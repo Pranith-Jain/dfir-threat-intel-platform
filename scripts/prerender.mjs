@@ -408,6 +408,7 @@ const ROUTES = [
   '/threatintel/aptmap',
   '/threatintel/estate',
   '/threatintel/infra/ai-honeypot',
+  '/threatintel/infra/ai-llm-intel',
 ];
 
 // Mirrors `appMode` in src/App.tsx: routes under these prefixes render the
