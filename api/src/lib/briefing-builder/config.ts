@@ -285,7 +285,19 @@ export const VICTIM_TRAILING_DESCRIPTORS = [
   'database leak',
 ];
 
-export const IOC_FEED_SOURCES = new Set(['URLhaus', 'MalwareBazaar', 'ThreatFox', 'TweetFeed']);
+/**
+ * Feed labels that mark a briefing as IOC-carrying. Keys must match the
+ * `iocSources` labels pushed in `build.ts`, or the daily-briefs index stops
+ * treating LLM-abuse briefings as IOC briefings.
+ */
+export const IOC_FEED_SOURCES = new Set([
+  'URLhaus',
+  'MalwareBazaar',
+  'ThreatFox',
+  'TweetFeed',
+  'AI Honeypot Observatory',
+  'LLM ThreatIntel',
+]);
 
 export const BRIEFING_MAX_AGE_DAYS = 30;
 

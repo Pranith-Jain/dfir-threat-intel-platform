@@ -999,6 +999,95 @@ export function fromRss(data: {
   }));
 }
 
+/**
+ * Dedicated AI/LLM intel (llm-threatintel + ai-honeypots) → pulse events.
+ *
+ * The narrative surfaces, NOT the observed IPs: campaigns/actors, write-ups,
+ * and the trend rollup. `honeypot` already renders observed addresses on the
+ * map; duplicating them here would double-count the same infrastructure on the
+ * same screen.
+ *
+ * Campaign posts carry no geography, so `lat/lng` are 0 — same convention as
+ * `fromHoneypot`, which the map treats as "unlocated".
+ */
+export function fromAiLlmIntel(data: {
+  actors?: Array<{
+    id: string;
+    names?: string[];
+    type?: string;
+    first_seen?: string;
+    status?: string;
+    distribution?: string[];
+    ttps?: string[];
+    description?: string;
+  }>;
+  posts?: Array<{
+    id: string;
+    title: string;
+    date: string;
+    author?: string;
+    tags?: string[];
+    excerpt?: string;
+    url?: string;
+  }>;
+  blog?: Array<{
+    id: string;
+    title: string;
+    date: string;
+    author?: string;
+    tags?: string[];
+    excerpt?: string;
+    url?: string;
+  }>;
+  honeypot_actor_classes?: Array<{ category: string; description?: string; count: number }>;
+}): PulseEvent[] {
+  const events: PulseEvent[] = [];
+  const today = new Date().toISOString();
+
+  for (const a of (data.actors ?? []).slice(0, 25)) {
+    const ttps = (a.ttps ?? []).slice(0, 3).join(', ');
+    events.push({
+      id: `aillm-campaign-${a.id}`.slice(0, 120),
+      kind: 'ai_llm_campaign' as const,
+      title: (a.names?.[0] || a.id).slice(0, 120),
+      description: [a.type, a.status, ttps ? `techniques: ${ttps}` : ''].filter(Boolean).join(' · ').slice(0, 220),
+      lat: 0,
+      lng: 0,
+      timestamp: a.first_seen || today,
+      // A tracked active campaign outranks a background trend. The technique
+      // list is the discriminator: credential/execution TT&CK means the
+      // campaign is doing something, not just being catalogued.
+      severity: (a.ttps ?? []).some((t) => /T1059|T1552|T1204|T1190/.test(t)) ? 'high' : 'medium',
+      source: 'LLM ThreatIntel',
+      url: `https://llm-threatintel.com/#${a.id}`,
+    });
+  }
+
+  const narrative = [...(data.posts ?? []), ...(data.blog ?? [])].slice(0, 30);
+  for (const p of narrative) {
+    const tags = p.tags ?? [];
+    events.push({
+      id: `aillm-post-${p.id}`.slice(0, 120),
+      kind: 'ai_llm_research' as const,
+      title: p.title.slice(0, 120),
+      description: [p.excerpt?.slice(0, 180), tags.length ? `tags: ${tags.slice(0, 5).join(', ')}` : '']
+        .filter(Boolean)
+        .join(' · ')
+        .slice(0, 220),
+      lat: 0,
+      lng: 0,
+      timestamp: p.date || today,
+      severity: tags.some((t) => /clickfix|phishing|injection|mcp|exfiltrat|malware|rat|stealer/.test(t))
+        ? 'high'
+        : 'medium',
+      source: 'LLM ThreatIntel',
+      url: p.url || 'https://llm-threatintel.com/',
+    });
+  }
+
+  return events;
+}
+
 export function fromHoneypot(data: {
   source_url?: string;
   indicators?: Array<{

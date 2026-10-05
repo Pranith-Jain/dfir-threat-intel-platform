@@ -372,6 +372,7 @@ const VeraChat = lazy(() => import('./pages/threatintel/VeraChat'));
 const RansomwareLive = lazy(() => import('./pages/threatintel/RansomwareLive'));
 const CyberPulse = lazy(() => import('./pages/threatintel/CyberPulse'));
 const AiHoneypotObservatory = lazy(() => import('./pages/threatintel/AiHoneypotObservatory'));
+const AiLlmIntel = lazy(() => import('./pages/threatintel/AiLlmIntel'));
 const WhoisHistory = lazy(() => import('./pages/dfir/WhoisHistory'));
 const OpenDirectory = lazy(() => import('./pages/dfir/OpenDirectory'));
 const ApkAnalyzer = lazy(() => import('./pages/dfir/ApkAnalyzer'));
@@ -553,6 +554,7 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/ransomware-live', Component: RansomwareLive },
   { path: '/threatintel/cyberpulse', Component: CyberPulse },
   { path: '/threatintel/infra/ai-honeypot', Component: AiHoneypotObservatory },
+  { path: '/threatintel/infra/ai-llm-intel', Component: AiLlmIntel },
   { path: '/threatintel/threat-actor-monitor', Component: ThreatActorMonitor },
   { path: '/threatintel/alerts', Component: AlertFeed },
   { path: '/threatintel/vera', Component: VeraChat },

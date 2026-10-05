@@ -447,7 +447,7 @@ export default function LiveIocs(): JSX.Element {
         emptyLabel={
           query || kindFilter.size > 0 || sourceFilter.size > 0
             ? 'No indicators match the current filter.'
-            : 'No indicators in the current snapshot. The cron repopulates this every 15 minutes - click refresh to re-pull.'
+            : 'No indicators in the current snapshot. The hourly cron repopulates this - click refresh to re-pull.'
         }
         onRetry={() => refetch()}
         rows={8}

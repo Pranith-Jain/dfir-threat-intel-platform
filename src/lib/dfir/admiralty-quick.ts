@@ -81,6 +81,28 @@ export const SOURCE_RELIABILITY: Record<string, AdmiraltyReliability> = {
   // MyThreatIntel (sourced from many places - average C)
   mti: 'C',
   mythreatintel: 'C',
+  // Dedicated AI / LLM threat intelligence. `ai-honeypots` is first-hand
+  // telemetry (B) but its bulk is deliberately low-confidence scanners;
+  // `llm-threatintel` is a single-analyst operation, so secondary reporting.
+  'ai-honeypots': 'B',
+  'llm-threatintel': 'C',
+  // Curated open-source C2 feeds — B for the Cobalt Strike sources (scanner or
+  // vendor research with real infrastructure attribution), C for the rest.
+  'foxit-cobaltstrike': 'B',
+  'carbonblack-c2': 'B',
+  'threatview-c2': 'C',
+  'c2intel-domains': 'C',
+  'threatfox-hostfile': 'B',
+  'threatfox-urls': 'B',
+  'threatcluster-ip': 'C',
+  'threatcluster-domains': 'C',
+  'sslbl-ja3': 'B',
+  greensnow: 'C',
+  siberkapan: 'C',
+  'bruteforce-login': 'C',
+  'bl-de-ssh': 'C',
+  'tsirolnik-spam': 'C',
+  'botvrij-domain': 'C',
 };
 
 const KIND_CREDIBILITY: Record<string, AdmiraltyCredibility> = {

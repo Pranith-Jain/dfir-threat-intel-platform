@@ -7,9 +7,16 @@ interface FeedSnapshot {
   generated_at: string;
 }
 
+// Imported, not hardcoded: this key belongs to the live-iocs route and this
+// file was pinned at v11 while the route advanced to v13, so the WebSocket DO
+// read a key nothing ever wrote and reported `total: 0` for the iocs layer.
+// A literal here silently drifts again on the next route-side bump; the import
+// cannot.
+import { LIVE_IOCS_CACHE_KEY } from '../../api/src/routes/live-iocs';
+
 const CACHE_KEYS = [
   { key: 'https://ransomware-recent-cache.internal/v8-af-source', label: 'ransomware' },
-  { key: 'https://live-iocs-cache.internal/v11-freshness-filter', label: 'iocs' },
+  { key: LIVE_IOCS_CACHE_KEY, label: 'iocs' },
   { key: 'https://cve-recent-cache.internal/v10-750-paged', label: 'cves' },
   { key: 'https://malware-samples-cache.internal/v3-500', label: 'malware' },
   { key: 'https://breach-cache.internal/v6-hibp-only', label: 'breaches' },

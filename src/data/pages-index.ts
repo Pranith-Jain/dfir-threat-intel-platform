@@ -3166,6 +3166,26 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     keywords: ['ai', 'llm', 'honeypot', 'mcp', 'credential harvester', 'scanner', 'ioc', 'blocklist'],
   },
   {
+    path: '/threatintel/infra/ai-llm-intel',
+    label: 'AI/LLM Threat Intel',
+    description:
+      'Campaigns, ATT&CK techniques, trends, and analyst write-ups on LLM-specific abuse - ClickFix lures, malicious MCP servers, prompt injection, relay-pool abuse.',
+    sectionLabel: 'Threat Intel · Infrastructure',
+    group: 'threatintel',
+    keywords: [
+      'ai',
+      'llm',
+      'threat intel',
+      'campaign',
+      'clickfix',
+      'mcp',
+      'prompt injection',
+      'supply chain',
+      'attack technique',
+      'trend',
+    ],
+  },
+  {
     path: '/threatintel/ai-honeypot-observatory',
     label: 'AI Honeypot Observatory (alias)',
     description: 'Alias for the AI Honeypot Observatory page.',

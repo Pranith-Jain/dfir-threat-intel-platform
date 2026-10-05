@@ -1,0 +1,76 @@
+name: Feed health audit
+
+# Probes every registered IOC feed and fails when one stops returning real
+# indicator data. Feed rot is invisible in the build — a dead upstream just
+# reports ok:false and the source quietly stops contributing — so this is the
+# only automated signal that a feed broke.
+#
+# Two failure modes are caught, and the second is why a status-code check is
+# not enough: a 200 whose body is an HTML page or an empty stub. Four feeds
+# were adopted from a community catalogue in exactly that state and
+# contributed nothing indefinitely.
+#
+# Key-gated / POST-only endpoints (malwarebazaar, phishing) are skipped by
+# design — see NOT_PLAIN_GET in the script. Retired feeds are never probed
+# here; `npm run audit:feeds:all` covers them and is informational.
+#
+# Manual: re-probe and get the same report on demand.
+
+on:
+  schedule:
+    # Monthly, off-peak. Feed rot is not minute-scale; the runtime already
+    # surfaces a dead source via ?debug=1 and the degraded banner between runs.
+    - cron: "17 4 1 * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: feed-audit
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # The audit script is dependency-free by design (no npm ci needed) —
+      # it is run on a schedule by machines that have not installed anything.
+
+      - name: Audit registered feeds
+        id: audit
+        run: |
+          set +e
+          npm run audit:feeds -- --json > /tmp/feed-audit.json 2>/tmp/feed-audit.log
+          code=$?
+          set -e
+          cat /tmp/feed-audit.log
+          echo "exit=$code" >> "$GITHUB_OUTPUT"
+          # Summarize even on a non-zero exit — a failing audit that prints no
+          # report is unactionable, and the report is the whole value here.
+          node scripts/format-feed-audit.mjs /tmp/feed-audit.json /tmp/feed-audit-summary.txt
+          cat /tmp/feed-audit-summary.txt
+
+      - name: Publish summary
+        if: always()
+        run: cat /tmp/feed-audit-summary.txt >> "$GITHUB_STEP_SUMMARY"
+
+      # Failing loudly is the point: a silent failure is how the last four
+      # retired feeds stayed wired for months. A non-zero exit here fails the
+      # run visibly in the Actions tab.
+      - name: Fail on unhealthy feed
+        if: steps.audit.outputs.exit != '0'
+        run: |
+          echo "::error::One or more registered IOC feeds are dead, stubbed, or returning HTML. See the run summary, then either re-point the URL, adopt a replacement, or add a RETIRED_FEEDS entry in api/src/lib/feed-curation.ts. Re-audit with: npm run audit:feeds"
+          exit 1

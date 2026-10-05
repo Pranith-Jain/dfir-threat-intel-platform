@@ -1,5 +1,7 @@
 import type { FeedQueueMessage } from '../../lib/live-iocs-slices';
 import { CVE_DIGEST_CACHE_KEY } from '../cve-digest';
+import { AI_LLM_SLICE_KEY } from '../ai-llm-intel';
+import { LIVE_IOCS_CACHE_KEY } from '../live-iocs';
 
 /* ─── Global-pulse feed registry + queue warmer ─────────────────────────── */
 // Each feed is warmed into `gp:warm:<key>` by the queue consumer — ONE feed per
@@ -37,6 +39,10 @@ export const GP_FEEDS: ReadonlyArray<{ key: string; path: string }> = [
   { key: 'rss', path: '/api/v1/cyber-news' },
   { key: 'webamon', path: '/api/v1/webamon/campaign-intel' },
   { key: 'honeypot', path: '/api/v1/ai-honeypot-feed' },
+  // Dedicated AI/LLM intel: campaigns, actors, write-ups, blog, and the trends
+  // rollup. Separate from `honeypot` (raw observed telemetry) because this layer
+  // is narrative — what is being attacked and how — not another IP list.
+  { key: 'aillm', path: '/api/v1/ai-llm-intel' },
   { key: 'firms', path: '/api/v1/firms-fires' },
   { key: 'ukmto', path: '/api/v1/ukmto-incidents' },
 ];
@@ -78,7 +84,10 @@ export const GP_FEED_CACHE_KEYS: Readonly<Record<string, string>> = {
   scam: 'https://crypto-scam-feed-cache.internal/v1',
   breach: 'https://breach-cache.internal/v6-hibp-only',
   tm: 'https://threat-map-cache.internal/v5-1k',
-  ioc: 'https://live-iocs-cache.internal/v13-freshness-filter',
+  // Imported, not hardcoded: this key is versioned by the live-iocs route and
+  // was already stale once at v13 (the route had moved to v14) — see the
+  // cvedigest comment for the same rationale.
+  ioc: LIVE_IOCS_CACHE_KEY,
   xclaims: 'https://x-claims-cache.internal/v2',
   // Imported, not hardcoded like the rest: this key was created alongside the
   // digest route and an import can't drift out of sync with it.
@@ -87,6 +96,9 @@ export const GP_FEED_CACHE_KEYS: Readonly<Record<string, string>> = {
   secretleaks: 'https://secret-leaks-cache.internal/v5-noedgecache',
   malpkg: 'https://malicious-packages-cache.internal/v2?e=npm',
   honeypot: 'https://ai-honeypot-feed.internal/v2',
+  // Imported, not hardcoded: this key belongs to the ai-llm-intel route and an
+  // import cannot drift out of sync with it (same rationale as cvedigest).
+  aillm: AI_LLM_SLICE_KEY,
   firms: 'https://global-pulse-cache.internal/firms-ukmto-v1',
   ukmto: 'https://global-pulse-cache.internal/firms-ukmto-v1',
 };

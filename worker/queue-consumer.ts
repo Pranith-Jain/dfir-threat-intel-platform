@@ -13,8 +13,10 @@
 import type { Env } from './env';
 import type { Env as ApiEnv } from '../api/src/env';
 import apiApp from '../api/src/index';
-import { runFeedSourceById, type FeedDeps } from '../api/src/routes/live-iocs';
-import { writeSlice, type FeedQueueMessage } from '../api/src/lib/live-iocs-slices';
+import { runFeedSourceById, feedBatchId, type FeedDeps, type FeedResult } from '../api/src/routes/live-iocs';
+import { writeBatchSlice, type FeedQueueMessage } from '../api/src/lib/live-iocs-slices';
+import { buildAiLlmIntel } from '../api/src/lib/ai-llm-intel';
+import { writeAiLlmSlice } from '../api/src/routes/ai-llm-intel';
 import { gpWarmKey } from '../api/src/routes/global-pulse';
 import { warmCveDigestCache } from '../api/src/routes/cve-digest';
 import { concurrentMap } from '../api/src/lib/concurrent-map';
@@ -179,6 +181,44 @@ export async function handleQueue(
           return;
         }
 
+        // ── Dedicated AI / LLM intel slice warm ──────────────────────────
+        // Rebuilds the AI/LLM intel payload (llm-threatintel iocs/actors/
+        // posts/blog + ai-honeypots) and parks it in the Cache API slice the
+        // read path serves. Its own message → own 50-subrequest budget; the
+        // build fans over 5 third-party upstreams, so sharing the hourly alarm
+        // would starve the live-IOC batches. The two indicator sets are ALSO
+        // live-IOC sources, so this is additive: the stream shows the
+        // addresses, this carries the campaign narrative.
+        if (msg.body?.aiLlmWarm === true) {
+          try {
+            const payload = await buildAiLlmIntel();
+            if (!payload.sources.some((s) => s.ok)) {
+              // Nothing usable upstream — retry rather than parking an empty
+              // slice that would read as "no AI/LLM intel exists" for 6h.
+              console.error(JSON.stringify({ job: 'ai-llm-warm', status: 'all-sources-down' }));
+              msg.retry({ delaySeconds: 300 });
+              return;
+            }
+            await writeAiLlmSlice(payload);
+            console.log(
+              JSON.stringify({
+                job: 'ai-llm-warm',
+                ok: true,
+                degraded: !!payload.degraded,
+                actors: payload.stats.actors,
+                iocs: payload.stats.iocs,
+                posts: payload.stats.posts,
+              })
+            );
+            msg.ack();
+            return;
+          } catch (e) {
+            console.error(JSON.stringify({ job: 'ai-llm-warm', error: e instanceof Error ? e.message : String(e) }));
+            msg.retry({ delaySeconds: 300 });
+            return;
+          }
+        }
+
         // ── CyberPulse source warm (cp:warm:<type>) ──────────────────────
         // Each source type gets its own consumer invocation → its own
         // 50-subrequest budget. The fetcher is called IN-PROCESS (no HTTP
@@ -221,16 +261,34 @@ export async function handleQueue(
 
         // Runtime-guard the body (a cross-version producer could send a
         // malformed shape) — the generic already types it, so no cast needed.
-        sourceId = msg.body && typeof msg.body.sourceId === 'string' ? msg.body.sourceId : '';
-        if (!sourceId) {
+        // Accept BOTH the batched (`sourceIds`) and legacy single (`sourceId`)
+        // shapes: a message enqueued by a previous deploy can still be in flight
+        // across a rolling update.
+        const batchIds: string[] = Array.isArray(msg.body?.sourceIds)
+          ? msg.body.sourceIds.filter((s): s is string => typeof s === 'string')
+          : [];
+        sourceId =
+          typeof msg.body?.sourceId === 'string' && msg.body.sourceId ? msg.body.sourceId : batchIds.join(',') || '';
+        if (!batchIds.length && !sourceId) {
           // Ack (no retry — a malformed body won't parse on redelivery) but log
-          // so a burst of bad messages is observable once PR3 wires the producer.
+          // so a burst of bad messages is observable.
           msg.ack();
           return;
         }
-        const result = await runFeedSourceById(sourceId, deps);
-        if (!result) {
-          // Unknown source id — ack so a stale/poison message doesn't loop to the DLQ.
+        // A batch runs every source against its own invocation's 50-subrequest
+        // budget, then parks them all in ONE slice — so adding a feed costs one
+        // cache write instead of one subrequest in compose. See
+        // `FeedQueueMessage.sourceIds`.
+        const targets = batchIds.length ? batchIds : [sourceId];
+        const results: Array<{ sourceId: string; result: FeedResult }> = [];
+        for (const id of targets) {
+          const result = await runFeedSourceById(id, deps);
+          // Unknown source id — a stale/poison id from an older registry. Skip it
+          // rather than failing the batch, which would retry work that can never
+          // succeed and eventually DLQ the whole batch.
+          if (result) results.push({ sourceId: id, result });
+        }
+        if (!results.length) {
           msg.ack();
           return;
         }
@@ -239,7 +297,7 @@ export async function handleQueue(
         // budget reasoning. `kv` stays in the deps for sources that need it
         // (e.g. andreafortuna's last-good mirror), but the slice itself does
         // not touch KV.
-        await writeSlice(sourceId, result);
+        await writeBatchSlice(feedBatchId(targets), results);
         msg.ack();
       } catch (e) {
         // Transient (KV write / unexpected) — let the queue retry, then DLQ.

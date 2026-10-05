@@ -212,6 +212,107 @@ export const SOURCE_META: Record<string, SourceMeta> = {
     color: DEFAULT_SOURCE_COLOR,
     weight: 5,
   },
+  swiftioc: {
+    label: 'SwiftIOC',
+    color: 'border-cyan-500/40 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300',
+    weight: 25,
+  },
+  'webamon-campaigns': {
+    label: 'Webamon Campaigns',
+    color: DEFAULT_SOURCE_COLOR,
+    weight: 30,
+  },
+
+  // ── Dedicated AI / LLM threat intelligence ─────────────────────────────
+  // Violet/fuchsia reserved for the AI-LLM family so these rows are visually
+  // separable from the generic blocklist noise around them.
+  'ai-honeypots': {
+    label: 'AI Honeypot',
+    color: 'border-violet-500/40 bg-violet-500/10 text-violet-700 dark:text-violet-300',
+    weight: 40,
+  },
+  'llm-threatintel': {
+    label: 'LLM ThreatIntel',
+    color: 'border-fuchsia-500/40 bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300',
+    weight: 45,
+  },
+
+  // ── Curated open-source C2 feeds ───────────────────────────────────────
+  'foxit-cobaltstrike': {
+    label: 'Fox-IT Cobalt Strike',
+    color: 'border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300',
+    weight: 55,
+  },
+  'carbonblack-c2': {
+    label: 'Carbon Black C2',
+    color: 'border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300',
+    weight: 55,
+  },
+  'threatview-c2': {
+    label: 'Threatview C2',
+    color: 'border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300',
+    weight: 50,
+  },
+  'c2intel-domains': {
+    label: 'C2IntelFeeds C2 domains',
+    color: 'border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300',
+    weight: 45,
+  },
+  'threatfox-hostfile': {
+    label: 'ThreatFox hosts',
+    color: 'border-fuchsia-500/40 bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300',
+    weight: 40,
+  },
+  'threatfox-urls': {
+    label: 'ThreatFox URLs',
+    color: 'border-fuchsia-500/40 bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300',
+    weight: 40,
+  },
+  'threatcluster-ip': {
+    label: 'ThreatCluster IP',
+    color: DEFAULT_SOURCE_COLOR,
+    weight: 25,
+  },
+  'threatcluster-domains': {
+    label: 'ThreatCluster domains',
+    color: DEFAULT_SOURCE_COLOR,
+    weight: 25,
+  },
+  'sslbl-ja3': {
+    label: 'SSLBL JA3',
+    color: 'border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300',
+    weight: 45,
+  },
+  greensnow: {
+    label: 'GreenSnow',
+    color: DEFAULT_SOURCE_COLOR,
+    weight: 20,
+  },
+  siberkapan: {
+    label: 'SiberKapan',
+    color: DEFAULT_SOURCE_COLOR,
+    weight: 18,
+  },
+  'bruteforce-login': {
+    label: 'Blocklist.de brute-force',
+    color: 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300',
+    weight: 22,
+  },
+  'bl-de-ssh': {
+    label: 'Blocklist.de SSH',
+    color: 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300',
+    weight: 22,
+  },
+  'tsirolnik-spam': {
+    label: 'tsirolnik spam',
+    color: DEFAULT_SOURCE_COLOR,
+    weight: 15,
+  },
+  'botvrij-domain': {
+    label: 'Botvrij domains',
+    color: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+    weight: 22,
+  },
 };
 
 /**

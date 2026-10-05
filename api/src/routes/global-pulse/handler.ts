@@ -52,6 +52,7 @@ import {
   fromRss,
   fromWebamonCampaigns,
   fromHoneypot,
+  fromAiLlmIntel,
   fromFirms,
   fromUkmto,
   fromCveDigest,
@@ -301,6 +302,9 @@ export async function buildGlobalPulseSync(
       merged.webamon ? fromWebamonCampaigns(merged.webamon as Parameters<typeof fromWebamonCampaigns>[0]) : []
     ),
     ...safe(() => (merged.honeypot ? fromHoneypot(merged.honeypot as Parameters<typeof fromHoneypot>[0]) : [])),
+    // Narrative AI/LLM intel — campaigns, actors, write-ups, blog. The observed
+    // IPs already render via `honeypot`, so this deliberately omits them.
+    ...safe(() => (merged.aillm ? fromAiLlmIntel(merged.aillm as Parameters<typeof fromAiLlmIntel>[0]) : [])),
     ...safe(() => (merged.cve ? fromCveRecent(merged.cve as Parameters<typeof fromCveRecent>[0]) : [])),
     // 24h digest — the 0-day surface (KEV + exploited + criticals, capped).
     // Warmed hourly via the cvedigest queue slice; shares the digest route's
@@ -416,6 +420,8 @@ export async function buildGlobalPulseSync(
     cyberpulse: 0,
     rss: 0,
     honeypot: 0,
+    ai_llm_campaign: 0,
+    ai_llm_research: 0,
   });
 
   const layers: Record<PulseKind, number> = zeroLayers();

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { runFeedSourceById, FEED_SOURCE_IDS, type FeedDeps } from '../../src/routes/live-iocs';
+import { runFeedSourceById, FEED_SOURCE_IDS, FEED_SOURCE_DEBUG_URLS, type FeedDeps } from '../../src/routes/live-iocs';
 
 const deps: FeedDeps = {};
 
@@ -39,22 +39,60 @@ describe('runFeedSourceById', () => {
 });
 
 describe('FEED_SOURCE_IDS', () => {
-  it('lists the 29 runner units in registry order', () => {
-    // Count pinned to the registry. Was 30; threatbase removed 2026-09-30 after
-    // its upstream repo (kalidada18/threatbase) began 404ing — the entry cost a
-    // subrequest per invocation for a feed that could never return. When adding
-    // or removing a feed, bump this number AND update the assertions below.
-    expect(FEED_SOURCE_IDS).toHaveLength(29);
+  it('lists the 45 runner units in registry order', () => {
+    // Count pinned to the registry. History: 30 → 29 (threatbase removed
+    // 2026-09-30 after its upstream repo began 404ing) → 45 on 2026-10-05, when
+    // the ai-honeypots + llm-threatintel sources and the 15 curated
+    // open-source feeds landed and webamon-campaigns was retired (403 with no
+    // API key configured, so it reported ok:false on every build).
+    // When adding or removing a feed, bump this number AND update the
+    // assertions below.
+    expect(FEED_SOURCE_IDS).toHaveLength(45);
     expect(FEED_SOURCE_IDS[0]).toBe('tweetfeed');
-    expect(FEED_SOURCE_IDS[28]).toBe('swiftioc');
+    expect(FEED_SOURCE_IDS[44]).toBe('swiftioc');
     expect(FEED_SOURCE_IDS).toContain('emerging-threats');
     expect(FEED_SOURCE_IDS).toContain('crypto-scam');
+    // Dedicated AI / LLM threat intel.
+    expect(FEED_SOURCE_IDS).toContain('ai-honeypots');
+    expect(FEED_SOURCE_IDS).toContain('llm-threatintel');
     // Removed dead sources
     expect(FEED_SOURCE_IDS).not.toContain('sslbl-c2');
     expect(FEED_SOURCE_IDS).not.toContain('andreafortuna-defacements');
     expect(FEED_SOURCE_IDS).not.toContain('mythreatintel');
     // Removed 2026-09-30: upstream repo deleted, 404 on every fetch.
     expect(FEED_SOURCE_IDS).not.toContain('threatbase');
+    // Removed 2026-10-05: pro.webamon.com/campaigns is 403 without a
+    // WEBAMON_API_KEY (none configured), so the source could only ever report
+    // ok:false and forced `degraded: true` on every build. See
+    // api/src/lib/feed-curation.ts RETIRED_FEEDS.
+    expect(FEED_SOURCE_IDS).not.toContain('webamon-campaigns');
+  });
+
+  it('has no duplicate source ids (a dup would make two slices collide)', () => {
+    const seen = new Set<string>();
+    const dups = FEED_SOURCE_IDS.filter((id) => (seen.has(id) ? true : (seen.add(id), false)));
+    expect(dups).toEqual([]);
+  });
+
+  it('never registers a URL from the retired-feed list', async () => {
+    // Guards against a future sync re-introducing a known-dead upstream on the
+    // strength of a stale third-party feed catalogue.
+    const { RETIRED_FEEDS } = await import('../../src/lib/feed-curation');
+    const dead = new Set(RETIRED_FEEDS.map((r) => r.url));
+    const urls = Object.values(FEED_SOURCE_DEBUG_URLS).flatMap((d) => [d.url, ...(d.fallbackUrls ?? [])]);
+    for (const url of urls) {
+      expect(dead.has(url), `registered a retired feed URL: ${url}`).toBe(false);
+    }
+  });
+
+  it('debug mirror covers every registry source (or is a documented exception)', () => {
+    // A missing entry means `?debug=1` reports "unreachable" for a source that is
+    // actually fine — the mirror failing silently is worse than it being absent.
+    const knownNonFeed = new Set(['malwarebazaar', 'phishing', 'openphish', 'feed-scheduler']);
+    for (const id of FEED_SOURCE_IDS) {
+      if (knownNonFeed.has(id)) continue;
+      expect(FEED_SOURCE_DEBUG_URLS[id], `no debug mirror for registry source: ${id}`).toBeDefined();
+    }
   });
 
   it('flags capped=true when a feed fills the per-feed cap, so 300 is not read as small', async () => {

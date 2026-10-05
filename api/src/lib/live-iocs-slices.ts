@@ -43,6 +43,30 @@ import type { LiveIoc, LiveSource, FeedResult } from '../routes/live-iocs';
  */
 export interface FeedQueueMessage {
   sourceId?: string;
+  /**
+   * Batched form: run every id in this array and write ONE combined slice.
+   *
+   * Replaces the one-message-per-source fan-out. Two hard limits made that
+   * design unscalable once the registry passed ~30 sources:
+   *
+   *  1. **Compose-on-read counted a Cache API read per source.** Slice reads
+   *     are subrequests, so `composeLiveIocs` over N sources needed N+ reads —
+   *     already past the free-plan 50 cap at 46 sources, before the handler's
+   *     own `cache.match` / KV / analytics work.
+   *  2. **The synchronous cold-start fallback ran one shared 42-subrequest
+   *     budget across every source**, so sources past the 42nd degraded to
+   *     `ok:false` on every cold colo.
+   *
+   * Batching fixes both at once: the consumer runs `sourceIds.length` sources in
+   * ONE invocation (its own 50-subrequest budget, so a batch must stay small —
+   * see `FEED_BATCH_SIZE`) and writes ONE slice; compose then reads one slice
+   * per batch instead of one per source. Adding feeds now costs one slice, not
+   * two subrequests.
+   *
+   * `sourceId` is retained so in-flight messages from a previous deploy still
+   * resolve (the consumer treats the two shapes identically).
+   */
+  sourceIds?: string[];
   gp?: { key: string; path: string };
   /** CyberPulse source warm message. Each source type gets its own consumer
    *  invocation → its own 50-subrequest budget. The consumer fetches the source
@@ -57,6 +81,15 @@ export interface FeedQueueMessage {
    * from a fresh budget). Its own consumer invocation → its own budget.
    */
   digestWarm?: true;
+  /**
+   * Rebuild the dedicated AI/LLM intel slice (llm-threatintel + ai-honeypots).
+   *
+   * Its own message + its own consumer invocation because the build fans out
+   * over five third-party JSON endpoints — sharing the hourly alarm's budget
+   * would starve the live-IOC batches, and running it inline on a page view
+   * would put five third-party upstreams on the read path.
+   */
+  aiLlmWarm?: true;
 }
 
 export const SLICE_KEY_PREFIX = 'live-iocs:slice:';
@@ -126,6 +159,85 @@ export async function readSlice(sourceId: string): Promise<LiveIocSlice | null> 
     const hit = await cache.match(sliceKey(sourceId));
     if (!hit) return null;
     const parsed = (await hit.json()) as LiveIocSlice | null;
+    if (!parsed || !Array.isArray(parsed.items) || !Array.isArray(parsed.sources)) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+// ── Batched slices ────────────────────────────────────────────────────────
+//
+// One slice per BATCH of sources rather than one per source. See the
+// `sourceIds` doc on `FeedQueueMessage` for why: per-source slices made
+// compose-on-read cost one subrequest per source, which does not survive the
+// registry growing.
+
+export const BATCH_SLICE_KEY_PREFIX = 'live-iocs:slice:batch:';
+
+/** Cache API request key for a batch slice (internal URL — never fetched). */
+export function batchSliceKey(batchId: string): Request {
+  return new Request(`https://live-iocs-slice.internal/v2/${encodeURIComponent(batchId)}`);
+}
+
+/**
+ * A batch slice carries the same envelope as a single-source slice. `source_id`
+ * holds the batch id so a mis-keyed write is visible in the stored payload, not
+ * just in the URL.
+ */
+export type LiveIocBatchSlice = LiveIocSlice;
+
+/**
+ * Write every source's contribution for one batch as a single slice.
+ *
+ * Accepts the results keyed by source id and drops any id the batch did not
+ * produce a result for (a source that threw is simply absent — the compose-side
+ * count check reports the batch as degraded rather than serving a hole
+ * silently). Best-effort: a Cache API failure must not wedge the consumer's
+ * retry loop.
+ */
+export async function writeBatchSlice(
+  batchId: string,
+  results: ReadonlyArray<{ sourceId: string; result: FeedResult }>
+): Promise<void> {
+  const items: LiveIoc[] = [];
+  const sources: LiveSource[] = [];
+  for (const { result } of results) {
+    for (const it of result.items) items.push(it);
+    for (const s of result.sources) sources.push(s);
+  }
+  if (results.length === 0) return;
+  const slice: LiveIocBatchSlice = {
+    source_id: batchId,
+    generated_at: new Date().toISOString(),
+    items,
+    sources,
+  };
+  const cache = getDefaultCache();
+  if (!cache) return;
+  try {
+    await cache.put(
+      batchSliceKey(batchId),
+      new Response(JSON.stringify(slice), {
+        headers: {
+          'content-type': 'application/json',
+          'cache-control': `public, max-age=${SLICE_TTL_SECONDS}`,
+        },
+      })
+    );
+  } catch {
+    /* best-effort — a cache write failure must not break the queue consumer */
+  }
+}
+
+/** Read one batch slice, or null if absent / unparseable. */
+export async function readBatchSlice(batchId: string): Promise<LiveIocBatchSlice | null> {
+  const cache = getDefaultCache();
+  if (!cache) return null;
+  try {
+    const hit = await cache.match(batchSliceKey(batchId));
+    if (!hit) return null;
+    const parsed = (await hit.json()) as LiveIocBatchSlice | null;
     if (!parsed || !Array.isArray(parsed.items) || !Array.isArray(parsed.sources)) return null;
     return parsed;
   } catch {

@@ -361,7 +361,7 @@ export const HUB_META: readonly HubMeta[] = [
         badge: 'new',
       },
       {
-        path: '/threatintel/malware/supply-chain',
+        path: '/threatintel/supply-chain',
         tabId: 'supply-chain',
         label: 'Supply-Chain Incidents',
         desc: 'Confirmed supply-chain compromise incidents - npm · PyPI · containers · AI agents. Data: supplychainattack.org.',
@@ -576,7 +576,7 @@ export const HUB_META: readonly HubMeta[] = [
         compVar: 'DarknetList',
       },
       {
-        path: '/threatintel/darkweb/forums',
+        path: '/threatintel/breach-hub?tab=forums',
         tabId: 'forums',
         label: 'Breach Forums',
         desc: 'Breach forum tracker - posts, threads, user activity.',
@@ -620,14 +620,14 @@ export const HUB_META: readonly HubMeta[] = [
         badge: 'live',
       },
       {
-        path: '/threatintel/darkweb/disclosures',
+        path: '/threatintel/breach-hub?tab=disclosures',
         tabId: 'disclosures',
         label: 'Breach Disclosures',
         desc: 'Breach disclosure feed - official statements and regulatory filings.',
         compVar: 'BreachDisclosures',
       },
       {
-        path: '/threatintel/darkweb/breach-watch',
+        path: '/threatintel/breach-hub?tab=watch',
         tabId: 'breach-watch',
         label: 'Breach Watch',
         desc: 'Aggregated breach and leak corpus from 6 public trackers - ransomware leaks, data breaches, combo lists.',
@@ -796,6 +796,13 @@ export const HUB_META: readonly HubMeta[] = [
         label: 'AI Honeypot Observatory',
         desc: 'LLM/AI endpoint honeypot intelligence - attacker categories, top IPs, and attack volume from ai-honeypots.com.',
         compVar: 'AiHoneypotObservatory',
+      },
+      {
+        path: '/threatintel/infra/ai-llm-intel',
+        tabId: 'ai-llm-intel',
+        label: 'AI/LLM Threat Intel',
+        desc: 'Campaigns, ATT&CK techniques, trends, and analyst write-ups on LLM-specific abuse.',
+        compVar: 'AiLlmIntel',
       },
     ],
   },

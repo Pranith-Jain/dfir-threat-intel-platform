@@ -6,8 +6,7 @@ import type { D1Database, Queue } from '@cloudflare/workers-types';
 import { safeNullLog } from '../lib/safe-catch';
 import { requireAdmin } from '../lib/admin-auth';
 import { concurrentMap } from '../lib/concurrent-map';
-import { readSlice, type FeedQueueMessage } from '../lib/live-iocs-slices';
-import { listCampaigns, listCampaignDomains } from '../lib/webamon-campaigns';
+import { readBatchSlice, type FeedQueueMessage } from '../lib/live-iocs-slices';
 import {
   parseTweetFeed,
   parseSansIsc,
@@ -20,7 +19,19 @@ import {
   parseViriback,
   parseThreatviewDomains,
   parseSwiftioc,
+  parseAiHoneypots,
+  parseLlmThreatintelIocs,
+  parseCobaltStrikeCsv,
+  parseCarbonBlackC2,
+  parseThreatviewC2,
+  parseThreatfoxHostfile,
+  parseThreatfoxUrls,
+  parseC2IntelDomains,
+  parseBotvrijDomains,
+  parsePlainDomainList,
+  parseSslblJa3,
 } from '../lib/ioc-feed-parsers';
+import { CURATED_FEEDS, type CuratedFeed } from '../lib/feed-curation';
 import { fetchMalwareSamplesCached } from './malware-samples';
 import { fetchPhishingUrlsCached } from './phishing-urls';
 import { fetchCryptoScamCached } from './crypto-scam-feed';
@@ -50,7 +61,12 @@ import { trackEvent, visitorCountry } from '../lib/analytics';
  * Cached 30 min — these feeds churn faster than the correlation endpoint.
  */
 
-export const LIVE_IOCS_CACHE_KEY = 'https://live-iocs-cache.internal/v13-freshness-filter';
+// v14 (2026-10-05): bumped on the registry change — webamon-campaigns retired,
+// ai-honeypots + llm-threatintel + the curated open-source feeds added, and the
+// compose path moved from per-source slices to batch slices. The shape the
+// old key holds is no longer what the handler serves, so serving it would mix a
+// 29-source snapshot with the new roster.
+export const LIVE_IOCS_CACHE_KEY = 'https://live-iocs-cache.internal/v14-batched-slices';
 const CACHE_KEY = LIVE_IOCS_CACHE_KEY;
 const CACHE_TTL_SECONDS = 30 * 60;
 // When a build is degraded (an upstream fetch failed), cache for a shorter
@@ -331,8 +347,12 @@ const FEED_FANOUT_CONCURRENCY = 5;
  * If you add or change a feed's URL, update BOTH the FEED_SOURCES registry
  * AND this map. A drift would surface as "source unreachable in debug"
  * when the real failure is "the debug mirror is stale".
+ *
+ * Exported so the drift guard in `live-iocs-runner.test.ts` can assert the
+ * mirror neither references a retired upstream nor misses a registry source —
+ * both failure modes are otherwise invisible until someone opens `?debug=1`.
  */
-const FEED_SOURCE_DEBUG_URLS: Record<string, { url: string; fallbackUrls?: string[] }> = {
+export const FEED_SOURCE_DEBUG_URLS: Record<string, { url: string; fallbackUrls?: string[] }> = {
   tweetfeed: { url: 'https://raw.githubusercontent.com/0xDanielLopez/TweetFeed/master/today.csv' },
   'sans-isc': { url: 'https://isc.sans.edu/api/sources/attacks/200/?json' },
   'c2-intel': { url: 'https://raw.githubusercontent.com/drb-ra/C2IntelFeeds/master/feeds/IPC2s.csv' },
@@ -373,8 +393,13 @@ const FEED_SOURCE_DEBUG_URLS: Record<string, { url: string; fallbackUrls?: strin
   },
   'domains-blacklist': {
     url: 'https://www.joewein.net/dl/bl/dom-bl.txt',
-    fallbackUrls: ['https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts'],
+    fallbackUrls: [
+      'https://raw.githubusercontent.com/tsirolnik/spam-domains-list/master/spamdomains.txt',
+      'https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts',
+    ],
   },
+  // Retired as a primary (9 URLs at the 2026-10-05 audit); kept as the last-resort
+  // fallback for `botvrij-domain`.
   'botvrij-urls': {
     url: 'https://www.botvrij.eu/data/ioclist.url.raw',
     fallbackUrls: [
@@ -426,10 +451,26 @@ const FEED_SOURCE_DEBUG_URLS: Record<string, { url: string; fallbackUrls?: strin
   swiftioc: {
     url: 'https://raw.githubusercontent.com/PKHarsimran/SwiftIOC-Automated-Threat-Intelligence-Collector/main/public/iocs/high_confidence.csv',
   },
-  // mythreatintel + openphish are handled by named sources with internal
-  // fetch helpers; their URLs are in the helpers themselves.
+  // openphish is emitted as a RESPONSE id by the `phishing` source, not a
+  // registry runner, so it is listed here only so `?debug=1` can reach it.
+  // malwarebazaar + phishing carry key-gated or key-dependent upstreams and
+  // cannot be probed as a plain GET — see scripts/audit-feed-health.mjs
+  // NOT_PLAIN_GET, and the drift test's documented non-feed exceptions.
   openphish: { url: 'https://openphish.com/feed.txt' },
-  'webamon-campaigns': { url: 'https://pro.webamon.com/campaigns' },
+  // ── Dedicated AI / LLM threat intelligence ─────────────────────────────
+  'ai-honeypots': {
+    url: 'https://ai-honeypots.com/feeds/iocs.json',
+    fallbackUrls: ['https://ai-honeypots.com/feeds/iocs.txt'],
+  },
+  'llm-threatintel': { url: 'https://llm-threatintel.com/data/iocs.json' },
+  // ── Curated open-source feeds ──────────────────────────────────────────
+  // Generated from CURATED_FEEDS so this mirror cannot drift from the registry.
+  ...Object.fromEntries(
+    CURATED_FEEDS.map((f) => [
+      f.id,
+      { url: f.url, ...(f.fallbackUrls?.length ? { fallbackUrls: f.fallbackUrls } : {}) },
+    ])
+  ),
 };
 
 const CPS_BASE = 'https://raw.githubusercontent.com/CriticalPathSecurity/Public-Intelligence-Feeds/master';
@@ -704,47 +745,194 @@ const cryptoScamSource: FeedSource = {
   },
 };
 
-/** Webamon campaign intelligence: fresh malicious domains from the fastest-growing
- *  tracked phishing / malware-delivery estates (intel.webamon.com). Pulls the top
- *  campaigns by 24h delta and emits their currently-online domains. Key-gated —
- *  degrades to an empty, ok:false row when WEBAMON_API_KEY is unset. */
-const webamonCampaignsSource: FeedSource = {
-  id: 'webamon-campaigns',
-  run: async ({ env, budget }) => {
-    const id = 'webamon-campaigns';
-    // listCampaigns + per-campaign listCampaignDomains = 1 + N subrequests.
-    // Give it a small allowance; an exhausted budget degrades the source
-    // rather than aborting the whole invocation.
-    if (!consumeBudget(budget, 3)) return { items: [], sources: [{ id, ok: false, count: 0 }] };
-    if (!env?.WEBAMON_API_KEY) return { items: [], sources: [{ id, ok: false, count: 0 }] };
-    try {
-      const campaigns = await listCampaigns(env, { size: 3, sortBy: 'delta_24h', order: 'desc' });
-      const top = (campaigns?.results ?? []).filter((c) => (c.delta_24h ?? 0) > 0).slice(0, 3);
-      if (top.length === 0) return { items: [], sources: [{ id, ok: true, count: 0 }] };
-      const items: LiveIoc[] = [];
-      for (const camp of top) {
-        const doms = await listCampaignDomains(env, camp.campaign_id, { size: 100 });
-        for (const d of doms?.results ?? []) {
-          if (d.online === false) continue;
-          items.push({
-            value: d.domain,
-            kind: 'domain',
-            source: id,
-            reporter: 'Webamon campaigns',
-            context: `${camp.name}${d.count ? ` · ${d.count} scans` : ''}`,
-            observed_at: isoFromLoose(d.first_seen) ?? isoFromLoose(d.last_seen),
-            reference_url: 'https://intel.webamon.com',
-          });
-        }
-      }
-      const capped = items.slice(0, PER_FEED_CAP);
-      return { items: capped, sources: [{ id, ok: true, count: capped.length }] };
-    } catch (err) {
-      logError('webamonCampaignsSource failed', err);
-      return { items: [], sources: [{ id, ok: false, count: 0 }] };
-    }
+// ── Dedicated AI / LLM threat-intelligence sources ────────────────────────
+//
+// Unlike every other source here, these two are not "malicious IPs someone
+// blocklisted". They carry per-indicator ATTRIBUTION — actor category, ATT&CK
+// technique, honeypot persona/model interaction — which is what makes a row in
+// the live stream say something an analyst can act on rather than just
+// "block this address".
+
+/**
+ * AI Honeypot Observatory (ai-honeypots.com).
+ *
+ * The JSON feed is primary and the `.txt` blocklist is the fallback: they carry
+ * the same 1,000 IPs, but only the JSON has `last_seen` (→ `observed_at`, so
+ * these rows participate in the freshness window and sort to the top of the
+ * stream) plus `actor_category` / `ttps` / hit counts. Upstream already orders
+ * the JSON most-confident-first, so the per-feed cap keeps the 7 `very-high` and
+ * 78 `high` rows rather than an arbitrary slice.
+ *
+ * TLP:WHITE / CC0 per the feed header — safe to republish.
+ */
+const aiHoneypotsSource: FeedSource = {
+  id: 'ai-honeypots',
+  run: async (deps) => {
+    const json = await fetchJson('https://ai-honeypots.com/feeds/iocs.json', deps?.budget);
+    const txt = json ? null : await fetchText('https://ai-honeypots.com/feeds/iocs.txt', deps?.budget);
+    if (!json && !txt) return { items: [], sources: [{ id: 'ai-honeypots', ok: false, count: 0 }] };
+    // The .txt fallback has no timestamps/attribution, so it parses to bare
+    // entries — still useful, just undated, and the source row stays honest
+    // about which upstream actually answered.
+    const parsed = json ? parseAiHoneypots(json, PER_FEED_CAP) : parseAiHoneypotsFallback(txt as string, PER_FEED_CAP);
+    const items: LiveIoc[] = parsed.map((e) => ({
+      value: e.value,
+      kind: 'ip',
+      source: 'ai-honeypots',
+      reporter: 'AI Honeypot Observatory',
+      context: e.context,
+      reference_url: 'https://ai-honeypots.com/feeds/',
+      ...(e.timestamp ? { observed_at: e.timestamp } : {}),
+    }));
+    return {
+      items,
+      sources: [
+        { id: 'ai-honeypots', ok: items.length > 0, count: items.length, capped: items.length >= PER_FEED_CAP },
+      ],
+    };
   },
 };
+
+/**
+ * `feeds/iocs.txt` fallback parser: `<ip>  # ACTOR | conf:X | hits:N`.
+ * Only reached when the JSON feed is unreachable.
+ */
+const parseAiHoneypotsFallback = (text: string, cap: number): ParsedEntry[] => {
+  const out: ParsedEntry[] = [];
+  for (const line of text.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const hash = trimmed.indexOf('#');
+    const ip = (hash === -1 ? trimmed : trimmed.slice(0, hash)).trim();
+    if (!/^(?:\d{1,3}\.){3}\d{1,3}$/.test(ip)) continue;
+    const meta = hash === -1 ? '' : trimmed.slice(hash + 1).trim();
+    out.push({ value: ip, type: 'ip', ...(meta ? { context: `AI honeypot — ${meta}` } : {}) });
+    if (out.length >= cap) break;
+  }
+  return out;
+};
+
+/**
+ * LLM ThreatIntel (llm-threatintel.com) — the `data/iocs.json` indicator set.
+ *
+ * Indicators are keyed to a named campaign (`campaign` field) and carry the
+ * reporting analyst's own context, so each row is a claim with provenance
+ * rather than an anonymous address. The companion actors/posts/blog data lives
+ * in `ai-llm-intel.ts`, which is what feeds brief / trends / blog.
+ */
+const llmThreatintelSource: FeedSource = {
+  id: 'llm-threatintel',
+  run: async (deps) => {
+    const json = await fetchJson('https://llm-threatintel.com/data/iocs.json', deps?.budget);
+    if (!json) return { items: [], sources: [{ id: 'llm-threatintel', ok: false, count: 0 }] };
+    const parsed = parseLlmThreatintelIocs(json, PER_FEED_CAP);
+    const items: LiveIoc[] = [];
+    for (const e of parsed) {
+      // The feed's `type` is already validated by the parser's LLM_TYPE_MAP, so
+      // this only drops entries whose type has no live-IOC kind.
+      const kind = iocKind(e.type ?? '');
+      if (!kind) continue;
+      items.push({
+        value: e.value,
+        kind,
+        source: 'llm-threatintel',
+        reporter: 'LLM ThreatIntel',
+        context: e.context,
+        // The feed's own IOC page as the permalink, so a row is click-throughable.
+        reference_url: 'https://llm-threatintel.com/#ioc-feed',
+        ...(e.timestamp ? { observed_at: e.timestamp } : {}),
+      });
+    }
+    return {
+      items,
+      sources: [
+        { id: 'llm-threatintel', ok: items.length > 0, count: items.length, capped: items.length >= PER_FEED_CAP },
+      ],
+    };
+  },
+};
+
+/** Fetch + parse JSON, sharing `fetchText`'s budget accounting and HTML guard. */
+async function fetchJson(url: string, budget?: { used: number; max: number }): Promise<string | null> {
+  return fetchText(url, budget);
+}
+
+// ── Curated open-source feeds ────────────────────────────────────────────
+//
+// Generated from `CURATED_FEEDS` (see api/src/lib/feed-curation.ts for the
+// per-feed audit, the retired list, and why each feed was chosen) so the
+// curation record and the runtime registry cannot drift: there is exactly one
+// place to edit when a feed rots.
+
+/** Parser per curated feed id. Anything not listed falls back to a kind-based
+ *  plain-list reader, which is correct for the bare blocklists. */
+const CURATED_PARSERS: Record<string, (body: string, cap: number) => ParsedEntry[]> = {
+  'foxit-cobaltstrike': parseCobaltStrikeCsv,
+  'carbonblack-c2': parseCarbonBlackC2,
+  'threatview-c2': parseThreatviewC2,
+  'threatfox-hostfile': parseThreatfoxHostfile,
+  'threatfox-urls': parseThreatfoxUrls,
+  'c2intel-domains': parseC2IntelDomains,
+  'botvrij-domain': parseBotvrijDomains,
+  'sslbl-ja3': parseSslblJa3,
+  'tsirolnik-spam': parsePlainDomainList,
+  'threatcluster-ip': (body, cap) => parsePlainTextIps(body, cap),
+  'threatcluster-domains': parsePlainDomainList,
+  greensnow: (body, cap) => parsePlainTextIps(body, cap),
+  siberkapan: (body, cap) => parsePlainTextIps(body, cap),
+  'bruteforce-login': (body, cap) => parsePlainTextIps(body, cap),
+  'bl-de-ssh': (body, cap) => parsePlainTextIps(body, cap),
+};
+
+/** Map a curated feed's declared kind onto the live-IOC kind union. */
+function curatedKind(f: CuratedFeed): IocKind {
+  if (f.kind === 'ipv4') return 'ip';
+  if (f.kind === 'domain') return 'domain';
+  if (f.kind === 'url') return 'url';
+  return 'hash';
+}
+
+/**
+ * Build the registry entry for one curated feed.
+ *
+ * `withTimestamp` is on only when the upstream actually publishes per-entry
+ * dates. This matters: `finalizeLiveIocs` drops timestamped items older than
+ * STALENESS_HOURS, so tagging a dateless blocklist as timestamped would silently
+ * delete the entire feed, while leaving a dated C2 list undated would hide its
+ * freshness. Dated: foxit-cobaltstrike, carbonblack-c2, threatview-c2,
+ * threatfox-urls, sslbl-ja3.
+ */
+const curatedSource = (f: CuratedFeed): FeedSource => {
+  const parse = CURATED_PARSERS[f.id] ?? ((body: string, cap: number) => parsePlainTextIps(body, cap));
+  return textFeedSource({
+    id: f.id,
+    url: f.url,
+    fallbackUrls: f.fallbackUrls,
+    parse: (body, cap) => parse(body, cap),
+    kind: curatedKind(f),
+    reporter: f.name,
+    context: f.context,
+    withTimestamp: CURATED_DATED.has(f.id),
+    // An empty body from a 200 means the feed collapsed upstream — report it
+    // unhealthy rather than letting it read as a healthy-but-quiet source.
+    okRequiresItems: true,
+  });
+};
+
+const CURATED_DATED = new Set<string>([
+  'foxit-cobaltstrike',
+  'carbonblack-c2',
+  'threatview-c2',
+  'threatfox-urls',
+  'sslbl-ja3',
+]);
+
+// Tier 1 (named C2 infrastructure with attribution) first so the synchronous
+// cold-start fan-out's 42-subrequest budget is spent on the evidence-bearing
+// feeds before the high-volume context-free blocklists. The queue path — the
+// primary refresh model — has no such ceiling and covers everything.
+const curatedTier1 = CURATED_FEEDS.filter((f) => f.priority === 1).map(curatedSource);
+const curatedTier2 = CURATED_FEEDS.filter((f) => f.priority === 2).map(curatedSource);
 
 // Registry, ordered exactly as the original sequential blocks pushed sources —
 // concurrentMap preserves input order, so the flattened sources/items keep this
@@ -806,7 +994,10 @@ const FEED_SOURCES: FeedSource[] = [
   malwarebazaarSource,
   phishingSource,
   cryptoScamSource,
-  webamonCampaignsSource,
+  aiHoneypotsSource,
+  llmThreatintelSource,
+  ...curatedTier1,
+  ...curatedTier2,
   textFeedSource({
     id: 'binarydefense',
     url: `${CPS_BASE}/binarydefense.txt`,
@@ -871,15 +1062,26 @@ const FEED_SOURCES: FeedSource[] = [
     context: 'malicious IP blocklist',
   }),
   textFeedSource({
+    // joewein's dom-bl.txt is tiny (181 domains at the 2026-10-05 audit) and is
+    // the only primary we had for curated malicious domains, so it now falls back
+    // to the far larger tsirolnik spam/malware domain list before the generic
+    // StevenBlack hosts file (which is mostly benign-with-ad-servers and a poor
+    // last resort for this source's "known malicious domain" framing).
     id: 'domains-blacklist',
     url: 'https://www.joewein.net/dl/bl/dom-bl.txt',
-    fallbackUrls: ['https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts'],
+    fallbackUrls: [
+      'https://raw.githubusercontent.com/tsirolnik/spam-domains-list/master/spamdomains.txt',
+      'https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts',
+    ],
     parse: parsePhishingArmy,
     kind: 'domain',
     reporter: 'Joewein.net',
     context: 'known malicious domain',
   }),
   textFeedSource({
+    // RETIRED as the URL primary (audited 2026-10-05: shrunk to 9 URLs, one of
+    // them a malformed `ttp://` row). It survives only as the LAST-RESORT
+    // fallback for `botvrij-domain`, which carries 3,894 domains.
     id: 'botvrij-urls',
     url: 'https://www.botvrij.eu/data/ioclist.url.raw',
     fallbackUrls: [
@@ -992,6 +1194,55 @@ const FEED_SOURCES: FeedSource[] = [
  * the staleness filter — see fetchLiveIocs).
  */
 export const FEED_SOURCE_IDS: readonly string[] = FEED_SOURCES.map((s) => s.id);
+
+/**
+ * Sources per queue message.
+ *
+ * Sized so one consumer invocation stays well inside the free-plan 50-subrequest
+ * cap even on the worst-case batch: most sources cost 1 fetch, but the ones with
+ * KV-cached helpers (malwarebazaar, phishing, crypto-scam) and the multi-URL
+ * fallback chains cost 2-3. At 6 sources/batch the ceiling is ~18 subrequests,
+ * leaving ample room for the slice write.
+ *
+ * Upper bound on the other side: too small and the compose path needs a slice
+ * read per batch, so the batch count is itself the compose subrequest cost.
+ * 6 × ~46 sources ≈ 8 slices ≈ 8 reads, comfortably inside the cap, and each
+ * still amortises well over the sources it covers.
+ */
+export const FEED_BATCH_SIZE = 6;
+
+/**
+ * Chunk the registry ids into fixed-size batches, preserving order.
+ *
+ * Order is load-bearing: `finalizeLiveIocs` relies on contributions arriving in
+ * FEED_SOURCES order for its stable newest-first sort and per-source recount.
+ */
+export function feedSourceBatches(size: number = FEED_BATCH_SIZE): string[][] {
+  const batches: string[][] = [];
+  for (let i = 0; i < FEED_SOURCE_IDS.length; i += size) {
+    batches.push(FEED_SOURCE_IDS.slice(i, i + size));
+  }
+  return batches;
+}
+
+/**
+ * Stable id for a batch: an FNV-1a hash of its member source ids.
+ *
+ * Content-addressed rather than index-addressed so the producer and the consumer
+ * derive the same key without exchanging an index — the consumer only ever sees
+ * `sourceIds`, and an index would silently orphan every slice if the registry
+ * were reordered or a source inserted. It also means a registry edit only
+ * invalidates the slices of the batches it actually touched.
+ */
+export function feedBatchId(sourceIds: readonly string[]): string {
+  const s = sourceIds.join(',');
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return `b${h.toString(16)}`;
+}
 
 /**
  * Run a single registered feed source by id and return its contributed
@@ -1246,31 +1497,49 @@ const SLICE_READ_CONCURRENCY = 12;
  * and the caller falls through to the synchronous fan-out.
  */
 export async function composeLiveIocs(env?: Env): Promise<{ response: LiveIocsResponse; presentSlices: number }> {
-  const slices = await concurrentMap(FEED_SOURCE_IDS, (id) => readSlice(id), SLICE_READ_CONCURRENCY);
+  const batches = feedSourceBatches();
+  // One Cache API read per BATCH, not per source — see `FeedQueueMessage.sourceIds`
+  // for why per-source slices stopped scaling.
+  const batchSlices = await concurrentMap(batches, (ids) => readBatchSlice(feedBatchId(ids)), SLICE_READ_CONCURRENCY);
   const items: LiveIoc[] = [];
   const sources: LiveSource[] = [];
   let presentSlices = 0;
-  for (const slice of slices) {
+  for (const slice of batchSlices) {
     if (!slice) continue;
     presentSlices++;
-    // Defensive per-slice cap mirroring the sync path (each source's run() caps
-    // at PER_FEED_CAP). A slice is written from that already-capped result, so
+    // Defensive per-source cap mirroring the sync path (each source's run() caps
+    // at PER_FEED_CAP). A slice is written from those already-capped results, so
     // this only guards against a corrupted/oversized slice ballooning compose.
-    for (const it of slice.items.slice(0, PER_FEED_CAP)) items.push(it);
+    for (const it of slice.items.slice(0, PER_FEED_CAP * FEED_BATCH_SIZE)) items.push(it);
     for (const s of slice.sources) sources.push(s);
   }
-  const extraDegraded = presentSlices < FEED_SOURCE_IDS.length;
+  const extraDegraded = presentSlices < batches.length;
   const response = await finalizeLiveIocs(items, sources, env, extraDegraded);
   return { response, presentSlices };
 }
 
-/** Enqueue a refresh for every registry source (one message per source). */
+/**
+ * Enqueue a refresh for every registry source, batched, plus the AI/LLM intel
+ * slice warm.
+ *
+ * One message per batch (not per source) so each consumer invocation covers
+ * `FEED_BATCH_SIZE` sources against its own subrequest budget and writes a
+ * single slice. Sends are staggered so the messages don't land as one burst the
+ * consumer (max_concurrency 10) can't drain, which would show up as an
+ * average-lag spike. The AI/LLM warm rides the same batch (it is one message,
+ * one invocation, independent of the feed batches).
+ */
 export async function enqueueAllFeeds(queue: Queue<FeedQueueMessage>): Promise<void> {
-  // Stagger sends (2s apart) so 23 messages don't land in the queue as a
-  // single burst that the consumer (max_concurrency 10) can't drain fast
-  // enough — a burst creates a transient backlog + avg-lag spike on the
-  // dashboard. The stagger spaces them so the consumer keeps pace.
-  await queue.sendBatch(FEED_SOURCE_IDS.map((id, i) => ({ body: { sourceId: id }, delaySeconds: i * 2 })));
+  const batches = feedSourceBatches();
+  const messages: Array<{ body: FeedQueueMessage; delaySeconds?: number }> = batches.map((sourceIds, i) => ({
+    body: { sourceIds },
+    delaySeconds: i * 2,
+  }));
+  // AI/LLM intel last, and staggered behind the batches so the dedicated
+  // narrative payload never competes with the indicator batches for the head of
+  // the drain.
+  messages.push({ body: { aiLlmWarm: true }, delaySeconds: batches.length * 2 + 5 });
+  await queue.sendBatch(messages as Parameters<Queue<FeedQueueMessage>['sendBatch']>[0]);
 }
 
 const ENQUEUE_COOLDOWN_KEY = 'live-iocs:enqueue-cooldown';

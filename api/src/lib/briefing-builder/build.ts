@@ -3,6 +3,8 @@ import type { Env } from '../../env';
 import { type IocEntry } from '../ioc-feed-parsers';
 import { fetchMtiSource, type MtiCveRecord } from '../mythreatintel-api';
 import { fetchRansomwareRecent, type RansomwareVictim } from '../../routes/ransomware-recent';
+import { readAiLlmIntelSlice } from '../../routes/ai-llm-intel';
+import { AI_LLM_BASE } from '../ai-llm-intel';
 import { getCampaignIntel, type WebamonCampaignIntel } from '../webamon-campaigns';
 import { normalizeGroup } from '../group-normalize';
 import { computeDailyWindow, computeLiveDailyWindow } from '../briefing-window';
@@ -23,11 +25,7 @@ import {
   type DailyHuntIocFamily,
   type DbugsVuln,
 } from './feeds';
-import {
-  fetchVulnTrackerDaily,
-  type VulnTrackerBlogPost,
-  type VulnTrackerDayCounts,
-} from '../vulntracker';
+import { fetchVulnTrackerDaily, type VulnTrackerBlogPost, type VulnTrackerDayCounts } from '../vulntracker';
 import {
   isoDate,
   isoYearWeek,
@@ -232,6 +230,9 @@ export async function buildBriefing(
 
   const wrap = <T>(p: Promise<T>, fallback: T) =>
     p.then((v) => ({ ok: true, v })).catch(() => ({ ok: false, v: fallback }));
+  /** Like `wrap` but unwraps an optional slice read. */
+  const wrapOpt = <T>(p: Promise<T | null>) =>
+    p.then((v) => ({ ok: v !== null, v })).catch(() => ({ ok: false, v: null as T | null }));
   const mtiEnv = opts.env;
   const [
     kevR,
@@ -239,6 +240,9 @@ export async function buildBriefing(
     malwarebazaar,
     threatfox,
     tweetfeed,
+    aiHoneypots,
+    llmThreatintel,
+    aiLlmIntel,
     nvdR,
     ransomwareBundle,
     mtiCveItems,
@@ -254,6 +258,18 @@ export async function buildBriefing(
     fetchFeedResilient(mtiEnv, 'malwarebazaar'),
     fetchFeedResilient(mtiEnv, 'threatfox'),
     fetchFeedResilient(mtiEnv, 'tweetfeed'),
+    // AI/LLM threat intel. Two indicator feeds + the narrative payload, so the
+    // briefing covers LLM-abuse campaigns (ClickFix lures, malicious MCP
+    // servers, prompt injection) alongside classic malware. All three are
+    // fetch-resilient with a last-good mirror, and each adds exactly 1
+    // subrequest — the build's fan-out stays inside the free-plan cap.
+    fetchFeedResilient(mtiEnv, 'ai-honeypots'),
+    fetchFeedResilient(mtiEnv, 'llm-threatintel'),
+    // Read the warmed slice, never build it here: this fan-out runs inside the
+    // daily briefing build, and an inline build would put 5 third-party
+    // upstreams on the briefing's subrequest budget for a payload the hourly
+    // cron already keeps warm. Null when cold → the section is simply omitted.
+    wrapOpt(readAiLlmIntelSlice()),
     wrap(
       withLastGood(mtiEnv, `briefing-nvd?s=${startMs}&e=${endMs}`, async () => {
         try {
@@ -488,13 +504,24 @@ export async function buildBriefing(
   const malwarebazaarMatched = malwarebazaar.filter(matchTimestamp);
   const threatfoxMatched = threatfox.filter(matchTimestamp);
   const tweetfeedMatched = tweetfeed.filter(matchTimestamp);
+  const aiHoneypotsMatched = aiHoneypots.filter(matchTimestamp);
+  const llmThreatintelMatched = llmThreatintel.filter(matchTimestamp);
   if (urlhausMatched.length > 0) iocPerSource['URLhaus'] = urlhausMatched.length;
   if (malwarebazaarMatched.length > 0) iocPerSource['MalwareBazaar'] = malwarebazaarMatched.length;
   if (threatfoxMatched.length > 0) iocPerSource['ThreatFox'] = threatfoxMatched.length;
   if (tweetfeedMatched.length > 0) iocPerSource['TweetFeed'] = tweetfeedMatched.length;
+  if (aiHoneypotsMatched.length > 0) iocPerSource['AI Honeypot Observatory'] = aiHoneypotsMatched.length;
+  if (llmThreatintelMatched.length > 0) iocPerSource['LLM ThreatIntel'] = llmThreatintelMatched.length;
 
   const seenIoc = new Set<string>();
-  const allIocs = [...urlhausMatched, ...malwarebazaarMatched, ...threatfoxMatched, ...tweetfeedMatched].filter((e) => {
+  const allIocs = [
+    ...urlhausMatched,
+    ...malwarebazaarMatched,
+    ...threatfoxMatched,
+    ...tweetfeedMatched,
+    ...aiHoneypotsMatched,
+    ...llmThreatintelMatched,
+  ].filter((e) => {
     const k = `${e.type}|${e.value.trim().toLowerCase()}`;
     if (seenIoc.has(k)) return false;
     seenIoc.add(k);
@@ -508,6 +535,8 @@ export async function buildBriefing(
   if (malwarebazaarMatched.length > 0) iocSources.push('MalwareBazaar');
   if (threatfoxMatched.length > 0) iocSources.push('ThreatFox');
   if (tweetfeedMatched.length > 0) iocSources.push('TweetFeed');
+  if (aiHoneypotsMatched.length > 0) iocSources.push('AI Honeypot Observatory');
+  if (llmThreatintelMatched.length > 0) iocSources.push('LLM ThreatIntel');
 
   const ransomwareVictims = ransomwareBundle.victims;
   const ransomwareGroups = ransomwareBundle.groups;
@@ -803,6 +832,90 @@ export async function buildBriefing(
     });
   }
 
+  // ── AI/LLM threat intel: campaigns, write-ups, and blog ────────────────
+  // Reads the hourly-warmed slice rather than fetching, so this adds 0
+  // subrequests to the briefing build. Two sections because they answer
+  // different questions: campaigns say WHAT is being attacked, the narrative
+  // feed says HOW it works.
+  let aiLlmSectionsEmitted = false;
+  if (aiLlmIntel?.ok && aiLlmIntel.v) {
+    const intel = aiLlmIntel.v;
+
+    // Actors/campaigns first_seen within the window, newest first.
+    const actorFindings: BriefingFinding[] = [];
+    const seenActors = new Set<string>();
+    for (const a of intel.actors) {
+      if (a.first_seen && !withinRange(a.first_seen, startMs, endMs)) continue;
+      // An actor with no first_seen is undated upstream — skip it rather than
+      // asserting a date we don't have and letting it into a time-boxed brief.
+      if (!a.first_seen) continue;
+      if (seenActors.has(a.id)) continue;
+      seenActors.add(a.id);
+      actorFindings.push({
+        id: `llm-campaign-${a.id}`.replace(/[^a-zA-Z0-9-]/g, '-').slice(0, 90),
+        title: a.names[0] || a.id,
+        description: [
+          a.description?.slice(0, 400),
+          a.ttps?.length ? `Techniques: ${a.ttps.slice(0, 6).join('; ')}` : '',
+          a.distribution?.length ? `Distribution: ${a.distribution.slice(0, 4).join('; ')}` : '',
+        ]
+          .filter(Boolean)
+          .join('\n'),
+        // A tracked campaign is an active intrusion concern, not a CVE. 'medium'
+        // is the floor here; a LLM-abuse campaign with a credential-harvesting
+        // TTPP set should read as high, which the mitre list signals.
+        severity: a.ttps?.some((t) => /T1059|T1552|T1204|T1190/.test(t)) ? 'high' : 'medium',
+        source: 'LLM ThreatIntel',
+        source_url: `${AI_LLM_BASE}/#${a.id}`,
+        mitre_techniques: a.ttps ?? [],
+      });
+    }
+    if (actorFindings.length > 0) {
+      sections.push({
+        id: 'llm-campaigns',
+        title: 'AI/LLM campaigns',
+        count: actorFindings.length,
+        blurb: `LLM-abuse campaigns and supply-chain clusters first observed in this window, with ATT&CK mapping and delivery channels.`,
+        findings: actorFindings,
+      });
+    }
+
+    // Write-ups + blog merged, windowed by post date.
+    const narrativeFindings: BriefingFinding[] = [];
+    const seenNarrative = new Set<string>();
+    for (const post of [...intel.posts, ...intel.blog]) {
+      if (!withinRange(post.date, startMs, endMs)) continue;
+      if (seenNarrative.has(post.id)) continue;
+      seenNarrative.add(post.id);
+      narrativeFindings.push({
+        id: `llm-intel-${post.id}`.replace(/[^a-zA-Z0-9-]/g, '-').slice(0, 90),
+        title: post.title.length > 120 ? `${post.title.slice(0, 117)}…` : post.title,
+        description: [post.excerpt?.slice(0, 400), post.tags.length ? `Tags: ${post.tags.join(', ')}` : '']
+          .filter(Boolean)
+          .join('\n'),
+        // Analysis of an active abuse technique; high when the tags name a
+        // delivery/persistence mechanism rather than a topic.
+        severity: post.tags.some((t) => /clickfix|phishing|injection|mcp|exfiltrat|malware|rat|stealer/.test(t))
+          ? 'high'
+          : 'medium',
+        source: 'LLM ThreatIntel',
+        source_url: post.url,
+        mitre_techniques: [],
+      });
+    }
+    if (narrativeFindings.length > 0) {
+      sections.push({
+        id: 'llm-narrative',
+        title: 'AI/LLM threat analysis',
+        count: narrativeFindings.length,
+        blurb: `Analyst write-ups on LLM-specific abuse — ClickFix lures, malicious MCP servers, prompt injection, agent hijacking — published in this window.`,
+        findings: narrativeFindings,
+      });
+    }
+
+    if (actorFindings.length > 0 || narrativeFindings.length > 0) aiLlmSectionsEmitted = true;
+  }
+
   const stats = buildStats(findings, sections, iocsRawTotal, ransomwareFindings.length);
   const summaryArgs = {
     type,
@@ -836,6 +949,9 @@ export async function buildBriefing(
   if (dbugsBundle.vulns.length > 0) sources.push('dbu.gs');
   if (ransomwareFindings.length > 0) sources.push('ransomware.live');
   if (webamonFindings.length > 0) sources.push('Webamon');
+  // Declared `sources` lives below the AI/LLM block, so the block records its
+  // own emission into a flag this reads.
+  if (aiLlmSectionsEmitted) sources.push('LLM ThreatIntel');
   if (malpkgFindings.length > 0) sources.push('ossf/malicious-packages');
   if (dailyHuntFindings.length > 0) sources.push('Daily-Hunt');
   sources.push(...iocSources);

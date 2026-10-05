@@ -643,6 +643,156 @@ export const SOURCE_RELIABILITY_REGISTRY: Record<string, SourceReliabilityEntry>
     description: 'IOCs harvested from public social posts',
     known_bias: 'High volume, low curation; frequently stale or retracted',
   },
+
+  // ── Dedicated AI / LLM threat intelligence ─────────────────────────────
+  // Grading note: `ai-honeypots` is B rather than A despite being first-hand
+  // telemetry. A first-hand observer sees only what reaches its own honeypots,
+  // and its high-confidence tiers are hit-count thresholds, not analyst
+  // judgement — the bulk of the feed is deliberately low-confidence scanners.
+  // `llm-threatintel` is a single-analyst operation (TLP:CLEAR, "independent
+  // project"), so its indicators are secondary reporting with named provenance
+  // rather than primary ground truth.
+  'ai-honeypots': {
+    id: 'ai-honeypots',
+    name: 'AI Honeypot Observatory',
+    reliability: 'B',
+    category: 'primary',
+    description:
+      'First-hand LLM honeypot telemetry — IPs observed probing Ollama/LiteLLM/OpenAI-compatible endpoints, with ATT&CK mapping and actor-category classification',
+    known_bias:
+      'Only sees sources that scan its own honeypot network; 84% of indicators are RELAY-CUSTOMER end-users of shadow API relay pools rather than attackers',
+  },
+  'llm-threatintel': {
+    id: 'llm-threatintel',
+    name: 'LLM ThreatIntel',
+    reliability: 'C',
+    category: 'secondary',
+    description:
+      'Independent analyst tracking of LLM-abuse campaigns — ClickFix lures, malicious MCP servers, supply-chain prompt injection, each indicator tied to a named campaign',
+    known_bias:
+      'Single-analyst operation with a 7-day campaign half-life; indicators are stood down (status != active) as campaigns are resolved',
+  },
+  // Curated open-source C2 feeds (see feed-curation.ts).
+  'foxit-cobaltstrike': {
+    id: 'foxit-cobaltstrike',
+    name: 'Fox-IT Cobalt Strike servers',
+    reliability: 'B',
+    category: 'secondary',
+    description:
+      'Internet-wide scan for Cobalt Strike team-server response artifacts — high-precision C2 infrastructure',
+    known_bias:
+      'Response artifact matching, so a server is only listed once it has been seen serving; misses staged/never-beaconed infrastructure',
+  },
+  'carbonblack-c2': {
+    id: 'carbonblack-c2',
+    name: 'Carbon Black active C2',
+    reliability: 'B',
+    category: 'secondary',
+    description: 'Vendor-researched Cobalt Strike C2 attributed to a named intrusion set (actor-specific CSVs)',
+    known_bias: 'Manual, campaign-scoped curation — coverage stops when the campaign ends',
+  },
+  'threatview-c2': {
+    id: 'threatview-c2',
+    name: 'Threatview.io Cobalt Strike C2',
+    reliability: 'C',
+    category: 'secondary',
+    description: 'Proactive-hunter output listing high-confidence Cobalt Strike C2 with per-host beacon configuration',
+    known_bias: 'Regenerated wholesale on each scan, so the whole list shares one detection date',
+  },
+  'c2intel-domains': {
+    id: 'c2intel-domains',
+    name: 'C2IntelFeeds C2 domains',
+    reliability: 'C',
+    category: 'secondary',
+    description: '30-day rolling window of domains attributed to Cobalt Strike and comparable C2 frameworks',
+    known_bias:
+      'Heavily overlaps CDNs and cloud providers (Tencent SCF, sslip.io), so domain-level FP rate is high without beacon evidence',
+  },
+  'threatfox-hostfile': {
+    id: 'threatfox-hostfile',
+    name: 'abuse.ch ThreatFox hostfile',
+    reliability: 'B',
+    category: 'secondary',
+    description: 'Botnet C2 and payload-delivery hostnames from analyst-submitted ThreatFox reports',
+  },
+  'threatfox-urls': {
+    id: 'threatfox-urls',
+    name: 'abuse.ch ThreatFox recent URLs',
+    reliability: 'B',
+    category: 'secondary',
+    description: 'Recent payload-delivery URLs with malware-family attribution (ClearFake and similar loaders)',
+  },
+  'threatcluster-ip': {
+    id: 'threatcluster-ip',
+    name: 'ThreatCluster public IOCs',
+    reliability: 'C',
+    category: 'tertiary',
+    description: 'Community-submitted high-confidence malicious IPs, 30-day window',
+    known_bias: 'Community submission with no analyst verification gate',
+  },
+  'threatcluster-domains': {
+    id: 'threatcluster-domains',
+    name: 'ThreatCluster public domains',
+    reliability: 'C',
+    category: 'tertiary',
+    description: 'Community-submitted high-confidence malicious domains, 30-day window',
+    known_bias: 'Community submission with no analyst verification gate',
+  },
+  'sslbl-ja3': {
+    id: 'sslbl-ja3',
+    name: 'abuse.ch SSLBL JA3 fingerprints',
+    reliability: 'B',
+    category: 'secondary',
+    description:
+      'JA3 TLS client fingerprints observed in SSL/TLS-fingerprinted botnet C2, with malware-family attribution',
+    known_bias:
+      'JA3 fingerprints are coarse — popular client libraries collide across benign and malicious traffic alike, so this is a corroborating signal, never a standalone verdict',
+  },
+  greensnow: {
+    id: 'greensnow',
+    name: 'GreenSnow',
+    reliability: 'C',
+    category: 'secondary',
+    description: 'Curated SSH brute-force and scanning source list',
+    known_bias: 'SSH-centric; carries no protocol or campaign attribution',
+  },
+  siberkapan: {
+    id: 'siberkapan',
+    name: 'SiberKapan',
+    reliability: 'C',
+    category: 'secondary',
+    description: 'High-volume attack-source IP list',
+    known_bias: 'No per-entry context — a bare address list, useful for blocking not for attribution',
+  },
+  'bruteforce-login': {
+    id: 'bruteforce-login',
+    name: 'Blocklist.de bruteforcelogin',
+    reliability: 'C',
+    category: 'secondary',
+    description: 'Blocklist.de brute-force / credential-stuffing source list',
+  },
+  'bl-de-ssh': {
+    id: 'bl-de-ssh',
+    name: 'Blocklist.de SSH attackers',
+    reliability: 'C',
+    category: 'secondary',
+    description: 'Blocklist.de SSH attack source list',
+  },
+  'tsirolnik-spam': {
+    id: 'tsirolnik-spam',
+    name: 'tsirolnik spam domains',
+    reliability: 'C',
+    category: 'tertiary',
+    description: 'Long-maintained community list of spam and malvertising domains',
+    known_bias: 'Spam-weighted rather than malware-weighted — expect ad/malvertising domains, not C2',
+  },
+  'botvrij-domain': {
+    id: 'botvrij-domain',
+    name: 'Botvrij.eu domains',
+    reliability: 'C',
+    category: 'secondary',
+    description: 'Curated malicious domain list with upstream decay scoring',
+  },
 };
 
 // ─── Canonical Admiralty primitives ───────────────────────────────────────

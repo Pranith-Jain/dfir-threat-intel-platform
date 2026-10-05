@@ -15,6 +15,8 @@ import {
   Box,
   Crosshair,
   Anchor,
+  BrainCircuit,
+  FileText,
 } from 'lucide-react';
 
 export type PulseKind =
@@ -47,6 +49,8 @@ export type PulseKind =
   | 'cyberpulse'
   | 'rss'
   | 'honeypot'
+  | 'ai_llm_campaign'
+  | 'ai_llm_research'
   | 'firm'
   | 'maritime';
 
@@ -337,6 +341,24 @@ export const LAYER_DEFS: Record<PulseKind, LayerDef> = {
     icon: <Crosshair size={14} />,
     color: 'text-teal-600 dark:text-teal-400',
     bgColor: 'bg-teal-500/10 border-teal-500/20',
+    group: 'intel',
+  },
+  // AI/LLM narrative intel. Violet/fuchsia so these read as a family alongside
+  // the teal honeypot layer without colliding with the red malware/C2 palette.
+  ai_llm_campaign: {
+    label: 'AI/LLM Campaigns',
+    shortLabel: 'AICAM',
+    icon: <BrainCircuit size={14} />,
+    color: 'text-violet-600 dark:text-violet-400',
+    bgColor: 'bg-violet-500/10 border-violet-500/20',
+    group: 'intel',
+  },
+  ai_llm_research: {
+    label: 'AI/LLM Research',
+    shortLabel: 'AIPAP',
+    icon: <FileText size={14} />,
+    color: 'text-fuchsia-600 dark:text-fuchsia-400',
+    bgColor: 'bg-fuchsia-500/10 border-fuchsia-500/20',
     group: 'intel',
   },
   firm: {
