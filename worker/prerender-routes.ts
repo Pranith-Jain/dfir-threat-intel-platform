@@ -375,4 +375,5 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/threatintel/aptmap', '/__prerendered/threatintel__aptmap'],
   ['/threatintel/estate', '/__prerendered/threatintel__estate'],
   ['/threatintel/infra/ai-honeypot', '/__prerendered/threatintel__infra__ai-honeypot'],
+  ['/threatintel/infra/ai-llm-intel', '/__prerendered/threatintel__infra__ai-llm-intel'],
 ]);
