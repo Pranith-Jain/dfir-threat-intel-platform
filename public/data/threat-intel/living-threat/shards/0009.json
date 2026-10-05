@@ -3,6 +3,758 @@
     "Adversary": {
       "Aliases": [],
       "Associated_Groups": [],
+      "Description": "The adversary is likely an authenticated user exploiting vulnerabilities in Nagios Log Server.",
+      "Known_Campaigns": [],
+      "Motivation": "Potentially to gain unauthorized access or disrupt services.",
+      "Sophistication": "Moderate, as the attack requires valid user authentication.",
+      "Strategic_Objectives": "Compromise system integrity and availability.",
+      "TTPs_Employed": ["Exploitation of CVE-2025-44823 and CVE-2025-44824"]
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Exploitation of vulnerabilities CVE-2025-44823 and CVE-2025-44824.",
+        "Detection": "Monitor API calls to vulnerable endpoints.",
+        "Remediation": "Upgrade to Nagios Log Server version 2024R1.3.2 or later.",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "Exploiting vulnerabilities to gain unauthorized access.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Using valid user credentials to exploit vulnerabilities.",
+            "technique_id": "T1078",
+            "technique_name": "Valid Accounts"
+          }
+        ],
+        "Techniques": ["T1078"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Unauthorized service manipulation and potential denial of service.",
+        "Detection": "Monitor for unexpected service stop commands.",
+        "Remediation": "Restrict API access and validate user permissions.",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "Disrupting services to impact availability.",
+            "tactic_id": "TA0040",
+            "tactic_name": "Impact"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Stopping services to cause denial of service.",
+            "technique_id": "T1489",
+            "technique_name": "Service Stop"
+          }
+        ],
+        "Techniques": ["T1489"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": ["Exploitation of known vulnerabilities with valid credentials."],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": [],
+      "Description": "Exploitation of vulnerabilities in Nagios Log Server to gain unauthorized access and disrupt services.",
+      "Exploits": ["CVE-2025-44823", "CVE-2025-44824"],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": ["Nagios Log Server API"],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": ["Monitor API calls to /nagioslogserver/index.php/api/system/get_users"],
+    "Extracted_Entities": {
+      "Assets": ["Nagios Log Server"],
+      "Breach_Types": [],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Nagios"],
+      "Countries": [],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["CVE-2025-44823", "CVE-2025-44824", "Elasticsearch", "API keys"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": ["2024R1.3.2"],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Information Technology"],
+      "Software": ["Nagios Log Server"],
+      "Technologies": ["Elasticsearch"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": ["CVE-2025-44823", "CVE-2025-44824"]
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": ["HTTP"],
+      "Description": "The infrastructure involves the Nagios Log Server and its API endpoints.",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": ["Rotate all API keys and audit user access levels."],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Exploitation of CVE-2025-44823", "Exploitation of CVE-2025-44824"],
+      "Tools": ["Nagios Log Server API"]
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": ["Nagios Log Server API monitoring tools"],
+    "Severity": "Critical",
+    "Threat_Actors": [],
+    "Timestamp": "2025-10-08T12:21:30Z",
+    "Title": "Critical Vulnerabilities in Nagios Log Server: CVE-2025-44823 and CVE-2025-44824",
+    "Tools": ["Nagios Log Server API", "Nagios Log Server"],
+    "Victim": {
+      "Access_Vectors": ["Network-based"],
+      "Data_Types_At_Risk": ["Administrative API keys"],
+      "Description": "Organizations using Nagios Log Server versions prior to 2024R1.3.2.",
+      "Geography": "Global",
+      "Impact_Severity": "Critical",
+      "Industry": "Information Technology",
+      "Security_Posture": "Vulnerable due to outdated software versions.",
+      "Targeted_Assets": ["Nagios Log Server", "Elasticsearch service"]
+    },
+    "diamond_model_summary": "The incident involves authenticated users exploiting vulnerabilities in Nagios Log Server, specifically CVE-2025-44823 and CVE-2025-44824. These vulnerabilities allow unauthorized access to administrative API keys and service manipulation, posing a critical risk to enterprise monitoring infrastructure. Organizations are advised to upgrade to the latest version and audit user access.",
+    "doc_summary": "Security researchers have identified two significant vulnerabilities in Nagios Log Server, tracked as CVE-2025-44823 and CVE-2025-44824, affecting versions prior to 2024R1.3.2. CVE-2025-44823, with a CVSS score of 9.9, allows authenticated users to retrieve cleartext administrative API keys, posing a critical risk. CVE-2025-44824, scoring 8.5, enables users with read-only API access to stop the Elasticsearch service, causing denial of service. Both vulnerabilities highlight improper handling of sensitive information and incorrect authorization issues. Organizations are advised to upgrade to version 2024R1.3.2 or later and audit user access levels. The vendor has acknowledged and resolved these issues in the official Nagios changelog.",
+    "enrichment": { "processed_at": "2026-02-18T00:35:51.456998+00:00", "source_fields": ["title"], "version": "v1" },
+    "id": "4ddea24389378417731436bd48fb56e88e9ce45b",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The attack involves exploiting vulnerabilities in Nagios Log Server, allowing authenticated users to gain unauthorized access and manipulate services. The exploitation stage is critical, with attackers using valid credentials to retrieve administrative API keys and stop services, leading to potential denial of service. Organizations must upgrade and monitor API access.",
+    "operational_tags": ["High Priority"],
+    "priority_score": 92,
+    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes TTPs related to exploiting vulnerabilities in Nagios Log Server. The critical vulnerabilities CVE-2025-44823 and CVE-2025-44824 are key indicators, with the exploitation of administrative API keys and service manipulation being significant pain points. Organizations must address these vulnerabilities to mitigate risk.",
+    "relevance_score": 47,
+    "sequence": 17748,
+    "source": "https://gbhackers.com/nagios-vulnerability/",
+    "slug": "Critical_Vulnerabilities_in_Nagios_Log_Server__CVE-2025-44823_and_CVE-20-017748",
+    "shard": 9
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
+      "Description": "Unauthenticated attackers exploiting DrayOS routers' WebUI vulnerability.",
+      "Known_Campaigns": [],
+      "Motivation": "Potentially to gain unauthorized access or control over network devices.",
+      "Sophistication": "Moderate, as the attack requires crafting specific HTTP/HTTPS requests.",
+      "Strategic_Objectives": "Compromise network devices for further exploitation or data access.",
+      "TTPs_Employed": ["Remote Code Execution", "Memory Corruption"]
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Crafting of special HTTP/HTTPS requests to exploit the vulnerability.",
+        "Detection": "Monitor network traffic for unusual HTTP/HTTPS requests.",
+        "Remediation": "Apply firmware updates to patch the vulnerability.",
+        "Stage": "Weaponization",
+        "Tactics": [
+          {
+            "tactic_description": "Exploitation of a vulnerability in a public-facing application.",
+            "tactic_id": "T1190",
+            "tactic_name": "Exploit Public-Facing Application"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exploitation of a vulnerability in a public-facing application.",
+            "technique_id": "T1190",
+            "technique_name": "Exploit Public-Facing Application"
+          }
+        ],
+        "Techniques": ["T1190"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Exploitation of the uninitialized variable in the WebUI.",
+        "Detection": "Monitor for signs of memory corruption or device instability.",
+        "Remediation": "Apply firmware updates to patch the vulnerability.",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "Exploitation of a vulnerability to execute code on a client.",
+            "tactic_id": "T1203",
+            "tactic_name": "Exploitation for Client Execution"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exploitation of a vulnerability to execute code on a client.",
+            "technique_id": "T1203",
+            "technique_name": "Exploitation for Client Execution"
+          }
+        ],
+        "Techniques": ["T1203"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Potential execution of arbitrary code under the system’s privilege context.",
+        "Detection": "Monitor for unauthorized command execution on network devices.",
+        "Remediation": "Apply firmware updates to patch the vulnerability.",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "Execution of commands or scripts on a system.",
+            "tactic_id": "T1059",
+            "tactic_name": "Command and Scripting Interpreter"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Execution of commands or scripts on a system.",
+            "technique_id": "T1059",
+            "technique_name": "Command and Scripting Interpreter"
+          }
+        ],
+        "Techniques": ["T1059"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": ["Crafting of special HTTP/HTTPS requests"],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": [],
+      "Description": "Exploitation of uninitialized variable in DrayOS WebUI for remote code execution.",
+      "Exploits": ["Uninitialized Variable Exploit"],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": [],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": ["Monitor for unusual HTTP/HTTPS requests"],
+    "Extracted_Entities": {
+      "Assets": ["Routers"],
+      "Breach_Types": [],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["DrayTek", "ChapsVision"],
+      "Countries": [],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["vulnerability", "remote code execution", "WebUI", "ACLs"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": ["Firmware updates"],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Technology"],
+      "Software": ["DrayOS"],
+      "Technologies": ["HTTP", "HTTPS"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": ["Uninitialized Variable"]
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": ["HTTP", "HTTPS"],
+      "Description": "DrayOS routers with vulnerable WebUI accessible over the network.",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": ["Apply firmware updates immediately"],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Remote Code Execution", "Memory Corruption"],
+      "Tools": []
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": ["Network traffic analysis tools"],
+    "Severity": "Critical",
+    "Threat_Actors": [],
+    "Timestamp": "2025-10-03T12:32:36Z",
+    "Title": "Critical Vulnerability in DrayOS Routers Allowing Remote Code Execution",
+    "Tools": ["DrayOS"],
+    "Victim": {
+      "Access_Vectors": ["Network Access"],
+      "Data_Types_At_Risk": ["Network Configuration", "Potentially Sensitive Data"],
+      "Description": "Organizations using DrayOS routers with vulnerable firmware.",
+      "Geography": "Global",
+      "Impact_Severity": "Critical",
+      "Industry": "Technology",
+      "Security_Posture": "Vulnerable if firmware is outdated.",
+      "Targeted_Assets": ["Network Routers"]
+    },
+    "diamond_model_summary": "The incident involves unauthenticated attackers exploiting a critical vulnerability in DrayOS routers' WebUI, allowing remote code execution. The capability involves exploiting an uninitialized variable, with the infrastructure being vulnerable routers accessible over the network. Victims are organizations using these routers, primarily in the technology sector.",
+    "doc_summary": "A critical vulnerability in DrayOS routers, discovered by Pierre-Yves Maes of ChapsVision on July 22, allows unauthenticated attackers to execute code remotely. The flaw is due to an uninitialized variable in the Web User Interface (WebUI), which can be exploited by crafting special HTTP or HTTPS requests. This leads to memory corruption, potentially crashing the device or allowing remote code execution. The vulnerability affects several DrayOS router models, including Vigor1000B, Vigor2962, Vigor3910, and others. DrayTek has released firmware updates to address the issue. Routers are protected from WAN threats if WebUI and SSL VPN services are disabled or protected by Access Control Lists (ACLs), but local attackers can still exploit the flaw if the firmware is outdated. Administrators are advised to apply updates immediately to ensure full protection.",
+    "enrichment": { "processed_at": "2026-02-18T00:35:51.456964+00:00", "source_fields": ["title"], "version": "v1" },
+    "id": "995313d12df469016f5941062c0b144d56372753",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The attack involves crafting special HTTP/HTTPS requests to exploit a vulnerability in DrayOS routers' WebUI, leading to memory corruption and potential remote code execution. The exploitation stage is critical, with the need for immediate firmware updates to mitigate the risk. The attack highlights the importance of securing network devices against unauthorized access.",
+    "operational_tags": ["High Priority"],
+    "priority_score": 97,
+    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes TTPs such as remote code execution and memory corruption. No specific hash values, IP addresses, or domain names were identified. The focus is on the exploitation of a vulnerability in DrayOS routers' WebUI, emphasizing the need for firmware updates and network access controls to prevent unauthorized exploitation.",
+    "relevance_score": 45,
+    "sequence": 17747,
+    "source": "https://gbhackers.com/drayos-router-flaw/",
+    "slug": "Critical_Vulnerability_in_DrayOS_Routers_Allowing_Remote_Code_Execution-017747",
+    "shard": 9
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
+      "Description": "The adversary is exploiting a 0-day vulnerability in Oracle EBS.",
+      "Known_Campaigns": [],
+      "Motivation": "Unauthorized access and control over Oracle EBS systems.",
+      "Sophistication": "High, due to the exploitation of a 0-day vulnerability.",
+      "Strategic_Objectives": "Compromise Oracle EBS systems for potential data theft or disruption.",
+      "TTPs_Employed": ["Exploitation of CVE-2025-61882"]
+    },
+    "Analyses": [
+      {
+        "Description": "No specific reconnaissance activity detected.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No specific weaponization activity detected.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No specific delivery activity detected.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Exploitation of CVE-2025-61882 in Oracle EBS.",
+        "Detection": "Monitor for unusual HTTP requests to Oracle EBS systems.",
+        "Remediation": "Apply the latest Oracle EBS security updates.",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to get into your network.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exploitation of a vulnerability in a public-facing application.",
+            "technique_id": "T1190",
+            "technique_name": "Exploit Public-Facing Application"
+          }
+        ],
+        "Techniques": ["T1190"]
+      },
+      {
+        "Description": "No specific installation activity detected.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No specific command and control activity detected.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Potential unauthorized access and data exfiltration.",
+        "Detection": "Monitor for unusual data access patterns.",
+        "Remediation": "Limit access to sensitive data and monitor for unauthorized access.",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to gather data of interest to their goal.",
+            "tactic_id": "TA0009",
+            "tactic_name": "Collection"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may search local system sources to find files of interest.",
+            "technique_id": "T1005",
+            "technique_name": "Data from Local System"
+          }
+        ],
+        "Techniques": ["T1005"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": ["Exploitation of public-facing applications."],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": [],
+      "Description": "Exploitation of a critical remote code execution vulnerability in Oracle EBS.",
+      "Exploits": ["CVE-2025-61882"],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": [],
+      "Zero_Days": ["CVE-2025-61882"]
+    },
+    "Data_Exfiltration_Indicators": ["Unusual outbound connections from Oracle EBS systems."],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": ["Monitor for IoCs provided by Oracle."],
+    "Extracted_Entities": {
+      "Assets": ["Oracle EBS systems"],
+      "Breach_Types": [],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Oracle"],
+      "Countries": ["United Kingdom"],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": ["200.107.207.26", "185.181.60.11"],
+      "Keywords": ["CVE-2025-61882", "NCSC", "BI Publisher Integration", "remote code execution"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": ["October 2023 Critical Patch Update"],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Technology"],
+      "Software": ["Oracle E-Business Suite"],
+      "Technologies": ["HTTP"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": ["CVE-2025-61882"]
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": ["HTTP"],
+      "Description": "Use of public internet to exploit Oracle EBS systems.",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": ["200.107.207.26", "185.181.60.11"],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": ["Conduct a thorough compromise assessment and apply all security patches."],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": ["200.107.207.26", "185.181.60.11"],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Exploitation of CVE-2025-61882"],
+      "Tools": []
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": ["Network monitoring tools", "Vulnerability scanners"],
+    "Severity": "Critical",
+    "Threat_Actors": [],
+    "Timestamp": "2025-10-07T05:33:43Z",
+    "Title": "Active Exploitation of CVE-2025-61882 in Oracle E-Business Suite",
+    "Tools": ["Oracle E-Business Suite"],
+    "Victim": {
+      "Access_Vectors": ["Remote"],
+      "Data_Types_At_Risk": ["Sensitive business data"],
+      "Description": "Organizations using vulnerable versions of Oracle EBS.",
+      "Geography": "United Kingdom",
+      "Impact_Severity": "Critical",
+      "Industry": "Technology",
+      "Security_Posture": "Vulnerable due to unpatched systems.",
+      "Targeted_Assets": ["Oracle EBS systems"]
+    },
+    "diamond_model_summary": "The incident involves an adversary exploiting a 0-day vulnerability (CVE-2025-61882) in Oracle E-Business Suite, specifically targeting the BI Publisher Integration component. The adversary's capability includes exploiting this vulnerability to gain unauthorized access and execute arbitrary commands. The infrastructure involves the use of public internet to target vulnerable Oracle EBS systems, with identified IP addresses as indicators of compromise. Victims are organizations in the technology sector, particularly those in the United Kingdom, using affected Oracle EBS versions.",
+    "doc_summary": "The UK National Cyber Security Centre (NCSC) has issued a security alert regarding the active exploitation of a critical 0-day vulnerability, CVE-2025-61882, in Oracle E-Business Suite (EBS). This severe remote code execution vulnerability affects the BI Publisher Integration component of Oracle Concurrent Processing within EBS, allowing remote, unauthenticated attackers to send specially crafted HTTP requests to vulnerable EBS instances, leading to full system compromise. The vulnerability impacts Oracle EBS versions 12.2.3 through 12.2.14, with a CVSS v3.1 base score of 9.8. Oracle has confirmed active exploitation in the wild, providing indicators of compromise (IoCs) such as suspicious IP addresses (200.107.207.26 and 185.181.60.11) and SHA256 hashes of exploit files. The NCSC urges organizations to assess their environments for compromise, apply security updates, and follow best practices for securing network perimeters. Impacted organizations in the United Kingdom should report incidents to Oracle PSIRT and the NCSC.",
+    "enrichment": { "processed_at": "2026-02-18T00:35:51.456912+00:00", "source_fields": ["title"], "version": "v1" },
+    "id": "b5626dda033808dbc3af49214d6e44ebd5f8c75d",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The kill chain analysis reveals that the adversary exploited a critical vulnerability (CVE-2025-61882) in Oracle E-Business Suite, allowing for initial access through public-facing applications. The exploitation stage involved sending specially crafted HTTP requests to vulnerable systems, leading to potential unauthorized access and data exfiltration. Detection measures include monitoring for unusual HTTP requests and data access patterns, while remediation involves applying the latest security updates and limiting internet exposure of Oracle EBS systems.",
+    "operational_tags": ["High Priority"],
+    "priority_score": 92,
+    "pyramid_of_pain_summary": "The Pyramid of Pain analysis identifies IP addresses (200.107.207.26, 185.181.60.11) as key indicators of compromise, along with the exploitation of a specific vulnerability (CVE-2025-61882) in Oracle EBS. These indicators are critical for detection and response efforts, as they provide actionable intelligence for identifying and mitigating the threat. The presence of a 0-day vulnerability highlights the adversary's advanced capabilities and the need for timely patching and monitoring to prevent further exploitation.",
+    "relevance_score": 43,
+    "sequence": 17746,
+    "source": "https://gbhackers.com/ncsc-issues-oracle-0-day-vulnerability/",
+    "slug": "Active_Exploitation_of_CVE-2025-61882_in_Oracle_E-Business_Suite-017746",
+    "shard": 9
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
+      "Description": "Local attackers with access to user accounts on affected systems.",
+      "Known_Campaigns": [],
+      "Motivation": "Privilege escalation and persistence on compromised networks.",
+      "Sophistication": "Moderate, requires local access.",
+      "Strategic_Objectives": "Gain elevated privileges and maintain persistence.",
+      "TTPs_Employed": ["Exploitation of unquoted search path vulnerability"]
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Exploitation of unquoted search path vulnerability.",
+        "Detection": "Monitor for unexpected process executions from user directories.",
+        "Remediation": "Apply patches to affected software versions.",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "Gaining access to a system through local user accounts.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exploiting unquoted search paths to execute malicious code.",
+            "technique_id": "T1055",
+            "technique_name": "Process Injection"
+          }
+        ],
+        "Techniques": ["T1055"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Actions on Objectives",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": [],
+      "Description": "Exploitation of unquoted search path vulnerability in Windows applications.",
+      "Exploits": ["CVE-2025-57714"],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": [],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [],
+    "Extracted_Entities": {
+      "Assets": ["Backup systems"],
+      "Breach_Types": [],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["QNAP Systems", "GMO Cybersecurity by IERAE, Inc."],
+      "Countries": [],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["unquoted search path", "vulnerability", "CVE-2025-57714"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": ["4.5.15.0807"],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Technology"],
+      "Software": ["NetBak Replicator"],
+      "Technologies": ["Windows"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": ["CVE-2025-57714"]
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "Local systems running vulnerable versions of NetBak Replicator.",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [
+      "Update to the latest version of NetBak Replicator.",
+      "Implement defense-in-depth security measures.",
+      "Conduct regular security assessments."
+    ],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Exploitation of unquoted search path vulnerability"],
+      "Tools": []
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "Critical",
+    "Threat_Actors": [],
+    "Timestamp": "2025-10-06T06:18:31Z",
+    "Title": "Critical Vulnerability in QNAP NetBak Replicator: CVE-2025-57714",
+    "Tools": ["NetBak Replicator"],
+    "Victim": {
+      "Access_Vectors": ["Local access"],
+      "Data_Types_At_Risk": ["System integrity"],
+      "Description": "Organizations using QNAP NetBak Replicator version 4.5.x.",
+      "Geography": "Global",
+      "Impact_Severity": "Critical",
+      "Industry": "Technology",
+      "Security_Posture": "Vulnerable due to unpatched software.",
+      "Targeted_Assets": ["Backup systems"]
+    },
+    "diamond_model_summary": "The incident involves local attackers exploiting a vulnerability in QNAP's NetBak Replicator software. The adversary is characterized by their ability to exploit unquoted search path vulnerabilities, allowing them to execute malicious code with elevated privileges. The infrastructure is limited to local systems running vulnerable software versions, and the victims are organizations using QNAP's backup solutions. The capability of the attackers is moderate, requiring local access to user accounts.",
+    "doc_summary": "QNAP Systems disclosed a critical security vulnerability in its NetBak Replicator software, tracked as CVE-2025-57714, which allows local attackers to execute malicious code. The flaw stems from an unquoted search path element, affecting version 4.5.x. This vulnerability enables unauthorized code execution by exploiting unquoted search paths, posing significant risks in environments with multiple users or where attackers have initial access. Discovered by Kazuma Matsumoto from GMO Cybersecurity by IERAE, Inc., the vulnerability is concerning in shared computing environments. QNAP addressed the issue in version 4.5.15.0807, urging immediate updates and emphasizing defense-in-depth measures.",
+    "enrichment": { "processed_at": "2026-02-18T00:35:51.456810+00:00", "source_fields": ["title"], "version": "v1" },
+    "id": "ee112446a86e1be67281a53a295d319d7cbddb3c",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The kill chain analysis reveals that the primary stage of concern is exploitation, where attackers leverage the unquoted search path vulnerability to execute unauthorized code. This vulnerability allows for privilege escalation, posing significant risks in environments with shared access. The exploitation stage is critical, as it enables attackers to gain elevated privileges and potentially maintain persistence on compromised systems. Detection and remediation efforts should focus on monitoring for unexpected process executions and applying patches to affected software versions.",
+    "operational_tags": ["High Priority"],
+    "priority_score": 85,
+    "pyramid_of_pain_summary": "The Pyramid of Pain analysis indicates that the primary indicators of compromise are related to the exploitation of the unquoted search path vulnerability. While specific hash values, IP addresses, and domain names are not identified, the focus is on the tools and techniques used to exploit this vulnerability. The TTPs employed by the attackers are critical, as they enable privilege escalation and persistence. Organizations should prioritize patching and monitoring for suspicious activities to mitigate the impact of this vulnerability.",
+    "relevance_score": 41,
+    "sequence": 17745,
+    "source": "https://gbhackers.com/qnap-netbak-replicator-vulnerability/",
+    "slug": "Critical_Vulnerability_in_QNAP_NetBak_Replicator__CVE-2025-57714-017745",
+    "shard": 9
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
       "Description": "Authenticated attackers exploiting Redis vulnerability",
       "Known_Campaigns": [],
       "Motivation": "Potential unauthorized access and control over Redis servers",
@@ -97215,793 +97967,6 @@
     "sequence": 17250,
     "source": "https://gbhackers.com/apache-activemq-vulnerability/",
     "slug": "Critical_Vulnerability_in_Apache_ActiveMQ_NMS_Library_Enables_Remote_Cod-017250",
-    "shard": 9
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "Attackers exploiting vulnerabilities in Zimbra Collaboration Suite.",
-      "Known_Campaigns": [],
-      "Motivation": "Data theft, unauthorized access, and service disruption.",
-      "Sophistication": "Moderate",
-      "Strategic_Objectives": "Compromise enterprise email systems to access sensitive data.",
-      "TTPs_Employed": ["SQL Injection", "SSRF", "XSS", "CSRF"]
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Exploitation of Zimbra vulnerabilities to gain unauthorized access.",
-        "Detection": "Monitor for unusual access patterns • Analyze logs for exploitation attempts",
-        "Remediation": "Apply patches • Upgrade to latest Zimbra version",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "Gaining access to a system or network.",
-            "tactic_id": "TA0001",
-            "tactic_name": "Initial Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exploiting vulnerabilities in public-facing applications.",
-            "technique_id": "T1190",
-            "technique_name": "Exploit Public-Facing Application"
-          }
-        ],
-        "Techniques": ["T1190"]
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Unauthorized access to sensitive data and potential data exfiltration.",
-        "Detection": "Monitor data access patterns • Analyze data transfer logs",
-        "Remediation": "Implement data access controls • Conduct regular security audits",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "Gathering data of interest to the adversary.",
-            "tactic_id": "TA0009",
-            "tactic_name": "Collection"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Collecting data from local systems.",
-            "technique_id": "T1005",
-            "technique_name": "Data from Local System"
-          }
-        ],
-        "Techniques": ["T1005"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "Exploitation of Zimbra vulnerabilities to gain unauthorized access.",
-      "Exploits": ["CVE-2025-25064", "CVE-2025-25065", "CVE-2024-45516"],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": ["ANY.RUN Sandbox"],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": ["Monitor data access patterns", "Analyze data transfer logs"],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": ["Monitor for unusual access patterns", "Analyze logs for exploitation attempts"],
-    "Extracted_Entities": {
-      "Assets": ["Email systems", "User accounts"],
-      "Breach_Types": [],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": [],
-      "Countries": [],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["Zimbra", "vulnerabilities", "SQL Injection", "SSRF", "XSS", "CSRF"],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": ["Zimbra 9.0.0 Patch 44", "Zimbra 10.0.13", "Zimbra 10.1.5"],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Information Technology"],
-      "Software": ["Zimbra Collaboration Suite"],
-      "Technologies": ["SOAP endpoints", "API services"],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": ["CVE-2025-25064", "CVE-2025-25065", "CVE-2024-45516"]
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "Exploitation of Zimbra's web client, SOAP endpoints, and API services.",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [
-      "Apply patches",
-      "Upgrade to latest Zimbra version",
-      "Implement data access controls",
-      "Conduct regular security audits"
-    ],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["SQL Injection", "SSRF", "XSS", "CSRF"],
-      "Tools": ["ANY.RUN Sandbox"]
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": ["ANY.RUN Sandbox"],
-    "Severity": "Critical",
-    "Threat_Actors": [],
-    "Timestamp": "2025-02-10T07:09:32Z",
-    "Title": "Critical Vulnerabilities in Zimbra Collaboration Suite Exploited",
-    "Tools": ["ANY.RUN Sandbox", "Zimbra Collaboration Suite"],
-    "Victim": {
-      "Access_Vectors": ["Web client", "SOAP endpoints", "API services"],
-      "Data_Types_At_Risk": ["Sensitive corporate information"],
-      "Description": "Enterprises using vulnerable versions of Zimbra Collaboration Suite.",
-      "Geography": "Global",
-      "Impact_Severity": "Critical",
-      "Industry": "Information Technology",
-      "Security_Posture": "Vulnerable",
-      "Targeted_Assets": ["Email systems", "User accounts"]
-    },
-    "diamond_model_summary": "The incident involves attackers exploiting vulnerabilities in Zimbra Collaboration Suite, a widely used enterprise email platform. The adversaries are motivated by data theft and unauthorized access, leveraging capabilities such as SQL Injection, SSRF, XSS, and CSRF. The infrastructure targeted includes Zimbra's web client, SOAP endpoints, and API services, with victims being enterprises in the Information Technology sector globally.",
-    "doc_summary": "Serious vulnerabilities in Zimbra Collaboration Suite (ZCS), a popular enterprise email and collaboration platform, have raised alarm in the cybersecurity community. Security researchers have identified several critical flaws that allow attackers to access sensitive data and compromise user accounts. The vulnerabilities include SQL Injection in ZimbraSyncService (CVE-2025-25064), SSRF in RSS Feed Parser (CVE-2025-25065), Cross-Site Scripting (XSS) in Classic Web Client (CVE-2024-45516), and CSRF in GraphQL Endpoints. Zimbra has released patches addressing these vulnerabilities in its latest updates. Organizations using older versions are urged to upgrade immediately to prevent unauthorized access to sensitive data.",
-    "enrichment": { "processed_at": "2026-02-18T00:35:34.266096+00:00", "source_fields": ["title"], "version": "v1" },
-    "id": "748156452ae380c7a4ec3e9b0994a1ed2b452275",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The attack on Zimbra Collaboration Suite follows a structured kill chain. Initial access is gained through exploitation of public-facing applications, specifically targeting vulnerabilities in Zimbra's web client and API services. The exploitation stage involves SQL Injection, SSRF, XSS, and CSRF attacks, leading to unauthorized access and potential data exfiltration. The incident highlights the importance of patch management and proactive threat monitoring to prevent such attacks.",
-    "operational_tags": ["High Priority"],
-    "priority_score": 94,
-    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes several indicators of compromise. While specific hash values, IP addresses, and domain names are not identified, the tools and TTPs employed are significant. The use of SQL Injection, SSRF, XSS, and CSRF techniques represents a high level of pain for defenders, as these require robust detection and remediation strategies. The incident underscores the need for continuous monitoring and timely patching to mitigate such threats.",
-    "relevance_score": 47,
-    "sequence": 17249,
-    "source": "https://gbhackers.com/critical-zimbra-flaws/",
-    "slug": "Critical_Vulnerabilities_in_Zimbra_Collaboration_Suite_Exploited-017249",
-    "shard": 9
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "The adversary is likely a skilled participant in the Pwn2Own competition, demonstrating advanced capabilities in automotive cybersecurity.",
-      "Known_Campaigns": [],
-      "Motivation": "Demonstration of technical prowess and potential financial gain from competition rewards.",
-      "Sophistication": "High",
-      "Strategic_Objectives": "To exploit vulnerabilities in automotive systems for competitive advantage.",
-      "TTPs_Employed": ["Remote code execution", "Memory corruption", "Proximity-based attacks"]
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "The adversary crafted a malicious payload to exploit the integer overflow in the VCSEC.",
-        "Detection": "Monitor for unusual certificate responses in TPMS communications.",
-        "Remediation": "Apply firmware updates promptly to patch known vulnerabilities.",
-        "Stage": "Weaponization",
-        "Tactics": [
-          {
-            "tactic_description": "Exploiting a vulnerability to execute code on a target system.",
-            "tactic_id": "T1203",
-            "tactic_name": "Exploitation for Client Execution"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exploiting a vulnerability to execute code on a target system.",
-            "technique_id": "T1203",
-            "technique_name": "Exploitation for Client Execution"
-          }
-        ],
-        "Techniques": ["T1203"]
-      },
-      {
-        "Description": "The payload was delivered via manipulated certificate responses through the TPMS.",
-        "Detection": "Monitor TPMS communications for anomalies.",
-        "Remediation": "Implement strict validation of certificate responses.",
-        "Stage": "Delivery",
-        "Tactics": [
-          {
-            "tactic_description": "Using application layer protocols to communicate with a target system.",
-            "tactic_id": "T1071",
-            "tactic_name": "Application Layer Protocol"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Using application layer protocols to communicate with a target system.",
-            "technique_id": "T1071",
-            "technique_name": "Application Layer Protocol"
-          }
-        ],
-        "Techniques": ["T1071"]
-      },
-      {
-        "Description": "The integer overflow in the VCSEC was exploited to gain control over the system.",
-        "Detection": "Monitor for signs of memory corruption in vehicle systems.",
-        "Remediation": "Apply firmware updates to fix the integer overflow vulnerability.",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "Exploiting a vulnerability to execute code on a target system.",
-            "tactic_id": "T1203",
-            "tactic_name": "Exploitation for Client Execution"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exploiting a vulnerability to execute code on a target system.",
-            "technique_id": "T1203",
-            "technique_name": "Exploitation for Client Execution"
-          }
-        ],
-        "Techniques": ["T1203"]
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "The attacker gained control over the VCSEC, allowing unauthorized commands to the CAN bus.",
-        "Detection": "Monitor CAN bus communications for unauthorized commands.",
-        "Remediation": "Implement access controls to restrict CAN bus commands.",
-        "Stage": "Command and Control",
-        "Tactics": [
-          {
-            "tactic_description": "Transferring tools or payloads to a target system.",
-            "tactic_id": "T1105",
-            "tactic_name": "Ingress Tool Transfer"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Transferring tools or payloads to a target system.",
-            "technique_id": "T1105",
-            "technique_name": "Ingress Tool Transfer"
-          }
-        ],
-        "Techniques": ["T1105"]
-      },
-      {
-        "Description": "The attacker could manipulate driving functions and disable safety features.",
-        "Detection": "Monitor for changes in vehicle control settings.",
-        "Remediation": "Apply firmware updates and enable security notifications.",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "Manipulating data to achieve a desired outcome.",
-            "tactic_id": "T1565",
-            "tactic_name": "Data Manipulation"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Manipulating data to achieve a desired outcome.",
-            "technique_id": "T1565",
-            "technique_name": "Data Manipulation"
-          }
-        ],
-        "Techniques": ["T1565"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [
-      "Proximity-based attacks",
-      "Exploitation of wireless communication protocols"
-    ],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "The capability involves exploiting an integer overflow in the VCSEC module via the TPMS.",
-      "Exploits": ["Integer overflow in VCSEC"],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": ["Custom scripts for certificate manipulation"],
-      "Zero_Days": ["Previously unknown vulnerability in Tesla Model 3"]
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [
-      "Monitor for unusual TPMS communications",
-      "Check for unauthorized CAN bus commands"
-    ],
-    "Extracted_Entities": {
-      "Assets": ["Vehicle Control System", "Tire Pressure Monitoring System"],
-      "Breach_Types": ["Remote code execution"],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["Tesla", "Synacktiv"],
-      "Countries": ["United States of America"],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["TPMS", "VCSEC", "CAN bus", "Pwn2Own"],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": ["Firmware 2024.14"],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Automotive"],
-      "Software": ["Tesla Model 3 Firmware"],
-      "Technologies": ["Bluetooth", "Wi-Fi"],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": ["Integer overflow in VCSEC"]
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": ["Bluetooth", "Wi-Fi"],
-      "Description": "The attack infrastructure involves proximity-based communication channels like Bluetooth or Wi-Fi.",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [
-      "Apply firmware updates",
-      "Enable security notifications",
-      "Avoid untrusted networks"
-    ],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["Remote code execution", "Memory corruption", "Proximity-based attacks"],
-      "Tools": ["Custom scripts for certificate manipulation"]
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": ["Firmware analysis tools", "Network traffic monitoring"],
-    "Severity": "High",
-    "Threat_Actors": ["Synacktiv"],
-    "Timestamp": "2025-05-01T11:02:02Z",
-    "Title": "Tesla Model 3 TPMS Vulnerability Disclosed at Pwn2Own 2025",
-    "Tools": ["Custom scripts for certificate manipulation", "Tesla Model 3 Firmware"],
-    "Victim": {
-      "Access_Vectors": ["Proximity-based wireless communication"],
-      "Data_Types_At_Risk": ["Vehicle control data", "Safety feature settings"],
-      "Description": "Tesla Model 3 vehicles with vulnerable firmware versions.",
-      "Geography": "Global",
-      "Impact_Severity": "High",
-      "Industry": "Automotive",
-      "Security_Posture": "Vulnerable prior to firmware update 2024.14",
-      "Targeted_Assets": ["Vehicle Control System", "CAN bus"]
-    },
-    "diamond_model_summary": "The incident involves a sophisticated adversary exploiting a vulnerability in Tesla Model 3 vehicles. The capability includes remote code execution via the TPMS, with infrastructure relying on proximity-based communication. The victim is the automotive sector, specifically Tesla Model 3 vehicles, highlighting the need for robust cybersecurity measures.",
-    "doc_summary": "A significant cybersecurity incident involving Tesla's Model 3 vehicles was disclosed at the 2025 Pwn2Own hacking competition. The vulnerability, found in the Tire Pressure Monitoring System (TPMS), allowed remote code execution due to an integer overflow in the Vehicle Control System Electronic Controller (VCSEC). This flaw enabled attackers to send manipulated certificate responses, causing memory corruption and unauthorized commands to the CAN bus, affecting critical functions like braking and acceleration. Discovered by Synacktiv, the vulnerability required proximity but no authentication, posing a high risk. Tesla patched the issue in October 2024 with firmware update 2024.14. The incident highlights the growing risks in automotive cybersecurity and the need for robust security practices.",
-    "enrichment": { "processed_at": "2026-02-18T00:35:34.266070+00:00", "source_fields": ["title"], "version": "v1" },
-    "id": "5a436594f117de6b7c691a4cc0a6c5d466067f4a",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The attack follows a structured kill chain, starting with weaponization of a payload exploiting an integer overflow in the VCSEC. Delivery occurs via manipulated TPMS communications, leading to exploitation and control over the CAN bus. The attacker can manipulate vehicle functions, emphasizing the importance of timely firmware updates and security practices.",
-    "operational_tags": ["High Priority", "C2"],
-    "priority_score": 94,
-    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes TTPs like remote code execution and memory corruption, which are challenging to detect and remediate. The use of proximity-based communication channels adds complexity. Effective detection and remediation require monitoring TPMS communications and applying firmware updates to mitigate the identified vulnerability.",
-    "relevance_score": 59,
-    "sequence": 17248,
-    "source": "https://gbhackers.com/tesla-model-3-vcsec-vulnerability/",
-    "slug": "Tesla_Model_3_TPMS_Vulnerability_Disclosed_at_Pwn2Own_2025-017248",
-    "shard": 9
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "Potential malicious actors exploiting the RCE vulnerability in Marvel Rivals.",
-      "Known_Campaigns": [],
-      "Motivation": "Potential financial gain or disruption of gaming services.",
-      "Sophistication": "Moderate, leveraging known RCE techniques.",
-      "Strategic_Objectives": "Exploitation of gaming networks for control and data extraction.",
-      "TTPs_Employed": ["Remote Code Execution", "Network Exploitation"]
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Exploitation of RCE vulnerability in Marvel Rivals.",
-        "Detection": "Monitor network traffic for unusual activity • Check for unauthorized code execution",
-        "Remediation": "Apply patches • Implement server verification",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "Gaining access to the victim's system through RCE.",
-            "tactic_id": "TA0001",
-            "tactic_name": "Initial Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exploiting a vulnerability to execute code on the victim's system.",
-            "technique_id": "T1203",
-            "technique_name": "Exploitation for Client Execution"
-          }
-        ],
-        "Techniques": ["T1203"]
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Actions on Objectives",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "Exploitation of RCE vulnerability in Marvel Rivals' patching system.",
-      "Exploits": ["RCE in Marvel Rivals"],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": ["Custom scripts for RCE"],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": ["Monitor for unauthorized code execution", "Check for unusual network activity"],
-    "Extracted_Entities": {
-      "Assets": ["PC", "PlayStation 5"],
-      "Breach_Types": [],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": [],
-      "Countries": [],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["RCE", "vulnerability", "exploit", "gaming", "security"],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Gaming"],
-      "Software": ["Marvel Rivals"],
-      "Technologies": ["Remote Code Execution"],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": ["RCE in Marvel Rivals"]
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": ["Wi-Fi networks"],
-      "Description": "Exploitation occurs over local networks where the game is played.",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": ["Implement server verification", "Encourage bug bounty programs"],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["Remote Code Execution"],
-      "Tools": ["Custom scripts for RCE"]
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": ["Network traffic analysis tools", "Vulnerability scanners"],
-    "Severity": "Critical",
-    "Threat_Actors": [],
-    "Timestamp": "2025-02-10T10:34:30Z",
-    "Title": "Critical RCE Vulnerability in Marvel Rivals Exposes PC and PS5 Players",
-    "Tools": ["Custom scripts for RCE", "Marvel Rivals"],
-    "Victim": {
-      "Access_Vectors": ["Local network"],
-      "Data_Types_At_Risk": ["Personal data", "Game data"],
-      "Description": "Players of Marvel Rivals on PC and PlayStation 5.",
-      "Geography": "Global",
-      "Impact_Severity": "Critical",
-      "Industry": "Gaming",
-      "Security_Posture": "Vulnerable due to lack of server verification.",
-      "Targeted_Assets": ["PCs", "PlayStation 5 consoles"]
-    },
-    "diamond_model_summary": "The incident involves a critical RCE vulnerability in Marvel Rivals, allowing attackers to exploit the game's patching system. The adversary is likely motivated by financial gain or disruption, using moderate sophistication techniques. The infrastructure involves local networks, and victims are global players of the game.",
-    "doc_summary": "A severe security vulnerability has been discovered in the video game Marvel Rivals, affecting both PC and PlayStation 5 players. The exploit, identified by a security researcher, allows attackers to remotely control devices on the same network through a flaw in the game's hotfix patching system, which uses Remote Code Execution (RCE) without verifying server authenticity. This vulnerability is exacerbated by the game's administrative privileges on PCs, intended for anti-cheat features. The exploit poses significant risks, enabling hackers to execute malicious tasks on players' devices. The researcher criticized game developers for inadequate security measures and highlighted the absence of bug bounty programs. Security experts AeonLucid, LukeFZ, nitro, and sanktanglia contributed to the network encryption analysis. Players are advised to avoid unsecured networks and keep systems updated. This incident underscores the need for the gaming industry to prioritize cybersecurity.",
-    "enrichment": { "processed_at": "2026-02-18T00:35:34.266046+00:00", "source_fields": ["title"], "version": "v1" },
-    "id": "aac3c9a06adb8e1dcddadf502e2b2b566ac11f7f",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The kill chain analysis reveals exploitation through RCE in Marvel Rivals, allowing initial access to victim systems. The lack of server verification and administrative privileges on PCs exacerbate the vulnerability. Detection involves monitoring network traffic and unauthorized code execution, with remediation focusing on patching and server verification.",
-    "operational_tags": ["High Priority"],
-    "priority_score": 89,
-    "pyramid_of_pain_summary": "The Pyramid of Pain analysis identifies the RCE vulnerability as a critical TTP, with no specific hash values, IP addresses, or domain names detected. The focus is on the tools and techniques used to exploit the vulnerability, highlighting the need for improved security measures in the gaming industry.",
-    "relevance_score": 45,
-    "sequence": 17247,
-    "source": "https://gbhackers.com/marvel-game-vulnerability-exposes-pcs-ps5s/",
-    "slug": "Critical_RCE_Vulnerability_in_Marvel_Rivals_Exposes_PC_and_PS5_Players-017247",
-    "shard": 9
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "Potential remote attackers exploiting vulnerabilities in network devices.",
-      "Known_Campaigns": [],
-      "Motivation": "Unauthorized access and data theft.",
-      "Sophistication": "Moderate, leveraging known vulnerabilities.",
-      "Strategic_Objectives": "Gain unauthorized access and exfiltrate sensitive data.",
-      "TTPs_Employed": ["Remote code execution", "Buffer overflow exploitation"]
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Exploitation of buffer overflow vulnerabilities in Netgear EX6200.",
-        "Detection": "Monitor for unusual network traffic • Check for unauthorized access attempts",
-        "Remediation": "Apply patches when available • Disable remote management",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "Exploiting vulnerabilities to gain unauthorized access.",
-            "tactic_id": "TA0001",
-            "tactic_name": "Initial Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exploiting software vulnerabilities to execute code.",
-            "technique_id": "T1203",
-            "technique_name": "Exploitation for Client Execution"
-          }
-        ],
-        "Techniques": ["T1203"]
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Potential data theft and device compromise.",
-        "Detection": "Monitor for data exfiltration • Check for unusual device activity",
-        "Remediation": "Segment network • Restrict external access",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "Gathering sensitive data from compromised devices.",
-            "tactic_id": "TA0009",
-            "tactic_name": "Collection"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Collecting data from local devices.",
-            "technique_id": "T1005",
-            "technique_name": "Data from Local System"
-          }
-        ],
-        "Techniques": ["T1005"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "Exploitation of buffer overflow vulnerabilities in network devices.",
-      "Exploits": ["CVE-2025-4148", "CVE-2025-4149", "CVE-2025-4150"],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": [],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": ["Network credentials", "Sensitive data"],
-      "Breach_Types": [],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["Netgear"],
-      "Countries": [],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["Netgear EX6200", "vulnerabilities", "CVE-2025-4148", "CVE-2025-4149", "CVE-2025-4150"],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Consumer Electronics"],
-      "Software": ["Netgear EX6200 firmware 1.0.3.94"],
-      "Technologies": ["Wi-Fi range extender"],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": ["CVE-2025-4148", "CVE-2025-4149", "CVE-2025-4150"]
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "Netgear EX6200 Wi-Fi range extenders vulnerable to remote exploitation.",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["Buffer overflow exploitation", "Remote code execution"],
-      "Tools": []
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "Critical",
-    "Threat_Actors": [],
-    "Timestamp": "2025-05-01T11:14:21Z",
-    "Title": "Critical Vulnerabilities in Netgear EX6200 Wi-Fi Range Extender",
-    "Tools": ["Netgear EX6200 firmware 1.0.3.94"],
-    "Victim": {
-      "Access_Vectors": ["Remote exploitation"],
-      "Data_Types_At_Risk": ["Network credentials", "Sensitive data"],
-      "Description": "Users of Netgear EX6200 Wi-Fi range extenders, including homes and small businesses.",
-      "Geography": "Global",
-      "Impact_Severity": "Critical",
-      "Industry": "Consumer Electronics",
-      "Security_Posture": "Vulnerable due to unpatched firmware",
-      "Targeted_Assets": ["Wi-Fi range extenders", "Network credentials"]
-    },
-    "diamond_model_summary": "The incident involves potential remote attackers exploiting critical vulnerabilities in the Netgear EX6200 Wi-Fi range extender. The adversary's capability includes exploiting buffer overflow vulnerabilities, leading to unauthorized access and data theft. The infrastructure at risk includes the Netgear EX6200 devices, widely used in homes and small businesses. Victims are users of these devices, facing critical impact due to unpatched firmware vulnerabilities.",
-    "doc_summary": "Security researchers have identified three critical vulnerabilities in the Netgear EX6200 Wi-Fi range extender, affecting firmware version 1.0.3.94. These vulnerabilities, assigned CVEs CVE-2025-4148, CVE-2025-4149, and CVE-2025-4150, allow remote attackers to gain unauthorized access and potentially steal sensitive data. Despite early notification, Netgear has not responded, leaving users exposed. The vulnerabilities stem from improper handling of arguments in internal functions, leading to buffer overflow and potential arbitrary code execution. The flaws can be triggered remotely without user interaction, posing significant risks to devices configured for remote management. Users are advised to disable remote management, restrict network access, and monitor for updates. The vulnerabilities are classified as critical with CVSS scores of 8.8, indicating a high likelihood of exploitation. Until a patch is released, users should assess their risk and consider replacing or isolating affected devices.",
-    "enrichment": { "processed_at": "2026-02-18T00:35:34.266023+00:00", "source_fields": ["title"], "version": "v1" },
-    "id": "a3282f02183fa2db7479f21433892de6d540565e",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The attack chain involves exploiting buffer overflow vulnerabilities in the Netgear EX6200 Wi-Fi range extender. The exploitation stage is critical, allowing remote attackers to execute arbitrary code and gain unauthorized access. The actions on objectives include potential data theft and device compromise. Users are advised to disable remote management, restrict network access, and monitor for updates to mitigate risks.",
-    "operational_tags": ["High Priority"],
-    "priority_score": 90,
-    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes TTPs related to buffer overflow exploitation and remote code execution. No specific hash values, IP addresses, or domain names were identified. The focus is on the vulnerabilities CVE-2025-4148, CVE-2025-4149, and CVE-2025-4150, which are critical for understanding the attack vector. The lack of specific indicators highlights the need for proactive monitoring and patch management.",
-    "relevance_score": 43,
-    "sequence": 17246,
-    "source": "https://gbhackers.com/netgear-ex6200-flaw/",
-    "slug": "Critical_Vulnerabilities_in_Netgear_EX6200_Wi-Fi_Range_Extender-017246",
     "shard": 9
   }
 ]
