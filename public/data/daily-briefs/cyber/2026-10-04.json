@@ -1,0 +1,101 @@
+{
+  "type": "cyber",
+  "date": "2026-10-04",
+  "threatLevel": "",
+  "executiveSummary": "Adversaries are actively targeting Siemens S7-200/300/400/1200/1500 PLCs using AI-assisted tooling and Internet scanning, creating immediate risk to multiple U.S. critical infrastructure sectors. Security Advisory Multiple Internet-facing access gateways are under active exploitation: NetScaler ADC/Gateway critical RCEs and a reported zero-day; F5 BIG-IP APM OAuth RCE; and Cisco Catalyst SD-WAN Manager (KEV). JPCERT NetScaler Heise Zero-Day JPCERT F5 CISA SD-WAN KEV CISA bulletins highlight multiple OT/ICS gateway flaws (Advantech WISE-6610 and EKI-1242EIMS) with unauthenticated command execution and public exploits-high-likelihood ingress paths into IIoT/SCADA. CISA SB26-257 CISA SB26-264 Ransomware operators are abusing enterprise platforms already in CI environments: Warlock exploits on-prem SharePoint (victims include a water utility), and PAYLOAD ransomware hijacks Active Directory via domain-root GPOs. View Article IR Report Email/security edge devices remain high-risk: CISA added FortiMail to KEV; JPCERT reports Cisco Secure Email Gateway SQLi with observed exploitation; Zammad helpdesk CVEs now in KEV and exploited in the wild. CISA KEV FortiMail JPCERT Cisco SEG CISA KEV Zammad Additional OT-adjacent risks include Johnson Controls EasyIO Neo controllers leaking credentials over HTTP (patches available) and Meari IoT cloud API authorization flaws without vendor fixes-mandating isolation and strict access controls. CISA ICS Advisory CISA ICS Advisory",
+  "keyFindings": [
+    {
+      "title": "AI-assisted reconnaissance and script generation are accelerating unauthorized a",
+      "summary": "AI-assisted reconnaissance and script generation are accelerating unauthorized access attempts against Siemens S7 PLCs across multiple U.S. CI sectors. Supporting Advisory"
+    },
+    {
+      "title": "Actively exploited edge devices (NetScaler ADC/Gateway, F5 BIG-IP APM, Cisco Cat",
+      "summary": "Actively exploited edge devices (NetScaler ADC/Gateway, F5 BIG-IP APM, Cisco Catalyst SD-WAN Manager) are enabling initial access and lateral movement toward sensitive networks. F5 APM Advisory CISA SD-WAN KEV"
+    },
+    {
+      "title": "Advantech industrial gateways (WISE-6610, EKI-1242EIMS) contain multiple high-se",
+      "summary": "Advantech industrial gateways (WISE-6610, EKI-1242EIMS) contain multiple high-severity, remotely exploitable issues with public exploits, posing direct OT ingress risk. CISA SB26-257 CISA SB26-264"
+    },
+    {
+      "title": "Enterprise platforms are active ransomware vectors for CI operators",
+      "summary": "SharePoint exploitation by Warlock (water utility victim) and AD GPO hijack-based extortion. View Article IR Report"
+    },
+    {
+      "title": "Johnson Controls EasyIO Neo controllers previously transmitted credentials/sessi",
+      "summary": "Johnson Controls EasyIO Neo controllers previously transmitted credentials/session data over HTTP; patched releases now enforce safer defaults-urgent upgrade remains advised. Vendor/Agency Advisory"
+    },
+    {
+      "title": "Meari IoT Cloud OpenAPI authorization flaws enable cross-tenant device manipulat",
+      "summary": "Meari IoT Cloud OpenAPI authorization flaws enable cross-tenant device manipulation/data access; no vendor fix planned-compensating controls are mandatory. CISA ICS Advisory"
+    }
+  ],
+  "dashboard": {
+    "kpis": [],
+    "activelyExploited": [],
+    "vendors": [
+      "Siemens (S7-200/300/400/1200/1500 PLCs), TIA Portal/STEP 7, S7comm/S7comm Plus",
+      "Advantech (WISE-6610 LoRaWAN, EKI-1242EIMS industrial gateways)",
+      "Citrix NetScaler ADC/Gateway (VPN/AAA/DTLS/SAML surfaces)",
+      "F5 BIG-IP Access Policy Manager (OAuth Authorization Server)",
+      "Cisco Catalyst SD-WAN Manager; Cisco Secure Email Gateway (AsyncOS)",
+      "Fortinet FortiMail",
+      "Johnson Controls EasyIO Neo EC/CW controllers",
+      "AVEVA Pipeline Integrity Monitor; eProsima Fast DDS",
+      "Meari IoT Cloud OpenAPI",
+      "Microsoft SharePoint (on-prem), Active Directory / Group Policy"
+    ],
+    "sectors": [
+      "Energy; Water and Wastewater Systems; Critical Manufacturing; Government Services and Facilities; Transportation; Healthcare; Education; Telecommunications; Commercial Facilities; Food & Agriculture."
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "Warlock (aka Longlegs/Storm-2603) exploits SharePoint to disable security controls and stage ransomware, with victims including a water utility. Defenders should hunt web shells, VS Code Tunnels, and SYSVOL staging. View Article",
+        "Ransomware operators hijack AD Group Policy for encryptionless extortion, pushing policy-based disruption and ransom notes enterprise-wide-techniques likely to impact domain-joined HMIs/EWSs if present. IR Report",
+        "Crimeware campaigns (e.g., MovieReaper torrent malware) present IT-to-OT pivot risk via persistent backdoors and modular data theft. Technical Report"
+      ]
+    }
+  ],
+  "relevance": "Current activity clusters around edge-access devices and industrial gateways that frequently bridge enterprise and operational environments. Actively exploited NetScaler/F5/Cisco SD-WAN issues provide turnkey ingress to identity and management planes. Concurrently, CISA's Siemens S7 advisory flags direct PLC targeting with AI-enabled tooling, raising the likelihood of operational impact if network segmentation and controller protections are weak. Advantech gateway vulnerabilities heighten risk at the field edge where IIoT connectivity meets SCADA.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "F5 BIG-IP APM (CVE-2026-94127) - Unauthenticated RCE on OAuth endpoint; hotfix/iRule mitigations available. Advisory",
+        "NetScaler ADC/Gateway (CVE-2026-88771/88772) - RCEs; active scans/exploitation; new zero-day reported. Advisory Zero-Day Report",
+        "Cisco Catalyst SD-WAN Manager (CVE-2026-76504) - Added to KEV for active exploitation; immediate remediation required. KEV",
+        "Advantech WISE-6610 - Remote command injection (public exploits); ICS field gateway risk. CISA Bulletin",
+        "Advantech EKI-1242EIMS - Multiple unauth flaws in edgserver mgmt (TCP/5058), OPC UA DoS, code/command injection. CISA Bulletin",
+        "Fortinet FortiMail Path Traversal - Added to KEV; observed exploitation against email security appliances. KEV",
+        "Zammad Helpdesk (CVE-2026-102489/102490) - Actively exploited; session fixation and privilege issues. KEV",
+        "Johnson Controls EasyIO Neo EC/CW - Cleartext credential/session exposure over HTTP; fixed firmware available. CISA ICS",
+        "Meari IoT Cloud OpenAPI - Missing authorization enables cross-tenant device control and data access; no fix planned. CISA ICS",
+        "Oracle PeopleSoft (CVE-2026-35273) - Mass exploitation reported; enterprise HR portals often adjacent to CI operations. Investigation"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Edge device exploitation and web exploitation: unauth RCE on ADC/VPN/SD-WAN/Email gateways; zero-day targeting of SAML flows.",
+      "Credential access and domain dominance: DCSync, ADCS ESC1 abuse, Machine Account Quota abuse, excessive cloud app permissions; domain-root GPO hijack for disruption.",
+      "Initial access via web shells on SharePoint; DLL sideloading; VS Code Tunnels for covert remote access; BYOVD to kill security tools.",
+      "AI-assisted discovery/exploitation: automated scanning (Censys/ZoomEye), script generation for S7comm/snap7 interactions with PLCs.",
+      "Persistence and defense evasion: token abuse, ad-hoc signing (macOS), LaunchAgents/.zshrc persistence, msedge.exe masquerade in Telemetry path, SYSVOL staging.",
+      "Command and control: OAuth endpoint abuse, Solana blockchain-assisted C2 discovery (MovieReaper), ScreenConnect misuse."
+    ],
+    "mitreIds": []
+  },
+  "outlook72h": "Expect continued exploitation of NetScaler and F5 APM surfaces; prioritize patch windows and deploy temporary mitigations (disable DTLS/SAML where feasible; apply APM iRule). Increase monitoring for abnormal authentication flows, token issuance, and webshell indicators on remote access and SharePoint servers. Harden/patch Advantech gateways and strictly ACL management interfaces; raise alerting thresholds for unauthorized commands and new processes on field devices. Sweep for PLC exposure (TCP/102) beyond intended conduits; baseline S7 traffic and alert on write/PUT/GET operations. Review KEV coverage (FortiMail, Zammad, SD-WAN) on externally exposed assets; complete compromise assessments before/after patch.",
+  "relatedCves": [
+    "CVE-2026-94127",
+    "CVE-2026-88771",
+    "CVE-2026-76504",
+    "CVE-2026-102489",
+    "CVE-2026-35273",
+    "CVE-2026-91784"
+  ]
+}
