@@ -38,6 +38,57 @@ plane partial and cannot become an empty result.
 
 ## Exact runtime identity contracts
 
+### Optional exact Zip Lambda read plan
+
+The native AWS connection accepts `coverage_mode: "selected-resource"` with a typed
+`selected_resource` containing `kind: "lambda_zip"`, one unqualified `function_arn`,
+one `execution_role_arn`, and an approved `expected_model_id` (bounded Bedrock ID or ARN).
+This addition is implemented with local automated tests; production activation and real
+resource/model acceptance remain a separate reviewed release gate. Existing connections
+that omit this field retain the discovery behavior above; shared Platform AWS connections
+are not changed by this native adapter.
+
+The only declared scope is `aws.code_to_cloud`. Account and partition must match both
+ARNs; `regions` must contain exactly the Lambda ARN Region, equal to `deployment_region`.
+The generated reader has a different role name from the execution role, an external-ID
+trust, and only these exact-resource permissions:
+
+| Resource                 | Reads                                                                       |
+| ------------------------ | --------------------------------------------------------------------------- |
+| Exact Lambda ARN         | `lambda:GetFunctionConfiguration`, `lambda:ListTags`                        |
+| Exact execution-role ARN | `iam:ListRolePolicies`, `iam:ListAttachedRolePolicies`, `iam:GetRolePolicy` |
+
+The server-resolved tenant reloads the stored plan before collection. STS account,
+partition and assumed-reader identity must match. Returned function ARN/name, Zip
+packaging, execution role, and allow-listed model-ID metadata must match every pin.
+Missing or ambiguous model metadata fails the resource proof. No function list,
+enabled-Region discovery, ECS/EKS/SageMaker reads, code download, logs or invocation occur.
+Configuration responses can contain other environment values in memory; only the pinned
+model-ID metadata and bounded deployment metadata are retained, never arbitrary values.
+
+Collection reuses the observed deployment/model/role assertions and relationships, then
+Denali's existing `DENALI-AWS-AI-IAM-001` evaluator on this execution role. IAM pagination,
+returned role/policy names, and supported policy-document shape require explicit proof.
+Nonempty/incomplete attached-policy inventory or unsupported inline policy grammar makes
+the IAM plane partial; it never expands into `GetPolicy` or `GetPolicyVersion` reads.
+This check is an observed inline-policy posture signal, not an effective-permissions or
+account-wide security certification.
+
+Successful reads report `resource_coverage_state: "complete"` separately from the overall
+`state: "partial"` and `account_coverage: "not_assessed"`. The connection remains partial
+even when both exact read planes pass. Durable validation/collection jobs and normal
+result reads are reused; collection is explicitly requested, not automatically triggered
+by account-wide healthy status. Setup/status projections expose only the four public
+selection fields. UI/API/MCP use the same product create/validate/collect operations;
+the Platform gateway must deploy its matching typed optional create field before claiming
+MCP creation parity. No provider grants, deployment, model invocation or remediation are
+performed by these tests or by creating a Denali plan.
+
+For a live QA plan, approve the real function, separate read role, execution role and model
+before resource setup. Do not replace an existing discovery stack, reuse an execution role
+as the reader, widen healthy connectors, or infer that an existing broad role became narrow
+solely from this plan's template. Review the actual IAM grants at setup acceptance.
+
 All new direct-inventory joins require exact account ID and Region plus one service-specific
 identifier:
 
