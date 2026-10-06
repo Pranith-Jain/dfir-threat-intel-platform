@@ -1,0 +1,114 @@
+{
+  "type": "cyber",
+  "date": "2026-10-06",
+  "threatLevel": "",
+  "executiveSummary": "Active OT targeting: A joint NSA/CISA/FBI/DOE/EPA advisory highlights ongoing adversary activity against Siemens S7-series PLCs using AI-generated scripts and snap7 tooling over S7comm, creating credible risks of process disruption in Water/Wastewater, Energy, and Manufacturing environments. Security Advisory Critical OT gateways exposed: CISA bulletins detail unauthenticated RCE and missing-auth critical functions in Advantech EKI-1242 protocol gateways and additional flaws in WISE-6610 industrial gateways and DDS middleware, enabling remote takeover or telemetry disruption. Supporting Report Supporting Report Perimeter appliances under active exploitation: Citrix NetScaler ADC/Gateway and F5 BIG-IP APM face in-the-wild exploitation, with CISA and JPCERT urging urgent patching and compromise hunting; outages or compromise could impact remote access and identity gateways used to reach OT operations. CISA KEV JPCERT Advisory Service-desk and email appliances: Zammad helpdesk vulnerabilities and Fortinet FortiMail path traversal were added to CISA's KEV with confirmed exploitation, creating initial-access and lateral movement opportunities towards sensitive environments. CISA KEV CISA KEV Enterprise compromise pathways: Mass exploitation of Oracle PeopleSoft (CVE-2026-35273) and stealthy Linux backdoors masquerading as SMTP traffic at telecom/edge devices increase risk of identity theft and covert ingress that can pivot toward OT if segmentation is weak. View Article View Article Facility systems risk: Johnson Controls EasyIO Neo building automation controllers exposed cleartext credentials over HTTP; vendor firmware disables HTTP by default-operators should patch and enforce TLS now. ICS Advisory",
+  "keyFindings": [
+    {
+      "title": "Confirmed active threat to Siemens S7 PLCs with read/write reconnaissance via S7",
+      "summary": "Confirmed active threat to Siemens S7 PLCs with read/write reconnaissance via S7comm (TCP/102); immediate removal of Internet exposure and ICS segmentation required. Security Advisory"
+    },
+    {
+      "title": "Advantech EKI-1242 protocol gateways contain unauthenticated RCE and missing-aut",
+      "summary": "Advantech EKI-1242 protocol gateways contain unauthenticated RCE and missing-auth critical functions; restrict TCP/5058 and apply vendor updates when available. CISA Bulletin"
+    },
+    {
+      "title": "NetScaler ADC/Gateway CVE-2026-88779 actively exploited; patch to 14.1-73.41/13.",
+      "summary": "NetScaler ADC/Gateway CVE-2026-88779 actively exploited; patch to 14.1-73.41/13.1-64.28+, and hunt for webshells/persistence on appliances. CISA KEV"
+    },
+    {
+      "title": "F5 BIG-IP APM OAuth configuration permits unauthenticated RCE (CVE-2026-94127); ",
+      "summary": "F5 BIG-IP APM OAuth configuration permits unauthenticated RCE (CVE-2026-94127); hotfixes and interim iRule available, exploitation observed. JPCERT Advisory"
+    },
+    {
+      "title": "Zammad helpdesk flaws added to KEV; patch to v7.2.0, invalidate sessions, and re",
+      "summary": "Zammad helpdesk flaws added to KEV; patch to v7.2.0, invalidate sessions, and review for pre-patch compromise. CISA KEV"
+    },
+    {
+      "title": "Johnson Controls EasyIO Neo EC/CW controllers leaked credentials via HTTP; updat",
+      "summary": "Johnson Controls EasyIO Neo EC/CW controllers leaked credentials via HTTP; update EC to V3.3b64 and CW to V3.3b26, disable HTTP, and enforce HTTPS/TLS. ICS Advisory"
+    },
+    {
+      "title": "Red-team case study",
+      "summary": "water sector OT DMZ exposure via AD/cloud misconfigurations; enforce phishing-resistant MFA and harden ADCS/Entra/OAuth paths. CISA Advisory"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "",
+        "label": "Overall OT Cyber Threat Level"
+      },
+      {
+        "value": "",
+        "label": "Events by Decision"
+      },
+      {
+        "value": "",
+        "label": "Actively Exploited Items"
+      },
+      {
+        "value": "",
+        "label": "OT/ICS-Direct Technologies Impacted"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Siemens S7-200/300/400/1200/1500 PLCs Advantech EKI-1242EIMS/IEIMS Advantech WISE-6610 Citrix NetScaler ADC/Gateway F5 BIG-IP APM Fortinet FortiMail Zammad Helpdesk Johnson Controls EasyIO Neo EC/CW Oracle PeopleSoft Apache Tomcat / Fluent Bit / containerd AWS SSM Agent eProsima Fast DDS Microsoft Exchange Server (on-prem)"
+    ],
+    "sectors": [
+      "Water and Wastewater Systems; Energy; Manufacturing; Building Automation/FMS Telecommunications and Network Edge Providers Government/Public Administration and Higher Education Transportation (potential exposure via enterprise perimeters and identity)"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "Mass exploitation: ShinyHunters leveraged Oracle PeopleSoft CVE-2026-35273 across sectors (gov, transport, healthcare, higher-ed), bypassing initial WAF mitigations via URL-encoding. View Article",
+        "Telecom/edge targeting: Stealthy Linux implants (BPFDoor/BPF Rekoobe/AVERAT) masqueraded as SMTP traffic, using compromised NAS/camera devices as relays, complicating detection. View Article",
+        "Ransomware without encryption: Group Policy weaponization at a manufacturing firm disabled defenses and disrupted operations via domain-wide GPO changes-underscoring AD Tier-0 exposure. View Article"
+      ]
+    }
+  ],
+  "relevance": "Multiple perimeter-edge vulnerabilities (NetScaler, F5 APM, FortiMail, Zammad) are under active exploitation and are commonly used in critical-infrastructure enterprises. Compromise at these edges regularly precedes domain compromise and can bridge into OT via jump hosts or improperly segmented VLANs. Direct OT risk is elevated by the Siemens S7 PLC advisory describing real-world reconnaissance and potential control write operations. Combined with gateway RCE in Advantech EKI devices, operators face both controller-level and protocol-bridge threats that could impair monitoring, safety, or process continuity. Enterprise campaigns (Oracle PeopleSoft mass exploitation; SMTP-masquerading Linux implants on edge devices) materially increase lateral-movement pressure. These can expose credentials, engineering notes, and network diagrams which adversaries use to identify OT pivot opportunities. Facility systems (Johnson Controls EasyIO Neo) require urgent TLS hardening to protect building automation relevant to occupant safety, energy, and environmental controls at CI sites.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Advantech EKI-1242EIMS/IEIMS: Unauth RCE, missing auth for reboot/reset/config/upgrade; unsigned firmware; OPC UA DoS. CISA Bulletin",
+        "Citrix NetScaler ADC/Gateway: CVE-2026-88779 (DoS/SAML), plus multiple RCE noted by JPCERT; KEV inclusion mandates rapid remediation. JPCERT Alert CISA KEV",
+        "F5 BIG-IP APM (OAuth AS): CVE-2026-94127 heap overflow → unauth RCE; hotfixes and iRule available; exploitation observed. JPCERT Advisory",
+        "Zammad Helpdesk: Session fixation/improper privilege management-actively exploited; update to 7.2.0. CISA KEV",
+        "Fortinet FortiMail: Path traversal (CVE-2026-104286) actively exploited; patch and review for file-write/webshell artifacts. CISA KEV",
+        "Johnson Controls EasyIO Neo EC/CW: Cleartext credential/session exposure over HTTP; firmware updates disable HTTP by default. ICS Advisory",
+        "Additional exposure set (infrastructure & cloud): Weekly CISA CVE summaries list risks in Citrix NetScaler, Brocade SANnav, Apache Tomcat, Fluent Bit, containerd-validate inventories and patch. CISA Bulletin"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Exploitation of Public-Facing Applications: NetScaler, F5 APM, Zammad, FortiMail, PeopleSoft (ATT&CK: T1190-style behavior)",
+      "Domain Dominance/Policy Abuse: Group Policy modification and propagation for mass impact (Enterprise ATT&CK: Domain Policy Modification)",
+      "Identity & Token Abuse: ADCS ESC1, DCSync, OAuth/service principal abuse, excessive Graph permissions (from red-team findings)",
+      "Protocol and Controller Access: S7comm read/write operations over TCP/102; PLC PUT/GET; ICS reconnaissance (ATT&CK for ICS)",
+      "Evasion/Command & Control: SMTP-masquerading beacons over TCP/25; eBPF/raw socket implants; blockchain-assisted C2 infrastructures"
+    ],
+    "mitreIds": [
+      "T1190"
+    ]
+  },
+  "outlook72h": "Expect sustained scanning and exploit attempts on NetScaler and F5 APM; prioritize patching, traffic shaping/rate-limits, and appliance compromise checks. OT gateways (Advantech EKI/WISE) likely to see opportunistic probing; immediately restrict management interfaces and monitor TCP/5058, OPC UA session anomalies. Increase hunts for S7comm anomalies and unauthorized engineering workstation activity; validate that PLC protections (PUT/GET disablement) align with current operations. Validate continuity plans for remote OT access in case of Gateway maintenance or DoS; test alternate access methods and ensure MFA remains enforced. Watch for SMTP-like C2 from non-mail hosts (TCP/25) and eBPF activity on Linux appliances; tighten egress and remove legacy VPN services (e.g., PPTP).",
+  "relatedCves": [
+    "CVE-2026-35273",
+    "CVE-2026-88779",
+    "CVE-2026-94127",
+    "CVE-2026-104286",
+    "CVE-2026-96940",
+    "CVE-2026-100754",
+    "CVE-2026-76461",
+    "CVE-2026-41875",
+    "CVE-2026-91784"
+  ]
+}
