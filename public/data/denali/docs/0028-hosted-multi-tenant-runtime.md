@@ -72,6 +72,18 @@ Every tenant-owned repository method accepts the server-resolved Denali tenant U
 from request bodies, query parameters, routes, arbitrary headers, or the browser's selected state
 are untrusted and cannot select a tenant.
 
+The optional Platform results/MCP receiver is a separate internal API boundary, not
+a second database reader or browser API. It accepts only named, versioned Denali
+capabilities and short-lived Clerk M2M tokens from an exact gateway machine,
+bound to a verified user and Organization. Denali checks live Organization
+membership, resolves an existing tenant mapping without creating one, and
+requires an Organization admin plus an idempotency key for Denali-record writes.
+See [the capability gateway contract](../development/capability-gateway.md).
+Its metadata-only runtime-session export has explicit activity and byte limits.
+Evidence import submission also requires an expected-organization guard and
+explicit confirmation; the native durable job and gateway audit commit atomically,
+while the existing leased worker owns ingestion and evaluation.
+
 `/healthz`, API documentation, and the Entra and GitHub provider callbacks are public at
 the HTTP middleware layer. Callback authorization instead uses verified, expiring, one-time setup
 state. The stored state resolves both tenant and connection, so changing the browser's active
@@ -92,6 +104,14 @@ Connection validation is the reference durable-work implementation:
 All new hosted work that can outlive a request must follow this pattern: durable job row, idempotent
 claim, explicit lease/timeout, Modal worker receiving durable identifiers, database-backed status,
 sanitized terminal result, and safe retry/deduplication behavior.
+
+The hard Modal timeouts and default database leases share named constants in
+`denali.worker_limits`. Validation and collection use a 2400-second hard timeout with a
+2700-second lease; evidence imports use a 1200-second hard timeout with a 1500-second lease.
+The 300-second grace prevents stale-job replacement while the original container can still
+execute. A validation loop's shorter soft deadline cannot bound blocking provider calls and
+must not shorten its lease. Longer native/local validation deadlines retain a correspondingly
+longer lease.
 
 Microsoft Entra evidence, GitHub source, and AWS/Azure/GCP deployment collection all use
 `connection_collection_job` records and the dedicated Modal `collection_worker`. The API returns
@@ -209,6 +229,14 @@ configuration because Modal resolves image/function declarations before runtime 
 attached. Every function mounts one core Secret and one environment-local provider Secret; keeping
 those resources stable is required for consistent local and remote Modal module evaluation. The
 provider Secret is mounted after the core Secret and must not repeat core Clerk or Neon keys.
+The shared-connections pilot also mounts one deployment-scoped configuration object for its
+public platform origin on every function, including workers that import the API module. That
+object remains present when unset, so the dependency count stays identical on remote import;
+the machine key remains in the core Secret. The production bridge is dark until its separate
+rollout configures both values. A server-side `DENALI_PLATFORM_ALLOWED_CLERK_ORG_IDS` allowlist
+in the core Secret defaults to no organizations even if the origin and key are present; the
+allowlist applies to browser routes, operator snapshots, and worker leases. Existing Denali
+provider connections and their execution paths remain unchanged.
 Production normally uses `custom-secret` plus `denali-github-provider`; the Shasta Workspace pilot
 function additionally mounts a fixed-name `shasta-denali-bridge` for its per-source signing key and
 bindings, while retaining the provider Secret's Google Workspace operator identity. The fixed name
