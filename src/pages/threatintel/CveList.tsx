@@ -23,7 +23,13 @@ interface RecentCve {
   kev_due?: string;
   kev_ransomware?: boolean;
   actors?: Array<{ slug: string; mitre_id?: string; mitre_url?: string; mitre_name?: string }>;
-  origin: 'nvd' | 'kev' | 'mti' | 'cvefeed' | 'cvenotify' | 'tg' | 'dbugs' | 'exploitgrid';
+  origin: 'nvd' | 'kev' | 'mti' | 'cvefeed' | 'cvenotify' | 'tg' | 'dbugs' | 'exploitgrid' | 'cvemon';
+  /** Intruder cvemon trending rank (1 = most discussed). */
+  hype_rank?: number;
+  /** Intruder cvemon hype score. */
+  hype_score?: number;
+  /** cvemon detail page. */
+  cvemon_url?: string;
   /** dbu.gs vendor (origin 'dbugs'). */
   vendor?: string;
   /** dbu.gs product (origin 'dbugs'). */
@@ -108,6 +114,11 @@ const ORIGIN_PILL: Record<RecentCve['origin'], { label: string; cls: string; too
     label: 'ExploitGrid',
     cls: 'border-orange-500/40 bg-orange-500/10 text-orange-700 dark:text-orange-300',
     tooltip: 'Gap-filled from ExploitGrid — a public proof-of-concept exists for this CVE',
+  },
+  cvemon: {
+    label: 'Trending',
+    cls: 'border-fuchsia-500/40 bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300',
+    tooltip: 'Gap-filled from Intruder cvemon — trending on social media by discussion volume',
   },
 };
 

@@ -37,27 +37,32 @@ export const calendarRouter = new Hono<{ Bindings: Env }>();
 
 /** Map a CaseStudyType to a funnel stage. */
 const FUNNEL_MAP: Record<CaseStudyType, 'tofu' | 'mofu' | 'bofu'> = {
-  // Awareness — breaking news, threats, breaches, stats
+  // Awareness — things that just happened and someone needs to act on
   cve: 'tofu',
-  ransom: 'tofu',
+  vulnfaq: 'tofu',
+  exploit: 'tofu',
   breach: 'tofu',
   scam: 'tofu',
   news: 'tofu',
   trend: 'tofu',
+  darkweb: 'tofu',
+  supplychain: 'tofu',
   briefing: 'tofu',
-  // Consideration — deep-dives, analysis, tradecraft
+  // Consideration — deep-dives, tradecraft, AI security analysis
   actor: 'mofu',
   malware: 'mofu',
   intel: 'mofu',
   aisec: 'mofu',
+  llm: 'mofu',
+  aisecops: 'mofu',
   agentic: 'mofu',
   hunting: 'mofu',
   report: 'mofu',
+  analysis: 'mofu', // thought leadership sits in consideration
   // Decision — methodology, tools, how-to
   methodology: 'bofu',
   tool: 'bofu',
   osint: 'bofu',
-  analysis: 'mofu', // thought leadership sits in consideration
 };
 
 /** Target funnel mix (60/30/10) per the research docs. */

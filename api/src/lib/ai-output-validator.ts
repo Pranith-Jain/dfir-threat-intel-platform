@@ -756,48 +756,29 @@ export function findInvalidMitreIds(text: string): string[] {
   return extractMitreIds(text).filter((id) => !VALID_ATTACK_IDS.has(id));
 }
 
-// ── AI-slop detection ────────────────────────────────────────────────────
-
-const SLOP_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
-  { pattern: /\byou'?re likely already aware\b/gi, label: 'presumptive opener' },
-  { pattern: /\byou'?re probably wondering\b/gi, label: 'presumptive opener' },
-  { pattern: /\byou might be wondering\b/gi, label: 'presumptive opener' },
-  { pattern: /\bchances are\b/gi, label: 'presumptive opener' },
-  { pattern: /\bin today'?s (?:digital|cyber|threat|rapidly evolving)\b/gi, label: 'AI-tell opener' },
-  { pattern: /\blet'?s (?:dive|delve|jump|explore) into\b/gi, label: 'AI-tell opener' },
-  { pattern: /\bin this (?:report|analysis|article|post)\b/gi, label: 'AI-tell opener' },
-  { pattern: /\bit'?s (?:important|worth|crucial) to note\b/gi, label: 'filler phrase' },
-  { pattern: /\bas we (?:delve|navigate|explore)\b/gi, label: 'AI-tell transition' },
-  { pattern: /\bin (?:conclusion|summary)\b/gi, label: 'formulaic closer' },
-  { pattern: /\b(?:moreover|furthermore|additionally),?\s/gi, label: 'filler transition' },
-  {
-    pattern: /\bthis (?:highlights|underscores|emphasizes) the (?:importance|need|critical)\b/gi,
-    label: 'empty emphasis',
-  },
-  // Reference-voice ban list (content-repurposing system): AI slop + corporate
-  { pattern: /\bunlock(?:s|ing|ed)?\b/gi, label: 'AI slop verb' },
-  { pattern: /\bleverag(?:e|es|ing|ed)\b/gi, label: 'AI slop verb' },
-  { pattern: /\bseamless(?:ly)?\b/gi, label: 'AI slop adverb' },
-  { pattern: /\bgame.?chang(?:er|ing)\b/gi, label: 'AI slop noun' },
-  { pattern: /\bdive into\b/gi, label: 'AI slop phrase' },
-  { pattern: /\bsynerg(?:y|ies|istic)\b/gi, label: 'corporate filler' },
-  { pattern: /\bbest practices\b/gi, label: 'corporate filler' },
-  { pattern: /\becosystem\b/gi, label: 'corporate filler' },
-  { pattern: /\bmove the needle\b/gi, label: 'corporate filler' },
-  { pattern: /\bin order to\b/gi, label: 'wordy' },
-  { pattern: /\bdue to the fact (?:that )?\b/gi, label: 'wordy' },
-];
-
-export function detectSlop(text: string): Array<{ phrase: string; label: string }> {
-  const found: Array<{ phrase: string; label: string }> = [];
-  for (const { pattern, label } of SLOP_PATTERNS) {
-    const matches = text.match(pattern);
-    if (matches) {
-      for (const m of matches) found.push({ phrase: m.trim(), label });
-    }
-  }
-  return found;
-}
+// ── Quality scoring ──────────────────────────────────────────────────────
+//
+// SCOPE NOTE: the slop-phrase detector that used to live here (`SLOP_PATTERNS`
+// / `detectSlop`, 26 regexes for "unlock", "dive into", "in today's landscape",
+// "best practices", …) has been removed, along with the `slopCount` deduction
+// in `scoreQuality` and the corresponding field in `QualityScore`.
+//
+// Two reasons it was hurting more than helping:
+//
+//  1. It punished legitimate security writing. "In today's threat landscape"
+//     is bad filler, but "leverage" and "ecosystem" appear in vendor
+//     advisories and MITRE technique descriptions that this pipeline quotes
+//     verbatim. Scoring a faithful quotation as slop teaches the model to
+//     paraphrase sources, which is exactly how quoted version strings and
+//     affected-build tables get corrupted.
+//  2. It was measuring the wrong thing. Fluency and phrasing tell you nothing
+//     about whether a CVE id is real. The checks that remain below
+//     (`ungroundedCveCount`, `invalidMitreCount`, `untrustedUrlCount`) all
+//     test facts against an external source of truth, which is the only
+//     thing worth detecting here.
+//
+// Grounding is now prevented primarily upstream — the research stage feeds
+// the writer verified facts — with these checks as the backstop.
 
 // ── Quality scoring ──────────────────────────────────────────────────────
 
@@ -807,7 +788,6 @@ export interface QualityScore {
   hasSections: boolean;
   hasCitations: boolean;
   citationCount: number;
-  slopCount: number;
   untrustedUrlCount: number;
   ungroundedCveCount: number;
   invalidMitreCount: number;
@@ -815,7 +795,12 @@ export interface QualityScore {
 }
 
 /**
- * Score the quality of an AI-generated output.
+ * Score an AI-generated output.
+ *
+ * Every deduction below tests a FACT against an external source of truth:
+ * does this CVE exist in the input, is this ATT&CK id real, is this host on
+ * the allowlist. Nothing here judges phrasing, length targets, or style.
+ *
  * @param text The LLM output.
  * @param sourceData The source data that was fed to the LLM (for grounding checks).
  * @param opts Optional overrides for scoring thresholds.
@@ -833,7 +818,6 @@ export function scoreQuality(
   const hasSections = /^##\s/m.test(text);
   const citationMatches = text.match(/\[\d+\]/g) ?? [];
   const citationCount = citationMatches.length;
-  const slop = detectSlop(text);
   const { stripped } = stripUntrustedUrls(text);
   const ungrounded = sourceData ? findUngroundedCves(text, sourceData) : [];
   const invalidMitre = findInvalidMitreIds(text);
@@ -842,19 +826,17 @@ export function scoreQuality(
   if (wordCount < minWords) issues.push(`Too short (${wordCount} words, min ${minWords})`);
   if (!hasSections) issues.push('No section headings (##)');
   if (requireCitations && citationCount === 0) issues.push('No inline citations [N]');
-  if (slop.length > 2) issues.push(`${slop.length} AI-slop phrases detected`);
   if (stripped.length > 0) issues.push(`${stripped.length} untrusted URLs stripped`);
   if (ungrounded.length > 0)
     issues.push(`${ungrounded.length} ungrounded CVE IDs: ${ungrounded.slice(0, 5).join(', ')}`);
   if (invalidMitre.length > 0)
     issues.push(`${invalidMitre.length} invalid ATT&CK IDs: ${invalidMitre.slice(0, 5).join(', ')}`);
 
-  // Score: start at 100, deduct for issues
+  // Score: start at 100, deduct only for factual problems.
   let score = 100;
   if (wordCount < minWords) score -= 30;
   if (!hasSections) score -= 10;
   if (requireCitations && citationCount === 0) score -= 20;
-  score -= Math.min(20, slop.length * 5);
   score -= Math.min(15, stripped.length * 5);
   score -= Math.min(20, ungrounded.length * 10);
   score -= Math.min(10, invalidMitre.length * 5);
@@ -866,7 +848,6 @@ export function scoreQuality(
     hasSections,
     hasCitations: citationCount > 0,
     citationCount,
-    slopCount: slop.length,
     untrustedUrlCount: stripped.length,
     ungroundedCveCount: ungrounded.length,
     invalidMitreCount: invalidMitre.length,

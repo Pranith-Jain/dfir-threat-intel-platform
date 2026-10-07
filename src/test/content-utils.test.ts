@@ -4,7 +4,6 @@ import {
   extractTableOfContents,
   generateHashtags,
   generateShareUrls,
-  scoreContentQuality,
   findRelatedPosts,
   suggestPostingTime,
 } from '../lib/content-utils';
@@ -106,35 +105,6 @@ describe('Content Utilities', () => {
     it('includes hashtags in Twitter URL', () => {
       const urls = generateShareUrls('Test', 'https://example.com', ['cyber', 'infosec']);
       expect(urls.twitter).toContain('cyber');
-    });
-  });
-
-  describe('scoreContentQuality', () => {
-    it('returns score between 0 and 100', () => {
-      const score = scoreContentQuality('Test content', 'Test title');
-      expect(score.overall).toBeGreaterThanOrEqual(0);
-      expect(score.overall).toBeLessThanOrEqual(100);
-    });
-
-    it('gives higher score for specific content', () => {
-      const generic = scoreContentQuality('This is a generic article about security.', 'Security');
-      const specific = scoreContentQuality(
-        'CVE-2024-3094 in XZ Utils (CVSS 10.0) allows remote code execution via supply chain attack. The vulnerability affects versions 5.6.0 and 5.6.1.',
-        'XZ Utils Backdoor'
-      );
-      // Specific content with CVE IDs and numbers should score higher overall
-      expect(specific.overall).toBeGreaterThanOrEqual(generic.overall);
-    });
-
-    it('penalizes generic phrases', () => {
-      const withGeneric = scoreContentQuality("In today's world, security is important.", 'Test');
-      const without = scoreContentQuality('CVE-2024-3094 is a critical vulnerability.', 'Test');
-      expect(without.breakdown.originality).toBeGreaterThan(withGeneric.breakdown.originality);
-    });
-
-    it('returns suggestions', () => {
-      const score = scoreContentQuality('Short.', 'Test');
-      expect(score.suggestions.length).toBeGreaterThan(0);
     });
   });
 

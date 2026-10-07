@@ -82,22 +82,26 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
     const errors: string[] = [];
 
     /** Approval gate — mirrors the n8n "reject weak/empty output" node. */
-    function approve(platform: string, text: string | undefined, minLen: number, validation?: unknown) {
+    /**
+     * The only automatic rejection left for generated social copy: nothing at
+     * all, or something too short to be a post.
+     *
+     * The `quality_score_below_threshold` check that used to live here read a
+     * composite score built from character counts, a hardcoded vendor/actor
+     * keyword list, hashtag count and slop phrases. It rejected sharp posts
+     * about unfamiliar products as "low quality" and passed name-stuffed ones.
+     * Real errors (a CVE id not in the dossier, a link to an untrusted host)
+     * are already fixed in `generation/social.ts` before the copy returns,
+     * and are surfaced for review rather than used as a gate.
+     */
+    function approve(text: string | undefined, minLen: number) {
       const trimmed = (text ?? '').trim();
-      const score =
-        typeof (validation as { score?: number } | undefined)?.score === 'number'
-          ? (validation as { score: number }).score
-          : null;
       if (trimmed.length === 0) {
         return { rejected: true, reason: 'empty_content' };
       }
       if (trimmed.length < minLen) {
         return { rejected: true, reason: `too_short (${trimmed.length} < ${minLen} chars)` };
       }
-      if (score !== null && score < 60) {
-        return { rejected: true, reason: `quality_score_below_threshold (${score}/100)` };
-      }
-      void platform;
       return { rejected: false };
     }
 
@@ -121,8 +125,12 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
             groqKey: c.env.GROQ_API_KEY,
             googleKey: c.env.GOOGLE_AI_STUDIO_API_KEY,
             infronKey: c.env.INFRON_API_KEY,
+            // Lets the research stage read the platform's own corpus
+            // (writeups, trending CVEs, darkweb hits) via the SELF binding.
+            self: c.env.SELF,
+            internalTokenSecret: c.env.INTERNAL_TOKEN_SECRET,
           });
-          const gate = approve('blog', post.body, 500);
+          const gate = approve(post.body, 500);
           if (!gate.rejected && !dry_run) await putDraft(c.env.CASE_STUDIES, post);
           result.blog = {
             slug: post.slug,
@@ -146,17 +154,10 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
             linkedin?: string;
             twitter?: string;
             generatedAt: string;
-            _validation?: { quality?: { score?: number } };
+            _validation?: unknown;
           };
           const text = fmt === 'linkedin' ? out.linkedin : out.twitter;
-          // The score lives at _validation.quality.score (SocialQuality) —
-          // passing the wrapper itself made the score check dead code.
-          const gate = approve(
-            fmt,
-            text,
-            fmt === 'linkedin' ? 400 : 120,
-            out._validation?.quality
-          );
+          const gate = approve(text, fmt === 'linkedin' ? 400 : 120);
           result[fmt] = {
             final_post: text ?? '',
             generatedAt: out.generatedAt,

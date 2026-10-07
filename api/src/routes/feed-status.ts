@@ -4,6 +4,7 @@ import { logError } from '../lib/logger';
 import { SOURCE_RELIABILITY_REGISTRY } from '../lib/confidence';
 import { SNAPSHOT_CACHE_KEY } from './snapshot';
 import { CVE_RECENT_CACHE_KEY } from './cve-recent';
+import { CVE_TRENDS_CACHE_KEY } from '../lib/cvemon';
 import { CVE_DIGEST_CACHE_KEY } from './cve-digest';
 import { MALWARE_SAMPLES_CACHE_KEY } from './malware-samples';
 import { PHISHING_URLS_CACHE_KEY } from './phishing-urls';
@@ -225,6 +226,7 @@ export const PROBE_SOURCES: Record<string, string[]> = {
   // The 24h digest is anchored on ctiwatch (B) with VulnTracker volume for
   // context — best-evidence-wins keeps it at B.
   'cve-digest': ['ctiwatch', 'vulntracker'],
+  'cve-trends': ['cvemon'],
   'malware-samples': ['abusech-malwarebazaar'],
   'ransomware-recent': ['ransomlook'],
   'onion-watch': ['ransomlook'],
@@ -300,6 +302,36 @@ export const PROBES: FeedProbeSpec[] = [
         // Gap-filler counts ride along as metrics so a drop to 0 is visible here
         // rather than only as a missing row on the CVE list.
         metrics: { count, nvd: nvdCount, kev: kevCount, dbugs: dbugsCount, exploitgrid: exploitGridCount },
+        ageS,
+      };
+    },
+  },
+  {
+    id: 'cve-trends',
+    label: 'CVE trending — social attention (cvemon)',
+    page_path: '/threatintel/cve-intel?tab=trending',
+    api_path: '/api/v1/cve-trends',
+    cache_key: CVE_TRENDS_CACHE_KEY,
+    sourceIds: PROBE_SOURCES['cve-trends'],
+    evaluate: (body) => {
+      const count = intField(body, 'count') ?? 0;
+      const ageS = ageSeconds(strField(body, 'generated_at'));
+      const stale = (body as { stale?: boolean }).stale === true;
+      // cvemon is a single upstream with no fallback tiers, so there is no
+      // partial-degradation story: either it answered or we are on the KV
+      // last-good payload. `stale` is surfaced in the reason because a stale
+      // trending list is actively misleading — it looks like "nothing is
+      // trending" when it really means "we could not ask".
+      const status: Status = count > 0 && !stale ? 'ok' : count > 0 ? 'degraded' : 'down';
+      return {
+        status,
+        reason:
+          count > 0
+            ? stale
+              ? 'cvemon unreachable — serving cached rankings'
+              : `${count} CVEs trending on social`
+            : 'cvemon returned no trending CVEs',
+        metrics: { count },
         ageS,
       };
     },

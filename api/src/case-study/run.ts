@@ -11,11 +11,15 @@ import { discoverCves } from './discovery/cve';
 import { selfFetchJson } from '../lib/self-fetch';
 import { discoverActors } from './discovery/actor';
 import { discoverMalware } from './discovery/malware';
-import { discoverRansomware } from './discovery/ransomware';
-import { discoverReleaks, type ReleakRow } from './discovery/releak';
 import { discoverBreaches } from './discovery/breach';
 import { discoverScams } from './discovery/scam';
 import { discoverAiSec } from './discovery/aisec';
+import { discoverAiSecOps } from './discovery/aisecops';
+import { discoverLlmSec } from './discovery/llm';
+import { discoverDarkweb } from './discovery/darkweb';
+import { discoverSupplyChain } from './discovery/supplychain';
+import { discoverExploits } from './discovery/exploits';
+import { discoverInfostealers } from './discovery/infostealers';
 import { discoverIntel } from './discovery/intel';
 import { discoverOsint } from './discovery/osint';
 import { discoverMethodology } from './discovery/methodology';
@@ -30,7 +34,7 @@ import {
 import { discoverAdvisories } from './discovery/advisories';
 import { discoverVulnCheckKev } from './discovery/vulncheck';
 import { discoverEuvd } from './discovery/euvd';
-import { discoverAgenticTrends } from './discovery/agentic-trends';
+import { discoverTrendResearch } from './discovery/trend-research';
 import { discoverPhishuntHunts } from './discovery/phishunt';
 import { activeRunnerNames } from './discovery/rotation';
 import { runPlanner } from './publishing/planner';
@@ -66,7 +70,6 @@ import type { SocialContent } from './types';
 import { kv as csKvKeys } from './kv-keys';
 import { ACTOR_RSS_FEEDS, ADVISORY_RSS_FEEDS } from './config';
 import { getSiteUrl } from '../lib/site-config';
-import { fetchRecentVictims } from './ransom-source';
 import type { D1Database } from '@cloudflare/workers-types';
 import type { Candidate } from './types';
 import { logError } from '../lib/logger';
@@ -164,22 +167,13 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
   //   - PUBLISHED key  → hard-suppress for 30d (never republish the same story)
   //   - Surfaced (kept, not published) → hard-suppress for 7d to prevent the
   //     same candidates from appearing in every daily run. Without this,
-  //     high-severity items (CVE 0.99, ransomware groups) keep dominating
+  //     high-severity items keep dominating
   //     because noveltyScore only soft-deweights them.
-  //   - alreadyCoveredTopics: dedup keys surfaced in the last 14 days, fed
-  //     into the agentic-trends prompt so the LLM actively avoids them.
+  //   - the discovery runner itself consults the dedup map via `getDedup`.
   const REPUBLISH_BLOCK_MS = 30 * 24 * 3600 * 1000;
   const SURFACED_BLOCK_MS = 14 * 24 * 3600 * 1000;
   const isSuppressed = (key: string): boolean =>
     isKeySuppressed(dedupMap[key] ?? null, now, REPUBLISH_BLOCK_MS, SURFACED_BLOCK_MS);
-  // Build a list of recently-covered topic keys so the agentic-trends LLM
-  // can avoid repeating them. Extract keys surfaced in the last 14 days.
-  const alreadyCoveredTopics: string[] = [];
-  const coveredCutoff = now.getTime() - SURFACED_BLOCK_MS;
-  for (const [key, rec] of Object.entries(dedupMap)) {
-    const t = Date.parse(rec.lastSeenAt);
-    if (!Number.isNaN(t) && t >= coveredCutoff) alreadyCoveredTopics.push(key);
-  }
   // One rand stream per run, seeded by the UTC date: stable within a day,
   // different the next. Weighted by score so high-value items stay likely
   // (and the single top item is guaranteed) without freezing the queue.
@@ -187,104 +181,15 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
   const selectPerTopic = (cands: Parameters<typeof weightedSampleByScore>[0], k: number) =>
     weightedSampleByScore(cands, k, rand);
 
-  // Fetch real trending context from the platform to ground the agentic-trends
-  // LLM prompt. Without this, the LLM hallucinates from training data and
-  // produces similar output every day. Gracefully degrades to empty string
-  // when the fetch fails or SELF binding is unavailable.
-  const trendingContext = await (async (): Promise<string> => {
-    try {
-      const fetcher = env.SELF ?? { fetch: globalThis.fetch };
-      const endpoints = [
-        '/api/v1/cisa-kev',
-        '/api/v1/ransomware-recent?limit=7',
-        '/api/v1/global-pulse',
-        '/api/v1/breach-disclosures?limit=5',
-        '/api/v1/writeups?limit=5',
-        '/api/v1/x-claims?limit=5',
-        '/api/v1/reddit-feed?limit=5',
-      ];
-      const results = await Promise.allSettled(
-        endpoints.map((path) =>
-          fetcher.fetch(new Request(`https://pranithjain.qzz.io${path}`)).then((r) => (r.ok ? r.json() : null))
-        )
-      );
-      const parts: string[] = [];
-      const kevData = results[0]?.status === 'fulfilled' ? results[0].value : null;
-      if (kevData && typeof kevData === 'object' && 'vulnerabilities' in (kevData as Record<string, unknown>)) {
-        const vulns = (kevData as Record<string, unknown>).vulnerabilities;
-        if (Array.isArray(vulns) && vulns.length > 0) {
-          parts.push(
-            'KEV: ' + JSON.stringify(vulns.slice(0, 5).map((v: Record<string, unknown>) => v.cveId ?? v.id ?? v))
-          );
-        }
-      }
-      const ransomData = results[1]?.status === 'fulfilled' ? results[1].value : null;
-      if (ransomData && typeof ransomData === 'object' && 'victims' in (ransomData as Record<string, unknown>)) {
-        const victims = (ransomData as Record<string, unknown>).victims;
-        if (Array.isArray(victims) && victims.length > 0) {
-          const top = victims.slice(0, 5).map((v: Record<string, unknown>) => `${v.group ?? '?'}:${v.victim ?? '?'}`);
-          parts.push('Ransom: ' + top.join('; '));
-        }
-      }
-      const pulseData = results[2]?.status === 'fulfilled' ? results[2].value : null;
-      if (pulseData && typeof pulseData === 'object') {
-        const pd = pulseData as Record<string, unknown>;
-        const s: string[] = [];
-        if (typeof pd.totalEvents === 'number') s.push(`ev:${pd.totalEvents}`);
-        if (typeof pd.ransomwareCount === 'number') s.push(`ransom:${pd.ransomwareCount}`);
-        if (typeof pd.iocCount === 'number') s.push(`iocs:${pd.iocCount}`);
-        if (s.length > 0) parts.push('Pulse: ' + s.join(' '));
-      }
-      const breachData = results[3]?.status === 'fulfilled' ? results[3].value : null;
-      if (breachData && typeof breachData === 'object') {
-        const items = (breachData as Record<string, unknown>).items ?? (breachData as Record<string, unknown>).breaches;
-        if (Array.isArray(items) && items.length > 0) {
-          parts.push('Breaches: ' + JSON.stringify(items.slice(0, 3)));
-        }
-      }
-      const writeupData = results[4]?.status === 'fulfilled' ? results[4].value : null;
-      if (writeupData && typeof writeupData === 'object') {
-        const items =
-          (writeupData as Record<string, unknown>).items ?? (writeupData as Record<string, unknown>).writeups;
-        if (Array.isArray(items) && items.length > 0) {
-          const titles = (items as Array<Record<string, unknown>>)
-            .slice(0, 3)
-            .map((w) => w.title ?? w)
-            .filter(Boolean);
-          if (titles.length > 0) parts.push('Writeups: ' + titles.join(' | '));
-        }
-      }
-      const xData = results[5]?.status === 'fulfilled' ? results[5].value : null;
-      if (xData && typeof xData === 'object') {
-        const items = (xData as Record<string, unknown>).items ?? (xData as Record<string, unknown>).claims;
-        if (Array.isArray(items) && items.length > 0) {
-          parts.push('X: ' + JSON.stringify(items.slice(0, 3)));
-        }
-      }
-      const redditData = results[6]?.status === 'fulfilled' ? results[6].value : null;
-      if (redditData && typeof redditData === 'object') {
-        const items = (redditData as Record<string, unknown>).items ?? (redditData as Record<string, unknown>).posts;
-        if (Array.isArray(items) && items.length > 0 && (items[0] as Record<string, unknown>)?.title) {
-          parts.push(
-            'Reddit: ' +
-              (items as Array<Record<string, unknown>>)
-                .slice(0, 3)
-                .map((p) => p.title)
-                .join(' | ')
-          );
-        }
-      }
-      return parts.join('\n');
-    } catch {
-      return '';
-    }
-  })();
-
   // Shared platform API fetch — uses SELF service binding for in-process
   // calls so /api/v1/* endpoints don't hit the public API-key gate.
   const apiFetch: (path: string) => Promise<unknown> = async (path) => {
     return selfFetchJson<unknown>(env.SELF, path, env);
   };
+
+  /** Coerce a self-fetch payload field into an array of row objects. */
+  const asRows = (v: unknown): Array<Record<string, unknown>> =>
+    Array.isArray(v) ? v.filter((x): x is Record<string, unknown> => !!x && typeof x === 'object') : [];
 
   const allRunners: Record<string, () => Promise<Candidate[]>> = {
     vulncheck: () =>
@@ -293,28 +198,44 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
     actor: () => discoverActors({ fetch: globalThis.fetch, now, getDedup: memGet, feeds: ACTOR_RSS_FEEDS }),
     malware: () =>
       discoverMalware({ fetch: globalThis.fetch, now, getDedup: memGet, abuseChKey: env.ABUSECH_AUTH_KEY ?? '' }),
-    ransom: () =>
-      discoverRansomware({ fetchVictims: () => fetchRecentVictims(globalThis.fetch), now, getDedup: memGet }),
-    releak: () =>
-      discoverReleaks({
-        // Re-uses the existing /api/v1/victim-releaks surface — same data
-        // that powers /threatintel/re-leaks, already 6h edge-cached so
-        // the cron fan-out cost is one cheap GET per discovery run.
-        // Uses SELF service binding to bypass the public API-key gate.
-        fetchReleaks: async () => {
-          try {
-            const data = await selfFetchJson<{ releaks?: ReleakRow[] }>(env.SELF, '/api/v1/victim-releaks', env);
-            return data?.releaks ?? [];
-          } catch {
-            return [];
-          }
-        },
+    // The ransomware-victim runner is gone (see types.ts). `darkweb` covers
+    // the same underground ground with far more signal per post: what access
+    // is being offered, to whom, and at what price.
+    darkweb: () =>
+      discoverDarkweb({
+        fetch: globalThis.fetch,
         now,
         getDedup: memGet,
+        fetchHits: async (limit) => {
+          const data = await selfFetchJson<Record<string, unknown>>(
+            env.SELF,
+            `/api/v1/darkweb-monitor?limit=${limit}`,
+            env
+          );
+          return asRows(data?.items).length ? asRows(data?.items) : asRows(data?.hits);
+        },
       }),
+    exploit: () =>
+      discoverExploits({
+        fetch: globalThis.fetch,
+        now,
+        getDedup: memGet,
+        fetchExploitDb: async (limit) => {
+          const data = await selfFetchJson<Record<string, unknown>>(env.SELF, `/api/v1/exploit-db?limit=${limit}`, env);
+          return asRows(data?.items).length ? asRows(data?.items) : asRows(data?.exploits);
+        },
+        fetchRecent: async (limit) => {
+          const data = await selfFetchJson<Record<string, unknown>>(env.SELF, `/api/v1/cve-recent?limit=${limit}`, env);
+          return asRows(data?.cves);
+        },
+      }),
+    supplychain: () => discoverSupplyChain({ fetch: globalThis.fetch, now, getDedup: memGet }),
+    infostealers: () => discoverInfostealers({ fetch: globalThis.fetch, now, getDedup: memGet }),
     breach: () => discoverBreaches({ fetch: globalThis.fetch, now, getDedup: memGet }),
     scam: () => discoverScams({ fetch: globalThis.fetch, now, getDedup: memGet }),
     aisec: () => discoverAiSec({ fetch: globalThis.fetch, now, getDedup: memGet }),
+    llm: () => discoverLlmSec({ fetch: globalThis.fetch, now, getDedup: memGet }),
+    aisecops: () => discoverAiSecOps({ fetch: globalThis.fetch, now, getDedup: memGet }),
     intel: () => discoverIntel({ fetch: globalThis.fetch, now, getDedup: memGet }),
     advisories: () => discoverAdvisories({ fetch: globalThis.fetch, now, getDedup: memGet, feeds: ADVISORY_RSS_FEEDS }),
     osint: () => discoverOsint({ fetch: globalThis.fetch, now, getDedup: memGet }),
@@ -331,14 +252,6 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
     platformTelegram: () => discoverFromTelegramLeaks({ apiFetch, now, getDedup: memGet }),
     platformIocs: () => discoverFromTrendingIocs({ apiFetch, now, getDedup: memGet }),
     platformPulse: () => discoverFromThreatPulse({ apiFetch, now, getDedup: memGet }),
-    // Agentic trends: uses LLM to discover trending cybersecurity content
-    // beyond the configured RSS/API sources. Produces high-quality candidates
-    // with hooks, angles, and trending signals. Falls back gracefully when
-    // the LLM call fails (returns empty array).
-    // trendingContext feeds real platform data into the prompt so the LLM
-    // has actual current events to work with instead of hallucinating.
-    // alreadyCoveredTopics tells the LLM what topics were recently surfaced
-    // so it actively avoids repeating them.
     // Phishunt: free, no-auth phishing feed with enriched data (IP, ASN, TLS,
     // detection sources). Surfaces brand impersonation campaigns and critical
     // phishing sites flagged by multiple detection engines.
@@ -373,28 +286,32 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
         now,
         getDedup: memGet,
       }),
+    // Trend research (replaces the LLM-invented `trends` runner). Reads the
+    // platform's OWN corpus for what actually moved — fresh KEV additions,
+    // social-hype CVEs, EPSS outliers, fresh writeups, darkweb hits — and
+    // only publishes candidates whose source URL verifiably resolves. When
+    // the corpus is quiet it returns nothing, which is the correct outcome;
+    // the old runner guaranteed three stories a day by inventing them.
     trends: () =>
-      discoverAgenticTrends({
+      discoverTrendResearch({
         now,
         getDedup: memGet,
-        groqKey: env.GROQ_API_KEY,
-        googleKey: env.GOOGLE_AI_STUDIO_API_KEY,
-        infronKey: env.INFRON_API_KEY,
-        trendingContext,
-        alreadyCoveredTopics,
-        // Same opt-in flag as the generation-time reference probe — one extra
-        // ranged GET per HEAD-200 source URL (title-sniff for soft-404s). The
-        // only discovery runner that needs it: trend sources are LLM-invented.
+        self: env.SELF,
+        internalTokenSecret: env.INTERNAL_TOKEN_SECRET,
+        // One extra ranged GET per HEAD-200 source URL to catch soft-404s.
+        // These URLs come from the platform's own corpus, so they are far
+        // more trustworthy than the LLM's were — off by default.
         deepVerify: env.DEEP_LINK_VERIFY === 'true',
       }),
   };
-  // Discovery diversity model (2026-06-22 — platform split into 3):
-  //   - 8 high-value "always-on" topics: `cve`, `actor`, `ransom`,
-  //     `phish`, `trends`, and 3 platform sub-runners (telegram, iocs,
-  //     pulse). Platform split gives each source its own perTopic budget.
-  //   - The remaining ~14 optional topics partition into 6 day-buckets
-  //     (rotation.ts), so each day surfaces ~2 of them.
-  //   - Total per day: 8 always + 2 rotating = ~10 topics.
+  // Discovery diversity model:
+  //   - 10 high-value "always-on" topics: `cve`, `actor`, `exploit`,
+  //     `darkweb`, `infostealers`, `phish`, `trends`, and 3 platform
+  //     sub-runners (telegram, iocs, pulse). Platform split gives each
+  //     source its own perTopic budget.
+  //   - The remaining optional topics partition into 6 day-buckets
+  //     (rotation.ts), so each day surfaces a few of them.
+  //   - Total per day: 9 always + ~3 rotating.
   //   - perTopic=2: each topic contributes up to 2 candidates, ensuring
   //     at least 10 different categories per run.
   //   - trends=3: fewer LLM candidates, higher quality bar enforced by
@@ -402,7 +319,9 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
   const ALWAYS_ON = new Set([
     'cve',
     'actor',
-    'ransom',
+    'exploit',
+    'darkweb',
+    'infostealers',
     'platformTelegram',
     'platformIocs',
     'platformPulse',
@@ -515,6 +434,11 @@ export async function runPublisherNow(env: CaseStudyEnv, now: Date) {
                   : liveVerifyUrls,
             })
           : undefined,
+        // Research stage: SELF + token let the dossier query the platform's
+        // own API (writeups, trending CVEs, darkweb hits) in addition to
+        // fetching the candidate's own source pages.
+        self: env.SELF,
+        internalTokenSecret: env.INTERNAL_TOKEN_SECRET,
         // AI illustrations: on by default, disable via BLOG_AI_IMAGES_DISABLED.
         aiImages:
           env.BLOG_AI_IMAGES_DISABLED === 'true'

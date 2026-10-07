@@ -15,12 +15,17 @@ const THIRTY_DAYS_SECONDS = 30 * 24 * 3600;
  */
 export const CANDIDATE_TYPES: CaseStudyType[] = [
   'cve',
+  'vulnfaq',
+  'exploit',
   'actor',
   'malware',
-  'ransom',
+  'darkweb',
   'breach',
   'scam',
   'aisec',
+  'llm',
+  'aisecops',
+  'supplychain',
   'intel',
   'osint',
   'methodology',

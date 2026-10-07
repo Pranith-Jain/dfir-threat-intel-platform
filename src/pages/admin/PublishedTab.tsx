@@ -56,29 +56,14 @@ interface CarouselSlide {
   kind?: string;
 }
 
-interface SocialQuality {
+/** Factual per-platform checks (see SocialCheck in api/src/case-study/types.ts).
+ *  No score: the composite score and the slop-phrase counter are gone. These
+ *  are measurements and ground-truth lookups only. */
+interface SocialCheck {
   char_count: number;
   over_limit: boolean;
   ungrounded_cves: string[];
   untrusted_urls: number;
-  slop_count: number;
-  score: number;
-  issues: string[];
-}
-
-interface ReadinessVerdict {
-  score: number;
-  ready: boolean;
-  blockers: string[];
-  warnings: string[];
-  platforms: Array<{ platform: string; present: boolean; score: number; overLimit: boolean; issues: string[] }>;
-  crossPlatform: {
-    hookDiversity: number;
-    bodyOverlap: number;
-    similarHookPairs: Array<{ a: string; b: string; similarity: number }>;
-    similarBodyPairs: Array<{ a: string; b: string; similarity: number }>;
-    hooks: { twitter?: string; linkedin?: string; instagram?: string };
-  };
 }
 
 interface SocialContent {
@@ -90,10 +75,9 @@ interface SocialContent {
   generatedAt: string;
   hooks?: string[];
   _validation?: {
-    twitter_quality?: SocialQuality;
-    linkedin_quality?: SocialQuality;
-    instagram_quality?: SocialQuality;
-    readiness?: ReadinessVerdict;
+    twitter_check?: SocialCheck;
+    linkedin_check?: SocialCheck;
+    instagram_check?: SocialCheck;
   };
 }
 
@@ -539,38 +523,50 @@ function QueueStatusBadge({ item }: { item: SocialQueueItem }) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Cross-platform readiness badge — surfaces the content-engine quality gate
- *  verdict (hook diversity, body overlap, per-platform scores, blockers).
- *  Advisory: warnings don't block posting; blockers (char limits) do. */
-function ReadinessBadge({ verdict }: { verdict: ReadinessVerdict }) {
-  const { score, ready, blockers, warnings, crossPlatform } = verdict;
-  const tone = ready
-    ? 'border-emerald-200 dark:border-emerald-700/50 bg-emerald-50 dark:bg-emerald-900/20'
-    : 'border-amber-200 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-900/20';
-  const labelTone = ready ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300';
+/**
+ * Per-platform factual checks.
+ *
+ * Replaces the "readiness gate" badge, which scored the three platforms
+ * against each other (hook diversity, body overlap, composite scores) and
+ * rendered a READY / REVIEW verdict. That verdict was advisory only and had
+ * no relationship to whether the copy was any good, so it mostly told you
+ * things you could see by reading the posts.
+ *
+ * What is worth surfacing is what the server could not verify: a CVE id with
+ * no match in the research dossier, an over-limit post the platform will
+ * truncate, a link that was stripped for pointing at an untrusted host.
+ */
+function CheckBadges({ checks }: { checks: Record<string, SocialCheck | undefined> }) {
+  const rows = Object.entries(checks).filter(([, c]) => c !== undefined);
+  if (rows.length === 0) return null;
+
+  const issues = rows.flatMap(([platform, c]) => {
+    const list: string[] = [];
+    if (c!.over_limit) list.push(`${platform}: over the character limit (${c!.char_count})`);
+    if (c!.ungrounded_cves.length > 0) {
+      list.push(`${platform}: ${c!.ungrounded_cves.length} CVE(s) not in the research dossier`);
+    }
+    if (c!.untrusted_urls > 0) list.push(`${platform}: ${c!.untrusted_urls} untrusted link(s) stripped`);
+    return list;
+  });
+
+  if (issues.length === 0) return null;
+
   return (
-    <div className={`mb-4 rounded border ${tone} p-3`}>
-      <div className="flex items-center gap-2 mb-2">
-        <span className={`text-xs font-mono font-semibold ${labelTone}`}>{ready ? '✓ READY' : '⚠ REVIEW'}</span>
-        <span className="text-xs font-mono text-muted">score {score}/100</span>
-        <span className="text-xs font-mono text-muted">· hook diversity {crossPlatform.hookDiversity}/100</span>
-        <span className="text-xs font-mono text-muted">· body overlap {crossPlatform.bodyOverlap}/100</span>
+    <div className="mb-4 rounded border border-amber-200 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-900/20 p-3">
+      <div className="mb-1.5 flex items-center gap-2">
+        <span className="text-xs font-mono font-semibold text-amber-700 dark:text-amber-300">
+          ⚠ CHECK THESE BEFORE POSTING
+        </span>
+        <span className="text-xs font-mono text-muted">
+          {rows.map(([p, c]) => `${p} ${c!.char_count}ch`).join(' · ')}
+        </span>
       </div>
-      {blockers.length > 0 && (
-        <ul className="text-xs text-rose-600 dark:text-rose-400 space-y-0.5 mb-1">
-          {blockers.map((b, i) => (
-            <li key={i}>✗ {b}</li>
-          ))}
-        </ul>
-      )}
-      {warnings.length > 0 && (
-        <ul className="text-xs text-amber-600 dark:text-amber-400 space-y-0.5">
-          {warnings.slice(0, 4).map((w, i) => (
-            <li key={i}>⚠ {w}</li>
-          ))}
-          {warnings.length > 4 && <li className="text-muted">+{warnings.length - 4} more</li>}
-        </ul>
-      )}
+      <ul className="space-y-0.5 text-xs text-amber-700 dark:text-amber-400">
+        {issues.map((t, i) => (
+          <li key={i}>{t}</li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -655,7 +651,15 @@ function SocialContentPanel({
       </div>
       <p className="text-xs text-muted mb-4">Generated {new Date(effective.generatedAt).toLocaleString()}</p>
 
-      {effective._validation?.readiness && <ReadinessBadge verdict={effective._validation.readiness} />}
+      {effective._validation && (
+        <CheckBadges
+          checks={{
+            twitter: effective._validation.twitter_check,
+            linkedin: effective._validation.linkedin_check,
+            instagram: effective._validation.instagram_check,
+          }}
+        />
+      )}
 
       {effective.hooks && effective.hooks.length > 0 && (
         <HookSelector

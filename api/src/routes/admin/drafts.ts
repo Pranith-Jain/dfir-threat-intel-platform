@@ -111,8 +111,7 @@ draftsRouter.post('/drafts/:slug/edit', async (c) => {
     title: title ?? draft.title,
     body: out.body ?? body ?? draft.body,
     iocs: out.iocs ?? draft.iocs,
-    quality: out.quality,
-    qa: out.qa,
+    audit: out.audit,
   };
   await putDraft(c.env.CASE_STUDIES, edited);
   return c.json({
@@ -122,7 +121,7 @@ draftsRouter.post('/drafts/:slug/edit', async (c) => {
     body: edited.body,
     bodyHtml: renderMarkdown(edited.body),
     iocs: edited.iocs,
-    qa: edited.qa,
+    audit: edited.audit,
   });
 });
 
@@ -175,7 +174,7 @@ draftsRouter.post('/drafts/:slug/regenerate', async (c) => {
         {
           error: 'fix_failed',
           issues: out.errors,
-          qa: out.qa,
+          audit: out.audit,
           body: out.body,
         },
         422
@@ -187,8 +186,7 @@ draftsRouter.post('/drafts/:slug/regenerate', async (c) => {
         ...draft,
         body: out.body,
         iocs: out.iocs,
-        quality: out.quality,
-        qa: out.qa,
+        audit: out.audit,
       };
       await putDraft(c.env.CASE_STUDIES, repaired);
       return c.json({
@@ -198,7 +196,7 @@ draftsRouter.post('/drafts/:slug/regenerate', async (c) => {
         body: repaired.body,
         bodyHtml: renderMarkdown(repaired.body),
         iocs: repaired.iocs,
-        qa: repaired.qa,
+        audit: repaired.audit,
         changed: true,
         mode,
       });
@@ -210,7 +208,7 @@ draftsRouter.post('/drafts/:slug/regenerate', async (c) => {
       body: draft.body,
       bodyHtml: renderMarkdown(draft.body),
       iocs: draft.iocs,
-      qa: draft.qa,
+      audit: draft.audit,
       changed: false,
       mode,
     });
@@ -279,7 +277,7 @@ draftsRouter.post('/drafts/:slug/regenerate', async (c) => {
       body: newPost.body,
       bodyHtml: renderMarkdown(newPost.body),
       iocs: newPost.iocs,
-      qa: newPost.qa,
+      audit: newPost.audit,
       changed: true,
       mode,
     });

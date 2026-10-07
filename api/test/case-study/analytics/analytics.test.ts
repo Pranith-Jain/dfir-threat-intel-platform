@@ -33,11 +33,11 @@ describe('computeTypePerformance', () => {
     const records = [
       rec({ slug: 'a', type: 'cve', metrics: { likes: 100, replies: 10 } }),
       rec({ slug: 'b', type: 'cve', metrics: { likes: 0 } }),
-      rec({ slug: 'c', type: 'ransom', metrics: { likes: 500, reposts: 50 } }),
+      rec({ slug: 'c', type: 'darkweb', metrics: { likes: 500, reposts: 50 } }),
     ];
     const out = computeTypePerformance(records);
     // ransom (1 post, high) should rank above cve (avg of 2 posts)
-    expect(out[0]!.type).toBe('ransom');
+    expect(out[0]!.type).toBe('darkweb');
     const cve = out.find((o) => o.type === 'cve')!;
     expect(cve.posts).toBe(2);
     expect(cve.avgEngagement).toBeCloseTo(engagementScore({ likes: 100, replies: 10 }) / 2, 5);

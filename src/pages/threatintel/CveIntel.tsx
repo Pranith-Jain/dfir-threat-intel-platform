@@ -5,6 +5,7 @@ import { DataPageLayout } from '../../components/DataPageLayout';
 import { Bug } from 'lucide-react';
 
 const CveList = lazy(() => import('./CveList'));
+const CveTrends = lazy(() => import('./CveTrends'));
 const CveDigest = lazy(() => import('./CveDigest'));
 const ExploitableCves = lazy(() => import('./ExploitableCves'));
 const CisaKevCatalog = lazy(() => import('./CisaKevCatalog'));
@@ -14,10 +15,15 @@ const PocScanner = lazy(() => import('./PocScanner'));
 const CyberNewsFeed = lazy(() => import('./CyberNewsFeed'));
 const CveHealthCheck = lazy(() => import('./CveHealthCheck'));
 
-type TabId = 'all' | 'digest' | 'exploitable' | 'kev' | 'k8s' | 'cert-in' | 'poc' | 'news' | 'health';
+type TabId = 'all' | 'trending' | 'digest' | 'exploitable' | 'kev' | 'k8s' | 'cert-in' | 'poc' | 'news' | 'health';
 
 const TABS: Array<{ id: TabId; label: string; desc: string }> = [
   { id: 'all', label: 'All Recent', desc: 'NVD + KEV + MyThreatIntel + cvefeed.io + CVE Telegram channels + EPSS' },
+  {
+    id: 'trending',
+    label: 'Trending',
+    desc: 'CVEs trending on social media (cvemon) with CVSS, KEV, EPSS and exploit status — discussion ahead of confirmation',
+  },
   {
     id: 'digest',
     label: '24h Digest',
@@ -96,6 +102,7 @@ export default function CveIntel(): JSX.Element {
       <div role="tabpanel" id={`tabpanel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
         <Suspense fallback={<TabLoader />}>
           {activeTab === 'all' && <CveList bare />}
+          {activeTab === 'trending' && <CveTrends />}
           {activeTab === 'digest' && <CveDigest bare />}
           {activeTab === 'exploitable' && <ExploitableCves bare />}
           {activeTab === 'kev' && <CisaKevCatalog bare />}

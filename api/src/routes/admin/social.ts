@@ -342,11 +342,11 @@ socialRouter.get('/social/:slug', async (c) => {
     c.env.CASE_STUDIES.get<string>(csKvKeys.socialTwitter(slug)),
     c.env.CASE_STUDIES.get<string>(csKvKeys.socialLinkedin(slug)),
   ]);
-  // Return the full combined social object (which carries _validation,
-  //  instagram, carousel, hooks, and the readiness gate) so the frontend
-  //  can surface the cross-platform quality verdict. Fall back to a minimal
-  //  reconstruction only when the combined blob is absent (legacy posts
-  //  generated before the _validation field existed).
+  // Return the full combined social object (which carries `_validation`,
+  //  instagram, carousel and hooks) so the frontend can surface the
+  //  per-platform factual checks. Fall back to a minimal reconstruction only
+  //  when the combined blob is absent (legacy posts generated before the
+  //  `_validation` field existed).
   let social: SocialContent;
   if (combined) {
     // Override twitter/linkedin with the per-platform blobs when they exist

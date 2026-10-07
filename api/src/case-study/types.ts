@@ -1,14 +1,45 @@
 // api/src/case-study/types.ts
 import type { CarouselSpec } from './social/slide-spec';
 
+/**
+ * Content-engine topic types. Every type maps 1:1 to a discovery runner and
+ * to a writing shape in `generation/templates.ts`.
+ *
+ * `ransom` was removed — the platform still tracks ransomware as an intel
+ * SIGNAL (KEV `known_ransomware_campaign_use`, leak trackers, negotiation
+ * data, graph ingest), but it is no longer a content topic. Its place in the
+ * daily mix is taken by `darkweb` (leak sites, IAB listings, infostealer
+ * logs), which covers the same ground with more signal per post.
+ *
+ * The 2026 additions cluster around what practitioners actually search for:
+ *   - `vulnfaq`     answer-first vulnerability deep-dives
+ *   - `exploit`     weaponisation timelines, PoC drops, exploit chains
+ *   - `darkweb`     darkweb / deepweb / IAB / infostealer telemetry
+ *   - `llm`         LLM + AI-model security (injection, MCP, jailbreaks)
+ *   - `aisecops`    AI inside the SOC / SecOps (triage, copilots, AI-SOC)
+ *   - `supplychain` dependency, CI/CD, registry and third-party risk
+ */
 export type CaseStudyType =
+  // Vulnerability & exploitation
   | 'cve'
+  | 'vulnfaq'
+  | 'exploit'
+  // Adversary & malware
   | 'actor'
   | 'malware'
-  | 'ransom'
+  // Underground & data exposure
+  | 'darkweb'
   | 'breach'
-  | 'scam'
+  // AI security (target = the AI system)
   | 'aisec'
+  | 'llm'
+  // AI security (tool = AI in the security function)
+  | 'aisecops'
+  | 'agentic'
+  // Ecosystem
+  | 'supplychain'
+  | 'scam'
+  // Analysis & craft
   | 'intel'
   | 'osint'
   | 'methodology'
@@ -17,7 +48,6 @@ export type CaseStudyType =
   | 'analysis'
   | 'tool'
   | 'news'
-  | 'agentic'
   | 'hunting'
   | 'report';
 
@@ -58,25 +88,29 @@ export interface PostSource {
   title: string;
 }
 
-export interface QualityScore {
-  total: number;
-  breakdown: {
-    length: number;
-    sections: number;
-    depth: number;
-    technical: number;
-    references: number;
-    fillerPenalty: number;
-  };
-}
-
-/** Deterministic content-QA verdict. `passed: false` gates a publish. */
-export interface QaVerdict {
-  passed: boolean;
-  /** 0-100 — mirrors QualityScore.total at QA time. */
-  score: number;
-  /** Human-readable QA failures (empty when passed). */
-  issues: string[];
+/**
+ * Factual measurements of a generated post, recorded for the admin to see.
+ *
+ * This is NOT a quality score and nothing gates publish on it. The previous
+ * design scored output on length / section count / filler density and then
+ * blocked the publish below a threshold. That machinery (plus its slop
+ * detectors) reliably rejected good drafts and let mediocre ones through,
+ * because the model was being trained against a checklist instead of being
+ * given better facts. Editorial judgement now lives with the human reviewing
+ * the draft in `/admin/drafts`; these counters exist so that human has the
+ * numbers in front of them.
+ */
+export interface PostAudit {
+  words: number;
+  sections: number;
+  /** Clickable markdown links in the body. */
+  references: number;
+  iocs: number;
+  /**
+   * Factual grounding notes raised while normalising the draft, e.g. a CVE
+   * cited that does not appear in the research dossier. Informational only.
+   */
+  warnings: string[];
 }
 
 /**
@@ -114,8 +148,8 @@ export interface Post {
   iocs: PostIOC[];
   tags: string[];
   sources: PostSource[];
-  quality?: QualityScore;
-  qa?: QaVerdict;
+  /** Factual counters for the admin reviewer. Never a publish gate. */
+  audit?: PostAudit;
   /** Reference-link HEAD-check outcome, for the admin verification badge. */
   linkVerification?: LinkVerification;
   /**
@@ -176,56 +210,38 @@ export interface SocialContent {
   /** Alternative opening hooks (different angles) for A/B / manual selection. */
   hooks?: string[];
   generatedAt: string;
-  /** Per-platform quality validation + cross-platform readiness gate.
-   *  Populated by generateSocialContent; persisted to KV so the admin
-   *  frontend can surface the verdict. Underscore-prefixed because it's
-   *  metadata, not copy. */
+  /**
+   * Factual per-platform checks (character limits, CVE grounding, link
+   * allowlist) recorded for the admin. Purely descriptive: the copy is never
+   * regenerated or withheld because of a score. Underscore-prefixed because
+   * it's metadata, not copy.
+   */
   _validation?: {
-    twitter_quality?: SocialQuality;
-    linkedin_quality?: SocialQuality;
-    instagram_quality?: SocialQuality;
-    /** Cross-platform readiness gate — runs after all platforms generate.
-     *  Detects hook/body duplication across platforms and aggregates the
-     *  per-platform quality scores into a single publish verdict. */
-    readiness?: ReadinessVerdict;
+    twitter_check?: SocialCheck;
+    linkedin_check?: SocialCheck;
+    instagram_check?: SocialCheck;
   };
 }
 
-/** Per-platform quality score from validateSocial(). Mirrors the shape
- *  generated in generation/social.ts — kept here in the canonical types
- *  file so the route layer can type the KV blob without importing from
- *  the generation module (which would create a circular dep). */
-export interface SocialQuality {
+/**
+ * Factual, checkable properties of one platform's generated copy. Every
+ * field here is either a measurement (counts, lengths) or a ground-truth
+ * lookup (does this CVE exist in the dossier, is this host on the
+ * allowlist). Nothing here encodes an opinion about how good the copy is.
+ *
+ * Lives here rather than in `generation/social.ts` so the route layer can
+ * type the KV blob without importing from the generation module (which would
+ * be a circular dependency).
+ */
+export interface SocialCheck {
+  /** Longest single post (X) or the body before FIRST COMMENT (LinkedIn/IG). */
   char_count: number;
+  /** True when that exceeds the platform's hard limit. */
   over_limit: boolean;
+  /** CVEs in the copy with no match in the research dossier. */
   ungrounded_cves: string[];
+  /** Links to hosts outside the allowlist, stripped before publishing. */
   untrusted_urls: number;
-  slop_count: number;
-  score: number;
-  issues: string[];
-}
-
-/** Cross-platform readiness verdict from assessReadiness(). Mirrors the
- *  shape generated in generation/readiness-gate.ts. */
-export interface ReadinessVerdict {
-  score: number;
-  ready: boolean;
-  blockers: string[];
-  warnings: string[];
-  platforms: Array<{
-    platform: 'twitter' | 'linkedin' | 'instagram';
-    present: boolean;
-    score: number;
-    overLimit: boolean;
-    issues: string[];
-  }>;
-  crossPlatform: {
-    hookDiversity: number;
-    bodyOverlap: number;
-    similarHookPairs: Array<{ a: string; b: string; similarity: number }>;
-    similarBodyPairs: Array<{ a: string; b: string; similarity: number }>;
-    hooks: { twitter?: string; linkedin?: string; instagram?: string };
-  };
 }
 
 /** Per-platform posting state for the social scheduling queue.

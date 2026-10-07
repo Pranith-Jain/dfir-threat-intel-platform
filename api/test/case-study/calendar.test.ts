@@ -9,7 +9,10 @@ import type { CaseStudyType } from '../../src/case-study/types';
 // shape here, not the Hono handler).
 const FUNNEL_MAP: Record<CaseStudyType, 'tofu' | 'mofu' | 'bofu'> = {
   cve: 'tofu',
-  ransom: 'tofu',
+  vulnfaq: 'tofu',
+  exploit: 'tofu',
+  darkweb: 'tofu',
+  supplychain: 'tofu',
   breach: 'tofu',
   scam: 'tofu',
   news: 'tofu',
@@ -19,13 +22,15 @@ const FUNNEL_MAP: Record<CaseStudyType, 'tofu' | 'mofu' | 'bofu'> = {
   malware: 'mofu',
   intel: 'mofu',
   aisec: 'mofu',
+  llm: 'mofu',
+  aisecops: 'mofu',
   agentic: 'mofu',
   hunting: 'mofu',
   report: 'mofu',
+  analysis: 'mofu',
   methodology: 'bofu',
   tool: 'bofu',
   osint: 'bofu',
-  analysis: 'mofu',
 };
 
 const TARGET_MIX = { tofu: 0.6, mofu: 0.3, bofu: 0.1 };
@@ -44,7 +49,9 @@ function mixDivergence(mix: { tofu: number; mofu: number; bofu: number }): numbe
 describe('funnel-mix mapping', () => {
   it('maps breaking-news types to TOFU (awareness)', () => {
     expect(FUNNEL_MAP.cve).toBe('tofu');
-    expect(FUNNEL_MAP.ransom).toBe('tofu');
+    expect(FUNNEL_MAP.exploit).toBe('tofu');
+    expect(FUNNEL_MAP.darkweb).toBe('tofu');
+    expect(FUNNEL_MAP.vulnfaq).toBe('tofu');
     expect(FUNNEL_MAP.breach).toBe('tofu');
     expect(FUNNEL_MAP.scam).toBe('tofu');
     expect(FUNNEL_MAP.news).toBe('tofu');
@@ -69,12 +76,17 @@ describe('funnel-mix mapping', () => {
   it('covers every CaseStudyType', () => {
     const allTypes: CaseStudyType[] = [
       'cve',
+      'vulnfaq',
+      'exploit',
       'actor',
       'malware',
-      'ransom',
+      'darkweb',
       'breach',
       'scam',
       'aisec',
+      'llm',
+      'aisecops',
+      'supplychain',
       'intel',
       'osint',
       'methodology',

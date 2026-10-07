@@ -5,7 +5,7 @@ import type { Post } from '../types';
 export async function upsertCsPostD1(db: D1Database, post: Post): Promise<void> {
   await db
     .prepare(
-      `INSERT INTO cs_posts (slug, title, type, excerpt, body, published_at, tags, candidate_id, ioc_count, source_count, quality_total)
+      `INSERT INTO cs_posts (slug, title, type, excerpt, body, published_at, tags, candidate_id, ioc_count, source_count, word_count)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(slug) DO UPDATE SET
          title = excluded.title,
@@ -14,7 +14,7 @@ export async function upsertCsPostD1(db: D1Database, post: Post): Promise<void> 
          tags = excluded.tags,
          ioc_count = excluded.ioc_count,
          source_count = excluded.source_count,
-         quality_total = excluded.quality_total,
+         word_count = excluded.word_count,
          updated_at = datetime('now')`
     )
     .bind(
@@ -28,7 +28,7 @@ export async function upsertCsPostD1(db: D1Database, post: Post): Promise<void> 
       post.candidateId ?? null,
       post.iocs?.length ?? 0,
       post.sources?.length ?? 0,
-      post.quality?.total ?? null
+      post.audit?.words ?? null
     )
     .run();
 }

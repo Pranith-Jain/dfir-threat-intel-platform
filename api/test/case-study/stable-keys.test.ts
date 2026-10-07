@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cveKey, actorKey, malwareKey, ransomKey, slotIdFor } from '../../src/case-study/stable-keys';
+import { cveKey, actorKey, malwareKey, topicKey, slotIdFor } from '../../src/case-study/stable-keys';
 
 describe('stable-keys', () => {
   it('cveKey lowercases and normalizes', () => {
@@ -16,8 +16,11 @@ describe('stable-keys', () => {
     expect(malwareKey('Lumma Stealer')).toBe('malware-lumma-stealer');
   });
 
-  it('ransomKey includes year-month bucket', () => {
-    expect(ransomKey('Akira', new Date('2026-05-14T00:00:00Z'))).toBe('ransom-akira-2026-05');
+  it('topicKey prefixes and bounds the seed', () => {
+    expect(topicKey('infostealer', 'Warden Stealer v1.9')).toBe('infostealer-warden-stealer-v1-9');
+    // Long seeds are truncated so KV keys stay bounded and dedupe-stable.
+    const long = topicKey('darkweb', 'x'.repeat(200));
+    expect(long.length).toBeLessThanOrEqual('darkweb-'.length + 60);
   });
 
   it('slotIdFor is deterministic per slot', () => {

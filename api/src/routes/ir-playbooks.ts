@@ -3,7 +3,6 @@ import type { Env } from '../env';
 import { logError } from '../lib/logger';
 import { badRequest, serviceUnavailable } from '../lib/api-error';
 import { runCompletion } from '../case-study/generation/ai-client';
-import { detectSlop } from '../lib/ai-output-validator';
 
 /**
  * POST /api/v1/ir-playbooks/generate
@@ -36,7 +35,6 @@ interface PlaybookResponse {
   related_playbooks: Array<{ id: string; title: string; category: string }>;
   _validation?: {
     step_count?: number;
-    slop_detected?: string[];
   };
 }
 
@@ -157,10 +155,6 @@ export async function irPlaybookHandler(c: Context<{ Bindings: Env }>): Promise<
       }))
       .filter((s) => s.description.length > 20); // Drop empty/filler steps
 
-    // Detect slop in descriptions
-    const allDescriptions = validatedSteps.map((s) => s.description).join(' ');
-    const slop = detectSlop(allDescriptions);
-
     const response: PlaybookResponse = {
       incident_type: incidentType,
       playbook: {
@@ -180,7 +174,6 @@ export async function irPlaybookHandler(c: Context<{ Bindings: Env }>): Promise<
         .map((r) => ({ id: r.id!, title: r.title!, category: r.category ?? '' })),
       _validation: {
         step_count: validatedSteps.length,
-        slop_detected: slop.length > 0 ? slop.map((s) => s.phrase) : undefined,
       },
     };
 

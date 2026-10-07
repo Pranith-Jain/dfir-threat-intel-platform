@@ -86,10 +86,10 @@ describe('candidates storage', () => {
     await putCandidate(kv, sampleCandidate);
     await putCandidate(kv, { ...sampleCandidate, key: 'cve-2026-5678' });
     await putCandidate(kv, { ...sampleCandidate, key: 'actor-fin7', type: 'actor' });
-    await putCandidate(kv, { ...sampleCandidate, key: 'ransom-akira', type: 'ransom' });
+    await putCandidate(kv, { ...sampleCandidate, key: 'darkweb-broker-listing', type: 'darkweb' });
     const all = await listAllCandidates(kv);
     expect(all).toHaveLength(4);
-    expect(new Set(all.map((c) => c.type))).toEqual(new Set(['cve', 'actor', 'ransom']));
+    expect(new Set(all.map((c) => c.type))).toEqual(new Set(['cve', 'actor', 'darkweb']));
   });
 
   it('countAllCandidates returns total count', async () => {

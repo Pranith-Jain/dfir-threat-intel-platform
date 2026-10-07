@@ -80,7 +80,7 @@ export async function discoverReleaks(deps: DiscoverReleakDeps): Promise<Candida
     });
     out.push({
       key,
-      type: 'ransom',
+      type: 'darkweb',
       title: `${display} re-leaked across ${groups.length} groups: ${groups.slice(0, 2).join(', ')}${groups.length > 2 ? '…' : ''}`,
       rationale: `${r.group_count} distinct ransomware groups claimed ${display} (re-leak signal — usually failed double-extortion or affiliate movement)`,
       score,

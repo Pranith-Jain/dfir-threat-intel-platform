@@ -17,7 +17,7 @@
 
 import type { Env } from '../env';
 import { runCompletion, runWorkersAI, isWorkersAi } from '../case-study/generation/ai-client';
-import { findUngroundedCves, extractCves, detectSlop } from './ai-output-validator';
+import { findUngroundedCves, extractCves } from './ai-output-validator';
 import { fenceUntrusted, neutralizeUntrusted, UNTRUSTED_DATA_SYSTEM_NOTE } from './prompt-fence';
 import { NO_EM_DASH_RULE, stripConnectorEmDashes } from './prose-style';
 import { logError } from './logger';
@@ -43,7 +43,6 @@ export interface SummaryResult {
   _validation?: {
     quality_score?: number;
     ungrounded_cves?: string[];
-    slop_count?: number;
   };
 }
 
@@ -301,7 +300,6 @@ export async function generateAiSummary(input: SummaryInput, env: Env): Promise<
     const ungrounded = [
       ...new Set([...findUngroundedCves(summary, sourceText), ...findUngroundedCves(linkedin, sourceText)]),
     ];
-    const slop = detectSlop(summary);
     const sourceCves = new Set(extractCves(sourceText));
     const textCves = extractCves(summary);
     const groundedCves = textCves.filter((c) => sourceCves.has(c));
@@ -309,7 +307,6 @@ export async function generateAiSummary(input: SummaryInput, env: Env): Promise<
     // Quality score: start at 100, deduct for issues
     let quality = 100;
     if (ungrounded.length > 0) quality -= ungrounded.length * 15;
-    if (slop.length > 1) quality -= slop.length * 10;
     if (textCves.length > 0 && groundedCves.length === 0) quality -= 20;
     quality = Math.max(0, Math.min(100, quality));
 
@@ -322,7 +319,6 @@ export async function generateAiSummary(input: SummaryInput, env: Env): Promise<
       _validation: {
         quality_score: quality,
         ungrounded_cves: ungrounded.length > 0 ? ungrounded : undefined,
-        slop_count: slop.length > 0 ? slop.length : undefined,
       },
     };
   } catch (err) {

@@ -105,6 +105,7 @@ import {
 } from './routes/telegram-feed';
 import { telegramSearchHandler, telegramChannelMetaHandler } from './routes/telegram-search';
 import { cveRecentHandler } from './routes/cve-recent';
+import { cveTrendsHandler, cveTrendsOptions } from './routes/cve-trends';
 import { cveDigestHandler } from './routes/cve-digest';
 import { cveDigestCsvHandler, cveDigestRssHandler, cveDigestFeedUrlHandler } from './routes/cve-digest-export';
 import {
@@ -1479,6 +1480,8 @@ app.post('/api/v1/research-digest', researchDigestHandler);
 app.post('/api/v1/darkweb-intel', darkwebIntelHandler);
 app.post('/api/v1/knowledge-graph', knowledgeGraphHandler);
 app.get('/api/v1/cve-recent', cveRecentHandler);
+app.get('/api/v1/cve-trends', cveTrendsHandler);
+app.options('/api/v1/cve-trends', cveTrendsOptions);
 // Daily CVE digest — every CVE published in the last 24h. Separate route (and
 // cache key) from cve-recent because the promise is different: cve-recent is a
 // recent SAMPLE bounded by NVD paging, this is a complete window. Cron-warmed,

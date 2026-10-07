@@ -1,18 +1,32 @@
 import { useState } from 'react';
 import { postJsonWithBody } from './adminApi';
 
+/**
+ * Content types offered for manual generation.
+ *
+ * Ordered the way an operator thinks about it — "what do I want to write
+ * about" — rather than by the internal union order. Mirrors
+ * `CaseStudyType` in api/src/case-study/types.ts; the new vulnerability and
+ * AI types are the ones this list was missing before.
+ */
 const CASE_TYPES = [
-  { value: 'analysis', label: 'Analysis' },
+  { value: 'vulnfaq', label: 'Vulnerability explainer (FAQ)' },
+  { value: 'exploit', label: 'Exploit / weaponisation' },
   { value: 'cve', label: 'CVE' },
   { value: 'actor', label: 'Threat Actor' },
   { value: 'malware', label: 'Malware' },
-  { value: 'ransom', label: 'Ransomware' },
+  { value: 'darkweb', label: 'Darkweb / underground' },
   { value: 'breach', label: 'Breach' },
   { value: 'scam', label: 'Scam' },
+  { value: 'llm', label: 'LLM / model security' },
   { value: 'aisec', label: 'AI Security' },
+  { value: 'aisecops', label: 'AI SecOps' },
+  { value: 'supplychain', label: 'Supply chain' },
   { value: 'intel', label: 'Threat Intel' },
   { value: 'osint', label: 'OSINT' },
   { value: 'methodology', label: 'Methodology' },
+  { value: 'hunting', label: 'Threat hunt' },
+  { value: 'analysis', label: 'Analysis' },
   { value: 'trend', label: 'Trend' },
 ];
 

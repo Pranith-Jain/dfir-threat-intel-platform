@@ -34,7 +34,8 @@ const BASE: Record<string, string[]> = {
 const DEFAULT_BASE = ['cybersecurity', 'infosec', 'threatintel'];
 
 /** Strip everything but ASCII alphanumerics (hashtags can't contain hyphens,
- *  spaces, or punctuation). "CVE-2026-1234" → "CVE20261234". */
+ *  spaces, or punctuation). A CVE id loses its hyphens and becomes a single
+ *  tag token. */
 function normalize(s: unknown): string {
   if (typeof s !== 'string') return '';
   return s.replace(/[^A-Za-z0-9]+/g, '');

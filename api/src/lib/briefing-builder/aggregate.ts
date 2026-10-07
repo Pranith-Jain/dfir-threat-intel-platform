@@ -3,7 +3,7 @@ import type { Env } from '../../env';
 import { type IocEntry } from '../ioc-feed-parsers';
 import { normalizeGroup } from '../group-normalize';
 import { runCompletion } from '../../case-study/generation/ai-client';
-import { findUngroundedCves, detectSlop } from '../ai-output-validator';
+import { findUngroundedCves } from '../ai-output-validator';
 import { fenceUntrusted, neutralizeUntrusted, UNTRUSTED_DATA_SYSTEM_NOTE } from '../prompt-fence';
 import {
   CATEGORY_RULES,
@@ -453,9 +453,12 @@ export async function buildLlmExecutiveSummary(
     const text = result.text?.trim();
     if (text && text.length > 50 && text.length < 2000) {
       const findingsText = findings.map((f) => `${f.id} ${f.title}`).join(' ');
+      // Only grounding is checked here. A summary that cites CVEs not in the
+      // findings is wrong; one that uses the word "leverage" is merely
+      // inelegant, and falling back to a template over that throws away a
+      // usable summary.
       const ungrounded = findUngroundedCves(text, findingsText);
-      const slop = detectSlop(text);
-      if (ungrounded.length > 2 || slop.length > 3) {
+      if (ungrounded.length > 2) {
         return templateSummary;
       }
       return text;

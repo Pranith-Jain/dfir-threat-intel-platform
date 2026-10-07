@@ -25,12 +25,6 @@ export function malwareKey(family: string): string {
   return `malware-${slugify(nonEmpty(family, 'family'))}`;
 }
 
-export function ransomKey(group: string, when: Date): string {
-  const y = when.getUTCFullYear();
-  const m = String(when.getUTCMonth() + 1).padStart(2, '0');
-  return `ransom-${slugify(nonEmpty(group, 'group'))}-${y}-${m}`;
-}
-
 /**
  * Generic stable key for the RSS/JSON-derived topics (breach, scam, aisec,
  * intel). `seed` is the breach name / article title / CVE id — slugified

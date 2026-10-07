@@ -455,19 +455,82 @@ script), provider `api/src/providers/destroylist.ts`, routes in
 `api/src/routes/threat-intel-edge-tools.ts`, SPA `src/pages/threatintel/
 Destroylist.tsx`. Daily sync rides `.github/workflows/threat-intel-sync.yml`.
 
-## Admin content-generation system (/admin/generate + tabs)
+## Content-generation system (/admin)
 
-The admin Generate tab (formerly "Manual") drives on-demand content: topic +
-audience + tone + type → blog draft and/or LinkedIn/X posts via
-`POST /admin/generate`. Mirrors the reference n8n LinkedIn pipeline contract:
-brand configuration → composition → **approval gate** (empty/too-short/
-score<60 output is returned `rejected` with a reason, never usable) →
-normalized single `final_post` field per format → optional `dry_run`
-(compose without persisting). Social publishing supports `?dry_run=true` on
+The pipeline is **RESEARCH → WRITE → NORMALISE**. The research stage
+(`api/src/case-study/research/`) fetches and reads the candidate's real
+source pages, resolves its CVEs against NVD/CISA KEV/FIRST EPSS/public-PoC
+indexes, queries the platform's own corpus, and writes down what it could NOT
+establish. That dossier — not raw evidence JSON — is what the writer sees.
+
+This replaced two things that were actively causing bad output:
+
+- **Quality scoring.** `postProcess` used to score length, section count,
+  sentences-per-section, a keyword match against a "technical terms" list,
+  and a filler-phrase penalty, then fail the publish below 45/100. The
+  cheapest way to pass was to write more sentences, which is exactly the
+  padding the rules existed to prevent. Removed; `Post.audit` now records
+  factual counters (words, sections, references, IOCs, warnings) for the
+  human reviewing the draft.
+- **Slop detection.** `EGREGIOUS_SLOP` (blog, sentence-deleting),
+  `SLOP_PATTERNS`/`detectSlop` (26 regexes), the cross-platform
+  `readiness-gate`, and the social `validateSocial` retry-on-score loop are
+  all gone. They punished legitimate security writing ("leverage" and
+  "ecosystem" appear in advisories the pipeline quotes verbatim), measured
+  fluency rather than truth, and the retry loop taught the model to satisfy
+  a checklist instead of improving.
+
+Grounding is now prevented **upstream** (real facts in, dossier instructions
+in, fabricated CVE ids out) rather than detected afterwards. What remains
+post-write is correctness only: markdown repair, empty-section removal,
+citation-host filtering, indicator extraction. Only one thing fails a
+publish — output with no section headings, which cannot render as an
+article.
+
+**Content types** (`api/src/case-study/types.ts`): `ransom` was removed —
+ransomware remains an intel _signal_ (KEV `known_ransomware_campaign_use`,
+leak trackers, negotiation data, graph ingest) but is no longer a content
+topic. New types: `vulnfaq` (answer-first vulnerability deep-dives),
+`exploit` (weaponisation timelines), `darkweb` (underground/IAB/infostealer),
+`llm` (model-layer security), `aisecops` (AI in the SOC), `supplychain`.
+
+**Trend research** (`discovery/trend-research.ts`) replaced the LLM-invented
+`agentic-trends` runner, which guaranteed three stories a day by asking an
+LLM to invent them and then needed a fabricated-host blocklist to catch its
+own output. The new runner reads the platform's own corpus (fresh KEV
+additions, cvemon trending CVEs, EPSS outliers, fresh writeups, darkweb hits)
+and returns **nothing** when the corpus is quiet — which is the correct
+outcome.
+
+**New discovery runners**: `aisecops`, `llm`, `darkweb`, `exploits`,
+`supplychain`, `infostealers` (Hudson Rock infostealer telemetry + ClickFix
+family). `infostealers` is always-on: ClickFix needs no CVE, so CVE feeds
+never mention it.
+
+**Generation cost dropped by two LLM calls**: the pre-generation
+"fact extraction" pass (deterministic extraction is now code) and the
+QA-triggered repair pass (there is no gate to repair).
+
+**CVE trending** (`api/src/lib/cvemon.ts`, `/api/v1/cve-trends`): Intruder's
+cvemon feed is the only source that measures social _attention_ rather than
+severity. Surfaced as its own "Trending" tab in `/threatintel/cve-intel`
+and merged into `/api/v1/cve-recent` as tier 8 (hype fields annotate any
+merged id). "Trending but not yet in KEV" is the interesting case — that is
+the window where a write-up has value.
+
+### Admin content-generation UI (/admin/generate + tabs)
+
+The admin Generate tab drives on-demand content: topic + audience + tone +
+type → blog draft and/or LinkedIn/X posts via `POST /admin/generate`. The
+approval gate now rejects only **empty or too-short** output (empty/too-short
+is returned `rejected` with a reason, never usable); the old
+`quality_score_below_threshold` check that read the removed composite score is
+gone. Normalized single `final_post` field per format, optional `dry_run`.
+Social publishing supports `?dry_run=true` on
 `/social/:slug/:platform/post-*` — returns exactly what would be posted.
-Dead admin UI (PendingTab per-candidate LI/X buttons, DraftsTab `_SocialBtn`
-/`_generateSocial`/unused regenerate menu) was removed; social generation for
-candidates lives in PublishedTab, drafts get it after approval.
+Social panels in PublishedTab show factual per-platform checks (char limit,
+ungrounded CVEs, untrusted links stripped) rather than the removed
+"readiness" verdict.
 
 ## WinReg DFIR — Windows Registry Forensic Artifact Reference
 
