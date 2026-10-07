@@ -170,7 +170,7 @@ siEdgeToolsRouter.get('/si/shiftlog', async (c) => {
   const author = c.req.query('author');
   const shift = c.req.query('shift');
   const openOnly = c.req.query('open_only') === 'true';
-  const limit = c.req.query('limit') ? Math.min(100, Math.max(1, Number(c.req.query('limit')))) : undefined;
+  const limit = c.req.query('limit') ? Math.min(100, Math.max(1, Number(c.req.query('limit')) || 1)) : undefined;
   try {
     const mod = await loadShiftLogMod();
     const list = await mod.shiftlogList(c.env, {
@@ -294,7 +294,7 @@ siEdgeToolsRouter.get('/si/promptvault', async (c) => {
   const category = c.req.query('category');
   const tag = c.req.query('tag');
   const q = c.req.query('q');
-  const limit = c.req.query('limit') ? Math.min(100, Math.max(1, Number(c.req.query('limit')))) : undefined;
+  const limit = c.req.query('limit') ? Math.min(100, Math.max(1, Number(c.req.query('limit')) || 1)) : undefined;
   try {
     const mod = await loadPromptVaultMod();
     const list = await mod.promptVaultList(c.env, { category, tag, q, limit });

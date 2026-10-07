@@ -151,18 +151,18 @@ function buildBundleWhere(filters: PgFilter[]): { clause: string; bindings: unkn
         // Array contains: JSON array column (stored as TEXT, e.g. '["APT29"]')
         const arr = f.value as string[];
         if (arr.length === 0) break;
-        const subClauses = arr.map(() => `b.${col} LIKE ?`);
+        const subClauses = arr.map(() => `b.${col} LIKE ? ESCAPE '\\'`);
         whereClauses.push(`(${subClauses.join(' AND ')})`);
-        for (const v of arr) bindings.push(`%"${escapeJsonString(v)}"%`);
+        for (const v of arr) bindings.push(likeJsonArrayContains(v));
         break;
       }
       case 'cd': {
         // Contains any: JSON array column, match if ANY element matches
         const arr = f.value as string[];
         if (arr.length === 0) break;
-        const subClauses = arr.map(() => `b.${col} LIKE ?`);
+        const subClauses = arr.map(() => `b.${col} LIKE ? ESCAPE '\\'`);
         whereClauses.push(`(${subClauses.join(' OR ')})`);
-        for (const v of arr) bindings.push(`%"${escapeJsonString(v)}"%`);
+        for (const v of arr) bindings.push(likeJsonArrayContains(v));
         break;
       }
     }
@@ -227,6 +227,24 @@ export async function stixBundlesHandler(c: Context<{ Bindings: Env }>): Promise
   return response;
 }
 
-function escapeJsonString(s: string): string {
-  return s.replace(/[\\"]/g, '\\$&');
+/**
+ * Build a LIKE pattern that matches `"value"` inside a stored JSON array, with
+ * the pattern's own metacharacters neutralised.
+ *
+ * These predicates used to bind a pattern escaped only by escapeJsonString with NO
+ * `ESCAPE` clause. That escaped only backslash and quote, so `%` and `_` in the
+ * caller's value stayed live wildcards: `?threat_actors=cs.{%}` bound `%"%"%`
+ * and matched effectively every row, silently turning "contains APT29" into
+ * "match anything". The `cd` (OR) variant is worse — one wildcarded element
+ * defeats the whole disjunction.
+ *
+ * The escape character must be declared in the predicate itself (hence
+ * `LIKE ? ESCAPE '\'` above) or SQLite applies no escaping at all. This mirrors
+ * briefing-builder/build.ts, which already does it correctly.
+ *
+ * Note the ordering: the escape char is added first so the backslashes this
+ * function introduces are not themselves re-escaped.
+ */
+function likeJsonArrayContains(value: string): string {
+  return `%"${value.replace(/[\\%_"]/g, '\\$&')}"%`;
 }

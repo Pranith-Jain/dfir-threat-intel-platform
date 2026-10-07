@@ -104,6 +104,77 @@ export async function cyberpulseIncidentsHandler(c: Context<{ Bindings: Env }>):
 
 // ─── GET /api/v1/cyberpulse/stats ──────────────────────────────────────────
 
+/** Row shape of the combined low-cardinality rollup below. */
+export type RollupRow = {
+  incident_type: string | null;
+  severity: string | null;
+  source_platform: string | null;
+  victim_sector: string | null;
+  n: number;
+};
+
+/**
+ * Dimensions folded into the tuple rollup.
+ *
+ * Every one of these is constrained at the schema level to a fixed enum, which
+ * is what makes the fold safe: incident_type (CHECK), severity (CHECK, 4
+ * values), source_platform (CHECK), victim_sector (CHECK, ~14 values). The
+ * product bounds the result to a few thousand groups regardless of how many
+ * incident rows fall in the window.
+ *
+ * victim_country is DELIBERATELY NOT HERE. It is plain `TEXT` with no CHECK
+ * constraint, so its cardinality is whatever upstream feeds happen to emit.
+ * Folding an unbounded dimension into the tuple means the group count is capped
+ * only by the row count — in the degenerate case where tuples are mostly
+ * distinct the "rollup" returns ~one row per incident, which is no cheaper than
+ * the scan it replaced and adds a large result-set transfer on top. It gets its
+ * own aggregate instead, so its cost stays independent of the other four.
+ */
+const ROLLUP_DIMS = ['incident_type', 'severity', 'source_platform', 'victim_sector'] as const;
+
+/**
+ * Derive per-dimension marginals from a tuple-grouped rollup.
+ *
+ * This handler previously issued NINE independent aggregates over the same
+ * trailing window. Each one independently re-walked idx_cp_discovered AND
+ * re-fetched the table row for its grouping column (that column is not in the
+ * index), so every aggregate cost roughly rows-in-window x 2 in rows_read. With
+ * a 36,170-row table and a 30-day default window that is ~650k rows_read for a
+ * single request against a 5M/day free-tier budget — one dashboard refresh
+ * could spend an eighth of the day's allowance.
+ *
+ * The four bounded dimensions collapse into ONE tuple GROUP BY. The exact
+ * marginals are then recoverable in JS by summing `n` across groups that share
+ * a key — the same numbers the original queries returned, from one scan instead
+ * of five.
+ *
+ * NULL keys are skipped, preserving the original `victim_sector IS NOT NULL`
+ * filter. Note the other three columns are NOT NULL at the schema level, so
+ * skipping NULLs cannot drop a bucket that the old query would have returned.
+ */
+export function buildMarginals(rows: RollupRow[]): Record<(typeof ROLLUP_DIMS)[number], unknown[]> {
+  const out = {} as Record<(typeof ROLLUP_DIMS)[number], unknown[]>;
+  for (const dim of ROLLUP_DIMS) {
+    const counts = new Map<string, number>();
+    for (const row of rows) {
+      const key = row[dim];
+      if (key === null || key === undefined) continue;
+      counts.set(key, (counts.get(key) ?? 0) + row.n);
+    }
+    // Deterministic ordering: count descending, then key ascending.
+    //
+    // The original SQL was `ORDER BY count DESC` with no tiebreaker, so equal
+    // counts came back in whatever order the scan produced — which meant the
+    // dashboard's "top N" lists could reshuffle between otherwise identical
+    // requests. Sorting on the key as a secondary criterion makes the response
+    // stable, which also makes it assertable in tests.
+    out[dim] = [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([k, count]) => ({ [dim]: k, count }));
+  }
+  return out;
+}
+
 export async function cyberpulseStatsHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const env = c.env as unknown as Record<string, unknown>;
   const db = env.BRIEFINGS_DB as import('@cloudflare/workers-types').D1Database | undefined;
@@ -113,67 +184,57 @@ export async function cyberpulseStatsHandler(c: Context<{ Bindings: Env }>): Pro
   const daysBack = Math.min(90, Math.max(1, Number(url.searchParams.get('days') ?? '30')));
   const cutoff = new Date(Date.now() - daysBack * 86_400_000).toISOString();
 
-  const [total, byType, bySeverity, byPlatform, bySector, byCountry, dailyTrend, topActors, topVictims] =
-    await Promise.all([
-      db
-        .prepare('SELECT COUNT(*) as total FROM cyberpulse_incidents WHERE discovered_at > ?')
-        .bind(cutoff)
-        .first<{ total: number }>(),
-      db
-        .prepare(
-          'SELECT incident_type, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? GROUP BY incident_type ORDER BY count DESC'
-        )
-        .bind(cutoff)
-        .all(),
-      db
-        .prepare(
-          'SELECT severity, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? GROUP BY severity ORDER BY count DESC'
-        )
-        .bind(cutoff)
-        .all(),
-      db
-        .prepare(
-          'SELECT source_platform, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? GROUP BY source_platform ORDER BY count DESC'
-        )
-        .bind(cutoff)
-        .all(),
-      db
-        .prepare(
-          'SELECT victim_sector, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? AND victim_sector IS NOT NULL GROUP BY victim_sector ORDER BY count DESC'
-        )
-        .bind(cutoff)
-        .all(),
-      db
-        .prepare(
-          'SELECT victim_country, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? AND victim_country IS NOT NULL GROUP BY victim_country ORDER BY count DESC'
-        )
-        .bind(cutoff)
-        .all(),
-      db
-        .prepare(
-          `SELECT DATE(discovered_at) as day, COUNT(*) as count
+  // 9 scans -> 5. The rollup replaces total / by_type / by_severity /
+  // by_platform / by_sector (5 scans) with a single pass. by_country stays
+  // separate (unconstrained cardinality — see ROLLUP_DIMS), as do top_actors,
+  // top_victims and daily_trend, whose grouping keys are all unbounded.
+  // victim_country is the explicit secondary sort key in the by_country query so
+  // equal counts order stably, matching the tiebreaker buildMarginals applies
+  // to the rollup dimensions.
+  const [rollup, byCountry, dailyTrend, topActors, topVictims] = await Promise.all([
+    db
+      .prepare(
+        `SELECT incident_type, severity, source_platform, victim_sector, COUNT(*) AS n
+       FROM cyberpulse_incidents WHERE discovered_at > ?
+       GROUP BY incident_type, severity, source_platform, victim_sector`
+      )
+      .bind(cutoff)
+      .all<RollupRow>(),
+    db
+      .prepare(
+        'SELECT victim_country, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? AND victim_country IS NOT NULL GROUP BY victim_country ORDER BY count DESC, victim_country ASC'
+      )
+      .bind(cutoff)
+      .all(),
+    db
+      .prepare(
+        `SELECT DATE(discovered_at) as day, COUNT(*) as count
       FROM cyberpulse_incidents WHERE discovered_at > ?
       GROUP BY DATE(discovered_at) ORDER BY day`
-        )
-        .bind(cutoff)
-        .all(),
-      db
-        .prepare(
-          `SELECT threat_actor, COUNT(*) as count
+      )
+      .bind(cutoff)
+      .all(),
+    db
+      .prepare(
+        `SELECT threat_actor, COUNT(*) as count
       FROM cyberpulse_incidents WHERE discovered_at > ? AND threat_actor IS NOT NULL
       GROUP BY threat_actor ORDER BY count DESC LIMIT 10`
-        )
-        .bind(cutoff)
-        .all(),
-      db
-        .prepare(
-          `SELECT victim_name, COUNT(*) as count
+      )
+      .bind(cutoff)
+      .all(),
+    db
+      .prepare(
+        `SELECT victim_name, COUNT(*) as count
       FROM cyberpulse_incidents WHERE discovered_at > ? AND victim_name IS NOT NULL
       GROUP BY victim_name ORDER BY count DESC LIMIT 10`
-        )
-        .bind(cutoff)
-        .all(),
-    ]);
+      )
+      .bind(cutoff)
+      .all(),
+  ]);
+
+  const rollupRows = rollup.results;
+  const total = rollupRows.reduce((sum, r) => sum + r.n, 0);
+  const marginals = buildMarginals(rollupRows);
 
   // Get last scan timestamp for freshness indicator
   const lastScan = await db
@@ -182,11 +243,11 @@ export async function cyberpulseStatsHandler(c: Context<{ Bindings: Env }>): Pro
 
   return c.json({
     period_days: daysBack,
-    total: total?.total ?? 0,
-    by_type: byType.results,
-    by_severity: bySeverity.results,
-    by_platform: byPlatform.results,
-    by_sector: bySector.results,
+    total,
+    by_type: marginals.incident_type,
+    by_severity: marginals.severity,
+    by_platform: marginals.source_platform,
+    by_sector: marginals.victim_sector,
     by_country: byCountry.results,
     daily_trend: dailyTrend.results,
     top_actors: topActors.results,
@@ -315,10 +376,38 @@ export async function cyberpulseIngestHandler(c: Context<{ Bindings: Env }>): Pr
 
 const scanRateLimits = new Map<string, number>();
 const SCAN_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+/**
+ * Upper bound on the cooldown map.
+ *
+ * This is a module-scope Map, so it is per-isolate and its lifetime is an
+ * isolate's lifetime. Without a cap, every distinct source IP that reaches the
+ * handler adds a permanent entry — an unauthenticated endpoint could be used to
+ * grow isolate memory without bound. Entries older than the cooldown are dead
+ * weight (the cooldown has expired), so a periodic sweep is lossless.
+ */
+const SCAN_LIMIT_SWEEP_MS = 60 * 1000;
+const SCAN_LIMIT_MAX_ENTRIES = 10_000;
+let lastScanSweep = 0;
+
+function sweepScanCooldowns(now: number): void {
+  if (now - lastScanSweep < SCAN_LIMIT_SWEEP_MS && scanRateLimits.size <= SCAN_LIMIT_MAX_ENTRIES) return;
+  lastScanSweep = now;
+  for (const [ip, ts] of scanRateLimits) {
+    if (now - ts >= SCAN_COOLDOWN_MS) scanRateLimits.delete(ip);
+  }
+  // If a flood of fresh IPs still exceeds the cap, drop the oldest entries so
+  // the map cannot outgrow its bound between sweeps.
+  while (scanRateLimits.size > SCAN_LIMIT_MAX_ENTRIES) {
+    const oldest = scanRateLimits.keys().next();
+    if (oldest.done) break;
+    scanRateLimits.delete(oldest.value);
+  }
+}
 
 export async function cyberpulseScanHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const ip = c.req.header('cf-connecting-ip') ?? 'unknown';
   const now = Date.now();
+  sweepScanCooldowns(now);
   const lastScan = scanRateLimits.get(ip) ?? 0;
 
   if (now - lastScan < SCAN_COOLDOWN_MS) {

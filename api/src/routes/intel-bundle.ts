@@ -68,7 +68,9 @@ interface IntelBundleRow {
 
 async function readBundle(db: D1Database, sourceId: string, itemRef: string): Promise<IntelBundleRow | null> {
   const row = await db
-    .prepare('SELECT id, source_id, item_ref, report_id, title, published_at, extracted_hash, bundle_json, view_json, created_at, updated_at, ioc_count, actor_count, malware_count FROM intel_bundles WHERE source_id = ? AND item_ref = ? LIMIT 1')
+    .prepare(
+      'SELECT id, source_id, item_ref, report_id, title, published_at, extracted_hash, bundle_json, view_json, created_at, updated_at, ioc_count, actor_count, malware_count FROM intel_bundles WHERE source_id = ? AND item_ref = ? LIMIT 1'
+    )
     .bind(sourceId, itemRef)
     .first<IntelBundleRow>();
   return row ?? null;
@@ -97,6 +99,29 @@ async function publishStatusSnapshot(
   }
 ): Promise<void> {
   try {
+    // Throttle: if a snapshot is already cached, it is at most TTL old, and the
+    // only consumer (feed-status) reads it through that same cache. Recomputing
+    // on every bundle write bought nothing observable while costing a full scan
+    // of intel_bundles — a table whose every row carries a full STIX 2.1
+    // bundle_json blob — per write. This turns a per-write table scan into at
+    // most one per cache TTL per colo, and is self-tuning: if the cache is cold
+    // or missing we simply fall through and refresh, so worst case equals the
+    // old behaviour.
+    //
+    // The cache entry is written below with `public, max-age=600`, so a hit
+    // here means the cached snapshot cannot be older than 10 minutes.
+    //
+    // The match is guarded separately and fails OPEN: if the cache API itself
+    // throws we must still refresh, otherwise a cache-layer fault would
+    // silently freeze the status panel at whatever it last held.
+    let snapshotIsFresh = false;
+    try {
+      snapshotIsFresh = (await caches.default.match(new Request(INTEL_BUNDLE_CACHE_KEY))) !== undefined;
+    } catch {
+      snapshotIsFresh = false;
+    }
+    if (snapshotIsFresh) return;
+
     const totals = await db
       .prepare(
         `SELECT COUNT(*) as total,

@@ -966,13 +966,48 @@ export async function fetchXAccountPosts(
 
 // ─── D1 operations ─────────────────────────────────────────────────────────
 
-async function getExistingDedupHashes(db: D1Database, hoursBack: number = 48): Promise<Set<string>> {
-  const cutoff = new Date(Date.now() - hoursBack * 3600_000).toISOString();
-  const { results } = await db
-    .prepare('SELECT dedup_hash FROM cyberpulse_incidents WHERE discovered_at > ? AND dedup_hash IS NOT NULL')
-    .bind(cutoff)
-    .all<{ dedup_hash: string }>();
-  return new Set(results.map((r) => r.dedup_hash));
+/**
+ * Lazy, memoized dedup membership test against `cyberpulse_incidents`.
+ *
+ * Replaces a preload that read EVERY dedup_hash in a trailing 48h window into a
+ * JS Set before each ingestion pass. That range walk costs roughly the row
+ * count of the window plus one index probe per row (~4.8k rows_read against a
+ * 36k-row table). Ingestion runs 72x/day (48 from the every-30-minutes cron plus
+ * 24 from the hourly cron), so the preload alone burned ~350k rows_read/day,
+ * ~6% of the 5M free-tier daily budget, before any real work happened.
+ *
+ * Cost is now proportional to the number of INCOMING hashes rather than to the
+ * size of the table: each unseen hash costs one point lookup served by
+ * idx_cp_dedup (~1 row). Nothing is re-probed within a run.
+ *
+ * Correctness note: idx_cp_dedup is NOT unique, so `INSERT OR IGNORE` does not
+ * dedupe on this column — `claim()` is the only thing standing between a
+ * re-scraped post and a duplicate incident row. It must stay correct, not
+ * merely fast, so a miss still *claims* the hash: a second identical hash in
+ * the same batch must resolve as already-seen, exactly as the old
+ * `existingHashes.add(hash)` immediately after a miss did.
+ */
+class DedupProbe {
+  /** Hashes known to be persisted, or reserved by this run for insertion. */
+  private readonly claimed = new Set<string>();
+
+  /**
+   * @returns true if the hash is already stored (or already reserved by an
+   *   earlier item in this same batch) and the caller must skip it.
+   */
+  async claim(db: D1Database, hash: string): Promise<boolean> {
+    if (this.claimed.has(hash)) return true;
+
+    const row = await db
+      .prepare('SELECT 1 AS hit FROM cyberpulse_incidents WHERE dedup_hash = ? LIMIT 1')
+      .bind(hash)
+      .first<{ hit: number }>();
+
+    // Claim on BOTH outcomes. On a hit that is memoization; on a miss it is
+    // what prevents a duplicate hash later in this batch from inserting twice.
+    this.claimed.add(hash);
+    return row !== null;
+  }
 }
 
 async function insertIncidents(db: D1Database, incidents: CyberPulseIncident[]): Promise<number> {
@@ -1262,7 +1297,7 @@ export async function runCyberPulseIngestion(
   prefetched: CyberPulsePrefetch = {}
 ): Promise<IngestResult[]> {
   const results: IngestResult[] = [];
-  const existingHashes = await getExistingDedupHashes(db, 48);
+  const dedup = new DedupProbe();
   const now = new Date().toISOString();
 
   // ── 1. X account monitoring ──────────────────────────────────────────
@@ -1279,11 +1314,10 @@ export async function runCyberPulseIngestion(
       if (classification.confidence < 0.2 && classification.incident_type === 'other') continue;
 
       const hash = dedupHash(post.text.slice(0, 200), classification.victim_name ?? '', 'x');
-      if (existingHashes.has(hash)) {
+      if (await dedup.claim(db, hash)) {
         deduped++;
         continue;
       }
-      existingHashes.add(hash);
 
       incidents.push(buildIncident(classification, post, now, hash, 'x'));
     }
@@ -1336,11 +1370,10 @@ export async function runCyberPulseIngestion(
       if (classification.confidence < 0.3 && classification.incident_type === 'other') continue;
 
       const hash = dedupHash(post.text.slice(0, 200), classification.victim_name ?? '', 'telegram');
-      if (existingHashes.has(hash)) {
+      if (await dedup.claim(db, hash)) {
         deduped++;
         continue;
       }
-      existingHashes.add(hash);
 
       incidents.push(buildIncident(classification, post, now, hash, 'telegram'));
     }
@@ -1393,11 +1426,10 @@ export async function runCyberPulseIngestion(
       if (classification.confidence < 0.15 && classification.incident_type === 'other') continue;
 
       const hash = dedupHash(post.text.slice(0, 200), classification.victim_name ?? '', post.platform);
-      if (existingHashes.has(hash)) {
+      if (await dedup.claim(db, hash)) {
         deduped++;
         continue;
       }
-      existingHashes.add(hash);
 
       incidents.push(buildIncident(classification, post, now, hash, post.platform));
     }
@@ -1450,11 +1482,10 @@ export async function runCyberPulseIngestion(
       if (classification.confidence < 0.3 && classification.incident_type === 'other') continue;
 
       const hash = dedupHash(post.text.slice(0, 200), classification.victim_name ?? '', 'reddit');
-      if (existingHashes.has(hash)) {
+      if (await dedup.claim(db, hash)) {
         deduped++;
         continue;
       }
-      existingHashes.add(hash);
 
       incidents.push(buildIncident(classification, post, now, hash, 'reddit'));
     }

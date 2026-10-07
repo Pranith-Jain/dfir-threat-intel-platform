@@ -33,7 +33,10 @@ export async function tgBooleanSearchHandler(c: Context<{ Bindings: Env }>): Pro
   const dateFrom = c.req.query('from');
   const dateTo = c.req.query('to');
   const sort = c.req.query('sort') || 'newest';
-  const limit = Math.min(Number(c.req.query('limit') ?? '50'), 200);
+  // `|| 50` absorbs a non-numeric `limit` (Number('abc') is NaN, and Math.min(…, NaN)
+  // is NaN) which would otherwise reach SQL as `LIMIT NaN` — a SQLite syntax error
+  // and a 500.
+  const limit = Math.min(Number(c.req.query('limit')) || 50, 200);
   const offset = Number(c.req.query('offset') ?? '0');
 
   const whereParts: string[] = [];

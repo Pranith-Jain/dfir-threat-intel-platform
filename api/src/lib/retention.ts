@@ -77,6 +77,48 @@ export const RETENTION_POLICY: RetentionPolicy[] = [
   // unbounded growth; incidents keep the standard 30d.
   { table: 'cyberpulse_scan_log', column: 'scanned_at', format: 'iso' },
   { table: 'cyberpulse_incidents', column: 'discovered_at', format: 'iso' },
+
+  // ── Previously unbounded (added 2026-10-07) ────────────────────────────
+  //
+  // These seven tables were never added to the policy, so they grew without
+  // limit. That matters because unbounded growth turns every full scan into an
+  // ever-larger rows_read charge: the threat graph alone is read by
+  // `live-iocs.ts` via `json_extract(sources,...) LIKE 'feed:%' ORDER BY
+  // last_seen DESC`, which is a full scan with no usable index.
+  //
+  // ORDER MATTERS: edges before nodes. graph_edges has no FOREIGN KEY to
+  // graph_nodes, so nothing cascades — sweeping nodes first would leave the
+  // edges pointing at them behind as orphans that no traversal can ever join
+  // (threat-graph inner-joins the two), so the rows would occupy storage and
+  // skew counts forever while returning nothing. Sweeping the child table first
+  // keeps the pair consistent: anything past the cutoff loses its edges and its
+  // nodes in the same pass.
+  //
+  // `graph_nodes` / `graph_edges` use `first_seen`, not `last_seen`, on purpose.
+  // Sweeping on `last_seen` would keep any node that is ever re-observed
+  // forever, which is unbounded by construction. `first_seen` bounds the table;
+  // a genuinely still-active node re-ingests on the next graph run.
+  { table: 'graph_edges', column: 'first_seen', format: 'iso' },
+  { table: 'graph_nodes', column: 'first_seen', format: 'iso' },
+
+  // Alert feed with no sweep at all; `ssvc-triage` and `estate` read it by
+  // `dismissed` / `read` / `source_url`, none of which are indexed.
+  { table: 'alert_feeds', column: 'created_at', format: 'iso' },
+
+  // Telemetry tables with no sweep; `passive-dns` groups them by the
+  // unindexed `source` column.
+  { table: 'passive_dns_observations', column: 'created_at', format: 'iso' },
+
+  // Grows one row per extracted IOC, unbounded. `valid_until` is the
+  // semantically interesting column but is nullable and frequently NULL, so
+  // sweeping on it would never remove anything; `created_at` is the insert
+  // time and bounds the table.
+  { table: 'actionable_iocs', column: 'created_at', format: 'iso' },
+
+  // Synced article tables. Both already carry idx_*_published, so these
+  // DELETEs are index-backed rather than scans.
+  { table: 'articles', column: 'published_date', format: 'iso' },
+  { table: 'supply_chain_incidents', column: 'published_date', format: 'iso' },
 ];
 
 export interface RetentionResult {

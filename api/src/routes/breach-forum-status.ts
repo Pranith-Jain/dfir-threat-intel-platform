@@ -29,6 +29,18 @@ const CACHE_TTL_SECONDS = 600;
 const MAX_LIMIT = 500;
 const DEFAULT_LIMIT = 100;
 const DEFAULT_SINCE_DAYS = 7;
+/**
+ * Hard floor on the requested window.
+ *
+ * `since` is caller-controlled, and the deltas query is a window-function CTE
+ * (two LAG() + one ROW_NUMBER() over PARTITION BY name) that must read every
+ * row in the window before it can rank anything. Left unbounded, a single
+ * `?since=1970-01-01T00:00:00Z` widens that to the entire snapshot table.
+ *
+ * 30 days matches the table's own retention window, so clamping here costs no
+ * real fidelity — everything older is already deleted by the nightly sweep.
+ */
+const MAX_SINCE_DAYS = 30;
 
 function parseSince(s: string | undefined): string | null {
   if (!s) return null;
@@ -52,7 +64,11 @@ export interface BreachForumStatusResponse {
   since: string;
   limit: number;
   deltas: StatusDelta[];
-  /** Number of rows in the underlying snapshot table (cheap health check). */
+  /**
+   * Number of snapshot rows within the response window (bounded health check).
+   * Window-scoped rather than lifetime — see the COUNT(*) comment in the
+   * handler for why the table-wide variant was removed.
+   */
   total_rows: number;
 }
 
@@ -61,7 +77,11 @@ export async function breachForumStatusHandler(c: Context<{ Bindings: Env }>): P
   if (c.req.query('since') && sinceParam === null) {
     return badRequest(c, 'since must be a valid ISO 8601 timestamp');
   }
-  const since = sinceParam ?? new Date(Date.now() - DEFAULT_SINCE_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const requestedSince = sinceParam ?? new Date(Date.now() - DEFAULT_SINCE_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  // Clamp the window: see MAX_SINCE_DAYS. String compare is safe because both
+  // sides are `toISOString()` output, so lexicographic order == chronological.
+  const sinceFloor = new Date(Date.now() - MAX_SINCE_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const since = requestedSince < sinceFloor ? sinceFloor : requestedSince;
   const limit = parseLimit(c.req.query('limit') ?? undefined);
 
   // Edge cache keyed by since + limit. The body is the same for the same
@@ -87,7 +107,23 @@ export async function breachForumStatusHandler(c: Context<{ Bindings: Env }>): P
     readRecentDeltas(db, { since, limit }),
     safeNullLog(
       'd1-count-breach-forum',
-      db.prepare('SELECT COUNT(*) AS n FROM breach_forum_status').first<{ n: number }>()
+      // Scoped to the response window, NOT the whole table.
+      //
+      // This was `SELECT COUNT(*) FROM breach_forum_status` with no WHERE —
+      // an unconditional full scan of a table holding ~10^5-10^6 snapshot rows,
+      // executed on every cache miss purely to populate one cosmetic field. It
+      // measured at ~631,000 rows_read per execution; two executions were
+      // 22% of the account's entire 5M/day free-tier read budget, and it was
+      // the single largest contributor to blowing the limit.
+      //
+      // `observed_at >= ?` is served by idx_bfs_observed_at, so the cost is now
+      // bounded by the (already clamped) window rather than by table size.
+      // Semantics improve too: "rows in the window you asked about" is a more
+      // useful health signal than a lifetime table total.
+      db
+        .prepare('SELECT COUNT(*) AS n FROM breach_forum_status WHERE observed_at >= ?')
+        .bind(since)
+        .first<{ n: number }>()
     ),
   ]);
 

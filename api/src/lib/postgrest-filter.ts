@@ -60,6 +60,16 @@ export function parseFiniteInt(raw: string | null | undefined): number | undefin
 }
 
 /**
+ * Upper bound on a `Range:`-derived page size.
+ *
+ * The query-param `limit` path deliberately does not clamp (callers own their
+ * own caps), but Range is an alternate route to the same LIMIT clause, so it
+ * gets its own ceiling. 1000 comfortably covers the real UI page sizes while
+ * keeping a single request from pulling an unbounded slice.
+ */
+const MAX_RANGE_ROWS = 1000;
+
+/**
  * Resolve an API column name through a per-table allowlist map.
  * Returns the D1 column, or null when the name is unknown or the mapped
  * value is not a safe identifier — callers must reject (400) rather than
@@ -139,13 +149,30 @@ export function parsePostgrestQuery(params: URLSearchParams, rangeHeader?: strin
   if (offset) q.offset = parseFiniteInt(offset);
 
   // Range header
+  //
+  // `start`/`end` go through parseFiniteInt for the same reason the limit/offset
+  // query params do: the derived count is interpolated straight into
+  // `LIMIT ${limit} OFFSET ${offset}` by stix-bundles.ts and
+  // actionable-iocs.ts, and it is NOT guaranteed non-negative.
+  //
+  // `Range: 100-1` yields `end - start + 1 === -98`. SQLite reads a negative
+  // LIMIT expression as "no upper bound", so that single header used to turn
+  // `?limit` into a full-table dump — one request, the entire intel_bundles /
+  // actionable_iocs table in the response body. Route it through
+  // parseFiniteInt so a reversed or absurd range is discarded and the caller
+  // falls back to its default.
   if (rangeHeader) {
     const m = rangeHeader.match(/^(\d+)-(\d+)$/);
     if (m) {
-      const start = parseInt(m[1]!, 10);
-      const end = parseInt(m[2]!, 10);
-      q.offset = q.offset ?? start;
-      q.limit = q.limit ?? end - start + 1;
+      const start = parseFiniteInt(m[1]!);
+      const end = parseFiniteInt(m[2]!);
+      if (start !== undefined && end !== undefined) {
+        q.offset = q.offset ?? start;
+        // Inclusive on both ends, and clamped to a sane maximum: a hostile
+        // `Range: 0-2000000000` should not turn into a giant result set either.
+        const span = Math.min(end - start + 1, MAX_RANGE_ROWS);
+        q.limit = q.limit ?? (span > 0 ? span : undefined);
+      }
     }
   }
 
@@ -159,7 +186,17 @@ export function parsePostgrestQuery(params: URLSearchParams, rangeHeader?: strin
       const parts = splitTopLevel(inner);
       for (const p of parts) {
         const [col, rest] = splitFilterToken(p);
-        if (col && rest) q.filters.push({ column: col, op: rest.split('.')[0] as PgFilterOp, value: rest });
+        // Delegate to parseFilterToken rather than hand-rolling the filter.
+        //
+        // The hand-rolled version stored `value: rest` — the RAW "op.value"
+        // string — where the scalar path stores a properly typed value (an
+        // array for cs/cd/in). Consumers then cast to unknown[] and call
+        // `.map()` on it, so `?or=(title.cs.{x})` threw
+        // "arr.map is not a function" inside buildBundleWhere, which is not
+        // wrapped in try/catch — an unauthenticated 500. The column is still
+        // validated downstream by resolveColumn, and the value is still bound,
+        // so this only fixes the shape, not the trust model.
+        if (col && rest) q.filters.push(parseFilterToken(col, rest));
       }
     } else {
       q.filters.push(parseFilterToken(key, val));

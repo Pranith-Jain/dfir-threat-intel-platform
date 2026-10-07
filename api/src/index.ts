@@ -446,7 +446,7 @@ import { csrfGuard } from './lib/csrf-guard';
 import { errorHandler } from './lib/error-handler';
 import { serverTiming } from './lib/server-timing';
 import { requestId } from './lib/request-id';
-import { authenticate } from './lib/auth';
+import { authenticate, requireAdminRole } from './lib/auth';
 import { requireAdminMiddleware } from './lib/admin-auth';
 import { validate, validateText } from './lib/validate';
 import { looseValidation } from './lib/loose-validate';
@@ -703,9 +703,19 @@ app.post('/api/v1/radar/scan', radarScanHandler);
 app.get('/api/v1/radar/scan/:id', radarGetScanHandler);
 app.get('/api/v1/radar/recent', radarRecentHandler);
 
-// ── CyberPulse scan (public, rate-limited) ─────────────────────────────
+// ── CyberPulse scan ─────────────────────────────────────────────────────
+// NOTE: the route itself is registered BELOW, after the global
+// `authenticate('external-only')` chain (see below). It used to be registered
+// here — above the auth middleware — which meant it carried NO authentication
+// at all: no key, no same-origin check, no apiKeyRateLimit. It triggers
+// runCyberPulseIngestion, which fans out to several upstream social feeds and
+// WRITES to cyberpulse_incidents + cyberpulse_scan_log, so an unauthenticated
+// caller could drive D1 writes and spend upstream quota on demand.
+//
+// It stays reachable from the site's own UI without a credential, because that
+// UI is same-origin and the `external-only` mode exempts same-origin callers.
+// Third parties now need an API key, matching every sibling /api/v1 route.
 app.use('/api/v1/cyberpulse/*', rateLimit);
-app.post('/api/v1/cyberpulse/scan', cyberpulseScanHandler);
 
 // ── IRONSIGHT (public, no auth required — proxy to free external APIs) ──
 app.use(
@@ -838,6 +848,25 @@ app.use('/api/v1/*', rateLimit);
 // paid-upstream fan-out" gap the per-IP limiter alone left open.
 app.use('/api/v1/*', apiKeyRateLimit);
 app.use('/api/v1/*', apiVersion);
+
+// Role gate for mutations, mounted once here rather than per-route.
+//
+// `requireAdminRole` (lib/auth.ts) only rejects when a caller presents an
+// API key whose role is `readonly`; callers with no `c.user` — the same-origin
+// SPA, the internal DO token, the OPEN_PUBLIC_READS valve — pass straight
+// through. So this cannot break the website's own keyless writes; it only stops
+// a readonly key, which is documented as read-only, from reaching a mutation.
+//
+// Previously this was applied to 5 routes in si-edge-tools.ts out of roughly 180
+// mutations, so a readonly key could create and delete SOC playbooks, tamper
+// with the estate/risk-register/GRC data, forge compliance evidence, and drive
+// the Workers AI spend endpoints. Per-route `requireAdmin(c)` gates (there are
+// ~75) still apply and are unaffected.
+//
+// Deliberately NOT mounted on GET/HEAD: reads are the point of a readonly key.
+for (const method of ['POST', 'PUT', 'PATCH', 'DELETE'] as const) {
+  app.on(method, '/api/v1/*', requireAdminRole());
+}
 // Preload the MITRE ATT&CK id index (runtime asset, see lib/attack-id-lazy).
 // Memoised per isolate — after the first request this is a pointer read, but
 // awaiting here guarantees every downstream handler/lib sees a loaded index
@@ -1293,6 +1322,10 @@ app.get('/api/v1/cyberpulse/stats', cyberpulseStatsHandler);
 app.get('/api/v1/cyberpulse/trending', cyberpulseTrendingHandler);
 app.get('/api/v1/cyberpulse/scan-log', cyberpulseScanLogHandler);
 app.get('/api/v1/cyberpulse/ingest', cyberpulseIngestHandler);
+// Registered here, not next to the `rateLimit` mount above, so it sits after
+// the global `authenticate('external-only')` chain. See the note by the
+// rateLimit mount at the top of this block for why that matters.
+app.post('/api/v1/cyberpulse/scan', cyberpulseScanHandler);
 app.get('/api/v1/ransomware-recent', ransomwareRecentHandler);
 app.get('/api/v1/ransomware-map', ransomwareMapHandler);
 app.get('/api/v1/crypto-trace', validate('query', cryptoTraceSchema), cryptoTraceHandler);

@@ -537,7 +537,8 @@ export async function telegramLeakSearchHandler(c: Context<{ Bindings: Env }>): 
   const limit = Math.min(Number(c.req.query('limit')) || 50, 200);
   const offset = Number(c.req.query('offset')) || 0;
 
-  let sql = 'SELECT id, channel_handle, message_link, message_text, leak_type, credential_count, file_url, file_name, domains_found, severity, discovered_at, raw_content FROM telegram_leak_entries WHERE 1=1';
+  let sql =
+    'SELECT id, channel_handle, message_link, message_text, leak_type, credential_count, file_url, file_name, domains_found, severity, discovered_at, raw_content FROM telegram_leak_entries WHERE 1=1';
   const binds: unknown[] = [];
 
   if (q) {
@@ -583,7 +584,8 @@ export async function telegramDiscoveredChannelsHandler(c: Context<{ Bindings: E
   if (!db) return internalError(c, 'D1 not configured');
 
   const reviewed = c.req.query('reviewed');
-  let sql = 'SELECT id, handle, source_message, discovered_at, reviewed, added_to_watch FROM telegram_discovered_channels';
+  let sql =
+    'SELECT id, handle, source_message, discovered_at, reviewed, added_to_watch FROM telegram_discovered_channels';
   const binds: unknown[] = [];
 
   if (reviewed === 'true') {
@@ -612,9 +614,24 @@ export async function telegramWatchedChannelsHandler(c: Context<{ Bindings: Env 
 
   try {
     const { results } = await db
-      .prepare('SELECT handle, title, category, discovered_from, added_by, added_at, last_scraped, last_leak_found, message_count, leak_count, active, tags FROM telegram_watched_channels WHERE active = 1 ORDER BY last_leak_found DESC')
+      .prepare(
+        'SELECT handle, title, category, discovered_from, added_by, added_at, last_scraped, last_leak_found, message_count, leak_count, active, tags FROM telegram_watched_channels WHERE active = 1 ORDER BY last_leak_found DESC'
+      )
       .all();
-    return c.json({ channels: results }, 200);
+    // Previously sent with no Cache-Control, so every /threatintel/telegram
+    // page view re-read the table. `last_scraped` / `last_leak_found` only move
+    // on a scrape tick (every 30 min for active channels) or an
+    // approve/reject, so 5 minutes is well inside the staleness anyone would
+    // notice on a channel list.
+    //
+    // `private`, not `public`: this route sits behind the API-key middleware,
+    // and RFC 9111 lets a shared cache store an authenticated response only if
+    // it says `public`/`s-maxage`. Marking it `public` would therefore let the
+    // edge cache an API-key-gated body and replay it to callers who present no
+    // key at all. `private` still gets the win that matters here — the browser
+    // reuses the response across in-app navigation, so the D1 read happens once
+    // per 5 minutes per client instead of once per page view.
+    return c.json({ channels: results }, 200, { 'Cache-Control': 'private, max-age=300' });
   } catch (e) {
     logError('telegramWatchedChannelsHandler failed', e);
     return internalError(c, e instanceof Error ? e.message : 'query failed');
@@ -732,8 +749,12 @@ export async function telegramLeakStatsHandler(c: Context<{ Bindings: Env }>): P
   if (!db) return internalError(c, 'D1 not configured');
 
   try {
-    const [total, severityDist, topChannels, topDomains, recent24h] = await Promise.all([
-      db.prepare('SELECT COUNT(*) as n FROM telegram_leak_entries').first<{ n: number }>(),
+    // `total` used to be a separate bare `SELECT COUNT(*) FROM
+    // telegram_leak_entries` — an unconditional full scan of the largest table
+    // in the schema, on every page view of /threatintel/telegram (TelegramHub
+    // fetches this endpoint on mount). Summing the severity rollup yields the
+    // identical total and removes one full scan from the request.
+    const [severityRollup, topChannels, topDomains, recent24h] = await Promise.all([
       db
         .prepare(
           `SELECT severity, COUNT(*) as n FROM telegram_leak_entries
@@ -746,10 +767,16 @@ export async function telegramLeakStatsHandler(c: Context<{ Bindings: Env }>): P
          GROUP BY channel_handle ORDER BY n DESC LIMIT 10`
         )
         .all<{ channel_handle: string; n: number }>(),
+      // Ordered so this is served by idx_leak_entries_discovered_at and reads
+      // only the newest 100 rows. Without the ORDER BY, SQLite scanned forward
+      // from the table start until it happened to collect 100 non-empty blobs,
+      // which on a sparse table meant walking the whole thing — and the sample
+      // was arbitrary. "Most recent 100" is both bounded and more useful.
       db
         .prepare(
           `SELECT json_extract(domains_found, '$') as domain_blob FROM telegram_leak_entries
-         WHERE domains_found IS NOT NULL AND domains_found != '[]' LIMIT 100`
+         WHERE domains_found IS NOT NULL AND domains_found != '[]'
+         ORDER BY discovered_at DESC LIMIT 100`
         )
         .all<{ domain_blob: string }>(),
       db
@@ -759,6 +786,8 @@ export async function telegramLeakStatsHandler(c: Context<{ Bindings: Env }>): P
         )
         .first<{ n: number }>(),
     ]);
+
+    const total = (severityRollup.results ?? []).reduce((sum, r) => sum + r.n, 0);
 
     // Aggregate domains from the sampled blob entries.
     const domainCounts = new Map<string, number>();
@@ -782,9 +811,9 @@ export async function telegramLeakStatsHandler(c: Context<{ Bindings: Env }>): P
 
     return c.json(
       {
-        total_entries: total?.n ?? 0,
+        total_entries: total,
         last_24h: recent24h?.n ?? 0,
-        severity_distribution: severityDist.results ?? [],
+        severity_distribution: severityRollup.results ?? [],
         top_channels: topChannels.results ?? [],
         top_domains: topDomainsList,
       },

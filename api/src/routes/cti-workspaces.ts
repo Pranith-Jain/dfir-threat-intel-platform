@@ -128,7 +128,10 @@ export async function listWorkspacesHandler(c: Context<{ Bindings: Env }>): Prom
   await ensureWorkspaceTables(db);
 
   const status = c.req.query('status');
-  const limit = Math.min(Number(c.req.query('limit') ?? '50'), 200);
+  // `|| 50` absorbs a non-numeric `limit` (Number('abc') is NaN, and Math.min(…, NaN)
+  // is NaN) which would otherwise reach SQL as `LIMIT NaN` — a SQLite syntax error
+  // and a 500. Same idiom as cti-collector.ts / cyberpulse.ts.
+  const limit = Math.min(Number(c.req.query('limit')) || 50, 200);
 
   const vis = ownerVisibilityFilter(c);
   let query = `SELECT id, title, description, target, target_type, phase, status, exposure_score, exposure_label, tags, metadata, created_at, updated_at FROM investigation_workspaces WHERE ${vis.clause}`;
