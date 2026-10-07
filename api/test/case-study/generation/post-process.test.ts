@@ -37,6 +37,75 @@ const FACTS = JSON.stringify({
 const run = (raw: string, type: CaseStudyType = 'vulnfaq', facts = FACTS) =>
   postProcess({ type, raw, factsText: facts });
 
+describe('postProcess — heading depth tolerance', () => {
+  // Regression: the structural check used to test /^##\s+.+/ only, so a body
+  // whose sections came back as `###` was rejected with "output contained no
+  // section headings" — even though `marked.parse` renders h3 fine and the
+  // table of contents accepts h2/h3. The prompt actively encourages question
+  // shaped headings that models emit at varying depths.
+
+  it('accepts a body whose sections are all h3', () => {
+    const out = run(
+      '### Which versions are affected?\n\nThe edge gateway build.\n\n### Is it being exploited?\n\nYes, in the wild.'
+    );
+    expect(out.ok).toBe(true);
+    expect(out.errors.join(' ')).not.toMatch(/no section headings/i);
+  });
+
+  it('promotes an all-h3 body to top-level h2 so the table of contents fills', () => {
+    const out = run('### First question?\n\nBody one.\n\n### Second question?\n\nBody two.');
+    expect(out.body).toMatch(/^## First question\?/m);
+    expect(out.body).toMatch(/^## Second question\?/m);
+  });
+
+  it('preserves genuine nesting when a real h2 is already present', () => {
+    const out = run(
+      '## Summary\n\nOverview text.\n\n### A deeper detail\n\nNested body.\n\n## References\n\n- [NVD](https://nvd.nist.gov/vuln/detail/CVE-2099-0001)'
+    );
+    expect(out.body).toMatch(/^## Summary/m);
+    expect(out.body).toMatch(/^### A deeper detail/m);
+  });
+
+  it('keeps content that follows an h3 subsection attached to its section', () => {
+    // stripEmptySections used to break a `##` section body at a `###`, orphaning
+    // everything after the subsection as loose lines.
+    const out = run('## Summary\n\nLead paragraph.\n\n### Detail\n\nDetail body.\n\n## Fix\n\nUpgrade.');
+    expect(out.ok).toBe(true);
+    expect(out.body).toContain('Lead paragraph.');
+    expect(out.body).toContain('Detail body.');
+    expect(out.body).toContain('Upgrade.');
+  });
+
+  it('promotes a bold question pseudo-heading when there are no real headings', () => {
+    const out = run('**Which versions are affected?**\n\nThe gateway build.\n\n**What should I do?**\n\nUpgrade.');
+    expect(out.ok).toBe(true);
+    expect(out.body).toMatch(/^## Which versions are affected\?/m);
+  });
+
+  it('still fails a body with no headings at all', () => {
+    const out = run('Just a paragraph with no headings whatsoever.');
+    expect(out.ok).toBe(false);
+    expect(out.errors.join(' ')).toMatch(/no section headings/i);
+  });
+
+  it('strips untrusted citation hosts when the References section is written as h3', () => {
+    // stripUnknownRefHosts finds the References block by /^##\s+(References|…)/.
+    // If heading depth is normalised AFTER that call, an h3 References heading
+    // is invisible to it and invented citations slip through the allowlist.
+    const out = run(
+      `### Summary\n\nTwo RCEs.\n\n### References\n\n- [NVD](https://nvd.nist.gov/vuln/detail/${SYNTHETIC_CVE}) — the record\n- [Totally Real Research](https://totally-real-research.example.net/paper) — invented`
+    );
+    expect(out.body).toContain('nvd.nist.gov');
+    expect(out.body).not.toContain('totally-real-research.example.net');
+  });
+
+  it('counts sections in the audit consistently with the structural check', () => {
+    const out = run('### One?\n\nA.\n\n### Two?\n\nB.');
+    expect(out.ok).toBe(true);
+    expect(out.audit?.sections).toBe(2);
+  });
+});
+
 describe('postProcess — structure', () => {
   it('accepts a body with sections', () => {
     const out = run(

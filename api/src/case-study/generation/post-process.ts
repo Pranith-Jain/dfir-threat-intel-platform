@@ -143,9 +143,83 @@ const ALL_HEADINGS = [
 const ESCAPED = ALL_HEADINGS.map((h) => h.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&'));
 const SECTION_NAME_RE = new RegExp(`^(${ESCAPED.join('|')})[\\s:\\-]*$`, 'im');
 
+/** Any ATX heading (h1-h6) that carries content. */
+const ATX_HEADING_RE = /^(#{1,6})\s+(.+)$/;
+/** The level every downstream consumer expects for a top-level section. */
+const TOP_SECTION_LEVEL = 2;
+/** Deepest level the table of contents renders (see content-utils.ts). */
+const MAX_TOC_LEVEL = 3;
+
 /** Promote a bare section name to a real markdown heading. */
 function ensureMdHeaders(body: string): string {
   return body.replace(SECTION_NAME_RE, '## $1');
+}
+
+/**
+ * True when the body carries at least one usable section heading at any level.
+ *
+ * This used to test `/^##\s+.+/` — level 2 only. That is narrower than what
+ * the generator actually emits and narrower than what the renderer accepts
+ * (`marked.parse` handles h1-h6). A body written with `###` headings was
+ * therefore rejected with "output contained no section headings" even though it
+ * was perfectly well structured.
+ */
+function hasSectionHeadings(body: string): boolean {
+  return body.split('\n').some((line) => {
+    const m = ATX_HEADING_RE.exec(line);
+    return m !== null && (m[2] ?? '').trim().length > 0;
+  });
+}
+
+/**
+ * Lift a body whose headings all sit below `##` up to the canonical level.
+ *
+ * Only fires when the shallowest heading in the document is deeper than a top
+ * section, so genuine nesting is preserved: a body with a real `##` keeps its
+ * `###` subsections as subsections, while an all-`###` body is promoted to
+ * proper top-level sections. Levels are clamped to the depth the table of
+ * contents renders so nothing silently disappears from the sidebar.
+ */
+function normalizeSectionDepth(body: string): string {
+  const levels: number[] = [];
+  for (const line of body.split('\n')) {
+    const m = ATX_HEADING_RE.exec(line);
+    if (m) levels.push(m[1]!.length);
+  }
+  if (levels.length === 0) return body;
+
+  const shallowest = Math.min(...levels);
+  if (shallowest <= TOP_SECTION_LEVEL) return body;
+
+  return body
+    .split('\n')
+    .map((line) => {
+      const m = ATX_HEADING_RE.exec(line);
+      if (!m) return line;
+      const lifted = Math.min(m[1]!.length - (shallowest - TOP_SECTION_LEVEL), MAX_TOC_LEVEL);
+      return `${'#'.repeat(lifted)} ${m[2]!}`;
+    })
+    .join('\n');
+}
+
+/**
+ * Promote bold pseudo-headings when the body has no real headings at all.
+ *
+ * Question-shaped headings are explicitly encouraged by the prompt ("Which
+ * versions are affected?", "Is it being exploited?"), and models often emit
+ * them emphasised rather than as ATX headings. Only applies when there is no
+ * ATX heading to begin with, so a body that already has structure is never
+ * touched.
+ */
+function promoteBoldPseudoHeadings(body: string): string {
+  if (hasSectionHeadings(body)) return body;
+  return body
+    .split('\n')
+    .map((line) => {
+      const m = /^\s*\*\*([^*\n]{3,80}\?)\*\*:?\s*$/.exec(line);
+      return m ? `## ${m[1]!.trim()}` : line;
+    })
+    .join('\n');
 }
 
 /** Remove a section whose body carries no content at all. */
@@ -155,13 +229,20 @@ function stripEmptySections(body: string): string {
   let i = 0;
   while (i < lines.length) {
     const line = lines[i] ?? '';
-    if (/^##\s+/.test(line)) {
+    if (ATX_HEADING_RE.test(line)) {
       const heading = line;
       const sectionBody: string[] = [];
+      const headingLevel = (ATX_HEADING_RE.exec(line)?.[1] ?? '#').length;
       i++;
       while (i < lines.length) {
         const cur = lines[i] ?? '';
-        if (cur.startsWith('##')) break;
+        // Break on a heading at this level or shallower. Previously this was
+        // `cur.startsWith('##')`, which also stopped at a DEEPER `###`
+        // subsection — so a `###` ended its parent `##` section's body, and
+        // the subsection was then re-emitted as loose content with the rest of
+        // the section orphaned behind it.
+        const curMatch = ATX_HEADING_RE.exec(cur);
+        if (curMatch && curMatch[1]!.length <= headingLevel) break;
         sectionBody.push(cur);
         i++;
       }
@@ -423,7 +504,9 @@ function extractIocs(body: string, dossierText: string, type: CaseStudyType): Po
 function buildAudit(body: string, iocs: PostIOC[], warnings: string[]): PostAudit {
   return {
     words: body.split(/\s+/).filter(Boolean).length,
-    sections: (body.match(/^##\s+.+/gm) ?? []).length,
+    // Counts every heading level the structural check accepts, so the reviewer
+    // sees the same number the validator used to decide.
+    sections: body.split('\n').filter((line) => hasSectionHeadings(line)).length,
     references: (body.match(REF_LINK_RE) ?? []).length,
     iocs: iocs.length,
     warnings,
@@ -438,6 +521,13 @@ export function postProcess(input: PostProcessInput): PostProcessOutput {
   // 1. Normalise markdown structure.
   body = ensureMdHeaders(body);
   body = body.replace(FACTS_BLOCK_RE, '').trim();
+  // Heading shape is normalised EARLY, before stripUnknownRefHosts. That helper
+  // locates the References section with /^##\s+(References|…)/, so if a body
+  // expressed its sections as `###` the lookup would miss and untrusted citation
+  // hosts would survive the allowlist filter — a factual-integrity control
+  // silently skipped.
+  body = promoteBoldPseudoHeadings(body);
+  body = normalizeSectionDepth(body);
   body = stripUnknownRefHosts(body, input.factsText);
   body = fixListBlocks(body);
   body = stripEmptySections(body);
@@ -471,8 +561,11 @@ export function postProcess(input: PostProcessInput): PostProcessOutput {
 
   // 4. Structural check. A body with no section headings cannot be rendered
   //    as an article, so this is the one thing that legitimately fails.
-  const hasSections = (body.match(/^##\s+.+/gm) ?? []).length > 0;
-  if (!hasSections) {
+  //
+  //    Accepts any ATX level, not just `##`. The previous level-2-only test
+  //    rejected well-formed bodies whose sections happened to be `###`, which
+  //    the renderer and the table of contents both handle happily.
+  if (!hasSectionHeadings(body)) {
     return { ok: false, body, iocs: [], errors: ['output contained no section headings'], audit: undefined };
   }
 
