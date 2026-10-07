@@ -17,6 +17,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { sanitizeAiHtml } from '../../lib/sanitize-html';
+// Shared with VeraChat/Copilot — this file used to carry its own byte-for-byte
+// copy of the same renderer (minus the fenced-code handling), which meant two
+// subtly different renderers for identical input.
+import { renderMarkdown } from '../../components/threatintel/ChatShared';
 
 interface Source {
   name: string;
@@ -102,44 +106,6 @@ const QUERY_EXAMPLES = [
   { label: 'CVE-2024-1709', type: 'CVE', query: 'CVE-2024-1709' },
   { label: 'd41d8cd98f00b204e9800998ecf8427e', type: 'MD5 hash', query: 'd41d8cd98f00b204e9800998ecf8427e' },
 ];
-
-function renderMarkdown(safeMd: string): string {
-  let html = safeMd
-    .replace(/### (.+)/g, '<h3 class="text-base font-semibold mt-4 mb-1.5">$1</h3>')
-    .replace(/## (.+)/g, '<h2 class="text-lg font-bold mt-5 mb-2">$1</h2>')
-    .replace(/# (.+)/g, '<h1 class="text-xl font-bold mt-5 mb-2">$1</h1>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-    .replace(
-      /`([^`]+)`/g,
-      '<code class="px-1 py-0.5 rounded bg-slate-100 dark:bg-surface-300 text-xs font-mono">$1</code>'
-    )
-    .replace(/^- (.+)$/gm, '<li class="ml-4 list-disc text-sm">$1</li>')
-    .replace(/^\d+\.\s(.+)$/gm, '<li class="ml-4 list-decimal text-sm">$1</li>')
-    .replace(/(<li.*<\/li>\n?)+/g, function (match) {
-      if (match.includes('list-decimal')) {
-        return `<ol class="space-y-1 my-1.5">${match}</ol>`;
-      }
-      return `<ul class="space-y-0.5 my-1.5">${match}</ul>`;
-    });
-
-  html = html
-    .split(/\n\n+/)
-    .map((block) => {
-      const trimmed = block.trim();
-      if (!trimmed) return '';
-      if (
-        trimmed.startsWith('<h') ||
-        trimmed.startsWith('<ul') ||
-        trimmed.startsWith('<ol') ||
-        trimmed.startsWith('<li')
-      )
-        return trimmed;
-      return `<p class="text-sm leading-relaxed mb-2">${trimmed}</p>`;
-    })
-    .join('\n');
-  return html;
-}
 
 const TYPE_BADGES: Record<string, { label: string; color: string }> = {
   cve: { label: 'CVE', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' },

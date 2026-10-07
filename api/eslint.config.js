@@ -63,6 +63,13 @@ export default tseslint.config(
         FetchEvent: 'readonly',
         ScheduledEvent: 'readonly',
         ExecutionContext: 'readonly',
+        // Workers HTMLRewriter + the DOM types its element handlers receive.
+        // Missing these made `no-undef` fire on correct code.
+        HTMLRewriter: 'readonly',
+        Element: 'readonly',
+        HTMLElement: 'readonly',
+        Node: 'readonly',
+        Text: 'readonly',
         performance: 'readonly',
         Buffer: 'readonly',
         process: 'readonly',
@@ -94,7 +101,10 @@ export default tseslint.config(
       'prefer-rest-params': 'warn',
       'prefer-spread': 'warn',
       'no-undef': 'warn',
-      'no-irregular-whitespace': 'warn',
+      // skipRegExps: an invisible character inside a regex is usually
+      // deliberate, not a typo. A non-breaking space in `/[ \t\u00A0]+/g`
+      // is the author asking to collapse NBSPs, and the rule was failing it.
+      'no-irregular-whitespace': ['warn', { skipRegExps: true }],
       '@typescript-eslint/prefer-as-const': 'warn',
       '@typescript-eslint/no-unnecessary-type-constraint': 'warn',
       '@typescript-eslint/ban-ts-comment': 'warn',

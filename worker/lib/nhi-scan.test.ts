@@ -3,7 +3,19 @@
  * MIT) to vitest: tiering rules, OWASP checks, scan orchestration, ingest.
  */
 import { describe, expect, it } from 'vitest';
-import { Nhi, assess, parseFleet, runChecks, scan, reportToJson, reportToMarkdown, type NhiRecord } from './nhi-scan';
+// The worker copy of this module was a byte-identical duplicate that nothing
+// imported — production has always used the api/src one. Point the suite at the
+// live module so it stops passing against dead code.
+import {
+  Nhi,
+  assess,
+  parseFleet,
+  runChecks,
+  scan,
+  reportToJson,
+  reportToMarkdown,
+  type NhiRecord,
+} from '../../api/src/lib/nhi-scan';
 
 function nhi(kw: Partial<NhiRecord> & { id?: string; name?: string } = {}): Nhi {
   const base: NhiRecord = { id: 'x', name: 'x', owner: 'o@example' };

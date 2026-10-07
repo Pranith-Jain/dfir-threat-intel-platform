@@ -14,7 +14,7 @@ import {
   type MatrixIndex,
   type ResearchIndex,
   type VulnsIndex,
-} from './ai-security-manifest';
+} from '../../api/src/lib/ai-security-manifest';
 
 const MATRIX: MatrixIndex = {
   updatedAt: '2026-09-18T00:00:00.000Z',

@@ -8,7 +8,9 @@
  * a failing assertion.
  */
 import { describe, it, expect } from 'vitest';
-import { analyzeUrlSignals, calculateUrlRisk, computeAgeInDays } from './url-risk';
+// Was ./url-risk — a byte-identical duplicate nothing imported. Production uses
+// the api/src module; test that one instead.
+import { analyzeUrlSignals, calculateUrlRisk, computeAgeInDays } from '../../api/src/lib/url-risk';
 
 describe('analyzeUrlSignals — static heuristics (signals.py port)', () => {
   it('clean https URL produces no flags', () => {

@@ -13,7 +13,8 @@ vi.mock('@resvg/resvg-wasm/index_bg.wasm', () => {
   return { default: new (WebAssembly.Module as any)(bytes) as WebAssembly.Module };
 });
 
-import { carouselSlideToPng } from './social-carousel-raster';
+// Was ./social-carousel-raster — a byte-identical duplicate nothing imported.
+import { carouselSlideToPng } from '../api/src/lib/social-carousel-raster';
 
 // Minimal Env stub: ASSETS.fetch returns the real font bytes from disk.
 const env = {

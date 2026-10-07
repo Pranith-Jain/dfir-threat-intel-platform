@@ -93,20 +93,28 @@ export function buildShareMarkdown(report: string, actionCard?: ReportActionCard
 }
 
 /**
- * Strip EVERY html tag from untrusted source text (loop until stable so
- * crafted nesting like `<scr<script>ipt>` cannot reassemble a tag), plus
+ * Remove HTML tags from untrusted source text so they do not render, plus
  * script/style blocks with their bodies. The markdown pipeline below emits
- * only its own trusted markup, so a fully de-tagged source makes every
- * downstream insertion safe for the dangerouslySetInnerHTML sink. This
- * markdown renders LLM agent output that quotes untrusted third-party text
- * (leak-site titles, Telegram captions, CVE descriptions).
+ * only its own trusted markup, and `renderMarkdown` escapes the whole source
+ * before any transform runs, so this pass is about display (don't show the
+ * author's stray markup) and defence in depth — escaping is what actually
+ * makes the output safe.
+ *
+ * Only tag-LIKE runs are removed: `<` immediately followed by a letter or `/`
+ * and closed by `>`. Matching bare `<[^>]*>` instead would silently delete
+ * ordinary prose — threat-intel writing is full of comparisons like
+ * `a < b and b > c` — and that data loss was a real bug.
+ *
+ * An unclosed `<img src=x onerror=...` has no `>` so it survives here, which is
+ * fine: the escaping pass neutralises it. The loop runs until stable so
+ * crafted nesting like `<scr<script>ipt>` cannot reassemble a tag.
  */
 function stripHtmlTags(input: string): string {
   let out = input.replace(/<script[\s\S]*?<\/script\s*>/gi, '').replace(/<style[\s\S]*?<\/style\s*>/gi, '');
   let prev = out;
   do {
     prev = out;
-    out = out.replace(/<[^>]*>/g, '');
+    out = out.replace(/<\/?[a-zA-Z][^>]*>/g, '');
   } while (out !== prev);
   return out;
 }
@@ -122,15 +130,25 @@ export function renderMarkdown(md: string): string {
   s = s.replace(/```stix\s*\n[\s\S]*?```/g, '');
   s = s.replace(/```json\s*\n\{[\s\S]*?"type"\s*:\s*"bundle"[\s\S]*?\}\s*\n```/g, '');
 
-  // Escape HTML for the safe portions.
+  // SECURITY: escape the de-tagged source EXACTLY ONCE, here, before any
+  // transform injects markup.
+  //
+  // stripHtmlTags only removes well-formed `<...>` pairs, so a payload with no
+  // closing `>` (e.g. `<img src=x onerror=alert(1)`) survived it — and the
+  // <p>/<li>/<td> wrappers below then supplied the `>` that turned it back
+  // into a live tag. Escaping up front closes that hole. The transforms below
+  // still emit their own trusted markup because replacement literals are never
+  // re-escaped; no transform may escape content again, or it would
+  // double-escape it.
   const esc = (x: string) => x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  s = esc(s);
 
   // Convert fenced code blocks first - keep them intact through other regexes.
   const codeBlocks: string[] = [];
   s = s.replace(/```(\w*)\n([\s\S]*?)```/g, (_m, lang, body) => {
     const idx = codeBlocks.length;
     codeBlocks.push(
-      `<pre data-codeblock="${idx}" data-lang="${esc(lang)}" class="rounded bg-surface-100 dark:bg-input-200 text-slate-100 p-3 my-3 text-xs overflow-x-auto font-mono leading-relaxed"><code>${esc(body.trimEnd())}</code></pre>`
+      `<pre data-codeblock="${idx}" data-lang="${lang}" class="rounded bg-surface-100 dark:bg-input-200 text-slate-100 p-3 my-3 text-xs overflow-x-auto font-mono leading-relaxed"><code>${body.trimEnd()}</code></pre>`
     );
     return `\n\n§§CODEBLOCK${idx}§§\n\n`;
   });
