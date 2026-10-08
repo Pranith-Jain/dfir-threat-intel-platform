@@ -1,0 +1,67 @@
+{
+  "type": "cyber",
+  "date": "2026-10-08",
+  "threatLevel": "",
+  "executiveSummary": "Multiple actively exploited edge-access vulnerabilities and campaign advisories elevate near-term risk for OT operators. Citrix NetScaler ADC/Gateway unauthenticated RCE is being exploited in the wild and is broadly deployed on critical infrastructure perimeters (immediate patching and compromise assessments are required). Security Advisory Supporting Advisory F5 BIG-IP APM OAuth Authorization Server configurations are under active exploitation for unauthenticated RCE; compromise can enable perimeter breach and potential pivot toward OT jump hosts and engineering assets. Security Advisory U.S. agencies warn of active threat activity against Siemens S7-series PLCs across Water/Wastewater, Energy, and Manufacturing sectors, highlighting AI-assisted discovery and unauthorized S7comm operations; immediate hardening and network isolation are advised. Security Advisory CISA's weekly vulnerability bulletin features multiple OT-adjacent, publicly exploitable issues-most notably Advantech WISE-6610 industrial gateways (remote command injection) and eProsima Fast-DDS flaws affecting industrial messaging-requiring rapid triage in utility and manufacturing environments. Security Bulletin Edge risk remains elevated: CISA and national CERTs confirm active exploitation of Citrix NetScaler and add further KEV items (Citrix, Fortinet FortiMail, Zammad), indicating continued targeting of remote access and ITSM platforms often adjacent to OT. CISA KEV CISA KEV SonicWall SMA1000 hotfixes address a CVSS 10.0 pre-auth SSRF in widely used remote access gateways; while exploitation is not yet reported for this set, prior similar flaws were abused this year. View Article Enterprise-to-OT pivot paths remain a priority. CISA's \"Tale of Two SOCs\" red-team findings at a water utility show containment at the IT/OT DMZ can hold even as cloud identities are abused-reinforcing the need for identity hygiene, cloud app governance, and OT egress controls. Security Advisory Current Level HIGH OT Risk Events - ESCALATE 7 Actively exploited edge + PLC targeting Events - MONITOR 16 Patch & watch perimeter and SaaS Events - IGNORE 6 Low/no OT impact Actively Exploited Surface Citrix NetScaler ADC/Gateway (RCE/DoS) F5 BIG-IP APM (OAuth RCE) Fortinet FortiMail (Path Traversal) Zammad (Session fixation/privilege issues) OT Vendor Advisories Johnson Controls EasyIO FG (EOL, no patch) Hitachi Energy REB500 (IEC 61850 DoS) Hitachi Energy Asset Suite (unauth. servlets) Key Sectors Impacted Water/Wastewater Energy Manufacturing Transportation/Ports Healthcare Telecom Federal Facilities Notable Actors/Clusters ShinyHunters MovieReaper (unknown) MALFEX supply-chain Hacktivist (Z-Pentest)",
+  "keyFindings": [],
+  "dashboard": {
+    "kpis": [],
+    "activelyExploited": [],
+    "vendors": [
+      "Citrix NetScaler ADC/Gateway (multiple CVEs, active exploitation) F5 BIG-IP Access Policy Manager (OAuth Authorization Server RCE) SonicWall SMA1000 (pre-auth SSRF + related flaws) Advantech WISE-6610 industrial LoRaWAN gateways eProsima Fast-DDS (industrial messaging) Hitachi Energy REB500 (IEC 61850) Hitachi Energy Asset Suite (Energy asset management) Johnson Controls EasyIO FG building automation controllers (EOL) Atlassian (Jira/Confluence/Bitbucket traversal attempts) Oracle PeopleSoft (CVE-2026-35273) Siemens S7-200/300/400/1200/1500 PLCs (S7comm/snap7 targeting) Fortinet FortiMail (KEV path traversal) Zammad helpdesk (KEV - session fixation & privilege issues) DNS/PKI ecosystem (registry hijack → misissued certs) npm ecosystem (MALFEX supply-chain, Overlord RAT) macOS developer endpoints (MacSync stealer/backdoor) Healthcare IoMT/OT crypto readiness (TLS/SSH/PQC gaps)"
+    ],
+    "sectors": [
+      "Water and Wastewater Systems Energy (Electric Substations, Asset Mgmt) Critical Manufacturing Transportation & Maritime Logistics Healthcare (IoMT/Facility OT) Telecommunications Federal Facilities (BAS/HVAC) Government Services"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "ShinyHunters mass-exploited Oracle PeopleSoft (CVE-2026-35273), including government targets; WAF encoding bypass observed. View Article Supporting Report",
+        "\"MovieReaper\" torrent campaign delivers modular Windows backdoor with Solana-hosted C2 details; opportunistic but enterprise-relevant. Vendor Research",
+        "Supply-chain malware (MALFEX) via npm postinstall scripts drops Overlord RAT; developer environment risk. View Article",
+        "macOS \"MacSync\" stealer/backdoor targets developers and crypto users; supply-chain implications. Vendor Research"
+      ]
+    }
+  ],
+  "relevance": "Today's risk posture is driven by concurrent, actively exploited edge-access vulnerabilities (Citrix NetScaler, F5 BIG-IP APM) combined with confirmatory federal advisories of direct PLC targeting. These align with common enterprise-to-OT intrusion patterns: initial edge compromise, identity abuse, and attempts to traverse OT DMZ jump hosts. In parallel, high-impact OT vendor advisories (Johnson Controls EasyIO FG EOL, Hitachi Energy REB500, Hitachi Asset Suite) and this week's CVE bulletins affecting industrial gateways and messaging stacks broaden the potential attack surface. Operators should prioritize edge patching, identity hardening, and stringent IT/OT segmentation with focused monitoring on PLC programming channels and engineering workstations.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Citrix NetScaler ADC/Gateway - multiple RCE/DoS; active exploitation. CERT-FR",
+        "F5 BIG-IP APM (CVE-2026-94127) - active RCE in OAuth configurations. JPCERT/CC",
+        "Advantech WISE-6610 (RCE), eProsima Fast-DDS (DoS/memory), AVEVA PIM (crypto exposure) - triage per bulletin. CISA Bulletin",
+        "SonicWall SMA1000 (CVE-2026-102255 et al) - hotfixes released; pre-auth SSRF (CVSS 10). View Article",
+        "Hitachi Energy REB500 (IEC 61850 DoS) - upgrade to v8.3.4.0. CISA ICS Advisory",
+        "Hitachi Energy Asset Suite ≤9.9.0 - unauthenticated servlets; disable/upgrade. CISA ICS Advisory",
+        "Johnson Controls EasyIO FG (EOL/EOS) - no patch; migrate/segregate. CISA ICS Advisory"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Edge exploitation and access broker tactics: unauthenticated RCE/DoS on NetScaler and BIG-IP; post-exploitation token/session hijacking; DTLS-focused probes.",
+      "PLC targeting: unauthorized S7comm interactions, snap7-based scripting, CPU enumeration, data block read/write; TCP/102 exposure abuse.",
+      "WAF bypass via encoding/canonicalization (PeopleSoft); traversal patterns using \"::\" to disclose Tomcat webapp configs (Atlassian CVE-2026-21589).",
+      "AD domain weaponization: malicious GPOs linked at domain root to propagate ransom notes/policy changes (no Windows encryptors required).",
+      "Supply-chain abuse: npm postinstall loaders (Overlord RAT); macOS LaunchAgent/Zsh/Git-hook persistence; CalDAV/HTTP PUT exfiltration.",
+      "DNS/PKI misuse: registry hijack → misissued DV TLS certs enabling potential regional MitM against public services."
+    ],
+    "mitreIds": []
+  },
+  "outlook72h": "Complete NetScaler and BIG-IP APM emergency patching and compromise assessments; revoke sessions/tokens and rotate VPN/AAA credentials. Block TCP/102 at all internet and IT/OT perimeters; validate no direct PLC exposure to the internet; baseline and alert on S7comm anomalies. Apply SonicWall SMA1000 hotfixes; shift admin interfaces behind VPN/allowlists; increase logging/egress monitoring on gateways. Triage bulletin-listed OT-adjacent CVEs (WISE-6610, Fast-DDS, AVEVA PIM) for exposure; implement virtual patching or isolation where updates require downtime. Harden identity: enforce MFA, reduce over-privileged cloud apps, enable continuous access evaluation and app consent governance.",
+  "relatedCves": [
+    "CVE-2026-88779",
+    "CVE-2026-104286",
+    "CVE-2026-35273",
+    "CVE-2026-94127",
+    "CVE-2026-102255",
+    "CVE-2026-21589",
+    "CVE-2026-75818",
+    "CVE-2026-91784"
+  ]
+}
