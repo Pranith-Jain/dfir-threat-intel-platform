@@ -35,6 +35,7 @@
     "smoke:slow": "node scripts/smoke.mjs --slow",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "lint:changed": "node scripts/lint-changed.mjs",
+    "review:diff": "node scripts/scan-review.mjs",
     "lint:fix": "eslint . --fix",
     "typecheck": "node node_modules/typescript/bin/tsc --noEmit --skipLibCheck",
     "typecheck:api": "node node_modules/typescript/bin/tsc --noEmit --skipLibCheck -p api/tsconfig.json",
@@ -53,7 +54,8 @@
     "test:dphish": "node --test scripts/sync-dphish.test.mjs",
     "test:mtproto": "node --test scripts/sync-telegram-mtproto.test.mjs",
     "test:cairn": "node --test scripts/build-cairn-manifest.test.mjs",
-    "test:scripts": "npm run test:mcp && npm run test:cert-in && npm run test:dphish && npm run test:prompt-eval && npm run test:mtproto && npm run test:cairn",
+    "test:scanners": "node --test scripts/scan-ssrf.test.mjs scripts/scan-review.test.mjs",
+    "test:scripts": "npm run test:mcp && npm run test:cert-in && npm run test:dphish && npm run test:prompt-eval && npm run test:mtproto && npm run test:cairn && npm run test:scanners",
     "prompt:eval": "node scripts/prompt-eval.mjs",
     "prompt:eval:live": "USE_LLM=true node scripts/prompt-eval.mjs",
     "test:prompt-eval": "node --test scripts/prompt-eval.test.mjs"
