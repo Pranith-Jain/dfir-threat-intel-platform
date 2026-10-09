@@ -1,159 +1,4 @@
 {
-  "CVE-2026-93355": {
-    "id": "CVE-2026-93355",
-    "title": "LiteLLM contains a weak authentication vulnerability that allows an attacker holding a valid JWT from the configured identity provider to authenticate as any existing user by exploiting an email-base…",
-    "sources": ["euvd"],
-    "severity": "7.6 (4.0)",
-    "cvssBase": 7.6,
-    "epss": 0.27,
-    "kev": false,
-    "kevSources": [],
-    "published": "Sep 28, 2026, 7:26:01 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-88462",
-    "aliases": ["GHSA-g83g-3c4g-cfm5", "CVE-2026-93355"],
-    "packages": [],
-    "vendor": "berriai",
-    "product": "LiteLLM",
-    "description": "LiteLLM contains a weak authentication vulnerability that allows an attacker holding a valid JWT from the configured identity provider to authenticate as any existing user by exploiting an email-based fallback lookup in the JWT authentication flow without verifying the email_verified claim. Attackers can present a token with an unverified email address matching a victim's account to inherit the victim's role, including proxy_admin privileges, and permanently overwrite the victim's stored identity binding to retain persistent unauthorized access to administrative endpoints exposing API keys and user management.",
-    "references": [
-      "https://www.ox.security/blog/litellm-an-ordinary-login-token-can-become-someone-elses-admin-account/",
-      "https://www.vulncheck.com/advisories/litellm-weak-jwt-authentication-via-email-based-user-lookup"
-    ],
-    "euvdId": "EUVD-2026-88462",
-    "kevDateAdded": null,
-    "epssPercentile": 0.18078
-  },
-  "CVE-2026-89032": {
-    "id": "CVE-2026-89032",
-    "title": "BerriAI LiteLLM before 1.101.0-rc.1 contains a tenant isolation bypass vulnerability in the semantic cache layer that allows authenticated users to read other tenants' cached responses by exploiting …",
-    "sources": ["euvd"],
-    "severity": "8.7 (4.0)",
-    "cvssBase": 8.7,
-    "epss": 0.27,
-    "kev": false,
-    "kevSources": [],
-    "published": "Sep 25, 2026, 4:04:47 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-87147",
-    "aliases": ["GHSA-237m-2qxv-ww7c", "CVE-2026-89032"],
-    "packages": [],
-    "vendor": "berriai",
-    "product": "LiteLLM",
-    "description": "BerriAI LiteLLM before 1.101.0-rc.1 contains a tenant isolation bypass vulnerability in the semantic cache layer that allows authenticated users to read other tenants' cached responses by exploiting a metadata key mismatch between _get_semantic_cache_tenant_scope() and _get_metadata_variable_name(). Attackers holding a valid virtual key can submit semantically similar prompts on affected routes such as /v1/responses and /bedrock/* to retrieve cached responses containing other tenants' personally identifiable information, financial data, or source code, and can cause agentic front-ends to auto-execute attacker-supplied tool calls under victim credentials by returning cached function_call or tool_calls payloads to a different principal.",
-    "references": [
-      "https://github.com/BerriAI/litellm/releases/tag/v1.101.0-rc.1",
-      "https://github.com/BerriAI/litellm/pull/39590",
-      "https://github.com/BerriAI/litellm/commit/16db51e2cfc28e02bd460481e634a8403ea9265e",
-      "https://www.vulncheck.com/advisories/berriai-litellm-rc-1-tenant-isolation-bypass-via-semantic-cache-layer"
-    ],
-    "euvdId": "EUVD-2026-87147",
-    "kevDateAdded": null,
-    "epssPercentile": 0.17941
-  },
-  "CVE-2026-59823": {
-    "id": "CVE-2026-59823",
-    "title": "LiteLLM is a proxy server (AI Gateway) to call LLM APIs in OpenAI (or native) format. Prior to 1.83.9, an authenticated LiteLLM Proxy caller with a valid virtual key can place api_base inside the use…",
-    "sources": ["euvd"],
-    "severity": "5.3 (4.0)",
-    "cvssBase": 5.3,
-    "epss": 0.44,
-    "kev": false,
-    "kevSources": [],
-    "published": "Sep 16, 2026, 6:36:21 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-80986",
-    "aliases": ["GHSA-hx8v-g79f-8w5f", "PYSEC-2026-4070", "CVE-2026-59823"],
-    "packages": [],
-    "vendor": "berriai",
-    "product": "LiteLLM",
-    "description": "LiteLLM is a proxy server (AI Gateway) to call LLM APIs in OpenAI (or native) format. Prior to 1.83.9, an authenticated LiteLLM Proxy caller with a valid virtual key can place api_base inside the user_config request body to bypass is_request_body_safe, which blocks top-level api_base and base_url but previously did not inspect or reject user_config. Because user_config constructs the outbound router, the nested destination redirects a server-side request to an internal or external host selected by the caller and can expose endpoints the caller cannot otherwise access. This issue is fixed in version 1.83.9.",
-    "references": [
-      "https://github.com/BerriAI/litellm/security/advisories/GHSA-hx8v-g79f-8w5f",
-      "https://github.com/BerriAI/litellm/pull/25827",
-      "https://github.com/BerriAI/litellm/commit/47214be317f45a2d2ac08258362e0481411eb427"
-    ],
-    "euvdId": "EUVD-2026-80986",
-    "kevDateAdded": null,
-    "epssPercentile": 0.36112
-  },
-  "CVE-2026-84377": {
-    "id": "CVE-2026-84377",
-    "title": "LiteLLM is a proxy server (AI Gateway) to call LLM APIs in OpenAI (or native) format. Prior to versions 1.88.6 and 1.96.2, any authenticated LiteLLM proxy user could redirect an outbound provider cal…",
-    "sources": ["euvd"],
-    "severity": "6.5 (3.1)",
-    "cvssBase": 6.5,
-    "epss": 0.54,
-    "kev": false,
-    "kevSources": [],
-    "published": "Sep 2, 2026, 5:18:32 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-70236",
-    "aliases": ["GHSA-3cv6-jpf6-8222", "CVE-2026-84377", "PYSEC-2026-4066"],
-    "packages": [],
-    "vendor": "berriai",
-    "product": "LiteLLM",
-    "description": "LiteLLM is a proxy server (AI Gateway) to call LLM APIs in OpenAI (or native) format. Prior to versions 1.88.6 and 1.96.2, any authenticated LiteLLM proxy user could redirect an outbound provider call to a destination the user controls and cause the proxy to send its configured provider credentials to that destination. Request validation in litellm/proxy/auth/auth_utils.py, litellm/proxy/common_request_processing.py, litellm/proxy/health_endpoints/_health_endpoints.py, litellm/proxy/image_endpoints/endpoints.py, and litellm/proxy/litellm_pre_call_utils.py used incomplete checks that did not cover every sensitive parameter or inspect equivalent values across nested request fields, path values, and bracket-notation form data. Routing and credential parameters including api_base, base_url, model_list, fallbacks, and litellm_credential_name could therefore be applied without clearing the operator's stored key, exposing upstream provider credentials and other configured secrets and permitting server-side requests to internal services reachable by the proxy. This issue is fixed in versions 1.88.6 and 1.96.2.",
-    "references": [
-      "https://github.com/BerriAI/litellm/security/advisories/GHSA-3cv6-jpf6-8222",
-      "https://github.com/BerriAI/litellm/pull/36011",
-      "https://github.com/BerriAI/litellm/pull/36314",
-      "https://github.com/BerriAI/litellm/pull/36494",
-      "https://github.com/BerriAI/litellm/commit/473f72e63a9777d793fbbf57194d8ec4fb97bc1b",
-      "https://github.com/BerriAI/litellm/commit/820f247a6abba55cd87d130bef7bba7be3b29d37",
-      "https://github.com/BerriAI/litellm/commit/c898d341c02299cf2506d0d8e84cc67953043593",
-      "https://github.com/BerriAI/litellm/releases/tag/v1.88.6"
-    ],
-    "euvdId": "EUVD-2026-70236",
-    "kevDateAdded": null,
-    "epssPercentile": 0.43612
-  },
-  "CVE-2026-59822": {
-    "id": "CVE-2026-59822",
-    "title": "LiteLLM is a proxy server (AI Gateway) to call LLM APIs in OpenAI (or native) format. Prior to 1.84.0, LiteLLM's MCP Streamable HTTP endpoint allowed an unauthenticated attacker to use a fabricated A…",
-    "sources": ["euvd", "kev"],
-    "severity": "8.8 (4.0)",
-    "cvssBase": 8.8,
-    "epss": 0.84,
-    "kev": true,
-    "kevSources": ["cisa_kev"],
-    "published": "Jul 8, 2026, 7:32:18 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-42359",
-    "aliases": ["PYSEC-2026-3479", "CVE-2026-59822", "GHSA-7488-6r32-c95q"],
-    "packages": [],
-    "vendor": "berriai",
-    "product": "LiteLLM",
-    "description": "LiteLLM is a proxy server (AI Gateway) to call LLM APIs in OpenAI (or native) format. Prior to 1.84.0, LiteLLM's MCP Streamable HTTP endpoint allowed an unauthenticated attacker to use a fabricated Authorization header to trigger an OAuth2 passthrough fallback path that replaced failed LiteLLM key validation with an empty UserAPIKeyAuth() object, allowing requests to reach MCP tooling without a valid LiteLLM key. This issue is fixed in version 1.84.0.",
-    "references": [
-      "https://github.com/BerriAI/litellm/security/advisories/GHSA-7488-6r32-c95q",
-      "https://github.com/BerriAI/litellm/pull/26463",
-      "https://github.com/BerriAI/litellm/commit/73869f0faf7d11ee21adcb5f91b8c33a340b6c2c",
-      "https://github.com/BerriAI/litellm/releases/tag/v1.84.0"
-    ],
-    "euvdId": "EUVD-2026-42359",
-    "kevDateAdded": "2026-09-02",
-    "epssPercentile": 0.56399
-  },
-  "CVE-2026-37004": {
-    "id": "CVE-2026-37004",
-    "title": "BerriAI litellm <=1.82.4 is vulnerable to Server-Side Template Injection (SSTI), which allows unauthenticated remote attackers to execute arbitrary OS commands via a crafted dotprompt_content paramet…",
-    "sources": ["euvd"],
-    "severity": "9.8 (3.1)",
-    "cvssBase": 9.8,
-    "epss": 0.8,
-    "kev": false,
-    "kevSources": [],
-    "published": "Aug 27, 2026, 12:00:00 AM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-67271",
-    "aliases": ["PYSEC-2026-3861", "GHSA-6wvf-77m9-58rm", "CVE-2026-37004"],
-    "packages": [],
-    "vendor": "n/a",
-    "product": "n/a",
-    "description": "BerriAI litellm <=1.82.4 is vulnerable to Server-Side Template Injection (SSTI), which allows unauthenticated remote attackers to execute arbitrary OS commands via a crafted dotprompt_content parameter in the /prompts/test endpoint due to use of an unsandboxed jinja2.Environment.",
-    "references": [
-      "https://github.com/BerriAI/litellm/blob/244bdffd1bfe7bebdfdef516e1ebe426a898e2f0/litellm/proxy/prompts/prompt_endpoints.py#L1073",
-      "https://yerangamage.com/cves/detail/?slug=litellm-ssti-rce"
-    ],
-    "euvdId": "EUVD-2026-67271",
-    "kevDateAdded": null,
-    "epssPercentile": 0.55195
-  },
   "CVE-2026-47102": {
     "id": "CVE-2026-47102",
     "title": "LiteLLM prior to 1.83.10 allows a user to modify their own user_role via the /user/update endpoint. While the endpoint correctly restricts users to updating only their own account, it does not restri…",
@@ -182,7 +27,7 @@
     ],
     "euvdId": "EUVD-2026-31345",
     "kevDateAdded": null,
-    "epssPercentile": 0.55961
+    "epssPercentile": 0.55987
   },
   "CVE-2026-47101": {
     "id": "CVE-2026-47101",
@@ -212,7 +57,162 @@
     ],
     "euvdId": "EUVD-2026-31346",
     "kevDateAdded": null,
-    "epssPercentile": 0.70214
+    "epssPercentile": 0.70231
+  },
+  "CVE-2026-93355": {
+    "id": "CVE-2026-93355",
+    "title": "LiteLLM contains a weak authentication vulnerability that allows an attacker holding a valid JWT from the configured identity provider to authenticate as any existing user by exploiting an email-base…",
+    "sources": ["euvd"],
+    "severity": "7.6 (4.0)",
+    "cvssBase": 7.6,
+    "epss": 0.27,
+    "kev": false,
+    "kevSources": [],
+    "published": "Sep 28, 2026, 7:26:01 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-88462",
+    "aliases": ["GHSA-g83g-3c4g-cfm5", "CVE-2026-93355"],
+    "packages": [],
+    "vendor": "berriai",
+    "product": "LiteLLM",
+    "description": "LiteLLM contains a weak authentication vulnerability that allows an attacker holding a valid JWT from the configured identity provider to authenticate as any existing user by exploiting an email-based fallback lookup in the JWT authentication flow without verifying the email_verified claim. Attackers can present a token with an unverified email address matching a victim's account to inherit the victim's role, including proxy_admin privileges, and permanently overwrite the victim's stored identity binding to retain persistent unauthorized access to administrative endpoints exposing API keys and user management.",
+    "references": [
+      "https://www.ox.security/blog/litellm-an-ordinary-login-token-can-become-someone-elses-admin-account/",
+      "https://www.vulncheck.com/advisories/litellm-weak-jwt-authentication-via-email-based-user-lookup"
+    ],
+    "euvdId": "EUVD-2026-88462",
+    "kevDateAdded": null,
+    "epssPercentile": 0.18097
+  },
+  "CVE-2026-89032": {
+    "id": "CVE-2026-89032",
+    "title": "BerriAI LiteLLM before 1.101.0-rc.1 contains a tenant isolation bypass vulnerability in the semantic cache layer that allows authenticated users to read other tenants' cached responses by exploiting …",
+    "sources": ["euvd"],
+    "severity": "8.7 (4.0)",
+    "cvssBase": 8.7,
+    "epss": 0.27,
+    "kev": false,
+    "kevSources": [],
+    "published": "Sep 25, 2026, 4:04:47 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-87147",
+    "aliases": ["GHSA-237m-2qxv-ww7c", "CVE-2026-89032"],
+    "packages": [],
+    "vendor": "berriai",
+    "product": "LiteLLM",
+    "description": "BerriAI LiteLLM before 1.101.0-rc.1 contains a tenant isolation bypass vulnerability in the semantic cache layer that allows authenticated users to read other tenants' cached responses by exploiting a metadata key mismatch between _get_semantic_cache_tenant_scope() and _get_metadata_variable_name(). Attackers holding a valid virtual key can submit semantically similar prompts on affected routes such as /v1/responses and /bedrock/* to retrieve cached responses containing other tenants' personally identifiable information, financial data, or source code, and can cause agentic front-ends to auto-execute attacker-supplied tool calls under victim credentials by returning cached function_call or tool_calls payloads to a different principal.",
+    "references": [
+      "https://github.com/BerriAI/litellm/releases/tag/v1.101.0-rc.1",
+      "https://github.com/BerriAI/litellm/pull/39590",
+      "https://github.com/BerriAI/litellm/commit/16db51e2cfc28e02bd460481e634a8403ea9265e",
+      "https://www.vulncheck.com/advisories/berriai-litellm-rc-1-tenant-isolation-bypass-via-semantic-cache-layer"
+    ],
+    "euvdId": "EUVD-2026-87147",
+    "kevDateAdded": null,
+    "epssPercentile": 0.1796
+  },
+  "CVE-2026-59823": {
+    "id": "CVE-2026-59823",
+    "title": "LiteLLM is a proxy server (AI Gateway) to call LLM APIs in OpenAI (or native) format. Prior to 1.83.9, an authenticated LiteLLM Proxy caller with a valid virtual key can place api_base inside the use…",
+    "sources": ["euvd"],
+    "severity": "5.3 (4.0)",
+    "cvssBase": 5.3,
+    "epss": 0.44,
+    "kev": false,
+    "kevSources": [],
+    "published": "Sep 16, 2026, 6:36:21 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-80986",
+    "aliases": ["GHSA-hx8v-g79f-8w5f", "PYSEC-2026-4070", "CVE-2026-59823"],
+    "packages": [],
+    "vendor": "berriai",
+    "product": "LiteLLM",
+    "description": "LiteLLM is a proxy server (AI Gateway) to call LLM APIs in OpenAI (or native) format. Prior to 1.83.9, an authenticated LiteLLM Proxy caller with a valid virtual key can place api_base inside the user_config request body to bypass is_request_body_safe, which blocks top-level api_base and base_url but previously did not inspect or reject user_config. Because user_config constructs the outbound router, the nested destination redirects a server-side request to an internal or external host selected by the caller and can expose endpoints the caller cannot otherwise access. This issue is fixed in version 1.83.9.",
+    "references": [
+      "https://github.com/BerriAI/litellm/security/advisories/GHSA-hx8v-g79f-8w5f",
+      "https://github.com/BerriAI/litellm/pull/25827",
+      "https://github.com/BerriAI/litellm/commit/47214be317f45a2d2ac08258362e0481411eb427"
+    ],
+    "euvdId": "EUVD-2026-80986",
+    "kevDateAdded": null,
+    "epssPercentile": 0.36141
+  },
+  "CVE-2026-84377": {
+    "id": "CVE-2026-84377",
+    "title": "LiteLLM is a proxy server (AI Gateway) to call LLM APIs in OpenAI (or native) format. Prior to versions 1.88.6 and 1.96.2, any authenticated LiteLLM proxy user could redirect an outbound provider cal…",
+    "sources": ["euvd"],
+    "severity": "6.5 (3.1)",
+    "cvssBase": 6.5,
+    "epss": 0.54,
+    "kev": false,
+    "kevSources": [],
+    "published": "Sep 2, 2026, 5:18:32 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-70236",
+    "aliases": ["GHSA-3cv6-jpf6-8222", "CVE-2026-84377", "PYSEC-2026-4066"],
+    "packages": [],
+    "vendor": "berriai",
+    "product": "LiteLLM",
+    "description": "LiteLLM is a proxy server (AI Gateway) to call LLM APIs in OpenAI (or native) format. Prior to versions 1.88.6 and 1.96.2, any authenticated LiteLLM proxy user could redirect an outbound provider call to a destination the user controls and cause the proxy to send its configured provider credentials to that destination. Request validation in litellm/proxy/auth/auth_utils.py, litellm/proxy/common_request_processing.py, litellm/proxy/health_endpoints/_health_endpoints.py, litellm/proxy/image_endpoints/endpoints.py, and litellm/proxy/litellm_pre_call_utils.py used incomplete checks that did not cover every sensitive parameter or inspect equivalent values across nested request fields, path values, and bracket-notation form data. Routing and credential parameters including api_base, base_url, model_list, fallbacks, and litellm_credential_name could therefore be applied without clearing the operator's stored key, exposing upstream provider credentials and other configured secrets and permitting server-side requests to internal services reachable by the proxy. This issue is fixed in versions 1.88.6 and 1.96.2.",
+    "references": [
+      "https://github.com/BerriAI/litellm/security/advisories/GHSA-3cv6-jpf6-8222",
+      "https://github.com/BerriAI/litellm/pull/36011",
+      "https://github.com/BerriAI/litellm/pull/36314",
+      "https://github.com/BerriAI/litellm/pull/36494",
+      "https://github.com/BerriAI/litellm/commit/473f72e63a9777d793fbbf57194d8ec4fb97bc1b",
+      "https://github.com/BerriAI/litellm/commit/820f247a6abba55cd87d130bef7bba7be3b29d37",
+      "https://github.com/BerriAI/litellm/commit/c898d341c02299cf2506d0d8e84cc67953043593",
+      "https://github.com/BerriAI/litellm/releases/tag/v1.88.6"
+    ],
+    "euvdId": "EUVD-2026-70236",
+    "kevDateAdded": null,
+    "epssPercentile": 0.43637
+  },
+  "CVE-2026-59822": {
+    "id": "CVE-2026-59822",
+    "title": "LiteLLM is a proxy server (AI Gateway) to call LLM APIs in OpenAI (or native) format. Prior to 1.84.0, LiteLLM's MCP Streamable HTTP endpoint allowed an unauthenticated attacker to use a fabricated A…",
+    "sources": ["euvd", "kev"],
+    "severity": "8.8 (4.0)",
+    "cvssBase": 8.8,
+    "epss": 0.84,
+    "kev": true,
+    "kevSources": ["cisa_kev"],
+    "published": "Jul 8, 2026, 7:32:18 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-42359",
+    "aliases": ["PYSEC-2026-3479", "CVE-2026-59822", "GHSA-7488-6r32-c95q"],
+    "packages": [],
+    "vendor": "berriai",
+    "product": "LiteLLM",
+    "description": "LiteLLM is a proxy server (AI Gateway) to call LLM APIs in OpenAI (or native) format. Prior to 1.84.0, LiteLLM's MCP Streamable HTTP endpoint allowed an unauthenticated attacker to use a fabricated Authorization header to trigger an OAuth2 passthrough fallback path that replaced failed LiteLLM key validation with an empty UserAPIKeyAuth() object, allowing requests to reach MCP tooling without a valid LiteLLM key. This issue is fixed in version 1.84.0.",
+    "references": [
+      "https://github.com/BerriAI/litellm/security/advisories/GHSA-7488-6r32-c95q",
+      "https://github.com/BerriAI/litellm/pull/26463",
+      "https://github.com/BerriAI/litellm/commit/73869f0faf7d11ee21adcb5f91b8c33a340b6c2c",
+      "https://github.com/BerriAI/litellm/releases/tag/v1.84.0"
+    ],
+    "euvdId": "EUVD-2026-42359",
+    "kevDateAdded": "2026-09-02",
+    "epssPercentile": 0.56424
+  },
+  "CVE-2026-37004": {
+    "id": "CVE-2026-37004",
+    "title": "BerriAI litellm <=1.82.4 is vulnerable to Server-Side Template Injection (SSTI), which allows unauthenticated remote attackers to execute arbitrary OS commands via a crafted dotprompt_content paramet…",
+    "sources": ["euvd"],
+    "severity": "9.8 (3.1)",
+    "cvssBase": 9.8,
+    "epss": 0.8,
+    "kev": false,
+    "kevSources": [],
+    "published": "Aug 27, 2026, 12:00:00 AM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-67271",
+    "aliases": ["PYSEC-2026-3861", "GHSA-6wvf-77m9-58rm", "CVE-2026-37004"],
+    "packages": [],
+    "vendor": "n/a",
+    "product": "n/a",
+    "description": "BerriAI litellm <=1.82.4 is vulnerable to Server-Side Template Injection (SSTI), which allows unauthenticated remote attackers to execute arbitrary OS commands via a crafted dotprompt_content parameter in the /prompts/test endpoint due to use of an unsandboxed jinja2.Environment.",
+    "references": [
+      "https://github.com/BerriAI/litellm/blob/244bdffd1bfe7bebdfdef516e1ebe426a898e2f0/litellm/proxy/prompts/prompt_endpoints.py#L1073",
+      "https://yerangamage.com/cves/detail/?slug=litellm-ssti-rce"
+    ],
+    "euvdId": "EUVD-2026-67271",
+    "kevDateAdded": null,
+    "epssPercentile": 0.55223
   },
   "CVE-2026-30623": {
     "id": "CVE-2026-30623",
@@ -237,7 +237,7 @@
     ],
     "euvdId": "EUVD-2026-44846",
     "kevDateAdded": null,
-    "epssPercentile": 0.92002
+    "epssPercentile": 0.9201
   },
   "CVE-2026-12773": {
     "id": "CVE-2026-12773",
@@ -264,7 +264,7 @@
     ],
     "euvdId": "EUVD-2026-38139",
     "kevDateAdded": null,
-    "epssPercentile": 0.62194
+    "epssPercentile": 0.62216
   },
   "CVE-2026-35029": {
     "id": "CVE-2026-35029",
@@ -285,7 +285,7 @@
     "references": ["https://github.com/BerriAI/litellm/security/advisories/GHSA-53mr-6c8q-9789"],
     "euvdId": "EUVD-2026-19370",
     "kevDateAdded": null,
-    "epssPercentile": 0.90221
+    "epssPercentile": 0.90228
   },
   "CVE-2026-35030": {
     "id": "CVE-2026-35030",
@@ -306,7 +306,7 @@
     "references": ["https://github.com/BerriAI/litellm/security/advisories/GHSA-jjhc-v7c2-5hh6"],
     "euvdId": "EUVD-2026-19372",
     "kevDateAdded": null,
-    "epssPercentile": 0.57822
+    "epssPercentile": 0.5784
   },
   "CVE-2026-40217": {
     "id": "CVE-2026-40217",
@@ -327,7 +327,7 @@
     "references": ["https://www.x41-dsec.de/lab/advisories/x41-2026-001-litellm/"],
     "euvdId": "EUVD-2026-21376",
     "kevDateAdded": null,
-    "epssPercentile": 0.88508
+    "epssPercentile": 0.88516
   },
   "CVE-2026-42203": {
     "id": "CVE-2026-42203",
@@ -351,7 +351,7 @@
     ],
     "euvdId": "EUVD-2026-28502",
     "kevDateAdded": null,
-    "epssPercentile": 0.50178
+    "epssPercentile": 0.50205
   },
   "CVE-2026-42208": {
     "id": "CVE-2026-42208",
@@ -375,7 +375,7 @@
     ],
     "euvdId": "EUVD-2026-28503",
     "kevDateAdded": "2026-05-08",
-    "epssPercentile": 0.92891
+    "epssPercentile": 0.92897
   },
   "CVE-2026-42271": {
     "id": "CVE-2026-42271",
@@ -423,7 +423,7 @@
     ],
     "euvdId": "EUVD-2026-38361",
     "kevDateAdded": null,
-    "epssPercentile": 0.87094
+    "epssPercentile": 0.87103
   },
   "CVE-2026-59821": {
     "id": "CVE-2026-59821",
@@ -448,7 +448,7 @@
     ],
     "euvdId": "EUVD-2026-42350",
     "kevDateAdded": null,
-    "epssPercentile": 0.58543
+    "epssPercentile": 0.58561
   },
   "CVE-2026-59820": {
     "id": "CVE-2026-59820",
@@ -474,7 +474,7 @@
     ],
     "euvdId": "EUVD-2026-42357",
     "kevDateAdded": null,
-    "epssPercentile": 0.46332
+    "epssPercentile": 0.46364
   },
   "CVE-2026-59819": {
     "id": "CVE-2026-59819",
@@ -499,7 +499,7 @@
     ],
     "euvdId": "EUVD-2026-42361",
     "kevDateAdded": null,
-    "epssPercentile": 0.45551
+    "epssPercentile": 0.4558
   },
   "CVE-2026-12795": {
     "id": "CVE-2026-12795",
@@ -526,7 +526,7 @@
     ],
     "euvdId": "EUVD-2026-38154",
     "kevDateAdded": null,
-    "epssPercentile": 0.55055
+    "epssPercentile": 0.55081
   },
   "CVE-2026-12770": {
     "id": "CVE-2026-12770",
@@ -555,7 +555,7 @@
     ],
     "euvdId": "EUVD-2026-38136",
     "kevDateAdded": null,
-    "epssPercentile": 0.45349
+    "epssPercentile": 0.45376
   },
   "CVE-2026-12796": {
     "id": "CVE-2026-12796",
@@ -582,7 +582,7 @@
     ],
     "euvdId": "EUVD-2026-38155",
     "kevDateAdded": null,
-    "epssPercentile": 0.45387
+    "epssPercentile": 0.45415
   },
   "CVE-2026-12772": {
     "id": "CVE-2026-12772",
@@ -609,7 +609,7 @@
     ],
     "euvdId": "EUVD-2026-38138",
     "kevDateAdded": null,
-    "epssPercentile": 0.32058
+    "epssPercentile": 0.32076
   },
   "CVE-2026-12798": {
     "id": "CVE-2026-12798",
@@ -636,7 +636,7 @@
     ],
     "euvdId": "EUVD-2026-38157",
     "kevDateAdded": null,
-    "epssPercentile": 0.32058
+    "epssPercentile": 0.32076
   },
   "CVE-2026-12799": {
     "id": "CVE-2026-12799",
@@ -663,7 +663,7 @@
     ],
     "euvdId": "EUVD-2026-38158",
     "kevDateAdded": null,
-    "epssPercentile": 0.34873
+    "epssPercentile": 0.34902
   },
   "CVE-2026-12797": {
     "id": "CVE-2026-12797",
@@ -690,7 +690,7 @@
     ],
     "euvdId": "EUVD-2026-38156",
     "kevDateAdded": null,
-    "epssPercentile": 0.32059
+    "epssPercentile": 0.32076
   },
   "CVE-2026-12771": {
     "id": "CVE-2026-12771",
@@ -717,7 +717,7 @@
     ],
     "euvdId": "EUVD-2026-38137",
     "kevDateAdded": null,
-    "epssPercentile": 0.35358
+    "epssPercentile": 0.35385
   },
   "CVE-2026-12774": {
     "id": "CVE-2026-12774",
@@ -744,7 +744,7 @@
     ],
     "euvdId": "EUVD-2026-38140",
     "kevDateAdded": null,
-    "epssPercentile": 0.32059
+    "epssPercentile": 0.32075
   },
   "CVE-2026-34936": {
     "id": "CVE-2026-34936",
@@ -765,7 +765,7 @@
     "references": ["https://github.com/MervinPraison/PraisonAI/security/advisories/GHSA-x6m9-gxvr-7jpv"],
     "euvdId": "EUVD-2026-18915",
     "kevDateAdded": null,
-    "epssPercentile": 0.26716
+    "epssPercentile": 0.26741
   },
   "CVE-2026-4993": {
     "id": "CVE-2026-4993",
@@ -791,7 +791,7 @@
     ],
     "euvdId": "EUVD-2026-16913",
     "kevDateAdded": null,
-    "epssPercentile": 0.03393
+    "epssPercentile": 0.03395
   },
   "CVE-2026-33634": {
     "id": "CVE-2026-33634",
@@ -821,7 +821,7 @@
     ],
     "euvdId": "EUVD-2026-14601",
     "kevDateAdded": "2026-03-26",
-    "epssPercentile": 0.76256
+    "epssPercentile": 0.76268
   },
   "CVE-2025-45809": {
     "id": "CVE-2025-45809",
@@ -845,7 +845,7 @@
     ],
     "euvdId": "EUVD-2025-19897",
     "kevDateAdded": null,
-    "epssPercentile": 0.19588
+    "epssPercentile": 0.19606
   },
   "CVE-2025-11203": {
     "id": "CVE-2025-11203",
@@ -869,7 +869,7 @@
     ],
     "euvdId": "EUVD-2025-36712",
     "kevDateAdded": null,
-    "epssPercentile": 0.26184
+    "epssPercentile": 0.26209
   },
   "CVE-2024-5751": {
     "id": "CVE-2024-5751",
@@ -890,7 +890,7 @@
     "references": ["https://huntr.com/bounties/ae623c2f-b64b-4245-9ed4-f13a0a5824ce"],
     "euvdId": "EUVD-2024-2057",
     "kevDateAdded": null,
-    "epssPercentile": 0.57909
+    "epssPercentile": 0.57928
   },
   "CVE-2025-0628": {
     "id": "CVE-2025-0628",
@@ -914,7 +914,7 @@
     ],
     "euvdId": "EUVD-2025-6827",
     "kevDateAdded": null,
-    "epssPercentile": 0.25098
+    "epssPercentile": 0.25124
   },
   "CVE-2024-8984": {
     "id": "CVE-2024-8984",
@@ -938,7 +938,7 @@
     ],
     "euvdId": "EUVD-2025-6882",
     "kevDateAdded": null,
-    "epssPercentile": 0.56555
+    "epssPercentile": 0.56579
   },
   "CVE-2024-6825": {
     "id": "CVE-2024-6825",
@@ -962,7 +962,7 @@
     ],
     "euvdId": "EUVD-2025-6976",
     "kevDateAdded": null,
-    "epssPercentile": 0.75775
+    "epssPercentile": 0.75785
   },
   "CVE-2024-5710": {
     "id": "CVE-2024-5710",
@@ -983,7 +983,7 @@
     "references": ["https://huntr.com/bounties/70897f59-a966-4d93-b71e-745e3da91970"],
     "euvdId": "EUVD-2024-2149",
     "kevDateAdded": null,
-    "epssPercentile": 0.3273
+    "epssPercentile": 0.32756
   },
   "CVE-2024-9606": {
     "id": "CVE-2024-9606",
@@ -1007,7 +1007,7 @@
     ],
     "euvdId": "EUVD-2025-6847",
     "kevDateAdded": null,
-    "epssPercentile": 0.5357
+    "epssPercentile": 0.53597
   },
   "CVE-2025-0330": {
     "id": "CVE-2025-0330",
@@ -1028,7 +1028,7 @@
     "references": ["https://huntr.com/bounties/661b388a-44d8-4ad5-862b-4dc5b80be30a"],
     "euvdId": "EUVD-2025-6833",
     "kevDateAdded": null,
-    "epssPercentile": 0.4455
+    "epssPercentile": 0.44576
   },
   "CVE-2024-10188": {
     "id": "CVE-2024-10188",
@@ -1052,7 +1052,7 @@
     ],
     "euvdId": "EUVD-2025-7124",
     "kevDateAdded": null,
-    "epssPercentile": 0.44724
+    "epssPercentile": 0.44749
   },
   "CVE-2024-4888": {
     "id": "CVE-2024-4888",
@@ -1073,7 +1073,7 @@
     "references": ["https://huntr.com/bounties/48461d89-cf13-4ad3-a43e-0d37da08fc6c"],
     "euvdId": "EUVD-2024-1906",
     "kevDateAdded": null,
-    "epssPercentile": 0.4801
+    "epssPercentile": 0.48035
   },
   "CVE-2024-6587": {
     "id": "CVE-2024-6587",
@@ -1097,7 +1097,7 @@
     ],
     "euvdId": "EUVD-2024-2785",
     "kevDateAdded": null,
-    "epssPercentile": 0.98411
+    "epssPercentile": 0.98412
   },
   "CVE-2024-4264": {
     "id": "CVE-2024-4264",
@@ -1118,7 +1118,7 @@
     "references": ["https://huntr.com/bounties/a3221b0c-6e25-4295-ab0f-042997e8fc61"],
     "euvdId": "EUVD-2024-1491",
     "kevDateAdded": null,
-    "epssPercentile": 0.57932
+    "epssPercentile": 0.57951
   },
   "CVE-2024-5225": {
     "id": "CVE-2024-5225",
@@ -1139,7 +1139,7 @@
     "references": ["https://huntr.com/bounties/491e4884-0306-4cd4-8fe2-9a19de33bf5c"],
     "euvdId": "EUVD-2024-2064",
     "kevDateAdded": null,
-    "epssPercentile": 0.35069
+    "epssPercentile": 0.35096
   },
   "CVE-2024-4889": {
     "id": "CVE-2024-4889",
@@ -1160,7 +1160,7 @@
     "references": ["https://huntr.com/bounties/be3fda72-a65b-4993-9a0e-7e0f05db51f8"],
     "euvdId": "EUVD-2024-44458",
     "kevDateAdded": null,
-    "epssPercentile": 0.57194
+    "epssPercentile": 0.57216
   },
   "CVE-2024-4890": {
     "id": "CVE-2024-4890",
@@ -1181,7 +1181,7 @@
     "references": ["https://huntr.com/bounties/a4f6d357-5b44-4e00-9cac-f1cc351211d2"],
     "euvdId": "EUVD-2024-1982",
     "kevDateAdded": null,
-    "epssPercentile": 0.44815
+    "epssPercentile": 0.44841
   },
   "CVE-2024-2952": {
     "id": "CVE-2024-2952",
@@ -1205,7 +1205,35 @@
     ],
     "euvdId": "EUVD-2024-1088",
     "kevDateAdded": null,
-    "epssPercentile": 0.68863
+    "epssPercentile": 0.68882
+  },
+  "CVE-2026-105775": {
+    "id": "CVE-2026-105775",
+    "title": "A security vulnerability has been detected in vllm-project vLLM up to 0.31.0. This impacts the function conv_ssm_forward of the file vllm/model_executor/layers/mamba/mamba_mixer2.py of the component …",
+    "sources": ["euvd"],
+    "severity": "5.3 (4.0)",
+    "cvssBase": 5.3,
+    "epss": 0.3,
+    "kev": false,
+    "kevSources": [],
+    "published": "Oct 6, 2026, 5:45:11 AM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-92962",
+    "aliases": ["GHSA-qx62-jwpf-rcpj", "CVE-2026-105775"],
+    "packages": [],
+    "vendor": "vllm-project",
+    "product": "vllm",
+    "description": "A security vulnerability has been detected in vllm-project vLLM up to 0.31.0. This impacts the function conv_ssm_forward of the file vllm/model_executor/layers/mamba/mamba_mixer2.py of the component Completions Request Handler. The manipulation leads to out-of-bounds read. The attack is possible to be carried out remotely. The exploit has been disclosed publicly and may be used. The project was informed of the problem early through an issue report but has not responded yet.",
+    "references": [
+      "https://vuldb.com/vuln/413808",
+      "https://vuldb.com/vuln/413808/cti",
+      "https://vuldb.com/cve/CVE-2026-105775",
+      "https://vuldb.com/submit/992291",
+      "https://github.com/vllm-project/vllm/issues/57266",
+      "https://github.com/vllm-project/vllm/"
+    ],
+    "euvdId": "EUVD-2026-92962",
+    "kevDateAdded": null,
+    "epssPercentile": 0.20406
   },
   "CVE-2026-105758": {
     "id": "CVE-2026-105758",
@@ -1213,7 +1241,7 @@
     "sources": ["euvd"],
     "severity": "5.3 (3.1)",
     "cvssBase": 5.3,
-    "epss": 0.31,
+    "epss": 0.3,
     "kev": false,
     "kevSources": [],
     "published": "Oct 5, 2026, 10:54:53 PM",
@@ -1231,7 +1259,7 @@
     ],
     "euvdId": "EUVD-2026-92848",
     "kevDateAdded": null,
-    "epssPercentile": 0.21623
+    "epssPercentile": 0.21146
   },
   "CVE-2026-105754": {
     "id": "CVE-2026-105754",
@@ -1257,7 +1285,7 @@
     ],
     "euvdId": "EUVD-2026-92844",
     "kevDateAdded": null,
-    "epssPercentile": 0.18074
+    "epssPercentile": 0.17492
   },
   "CVE-2026-105759": {
     "id": "CVE-2026-105759",
@@ -1283,7 +1311,7 @@
     ],
     "euvdId": "EUVD-2026-92850",
     "kevDateAdded": null,
-    "epssPercentile": 0.24351
+    "epssPercentile": 0.24376
   },
   "CVE-2026-105755": {
     "id": "CVE-2026-105755",
@@ -1309,7 +1337,7 @@
     ],
     "euvdId": "EUVD-2026-92845",
     "kevDateAdded": null,
-    "epssPercentile": 0.09465
+    "epssPercentile": 0.09311
   },
   "CVE-2026-105922": {
     "id": "CVE-2026-105922",
@@ -1338,7 +1366,7 @@
     ],
     "euvdId": "EUVD-2026-93430",
     "kevDateAdded": null,
-    "epssPercentile": 0.21093
+    "epssPercentile": 0.2111
   },
   "CVE-2026-105752": {
     "id": "CVE-2026-105752",
@@ -1346,7 +1374,7 @@
     "sources": ["euvd"],
     "severity": "3.1 (3.1)",
     "cvssBase": 3.1,
-    "epss": 0.21,
+    "epss": 0.22,
     "kev": false,
     "kevSources": [],
     "published": "Oct 5, 2026, 10:32:59 PM",
@@ -1365,7 +1393,7 @@
     ],
     "euvdId": "EUVD-2026-92842",
     "kevDateAdded": null,
-    "epssPercentile": 0.10647
+    "epssPercentile": 0.11062
   },
   "CVE-2026-105756": {
     "id": "CVE-2026-105756",
@@ -1391,7 +1419,7 @@
     ],
     "euvdId": "EUVD-2026-92846",
     "kevDateAdded": null,
-    "epssPercentile": 0.22031
+    "epssPercentile": 0.22285
   },
   "CVE-2026-105760": {
     "id": "CVE-2026-105760",
@@ -1417,7 +1445,7 @@
     ],
     "euvdId": "EUVD-2026-92851",
     "kevDateAdded": null,
-    "epssPercentile": 0.20977
+    "epssPercentile": 0.20993
   },
   "CVE-2026-105753": {
     "id": "CVE-2026-105753",
@@ -1444,7 +1472,7 @@
     ],
     "euvdId": "EUVD-2026-92843",
     "kevDateAdded": null,
-    "epssPercentile": 0.34712
+    "epssPercentile": 0.34982
   },
   "CVE-2026-105757": {
     "id": "CVE-2026-105757",
@@ -1470,35 +1498,7 @@
     ],
     "euvdId": "EUVD-2026-92847",
     "kevDateAdded": null,
-    "epssPercentile": 0.22032
-  },
-  "CVE-2026-105775": {
-    "id": "CVE-2026-105775",
-    "title": "A security vulnerability has been detected in vllm-project vLLM up to 0.31.0. This impacts the function conv_ssm_forward of the file vllm/model_executor/layers/mamba/mamba_mixer2.py of the component …",
-    "sources": ["euvd"],
-    "severity": "5.3 (4.0)",
-    "cvssBase": 5.3,
-    "epss": 0.3,
-    "kev": false,
-    "kevSources": [],
-    "published": "Oct 6, 2026, 5:45:11 AM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-92962",
-    "aliases": ["GHSA-qx62-jwpf-rcpj", "CVE-2026-105775"],
-    "packages": [],
-    "vendor": "vllm-project",
-    "product": "vllm",
-    "description": "A security vulnerability has been detected in vllm-project vLLM up to 0.31.0. This impacts the function conv_ssm_forward of the file vllm/model_executor/layers/mamba/mamba_mixer2.py of the component Completions Request Handler. The manipulation leads to out-of-bounds read. The attack is possible to be carried out remotely. The exploit has been disclosed publicly and may be used. The project was informed of the problem early through an issue report but has not responded yet.",
-    "references": [
-      "https://vuldb.com/vuln/413808",
-      "https://vuldb.com/vuln/413808/cti",
-      "https://vuldb.com/cve/CVE-2026-105775",
-      "https://vuldb.com/submit/992291",
-      "https://github.com/vllm-project/vllm/issues/57266",
-      "https://github.com/vllm-project/vllm/"
-    ],
-    "euvdId": "EUVD-2026-92962",
-    "kevDateAdded": null,
-    "epssPercentile": 0.2039
+    "epssPercentile": 0.22284
   },
   "CVE-2026-100649": {
     "id": "CVE-2026-100649",
@@ -1522,7 +1522,7 @@
     ],
     "euvdId": "EUVD-2026-87743",
     "kevDateAdded": null,
-    "epssPercentile": 0.25495
+    "epssPercentile": 0.2552
   },
   "CVE-2026-103241": {
     "id": "CVE-2026-103241",
@@ -1552,7 +1552,7 @@
     ],
     "euvdId": "EUVD-2026-90191",
     "kevDateAdded": null,
-    "epssPercentile": 0.52216
+    "epssPercentile": 0.52244
   },
   "CVE-2026-100653": {
     "id": "CVE-2026-100653",
@@ -1577,7 +1577,7 @@
     ],
     "euvdId": "EUVD-2026-87747",
     "kevDateAdded": null,
-    "epssPercentile": 0.19194
+    "epssPercentile": 0.19213
   },
   "CVE-2026-100650": {
     "id": "CVE-2026-100650",
@@ -1602,7 +1602,7 @@
     ],
     "euvdId": "EUVD-2026-87744",
     "kevDateAdded": null,
-    "epssPercentile": 0.49693
+    "epssPercentile": 0.49719
   },
   "CVE-2026-100654": {
     "id": "CVE-2026-100654",
@@ -1626,7 +1626,7 @@
     ],
     "euvdId": "EUVD-2026-87748",
     "kevDateAdded": null,
-    "epssPercentile": 0.21501
+    "epssPercentile": 0.22265
   },
   "CVE-2026-100647": {
     "id": "CVE-2026-100647",
@@ -1650,7 +1650,7 @@
     ],
     "euvdId": "EUVD-2026-87741",
     "kevDateAdded": null,
-    "epssPercentile": 0.26313
+    "epssPercentile": 0.26338
   },
   "CVE-2026-100651": {
     "id": "CVE-2026-100651",
@@ -1674,7 +1674,7 @@
     ],
     "euvdId": "EUVD-2026-87745",
     "kevDateAdded": null,
-    "epssPercentile": 0.24225
+    "epssPercentile": 0.2425
   },
   "CVE-2026-100652": {
     "id": "CVE-2026-100652",
@@ -1698,7 +1698,7 @@
     ],
     "euvdId": "EUVD-2026-87746",
     "kevDateAdded": null,
-    "epssPercentile": 0.27855
+    "epssPercentile": 0.27882
   },
   "CVE-2026-100648": {
     "id": "CVE-2026-100648",
@@ -1722,7 +1722,7 @@
     ],
     "euvdId": "EUVD-2026-87742",
     "kevDateAdded": null,
-    "epssPercentile": 0.26691
+    "epssPercentile": 0.26714
   },
   "CVE-2026-94626": {
     "id": "CVE-2026-94626",
@@ -1749,7 +1749,7 @@
     ],
     "euvdId": "EUVD-2026-84220",
     "kevDateAdded": null,
-    "epssPercentile": 0.48403
+    "epssPercentile": 0.4843
   },
   "CVE-2026-61732": {
     "id": "CVE-2026-61732",
@@ -1773,7 +1773,7 @@
     ],
     "euvdId": "EUVD-2026-86329",
     "kevDateAdded": null,
-    "epssPercentile": 0.67781
+    "epssPercentile": 0.67803
   },
   "CVE-2026-93841": {
     "id": "CVE-2026-93841",
@@ -1800,7 +1800,7 @@
     ],
     "euvdId": "EUVD-2026-83285",
     "kevDateAdded": null,
-    "epssPercentile": 0.13531
+    "epssPercentile": 0.13535
   },
   "CVE-2026-93840": {
     "id": "CVE-2026-93840",
@@ -1828,7 +1828,7 @@
     ],
     "euvdId": "EUVD-2026-83284",
     "kevDateAdded": null,
-    "epssPercentile": 0.14501
+    "epssPercentile": 0.14516
   },
   "CVE-2026-93436": {
     "id": "CVE-2026-93436",
@@ -1854,7 +1854,7 @@
     ],
     "euvdId": "EUVD-2026-82534",
     "kevDateAdded": null,
-    "epssPercentile": 0.53704
+    "epssPercentile": 0.53731
   },
   "CVE-2026-94625": {
     "id": "CVE-2026-94625",
@@ -1880,7 +1880,7 @@
     ],
     "euvdId": "EUVD-2026-84219",
     "kevDateAdded": null,
-    "epssPercentile": 0.42408
+    "epssPercentile": 0.42431
   },
   "CVE-2026-94623": {
     "id": "CVE-2026-94623",
@@ -1906,7 +1906,7 @@
     ],
     "euvdId": "EUVD-2026-84217",
     "kevDateAdded": null,
-    "epssPercentile": 0.48403
+    "epssPercentile": 0.4843
   },
   "CVE-2026-93989": {
     "id": "CVE-2026-93989",
@@ -1933,7 +1933,7 @@
     ],
     "euvdId": "EUVD-2026-83617",
     "kevDateAdded": null,
-    "epssPercentile": 0.09254
+    "epssPercentile": 0.09265
   },
   "CVE-2026-92365": {
     "id": "CVE-2026-92365",
@@ -1961,7 +1961,7 @@
     ],
     "euvdId": "EUVD-2026-80771",
     "kevDateAdded": null,
-    "epssPercentile": 0.42358
+    "epssPercentile": 0.42382
   },
   "CVE-2026-94624": {
     "id": "CVE-2026-94624",
@@ -1988,7 +1988,7 @@
     ],
     "euvdId": "EUVD-2026-84218",
     "kevDateAdded": null,
-    "epssPercentile": 0.48403
+    "epssPercentile": 0.4843
   },
   "CVE-2026-94622": {
     "id": "CVE-2026-94622",
@@ -2014,7 +2014,7 @@
     ],
     "euvdId": "EUVD-2026-84216",
     "kevDateAdded": null,
-    "epssPercentile": 0.48402
+    "epssPercentile": 0.48431
   },
   "CVE-2026-94627": {
     "id": "CVE-2026-94627",
@@ -2040,7 +2040,7 @@
     ],
     "euvdId": "EUVD-2026-84221",
     "kevDateAdded": null,
-    "epssPercentile": 0.48403
+    "epssPercentile": 0.4843
   },
   "CVE-2026-57173": {
     "id": "CVE-2026-57173",
@@ -2048,7 +2048,7 @@
     "sources": ["euvd"],
     "severity": "6.5 (3.1)",
     "cvssBase": 6.5,
-    "epss": 0.69,
+    "epss": 0.73,
     "kev": false,
     "kevSources": [],
     "published": "Sep 16, 2026, 4:34:39 PM",
@@ -2066,7 +2066,7 @@
     ],
     "euvdId": "EUVD-2026-80880",
     "kevDateAdded": null,
-    "epssPercentile": 0.51173
+    "epssPercentile": 0.5286
   },
   "CVE-2026-93592": {
     "id": "CVE-2026-93592",
@@ -2090,7 +2090,7 @@
     ],
     "euvdId": "EUVD-2026-82911",
     "kevDateAdded": null,
-    "epssPercentile": 0.43909
+    "epssPercentile": 0.43935
   },
   "CVE-2026-92220": {
     "id": "CVE-2026-92220",
@@ -2118,7 +2118,7 @@
     ],
     "euvdId": "EUVD-2026-80081",
     "kevDateAdded": null,
-    "epssPercentile": 0.51734
+    "epssPercentile": 0.51762
   },
   "CVE-2026-69147": {
     "id": "CVE-2026-69147",
@@ -2126,7 +2126,7 @@
     "sources": ["euvd"],
     "severity": "6.5 (3.1)",
     "cvssBase": 6.5,
-    "epss": 0.55,
+    "epss": 0.58,
     "kev": false,
     "kevSources": [],
     "published": "Sep 16, 2026, 5:49:20 PM",
@@ -2144,7 +2144,7 @@
     ],
     "euvdId": "EUVD-2026-80935",
     "kevDateAdded": null,
-    "epssPercentile": 0.44132
+    "epssPercentile": 0.46175
   },
   "CVE-2026-48746": {
     "id": "CVE-2026-48746",
@@ -2169,7 +2169,7 @@
     ],
     "euvdId": "EUVD-2026-38401",
     "kevDateAdded": null,
-    "epssPercentile": 0.65965
+    "epssPercentile": 0.65987
   },
   "CVE-2026-90713": {
     "id": "CVE-2026-90713",
@@ -2228,7 +2228,7 @@
     ],
     "euvdId": "EUVD-2026-78268",
     "kevDateAdded": null,
-    "epssPercentile": 0.4318
+    "epssPercentile": 0.43202
   },
   "CVE-2026-90553": {
     "id": "CVE-2026-90553",
@@ -2252,7 +2252,7 @@
     ],
     "euvdId": "EUVD-2026-76871",
     "kevDateAdded": null,
-    "epssPercentile": 0.21672
+    "epssPercentile": 0.21692
   },
   "CVE-2026-90554": {
     "id": "CVE-2026-90554",
@@ -2276,7 +2276,7 @@
     ],
     "euvdId": "EUVD-2026-76872",
     "kevDateAdded": null,
-    "epssPercentile": 0.09083
+    "epssPercentile": 0.09088
   },
   "CVE-2026-90555": {
     "id": "CVE-2026-90555",
@@ -2300,7 +2300,7 @@
     ],
     "euvdId": "EUVD-2026-76873",
     "kevDateAdded": null,
-    "epssPercentile": 0.42325
+    "epssPercentile": 0.42348
   },
   "CVE-2026-41523": {
     "id": "CVE-2026-41523",
@@ -2325,7 +2325,7 @@
     ],
     "euvdId": "EUVD-2026-38406",
     "kevDateAdded": null,
-    "epssPercentile": 0.58842
+    "epssPercentile": 0.58862
   },
   "CVE-2026-78684": {
     "id": "CVE-2026-78684",
@@ -2350,7 +2350,7 @@
     ],
     "euvdId": "EUVD-2026-65457",
     "kevDateAdded": null,
-    "epssPercentile": 0.47436
+    "epssPercentile": 0.47464
   },
   "CVE-2026-37237": {
     "id": "CVE-2026-37237",
@@ -2375,7 +2375,7 @@
     ],
     "euvdId": "EUVD-2026-67775",
     "kevDateAdded": null,
-    "epssPercentile": 0.5269
+    "epssPercentile": 0.52718
   },
   "CVE-2026-7141": {
     "id": "CVE-2026-7141",
@@ -2403,7 +2403,7 @@
     ],
     "euvdId": "EUVD-2026-25892",
     "kevDateAdded": null,
-    "epssPercentile": 0.39235
+    "epssPercentile": 0.39259
   },
   "CVE-2026-34755": {
     "id": "CVE-2026-34755",
@@ -2424,7 +2424,7 @@
     "references": ["https://github.com/vllm-project/vllm/security/advisories/GHSA-pq5c-rjhq-qp7p"],
     "euvdId": "EUVD-2026-19350",
     "kevDateAdded": null,
-    "epssPercentile": 0.5664
+    "epssPercentile": 0.56665
   },
   "CVE-2026-34756": {
     "id": "CVE-2026-34756",
@@ -2449,7 +2449,7 @@
     ],
     "euvdId": "EUVD-2026-19351",
     "kevDateAdded": null,
-    "epssPercentile": 0.54095
+    "epssPercentile": 0.5412
   },
   "CVE-2026-73560": {
     "id": "CVE-2026-73560",
@@ -2475,7 +2475,7 @@
     ],
     "euvdId": "EUVD-2026-60377",
     "kevDateAdded": null,
-    "epssPercentile": 0.32895
+    "epssPercentile": 0.32922
   },
   "CVE-2026-71486": {
     "id": "CVE-2026-71486",
@@ -2501,7 +2501,7 @@
     ],
     "euvdId": "EUVD-2026-60376",
     "kevDateAdded": null,
-    "epssPercentile": 0.292
+    "epssPercentile": 0.29228
   },
   "CVE-2026-73556": {
     "id": "CVE-2026-73556",
@@ -2527,7 +2527,7 @@
     ],
     "euvdId": "EUVD-2026-58063",
     "kevDateAdded": null,
-    "epssPercentile": 0.42011
+    "epssPercentile": 0.42036
   },
   "CVE-2026-73559": {
     "id": "CVE-2026-73559",
@@ -3747,7 +3747,7 @@
     "sources": ["euvd"],
     "severity": "9.1 (3.1)",
     "cvssBase": 9.1,
-    "epss": 0.15,
+    "epss": 0.42,
     "kev": false,
     "kevSources": [],
     "published": "Oct 1, 2026, 12:00:00 AM",
@@ -3776,7 +3776,7 @@
     "kevSources": [],
     "published": "Oct 6, 2026, 6:01:24 PM",
     "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-93771",
-    "aliases": ["CVE-2026-106119"],
+    "aliases": ["GHSA-m6rx-h84q-8r95", "CVE-2026-106119"],
     "packages": [],
     "vendor": "@feathersjs",
     "product": "MongoDB",
@@ -4177,7 +4177,7 @@
     "sources": ["euvd"],
     "severity": "8.7 (4.0)",
     "cvssBase": 8.7,
-    "epss": 0.47,
+    "epss": 0.48,
     "kev": false,
     "kevSources": [],
     "published": "Jan 12, 2026, 11:05:00 PM",
@@ -4888,7 +4888,7 @@
     "sources": ["euvd"],
     "severity": "3.7 (3.1)",
     "cvssBase": 3.7,
-    "epss": 0.43,
+    "epss": 0.47,
     "kev": false,
     "kevSources": [],
     "published": "Feb 10, 2026, 9:51:07 PM",
@@ -5038,7 +5038,7 @@
     "sources": ["euvd"],
     "severity": "7.4 (4.0)",
     "cvssBase": 7.4,
-    "epss": 0.88,
+    "epss": 0.89,
     "kev": false,
     "kevSources": [],
     "published": "Nov 7, 2025, 8:15:21 PM",
@@ -6106,6 +6106,57 @@
     "kevDateAdded": null,
     "epssPercentile": null
   },
+  "CVE-2026-105791": {
+    "id": "CVE-2026-105791",
+    "title": "Microsoft UFO is an open-source framework for intelligent automation across devices and platforms. Prior to 3.0.9, the run_shell tool in the CommandLineExecutor component of ufo/client/mcp/local_serv…",
+    "sources": ["euvd"],
+    "severity": "7.5 (3.1)",
+    "cvssBase": 7.5,
+    "epss": 0.62,
+    "kev": false,
+    "kevSources": [],
+    "published": "Oct 6, 2026, 2:09:23 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-93419",
+    "aliases": ["CVE-2026-105791"],
+    "packages": [],
+    "vendor": "Microsoft",
+    "product": "UFO",
+    "description": "Microsoft UFO is an open-source framework for intelligent automation across devices and platforms. Prior to 3.0.9, the run_shell tool in the CommandLineExecutor component of ufo/client/mcp/local_servers/cli_mcp_server.py validates only the first token of the bash_command parameter and permits explorer.exe. On Windows, explorer.exe delegates its following path argument to ShellExecute, so an attacker-influenced agent call can launch an arbitrary executable or script as the desktop user even though the subprocess uses shell=False. Exploitation depends on a user running an affected agent workflow and on inducing the tool call, but successful execution can access or modify that user's files, tokens, and sessions. This issue is fixed in version 3.0.9.",
+    "references": [
+      "https://github.com/microsoft/UFO/security/advisories/GHSA-cmq9-vqjf-4q2q",
+      "https://github.com/microsoft/UFO/commit/3e1262fc091eb319253b7a1338b63f62cc6c82b1",
+      "https://github.com/microsoft/UFO/releases/tag/v3.0.9"
+    ],
+    "euvdId": "EUVD-2026-93419",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2026-61427": {
+    "id": "CVE-2026-61427",
+    "title": "PraisonAI: MCP HTTP-stream transport is unauthenticated by default, exposing tool enumeration and an unvalidated tool-call surface",
+    "sources": ["euvd"],
+    "severity": "6.9 (4.0)",
+    "cvssBase": 6.9,
+    "epss": 0.39,
+    "kev": false,
+    "kevSources": [],
+    "published": "Oct 8, 2026, 9:58:42 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-44638",
+    "aliases": ["GHSA-hc5v-gxvj-58wh", "CVE-2026-61427", "GHSA-5866-9272-qcfv"],
+    "packages": [],
+    "vendor": "mervinpraison",
+    "product": "PraisonAI",
+    "description": "PraisonAI: MCP HTTP-stream transport is unauthenticated by default, exposing tool enumeration and an unvalidated tool-call surface",
+    "references": [
+      "https://github.com/MervinPraison/PraisonAI/security/advisories/GHSA-hc5v-gxvj-58wh",
+      "https://www.vulncheck.com/advisories/praisonai-before-authentication-bypass-via-http-stream",
+      "https://nvd.nist.gov/vuln/detail/CVE-2026-61427",
+      "https://nvd.nist.gov/vuln/detail/CVE-2026-62178"
+    ],
+    "euvdId": "EUVD-2026-44638",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
   "CVE-2026-32582": {
     "id": "CVE-2026-32582",
     "title": "Missing Authorization vulnerability in iatoai IATO MCP iato-mcp allows Exploiting Incorrectly Configured Access Control Security Levels.This issue affects IATO MCP: from n/a through 1.12.0.",
@@ -6126,6 +6177,212 @@
       "https://patchstack.com/database/wordpress/plugin/iato-mcp/vulnerability/wordpress-iato-mcp-plugin-1-11-0-broken-access-control-vulnerability?_s_id=cve"
     ],
     "euvdId": "EUVD-2026-92952",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2026-76286": {
+    "id": "CVE-2026-76286",
+    "title": "In Splunk MCP Server versions below 1.2.1, Splunk MCP Server could send the Splunk platform authentication token of a user who runs a custom Application Programming Interface (API) tool to the URL co…",
+    "sources": ["euvd"],
+    "severity": "5.3 (3.1)",
+    "cvssBase": 5.3,
+    "epss": 0.17,
+    "kev": false,
+    "kevSources": [],
+    "published": "Oct 7, 2026, 8:46:40 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-94587",
+    "aliases": ["GHSA-mgwr-9j5x-6w4x", "CVE-2026-76286"],
+    "packages": [],
+    "vendor": "Splunk",
+    "product": "Splunk MCP Server",
+    "description": "In Splunk MCP Server versions below 1.2.1, Splunk MCP Server could send the Splunk platform authentication token of a user who runs a custom Application Programming Interface (API) tool to the URL configured for that tool. If another user controls that URL, they could capture the token and use it to access data and perform actions as the user who ran the tool. Successful exploitation requires a user who holds a role that contains the mcp_tool_execute capability to run a custom API tool configured by another user. For more information see Configure the Splunk MCP Server (https://help.splunk.com/en/splunk-enterprise/mcp-server-for-splunk-platform/1.2/configure-the-splunk-mcp-server) and Managing custom tools in Splunk MCP Server (https://help.splunk.com/en/splunk-enterprise/mcp-server-for-splunk-platform/1.2/managing-custom-tools-in-splunk-mcp-server) in the Splunk documentation.",
+    "references": ["https://advisory.splunk.com/advisories/SVD-2026-1004"],
+    "euvdId": "EUVD-2026-94587",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2026-72846": {
+    "id": "CVE-2026-72846",
+    "title": "Lightdash stores the webhook URL supplied with a scheduled delivery and later posts to it from sendWebhook in packages/backend/src/clients/GoogleChat/GoogleChatClient.ts and in packages/backend/src/c…",
+    "sources": ["euvd"],
+    "severity": "5.3 (4.0)",
+    "cvssBase": 5.3,
+    "epss": 0.32,
+    "kev": false,
+    "kevSources": [],
+    "published": "Aug 20, 2026, 9:57:35 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-63731",
+    "aliases": ["GHSA-hw2h-qf3m-2r8v", "CVE-2026-72846"],
+    "packages": [],
+    "vendor": "Lightdash",
+    "product": "Lightdash",
+    "description": "Lightdash stores the webhook URL supplied with a scheduled delivery and later posts to it from sendWebhook in packages/backend/src/clients/GoogleChat/GoogleChatClient.ts and in packages/backend/src/clients/MicrosoftTeams/MicrosoftTeamsClient.ts. In affected versions both call fetch on the stored URL directly. The validatePublicHttpUrl helper in packages/backend/src/utils/ssrfProtection.ts, used for MCP server URLs, is not applied on either path, and the webhook fields carry no server-side URL constraint. A user able to create or trigger a scheduled delivery can therefore direct the server to issue POST requests to private, loopback and link-local addresses, including cloud metadata endpoints, and can distinguish reachable internal services from unreachable ones through the resulting errors. The upstream response is never returned to the requester; on a failure status its body is written to the server log instead. Version 1.146.4 routes both clients through postSchedulerWebhook from packages/backend/src/utils/schedulerWebhookValidation rather than calling fetch directly.",
+    "references": [
+      "https://github.com/lightdash/lightdash/issues/24389",
+      "https://github.com/lightdash/lightdash/blob/1.146.3/packages/backend/src/clients/GoogleChat/GoogleChatClient.ts",
+      "https://github.com/lightdash/lightdash/blob/1.146.3/packages/backend/src/clients/MicrosoftTeams/MicrosoftTeamsClient.ts",
+      "https://github.com/lightdash/lightdash/releases/tag/1.146.4",
+      "https://github.com/lightdash/lightdash",
+      "https://www.vulncheck.com/advisories/lightdash-scheduled-delivery-webhook-urls-are-not-validated-allowing-server-side-request-forgery"
+    ],
+    "euvdId": "EUVD-2026-63731",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2026-61462": {
+    "id": "CVE-2026-61462",
+    "title": "mcp-gitlab contains a path traversal vulnerability in the job_id parameter of build/index.js that allows attackers to redirect GitLab API requests to arbitrary endpoints. Attackers can supply crafted…",
+    "sources": ["euvd"],
+    "severity": "9.2 (4.0)",
+    "cvssBase": 9.2,
+    "epss": 0.51,
+    "kev": false,
+    "kevSources": [],
+    "published": "Jul 13, 2026, 5:17:26 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-43504",
+    "aliases": ["CVE-2026-61462", "GHSA-5383-j2p9-qfg3"],
+    "packages": [],
+    "vendor": "zereight",
+    "product": "mcp-gitlab",
+    "description": "mcp-gitlab contains a path traversal vulnerability in the job_id parameter of build/index.js that allows attackers to redirect GitLab API requests to arbitrary endpoints. Attackers can supply crafted job_id values like ../../../user to escape the intended path prefix and access arbitrary GitLab API resources using the operator's personal access token.",
+    "references": [
+      "https://github.com/zereight/gitlab-mcp/issues/587",
+      "https://github.com/zereight/gitlab-mcp",
+      "https://github.com/zereight/gitlab-mcp/commit/e2a81a047ab8750fa5bfa1763b5d85e5616f3994",
+      "https://www.vulncheck.com/advisories/mcp-gitlab-path-traversal-via-job-id-parameter"
+    ],
+    "euvdId": "EUVD-2026-43504",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2026-100868": {
+    "id": "CVE-2026-100868",
+    "title": "Penpot before 2.18.0 binds the MCP server plugin WebSocket bridge to all network interfaces without authentication in single-user mode. Unauthenticated attackers on adjacent networks can connect to t…",
+    "sources": ["euvd"],
+    "severity": "5.3 (4.0)",
+    "cvssBase": 5.3,
+    "epss": 0.26,
+    "kev": false,
+    "kevSources": [],
+    "published": "Sep 27, 2026, 1:09:53 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-87940",
+    "aliases": ["GHSA-hm3w-7xgf-hfwf", "CVE-2026-100868"],
+    "packages": [],
+    "vendor": "penpot",
+    "product": "penpot",
+    "description": "Penpot before 2.18.0 binds the MCP server plugin WebSocket bridge to all network interfaces without authentication in single-user mode. Unauthenticated attackers on adjacent networks can connect to the WebSocket port to impersonate the Penpot browser plugin, intercept task payloads, and return forged results to the MCP client.",
+    "references": [
+      "https://github.com/penpot/penpot/security/advisories/GHSA-ch2q-6x56-qg5r",
+      "https://github.com/penpot/penpot/commit/b5274a44766d095247037be18c1d1918ac67ddeb",
+      "https://github.com/penpot/penpot/blob/1d2c37e52c733f74017d90b0fd1ae2d074a5c33d/mcp/packages/server/src/PluginBridge.ts#L52",
+      "https://github.com/penpot/penpot/security/advisories/GHSA-22qr-rp27-j9wm",
+      "https://github.com/penpot/penpot",
+      "https://www.vulncheck.com/advisories/penpot-before-2.18.0-unauthenticated-websocket-access-via-mcp-bridge"
+    ],
+    "euvdId": "EUVD-2026-87940",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2026-0621": {
+    "id": "CVE-2026-0621",
+    "title": "Anthropic's MCP TypeScript SDK versions up to and including 1.25.1 contain a regular expression denial of service (ReDoS) vulnerability in the UriTemplate class when processing RFC 6570 exploded arra…",
+    "sources": ["euvd"],
+    "severity": "8.7 (4.0)",
+    "cvssBase": 8.7,
+    "epss": 0.44,
+    "kev": false,
+    "kevSources": [],
+    "published": "Jan 5, 2026, 8:57:14 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-0800",
+    "aliases": ["GHSA-8r9q-7v3j-jr4g", "CVE-2026-0621"],
+    "packages": [],
+    "vendor": "Anthropic",
+    "product": "MCP TypeScript SDK",
+    "description": "Anthropic's MCP TypeScript SDK versions up to and including 1.25.1 contain a regular expression denial of service (ReDoS) vulnerability in the UriTemplate class when processing RFC 6570 exploded array patterns. The dynamically generated regular expression used during URI matching contains nested quantifiers that can trigger catastrophic backtracking on specially crafted inputs, resulting in excessive CPU consumption. An attacker can exploit this by supplying a malicious URI that causes the Node.js process to become unresponsive, leading to a denial of service.",
+    "references": [
+      "https://github.com/modelcontextprotocol/typescript-sdk/issues/965",
+      "https://www.vulncheck.com/advisories/mcp-typescript-sdk-uritemplate-exploded-array-pattern-redos"
+    ],
+    "euvdId": "EUVD-2026-0800",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2025-9611": {
+    "id": "CVE-2025-9611",
+    "title": "Microsoft Playwright MCP Server versions prior to 0.0.40 fails to validate the Origin header on incoming connections. This allows an attacker to perform a DNS rebinding attack via a victim’s web brow…",
+    "sources": ["euvd"],
+    "severity": "7.2 (4.0)",
+    "cvssBase": 7.2,
+    "epss": 0.012199999999999999,
+    "kev": false,
+    "kevSources": [],
+    "published": "Jan 7, 2026, 4:24:13 AM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-1179",
+    "aliases": ["CVE-2025-9611", "GHSA-6fg3-hvw7-2fwq"],
+    "packages": [],
+    "vendor": "Microsoft",
+    "product": "Playwright",
+    "description": "Microsoft Playwright MCP Server versions prior to 0.0.40 fails to validate the Origin header on incoming connections. This allows an attacker to perform a DNS rebinding attack via a victim’s web browser and send unauthorized requests to a locally running MCP server, resulting in unintended invocation of MCP tool endpoints.",
+    "references": [
+      "https://github.com/JLLeitschuh/security-research/security/advisories/GHSA-8rgw-6xp9-2fg3",
+      "https://github.com/microsoft/playwright/commit/1313fbd",
+      "https://www.vulncheck.com/advisories/microsoft-playwright-mcp-server-dns-rebinding-via-missing-origin-header-validation"
+    ],
+    "euvdId": "EUVD-2026-1179",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2026-88257": {
+    "id": "CVE-2026-88257",
+    "title": "Improper Input Validation vulnerability in BeamMCP.Schema in ScriptKittyOS beam_mcp allows an MCP client to reach a tool's dispatch function with arguments that violate the input schema the server ad…",
+    "sources": ["euvd"],
+    "severity": "5.3 (4.0)",
+    "cvssBase": 5.3,
+    "epss": 0,
+    "kev": false,
+    "kevSources": [],
+    "published": "Oct 8, 2026, 1:40:55 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-94980",
+    "aliases": ["CVE-2026-88257", "GHSA-pgrr-g28j-jvp6"],
+    "packages": [],
+    "vendor": "ScriptKittyOS",
+    "product": "beam_mcp",
+    "description": "Improper Input Validation vulnerability in BeamMCP.Schema in ScriptKittyOS beam_mcp allows an MCP client to reach a tool's dispatch function with arguments that violate the input schema the server advertised. BeamMCP.Schema.validate/2 checked type, required, additionalProperties, enum and numeric bounds on the top-level arguments object only. Constraints inside nested objects and on array items (items, minItems, maxItems, minLength, maxLength, pattern, nested required, enum and additionalProperties: false) were advertised by tools/list and never checked at tools/call or prompts/get, and keywords outside the enforced subset (oneOf, anyOf, $ref) were advertised and ignored. A host whose dispatch code relies on the schema it declared receives values the schema forbids, such as an out-of-range number or an undeclared key inside a nested object. What the host does with such a value decides the impact. This issue affects beam_mcp: from 0.1.0 before 0.10.1.",
+    "references": [
+      "https://github.com/ScriptKittyOS/beam_mcp/security/advisories/GHSA-mrg2-4747-fmpw",
+      "https://cna.erlef.org/cves/CVE-2026-88257.html",
+      "https://osv.dev/vulnerability/EEF-CVE-2026-88257",
+      "https://github.com/ScriptKittyOS/beam_mcp/commit/083838eb8e17fe5f6fcaf761bdbe203110288b0b",
+      "https://github.com/ScriptKittyOS/beam_mcp/commit/289dbdbad641943b29a3b8d1eb36506cc8cec10a"
+    ],
+    "euvdId": "EUVD-2026-94980",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2026-104634": {
+    "id": "CVE-2026-104634",
+    "title": "Incorrect Type Conversion or Cast vulnerability in BeamMCP.Server in ScriptKittyOS beam_mcp allows an MCP client's JSON true, false and null tool arguments to reach the host's dispatch function as th…",
+    "sources": ["euvd"],
+    "severity": "2.3 (4.0)",
+    "cvssBase": 2.3,
+    "epss": 0,
+    "kev": false,
+    "kevSources": [],
+    "published": "Oct 8, 2026, 1:41:05 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-94981",
+    "aliases": ["GHSA-rcm8-2hxq-3q25", "CVE-2026-104634"],
+    "packages": [],
+    "vendor": "ScriptKittyOS",
+    "product": "beam_mcp",
+    "description": "Incorrect Type Conversion or Cast vulnerability in BeamMCP.Server in ScriptKittyOS beam_mcp allows an MCP client's JSON true, false and null tool arguments to reach the host's dispatch function as the strings \"true\", \"false\" and \"nil\". After BeamMCP.Schema.validate/2 accepted a value as a boolean, normalize_arguments/2 passed every argument through to_json_value/1, whose atom clause converts true, false and nil to strings. A string is truthy in Elixir, so a host that tests a boolean argument, for example if args.dry_run, takes the opposite branch for false, and a guard such as confirm: false reads as set. The client controls the argument and could send true directly, so the practical impact is limited to hosts whose behaviour on false differs from their behaviour on true, and to any policy layer in front of the server that permits false but refuses true. The same normalisation applies to prompts/get arguments, which exist from 0.5.0. This issue affects beam_mcp: from 0.1.0 before 0.10.1.",
+    "references": [
+      "https://github.com/ScriptKittyOS/beam_mcp/security/advisories/GHSA-wv7p-j6qh-3hj4",
+      "https://cna.erlef.org/cves/CVE-2026-104634.html",
+      "https://osv.dev/vulnerability/EEF-CVE-2026-104634",
+      "https://github.com/ScriptKittyOS/beam_mcp/commit/083838eb8e17fe5f6fcaf761bdbe203110288b0b",
+      "https://github.com/ScriptKittyOS/beam_mcp/commit/289dbdbad641943b29a3b8d1eb36506cc8cec10a"
+    ],
+    "euvdId": "EUVD-2026-94981",
     "kevDateAdded": null,
     "epssPercentile": null
   },
@@ -6156,34 +6413,13 @@
     "kevDateAdded": null,
     "epssPercentile": null
   },
-  "CVE-2026-76286": {
-    "id": "CVE-2026-76286",
-    "title": "In Splunk MCP Server versions below 1.2.1, Splunk MCP Server could send the Splunk platform authentication token of a user who runs a custom Application Programming Interface (API) tool to the URL co…",
-    "sources": ["euvd"],
-    "severity": "5.3 (3.1)",
-    "cvssBase": 5.3,
-    "epss": 0,
-    "kev": false,
-    "kevSources": [],
-    "published": "Oct 7, 2026, 8:46:40 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-94587",
-    "aliases": ["GHSA-mgwr-9j5x-6w4x", "CVE-2026-76286"],
-    "packages": [],
-    "vendor": "Splunk",
-    "product": "Splunk MCP Server",
-    "description": "In Splunk MCP Server versions below 1.2.1, Splunk MCP Server could send the Splunk platform authentication token of a user who runs a custom Application Programming Interface (API) tool to the URL configured for that tool. If another user controls that URL, they could capture the token and use it to access data and perform actions as the user who ran the tool. Successful exploitation requires a user who holds a role that contains the mcp_tool_execute capability to run a custom API tool configured by another user. For more information see Configure the Splunk MCP Server (https://help.splunk.com/en/splunk-enterprise/mcp-server-for-splunk-platform/1.2/configure-the-splunk-mcp-server) and Managing custom tools in Splunk MCP Server (https://help.splunk.com/en/splunk-enterprise/mcp-server-for-splunk-platform/1.2/managing-custom-tools-in-splunk-mcp-server) in the Splunk documentation.",
-    "references": ["https://advisory.splunk.com/advisories/SVD-2026-1004"],
-    "euvdId": "EUVD-2026-94587",
-    "kevDateAdded": null,
-    "epssPercentile": null
-  },
   "CVE-2026-105138": {
     "id": "CVE-2026-105138",
     "title": "Obot 0.12.0 before 0.26.2 contains an insufficiently protected credentials vulnerability that allows authenticated users to read static secrets set on MCP catalog entries by admins or power users. Ba…",
     "sources": ["euvd"],
     "severity": "7.1 (4.0)",
     "cvssBase": 7.1,
-    "epss": 0,
+    "epss": 0.26,
     "kev": false,
     "kevSources": [],
     "published": "Oct 7, 2026, 12:18:32 PM",
@@ -6509,31 +6745,6 @@
       "https://github.com/microsoft/UFO/releases/tag/v3.0.9"
     ],
     "euvdId": "EUVD-2026-93406",
-    "kevDateAdded": null,
-    "epssPercentile": null
-  },
-  "CVE-2026-105791": {
-    "id": "CVE-2026-105791",
-    "title": "Microsoft UFO is an open-source framework for intelligent automation across devices and platforms. Prior to 3.0.9, the run_shell tool in the CommandLineExecutor component of ufo/client/mcp/local_serv…",
-    "sources": ["euvd"],
-    "severity": "7.5 (3.1)",
-    "cvssBase": 7.5,
-    "epss": 0.62,
-    "kev": false,
-    "kevSources": [],
-    "published": "Oct 6, 2026, 2:09:23 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-93419",
-    "aliases": ["CVE-2026-105791"],
-    "packages": [],
-    "vendor": "Microsoft",
-    "product": "UFO",
-    "description": "Microsoft UFO is an open-source framework for intelligent automation across devices and platforms. Prior to 3.0.9, the run_shell tool in the CommandLineExecutor component of ufo/client/mcp/local_servers/cli_mcp_server.py validates only the first token of the bash_command parameter and permits explorer.exe. On Windows, explorer.exe delegates its following path argument to ShellExecute, so an attacker-influenced agent call can launch an arbitrary executable or script as the desktop user even though the subprocess uses shell=False. Exploitation depends on a user running an affected agent workflow and on inducing the tool call, but successful execution can access or modify that user's files, tokens, and sessions. This issue is fixed in version 3.0.9.",
-    "references": [
-      "https://github.com/microsoft/UFO/security/advisories/GHSA-cmq9-vqjf-4q2q",
-      "https://github.com/microsoft/UFO/commit/3e1262fc091eb319253b7a1338b63f62cc6c82b1",
-      "https://github.com/microsoft/UFO/releases/tag/v3.0.9"
-    ],
-    "euvdId": "EUVD-2026-93419",
     "kevDateAdded": null,
     "epssPercentile": null
   },
@@ -7755,34 +7966,6 @@
     "kevDateAdded": null,
     "epssPercentile": null
   },
-  "CVE-2026-100868": {
-    "id": "CVE-2026-100868",
-    "title": "Penpot before 2.18.0 binds the MCP server plugin WebSocket bridge to all network interfaces without authentication in single-user mode. Unauthenticated attackers on adjacent networks can connect to t…",
-    "sources": ["euvd"],
-    "severity": "5.3 (4.0)",
-    "cvssBase": 5.3,
-    "epss": 0.26,
-    "kev": false,
-    "kevSources": [],
-    "published": "Sep 27, 2026, 1:09:53 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-87940",
-    "aliases": ["GHSA-hm3w-7xgf-hfwf", "CVE-2026-100868"],
-    "packages": [],
-    "vendor": "penpot",
-    "product": "penpot",
-    "description": "Penpot before 2.18.0 binds the MCP server plugin WebSocket bridge to all network interfaces without authentication in single-user mode. Unauthenticated attackers on adjacent networks can connect to the WebSocket port to impersonate the Penpot browser plugin, intercept task payloads, and return forged results to the MCP client.",
-    "references": [
-      "https://github.com/penpot/penpot/security/advisories/GHSA-ch2q-6x56-qg5r",
-      "https://github.com/penpot/penpot/commit/b5274a44766d095247037be18c1d1918ac67ddeb",
-      "https://github.com/penpot/penpot/blob/1d2c37e52c733f74017d90b0fd1ae2d074a5c33d/mcp/packages/server/src/PluginBridge.ts#L52",
-      "https://github.com/penpot/penpot/security/advisories/GHSA-22qr-rp27-j9wm",
-      "https://github.com/penpot/penpot",
-      "https://www.vulncheck.com/advisories/penpot-before-2.18.0-unauthenticated-websocket-access-via-mcp-bridge"
-    ],
-    "euvdId": "EUVD-2026-87940",
-    "kevDateAdded": null,
-    "epssPercentile": null
-  },
   "CVE-2026-101063": {
     "id": "CVE-2026-101063",
     "title": "Obot versions before v0.23.0 fail to enforce authentication on MCP Registry endpoints under /v0.1/* when registry authentication is enabled. Unauthenticated attackers can read registry metadata inclu…",
@@ -8409,190 +8592,24 @@
     "kevDateAdded": null,
     "epssPercentile": null
   },
-  "CVE-2026-90474": {
-    "id": "CVE-2026-90474",
-    "title": "MCPHub before 1.0.32 contains an authentication bypass vulnerability in its embedded OAuth 2.0 authorization server where client authentication is disabled by default and PKCE enforcement is optional…",
+  "CVE-2026-103663": {
+    "id": "CVE-2026-103663",
+    "title": "Ollama is vulnerable to path traversal in the `/api/pull` endpoint due to insufficient validation of layer digests by the `digestToPath` function. An unauthenticated remote attacker can specify a pat…",
     "sources": ["euvd"],
-    "severity": "7.6 (4.0)",
-    "cvssBase": 7.6,
-    "epss": 0.55,
+    "severity": "6.9 (4.0)",
+    "cvssBase": 6.9,
+    "epss": 0,
     "kev": false,
     "kevSources": [],
-    "published": "Sep 12, 2026, 11:06:12 AM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-76850",
-    "aliases": ["GHSA-c47m-m826-fc8g", "CVE-2026-90474"],
+    "published": "Oct 8, 2026, 1:19:04 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-94962",
+    "aliases": ["GHSA-w8p2-phwr-px3r", "CVE-2026-103663"],
     "packages": [],
-    "vendor": "MCPHub",
-    "product": "MCPHub",
-    "description": "MCPHub before 1.0.32 contains an authentication bypass vulnerability in its embedded OAuth 2.0 authorization server where client authentication is disabled by default and PKCE enforcement is optional. Attackers who obtain an authorization code through interception can redeem it for access tokens without providing a client secret or PKCE verifier, gaining access to victim accounts and their privileges.",
-    "references": [
-      "https://github.com/samanhappy/mcphub/security/advisories/GHSA-3m7m-37xf-xp9x",
-      "https://github.com/samanhappy/mcphub/commit/e927620cd1a80e8691213b01eb8cd6ffa1a66e9f",
-      "https://github.com/samanhappy/mcphub/blob/v1.0.31/src/services/oauthServerService.ts#L26-L38",
-      "https://github.com/samanhappy/mcphub/releases/tag/v1.0.32",
-      "https://www.vulncheck.com/advisories/mcphub-before-1.0.32-oauth-2.0-authentication-bypass"
-    ],
-    "euvdId": "EUVD-2026-76850",
-    "kevDateAdded": null,
-    "epssPercentile": null
-  },
-  "CVE-2026-86439": {
-    "id": "CVE-2026-86439",
-    "title": "knowns versions before 0.30.0 fail to validate filesystem paths in MCP tool arguments, allowing attackers to read, create, overwrite and delete files outside the project directory. Attackers can supp…",
-    "sources": ["euvd"],
-    "severity": "8.7 (4.0)",
-    "cvssBase": 8.7,
-    "epss": 0.0108,
-    "kev": false,
-    "kevSources": [],
-    "published": "Sep 7, 2026, 11:03:16 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-72555",
-    "aliases": ["GHSA-9gfj-28hw-jchp", "CVE-2026-86439", "GHSA-qjrq-cvv4-3g9w"],
-    "packages": [],
-    "vendor": "knowns-dev",
-    "product": "knowns",
-    "description": "knowns versions before 0.30.0 fail to validate filesystem paths in MCP tool arguments, allowing attackers to read, create, overwrite and delete files outside the project directory. Attackers can supply path arguments containing directory traversal sequences to access arbitrary Markdown files accessible to the server process.",
-    "references": [
-      "https://github.com/knowns-dev/knowns/security/advisories/GHSA-9gfj-28hw-jchp",
-      "https://github.com/knowns-dev/knowns/blob/v0.29.1/internal/storage/doc_store.go#L124-L129",
-      "https://github.com/knowns-dev/knowns/blob/v0.29.1/internal/storage/memory_store.go#L203-L211",
-      "https://github.com/knowns-dev/knowns/commit/09c5a96fd5817b941dc86669278c1a17db10ed4e",
-      "https://github.com/knowns-dev/knowns/releases/tag/v0.30.0",
-      "https://www.vulncheck.com/advisories/knowns-before-0.30.0-path-traversal-via-mcp-doc-and-memory-tools"
-    ],
-    "euvdId": "EUVD-2026-72555",
-    "kevDateAdded": null,
-    "epssPercentile": null
-  },
-  "CVE-2026-86122": {
-    "id": "CVE-2026-86122",
-    "title": "Rowboat through 0.9.1 fails to validate custom MCP server and webhook URLs, allowing authenticated users to configure arbitrary destinations. Attackers can point these URLs at internal services and c…",
-    "sources": ["euvd"],
-    "severity": "5.3 (4.0)",
-    "cvssBase": 5.3,
-    "epss": 0.37,
-    "kev": false,
-    "kevSources": [],
-    "published": "Sep 5, 2026, 9:59:10 AM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-71954",
-    "aliases": ["CVE-2026-86122", "GHSA-jmxm-qmrf-xrpp"],
-    "packages": [],
-    "vendor": "rowboatlabs",
-    "product": "rowboat",
-    "description": "Rowboat through 0.9.1 fails to validate custom MCP server and webhook URLs, allowing authenticated users to configure arbitrary destinations. Attackers can point these URLs at internal services and cloud metadata endpoints to perform server-side request forgery and enumerate internal network topology.",
-    "references": [
-      "https://github.com/rowboatlabs/rowboat/issues/621",
-      "https://github.com/rowboatlabs/rowboat/blob/v0.9.1/apps/rowboat/src/application/use-cases/projects/add-custom-mcp-server.use-case.ts",
-      "https://github.com/rowboatlabs/rowboat/blob/v0.9.1/apps/rowboat/src/application/lib/agents-runtime/agent-tools.ts",
-      "https://github.com/rowboatlabs/rowboat",
-      "https://www.vulncheck.com/advisories/rowboat-through-0.9.1-server-side-request-forgery-via-custom-mcp-server"
-    ],
-    "euvdId": "EUVD-2026-71954",
-    "kevDateAdded": null,
-    "epssPercentile": null
-  },
-  "CVE-2026-82456": {
-    "id": "CVE-2026-82456",
-    "title": "argocd-mcp 0.8.0 binds its HTTP transport to every network interface and accepts MCP sessions without requiring caller credentials when ARGOCD_API_TOKEN is configured. Attackers who can reach the lis…",
-    "sources": ["euvd"],
-    "severity": "10 (4.0)",
-    "cvssBase": 10,
-    "epss": 0.0173,
-    "kev": false,
-    "kevSources": [],
-    "published": "Aug 29, 2026, 1:47:57 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-68103",
-    "aliases": ["CVE-2026-82456", "GHSA-p2x5-x87w-v2xj"],
-    "packages": [],
-    "vendor": "argoproj-labs",
-    "product": "argocd-mcp",
-    "description": "argocd-mcp 0.8.0 binds its HTTP transport to every network interface and accepts MCP sessions without requiring caller credentials when ARGOCD_API_TOKEN is configured. Attackers who can reach the listener can invoke the full tool surface using the operator's stored token to create applications, request syncs, and modify Argo CD resources.",
-    "references": [
-      "https://github.com/argoproj-labs/mcp-for-argocd/security/advisories/GHSA-rp45-5x3v-48mr",
-      "https://github.com/argoproj-labs/mcp-for-argocd",
-      "https://www.vulncheck.com/advisories/argocd-mcp-0.8.0-authentication-bypass-via-unauthenticated-http"
-    ],
-    "euvdId": "EUVD-2026-68103",
-    "kevDateAdded": null,
-    "epssPercentile": null
-  },
-  "CVE-2026-81735": {
-    "id": "CVE-2026-81735",
-    "title": "startServer.ts in the mcp-http-server package of UI-TARS-desktop defaulted its listen address to '::' when no host was given, so startSseAndStreamableHttpMcpServer bound the Streamable HTTP and SSE M…",
-    "sources": ["euvd"],
-    "severity": "10 (4.0)",
-    "cvssBase": 10,
-    "epss": 0.78,
-    "kev": false,
-    "kevSources": [],
-    "published": "Aug 27, 2026, 2:51:20 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-67078",
-    "aliases": ["GHSA-p68p-fq8j-3639", "CVE-2026-81735"],
-    "packages": [],
-    "vendor": "bytedance",
-    "product": "UI-TARS-desktop",
-    "description": "startServer.ts in the mcp-http-server package of UI-TARS-desktop defaulted its listen address to '::' when no host was given, so startSseAndStreamableHttpMcpServer bound the Streamable HTTP and SSE MCP transports to every interface, and its authentication middleware was optional: middlewares are applied only when a caller supplies them. The @agent-infra/mcp-server-commands and @agent-infra/mcp-server-filesystem entry points call startSseAndStreamableHttpMcpServer with a host and port alone and pass no middleware, so neither server required a credential. The commands server exposes a run_command tool that hands its caller-supplied command string to promisify(child_process.exec), so any unauthenticated client able to reach the port could run arbitrary commands as the user running the server, and the filesystem server exposed its file read and write tools on the same terms. The listen default became 127.0.0.1 in commit c2ad42e3eb9b27830db41a3e6f51ca7179d9b168; the package version stayed at 1.2.4 across that change, so the boundary is the commit rather than a release.",
-    "references": [
-      "https://github.com/bytedance/UI-TARS-desktop/pull/1918",
-      "https://github.com/bytedance/UI-TARS-desktop/commit/c2ad42e3eb9b27830db41a3e6f51ca7179d9b168",
-      "https://github.com/bytedance/UI-TARS-desktop",
-      "https://github.com/bytedance/UI-TARS-desktop/blob/e9f3387288da4af2ad99972da2ac916cdabce093/packages/agent-infra/mcp-http-server/src/startServer.ts#L263",
-      "https://www.vulncheck.com/advisories/ui-tars-desktop-agent-infra-mcp-servers-bind-every-interface-without-authentication-exposing-arbitrary-command-execution"
-    ],
-    "euvdId": "EUVD-2026-67078",
-    "kevDateAdded": null,
-    "epssPercentile": null
-  },
-  "CVE-2026-72846": {
-    "id": "CVE-2026-72846",
-    "title": "Lightdash stores the webhook URL supplied with a scheduled delivery and later posts to it from sendWebhook in packages/backend/src/clients/GoogleChat/GoogleChatClient.ts and in packages/backend/src/c…",
-    "sources": ["euvd"],
-    "severity": "5.3 (4.0)",
-    "cvssBase": 5.3,
-    "epss": 0.32,
-    "kev": false,
-    "kevSources": [],
-    "published": "Aug 20, 2026, 9:57:35 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-63731",
-    "aliases": ["GHSA-hw2h-qf3m-2r8v", "CVE-2026-72846"],
-    "packages": [],
-    "vendor": "Lightdash",
-    "product": "Lightdash",
-    "description": "Lightdash stores the webhook URL supplied with a scheduled delivery and later posts to it from sendWebhook in packages/backend/src/clients/GoogleChat/GoogleChatClient.ts and in packages/backend/src/clients/MicrosoftTeams/MicrosoftTeamsClient.ts. In affected versions both call fetch on the stored URL directly. The validatePublicHttpUrl helper in packages/backend/src/utils/ssrfProtection.ts, used for MCP server URLs, is not applied on either path, and the webhook fields carry no server-side URL constraint. A user able to create or trigger a scheduled delivery can therefore direct the server to issue POST requests to private, loopback and link-local addresses, including cloud metadata endpoints, and can distinguish reachable internal services from unreachable ones through the resulting errors. The upstream response is never returned to the requester; on a failure status its body is written to the server log instead. Version 1.146.4 routes both clients through postSchedulerWebhook from packages/backend/src/utils/schedulerWebhookValidation rather than calling fetch directly.",
-    "references": [
-      "https://github.com/lightdash/lightdash/issues/24389",
-      "https://github.com/lightdash/lightdash/blob/1.146.3/packages/backend/src/clients/GoogleChat/GoogleChatClient.ts",
-      "https://github.com/lightdash/lightdash/blob/1.146.3/packages/backend/src/clients/MicrosoftTeams/MicrosoftTeamsClient.ts",
-      "https://github.com/lightdash/lightdash/releases/tag/1.146.4",
-      "https://github.com/lightdash/lightdash",
-      "https://www.vulncheck.com/advisories/lightdash-scheduled-delivery-webhook-urls-are-not-validated-allowing-server-side-request-forgery"
-    ],
-    "euvdId": "EUVD-2026-63731",
-    "kevDateAdded": null,
-    "epssPercentile": null
-  },
-  "CVE-2026-65056": {
-    "id": "CVE-2026-65056",
-    "title": "mcp-webresearch 0.1.7 contains a server-side request forgery vulnerability that allows attackers to access internal network services by supplying loopback, link-local, or cloud metadata addresses to …",
-    "sources": ["euvd"],
-    "severity": "8.3 (4.0)",
-    "cvssBase": 8.3,
-    "epss": 0.41,
-    "kev": false,
-    "kevSources": [],
-    "published": "Jul 21, 2026, 8:48:50 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-46421",
-    "aliases": ["CVE-2026-65056", "GHSA-r9hf-v7rm-5h4j"],
-    "packages": [],
-    "vendor": "mzxrai",
-    "product": "mcp-webresearch",
-    "description": "mcp-webresearch 0.1.7 contains a server-side request forgery vulnerability that allows attackers to access internal network services by supplying loopback, link-local, or cloud metadata addresses to the visit_page tool, which only validates the URL protocol without filtering private or reserved IP ranges. Attackers can steer the LLM-controlled URL argument through prompt injection to navigate the server's Playwright browser to internal endpoints such as cloud instance metadata services, causing the server to return sensitive internal page content including credentials into the model context.",
-    "references": [
-      "https://github.com/geo-chen/oss/blob/main/mcp-webresearch.md",
-      "https://www.npmjs.com/package/@mzxrai/mcp-webresearch",
-      "https://www.vulncheck.com/advisories/mcp-webresearch-server-side-request-forgery-in-visit-page-due-to-missing-internal-ip-filtering"
-    ],
-    "euvdId": "EUVD-2026-46421",
+    "vendor": "ollama",
+    "product": "Ollama",
+    "description": "Ollama is vulnerable to path traversal in the `/api/pull` endpoint due to insufficient validation of layer digests by the `digestToPath` function. An unauthenticated remote attacker can specify a path traversal sequence as a layer digest, causing a malicious binary to be written outside the model store. Critically if the server process has write access to `/usr/lib/ollama` (the default in most Ollama Docker images), an attacker can write the malicious file to that directory. On the next server restart, the file is loaded and executed, resulting in remote code execution as root. This issue was fixed in version 0.35.0.",
+    "references": ["https://cert.pl/en/posts/2026/10/CVE-2026-103663/", "https://ollama.com/"],
+    "euvdId": "EUVD-2026-94962",
     "kevDateAdded": null,
     "epssPercentile": null
   },
@@ -8760,7 +8777,7 @@
     "sources": ["euvd"],
     "severity": "8.7 (4.0)",
     "cvssBase": 8.7,
-    "epss": 0.78,
+    "epss": 0.77,
     "kev": false,
     "kevSources": [],
     "published": "Jan 12, 2026, 11:03:52 PM",
@@ -9680,6 +9697,179 @@
     "kevDateAdded": null,
     "epssPercentile": null
   },
+  "CVE-2026-61445": {
+    "id": "CVE-2026-61445",
+    "title": "PraisonAI: AICoder Arbitrary File Write and Command Execution via LLM Tool Calls",
+    "sources": ["euvd"],
+    "severity": "9.4 (4.0)",
+    "cvssBase": 9.4,
+    "epss": 0.88,
+    "kev": false,
+    "kevSources": [],
+    "published": "Oct 8, 2026, 10:00:40 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-43181",
+    "aliases": ["GHSA-wj29-gm8v-33x8", "GHSA-9mp3-24cc-77mg", "CVE-2026-61445"],
+    "packages": [],
+    "vendor": "mervinpraison",
+    "product": "PraisonAI",
+    "description": "PraisonAI: AICoder Arbitrary File Write and Command Execution via LLM Tool Calls",
+    "references": [
+      "https://github.com/MervinPraison/PraisonAI/security/advisories/GHSA-9mp3-24cc-77mg",
+      "https://www.vulncheck.com/advisories/praisonai-before-arbitrary-file-write-and-command-execution",
+      "https://nvd.nist.gov/vuln/detail/CVE-2026-61445"
+    ],
+    "euvdId": "EUVD-2026-43181",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2026-107717": {
+    "id": "CVE-2026-107717",
+    "title": "Banks generates meaningful LLM prompts using a simple template language. Prior to 2.5.0, Banks Prompt.chat_messages() attempts to parse every line of rendered template output as ChatMessage JSON. Whe…",
+    "sources": ["euvd"],
+    "severity": "6.5 (3.1)",
+    "cvssBase": 6.5,
+    "epss": 0,
+    "kev": false,
+    "kevSources": [],
+    "published": "Oct 8, 2026, 9:38:07 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-95341",
+    "aliases": ["CVE-2026-107717", "GHSA-hmq2-7hp6-7crh"],
+    "packages": [],
+    "vendor": "masci",
+    "product": "banks",
+    "description": "Banks generates meaningful LLM prompts using a simple template language. Prior to 2.5.0, Banks Prompt.chat_messages() attempts to parse every line of rendered template output as ChatMessage JSON. When an application renders untrusted data and passes the returned ChatMessage objects to an LLM provider, attacker-controlled JSON can cross the prompt boundary and become a system, assistant, or tool message because ChatMessage.role accepts arbitrary strings. This can override application instructions, alter the intended prompt structure, or confuse downstream tool and message handling. This issue is fixed in version 2.5.0.",
+    "references": [
+      "https://github.com/masci/banks/security/advisories/GHSA-hmq2-7hp6-7crh",
+      "https://github.com/masci/banks/pull/78",
+      "https://github.com/masci/banks/commit/02172b816fb84f6a824cc09a8aca7416f53c12cb",
+      "https://github.com/masci/banks/releases/tag/v2.5.0"
+    ],
+    "euvdId": "EUVD-2026-95341",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2026-107716": {
+    "id": "CVE-2026-107716",
+    "title": "Banks generates meaningful LLM prompts using a simple template language. Prior to 2.5.1, Banks DirectoryPromptRegistry does not reject symbolic links for index.json or discovered and existing .jinja …",
+    "sources": ["euvd"],
+    "severity": "7.3 (4.0)",
+    "cvssBase": 7.3,
+    "epss": 0,
+    "kev": false,
+    "kevSources": [],
+    "published": "Oct 8, 2026, 9:33:13 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-95340",
+    "aliases": ["GHSA-556j-vv39-8rqv", "CVE-2026-107716"],
+    "packages": [],
+    "vendor": "masci",
+    "product": "banks",
+    "description": "Banks generates meaningful LLM prompts using a simple template language. Prior to 2.5.1, Banks DirectoryPromptRegistry does not reject symbolic links for index.json or discovered and existing .jinja prompt files. In an application where untrusted users can influence a prompt directory, DirectoryPromptRegistry._scan() and DirectoryPromptRegistry.get() can follow a link outside the registry root and disclose a file, while DirectoryPromptRegistry.set(), DirectoryPromptRegistry._save(), and DirectoryPromptRegistry._load() can read or overwrite an external link target. The issue requires attacker influence over the registry directory or its extracted contents. This issue is fixed in version 2.5.1.",
+    "references": [
+      "https://github.com/masci/banks/security/advisories/GHSA-556j-vv39-8rqv",
+      "https://github.com/masci/banks/pull/79",
+      "https://github.com/masci/banks/commit/23ed13e50b4e217693fa5f9c30943fac8a41582f",
+      "https://github.com/masci/banks/releases/tag/v2.5.1"
+    ],
+    "euvdId": "EUVD-2026-95340",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2026-70331": {
+    "id": "CVE-2026-70331",
+    "title": "Improper neutralization of input used for llm prompting in Microsoft Edge for iOS allows an unauthorized attacker to perform spoofing over a network.",
+    "sources": ["euvd"],
+    "severity": "5.4 (3.1)",
+    "cvssBase": 5.4,
+    "epss": 0.41,
+    "kev": false,
+    "kevSources": [],
+    "published": "Aug 28, 2026, 5:41:29 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-67846",
+    "aliases": ["GHSA-wjm5-2899-cw52", "CVE-2026-70331"],
+    "packages": [],
+    "vendor": "Microsoft",
+    "product": "Microsoft Edge (Chromium-based)",
+    "description": "Improper neutralization of input used for llm prompting in Microsoft Edge for iOS allows an unauthorized attacker to perform spoofing over a network.",
+    "references": ["https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-70331"],
+    "euvdId": "EUVD-2026-67846",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2026-61447": {
+    "id": "CVE-2026-61447",
+    "title": "PraisonAI: CodeAgent Executes LLM-Generated Code Without Sandboxing and Leaks All Environment Secrets",
+    "sources": ["euvd"],
+    "severity": "10 (4.0)",
+    "cvssBase": 10,
+    "epss": 0.024900000000000002,
+    "kev": false,
+    "kevSources": [],
+    "published": "Oct 8, 2026, 4:44:01 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-43182",
+    "aliases": ["CVE-2026-61447", "GHSA-mhgx-w3w5-2rvc", "GHSA-2xv2-w8cq-5gxw"],
+    "packages": [],
+    "vendor": "mervinpraison",
+    "product": "PraisonAI",
+    "description": "PraisonAI: CodeAgent Executes LLM-Generated Code Without Sandboxing and Leaks All Environment Secrets",
+    "references": [
+      "https://github.com/MervinPraison/PraisonAI/security/advisories/GHSA-2xv2-w8cq-5gxw",
+      "https://www.vulncheck.com/advisories/praisonai-before-remote-code-execution-via-codeagent",
+      "https://nvd.nist.gov/vuln/detail/CVE-2026-61447"
+    ],
+    "euvdId": "EUVD-2026-43182",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2026-58473": {
+    "id": "CVE-2026-58473",
+    "title": "Cognee before 1.2.0 contains an improper access control vulnerability that allows unauthenticated attackers to overwrite the global LLM provider configuration by self-registering an account and calli…",
+    "sources": ["euvd"],
+    "severity": "9.3 (4.0)",
+    "cvssBase": 9.3,
+    "epss": 0.51,
+    "kev": false,
+    "kevSources": [],
+    "published": "Jul 7, 2026, 8:34:54 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-42095",
+    "aliases": ["GHSA-49f7-whx5-4256", "PYSEC-2026-3816", "CVE-2026-58473"],
+    "packages": [],
+    "vendor": "topoteretes",
+    "product": "cognee",
+    "description": "Cognee before 1.2.0 contains an improper access control vulnerability that allows unauthenticated attackers to overwrite the global LLM provider configuration by self-registering an account and calling the settings endpoint, which performs no admin or superuser check. Attackers can redirect all LLM operations instance-wide to an attacker-controlled endpoint by exploiting the process-wide singleton configuration cache, enabling exfiltration of prompts, uploaded documents, extracted entities, and knowledge graph content from all users.",
+    "references": [
+      "https://github.com/topoteretes/cognee/releases/tag/v1.2.0",
+      "https://github.com/topoteretes/cognee/issues/3084",
+      "https://github.com/topoteretes/cognee/commit/d10b1b77e2157c6238fd4d1acb1923a048991699",
+      "https://www.vulncheck.com/advisories/cognee-unauthorized-llm-configuration-overwrite-via-api-v1-settings"
+    ],
+    "euvdId": "EUVD-2026-42095",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2026-56075": {
+    "id": "CVE-2026-56075",
+    "title": "PraisonAI before 4.5.128 contains an arbitrary shell command execution vulnerability where the UI modules hardcode approval_mode to auto, overriding administrator configuration from PRAISON_APPROVAL_…",
+    "sources": ["euvd"],
+    "severity": "8.7 (4.0)",
+    "cvssBase": 8.7,
+    "epss": 0.71,
+    "kev": false,
+    "kevSources": [],
+    "published": "Jun 18, 2026, 10:12:23 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-37959",
+    "aliases": ["CVE-2026-56075", "GHSA-gx4r-3wg8-9w5x"],
+    "packages": [],
+    "vendor": "mervinpraison",
+    "product": "PraisonAI",
+    "description": "PraisonAI before 4.5.128 contains an arbitrary shell command execution vulnerability where the UI modules hardcode approval_mode to auto, overriding administrator configuration from PRAISON_APPROVAL_MODE environment variable. Authenticated attackers can instruct the LLM agent to execute arbitrary shell commands via subprocess.run with shell=True, bypassing the manual approval gate and insufficient command sanitization blocklists.",
+    "references": [
+      "https://github.com/MervinPraison/PraisonAI/security/advisories/GHSA-qwgj-rrpj-75xm",
+      "https://www.vulncheck.com/advisories/praisonai-arbitrary-shell-command-execution-via-hardcoded-approval-mode-override"
+    ],
+    "euvdId": "EUVD-2026-37959",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
   "CVE-2026-105762": {
     "id": "CVE-2026-105762",
     "title": "Dify is an open-source LLM app development platform. Prior to 1.13.0, the /console/api/remote-files/upload endpoint in api/controllers/web/remote_files.py accepted an attacker-controlled URL without …",
@@ -9944,27 +10134,6 @@
     "kevDateAdded": null,
     "epssPercentile": null
   },
-  "CVE-2026-70331": {
-    "id": "CVE-2026-70331",
-    "title": "Improper neutralization of input used for llm prompting in Microsoft Edge for iOS allows an unauthorized attacker to perform spoofing over a network.",
-    "sources": ["euvd"],
-    "severity": "5.4 (3.1)",
-    "cvssBase": 5.4,
-    "epss": 0.41,
-    "kev": false,
-    "kevSources": [],
-    "published": "Aug 28, 2026, 5:41:29 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-67846",
-    "aliases": ["GHSA-wjm5-2899-cw52", "CVE-2026-70331"],
-    "packages": [],
-    "vendor": "Microsoft",
-    "product": "Microsoft Edge (Chromium-based)",
-    "description": "Improper neutralization of input used for llm prompting in Microsoft Edge for iOS allows an unauthorized attacker to perform spoofing over a network.",
-    "references": ["https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-70331"],
-    "euvdId": "EUVD-2026-67846",
-    "kevDateAdded": null,
-    "epssPercentile": null
-  },
   "CVE-2026-56681": {
     "id": "CVE-2026-56681",
     "title": "9Router is an AI router & token saver. Prior to 0.5.6, 9Router deployments that allow requests to reach Next.js without the sanitizing custom-server.js wrapper trust the client-supplied X-9r-Real-Ip …",
@@ -10065,6 +10234,31 @@
       "https://www.vulncheck.com/advisories/memos-authentication-bypass-via-unset-internal-service-secret"
     ],
     "euvdId": "EUVD-2026-60389",
+    "kevDateAdded": null,
+    "epssPercentile": null
+  },
+  "CVE-2026-65056": {
+    "id": "CVE-2026-65056",
+    "title": "mcp-webresearch 0.1.7 contains a server-side request forgery vulnerability that allows attackers to access internal network services by supplying loopback, link-local, or cloud metadata addresses to …",
+    "sources": ["euvd"],
+    "severity": "8.3 (4.0)",
+    "cvssBase": 8.3,
+    "epss": 0.41,
+    "kev": false,
+    "kevSources": [],
+    "published": "Jul 21, 2026, 8:48:50 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-46421",
+    "aliases": ["CVE-2026-65056", "GHSA-r9hf-v7rm-5h4j"],
+    "packages": [],
+    "vendor": "mzxrai",
+    "product": "mcp-webresearch",
+    "description": "mcp-webresearch 0.1.7 contains a server-side request forgery vulnerability that allows attackers to access internal network services by supplying loopback, link-local, or cloud metadata addresses to the visit_page tool, which only validates the URL protocol without filtering private or reserved IP ranges. Attackers can steer the LLM-controlled URL argument through prompt injection to navigate the server's Playwright browser to internal endpoints such as cloud instance metadata services, causing the server to return sensitive internal page content including credentials into the model context.",
+    "references": [
+      "https://github.com/geo-chen/oss/blob/main/mcp-webresearch.md",
+      "https://www.npmjs.com/package/@mzxrai/mcp-webresearch",
+      "https://www.vulncheck.com/advisories/mcp-webresearch-server-side-request-forgery-in-visit-page-due-to-missing-internal-ip-filtering"
+    ],
+    "euvdId": "EUVD-2026-46421",
     "kevDateAdded": null,
     "epssPercentile": null
   },
@@ -11613,122 +11807,57 @@
     "kevDateAdded": null,
     "epssPercentile": null
   },
-  "CVE-2026-62663": {
-    "id": "CVE-2026-62663",
-    "title": "Banks generates meaningful LLM prompts using a simple template language. In versions prior to 2.4.4, all four media filters (image, audio, video, document) in banks accept untrusted user input as fil…",
+  "CVE-2026-68770": {
+    "id": "CVE-2026-68770",
+    "title": "sentence-transformers contains a security control bypass vulnerability that allows attackers to achieve arbitrary code execution by exploiting a logic flaw in the import_module_class helper within se…",
     "sources": ["euvd"],
-    "severity": "7.5 (3.1)",
-    "cvssBase": 7.5,
-    "epss": 0.5,
+    "severity": "9.3 (4.0)",
+    "cvssBase": 9.3,
+    "epss": 0.91,
     "kev": false,
     "kevSources": [],
-    "published": "Jul 30, 2026, 4:16:34 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-51231",
-    "aliases": ["CVE-2026-62663"],
+    "published": "Jul 31, 2026, 8:56:06 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-51650",
+    "aliases": ["CVE-2026-68770", "PYSEC-2026-4164", "GHSA-jhr6-gm9c-rqjv"],
     "packages": [],
-    "vendor": "masci",
-    "product": "banks",
-    "description": "Banks generates meaningful LLM prompts using a simple template language. In versions prior to 2.4.4, all four media filters (image, audio, video, document) in banks accept untrusted user input as file paths via Path(value) and pass them directly to open(file_path, \"rb\") without any path sanitization, canonicalization, or directory restriction. An attacker who controls template variables passed to a banks Prompt can use path traversal (../) to read arbitrary files accessible to the Python process—including .env files, SSH keys, cloud credentials, source code, /etc/passwd, and /etc/shadow—with the content returned base64-encoded in the rendered prompt output, making exfiltration trivial. This is particularly dangerous for applications that use banks to process user-provided template variables before sending prompts to an LLM. This issue has been fixed in version 2.4.4.",
-    "references": ["https://github.com/masci/banks/security/advisories/GHSA-98rr-gvc9-3cjh"],
-    "euvdId": "EUVD-2026-51231",
+    "vendor": "Hugging Face",
+    "product": "sentence-transformers",
+    "description": "sentence-transformers contains a security control bypass vulnerability that allows attackers to achieve arbitrary code execution by exploiting a logic flaw in the import_module_class helper within sentence_transformers/util/misc.py, where the guard condition includes an 'or os.path.exists(model_name_or_path)' clause that satisfies the trust gate whenever the supplied path exists on the local filesystem, regardless of the trust_remote_code=False argument. Attackers who can control or influence the contents of a model directory on disk can place malicious Python files such as modeling_*.py referenced via modules.json, causing the code to execute at import time when an application loads the model with SentenceTransformer(path, trust_remote_code=False), bypassing the documented security contract and achieving code execution within the loading process.",
+    "references": [
+      "https://github.com/huggingface/sentence-transformers/issues/3801",
+      "https://github.com/huggingface/sentence-transformers/pull/3807",
+      "https://github.com/huggingface/sentence-transformers",
+      "https://github.com/huggingface/sentence-transformers/commit/ae1acc3fb2aa2004577b297eb4a915ce7a03316a",
+      "https://www.vulncheck.com/advisories/sentence-transformers-arbitrary-code-execution-on-local-model-load-despite-trust-remote-code-false"
+    ],
+    "euvdId": "EUVD-2026-51650",
     "kevDateAdded": null,
     "epssPercentile": null
   },
-  "CVE-2026-67428": {
-    "id": "CVE-2026-67428",
-    "title": "Flyto2 Core is an execution kernel for automation and AI-agent workflows. Prior to 2.26.7, HTTP-emitting modules including src/core/modules/third_party/developer/http/requests.py, core.api.http_get, …",
+  "CVE-2026-47117": {
+    "id": "CVE-2026-47117",
+    "title": "OpenMed before 1.5.2 contains a remote code execution vulnerability in the PII privacy-filter model loading path. The privacy-filter dispatcher used broad substring matching on the user-supplied mode…",
     "sources": ["euvd"],
-    "severity": "8.5 (3.1)",
-    "cvssBase": 8.5,
-    "epss": 0.45,
+    "severity": "9.3 (4.0)",
+    "cvssBase": 9.3,
+    "epss": 0.0129,
     "kev": false,
     "kevSources": [],
-    "published": "Jul 29, 2026, 6:48:42 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-50472",
-    "aliases": ["CVE-2026-67428", "GHSA-pgwh-4jj4-qm8v", "PYSEC-2026-3572"],
+    "published": "Jun 2, 2026, 2:15:17 PM",
+    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-33942",
+    "aliases": ["CVE-2026-47117", "PYSEC-2026-2852", "GHSA-m3v4-v5gx-7wf5"],
     "packages": [],
-    "vendor": "flytohub",
-    "product": "flyto-core",
-    "description": "Flyto2 Core is an execution kernel for automation and AI-agent workflows. Prior to 2.26.7, HTTP-emitting modules including src/core/modules/third_party/developer/http/requests.py, core.api.http_get, core.api.http_post, graphql.query, graphql.mutation, monitor.http_check, communication.slack_send, notification.discord.send_message, notification.slack.send_message, notification.teams.send_message, ai.vision_analyze, verify.visual_diff, browser.proxy_rotate, and the agent and llm inline base_url branch fetch caller-controlled URLs without validate_url_with_env_config, allowing SSRF to internal or metadata endpoints. This issue is fixed in version 2.26.7.",
+    "vendor": "maziyarpanahi",
+    "product": "openmed",
+    "description": "OpenMed before 1.5.2 contains a remote code execution vulnerability in the PII privacy-filter model loading path. The privacy-filter dispatcher used broad substring matching on the user-supplied model_name parameter, allowing a value such as attacker/foo-privacy-filter-bar to route through a path that loads Hugging Face models with trust_remote_code=True. An unauthenticated attacker can supply a malicious model repository containing custom Transformers code via auto_map in config.json or tokenizer_config.json, which is imported and executed with the privileges of the OpenMed service process.",
     "references": [
-      "https://github.com/flytohub/flyto-core/security/advisories/GHSA-pgwh-4jj4-qm8v",
-      "https://github.com/flytohub/flyto-core/commit/0a0a528520ec18f5a21f1ddf858a71cc1edfb6e9",
-      "https://github.com/flytohub/flyto-core/releases/tag/v2.26.7"
+      "https://github.com/SaiTeja-Erukude/CVE-2026-47117-openmed-rce",
+      "https://github.com/maziyarpanahi/openmed/releases/tag/v1.5.2",
+      "https://github.com/maziyarpanahi/openmed/pull/59",
+      "https://github.com/maziyarpanahi/openmed/commit/98724f65df98d7518b9006e6356740aa36c2f224",
+      "https://www.vulncheck.com/advisories/openmed-remote-code-execution-via-pii-model-loading"
     ],
-    "euvdId": "EUVD-2026-50472",
-    "kevDateAdded": null,
-    "epssPercentile": null
-  },
-  "CVE-2026-67425": {
-    "id": "CVE-2026-67425",
-    "title": "Flyto2 Core is an execution kernel for automation and AI-agent workflows. Prior to 2.26.6, llm.chat reads provider keys such as OPENAI_API_KEY and ANTHROPIC_API_KEY from the environment and sends the…",
-    "sources": ["euvd"],
-    "severity": "8.6 (3.1)",
-    "cvssBase": 8.6,
-    "epss": 0.56,
-    "kev": false,
-    "kevSources": [],
-    "published": "Jul 29, 2026, 6:35:01 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-50468",
-    "aliases": ["PYSEC-2026-3573", "CVE-2026-67425", "GHSA-qq9q-xgm3-xv9g"],
-    "packages": [],
-    "vendor": "flytohub",
-    "product": "flyto-core",
-    "description": "Flyto2 Core is an execution kernel for automation and AI-agent workflows. Prior to 2.26.6, llm.chat reads provider keys such as OPENAI_API_KEY and ANTHROPIC_API_KEY from the environment and sends them in the Authorization: Bearer header to caller-controlled base_url, allowing an attacker to receive the operator's key on a public host that passes the SSRF guard. This issue is fixed in version 2.26.6.",
-    "references": [
-      "https://github.com/flytohub/flyto-core/security/advisories/GHSA-qq9q-xgm3-xv9g",
-      "https://github.com/flytohub/flyto-core/commit/d5f89d71303e3c1e6418d347c5c55fcd173cc8cc",
-      "https://github.com/flytohub/flyto-core/releases/tag/v2.26.6"
-    ],
-    "euvdId": "EUVD-2026-50468",
-    "kevDateAdded": null,
-    "epssPercentile": null
-  },
-  "CVE-2026-44209": {
-    "id": "CVE-2026-44209",
-    "title": "Banks generates meaningful LLM prompts using a template language that makes sense. Prior to 2.4.2, banks uses jinja2.Environment() (unsandboxed) to render prompt templates. Applications that pass use…",
-    "sources": ["euvd"],
-    "severity": "7.5 (3.1)",
-    "cvssBase": 7.5,
-    "epss": 0.74,
-    "kev": false,
-    "kevSources": [],
-    "published": "May 26, 2026, 8:46:56 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-31997",
-    "aliases": ["CVE-2026-44209", "GHSA-gphh-9q3h-jgpp", "PYSEC-2026-2390"],
-    "packages": [],
-    "vendor": "masci",
-    "product": "banks",
-    "description": "Banks generates meaningful LLM prompts using a template language that makes sense. Prior to 2.4.2, banks uses jinja2.Environment() (unsandboxed) to render prompt templates. Applications that pass user-supplied strings as the template argument to Prompt() are vulnerable to Server-Side Template Injection (SSTI), which can lead to Remote Code Execution (RCE) on the host system. This vulnerability is fixed in 2.4.2.",
-    "references": [
-      "https://github.com/masci/banks/security/advisories/GHSA-gphh-9q3h-jgpp",
-      "https://github.com/masci/banks/pull/74"
-    ],
-    "euvdId": "EUVD-2026-31997",
-    "kevDateAdded": null,
-    "epssPercentile": null
-  },
-  "CVE-2026-65699": {
-    "id": "CVE-2026-65699",
-    "title": "AgentGPT through 1.0.0 contains an authorization bypass through user-controlled key vulnerability that allows authenticated users to attach tasks to another user's agent run by supplying a target run…",
-    "sources": ["euvd"],
-    "severity": "2.3 (4.0)",
-    "cvssBase": 2.3,
-    "epss": 0.28,
-    "kev": false,
-    "kevSources": [],
-    "published": "Jul 23, 2026, 4:59:46 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-48330",
-    "aliases": ["CVE-2026-65699", "GHSA-wwx9-477p-w7rm"],
-    "packages": [],
-    "vendor": "reworkd",
-    "product": "AgentGPT",
-    "description": "AgentGPT through 1.0.0 contains an authorization bypass through user-controlled key vulnerability that allows authenticated users to attach tasks to another user's agent run by supplying a target run_id in the request body without ownership verification. The AgentCRUD.create_task and validate_task_count functions look up the target AgentRun using the client-supplied run_id without confirming the run belongs to the requesting user, enabling an attacker who obtains a valid run_id to corrupt task history, exhaust the per-run loop budget, and drive LLM costs against the victim's run.",
-    "references": [
-      "https://github.com/geo-chen/oss/blob/main/AgentGPT.md",
-      "https://www.vulncheck.com/advisories/agentgpt-authorization-bypass-via-agent-task-creation"
-    ],
-    "euvdId": "EUVD-2026-48330",
+    "euvdId": "EUVD-2026-33942",
     "kevDateAdded": null,
     "epssPercentile": null
   },
@@ -11845,33 +11974,6 @@
       "https://www.vulncheck.com/advisories/hugging-face-transformers-path-traversal-via-checkpoint-index"
     ],
     "euvdId": "EUVD-2026-60384",
-    "kevDateAdded": null,
-    "epssPercentile": null
-  },
-  "CVE-2026-68770": {
-    "id": "CVE-2026-68770",
-    "title": "sentence-transformers contains a security control bypass vulnerability that allows attackers to achieve arbitrary code execution by exploiting a logic flaw in the import_module_class helper within se…",
-    "sources": ["euvd"],
-    "severity": "9.3 (4.0)",
-    "cvssBase": 9.3,
-    "epss": 0.91,
-    "kev": false,
-    "kevSources": [],
-    "published": "Jul 31, 2026, 8:56:06 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-51650",
-    "aliases": ["CVE-2026-68770", "PYSEC-2026-4164", "GHSA-jhr6-gm9c-rqjv"],
-    "packages": [],
-    "vendor": "Hugging Face",
-    "product": "sentence-transformers",
-    "description": "sentence-transformers contains a security control bypass vulnerability that allows attackers to achieve arbitrary code execution by exploiting a logic flaw in the import_module_class helper within sentence_transformers/util/misc.py, where the guard condition includes an 'or os.path.exists(model_name_or_path)' clause that satisfies the trust gate whenever the supplied path exists on the local filesystem, regardless of the trust_remote_code=False argument. Attackers who can control or influence the contents of a model directory on disk can place malicious Python files such as modeling_*.py referenced via modules.json, causing the code to execute at import time when an application loads the model with SentenceTransformer(path, trust_remote_code=False), bypassing the documented security contract and achieving code execution within the loading process.",
-    "references": [
-      "https://github.com/huggingface/sentence-transformers/issues/3801",
-      "https://github.com/huggingface/sentence-transformers/pull/3807",
-      "https://github.com/huggingface/sentence-transformers",
-      "https://github.com/huggingface/sentence-transformers/commit/ae1acc3fb2aa2004577b297eb4a915ce7a03316a",
-      "https://www.vulncheck.com/advisories/sentence-transformers-arbitrary-code-execution-on-local-model-load-despite-trust-remote-code-false"
-    ],
-    "euvdId": "EUVD-2026-51650",
     "kevDateAdded": null,
     "epssPercentile": null
   },
@@ -12110,33 +12212,6 @@
     "description": "A local unprivileged user on the same host can redirect all Zip/UnZip transformer output into a directory of their choosing by pre-creating /tmp/ziptransformer as a symlink before the application starts. Spring Integration 7.1.0 Spring Integration 7.0.0 - 7.0.5 Spring Integration 6.5.0 - 6.5.10 Spring Integration 6.4.0 - 6.4.12",
     "references": ["https://spring.io/security/cve-2026-59311"],
     "euvdId": "EUVD-2026-67195",
-    "kevDateAdded": null,
-    "epssPercentile": null
-  },
-  "CVE-2026-47117": {
-    "id": "CVE-2026-47117",
-    "title": "OpenMed before 1.5.2 contains a remote code execution vulnerability in the PII privacy-filter model loading path. The privacy-filter dispatcher used broad substring matching on the user-supplied mode…",
-    "sources": ["euvd"],
-    "severity": "9.3 (4.0)",
-    "cvssBase": 9.3,
-    "epss": 0.0129,
-    "kev": false,
-    "kevSources": [],
-    "published": "Jun 2, 2026, 2:15:17 PM",
-    "link": "https://euvd.enisa.europa.eu/vulnerability/EUVD-2026-33942",
-    "aliases": ["CVE-2026-47117", "PYSEC-2026-2852", "GHSA-m3v4-v5gx-7wf5"],
-    "packages": [],
-    "vendor": "maziyarpanahi",
-    "product": "openmed",
-    "description": "OpenMed before 1.5.2 contains a remote code execution vulnerability in the PII privacy-filter model loading path. The privacy-filter dispatcher used broad substring matching on the user-supplied model_name parameter, allowing a value such as attacker/foo-privacy-filter-bar to route through a path that loads Hugging Face models with trust_remote_code=True. An unauthenticated attacker can supply a malicious model repository containing custom Transformers code via auto_map in config.json or tokenizer_config.json, which is imported and executed with the privileges of the OpenMed service process.",
-    "references": [
-      "https://github.com/SaiTeja-Erukude/CVE-2026-47117-openmed-rce",
-      "https://github.com/maziyarpanahi/openmed/releases/tag/v1.5.2",
-      "https://github.com/maziyarpanahi/openmed/pull/59",
-      "https://github.com/maziyarpanahi/openmed/commit/98724f65df98d7518b9006e6356740aa36c2f224",
-      "https://www.vulncheck.com/advisories/openmed-remote-code-execution-via-pii-model-loading"
-    ],
-    "euvdId": "EUVD-2026-33942",
     "kevDateAdded": null,
     "epssPercentile": null
   },
@@ -13192,7 +13267,7 @@
     "sources": ["euvd"],
     "severity": "5.3 (3.0)",
     "cvssBase": 5.3,
-    "epss": 0.46,
+    "epss": 0.49,
     "kev": false,
     "kevSources": [],
     "published": "Jul 7, 2025, 9:54:39 AM",
@@ -13216,7 +13291,7 @@
     "sources": ["euvd"],
     "severity": "5.3 (3.0)",
     "cvssBase": 5.3,
-    "epss": 0.46,
+    "epss": 0.5,
     "kev": false,
     "kevSources": [],
     "published": "Jul 7, 2025, 9:54:59 AM",
@@ -13240,7 +13315,7 @@
     "sources": ["euvd"],
     "severity": "5.3 (3.0)",
     "cvssBase": 5.3,
-    "epss": 0.46,
+    "epss": 0.5,
     "kev": false,
     "kevSources": [],
     "published": "Jul 7, 2025, 9:55:11 AM",
@@ -13264,7 +13339,7 @@
     "sources": ["euvd"],
     "severity": "3.5 (3.0)",
     "cvssBase": 3.5,
-    "epss": 0.38,
+    "epss": 0.41,
     "kev": false,
     "kevSources": [],
     "published": "Jul 7, 2025, 9:55:38 AM",
