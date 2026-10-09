@@ -22,11 +22,31 @@
 
 const DEFAULT_DEBOUNCE_TTL_SECONDS = 6 * 60 * 60; // 6 hours
 
+/**
+ * The Cache API, or null when the runtime doesn't provide one.
+ *
+ * Dereferencing `caches.default` unguarded threw before the `try` below could
+ * catch it, so a runtime without the Cache API turned ~20 call sites — lastgood
+ * writes across the IOC, CVE, matrix and radar routes — from "writes a little
+ * more often" into "throws". The debounce is a KV-quota optimisation; losing it
+ * must cost writes, not availability.
+ */
+function cacheApi(): Cache | null {
+  try {
+    return (caches as unknown as { default?: Cache }).default ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function shouldWriteLastGood(
   name: string,
   ttlSeconds: number = DEFAULT_DEBOUNCE_TTL_SECONDS
 ): Promise<boolean> {
-  const cache = (caches as unknown as { default: Cache }).default;
+  const cache = cacheApi();
+  // No Cache API — nothing to debounce against. Fail open: the caller performs
+  // the write, which is exactly the pre-cache behaviour.
+  if (!cache) return true;
   const key = new Request(`https://lastgood-debounce.internal/v1/${encodeURIComponent(name)}`);
   try {
     const hit = await cache.match(key);

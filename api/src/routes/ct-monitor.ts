@@ -275,16 +275,48 @@ export async function ctCertsHandler(c: Context<{ Bindings: Env }>): Promise<Res
   return response;
 }
 
+/**
+ * Cap on certificates persisted per scan.
+ *
+ * This is NOT a subrequest budget — a `db.batch()` is one D1 call regardless of
+ * statement count. (An earlier revision of this file claimed the opposite and
+ * cut this from 90 to 40; that was based on a wrong premise and would have
+ * thrown away more than half of every scan.) The cap exists because crt.sh
+ * returns large, duplicate-heavy result sets whose tail is near-duplicate SANs
+ * of low value.
+ */
+const MAX_CERTS_PER_SCAN = 90;
+
+/**
+ * Chunk the cert inserts.
+ *
+ * The batch is atomic, so one rejected statement rolls back the whole set.
+ * Chunking bounds that blast radius and an isolated catch keeps a single
+ * failure from discarding certificates already written by earlier chunks.
+ */
+const CERT_BATCH_CHUNK = 50;
+
 /** Store certificates and check for alerts. */
 async function storeCerts(db: D1Database, domain: string, certs: CrtShCert[], alertTypes: string[]): Promise<number> {
   let alertCount = 0;
   const stmts: D1PreparedStatement[] = [];
 
   // crt.sh returns large, duplicate-heavy result sets. Cap the number we
-  // persist so a single invocation stays well under D1's per-batch statement
-  // limit and the Free-plan 50-subrequest cap (the old code did one serial
-  // .run() per cert — hundreds of subrequests on a busy domain).
-  for (const cert of certs.slice(0, 90)) {
+  // persist so one scan stays bounded (the old code did one serial .run() per
+  // cert — hundreds of subrequests on a busy domain).
+  const considered = certs.slice(0, MAX_CERTS_PER_SCAN);
+  if (certs.length > considered.length) {
+    console.log(
+      JSON.stringify({
+        job: 'ct-monitor',
+        domain,
+        certs_returned: certs.length,
+        certs_persisted: considered.length,
+        note: 'scan cap reached — the crt.sh tail is near-duplicate SANs of low value',
+      })
+    );
+  }
+  for (const cert of considered) {
     const names = cert.name_value
       ? cert.name_value
           .split('\n')
@@ -348,8 +380,11 @@ async function storeCerts(db: D1Database, domain: string, certs: CrtShCert[], al
     );
   }
 
-  // One subrequest for all inserts (atomic) instead of N serial writes.
-  if (stmts.length) await db.batch(stmts);
+  // One D1 call per chunk (not N serial writes), and a failure in one chunk
+  // does not discard the certificates already written by the others.
+  for (let i = 0; i < stmts.length; i += CERT_BATCH_CHUNK) {
+    await db.batch(stmts.slice(i, i + CERT_BATCH_CHUNK));
+  }
 
   return alertCount;
 }

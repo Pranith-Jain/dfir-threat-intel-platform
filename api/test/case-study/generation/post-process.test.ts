@@ -106,6 +106,93 @@ describe('postProcess — heading depth tolerance', () => {
   });
 });
 
+describe('postProcess — heading shapes other than `## text`', () => {
+  // Each case below is a shape a model actually emitted that rendered as one
+  // undifferentiated paragraph and was then rejected with "output contained no
+  // section headings", losing the whole generation. They are all valid
+  // markdown that `marked` renders and that a reader would call a section.
+
+  it('promotes Setext headings (underlined titles)', () => {
+    const out = run(
+      'Which versions are affected?\n---------------------------\n\nThe gateway build.\n\nIs it exploited?\n------------\n\nYes.'
+    );
+    expect(out.ok).toBe(true);
+    expect(out.body).toMatch(/^## Which versions are affected\?/m);
+    expect(out.body).toMatch(/^## Is it exploited\?/m);
+    expect(out.body).not.toMatch(/^---/m);
+  });
+
+  it('promotes a Setext `===` heading', () => {
+    const out = run('Summary\n=======\n\nThe vendor shipped two RCEs.');
+    expect(out.ok).toBe(true);
+    expect(out.body).toMatch(/^## Summary/m);
+  });
+
+  it('does not mistake a horizontal rule or front matter for a Setext heading', () => {
+    const out = run('## Summary\n\nTwo RCEs.\n\n---\n\nMore detail below the rule.');
+    expect(out.ok).toBe(true);
+    expect(out.body).toContain('## Summary');
+    // The rule must survive as a rule, not become a heading.
+    expect(out.body).not.toMatch(/^## -+$/m);
+  });
+
+  it('promotes non-question bold pseudo-headings when several of them are present', () => {
+    const out = run('**Summary**\n\nTwo RCEs.\n\n**Affected versions**\n\nGateway 14.1.');
+    expect(out.ok).toBe(true);
+    expect(out.body).toMatch(/^## Summary/m);
+    expect(out.body).toMatch(/^## Affected versions/m);
+  });
+
+  it('keeps a lone bold lead-in as prose rather than promoting it to a heading', () => {
+    // One `**Note:**` in a paragraph is emphasis, not a section. Promoting it
+    // would invent structure the model never wrote.
+    const out = run(
+      '**Note:** vendors should patch the edge appliance. The rest of this body is plain prose with no headings at all.'
+    );
+    expect(out.body).toContain('**Note:** vendors should patch');
+    expect(out.body).not.toMatch(/^## Note/m);
+  });
+
+  it('promotes a bold question that shares its line with its answer', () => {
+    const out = run(
+      '**Which versions are affected?** The gateway build is affected.\n\n**Is it exploited?** Yes, in the wild.'
+    );
+    expect(out.ok).toBe(true);
+    expect(out.body).toMatch(/^## Which versions are affected\?$/m);
+    // The answer sentence must be kept, not swallowed by the heading.
+    expect(out.body).toContain('The gateway build is affected.');
+  });
+
+  it('promotes an ordered list of bare questions used as a section index', () => {
+    const out = run(
+      '1. Which versions are affected?\n\nThe gateway build.\n\n2. Is it exploited?\n\nYes, in the wild.'
+    );
+    expect(out.ok).toBe(true);
+    expect(out.body).toMatch(/^## Which versions are affected\?/m);
+    expect(out.body).toMatch(/^## Is it exploited\?/m);
+  });
+
+  it('leaves an ordinary ordered list alone', () => {
+    const out = run('## Steps\n\n1. Patch the appliance.\n2. Restart the daemon.\n3. Confirm the fix version.');
+    expect(out.ok).toBe(true);
+    expect(out.body).toMatch(/^1\. Patch the appliance\./m);
+  });
+
+  it('never strips a document down to zero headings', () => {
+    // Every section reads as "empty" to the cleaner (its content is a fenced
+    // block the heuristic does not see). Stripping must not delete the outline.
+    const out = run('## Summary\n\n```\nCVE-2099-0001\n```\n\n## Fix\n\n```\nupgrade\n```');
+    expect(out.ok).toBe(true);
+    expect(out.audit?.sections).toBe(2);
+  });
+
+  it('still fails a plain paragraph with no heading shape at all', () => {
+    const out = run('Just a paragraph with no headings whatsoever.');
+    expect(out.ok).toBe(false);
+    expect(out.errors.join(' ')).toMatch(/no section headings/i);
+  });
+});
+
 describe('postProcess — structure', () => {
   it('accepts a body with sections', () => {
     const out = run(

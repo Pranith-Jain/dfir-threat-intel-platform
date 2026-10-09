@@ -69,9 +69,18 @@ export async function buildBlocklists(
   kv?: KVNamespace,
   executionCtx?: { waitUntil: (p: Promise<unknown>) => void }
 ): Promise<BlocklistSet> {
-  // Try CF cache first, then live fetch
-  const cache = caches.default;
-  const cached = await cache.match(new Request(LIVE_IOCS_CACHE_KEY));
+  // Try CF cache first, then live fetch. `caches.default` is dereferenced
+  // guarded: it is a read-through optimisation, and an unavailable Cache API
+  // must cost a live fetch rather than throwing out of `buildBlocklists` — which
+  // runs both on the hourly cron and at the top of three request routes.
+  const cache = (() => {
+    try {
+      return (caches as unknown as { default?: Cache }).default ?? null;
+    } catch {
+      return null;
+    }
+  })();
+  const cached = await cache?.match(new Request(LIVE_IOCS_CACHE_KEY)).catch(() => undefined);
   let data: LiveIocsResponse | null = null;
   if (cached) {
     try {

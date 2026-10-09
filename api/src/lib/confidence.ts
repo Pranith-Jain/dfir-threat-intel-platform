@@ -341,6 +341,20 @@ export const SOURCE_RELIABILITY_REGISTRY: Record<string, SourceReliabilityEntry>
     description: 'High-cadence Telegram CVE relay with structured publish timestamps but no severity data',
     known_bias: 'Relay, not primary disclosure; description-only, no CVSS',
   },
+  cvemon: {
+    id: 'cvemon',
+    name: 'cvemon (Intruder) CVE trends',
+    // A social-attention ranking, not a disclosure venue: Intruder derives
+    // "trending" and a hype score from discussion volume across its own
+    // community, with no severity, CVSS, or exploit data attached. Closer in
+    // kind to cvedetector (a relay) than to NVD/KEV, so D rather than B — the
+    // signal being surfaced is *attention*, which is a weak proxy for risk.
+    reliability: 'D',
+    category: 'secondary',
+    description: 'Intruder social-trending CVE ranking with a proprietary hype score',
+    known_bias:
+      'Attention, not risk — a heavily discussed low-severity CVE can outrank an actively exploited one. No CVSS or exploit data; single upstream with no fallback',
+  },
   'dwi-cve-alerts': {
     id: 'dwi-cve-alerts',
     name: 'DWI CVE Alerts (Telegram)',

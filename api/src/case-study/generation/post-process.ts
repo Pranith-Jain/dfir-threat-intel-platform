@@ -156,6 +156,47 @@ function ensureMdHeaders(body: string): string {
 }
 
 /**
+ * Rewrite Setext headings (`Title` underlined with `===` / `---`) as ATX.
+ *
+ * Setext is valid markdown and `marked` renders it, but the TOC builder
+ * (`content-utils.ts`) and every structural helper here key on ATX only, so a
+ * body written Setext-style looks like one long undifferentiated paragraph —
+ * and the structural check then rejects it with "output contained no section
+ * headings". Models fall into this shape regularly when they underline a
+ * question instead of prefixing it.
+ *
+ * Two shapes are deliberately NOT touched:
+ *   - an underline whose "title" is itself only punctuation (`-`, `*`, `_`,
+ *     `#`), which is a horizontal rule, not a title;
+ *   - anything in a body that opens with YAML front matter, where the closing
+ *     `---` would otherwise be eaten as a heading underline.
+ */
+function promoteSetextHeadings(body: string): string {
+  if (/^\s*---\s*\n/.test(body)) return body;
+  const lines = body.split('\n');
+  const out: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i] ?? '';
+    const next = lines[i + 1] ?? '';
+    const title = line.trim();
+    const isUnderline = /^ {0,3}(?:=+|-{2,})\s*$/.test(next);
+    const looksLikeTitle =
+      title.length > 0 &&
+      title.length <= 120 &&
+      !ATX_HEADING_RE.test(line) &&
+      !/^[-=*_#\s]+$/.test(title) &&
+      !/^\s*(?:\||[-*+]\s|\d+\.\s)/.test(line);
+    if (isUnderline && looksLikeTitle) {
+      out.push(`${'#'.repeat(TOP_SECTION_LEVEL)} ${title}`);
+      i++; // consume the underline
+      continue;
+    }
+    out.push(line);
+  }
+  return out.join('\n');
+}
+
+/**
  * True when the body carries at least one usable section heading at any level.
  *
  * This used to test `/^##\s+.+/` — level 2 only. That is narrower than what
@@ -203,23 +244,108 @@ function normalizeSectionDepth(body: string): string {
 }
 
 /**
+ * Leading bold run on its own line: `**text**`, `**text**:`, or `**text** rest`.
+ * Captures the bold content in $1 and whatever follows it in $2.
+ */
+const LEADING_BOLD_RE = /^\s*(?:\d+[.)]\s+)?\*\*([^*\n]{2,120})\*\*:?\s*(.*)$/;
+
+/**
  * Promote bold pseudo-headings when the body has no real headings at all.
  *
  * Question-shaped headings are explicitly encouraged by the prompt ("Which
- * versions are affected?", "Is it being exploited?"), and models often emit
- * them emphasised rather than as ATX headings. Only applies when there is no
- * ATX heading to begin with, so a body that already has structure is never
- * touched.
+ * versions are affected?", "Is it being exploited?"), and models emit them
+ * three ways that all rendered as one undifferentiated paragraph and were then
+ * rejected with "output contained no section headings":
+ *
+ *   1. `**Which versions are affected?**` alone on the line;
+ *   2. `**Which versions are affected?** The gateway build 14.1 is affected.` —
+ *      heading and its answer share a line;
+ *   3. `**Summary**` / `**Affected versions**` — section labels that are not
+ *      questions.
+ *
+ * A bare bold lead-in is only promoted when it is safe to read as a heading: a
+ * question mark (an unambiguous signal the model is labelling a section), or a
+ * short bold run with no sentence after it AND at least one more such run
+ * elsewhere. That second condition is what keeps inline emphasis like
+ * `**Note:** vendors should patch` from becoming a heading — one such line in a
+ * body of prose is emphasis, several are a section list.
+ *
+ * Only applies when there is no ATX heading to begin with, so a body that
+ * already has structure is never touched.
  */
 function promoteBoldPseudoHeadings(body: string): string {
   if (hasSectionHeadings(body)) return body;
-  return body
-    .split('\n')
-    .map((line) => {
-      const m = /^\s*\*\*([^*\n]{3,80}\?)\*\*:?\s*$/.exec(line);
-      return m ? `## ${m[1]!.trim()}` : line;
-    })
-    .join('\n');
+  const lines = body.split('\n');
+
+  const candidates: Array<{ index: number; text: string; trailing: string }> = [];
+  lines.forEach((line, index) => {
+    const m = LEADING_BOLD_RE.exec(line);
+    if (!m) return;
+    const text = (m[1] ?? '').trim();
+    if (!text) return;
+    candidates.push({ index, text, trailing: (m[2] ?? '').trim() });
+  });
+
+  const promote = new Map<number, string>();
+  for (const c of candidates) {
+    const isQuestion = c.text.endsWith('?');
+    const isBareSection = c.trailing.length === 0 || c.trailing.length <= 60;
+    if (isQuestion || (isBareSection && candidates.length >= 2)) {
+      promote.set(c.index, `${'#'.repeat(TOP_SECTION_LEVEL)} ${c.text}`);
+    }
+  }
+  if (promote.size === 0) return body;
+
+  // A promoted line that had trailing prose keeps it as the section's first
+  // body paragraph rather than discarding the sentence.
+  const out: string[] = [];
+  lines.forEach((line, index) => {
+    const heading = promote.get(index);
+    if (!heading) {
+      out.push(line);
+      return;
+    }
+    out.push(heading);
+    const trailing = candidates.find((c) => c.index === index)?.trailing;
+    if (trailing) out.push('', trailing);
+  });
+  return out.join('\n');
+}
+
+/**
+ * Promote an ordered list of bare questions used as a section index.
+ *
+ * `1. Which versions are affected?\n\nThe gateway build.\n\n2. Is it being
+ * exploited?\n\nYes.` is a section list the model wrote as a list. Left alone it
+ * renders as one blob with no headings, so the structural check rejects it.
+ * Only fires when EVERY numbered item in the body is question-shaped and is
+ * followed by a non-empty paragraph — a mixed or bare list is a real list and
+ * is left alone.
+ */
+function promoteNumberedQuestionIndex(body: string): string {
+  if (hasSectionHeadings(body)) return body;
+  const lines = body.split('\n');
+  const itemRe = /^\s*(\d+)[.)]\s+(.{3,120}\?)\s*$/;
+  let count = 0;
+  for (const line of lines) {
+    if (/^\s*\d+[.)]\s+/.test(line) && !itemRe.test(line)) return body;
+    if (itemRe.test(line)) count++;
+  }
+  if (count < 2) return body;
+
+  const out: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const m = itemRe.exec(lines[i] ?? '');
+    if (!m) {
+      out.push(lines[i] ?? '');
+      continue;
+    }
+    // The item must actually head a section — otherwise it is an inline
+    // question inside a list, not a section label.
+    const after = lines.slice(i + 1).find((l) => l.trim().length > 0) ?? '';
+    out.push(after.length === 0 ? (lines[i] ?? '') : `${'#'.repeat(TOP_SECTION_LEVEL)} ${m[2]!.trim()}`);
+  }
+  return out.join('\n');
 }
 
 /** Remove a section whose body carries no content at all. */
@@ -254,10 +380,17 @@ function stripEmptySections(body: string): string {
       i++;
     }
   }
-  return result
+  const stripped = result
     .join('\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+  // Never let this cleaner remove the document's entire outline. A body whose
+  // every section reads as "empty" is a shape this heuristic mis-reads (content
+  // in a fence, a table, a definition list), not a body with no content — and
+  // stripping it would turn a renderable draft into the
+  // "output contained no section headings" failure.
+  if (hasSectionHeadings(body) && !hasSectionHeadings(stripped)) return body.trim();
+  return stripped;
 }
 
 /** Blank line after a list block so the next paragraph isn't swallowed. */
@@ -506,7 +639,7 @@ function buildAudit(body: string, iocs: PostIOC[], warnings: string[]): PostAudi
     words: body.split(/\s+/).filter(Boolean).length,
     // Counts every heading level the structural check accepts, so the reviewer
     // sees the same number the validator used to decide.
-    sections: body.split('\n').filter((line) => hasSectionHeadings(line)).length,
+    sections: body.split('\n').filter((line) => ATX_HEADING_RE.test(line)).length,
     references: (body.match(REF_LINK_RE) ?? []).length,
     iocs: iocs.length,
     warnings,
@@ -523,9 +656,11 @@ export function postProcess(input: PostProcessInput): PostProcessOutput {
   body = body.replace(FACTS_BLOCK_RE, '').trim();
   // Heading shape is normalised EARLY, before stripUnknownRefHosts. That helper
   // locates the References section with /^##\s+(References|…)/, so if a body
-  // expressed its sections as `###` the lookup would miss and untrusted citation
-  // hosts would survive the allowlist filter — a factual-integrity control
-  // silently skipped.
+  // expressed its sections as `###`, Setext, or a bold pseudo-heading, the
+  // lookup would miss and untrusted citation hosts would survive the allowlist
+  // filter — a factual-integrity control silently skipped.
+  body = promoteSetextHeadings(body);
+  body = promoteNumberedQuestionIndex(body);
   body = promoteBoldPseudoHeadings(body);
   body = normalizeSectionDepth(body);
   body = stripUnknownRefHosts(body, input.factsText);

@@ -396,6 +396,17 @@ export async function executeCronJob(
                     })
                   );
                 }
+              } else {
+                // Logged unconditionally: "the scanner ran and matched nothing"
+                // and "the scanner never ran" look identical from the outside,
+                // which is how a dead leak pipeline stayed invisible for a week.
+                console.warn(
+                  JSON.stringify({
+                    job: 'telegram-leak-scanner',
+                    status: 'no_feed_items',
+                    reason: 'cache, KV warm slice and direct fetch all returned zero items',
+                  })
+                );
               }
             }
           } catch (e) {
@@ -421,6 +432,7 @@ export async function executeCronJob(
                   JSON.stringify({
                     job: 'telegram-watched-scrape',
                     channels_scraped: w.channels_scraped,
+                    channels_unreachable: w.channels_unreachable,
                     leaks_found: w.leaks_found,
                     channels_discovered: w.channels_discovered,
                   })
@@ -621,12 +633,56 @@ export async function executeCronJob(
                   nvdApiKey: env.NVD_API_KEY,
                   env: env as unknown as ApiEnv,
                 });
-                await writeBriefing(db, briefing);
+                const w = await writeBriefing(db, briefing);
                 console.log(
                   JSON.stringify({
                     job: 'briefing-heal',
                     type: 'weekly',
                     slug: briefing.slug,
+                    written: w.written,
+                    reason: w.reason,
+                    findings: briefing.stats.findings,
+                    iocs: briefing.stats.iocs,
+                  })
+                );
+              }
+              // ── Yesterday's daily ─────────────────────────────────────────
+              // The heal above only ever builds `daily-<today>` (the live
+              // 24h-to-now window). `GET /api/v1/briefings/today` — the card on
+              // the threat-intel front page — serves `daily-<yesterday>`, which
+              // is written ONLY by the dedicated 30 00 * * * cron. So a single
+              // missed night left that slug absent forever: the page 404'd with
+              // "not yet generated" and nothing in the hourly job ever looked
+              // for it. Repaired here only when the row is actually missing, so
+              // the steady-state cost is one extra indexed SELECT and the
+              // fan-out is paid only when a night was genuinely dropped.
+              const yesterdaySlug = `daily-${isoDate(new Date(now.getTime() - 86400_000))}`;
+              const yesterdayRow = await db
+                .prepare('SELECT slug FROM briefings WHERE slug = ?')
+                .bind(yesterdaySlug)
+                .first<{ slug: string }>();
+              if (!yesterdayRow) {
+                console.warn(
+                  JSON.stringify({
+                    job: 'briefing-heal',
+                    type: 'daily',
+                    slug: yesterdaySlug,
+                    status: 'rebuilding-missing',
+                    reason: 'the 00:30 dedicated build did not produce this row',
+                  })
+                );
+                const briefing = await buildBriefing('daily', undefined, {
+                  nvdApiKey: env.NVD_API_KEY,
+                  env: env as unknown as ApiEnv,
+                });
+                const w = await writeBriefing(db, briefing);
+                console.log(
+                  JSON.stringify({
+                    job: 'briefing-heal',
+                    type: 'daily',
+                    slug: briefing.slug,
+                    written: w.written,
+                    reason: w.reason,
                     findings: briefing.stats.findings,
                     iocs: briefing.stats.iocs,
                   })
@@ -1541,11 +1597,6 @@ export async function executeCronJob(
   ctx.waitUntil(
     (async () => {
       try {
-        // Kick off the landscape sync in parallel with the briefing build.
-        // Each sub-sync is bounded by FETCH_TIMEOUT_MS (20s) and never throws
-        // (Promise.allSettled + per-callback logCronFail), so a slow upstream
-        // can't extend the lease beyond the briefing build's window.
-        const landscapePromise = runLandscapeSync();
         const db = env.BRIEFINGS_DB as D1Database;
         try {
           const briefing = await buildBriefing(type, undefined, {
@@ -1561,16 +1612,35 @@ export async function executeCronJob(
               iocs: briefing.stats.iocs,
             })
           );
-          await writeBriefing(db, briefing);
+          // writeBriefing can legitimately REFUSE — it returns
+          // `{written:false, reason}` for a 0-finding build and for a build that
+          // would overwrite a richer existing row. The old code discarded that
+          // return value and logged `briefing-build` with the slug either way,
+          // so a refused write was indistinguishable from a successful one in the
+          // logs. That is how a missing daily looked like a healthy run.
+          const writeResult = await writeBriefing(db, briefing);
           console.log(
             JSON.stringify({
               job: 'briefing-build',
               type,
               slug: briefing.slug,
+              written: writeResult.written,
+              reason: writeResult.reason,
               findings: briefing.stats.findings,
               iocs: briefing.stats.iocs,
             })
           );
+          if (!writeResult.written) {
+            console.error(
+              JSON.stringify({
+                job: 'briefing-build',
+                type,
+                slug: briefing.slug,
+                status: 'not_persisted',
+                reason: writeResult.reason,
+              })
+            );
+          }
         } catch (err) {
           console.error(
             JSON.stringify({
@@ -1662,11 +1732,23 @@ export async function executeCronJob(
             }
           }
         }
-        // Wait for the parallel landscape sync to finish so the heartbeat
-        // interval is still alive (and the lease is held) for its duration.
-        // The sub-syncs are bounded by FETCH_TIMEOUT_MS each, so worst case
-        // is ~25 s; well within the 15-min lease + 5-min heartbeat.
-        await landscapePromise;
+        // Curated-landscape sync runs AFTER the briefing is persisted, not in
+        // parallel with the build.
+        //
+        // The free plan allows 50 subrequests per invocation and `buildBriefing`'s
+        // live fan-out already spends most of it. The landscape sync issues
+        // three more upstream fetches that were previously started in the same
+        // tick — so the two together could cross the cap, Cloudflare would abort
+        // the invocation, and NOTHING would be written. Sequencing it after the
+        // write means the sync can still fail on its own without ever costing
+        // the briefing its budget.
+        //
+        // Note on confidence: the cap is on SUBREQUESTS, and a D1 `db.batch()`
+        // is one subrequest however many statements it carries — the
+        // 1,494-statement breach-forum snapshot writes every hour without
+        // incident. This fan-out is real `fetch()` calls, so the cap genuinely
+        // applies here.
+        await runLandscapeSync();
       } finally {
         clearInterval(briefingHrt);
       }

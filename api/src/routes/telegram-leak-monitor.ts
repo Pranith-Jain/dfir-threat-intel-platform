@@ -338,6 +338,56 @@ export async function ensureWatchedChannel(db: D1Database, handle: string, categ
 
 // ─── main scan function ─────────────────────────────────────────────────────
 
+/**
+ * Statement chunk size.
+ *
+ * NOT a subrequest budget. A `db.batch()` is a single D1 call — one
+ * subrequest no matter how many statements it carries. (An earlier version of
+ * this file assumed the opposite and capped at 40 statements/pass; that was
+ * wrong, and it silently discarded ~150 of ~190 leaks an hour. The
+ * 1,494-statement `breach_forum_status` snapshot batch proves it: it has been
+ * writing every hour without incident.)
+ *
+ * The real reason to chunk is atomicity. A batch is all-or-nothing, so one bad
+ * statement discards every other statement in the same call. Chunking bounds
+ * that blast radius, and an isolated catch keeps one failure from taking the
+ * whole hourly pipeline down with it.
+ */
+const BATCH_CHUNK = 100;
+
+/** Severity order — real leaks are written before CVE chatter within a chunk. */
+const SEVERITY_RANK: Record<LeakScanResult['severity'], number> = {
+  critical: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+};
+
+/**
+ * Run statements in chunks, never letting one batch take the hour down with it.
+ *
+ * A batch is atomic: one rejected statement discards the whole batch. Chunking
+ * plus an isolated catch means a single failure costs that chunk, not the
+ * entire run — and the caller's `catch` never sees an exception that would
+ * abort the rest of the hourly pipeline.
+ */
+async function runChunked(
+  db: D1Database,
+  statements: ReturnType<D1Database['prepare']>[],
+  limit: number
+): Promise<number> {
+  let affected = 0;
+  for (let i = 0; i < statements.length; i += limit) {
+    const chunk = statements.slice(i, i + limit);
+    const results = await db.batch(chunk).catch((e) => {
+      logError('leak scanner batch failed', e);
+      return [] as unknown[];
+    });
+    for (const r of results) affected += d1Changes(r);
+  }
+  return affected;
+}
+
 export async function runTelegramLeakScanner(
   db: D1Database,
   items: TelegramFeedItem[]
@@ -351,10 +401,10 @@ export async function runTelegramLeakScanner(
       (channel_handle, message_link, message_text, leak_type, credential_count, domains_found, severity, discovered_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   );
-  const channelUpdateStmt = db.prepare(
+  const channelBumpStmt = db.prepare(
     `UPDATE telegram_watched_channels
        SET last_leak_found = ?,
-           leak_count = leak_count + 1
+           leak_count = leak_count + ?
      WHERE handle = ?`
   );
   const discoveredInsertStmt = db.prepare(
@@ -376,9 +426,8 @@ export async function runTelegramLeakScanner(
     .all<{ handle: string }>();
   const dismissedSet = new Set(dismissedRows.results?.map((r) => r.handle.toLowerCase()) ?? []);
 
-  // Collect everything, then batch.
-  const leakStmts: ReturnType<typeof db.prepare>[] = [];
-  const updateStmts: ReturnType<typeof db.prepare>[] = [];
+  // Collect, then budget.
+  const leakCandidates: LeakScanResult[] = [];
   const discoveredHandles = new Map<string, string | null>();
 
   for (const item of items) {
@@ -402,45 +451,44 @@ export async function runTelegramLeakScanner(
     }
 
     const result = scanMessageForLeaks(item);
-    if (result) {
-      leakStmts.push(
-        joinedLeaksStmt.bind(
-          result.channel_handle,
-          result.message_link,
-          result.message_text,
-          result.leak_type,
-          result.credential_count,
-          JSON.stringify(result.domains_found),
-          result.severity,
-          now
-        )
-      );
-      updateStmts.push(channelUpdateStmt.bind(now, result.channel_handle));
-    }
+    if (result) leakCandidates.push(result);
   }
 
-  // Batch discovered-channel inserts (skip watched).
+  // Discovered channels first: they are the operator-review queue.
   const discStmts: ReturnType<typeof db.prepare>[] = [];
   for (const [handle, source] of discoveredHandles) {
     if (!watchedSet.has(handle) && !dismissedSet.has(handle)) {
       discStmts.push(discoveredInsertStmt.bind(handle, source, now));
     }
   }
+  const channelsDiscovered = await runChunked(db, discStmts, BATCH_CHUNK);
 
-  // Execute batches.
-  const results = await Promise.all([
-    discStmts.length > 0 ? db.batch(discStmts) : [],
-    leakStmts.length > 0 ? db.batch(leakStmts) : [],
-    updateStmts.length > 0 ? db.batch(updateStmts) : [],
-  ]);
+  // Severity-ordered so that, if a batch chunk does fail, the retries on the
+  // next pass pick up the credential paste before the CVE chatter.
+  const ranked = [...leakCandidates].sort(
+    (a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] || a.message_link.localeCompare(b.message_link)
+  );
 
-  // Count changes via affected rows (D1 batch returns arrays of results
-  // where each result has meta.changes). Sum them up.
-  const batchResults = results.flat();
-  const channelsDiscovered = batchResults.slice(0, discStmts.length).reduce((sum, r) => sum + d1Changes(r), 0);
-  const leaksFound = batchResults
-    .slice(discStmts.length, discStmts.length + leakStmts.length)
-    .reduce((sum, r) => sum + d1Changes(r), 0);
+  const leakStmts = ranked.map((r) =>
+    joinedLeaksStmt.bind(
+      r.channel_handle,
+      r.message_link,
+      r.message_text,
+      r.leak_type,
+      r.credential_count,
+      JSON.stringify(r.domains_found),
+      r.severity,
+      now
+    )
+  );
+  const leaksFound = await runChunked(db, leakStmts, BATCH_CHUNK);
+
+  // One UPDATE per channel, not one per leak. A channel with 40 leaks this
+  // hour cost 40 statements to bump `leak_count`; it now costs 1.
+  const perChannel = new Map<string, number>();
+  for (const r of ranked) perChannel.set(r.channel_handle, (perChannel.get(r.channel_handle) ?? 0) + 1);
+  const updateStmts = [...perChannel.entries()].map(([handle, n]) => channelBumpStmt.bind(now, n, handle));
+  if (updateStmts.length > 0) await runChunked(db, updateStmts, BATCH_CHUNK);
 
   return { leaks_found: leaksFound, channels_discovered: channelsDiscovered };
 }
@@ -459,9 +507,13 @@ export async function runTelegramLeakScanner(
 const WATCHED_SCRAPE_CONCURRENCY = 4;
 const MAX_WATCHED_PER_RUN = 25;
 
-export async function scrapeWatchedChannels(
-  db: D1Database
-): Promise<{ channels_scraped: number; leaks_found: number; channels_discovered: number }> {
+export async function scrapeWatchedChannels(db: D1Database): Promise<{
+  channels_scraped: number;
+  leaks_found: number;
+  channels_discovered: number;
+  /** Channels where t.me returned no preview at all — i.e. the scrape failed. */
+  channels_unreachable: number;
+}> {
   // Oldest-scraped first (SQLite sorts NULL before any value in ASC), so a
   // backlog rotates through over successive hourly runs.
   const watched = await db
@@ -469,7 +521,9 @@ export async function scrapeWatchedChannels(
     .bind(MAX_WATCHED_PER_RUN)
     .all<{ handle: string }>();
   const channels = (watched.results ?? []).filter((r) => r.handle);
-  if (channels.length === 0) return { channels_scraped: 0, leaks_found: 0, channels_discovered: 0 };
+  if (channels.length === 0) {
+    return { channels_scraped: 0, leaks_found: 0, channels_discovered: 0, channels_unreachable: 0 };
+  }
 
   const now = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
   const scrapeUpdateStmt = db.prepare(
@@ -477,6 +531,7 @@ export async function scrapeWatchedChannels(
   );
   const updateStmts: ReturnType<typeof db.prepare>[] = [];
   const allItems: TelegramFeedItem[] = [];
+  let unreachable = 0;
 
   // Bounded concurrency so we don't burst Telegram or exhaust the subrequest budget.
   let idx = 0;
@@ -486,6 +541,12 @@ export async function scrapeWatchedChannels(
       if (!ch?.handle) continue;
       const html = await fetchHtml(`https://telegram.me/s/${encodeURIComponent(ch.handle)}`);
       const msgs = html ? parseChannelHtml(html) : [];
+      // `fetchHtml` returns null on a non-200/redirect — Cloudflare's egress IPs
+      // are rate-limited by Telegram, so every one of these currently comes back
+      // null. Counted separately so the log distinguishes "scraped, the channel
+      // is quiet" from "could not reach Telegram at all", which is the difference
+      // between a healthy pipeline and a dead one.
+      if (!html) unreachable += 1;
       for (const m of msgs) {
         allItems.push({
           channel_handle: ch.handle,
@@ -505,14 +566,9 @@ export async function scrapeWatchedChannels(
   };
   await Promise.all(Array.from({ length: Math.min(WATCHED_SCRAPE_CONCURRENCY, channels.length) }, () => worker()));
 
-  if (updateStmts.length > 0) {
-    try {
-      await db.batch(updateStmts);
-    } catch (_catchErr) {
-      logError('handler failed', _catchErr);
-      /* non-fatal — last_scraped is best-effort */
-    }
-  }
+  // Chunked: MAX_WATCHED_PER_RUN is a constant and the per-invocation D1 budget
+  // is not negotiable.
+  if (updateStmts.length > 0) await runChunked(db, updateStmts, BATCH_CHUNK);
 
   // Reuse the existing scanner for leak insertion + onward channel discovery.
   const scan =
@@ -522,6 +578,7 @@ export async function scrapeWatchedChannels(
     channels_scraped: channels.length,
     leaks_found: scan.leaks_found,
     channels_discovered: scan.channels_discovered,
+    channels_unreachable: unreachable,
   };
 }
 

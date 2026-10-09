@@ -43,7 +43,20 @@ export interface SseSlot {
  * cost. No-ops cleanly when the cache isn't available.
  */
 export async function claimSseSlot(_c: Context<{ Bindings: Env }>, ip: string): Promise<SseSlot | null> {
-  const cache = (caches as unknown as { default: Cache }).default;
+  const cache = (() => {
+    try {
+      return (caches as unknown as { default?: Cache }).default ?? null;
+    } catch {
+      return null;
+    }
+  })();
+  // No Cache API → no counter, so nothing can be over the cap. The contract
+  // above ("no-ops cleanly") required a slot back, not a throw: the previous
+  // unguarded `caches.default` dereference raised a TypeError before the
+  // try/catch below, failing all three SSE routes with a 500 rather than
+  // failing open. The per-window rateLimit middleware still applies.
+  const noopSlot: SseSlot = { release: async () => {} };
+  if (!cache) return noopSlot;
   const key = new Request(`https://sse-open.internal/v1/${encodeURIComponent(ip)}`);
   let count = 0;
   try {

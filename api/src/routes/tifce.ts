@@ -41,6 +41,8 @@ const CACHE_KEY = FEED_QUALITY_CACHE_KEY;
 const CACHE_TTL_SECONDS = 60 * 60;
 const HISTORY_WINDOW_DAYS = 7;
 const MAX_FEEDS_IN_RESPONSE = 200;
+/** Statements per D1 call. Bounds the atomicity blast radius, not a quota. */
+const MAX_TIFCE_BATCH = 50;
 
 export async function feedQualityHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const cache = (caches as unknown as { default: Cache }).default;
@@ -370,7 +372,15 @@ async function persistCurrentBuild(db: D1Database, result: TifceResult): Promise
       )
     );
   }
-  if (batch.length > 0) await db.batch(batch);
+  if (batch.length > 0) {
+    // Chunked for atomicity, not budget: a batch is all-or-nothing, so one bad
+    // statement would otherwise discard every row for the whole build. Today's
+    // fan-out yields ~20 distinct sources, well inside one chunk; the chunking
+    // is what keeps that true if the fan-out grows.
+    for (let i = 0; i < batch.length; i += MAX_TIFCE_BATCH) {
+      await db.batch(batch.slice(i, i + MAX_TIFCE_BATCH));
+    }
+  }
 }
 
 // ────────────────────────────────────────────────────────────────────────
