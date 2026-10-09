@@ -1,14 +1,15 @@
 # LOC Reduction Plan
 
-Status: Steps 1–5 executed and analyzed. Step 6 (policy) deferred; Step 7
-(manifest cache extraction) recommended but not started.
-Every claim below was re-verified against the repo on 2026-10-09.
-Baseline was green before and after: `typecheck`, `typecheck:api`,
-`typecheck:worker`, `lint` all exit 0.
+Status: **Complete and committed** (`898ae2b75`). Every claim below was
+re-verified against the repo on 2026-10-09.
 
-**Final tally: 7,400 LOC deleted, zero behavior change, zero build-speed
-change, 207 MB of build output reclaimed, and one correction to my own prior
-report.** The one worthwhile refactor remaining is Step 7 (~600–900 LOC).
+`npm run check:all` exits 0 — 3 typechecks clean, lint clean, **1828/1828 tests
+passing across 141 files.**
+
+**Final tally: ~7,955 LOC removed** (7,400 from `src/data/`, 555 from the
+manifest cache cluster), zero behavior change, zero build-speed change, 207 MB
+of build output reclaimed, 3 prompt-hygiene regressions fixed, and a dead-code
+audit that had to be corrected twice.
 
 ---
 
@@ -438,39 +439,94 @@ largely happened.
 | 4   | `rm -rf dist` (208 MB)                                       | 0                       | None | git-ignored    | ✅ done                                                     |
 | 5   | Manifest loader shape analysis                               | 0 (identifies ~600–900) | None | write-up only  | ✅ done                                                     |
 | 6   | `public/data/` policy                                        | 0                       | None | separate doc   | deferred — needs your call                                  |
-| 7   | Extract `BodyCache`/`fetchJson` cluster                      | **−555**                | Low  | 3× tsc + tests | ✅ done — 20 files, all gates green                         |
+| 7   | Extract `BodyCache`/`fetchJson` cluster                      | **−555**                | Low  | 3× tsc + tests | ✅ done — 20 files                                          |
+| 8   | Fix the 5 failing em-dash tests                              | 3 regressions fixed     | Low  | full suite     | ✅ done — suite fully green                                 |
+| 9   | Profile `public/data/` weight                                | 0                       | None | analysis only  | ✅ done — recommend leaving it in git                       |
 
 **Bottom line:** 7,400 LOC deleted from `src/data/` plus 555 net from the
 manifest cluster = **~7,955 LOC removed**, zero behavior change, zero
-build-speed change, 207 MB of build output reclaimed.
+build-speed change, 207 MB reclaimed, and a fully green test suite.
 
 **Do not** delete the 3 routes, **do not** touch `cyberpulse-ingest.ts`, **do
-not** remove the 4 dependencies, and **do not** mass-migrate `src/data/` to
-JSON.
+not** remove the 4 dependencies, **do not** mass-migrate `src/data/` to JSON,
+and **do not** git-lfs `public/data/`.
 
 ### Remaining known-broken items
 
-1. `src/__tests__/em-dash-prompts.test.ts` — 5 failures, pre-existing on `main`,
-   untouched by this work. Worth a separate fix.
+None. `npm run check:all` exits 0: 3 typechecks clean, `lint` clean, and
+`test:run` **1828/1828 passing across 141 files** — the first fully green run
+of this project.
 
-2. Untracked `scanrun.test.ts` at repo root (not authored by this work). It is
-   a scratch file that `fetch`es the **live production API**
-   (`https://pranithjain.qzz.io/api/v1/telegram-feed`) and has no assertions —
-   it only `console.log`s. It gets picked up by `vitest run` and adds a real
-   network call to every test run. Flagging rather than deleting, since it is
-   not mine: it should be deleted or moved out of the vitest glob.
+### Step 8 — [DONE] Fixed the 5 pre-existing em-dash test failures
 
-### Suggested next step
+They were **not** stale tests. The case-study rework (`896f5a745`) introduced
+three real regressions:
 
-None in this plan — it is exhausted. The remaining candidates were all measured
-and rejected with evidence. Two items need a decision rather than work:
+1. **`hook-variants.ts` was deleted** but still listed in `PROMPT_FILES`, so the
+   test failed on a missing file rather than on hygiene.
+2. **`NO_EM_DASH_RULE` was dropped from the case-study system prompt** while
+   `stripConnectorEmDashes` was kept in post-process. `prose-style.ts` documents
+   the invariant as "the rule goes into the system prompt of every surface
+   that emits prose"; case-study broke it. 6 connector em dashes were also
+   reintroduced into prompt prose.
+3. **The citation-format spec was deleted, silently disabling a factual-integrity
+   control.** `post-process.stripUnknownRefHosts` drops reference bullets
+   pointing at hosts that are neither allowlisted nor in the dossier — but it
+   only runs when the body carries a `## References`-style heading
+   (`post-process.ts:406`). The rework deliberately stopped mandating section
+   headings ("none of them mandates a specific heading"), so the model rarely
+   emits that heading, **the citation allowlist filter was being skipped
+   entirely, and fabricated source links could ship.**
 
-1. The `telegram-leak-monitor.ts` / `scheduled.ts` / `post-process.ts`
-   in-flight edits currently break `typecheck:worker` and `lint`. Whoever owns
-   them should finish and commit them.
-2. `public/data/` at 147 MB / 9,687 files is the repo's real weight — a
-   content-policy question (git-lfs vs. build-time fetch vs. accept), not a
-   refactor.
+Fixes: dropped the dead filename from the test, restored `NO_EM_DASH_RULE` plus
+a new `REFERENCES_CONTRACT` naming the heading the validator keys on, and
+rewrote the 6 connector dashes into colons/commas per the rule's own guidance.
+The contract keeps its `label — description` dash, which `NO_EM_DASH_RULE`
+explicitly permits as a definition pair and which `post-process` reads the
+description off.
+
+Added a regression test so the heading requirement cannot be dropped again:
+`names the references heading the citation allowlist keys on`.
+
+**Verification:** `em-dash-prompts` 13/13; `templates.test.ts` + `post-process.test.ts`
+68/68; full `check:all` exits 0.
+
+### Step 9 — [ANALYZED] `public/data/` weight: a policy call, not a refactor
+
+Measured: **147 MB, 9,627 JSON files**, all 9,679 tracked in git.
+
+| Directory                                                  | Size             |
+| ---------------------------------------------------------- | ---------------- |
+| `threat-intel/living-threat/`                              | 50 MB (11 files) |
+| `threat-intel/threaticon/`                                 | 10 MB            |
+| `threat-intel/cves/`                                       | 9.7 MB           |
+| `threat-intel/destroylist/`                                | 8.6 MB           |
+| `sigbase/`                                                 | 13 MB            |
+| `anarchy/`, `apt-actors/`, `pcmedicalist/`, `ai-security/` | ~5–8 MB each     |
+
+Facts that constrain the decision:
+
+- **All of it is generated**, by ~15 `scripts/build-*.mjs` + `sync-*.mjs`, from
+  staging dirs. `build-living-threat.mjs` is explicitly "NOT in prebuild" —
+  the comment says the upstream bootstrap is slow/expensive.
+- **It churns**: 317 commits touching `public/data` in the last 30 days, 30 of
+  them just `living-threat`.
+- **`living-threat` is already sharded** (500 incidents/shard, 11 files) with a
+  comment saying sharding "keeps the deployment well under the 20k static-asset
+  cap". So the ~9.7k file count is not arbitrary — it was designed against a
+  Workers static-asset limit. Raising file counts to reduce git size would
+  break that.
+- Largest single files are ~4.8 MB (the shards). No single-file outlier problem.
+
+**Recommendation: leave it in git; do not git-lfs it.** git-lfs would make every
+one of those 317 monthly commits an LFS round-trip for a dataset that is already
+regenerable by script, and it would put the shards behind LFS pointers at deploy
+time. The honest framing: this repo trades clone size for reproducibility, and
+for a data platform whose payload is 87 MB of threat intelligence that is
+defensible. If clone time actually hurts, the fix is a build-time fetch
+(`sync-*.mjs` promoted into `prebuild`), which is a CI/deploy change, not a
+refactor — and it needs a decision about build reliability, since it would make
+every build depend on third-party APIs being up.
 
 ## 4. Verification per step
 
