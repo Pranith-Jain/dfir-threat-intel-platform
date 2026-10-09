@@ -13,9 +13,18 @@ name: Daily bug & security scan
 # Checks (all static analysis, no deploys, no prod traffic):
 #   A. Secret-pattern scan over tracked source (defence-in-depth on top of
 #      the gitleaks CI step — catches patterns gitleaks rules miss).
-#   B. SSRF-reachability: every route that takes a user-supplied ?url= must
-#      reference ssrf-guard (assertPublicHost/pinnedFetchFollow) or an
-#      allow-list — the exact class of bug found in audit 2026-10-09 (#298).
+#   B. SSRF dataflow (scripts/scan-ssrf.mjs): a value read from
+#      c.req.query/param used as the FIRST ARGUMENT of fetch() — the one
+#      position where user input becomes the request host. The previous
+#      implementation was a grep for "reads a url param AND does not mention
+#      ssrf-guard", which flagged any handler that merely READ a url-ish param.
+#      Eight of its nine hits passed the value as an encodeURIComponent'd query
+#      parameter or a JSON body field to a fixed upstream — not SSRF-reachable.
+#      That noise buried the one real finding (#298) inside the same list.
+#   B2. Correctness gates (scripts/scan-gates.mjs): lockfile/manifest drift,
+#      missing workflow concurrency groups, colliding concurrency group names,
+#      scheduled workflows with branch filters, and analysis configs that
+#      nothing runs. Each is a silent failure that greps cannot see.
 #   C. Dangerous HTML sinks: dangerouslySetInnerHTML fed from a variable that
 #      was never produced by DOMPurify / renderMarkdown / a `<`-escaped
 #      JSON-LD literal in the same file.
@@ -91,22 +100,43 @@ jobs:
             record A high "Secret-pattern hits in tracked source" /tmp/scan/A.body
           fi
 
-          # ── B. SSRF-reachable URL handlers without ssrf-guard ─────────
-          # Any route file that reads a user-supplied url AFTER mount and
-          # neither references ssrf-guard nor a host allow-list is a suspect.
-          ssrf_hits=""
-          for f in $(grep -rlE "query\('(url|target|link|feed)'\)|query\(\"(url|target|link|feed)\"\)" api/src/routes --include='*.ts' 2>/dev/null); do
-            case "$f" in *test*) continue ;; esac
-            if ! grep -qE 'assertPublicHost|pinnedFetchFollow|ssrf-guard|ALLOWED_HOSTS|allow-list|allowlist' "$f"; then
-              ssrf_hits="${ssrf_hits}${f}
-          "
-            fi
-          done
-          if [ -n "$ssrf_hits" ]; then
-            { printf 'Route files accepting a user-supplied URL but referencing neither `ssrf-guard` nor an allow-list:\n\n'
-              printf '```\n%s```\n' "$ssrf_hits"
-              printf '_Scanner B: reachability review required. Known accepted exceptions: none — if a file is a false positive (e.g. .onion-only validated input), add an inline `// ssrf-audit: accept-reason` annotation so the scanner learns it._\n'; } > /tmp/scan/B.body
-            record B high "Routes fetching user-supplied URLs without ssrf-guard" /tmp/scan/B.body
+          # ── B. SSRF dataflow ──────────────────────────────────────────
+          # Delegates to scripts/scan-ssrf.mjs, which does the analysis inline:
+          # it tracks a `c.req.query/param` assignment to a bare identifier and
+          # reports only that identifier appearing as fetch()'s FIRST argument.
+          #
+          # This replaces a grep that flagged any route merely READING a url-ish
+          # query param. Eight of its nine hits were encodeURIComponent'd query
+          # params or JSON body fields sent to a fixed upstream — shapes that
+          # cannot change the request host — and that noise is why the one real
+          # finding (#298) was easy to overlook. Suppression is automatic for
+          # files using a guard fetcher, and via a `// ssrf-audit: accept-reason`
+          # annotation for false positives the guard grep cannot see (e.g.
+          # .onion-only input behind a fixed tor2web gateway).
+          if ssrf_out="$(node scripts/scan-ssrf.mjs 2>/tmp/scan/B.err)"; then
+            ssrf_out=""
+          else
+            ssrf_rc=$?
+            [ "$ssrf_rc" = 2 ] && ssrf_out="scanner error: $(cat /tmp/scan/B.err)"
+          fi
+          if [ -n "$ssrf_out" ]; then
+            { printf 'A request value is used as the **host** of an outbound fetch:\n\n'
+              printf '```\n%s\n```\n' "$ssrf_out"
+              printf '_Scanner B: this is the #298 shape — `fetch(<user value>)` lets a caller point the fetch at an internal address (169.254.169.254 metadata, loopback, RFC1918), because Worker egress is not loopback._\n\n'
+              printf '_Fix: `pinnedFetchFollow()` from `api/src/lib/ssrf-guard.ts` (re-validates + pins every redirect hop, which also defeats DNS rebinding) plus a host allow-list derived from the shipped manifest — see the threat-monitor fix in fd0dfc7 for the worked example. If this is a false positive, annotate the file `// ssrf-audit: accept-reason <why>` and this check will skip it from then on._\n'; } > /tmp/scan/B.body
+            record B high "Request value used as a fetch host (SSRF)" /tmp/scan/B.body
+          fi
+
+          # ── B2. correctness gates ─────────────────────────────────────
+          # Lockfile/manifest drift, missing or colliding workflow concurrency
+          # groups, branch filters silently disabling a schedule, and analysis
+          # configs nothing runs. All are silent failures greps cannot see.
+          if gates_out="$(node scripts/scan-gates.mjs 2>&1)"; then
+            gates_out=""
+          fi
+          if [ -n "$gates_out" ]; then
+            printf '%s\n' "$gates_out" > /tmp/scan/B2.body
+            record B2 medium "Repo-hygiene gates failing" /tmp/scan/B2.body
           fi
 
           # ── C. dangerous HTML sinks ───────────────────────────────────
@@ -138,8 +168,23 @@ jobs:
           sql_hits="$(grep -rnE '\.prepare\(`[^`]*\$\{' api/src --include='*.ts' 2>/dev/null \
             | grep -vE '\$\{[A-Z][A-Z0-9_]*\}|\$\{placeholders\}|\$\{where\}|\$\{whereClause\}|\$\{(table|column|sets|bundleJson)' | head -20 || true)"
           if [ -n "$sql_hits" ]; then
+            # Drop hits from files a human triaged and annotated
+            # `// sql-audit: accept-reason <why>` — the same suppression contract
+            # check B uses for `ssrf-audit: accept-reason`. Without it a reviewed
+            # false positive is re-reviewed every single day, which is what made
+            # this check's signal decay.
+            sql_hits="$(printf '%s\n' "$sql_hits" | while IFS= read -r hit; do
+              [ -z "$hit" ] && continue
+              sf="${hit%%:*}"
+              if grep -q 'sql-audit: accept-reason' "$sf" 2>/dev/null; then continue; fi
+              printf '%s\n' "$hit"
+            done)"
+          fi
+          if [ -n "$sql_hits" ]; then
             { printf '```\n%s\n```\n' "$sql_hits"
-              printf '_Scanner D: interpolated SQL fragments. Allowed: all-caps CONSTANT identifiers or values fully bound with ?/.bind() before interpolation. Anything else = injection suspect._\n'; } > /tmp/scan/D.body
+              printf '_Scanner D: interpolated SQL fragments. D1 cannot bind identifiers, so a table/column name in a template literal is expected — what matters is whether the interpolated value can be attacker-controlled._\n\n'
+              printf '_Safe when: the identifier comes from a hardcoded constant or is validated against an allow-list (see the retention identifier guard in api/src/lib/retention.ts), or the fragment is a fixed literal pushed by the code with user input only in `.bind()`._\n'
+              printf '_False positive? Annotate the file `// sql-audit: accept-reason <why>` and this check will skip it from then on._\n'; } > /tmp/scan/D.body
             record D high "Interpolated SQL in .prepare() template literals" /tmp/scan/D.body
           fi
 
@@ -147,8 +192,19 @@ jobs:
           timing_hits="$(grep -rnE '(===|!==|==|!=)\s*(env\.(ADMIN_TOKEN|API_[A-Z_]*|INTERNAL_TOKEN)[^ ]*|[A-Za-z_]*[Tt]oken\s*)' api/src worker --include='*.ts' 2>/dev/null \
             | grep -vE '\.length|test|\.test\.' | head -10 || true)"
           if [ -n "$timing_hits" ]; then
+            # Same annotation contract as B and D: `// timing-audit: accept-reason`.
+            timing_hits="$(printf '%s\n' "$timing_hits" | while IFS= read -r hit; do
+              [ -z "$hit" ] && continue
+              tf="${hit%%:*}"
+              if grep -q 'timing-audit: accept-reason' "$tf" 2>/dev/null; then continue; fi
+              printf '%s\n' "$hit"
+            done)"
+          fi
+          if [ -n "$timing_hits" ]; then
             { printf '```\n%s\n```\n' "$timing_hits"
-              printf '_Scanner E: direct equality compares on secrets/tokens. Use safeEqual() from api/src/lib/admin-auth.ts._\n'; } > /tmp/scan/E.body
+              printf '_Scanner E: direct equality compares on a value named `token`/`*_token`. The regex cannot tell a SECRET from a same-named non-secret._\n\n'
+              printf '_Use safeEqual() (api/src/lib/safe-equal.ts) when the value is a bearer capability or credential — a lease token, an admin token, an HMAC. Plain `===` is correct when it is not: a crypto asset SYMBOL (`USDT`), an enum, a status string._\n'
+              printf '_False positive? Annotate the file `// timing-audit: accept-reason <why>` and this check will skip it from then on._\n'; } > /tmp/scan/E.body
             record E medium "Non-constant-time secret comparisons" /tmp/scan/E.body
           fi
 
@@ -196,8 +252,10 @@ jobs:
             record F high "Typecheck regression (esbuild deploys past tsc)" /tmp/scan/F.body
           fi
 
-          echo "## Scan A–F: $(date -u +%F)" > /tmp/scan/summary.md
-          for k in A B C D E F; do
+          echo "## Scan A–F + B2: $(date -u +%F)" > /tmp/scan/summary.md
+          # B2 sits next to B because it is a different class (hygiene, not a
+          # code pattern) but shares the SSRF-adjacent blast radius.
+          for k in A B B2 C D E F; do
             if [ -f "/tmp/scan/$k.title" ]; then
               echo "- 🔴 [$k] $(cat /tmp/scan/$k.title)" >> /tmp/scan/summary.md
             else
@@ -252,13 +310,26 @@ jobs:
             fi
           done
 
-          # Auto-close trackers for scanner IDs that came up clean today —
-          # only typecheck (F) auto-closes, to avoid flapping on grep heuristics.
-          for open_num in $(gh issue list --state open --search "[scan] in:title" --json number,title \
-             -q '.[] | select(.title | test("^\\[scan\\] F ")) | .number'); do
-            if [ ! -f /tmp/scan/F.title ]; then
-              gh issue close "$open_num" --comment "✅ Scanner F (typecheck) clean at \`$SHAS\` ($today) — closing; reopened automatically if a later scan fails again." >/dev/null 2>&1 || true
-            fi
+          # Auto-close trackers for scanner IDs that came up clean today.
+          #
+          # F (typecheck), B (SSRF dataflow) and B2 (hygiene gates) are
+          # DETERMINISTIC: the same commit always yields the same verdict, so a
+          # clean scan genuinely means the finding is gone and closing the
+          # tracker is correct. C/D/E stay open by design — they are grep
+          # heuristics whose hit set shifts as files are added, and auto-closing
+          # them would flap the tracker open and shut every refactor.
+          for id in F B B2; do
+            case "$id" in
+              F)  label="typecheck" ;;
+              B)  label="SSRF dataflow" ;;
+              B2) label="repo-hygiene gates" ;;
+            esac
+            for open_num in $(gh issue list --state open --search "[scan] in:title" --json number,title \
+               -q ".[] | select(.title | test(\"^\\\\[scan\\\\] $id \")) | .number"); do
+              if [ ! -f "/tmp/scan/$id.title" ]; then
+                gh issue close "$open_num" --comment "✅ Scanner $id ($label) clean at \`$SHAS\` ($today) — closing; reopened automatically if a later scan fails again." >/dev/null 2>&1 || true
+              fi
+            done
           done
 
           echo "new=$any_new repeat=$any_repeat" >> "$GITHUB_STEP_SUMMARY"

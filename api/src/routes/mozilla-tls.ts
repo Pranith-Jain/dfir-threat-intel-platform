@@ -1,3 +1,7 @@
+// ssrf-audit: accept-reason `?url=` is passed as the `host` QUERY PARAMETER of a
+// fixed upstream (http-observatory.security.mozilla.org), encodeURIComponent'd.
+// The fetch target is always that constant host, so a caller cannot redirect it
+// at an internal address. Not SSRF-reachable.
 import { Hono } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';

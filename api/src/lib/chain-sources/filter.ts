@@ -1,3 +1,7 @@
+// timing-audit: accept-reason `token` here is a crypto asset SYMBOL (USDT/BTC)
+// from the explorer APIs, lowercased for a case-insensitive user-facing filter.
+// It is public on-chain data, not a credential — constant-time comparison would
+// be noise. The scanner's check E matches on the identifier name alone.
 import type { Transfer, TransferFilter, FetchResult } from './types';
 
 const DEFAULT_MAX = 50;

@@ -1,3 +1,9 @@
+// ssrf-audit: accept-reason `?url=` must be a v2/v3 .onion address —
+// extractOnionHostname()/isValidOnionAddress() enforce
+// /^[a-z2-7]{16,56}\.onion$/i — and is then fetched only through a fixed
+// TOR2WEB_GATEWAYS host. A caller cannot choose the fetch host, and anything
+// that is not a bare .onion hostname is rejected before the fetch.
+// Not SSRF-reachable.
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';

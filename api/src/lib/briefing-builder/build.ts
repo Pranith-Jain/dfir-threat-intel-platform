@@ -1148,6 +1148,11 @@ export async function sweepOldBriefings(
   return { deleted, kept: (remaining as { count: number } | null)?.count ?? 0 };
 }
 
+// sql-audit: accept-reason `${whereSql}` is assembled only from fixed string
+// literals pushed by this function (`type = ?`, the LIKE/ESCAPE clause); the
+// resulting fragment is always `''` or `' WHERE ' + <those literals>`. User
+// input (filter.q) reaches D1 exclusively through `.bind(...whereParams)`, and
+// its LIKE metacharacters are escaped for `% _ \`.
 export async function listBriefings(
   db: D1Database,
   filter?: { type?: 'daily' | 'weekly' | 'landscape'; q?: string; limit?: number; offset?: number }

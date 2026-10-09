@@ -1,3 +1,6 @@
+// ssrf-audit: accept-reason `?target=` must match a bare-domain regex before use,
+// then becomes the `q=%.<target>` QUERY PARAMETER of the fixed crt.sh host.
+// The fetch target is always crt.sh. Not SSRF-reachable.
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';

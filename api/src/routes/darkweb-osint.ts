@@ -7,6 +7,11 @@
  *   GET  /darkweb-osint/onion-search?q=...&limit=20
  *   GET  /darkweb-osint/status
  */
+// ssrf-audit: accept-reason `?url=` must be a valid v2/v3 .onion address —
+// onionHost() enforces /^[a-z2-7]{16,56}\.onion$/ before anything else happens —
+// and is then fetched only through a fixed TOR2WEB_GATEWAYS host
+// (`https://<onion>.<gateway>/`). A caller cannot choose the fetch host, and a
+// non-.onion input is rejected before the fetch. Not SSRF-reachable.
 import { Hono } from 'hono';
 import type { Env } from '../env';
 import { badRequest, internalError } from '../lib/api-error';

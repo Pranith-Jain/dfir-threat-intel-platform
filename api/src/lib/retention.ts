@@ -1,3 +1,9 @@
+// sql-audit: accept-reason `${p.table}` / `${p.column}` interpolate D1
+// identifiers, which cannot be bound as parameters. Every shipped entry in
+// RETENTION_POLICY is a hardcoded literal, and validatePolicyEntry() below
+// rejects any identifier outside /^[A-Za-z_][A-Za-z0-9_]*$/ (max 64 chars)
+// before it reaches the statement — on both the dry-run COUNT and the live
+// DELETE. Covered by api/test/lib/retention.test.ts.
 import type { D1Database } from '@cloudflare/workers-types';
 import { logError } from './logger';
 

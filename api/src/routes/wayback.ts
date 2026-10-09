@@ -1,3 +1,7 @@
+// ssrf-audit: accept-reason `?url=` is bound as the `url` QUERY PARAMETER of the
+// fixed CDX endpoint (web.archive.org/cdx/search/cdx) via URLSearchParams. The
+// fetch host is always that constant; the target string only tells IA which page
+// to look up. Not SSRF-reachable.
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';

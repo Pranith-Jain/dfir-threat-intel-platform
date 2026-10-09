@@ -1,3 +1,8 @@
+// ssrf-audit: accept-reason `?url=` / `?host=` are sent as JSON BODY FIELDS to
+// fixed upstream APIs (urlhaus-api.abuse.ch, pulsedive.com, vulners.com, …),
+// encodeURIComponent'd or JSON-encoded. The fetch host is always that constant;
+// the user's string is a value the vendor matches against, never a target.
+// Not SSRF-reachable.
 import { Hono } from 'hono';
 import type { Context } from 'hono';
 import type { Env } from '../env';
@@ -365,8 +370,7 @@ darknetIntelRouter.get('/darknet-intel/abuseipdb/check', async (c) => {
   const ip = c.req.query('ip');
   if (!ip) return badRequest(c, 'ip parameter required');
   const key = c.env.ABUSEIPDB_API_KEY;
-  if (!key)
-    return serviceUnavailable(c, 'ABUSEIPDB_API_KEY not configured (wrangler secret put ABUSEIPDB_API_KEY)');
+  if (!key) return serviceUnavailable(c, 'ABUSEIPDB_API_KEY not configured (wrangler secret put ABUSEIPDB_API_KEY)');
   try {
     const res = await fetch(
       `https://api.abuseipdb.com/api/v2/check?ipAddress=${encodeURIComponent(ip)}&maxAgeInDays=90`,
