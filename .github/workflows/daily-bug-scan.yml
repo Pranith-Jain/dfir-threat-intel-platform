@@ -54,6 +54,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          # persist-credentials false is fine here: the scanner's gh calls
+          # pass GH_TOKEN explicitly, so no checkout credential leakage.
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -73,7 +76,7 @@ jobs:
           record() { # record <id> <severity> <title> <body-file>
             printf '%s' "$2" > "/tmp/scan/$1.sev"
             printf '%s' "$3" > "/tmp/scan/$1.title"
-            cp "$4" "/tmp/scan/$1.body"
+            if [ "$4" != "/tmp/scan/$1.body" ]; then cp "$4" "/tmp/scan/$1.body"; fi
           }
 
           # ── A. Secret patterns ─────────────────────────────────────────
