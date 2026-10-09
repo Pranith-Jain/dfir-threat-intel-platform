@@ -37,11 +37,29 @@ export async function ctiCollectHandler(c: Context<{ Bindings: Env }>) {
 
 // ── Stats ──────────────────────────────────────────────────────────────
 
+/**
+ * `/api/v1/cti/stats` is the single largest D1 read amplifier on the platform.
+ *
+ * `getIocStats` runs ~8 unindexed aggregates on every call: four
+ * `COUNT(*)`/`GROUP BY` passes over `cti_iocs` (4k+ rows) and four over
+ * `cti_news`. Every one is a full scan, so one request costs ~15k rows read —
+ * and the route was public with no `cache-control`, so every visitor (and
+ * every prefetch) paid it. That alone accounted for the bulk of the 4.7M
+ * rows/day against the 5M free-tier cap.
+ *
+ * Fix: edge-cache it. The numbers are aggregate counters that shift slowly;
+ * nobody needs them fresher than a minute, and a hit now costs zero D1 reads.
+ * `s-maxage` lets the Cloudflare cache hold it longer than the browser.
+ */
+const STATS_TTL_SECONDS = 60;
+
 export async function ctiStatsHandler(c: Context<{ Bindings: Env }>) {
   const db = c.env.BRIEFINGS_DB;
   if (!db) return serviceUnavailable(c, 'database unavailable');
   const stats = await getIocStats(db);
-  return c.json(stats);
+  return c.json(stats, 200, {
+    'cache-control': `public, max-age=30, s-maxage=${STATS_TTL_SECONDS}`,
+  });
 }
 
 // ── IOC listing ────────────────────────────────────────────────────────
@@ -123,7 +141,9 @@ export async function ctiNewsHandler(c: Context<{ Bindings: Env }>) {
   }
 
   const rows = await db
-    .prepare(`SELECT id, title, url, summary, source, published, tags, fetched_at FROM cti_news ${where} ORDER BY fetched_at DESC LIMIT ?`)
+    .prepare(
+      `SELECT id, title, url, summary, source, published, tags, fetched_at FROM cti_news ${where} ORDER BY fetched_at DESC LIMIT ?`
+    )
     .bind(...params, String(limit))
     .all();
 
