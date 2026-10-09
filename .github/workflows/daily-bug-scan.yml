@@ -154,20 +154,41 @@ jobs:
 
           # ── F. typecheck gate (the three tsc projects) ────────────────
           npm ci --no-fund --silent || npm install --no-fund --silent
+          # One entry per project, tab-separated: <label>\t<project-path|NONE>.
+          # A plain `for proj in ... -p api/x.json` word-splits on spaces, so the
+          # loop body received a bare `-p` and tsc failed with
+          # "TS5058: The specified path does not exist: '-p'" (#308) — a scanner
+          # false positive that masked real typecheck failures. Keep each project
+          # path a single quoted token.
           typecheck_fail=""
-          for proj in NOFLAG -p api/tsconfig.json -p api/tsconfig.worker.json; do
-            if [ "$proj" = "NOFLAG" ]; then
-              node node_modules/typescript/bin/tsc --noEmit --skipLibCheck > /tmp/scan/F-tsc-root.log 2>&1 || typecheck_fail="${typecheck_fail}root
+          while IFS=$'\t' read -r proj_label proj_path; do
+            [ -n "${proj_label:-}" ] || continue
+            log="/tmp/scan/F-tsc-${proj_label}.log"
+            if [ "$proj_path" = "NONE" ]; then
+              # Root project: tsconfig.json sits at the repo root, so tsc picks
+              # it up implicitly. --skipLibCheck matches its own compilerOptions.
+              node node_modules/typescript/bin/tsc --noEmit --skipLibCheck > "$log" 2>&1 \
+                || typecheck_fail="${typecheck_fail}${proj_label}
           "
             else
-              node node_modules/typescript/bin/tsc --noEmit -p "${proj#-p }" > "/tmp/scan/F-tsc-${proj#-p api/}.log" 2>&1 || typecheck_fail="${typecheck_fail}${proj#-p api/}
+              node node_modules/typescript/bin/tsc --noEmit -p "$proj_path" > "$log" 2>&1 \
+                || typecheck_fail="${typecheck_fail}${proj_label}
           "
             fi
-          done
+          done <<'PROJECTS'
+          root	NONE
+          api	api/tsconfig.json
+          worker	api/tsconfig.worker.json
+          PROJECTS
           if [ -n "$typecheck_fail" ]; then
+            # Only print logs for projects that actually failed — globbing all
+            # F-tsc-*.log also drags in empty logs from passing projects, which
+            # made the report look like it had empty errors for them.
             { printf 'Failing projects:\n\n```\n%s```\n\n' "$typecheck_fail"
               printf 'First errors per project:\n\n'
-              for lg in /tmp/scan/F-tsc-*.log; do
+              printf '%s\n' "$typecheck_fail" | while IFS= read -r proj_label; do
+                [ -n "${proj_label:-}" ] || continue
+                lg="/tmp/scan/F-tsc-${proj_label}.log"
                 printf '#### %s\n\n```\n' "$(basename "$lg")"
                 head -15 "$lg"
                 printf '```\n\n'
