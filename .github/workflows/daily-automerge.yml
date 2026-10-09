@@ -1,0 +1,152 @@
+name: Daily auto-merge + stale-PR housekeeping
+
+# Daily housekeeping for pull requests:
+#   1. Merge every open PR that is mergeable, has green checks, and is either
+#      on a data-sync branch (chore/*-sync — the established pattern in this
+#      repo) or explicitly labeled `automerge`.
+#   2. Post a stale notice on open PRs older than 14 days — reported, never
+#      merged or closed automatically.
+#
+# Safety rules (per CLAUDE.md: never rebase/force-push, never `branch -f main`):
+#   - DIRTY (merge conflict) PRs are skipped and get a skip comment.
+#   - UNSTABLE / BLOCKED / pending-checks PRs are skipped.
+#   - DRAFT PRs are never merged.
+#   - Non-sync branches without the `automerge` label are skipped.
+#   - BEHIND branches get exactly one `gh pr update-branch` attempt (an
+#     upstream-restyled merge, not a rebase/force-push).
+#
+# Escalation: exit 1 only when a sync-branch PR (the ones that self-merge in
+# their own workflows) could not be merged — that is the drift signal worth a
+# red X. Plain human PR skips are summarized, not failed.
+
+on:
+  schedule:
+    # Daily 08:30 UTC — after the data-sync wave (05:30–07:30) so sync PRs
+    # are already open with completed checks.
+    - cron: "30 8 * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: daily-automerge
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Merge eligible PRs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # No `set -e`: merge attempts and comments are expected to fail
+        # individually; the summary at the end must still be written.
+        run: |
+          echo "## Daily auto-merge run — $(date -u '+%Y-%m-%dT%H:%MZ')" >> "$GITHUB_STEP_SUMMARY"
+          merged=0; skip_conflict=0; skip_checks=0; skip_other=0; failed_sync=0
+
+          branch_is_sync() {
+            case "$1" in
+              chore/*-sync|chore/*-upstream-sync) return 0 ;;
+              *) return 1 ;;
+            esac
+          }
+
+          # Collect per-PR results into vars read by the final summary — a
+          # piped `while` would run in a subshell and lose the counters.
+          prs="$(gh pr list --state open --limit 50 --json number,headRefName,isDraft,mergeStateStatus,labels \
+            --jq '.[] | [.number, .headRefName, .isDraft, .mergeStateStatus, ([.labels[].name] | join(","))] | @tsv')"
+
+          if [ -z "$prs" ]; then
+            echo "No open PRs." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          while IFS=$'\t' read -r num branch draft state labels; do
+            [ -z "$num" ] && continue
+
+            if [ "$draft" = "true" ]; then
+              echo "- ⏭️ PR #$num — skipped (draft)" >> "$GITHUB_STEP_SUMMARY"
+              skip_other=$((skip_other + 1))
+              continue
+            fi
+
+            if ! branch_is_sync "$branch" && [ "$labels" != "automerge" ] \
+               && ! printf '%s' "$labels" | grep -q '(^|,)automerge(,|$)'; then
+              echo "- ⏭️ PR #$num ($branch) — skipped (no \`automerge\` label)" >> "$GITHUB_STEP_SUMMARY"
+              skip_other=$((skip_other + 1))
+              continue
+            fi
+
+            case "$state" in
+              DIRTY)
+                echo "- ⚠️ PR #$num ($branch) — skipped: merge conflict with main" >> "$GITHUB_STEP_SUMMARY"
+                gh pr comment "$num" --body "Daily auto-merge skipped: merge conflict with \`main\`. Rebase (do not force-push) so auto-merge can pick it up." >/dev/null 2>&1 || true
+                skip_conflict=$((skip_conflict + 1))
+                continue
+                ;;
+              BEHIND)
+                if gh pr update-branch "$num" >/dev/null 2>&1; then
+                  sleep 5
+                  state="$(gh pr view "$num" --json mergeStateStatus -q .mergeStateStatus)"
+                fi
+                ;;
+            esac
+
+            if [ "$state" = "CLEAN" ] || [ "$state" = "HAS_HOOKS" ]; then
+              if gh pr merge "$num" --merge --delete-branch >/dev/null 2>&1; then
+                echo "- ✅ PR #$num ($branch) — merged" >> "$GITHUB_STEP_SUMMARY"
+                merged=$((merged + 1))
+              else
+                echo "- ❌ PR #$num ($branch) — merge attempt failed" >> "$GITHUB_STEP_SUMMARY"
+                skip_other=$((skip_other + 1))
+                if branch_is_sync "$branch"; then
+                  failed_sync=$((failed_sync + 1))
+                fi
+              fi
+            else
+              echo "- ⏳ PR #$num ($branch) — skipped (checks: $state)" >> "$GITHUB_STEP_SUMMARY"
+              skip_checks=$((skip_checks + 1))
+            fi
+          done < <(printf '%s\n' "$prs")
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Outcome | Count |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| --- | --- |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Merged | $merged |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Skipped: conflict | $skip_conflict |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Skipped: failing/pending checks | $skip_checks |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Skipped: draft / no label / failed | $skip_other |" >> "$GITHUB_STEP_SUMMARY"
+
+          # Escalate ONLY on sync-PR merge failures (their own workflows would
+          # have merged them; a failure here is drift the cron must surface).
+          if [ "$failed_sync" -gt 0 ]; then
+            echo "::error::$failed_sync data-sync PR(s) failed to merge — see step summary"
+            exit 1
+          fi
+
+      - name: Stale-PR report
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mixed="$(gh pr list --state open --limit 50 --json number,title,updatedAt \
+            --jq '.[] | "\(.updatedAt) #\(.number) \(.title)"')"
+          # ISO dates sort lexically — filter to entries older than 14 days.
+          cutoff="$(date -u -d '14 days ago' '+%Y-%m-%dT%H:%MZ')"
+          old="$(printf '%s\n' "$mixed" | sort | awk -v cut="$cutoff" '{split($1,d,"T"); if (d[1] < substr(cut,1,10)) print}' | cut -d' ' -f2-)"
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Stale PRs (no update in 14+ days — report only)" >> "$GITHUB_STEP_SUMMARY"
+          if [ -z "$old" ]; then
+            echo "None." >> "$GITHUB_STEP_SUMMARY"
+          else
+            printf '%s\n' "$old" >> "$GITHUB_STEP_SUMMARY"
+            # Post (or update) a single stale notice per PR.
+            printf '%s\n' "$old" | grep -oE '#[0-9]+' | tr -d '#' | while read -r n; do
+              gh pr comment "$n" --body "🤖 Daily housekeeping: this PR has not been updated in 14+ days. Please rebase/refresh or close it if superseded." >/dev/null 2>&1 || true
+            done
+          fi
