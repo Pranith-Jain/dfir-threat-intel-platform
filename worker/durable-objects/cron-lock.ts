@@ -1,5 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import type { Env } from '../env';
+import { safeEqual } from '../../api/src/lib/safe-equal';
 
 /**
  * Single-flight lease, backed by a Durable Object.
@@ -61,7 +62,10 @@ export class CronLockDO extends DurableObject<Env> {
 
     if (op === 'heartbeat') {
       const cur = await this.ctx.storage.get<Lease>(key);
-      if (cur && cur.token === token) {
+      // The lease token is a bearer capability — knowing it lets you extend or
+      // release someone else's lease, so compare it constant-time rather than
+      // letting `===` leak a prefix length through response timing.
+      if (cur && token !== undefined && safeEqual(cur.token, token)) {
         await this.ctx.storage.put<Lease>(key, { token: cur.token, expiresAt: Date.now() + (ttlMs ?? DEFAULT_TTL_MS) });
         return Response.json({ ok: true });
       }
@@ -71,7 +75,8 @@ export class CronLockDO extends DurableObject<Env> {
     if (op === 'release') {
       const cur = await this.ctx.storage.get<Lease>(key);
       // Token-matched so a stale fire can never release a live lease.
-      if (cur && cur.token === token) await this.ctx.storage.delete(key);
+      // Constant-time: the token is a bearer capability (see `heartbeat`).
+      if (cur && token !== undefined && safeEqual(cur.token, token)) await this.ctx.storage.delete(key);
       return Response.json({ ok: true });
     }
 

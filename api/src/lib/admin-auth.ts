@@ -28,20 +28,12 @@ import { validateInternalToken, ALLOWED_INTERNAL_CALLERS } from './internal-toke
 
 type AdminCtx = Context<{ Bindings: Env }>;
 
-/**
- * Constant-time string comparison. Folds the length check into the
- * accumulator and always iterates over the SECRET (`b`) length, so a
- * wrong-length candidate does not short-circuit and leak the secret's
- * length via response timing. Out-of-range `a.charCodeAt(i)` is NaN, and
- * `NaN | 0 === 0`, so a shorter candidate still runs the full loop.
- */
-export function safeEqual(a: string, b: string): boolean {
-  let mismatch = a.length ^ b.length;
-  for (let i = 0; i < b.length; i += 1) {
-    mismatch |= (a.charCodeAt(i) | 0) ^ b.charCodeAt(i);
-  }
-  return mismatch === 0;
-}
+// The implementation lives in a leaf module so Durable Objects and other
+// non-Hono callers can import the constant-time compare without pulling Hono +
+// Env into their module graph. Re-exported (not redefined) so route call sites
+// keep working unchanged and the two can never drift apart.
+import { safeEqual } from './safe-equal';
+export { safeEqual };
 
 /**
  * Extract a candidate token from the request, checking in order:

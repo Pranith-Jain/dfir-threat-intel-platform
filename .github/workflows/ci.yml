@@ -147,9 +147,11 @@ jobs:
       # in api/vitest.config.ts rather than skipping routes again.
       - name: build assets for ASSETS binding
         run: npm run build:client
-      - name: api vitest (lib + case-study + health)
+      # test/durable-objects runs under miniflare too (the DO classes need the
+      # Workers runtime, so they cannot live in the root jsdom suite).
+      - name: api vitest (lib + case-study + durable-objects + health)
         working-directory: api
-        run: npx vitest run test/lib test/case-study test/health.test.ts
+        run: npx vitest run test/lib test/case-study test/durable-objects test/health.test.ts
       - name: api vitest (routes)
         working-directory: api
         run: npx vitest run test/routes

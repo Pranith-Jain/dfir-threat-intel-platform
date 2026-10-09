@@ -33,6 +33,32 @@ export interface RetentionPolicy {
 export const DEFAULT_RETENTION_DAYS = 30;
 
 /**
+ * Table and column names cannot be bound as SQL parameters, so they are
+ * interpolated into the statement text. Every current policy entry is a
+ * hardcoded literal, but `runRetentionSweep` also accepts a caller-supplied
+ * `opts.policy` — without a check, any future caller that forwards untrusted
+ * input would be a straight SQL injection into a DELETE.
+ *
+ * D1 table and column names in this schema are all plain snake_case ASCII
+ * identifiers, so anything outside that shape is rejected outright rather than
+ * escaped. This runs before the sweep, so a bad policy entry cannot reach the
+ * database.
+ */
+const IDENTIFIER_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+function isSafeIdentifier(name: string): boolean {
+  return typeof name === 'string' && name.length <= 64 && IDENTIFIER_RE.test(name);
+}
+
+/** Validate one policy entry. Returns an error message, or null when usable. */
+function validatePolicyEntry(p: RetentionPolicy): string | null {
+  if (!isSafeIdentifier(p.table)) return `unsafe table identifier: ${JSON.stringify(p.table)}`;
+  if (!isSafeIdentifier(p.column)) return `unsafe column identifier: ${JSON.stringify(p.column)}`;
+  if (p.format !== 'iso' && p.format !== 'unix') return `unknown format: ${JSON.stringify(p.format)}`;
+  return null;
+}
+
+/**
  * Default policy. Excludes auth/control-plane tables. Add to this list
  * when a new time-series table ships so the sweep picks it up.
  */
@@ -165,6 +191,14 @@ export async function runRetentionSweep(
   let total = 0;
 
   for (const p of policy) {
+    // Reject before interpolating `p.table` / `p.column` into the statement.
+    // Counts as a swept table so the caller still sees the entry in its result.
+    const invalid = validatePolicyEntry(p);
+    if (invalid) {
+      tables.push({ table: String(p.table), column: String(p.column), deleted: 0, error: invalid });
+      logError(`retention skipped ${String(p.table)}`, new Error(invalid));
+      continue;
+    }
     try {
       if (dryRun) {
         const countRow = await db
