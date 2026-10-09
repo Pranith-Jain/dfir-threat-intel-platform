@@ -8,6 +8,29 @@ import {
 } from './copywriting';
 import { renderDossier, type ResearchDossier } from '../research/dossier';
 import { scrubString } from './scrub-prompt';
+import { NO_EM_DASH_RULE } from '../../lib/prose-style';
+
+/**
+ * Citation shape, reinstated after the dossier rework dropped it.
+ *
+ * `stripUnknownRefHosts` in post-process.ts drops reference bullets pointing
+ * at hosts that are neither allowlisted nor named in the dossier — but it only
+ * runs when the body contains a `##`-level References/Get more information/
+ * Further reading heading. The rework made section headings entirely the
+ * model's choice ("none of them mandates a specific heading"), so in practice
+ * the model rarely emits that heading, the citation allowlist filter was
+ * silently skipped, and fabricated source links could ship.
+ *
+ * The validator is the factual-integrity control PRODUCT.md calls out, so the
+ * prompt has to name the shape it keys on. Each bullet keeps the
+ * "label — description" dash: that is a definition pair, which NO_EM_DASH_RULE
+ * explicitly permits.
+ */
+const REFERENCES_CONTRACT = `
+## References
+End with a \`## References\` section. One bullet per source, in this exact shape:
+  \`- [Source name](url) — one-line description of what the source establishes\`
+The description is mandatory; a bare link is not an acceptable citation. Cite only sources the dossier supplied. NVD and CISA KEV entries are worth citing only when the piece actually relies on that specific record.`;
 
 /**
  * Prompt construction, rewritten around the research dossier.
@@ -43,6 +66,10 @@ function systemPrompt(formatGuidance: string): string {
     '\n' +
     formatGuidance +
     '\n' +
+    NO_EM_DASH_RULE +
+    '\n' +
+    REFERENCES_CONTRACT +
+    '\n' +
     PIPELINE_OUTPUT_GUARDRAIL +
     '\n' +
     FORMAT_CONTRACT
@@ -70,7 +97,7 @@ const FAQ_VULN_GUIDANCE =
   `- Carries the specifics early: the affected product and version range, ` +
   `  the fixed build, the CVE ids, the bulletin id. Practitioners scan for ` +
   `  version strings; make them findable.\n` +
-  `- Uses real tables where the content is genuinely tabular — a set of ` +
+  `- Uses real tables where the content is genuinely tabular: a set of ` +
   `  affected products with their fixed versions, a set of CVEs sharing a ` +
   `  bulletin, a set of previously-exploited CVEs in the same product. ` +
   `  Tables beat prose for anything a reader will compare across rows.\n` +
@@ -89,8 +116,8 @@ const FAQ_VULN_GUIDANCE =
   `  record, the KEV entry, the PoC references. Link each by name.\n\n` +
   `Prefer section headings shaped as the questions a reader would type: ` +
   `"Which versions are affected?", "Is it being exploited?", "How do I ` +
-  `check whether I was compromised?", "Is this related to CVE-XXXX?" — ` +
-  `rather than abstract labels like "Analysis" or "Overview". Close ` +
+  `check whether I was compromised?", "Is this related to CVE-XXXX?" rather ` +
+  `than abstract labels like "Analysis" or "Overview". Close ` +
   `headings with a question mark when they are genuinely questions.\n\n`;
 
 const EXPLOIT_GUIDANCE =
@@ -101,7 +128,7 @@ const EXPLOIT_GUIDANCE =
   `- Leads with where exploitation actually stands: a public PoC exists or ` +
   `  it does not, an exploit is in a public repo or it is not, the code is ` +
   `  weaponised or it is a scanner check. Distinguish "scanner detects it" ` +
-  `  from "code can exploit it" — conflating them is the most common error ` +
+  `  from "code can exploit it". Conflating them is the most common error ` +
   `  in this genre, and readers get burned by it.\n` +
   `- Gives the timeline from disclosure to first working PoC to observed ` +
   `  exploitation, with dates. That interval is the headline number.\n` +
@@ -111,7 +138,7 @@ const EXPLOIT_GUIDANCE =
   `  critical CVSS with a strong precondition is a different problem from ` +
   `  one without.\n` +
   `- Names the tooling that exists: PoC repositories, exploit framework ` +
-  `  modules, scanner templates — only ones the dossier lists.\n` +
+  `  modules, scanner templates, and only the ones the dossier lists.\n` +
   `- Says what defenders can do that is different from "patch promptly". ` +
   `  WAF rules, detection logic, segmentation, credential rotation, ` +
   `  exposure inventory.\n` +
@@ -263,8 +290,8 @@ const HUNTING_GUIDANCE =
   `- Say which data you used and why that data answers the question.\n` +
   `- Show the analysis: what you looked for, what you found, what you ruled ` +
   `  out, and how you ruled it out.\n` +
-  `- Give a copy-pasteable artifact when the hypothesis supports one — a ` +
-  `  query, a rule, a signature — in a fenced block with its language ` +
+  `- Give a copy-pasteable artifact when the hypothesis supports one: a ` +
+  `  query, a rule, or a signature, in a fenced block with its language ` +
   `  labelled.\n` +
   `- Cover false positives and tuning. A hunt without an FP discussion is ` +
   `  not finished.\n` +

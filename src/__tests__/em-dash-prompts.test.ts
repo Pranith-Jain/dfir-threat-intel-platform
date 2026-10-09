@@ -21,7 +21,12 @@ import { countConnectorEmDashes, NO_EM_DASH_RULE } from '../../api/src/lib/prose
  */
 
 const GEN_DIR = resolve(process.cwd(), 'api/src/case-study/generation');
-const PROMPT_FILES = ['copywriting.ts', 'templates.ts', 'index.ts', 'hook-variants.ts'] as const;
+/**
+ * `hook-variants.ts` was removed by the case-study pipeline rework
+ * (896f5a745) — its hooks now live in `copywriting.ts`. Leaving it listed here
+ * made this test fail on a missing file instead of on real prompt hygiene.
+ */
+const PROMPT_FILES = ['copywriting.ts', 'templates.ts', 'index.ts'] as const;
 
 const readGen = (file: string) => readFileSync(resolve(GEN_DIR, file), 'utf8');
 
@@ -59,9 +64,21 @@ describe('case-study prompts do not teach the em-dash habit', () => {
 
   it('keeps the citation-format dashes the generated output depends on', () => {
     const source = readGen('templates.ts');
+    // The bullet shape's "label — description" dash is a definition pair, which
+    // NO_EM_DASH_RULE explicitly permits. It is load-bearing: post-process reads
+    // the description off the far side of that dash.
     expect(source).toContain('— one-line description of what the source establishes');
-    expect(source).toMatch(/\* NVD\s*—\s*only if you cite/);
-    expect(source).toMatch(/\* CISA KEV\s*—\s*only if/);
+    expect(source).toMatch(/NVD and CISA KEV entries are worth citing only when/);
+  });
+
+  /**
+   * `stripUnknownRefHosts` only runs when the body carries a `##`-level
+   * References-style heading. The rework stopped mandating section headings,
+   * which silently skipped the citation allowlist — so the prompt has to name
+   * the shape the validator keys on.
+   */
+  it('names the references heading the citation allowlist keys on', () => {
+    expect(readGen('templates.ts')).toMatch(/^## References$/m);
   });
 });
 

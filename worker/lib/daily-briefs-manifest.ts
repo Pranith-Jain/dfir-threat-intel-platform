@@ -17,6 +17,8 @@
  * Bodies cached on demand with a 100-entry LRU.
  */
 
+import { fetchJsonAsset, recordHit, trackHit, type BodyCache } from './manifest-cache';
+
 export type DbBriefType = 'cyber' | 'deepfake' | 'disaster' | 'maritime';
 
 export interface DbIndexEntry {
@@ -106,44 +108,14 @@ export type DbBriefBody = DbCyberBrief | DbDeepfakeBrief | DbDisasterBrief;
 const DATA_PREFIX = '/data/daily-briefs';
 const MAX_BODY_CACHE = 100;
 
-interface BodyCache<T> {
-  map: Map<string, T>;
-  hits: number;
-  misses: number;
-}
-
 const bodyCache: BodyCache<DbBriefBody> = { map: new Map(), hits: 0, misses: 0 };
 let cachedIndex: DbIndex | null = null;
 let cachedIndexAt: number | null = null;
 
+// Fetch helper lives in manifest-cache.ts. The asset host is only an
+// origin placeholder (env.ASSETS ignores it) but keeps cache keys readable.
 async function fetchJson<T>(assets: Fetcher, path: string): Promise<T | null> {
-  const url = `https://db.local${path}`;
-  const res = await assets.fetch(new Request(url));
-  if (!res.ok) return null;
-  return (await res.json()) as T;
-}
-
-function recordHit<T>(cache: BodyCache<T>, key: string, value: T): T {
-  if (cache.map.has(key)) cache.map.delete(key);
-  cache.map.set(key, value);
-  while (cache.map.size > MAX_BODY_CACHE) {
-    const oldest = cache.map.keys().next().value;
-    if (oldest === undefined) break;
-    cache.map.delete(oldest);
-  }
-  return value;
-}
-
-function trackHit<T>(cache: BodyCache<T>, key: string): T | undefined {
-  const v = cache.map.get(key);
-  if (v === undefined) {
-    cache.misses += 1;
-    return undefined;
-  }
-  cache.hits += 1;
-  cache.map.delete(key);
-  cache.map.set(key, v);
-  return v;
+  return fetchJsonAsset<T>(assets, path, 'https://db.local');
 }
 
 export async function loadDbIndex(assets: Fetcher, opts: { forceRefresh?: boolean } = {}): Promise<DbIndex> {
@@ -166,7 +138,7 @@ export async function getDbBrief(assets: Fetcher, type: DbBriefType, date: strin
   if (hit) return hit;
   const body = await fetchJson<DbBriefBody>(assets, `${DATA_PREFIX}/${type}/${date}.json`);
   if (!body) return null;
-  return recordHit(bodyCache, key, body);
+  return recordHit(bodyCache, key, body, MAX_BODY_CACHE);
 }
 
 // ─── Filter helpers ─────────────────────────────────────────────────────

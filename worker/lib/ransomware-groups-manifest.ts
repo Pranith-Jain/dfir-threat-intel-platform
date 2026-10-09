@@ -13,6 +13,8 @@
  *   /data/ransomware-groups/groups/shard-0000.json … (maps slug → body)
  */
 
+import { fetchJsonAsset, recordHit, trackHit, type BodyCache } from './manifest-cache';
+
 export interface RansomwareGroupRow {
   slug: string;
   name: string;
@@ -79,45 +81,15 @@ function shardName(idx: number): string {
   return `${DATA_PREFIX}/groups/shard-${String(idx).padStart(4, '0')}.json`;
 }
 
-interface BodyCache<T> {
-  map: Map<string, T>;
-  hits: number;
-  misses: number;
-}
-
 const bodyCache: BodyCache<RansomwareGroupBody> = { map: new Map(), hits: 0, misses: 0 };
 const shardCache: BodyCache<Record<string, RansomwareGroupBody>> = { map: new Map(), hits: 0, misses: 0 };
 let cachedIndex: RansomwareGroupsIndex | null = null;
 let cachedIndexAt: number | null = null;
 
+// Fetch helper lives in manifest-cache.ts. The asset host is only an
+// origin placeholder (env.ASSETS ignores it) but keeps cache keys readable.
 async function fetchJson<T>(assets: Fetcher, path: string): Promise<T | null> {
-  const url = `https://ransomware-groups.local${path}`;
-  const res = await assets.fetch(new Request(url));
-  if (!res.ok) return null;
-  return (await res.json()) as T;
-}
-
-function recordHit<T>(cache: BodyCache<T>, key: string, value: T): T {
-  if (cache.map.has(key)) cache.map.delete(key);
-  cache.map.set(key, value);
-  while (cache.map.size > MAX_BODY_CACHE) {
-    const oldest = cache.map.keys().next().value;
-    if (oldest === undefined) break;
-    cache.map.delete(oldest);
-  }
-  return value;
-}
-
-function trackHit<T>(cache: BodyCache<T>, key: string): T | undefined {
-  const v = cache.map.get(key);
-  if (v === undefined) {
-    cache.misses += 1;
-    return undefined;
-  }
-  cache.hits += 1;
-  cache.map.delete(key);
-  cache.map.set(key, v);
-  return v;
+  return fetchJsonAsset<T>(assets, path, 'https://ransomware-groups.local');
 }
 
 export async function loadRansomwareGroupsIndex(
@@ -154,7 +126,7 @@ export async function getRansomwareGroup(assets: Fetcher, slug: string): Promise
       const raw = await fetchJson<Record<string, RansomwareGroupBody>>(assets, key);
       if (raw) {
         shard = raw;
-        recordHit(shardCache, key, shard);
+        recordHit(shardCache, key, shard, MAX_BODY_CACHE);
         while (shardCache.map.size > MAX_SHARD_CACHE) {
           const oldest = shardCache.map.keys().next().value;
           if (oldest === undefined) break;
@@ -163,9 +135,9 @@ export async function getRansomwareGroup(assets: Fetcher, slug: string): Promise
       }
     }
     const found = shard?.[slug];
-    if (found) return recordHit(bodyCache, slug, withMirrorsDetail(found));
+    if (found) return recordHit(bodyCache, slug, withMirrorsDetail(found), MAX_BODY_CACHE);
   }
-  return recordHit(bodyCache, slug, synthesizeBody(row));
+  return recordHit(bodyCache, slug, synthesizeBody(row), MAX_BODY_CACHE);
 }
 
 /** Normalize the legacy per-slug shape (`mirrors` array) to mirrors_detail. */

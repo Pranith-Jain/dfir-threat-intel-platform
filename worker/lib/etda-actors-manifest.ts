@@ -15,6 +15,8 @@
  * LRU bound.
  */
 
+import { fetchJsonAsset, recordHit, trackHit, type BodyCache } from './manifest-cache';
+
 export type ActorCategory = 'apt' | 'other' | 'unknown';
 
 export interface ActorIndexEntry {
@@ -105,12 +107,6 @@ export interface ActorIndex {
 const DATA_PREFIX = '/data/apt-actors';
 const MAX_BODY_CACHE = 200;
 
-interface BodyCache<T> {
-  map: Map<string, T>;
-  hits: number;
-  misses: number;
-}
-
 const actorBodyCache: BodyCache<ActorBody> = { map: new Map(), hits: 0, misses: 0 };
 let cachedIndex: ActorIndex | null = null;
 let cachedIndexAt: number | null = null;
@@ -122,34 +118,10 @@ function safeFilename(slug: string): string {
   return slug.replace(/\//g, '__').replace(/[^A-Za-z0-9._-]/g, '_');
 }
 
+// Fetch helper lives in manifest-cache.ts. The asset host is only an
+// origin placeholder (env.ASSETS ignores it) but keeps cache keys readable.
 async function fetchJson<T>(assets: Fetcher, path: string): Promise<T | null> {
-  const url = `https://etda.local${path}`;
-  const res = await assets.fetch(new Request(url));
-  if (!res.ok) return null;
-  return (await res.json()) as T;
-}
-
-function recordHit<T>(cache: BodyCache<T>, key: string, value: T): T {
-  if (cache.map.has(key)) cache.map.delete(key);
-  cache.map.set(key, value);
-  while (cache.map.size > MAX_BODY_CACHE) {
-    const oldest = cache.map.keys().next().value;
-    if (oldest === undefined) break;
-    cache.map.delete(oldest);
-  }
-  return value;
-}
-
-function trackHit<T>(cache: BodyCache<T>, key: string): T | undefined {
-  const v = cache.map.get(key);
-  if (v === undefined) {
-    cache.misses += 1;
-    return undefined;
-  }
-  cache.hits += 1;
-  cache.map.delete(key);
-  cache.map.set(key, v);
-  return v;
+  return fetchJsonAsset<T>(assets, path, 'https://etda.local');
 }
 
 export async function loadActorIndex(assets: Fetcher, opts: { forceRefresh?: boolean } = {}): Promise<ActorIndex> {
@@ -171,7 +143,7 @@ export async function getActor(assets: Fetcher, slug: string): Promise<ActorBody
   if (hit) return hit;
   const body = await fetchJson<ActorBody>(assets, `${DATA_PREFIX}/actors/${safeFilename(slug)}.json`);
   if (!body) return null;
-  return recordHit(actorBodyCache, slug, body);
+  return recordHit(actorBodyCache, slug, body, MAX_BODY_CACHE);
 }
 
 export async function loadAptmap(assets: Fetcher, opts: { forceRefresh?: boolean } = {}): Promise<AptmapGraph | null> {
@@ -193,7 +165,7 @@ export async function loadAptmapDataFile<T = unknown>(assets: Fetcher, filename:
   if (hit) return hit as T;
   const data = await fetchJson<T>(assets, `${DATA_PREFIX}/aptmap/${safe}`);
   if (!data) return null;
-  return recordHit(aptmapDataCache, safe, data) as T;
+  return recordHit(aptmapDataCache, safe, data, MAX_BODY_CACHE) as T;
 }
 
 // ─── Filter helpers ─────────────────────────────────────────────────────

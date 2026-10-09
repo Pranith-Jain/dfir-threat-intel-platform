@@ -11,6 +11,8 @@
  *   /data/cloud-ref/queries/<id>.json (full hunt query)
  */
 
+import { fetchJsonAsset, recordHit, trackHit, type BodyCache } from './manifest-cache';
+
 export interface CloudSrmDomainCell {
   aws: string;
   azure: string;
@@ -61,44 +63,14 @@ export interface CloudHuntQueryBody {
 const DATA_PREFIX = '/data/cloud-ref';
 const MAX_BODY_CACHE = 80;
 
-interface BodyCache<T> {
-  map: Map<string, T>;
-  hits: number;
-  misses: number;
-}
-
 const queryCache: BodyCache<CloudHuntQueryBody> = { map: new Map(), hits: 0, misses: 0 };
 let cachedIndex: CloudRefIndex | null = null;
 let cachedIndexAt: number | null = null;
 
+// Fetch helper lives in manifest-cache.ts. The asset host is only an
+// origin placeholder (env.ASSETS ignores it) but keeps cache keys readable.
 async function fetchJson<T>(assets: Fetcher, path: string): Promise<T | null> {
-  const url = `https://cloudref.local${path}`;
-  const res = await assets.fetch(new Request(url));
-  if (!res.ok) return null;
-  return (await res.json()) as T;
-}
-
-function recordHit<T>(cache: BodyCache<T>, key: string, value: T): T {
-  if (cache.map.has(key)) cache.map.delete(key);
-  cache.map.set(key, value);
-  while (cache.map.size > MAX_BODY_CACHE) {
-    const oldest = cache.map.keys().next().value;
-    if (oldest === undefined) break;
-    cache.map.delete(oldest);
-  }
-  return value;
-}
-
-function trackHit<T>(cache: BodyCache<T>, key: string): T | undefined {
-  const v = cache.map.get(key);
-  if (v === undefined) {
-    cache.misses += 1;
-    return undefined;
-  }
-  cache.hits += 1;
-  cache.map.delete(key);
-  cache.map.set(key, v);
-  return v;
+  return fetchJsonAsset<T>(assets, path, 'https://cloudref.local');
 }
 
 export async function loadCloudRefIndex(
@@ -122,7 +94,7 @@ export async function getCloudHuntQuery(assets: Fetcher, id: string): Promise<Cl
   if (hit) return hit;
   const body = await fetchJson<CloudHuntQueryBody>(assets, `${DATA_PREFIX}/queries/${id}.json`);
   if (!body) return null;
-  return recordHit(queryCache, id, body);
+  return recordHit(queryCache, id, body, MAX_BODY_CACHE);
 }
 
 export interface CloudQueryListOptions {

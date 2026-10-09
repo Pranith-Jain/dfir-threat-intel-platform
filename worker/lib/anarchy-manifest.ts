@@ -13,6 +13,8 @@
  *
  * Source: https://kazamadono.github.io/ (public GitHub Pages, KazamaDono)
  */
+
+import { fetchJsonAsset, recordHit, trackHit, type BodyCache } from './manifest-cache';
 import {
   recommendCourses,
   similarCourses,
@@ -86,12 +88,6 @@ export interface AnarchyTagBody {
 const DATA_PREFIX = '/data/anarchy';
 const MAX_BODY_CACHE = 200;
 
-interface BodyCache<T> {
-  map: Map<string, T>;
-  hits: number;
-  misses: number;
-}
-
 const courseCache: BodyCache<AnarchyCourseBody> = { map: new Map(), hits: 0, misses: 0 };
 const tagCache: BodyCache<AnarchyTagBody> = { map: new Map(), hits: 0, misses: 0 };
 let cachedIndex: AnarchyIndex | null = null;
@@ -101,40 +97,13 @@ function safeFilename(slug: string): string {
   return slug.replace(/\//g, '__').replace(/[^A-Za-z0-9._-]/g, '_');
 }
 
+// Fetch helper lives in manifest-cache.ts. The asset host is only an
+// origin placeholder (env.ASSETS ignores it) but keeps cache keys readable.
 async function fetchJson<T>(assets: Fetcher, path: string): Promise<T | null> {
-  const url = `https://anarchy.local${path}`;
-  const res = await assets.fetch(new Request(url));
-  if (!res.ok) return null;
-  return (await res.json()) as T;
+  return fetchJsonAsset<T>(assets, path, 'https://anarchy.local');
 }
 
-function recordHit<T>(cache: BodyCache<T>, key: string, value: T): T {
-  if (cache.map.has(key)) cache.map.delete(key);
-  cache.map.set(key, value);
-  while (cache.map.size > MAX_BODY_CACHE) {
-    const oldest = cache.map.keys().next().value;
-    if (oldest === undefined) break;
-    cache.map.delete(oldest);
-  }
-  return value;
-}
-
-function trackHit<T>(cache: BodyCache<T>, key: string): T | undefined {
-  const v = cache.map.get(key);
-  if (v === undefined) {
-    cache.misses += 1;
-    return undefined;
-  }
-  cache.hits += 1;
-  cache.map.delete(key);
-  cache.map.set(key, v);
-  return v;
-}
-
-export async function loadAnarchyIndex(
-  assets: Fetcher,
-  opts: { forceRefresh?: boolean } = {}
-): Promise<AnarchyIndex> {
+export async function loadAnarchyIndex(assets: Fetcher, opts: { forceRefresh?: boolean } = {}): Promise<AnarchyIndex> {
   if (cachedIndex && !opts.forceRefresh) return cachedIndex;
   const idx = await fetchJson<AnarchyIndex>(assets, `${DATA_PREFIX}/index.json`);
   if (!idx) {
@@ -153,7 +122,7 @@ export async function getAnarchyCourse(assets: Fetcher, id: string): Promise<Ana
   if (hit) return hit;
   const body = await fetchJson<AnarchyCourseBody>(assets, `${DATA_PREFIX}/courses/${safeFilename(key)}.json`);
   if (!body) return null;
-  return recordHit(courseCache, key, body);
+  return recordHit(courseCache, key, body, MAX_BODY_CACHE);
 }
 
 export async function getAnarchyTag(assets: Fetcher, tag: string): Promise<AnarchyTagBody | null> {
@@ -162,7 +131,7 @@ export async function getAnarchyTag(assets: Fetcher, tag: string): Promise<Anarc
   if (hit) return hit;
   const body = await fetchJson<AnarchyTagBody>(assets, `${DATA_PREFIX}/by-tag/${safeFilename(key)}.json`);
   if (!body) return null;
-  return recordHit(tagCache, key, body);
+  return recordHit(tagCache, key, body, MAX_BODY_CACHE);
 }
 
 export interface AnarchyListOptions {
@@ -184,7 +153,12 @@ export function filterAnarchyCourses(idx: AnarchyIndex, opts: AnarchyListOptions
   for (const c of idx.courses) {
     if (tagNeedle && !c.tags.includes(tagNeedle)) continue;
     if (difficulty && c.difficulty !== difficulty) continue;
-    if (providerNeedle && !c.provider.name.toLowerCase().includes(providerNeedle) && !c.provider.host.toLowerCase().includes(providerNeedle)) continue;
+    if (
+      providerNeedle &&
+      !c.provider.name.toLowerCase().includes(providerNeedle) &&
+      !c.provider.host.toLowerCase().includes(providerNeedle)
+    )
+      continue;
     if (maxHours !== undefined && c.hours > maxHours) continue;
     if (needle) {
       const hay = `${c.title} ${c.preview} ${c.tags.join(' ')} ${c.provider.name}`.toLowerCase();
@@ -218,11 +192,7 @@ export function recommendAnarchyCourses(
   return recommendCourses(idx.courses, { ...opts, tagPopularity: popularity });
 }
 
-export function similarAnarchyCourses(
-  idx: AnarchyIndex,
-  id: string,
-  limit = 4
-): ScoredCourse<AnarchyCourseSlim>[] {
+export function similarAnarchyCourses(idx: AnarchyIndex, id: string, limit = 4): ScoredCourse<AnarchyCourseSlim>[] {
   return similarCourses(idx.courses, id, limit);
 }
 

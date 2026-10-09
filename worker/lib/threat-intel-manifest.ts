@@ -22,6 +22,8 @@
  * the priority scoring here is derived independently from the README.
  */
 
+import { fetchJsonAsset, recordHit, trackHit, type BodyCache } from './manifest-cache';
+
 export type TiSeverity = 'critical' | 'high' | 'medium' | 'low' | 'unknown';
 
 export interface TiCveIndexEntry {
@@ -753,12 +755,6 @@ export interface MaIndex {
 const DATA_PREFIX = '/data/threat-intel';
 const MAX_BODY_CACHE = 200;
 
-interface BodyCache<T> {
-  map: Map<string, T>;
-  hits: number;
-  misses: number;
-}
-
 const cveBodyCache: BodyCache<TiCveBody> = { map: new Map(), hits: 0, misses: 0 };
 const iocBodyCache: BodyCache<TiIocBody> = { map: new Map(), hits: 0, misses: 0 };
 const sectorBodyCache: BodyCache<TiSectorBody> = { map: new Map(), hits: 0, misses: 0 };
@@ -805,34 +801,10 @@ function safeFilename(slug: string): string {
   return slug.replace(/\//g, '__').replace(/[^A-Za-z0-9._-]/g, '_');
 }
 
+// Fetch helper lives in manifest-cache.ts. The asset host is only an
+// origin placeholder (env.ASSETS ignores it) but keeps cache keys readable.
 async function fetchJson<T>(assets: Fetcher, path: string): Promise<T | null> {
-  const url = `https://ti.local${path}`;
-  const res = await assets.fetch(new Request(url));
-  if (!res.ok) return null;
-  return (await res.json()) as T;
-}
-
-function recordHit<T>(cache: BodyCache<T>, key: string, value: T): T {
-  if (cache.map.has(key)) cache.map.delete(key);
-  cache.map.set(key, value);
-  while (cache.map.size > MAX_BODY_CACHE) {
-    const oldest = cache.map.keys().next().value;
-    if (oldest === undefined) break;
-    cache.map.delete(oldest);
-  }
-  return value;
-}
-
-function trackHit<T>(cache: BodyCache<T>, key: string): T | undefined {
-  const v = cache.map.get(key);
-  if (v === undefined) {
-    cache.misses += 1;
-    return undefined;
-  }
-  cache.hits += 1;
-  cache.map.delete(key);
-  cache.map.set(key, v);
-  return v;
+  return fetchJsonAsset<T>(assets, path, 'https://ti.local');
 }
 
 export async function loadTiIndex(assets: Fetcher, opts: { forceRefresh?: boolean } = {}): Promise<TiIndex> {
@@ -855,7 +827,7 @@ export async function getTiCve(assets: Fetcher, cveId: string): Promise<TiCveBod
   if (hit) return hit;
   const body = await fetchJson<TiCveBody>(assets, `${DATA_PREFIX}/cves/${safeFilename(key)}.json`);
   if (!body) return null;
-  return recordHit(cveBodyCache, key, body);
+  return recordHit(cveBodyCache, key, body, MAX_BODY_CACHE);
 }
 
 export async function getTiIoc(assets: Fetcher, slug: string): Promise<TiIocBody | null> {
@@ -863,7 +835,7 @@ export async function getTiIoc(assets: Fetcher, slug: string): Promise<TiIocBody
   if (hit) return hit;
   const body = await fetchJson<TiIocBody>(assets, `${DATA_PREFIX}/iocs/${safeFilename(slug)}.json`);
   if (!body) return null;
-  return recordHit(iocBodyCache, slug, body);
+  return recordHit(iocBodyCache, slug, body, MAX_BODY_CACHE);
 }
 
 export async function getTiSector(assets: Fetcher, sector: string): Promise<TiSectorBody | null> {
@@ -872,7 +844,7 @@ export async function getTiSector(assets: Fetcher, sector: string): Promise<TiSe
   if (hit) return hit;
   const body = await fetchJson<TiSectorBody>(assets, `${DATA_PREFIX}/sectors/${safeFilename(key)}.json`);
   if (!body) return null;
-  return recordHit(sectorBodyCache, key, body);
+  return recordHit(sectorBodyCache, key, body, MAX_BODY_CACHE);
 }
 
 export async function getTiList(assets: Fetcher, slug: string): Promise<TiDetectionListBody | null> {
@@ -881,7 +853,7 @@ export async function getTiList(assets: Fetcher, slug: string): Promise<TiDetect
   if (hit) return hit;
   const body = await fetchJson<TiDetectionListBody>(assets, `${DATA_PREFIX}/lists/${safeFilename(key)}.json`);
   if (!body) return null;
-  return recordHit(listBodyCache, key, body);
+  return recordHit(listBodyCache, key, body, MAX_BODY_CACHE);
 }
 
 // ─── Darknet directory (darknetlist.is) ───────────────────────────────
@@ -918,7 +890,7 @@ export async function getDarknetSite(assets: Fetcher, slug: string): Promise<TiD
   if (hit) return hit;
   const body = await fetchJson<TiDarknetSiteBody>(assets, `${DATA_PREFIX}/darknet/sites/${safeFilename(key)}.json`);
   if (!body) return null;
-  return recordHit(darknetSiteCache, key, body);
+  return recordHit(darknetSiteCache, key, body, MAX_BODY_CACHE);
 }
 
 export async function getDarknetCategory(assets: Fetcher, category: string): Promise<TiDarknetCategoryBody | null> {
@@ -930,7 +902,7 @@ export async function getDarknetCategory(assets: Fetcher, category: string): Pro
     `${DATA_PREFIX}/darknet/categories/${safeFilename(key)}.json`
   );
   if (!body) return null;
-  return recordHit(darknetCategoryCache, key, body);
+  return recordHit(darknetCategoryCache, key, body, MAX_BODY_CACHE);
 }
 
 export async function loadKevSnapshot(assets: Fetcher, opts: { forceRefresh?: boolean } = {}): Promise<TiKevEntry[]> {
@@ -977,7 +949,7 @@ export async function getTcCluster(assets: Fetcher, slug: string): Promise<TcClu
     `${DATA_PREFIX}/threatcluster/clusters/${safeFilename(key)}.json`
   );
   if (!body) return null;
-  return recordHit(tcClusterCache, key, body);
+  return recordHit(tcClusterCache, key, body, MAX_BODY_CACHE);
 }
 
 export async function getTcVuln(assets: Fetcher, cveId: string): Promise<TcVulnBody | null> {
@@ -989,7 +961,7 @@ export async function getTcVuln(assets: Fetcher, cveId: string): Promise<TcVulnB
     `${DATA_PREFIX}/threatcluster/vulnerabilities/${safeFilename(key)}.json`
   );
   if (!body) return null;
-  return recordHit(tcVulnCache, key, body);
+  return recordHit(tcVulnCache, key, body, MAX_BODY_CACHE);
 }
 
 export async function getTcExploit(assets: Fetcher, cveId: string): Promise<TcExploitBody | null> {
@@ -1001,7 +973,7 @@ export async function getTcExploit(assets: Fetcher, cveId: string): Promise<TcEx
     `${DATA_PREFIX}/threatcluster/exploits/${safeFilename(key)}.json`
   );
   if (!body) return null;
-  return recordHit(tcExploitCache, key, body);
+  return recordHit(tcExploitCache, key, body, MAX_BODY_CACHE);
 }
 
 export async function getTcVictim(assets: Fetcher, id: string): Promise<TcVictimBody | null> {
@@ -1010,7 +982,7 @@ export async function getTcVictim(assets: Fetcher, id: string): Promise<TcVictim
   if (hit) return hit;
   const body = await fetchJson<TcVictimBody>(assets, `${DATA_PREFIX}/threatcluster/victims/${safeFilename(key)}.json`);
   if (!body) return null;
-  return recordHit(tcVictimCache, key, body);
+  return recordHit(tcVictimCache, key, body, MAX_BODY_CACHE);
 }
 
 export async function loadTcIocs(assets: Fetcher, opts: { forceRefresh?: boolean } = {}): Promise<TcIocsBody | null> {
@@ -1055,7 +1027,7 @@ export async function getTcEntity(assets: Fetcher, type: TcEntityType, slug: str
     `${DATA_PREFIX}/threatcluster/entities/${type}/${safeFilename(slug.toLowerCase())}.json`
   );
   if (!body) return null;
-  return recordHit(tcEntityCache, key, body);
+  return recordHit(tcEntityCache, key, body, MAX_BODY_CACHE);
 }
 
 export function getTcEntityTypeOrNull(raw: string | undefined): TcEntityType | null {
@@ -1092,7 +1064,7 @@ export async function getThreaticonActor(assets: Fetcher, slug: string): Promise
     `${DATA_PREFIX}/threaticon/actors/${safeFilename(key)}.json`
   );
   if (!body) return null;
-  return recordHit(tiActorCache, key, body);
+  return recordHit(tiActorCache, key, body, MAX_BODY_CACHE);
 }
 
 export async function loadThreaticonMalware(
@@ -1151,7 +1123,7 @@ export async function getDphishIndicator(assets: Fetcher, slug: string): Promise
     `${DATA_PREFIX}/dphish/indicators/${safeFilename(key)}.json`
   );
   if (!body) return null;
-  return recordHit(dphishBodyCache, key, body);
+  return recordHit(dphishBodyCache, key, body, MAX_BODY_CACHE);
 }
 
 // ─── Destroylist loaders ──────────────────────────────────────────────
@@ -1195,7 +1167,7 @@ async function getDestroylistBucket(assets: Fetcher, bucket: number): Promise<st
   if (hit) return hit;
   const body = await fetchJson<string[]>(assets, `${DATA_PREFIX}/destroylist/buckets/${key}.json`);
   if (!body) return null;
-  return recordHit(destroylistBucketCache, key, body);
+  return recordHit(destroylistBucketCache, key, body, MAX_BODY_CACHE);
 }
 
 function binarySearch(sorted: string[], needle: string): boolean {
@@ -1286,7 +1258,7 @@ export async function getLivingThreatIncident(assets: Fetcher, slug: string): Pr
   if (!shard) {
     shard = await fetchJson<LivingThreatIncidentBody[]>(assets, `${DATA_PREFIX}/living-threat/shards/${shardKey}.json`);
     if (!shard) return null;
-    recordHit(ltShardCache, cacheKey, shard);
+    recordHit(ltShardCache, cacheKey, shard, MAX_BODY_CACHE);
   }
   return shard.find((b) => b.slug === slug) ?? null;
 }
@@ -1350,7 +1322,7 @@ export async function getMaFeed(assets: Fetcher, name: MaFeedName): Promise<MaFe
   if (hit) return hit;
   const feed = await fetchJson<MaFeedEntry[]>(assets, `${DATA_PREFIX}/malwareanalyzer/${name}.json`);
   if (!feed) return [];
-  return recordHit(maFeedCache, cacheKey, feed);
+  return recordHit(maFeedCache, cacheKey, feed, MAX_BODY_CACHE);
 }
 
 export interface TiListMaOptions {

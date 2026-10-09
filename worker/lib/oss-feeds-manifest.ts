@@ -12,6 +12,8 @@
  * Source: https://github.com/Bert-JanP/Open-Source-Threat-Intel-Feeds
  */
 
+import { fetchJsonAsset, recordHit, trackHit, type BodyCache } from './manifest-cache';
+
 export interface OssFeedIndexEntry {
   vendor: string;
   description: string;
@@ -55,44 +57,14 @@ export interface OssCategoryBody {
 const DATA_PREFIX = '/data/oss-feed-registry';
 const MAX_CATEGORY_CACHE = 50;
 
-interface BodyCache<T> {
-  map: Map<string, T>;
-  hits: number;
-  misses: number;
-}
-
 const categoryBodyCache: BodyCache<OssCategoryBody> = { map: new Map(), hits: 0, misses: 0 };
 let cachedIndex: OssFeedsIndex | null = null;
 let cachedIndexAt: number | null = null;
 
+// Fetch helper lives in manifest-cache.ts. The asset host is only an
+// origin placeholder (env.ASSETS ignores it) but keeps cache keys readable.
 async function fetchJson<T>(assets: Fetcher, path: string): Promise<T | null> {
-  const url = `https://oss-feeds.local${path}`;
-  const res = await assets.fetch(new Request(url));
-  if (!res.ok) return null;
-  return (await res.json()) as T;
-}
-
-function recordHit<T>(cache: BodyCache<T>, key: string, value: T): T {
-  if (cache.map.has(key)) cache.map.delete(key);
-  cache.map.set(key, value);
-  while (cache.map.size > MAX_CATEGORY_CACHE) {
-    const oldest = cache.map.keys().next().value;
-    if (oldest === undefined) break;
-    cache.map.delete(oldest);
-  }
-  return value;
-}
-
-function trackHit<T>(cache: BodyCache<T>, key: string): T | undefined {
-  const v = cache.map.get(key);
-  if (v === undefined) {
-    cache.misses += 1;
-    return undefined;
-  }
-  cache.hits += 1;
-  cache.map.delete(key);
-  cache.map.set(key, v);
-  return v;
+  return fetchJsonAsset<T>(assets, path, 'https://oss-feeds.local');
 }
 
 export async function loadOssFeedsIndex(
@@ -117,7 +89,7 @@ export async function getOssFeedsByCategory(assets: Fetcher, category: string): 
   if (hit) return hit;
   const body = await fetchJson<OssCategoryBody>(assets, `${DATA_PREFIX}/categories/${slug}.json`);
   if (!body) return null;
-  return recordHit(categoryBodyCache, slug, body);
+  return recordHit(categoryBodyCache, slug, body, MAX_CATEGORY_CACHE);
 }
 
 export interface OssFeedListOptions {

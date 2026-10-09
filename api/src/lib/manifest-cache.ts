@@ -1,0 +1,1 @@
+../../../worker/lib/manifest-cache.ts

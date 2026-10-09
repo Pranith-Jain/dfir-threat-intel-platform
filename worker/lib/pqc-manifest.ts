@@ -11,6 +11,8 @@
  *   /data/pqc/algorithms/<slug>.json    (full algorithm reference)
  */
 
+import { fetchJsonAsset, recordHit, trackHit, type BodyCache } from './manifest-cache';
+
 export interface PqcAlgorithmIndexEntry {
   slug: string;
   name: string;
@@ -50,44 +52,12 @@ export interface PqcAlgorithmBody {
 const DATA_PREFIX = '/data/pqc';
 const MAX_BODY_CACHE = 20;
 
-interface BodyCache<T> {
-  map: Map<string, T>;
-  hits: number;
-  misses: number;
-}
-
 const algorithmCache: BodyCache<PqcAlgorithmBody> = { map: new Map(), hits: 0, misses: 0 };
 let cachedIndex: PqcIndex | null = null;
 let cachedIndexAt: number | null = null;
 
 async function fetchJson<T>(assets: Fetcher, path: string): Promise<T | null> {
-  const url = `https://pqc.local${path}`;
-  const res = await assets.fetch(new Request(url));
-  if (!res.ok) return null;
-  return (await res.json()) as T;
-}
-
-function recordHit<T>(cache: BodyCache<T>, key: string, value: T): T {
-  if (cache.map.has(key)) cache.map.delete(key);
-  cache.map.set(key, value);
-  while (cache.map.size > MAX_BODY_CACHE) {
-    const oldest = cache.map.keys().next().value;
-    if (oldest === undefined) break;
-    cache.map.delete(oldest);
-  }
-  return value;
-}
-
-function trackHit<T>(cache: BodyCache<T>, key: string): T | undefined {
-  const v = cache.map.get(key);
-  if (v === undefined) {
-    cache.misses += 1;
-    return undefined;
-  }
-  cache.hits += 1;
-  cache.map.delete(key);
-  cache.map.set(key, v);
-  return v;
+  return fetchJsonAsset<T>(assets, path, 'https://pqc.local');
 }
 
 export async function loadPqcIndex(assets: Fetcher, opts: { forceRefresh?: boolean } = {}): Promise<PqcIndex> {
@@ -106,7 +76,7 @@ export async function getPqcAlgorithm(assets: Fetcher, slug: string): Promise<Pq
   if (hit) return hit;
   const body = await fetchJson<PqcAlgorithmBody>(assets, `${DATA_PREFIX}/algorithms/${slug}.json`);
   if (!body) return null;
-  return recordHit(algorithmCache, slug, body);
+  return recordHit(algorithmCache, slug, body, MAX_BODY_CACHE);
 }
 
 export function pqcCacheStats(): {

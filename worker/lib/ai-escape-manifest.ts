@@ -13,6 +13,8 @@
  *   /data/ai-escape/trackers.json           (provenance table)
  */
 
+import { fetchJsonAsset, recordHit, trackHit, type BodyCache } from './manifest-cache';
+
 export type EscapeKlass = 'containment-breach' | 'agent-hijack' | 'supply-chain' | 'tool-misuse' | 'injection';
 export type EscapeSev = 'critical' | 'severe' | 'notable' | 'contained';
 export type EscapeTier = 'A' | 'B' | 'C' | 'D' | 'X';
@@ -101,46 +103,16 @@ export const ESCAPE_CHAIN_STAGES = ['PRESSURE', 'PROBE', 'BREACH', 'CHANNEL', 'E
 const DATA_PREFIX = '/data/ai-escape';
 const MAX_BODY_CACHE = 100;
 
-interface BodyCache<T> {
-  map: Map<string, T>;
-  hits: number;
-  misses: number;
-}
-
 const bodyCache: BodyCache<EscapeIncident> = { map: new Map(), hits: 0, misses: 0 };
 let cachedIndex: EscapeIndex | null = null;
 let cachedIndexAt: number | null = null;
 let cachedGuardrails: EscapeGuardrail[] | null = null;
 let cachedTrackers: EscapeTracker[] | null = null;
 
+// Fetch helper lives in manifest-cache.ts. The asset host is only an
+// origin placeholder (env.ASSETS ignores it) but keeps cache keys readable.
 async function fetchJson<T>(assets: Fetcher, path: string): Promise<T | null> {
-  const url = `https://ai-escape.local${path}`;
-  const res = await assets.fetch(new Request(url));
-  if (!res.ok) return null;
-  return (await res.json()) as T;
-}
-
-function recordHit<T>(cache: BodyCache<T>, key: string, value: T): T {
-  if (cache.map.has(key)) cache.map.delete(key);
-  cache.map.set(key, value);
-  while (cache.map.size > MAX_BODY_CACHE) {
-    const oldest = cache.map.keys().next().value;
-    if (oldest === undefined) break;
-    cache.map.delete(oldest);
-  }
-  return value;
-}
-
-function trackHit<T>(cache: BodyCache<T>, key: string): T | undefined {
-  const v = cache.map.get(key);
-  if (v === undefined) {
-    cache.misses += 1;
-    return undefined;
-  }
-  cache.hits += 1;
-  cache.map.delete(key);
-  cache.map.set(key, v);
-  return v;
+  return fetchJsonAsset<T>(assets, path, 'https://ai-escape.local');
 }
 
 export async function loadEscapeIndex(assets: Fetcher, opts: { forceRefresh?: boolean } = {}): Promise<EscapeIndex> {
@@ -168,7 +140,7 @@ export async function getEscapeIncident(assets: Fetcher, id: string): Promise<Es
   }
   const body = cachedDockets[id];
   if (!body) return null;
-  return recordHit(bodyCache, id, body);
+  return recordHit(bodyCache, id, body, MAX_BODY_CACHE);
 }
 
 export async function loadEscapeGuardrails(assets: Fetcher): Promise<EscapeGuardrail[]> {

@@ -20,6 +20,8 @@
  * limit when many distinct skills are requested back-to-back.
  */
 
+import { recordHit, trackHit, type BodyCache } from './manifest-cache';
+
 export type SiSkillCategory =
   | 'Quick Scan'
   | 'Core Investigation'
@@ -84,12 +86,6 @@ export interface SiAutomationBody extends SiAutomationIndexEntry {
 const DATA_PREFIX = '/data/si';
 const MAX_BODY_CACHE = 200;
 
-interface BodyCache<T> {
-  map: Map<string, T>;
-  hits: number;
-  misses: number;
-}
-
 const skillBodyCache: BodyCache<SiSkillBody> = { map: new Map(), hits: 0, misses: 0 };
 const queryBodyCache: BodyCache<SiQueryBody> = { map: new Map(), hits: 0, misses: 0 };
 const automationBodyCache: BodyCache<SiAutomationBody> = { map: new Map(), hits: 0, misses: 0 };
@@ -110,31 +106,6 @@ async function fetchJson<T>(assets: Fetcher, path: string): Promise<T | null> {
   const res = await assets.fetch(new Request(url));
   if (!res.ok) return null;
   return (await res.json()) as T;
-}
-
-function recordHit<T>(cache: BodyCache<T>, key: string, value: T): T {
-  // Refresh insertion order so LRU eviction works correctly.
-  if (cache.map.has(key)) cache.map.delete(key);
-  cache.map.set(key, value);
-  while (cache.map.size > MAX_BODY_CACHE) {
-    const oldest = cache.map.keys().next().value;
-    if (oldest === undefined) break;
-    cache.map.delete(oldest);
-  }
-  return value;
-}
-
-function trackHit<T>(cache: BodyCache<T>, key: string): T | undefined {
-  const v = cache.map.get(key);
-  if (v === undefined) {
-    cache.misses += 1;
-    return undefined;
-  }
-  cache.hits += 1;
-  // Move to end for LRU.
-  cache.map.delete(key);
-  cache.map.set(key, v);
-  return v;
 }
 
 /**
@@ -161,7 +132,7 @@ export async function getSiSkill(assets: Fetcher, slug: string): Promise<SiSkill
   if (hit) return hit;
   const body = await fetchJson<SiSkillBody>(assets, `${DATA_PREFIX}/skills/${safeFilename(slug)}.json`);
   if (!body) return null;
-  return recordHit(skillBodyCache, slug, body);
+  return recordHit(skillBodyCache, slug, body, MAX_BODY_CACHE);
 }
 
 export async function getSiQuery(assets: Fetcher, slug: string): Promise<SiQueryBody | null> {
@@ -169,7 +140,7 @@ export async function getSiQuery(assets: Fetcher, slug: string): Promise<SiQuery
   if (hit) return hit;
   const body = await fetchJson<SiQueryBody>(assets, `${DATA_PREFIX}/queries/${safeFilename(slug)}.json`);
   if (!body) return null;
-  return recordHit(queryBodyCache, slug, body);
+  return recordHit(queryBodyCache, slug, body, MAX_BODY_CACHE);
 }
 
 export async function getSiAutomation(assets: Fetcher, slug: string): Promise<SiAutomationBody | null> {
@@ -177,7 +148,7 @@ export async function getSiAutomation(assets: Fetcher, slug: string): Promise<Si
   if (hit) return hit;
   const body = await fetchJson<SiAutomationBody>(assets, `${DATA_PREFIX}/automations/${safeFilename(slug)}.json`);
   if (!body) return null;
-  return recordHit(automationBodyCache, slug, body);
+  return recordHit(automationBodyCache, slug, body, MAX_BODY_CACHE);
 }
 
 export interface SiListSkillsOptions {
@@ -319,7 +290,7 @@ export async function getDoc(assets: Fetcher, slug: string): Promise<SiDoc | nul
     filename: `${safeSlug}.md`,
     bodyMarkdown: text,
   };
-  return recordHit(docBodyCache, slug, doc);
+  return recordHit(docBodyCache, slug, doc, MAX_BODY_CACHE);
 }
 
 export async function getRef<T = unknown>(assets: Fetcher, name: string): Promise<T | null> {
@@ -328,7 +299,7 @@ export async function getRef<T = unknown>(assets: Fetcher, name: string): Promis
   if (hit !== undefined) return hit as T;
   const v = await fetchJson<T>(assets, `${DATA_PREFIX}/ref/${key}.json`);
   if (v === null) return null;
-  return recordHit(refBodyCache, key, v) as T;
+  return recordHit(refBodyCache, key, v, MAX_BODY_CACHE) as T;
 }
 
 export async function getRoutingPrompt(assets: Fetcher): Promise<string> {
@@ -384,6 +355,6 @@ export async function getScript(
   const res = await assets.fetch(new Request(url));
   if (!res.ok) return null;
   const text = await res.text();
-  recordHit(scriptBodyCache, name, text);
+  recordHit(scriptBodyCache, name, text, MAX_BODY_CACHE);
   return { name, body: text, sizeBytes: text.length };
 }
