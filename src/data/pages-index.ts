@@ -3719,34 +3719,6 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     group: 'threatintel',
   },
   {
-    path: '/threatintel/feeds/catalog',
-    label: 'Catalog',
-    description: 'Feed file browser.',
-    sectionLabel: 'Threat Intel · Feeds',
-    group: 'threatintel',
-  },
-  {
-    path: '/threatintel/feeds/sources',
-    label: 'Sources',
-    description: 'Feed source registry.',
-    sectionLabel: 'Threat Intel · Feeds',
-    group: 'threatintel',
-  },
-  {
-    path: '/threatintel/feeds/quality',
-    label: 'Quality',
-    description: 'Feed quality metrics.',
-    sectionLabel: 'Threat Intel · Feeds',
-    group: 'threatintel',
-  },
-  {
-    path: '/threatintel/feeds/scheduler',
-    label: 'Scheduler',
-    description: 'Feed scheduling and orchestration.',
-    sectionLabel: 'Threat Intel · Feeds',
-    group: 'threatintel',
-  },
-  {
     path: '/threatintel/feeds/threatcluster',
     label: 'ThreatCluster Feeds',
     description:

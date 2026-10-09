@@ -258,10 +258,6 @@ const Ooda = lazy(() => import('./pages/threatintel/Ooda'));
 const ThreatLedDefence = lazy(() => import('./pages/threatintel/ThreatLedDefence'));
 const KillChainV2 = lazy(() => import('./pages/threatintel/KillChainV2'));
 const UnifiedKillChain = lazy(() => import('./pages/threatintel/UnifiedKillChain'));
-const FeedCatalog = lazy(() => import('./pages/threatintel/FeedCatalog'));
-const FeedQuality = lazy(() => import('./pages/threatintel/FeedQuality'));
-const FeedScheduler = lazy(() => import('./pages/threatintel/FeedScheduler'));
-const FeedSources = lazy(() => import('./pages/threatintel/FeedSources'));
 const ThreatClusterFeeds = lazy(() => import('./pages/threatintel/ThreatCluster'));
 const ThreaticonFeeds = lazy(() => import('./pages/threatintel/Threaticon'));
 const DphishFeeds = lazy(() => import('./pages/threatintel/Dphish'));
@@ -651,10 +647,6 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/supply-chain', Component: SupplyChainHub },
   { path: '/threatintel/entity-graph', Component: EntityGraphPage },
   { path: '/threatintel/external/awesome', Component: AwesomeLists },
-  { path: '/threatintel/feeds/catalog', Component: FeedCatalog },
-  { path: '/threatintel/feeds/sources', Component: FeedSources },
-  { path: '/threatintel/feeds/quality', Component: FeedQuality },
-  { path: '/threatintel/feeds/scheduler', Component: FeedScheduler },
   { path: '/threatintel/feeds/threatcluster', Component: ThreatClusterFeeds },
   {
     path: '/threatintel/feeds/threatcluster/entities',
@@ -964,6 +956,10 @@ const REDIRECTS: ReadonlyArray<{ path: string; to: string; preserveQuery?: boole
   { path: '/threatintel/predictive/assessments', to: '/threatintel/catalog?cat=predictive' },
   { path: '/threatintel/estate', to: '/threatintel/catalog?cat=monitoring-estate' },
   // Campaigns / actor / IOC pages removed in the same pass.
+  { path: '/threatintel/feeds/catalog', to: '/threatintel/catalog?cat=feeds' },
+  { path: '/threatintel/feeds/sources', to: '/threatintel/catalog?cat=feeds' },
+  { path: '/threatintel/feeds/quality', to: '/threatintel/catalog?cat=feeds' },
+  { path: '/threatintel/feeds/scheduler', to: '/threatintel/catalog?cat=feeds' },
   { path: '/threatintel/campaigns/cross', to: '/threatintel/briefings' },
   { path: '/threatintel/cross-campaign', to: '/threatintel/briefings' },
   { path: '/threatintel/campaigns/reference', to: '/threatintel/briefings' },
@@ -978,7 +974,7 @@ const REDIRECTS: ReadonlyArray<{ path: string; to: string; preserveQuery?: boole
   { path: '/threatintel/aptmap', to: '/threatintel/actors/hub' },
   { path: '/threatintel/iocs/cross', to: '/threatintel/catalog?cat=iocs' },
   { path: '/threatintel/iocs/observable', to: '/threatintel/catalog?cat=iocs' },
-  { path: '/threatintel/iocs/aggregated', to: '/threatintel/feeds/sources' },
+  { path: '/threatintel/iocs/aggregated', to: '/threatintel/catalog?cat=feeds' },
   { path: '/threatintel/malware/vault', to: '/threatintel/catalog?cat=malware' },
   { path: '/threatintel/social/x-hub', to: '/threatintel/catalog?cat=social' },
   { path: '/threatintel/darkweb/bitcoin', to: '/threatintel/catalog?cat=darkweb' },

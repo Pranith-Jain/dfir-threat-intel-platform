@@ -288,34 +288,6 @@ export const HUB_META: readonly HubMeta[] = [
     tone: 'text-sky-700 dark:text-sky-300 border-sky-500/30 bg-sky-500/10',
     pages: [
       {
-        path: '/threatintel/feeds/catalog',
-        tabId: 'catalog',
-        label: 'Feed Catalog',
-        desc: 'Feed file browser with format and sample preview.',
-        compVar: 'FeedCatalog',
-      },
-      {
-        path: '/threatintel/feeds/sources',
-        tabId: 'sources',
-        label: 'Feed Sources',
-        desc: 'Feed source registry with enabled/disabled state.',
-        compVar: 'FeedSources',
-      },
-      {
-        path: '/threatintel/feeds/quality',
-        tabId: 'quality',
-        label: 'Feed Quality',
-        desc: 'Feed quality metrics - freshness, accuracy, FP rate.',
-        compVar: 'FeedQuality',
-      },
-      {
-        path: '/threatintel/feeds/scheduler',
-        tabId: 'scheduler',
-        label: 'Feed Scheduler',
-        desc: 'Feed scheduling and orchestration - cron, retry, backoff.',
-        compVar: 'FeedScheduler',
-      },
-      {
         path: '/threatintel/feeds/threatfeeds',
         tabId: 'threatfeeds',
         label: 'Threat Feeds',
