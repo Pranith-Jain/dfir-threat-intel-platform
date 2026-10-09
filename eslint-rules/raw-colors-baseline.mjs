@@ -40,7 +40,6 @@
  * Each entry should leave the list as its file is cleaned up.
  */
 export const RAW_COLORS_BASELINE = [
-  "src/components/AdminRequired.tsx",
   "src/components/AppShell.tsx",
   "src/components/CopyToClipboard.tsx",
   "src/components/DataPageLayout.tsx",
@@ -69,7 +68,6 @@ export const RAW_COLORS_BASELINE = [
   "src/pages/DFIR.tsx",
   "src/pages/DailyBriefs.tsx",
   "src/pages/DfirRef.tsx",
-  "src/pages/ETDAActors.tsx",
   "src/pages/HuntHypotheses.tsx",
   "src/pages/McpCatalog.tsx",
   "src/pages/NotFound.tsx",
@@ -106,10 +104,8 @@ export const RAW_COLORS_BASELINE = [
   "src/pages/dfir/ZeroTrustAiAgents.tsx",
   "src/pages/threatintel/AIReportShowcase.tsx",
   "src/pages/threatintel/AiHoneypotObservatory.tsx",
-  "src/pages/threatintel/Analyze.tsx",
   "src/pages/threatintel/AssessmentDetail.tsx",
   "src/pages/threatintel/BreachForums.tsx",
-  "src/pages/threatintel/CampaignLifecycle.tsx",
   "src/pages/threatintel/Catalog.tsx",
   "src/pages/threatintel/CertInAdvisories.tsx",
   "src/pages/threatintel/CisaKevCatalog.tsx",
@@ -142,6 +138,5 @@ export const RAW_COLORS_BASELINE = [
   "src/pages/threatintel/ThreatMonInfostealer.tsx",
   "src/pages/threatintel/ThreatPulse.tsx",
   "src/pages/threatintel/UnifiedSearch.tsx",
-  "src/pages/threatintel/VeraChat.tsx",
-  "src/pages/threatintel/Workspaces.tsx"
+  "src/pages/threatintel/VeraChat.tsx"
 ];
