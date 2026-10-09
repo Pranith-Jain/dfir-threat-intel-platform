@@ -155,6 +155,14 @@ jobs:
       - name: api vitest (routes)
         working-directory: api
         run: npx vitest run test/routes
+      # test/providers + test/queue-consumer.test.ts were previously ungated:
+      # the path list above is hand-maintained, so these 125 tests never ran in
+      # CI despite living in this suite. All pass (verified locally under the
+      # same miniflare pool). Keep the list exhaustive — prefer adding the
+      # directory here over assuming a new top-level test dir is covered.
+      - name: api vitest (providers + queue consumer)
+        working-directory: api
+        run: npx vitest run test/providers test/queue-consumer.test.ts
 
   # Secret scan — catches API keys / tokens committed to source or history.
   # Allowlisted files (.env.example, docs, upstream data) are in .gitleaks.toml.

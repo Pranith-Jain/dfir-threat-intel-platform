@@ -1,14 +1,15 @@
 # LOC Reduction Plan
 
-Status: **Complete and committed** (`898ae2b75`). Every claim below was
-re-verified against the repo on 2026-10-09.
+Status: **Complete and committed.** Every claim below was re-verified against
+the repo on 2026-10-09.
 
-`npm run check:all` exits 0 — 3 typechecks clean, lint clean, **1828/1828 tests
-passing across 141 files.**
+`npm run check:all` exits 0 — 3 typechecks clean, lint clean, **1828/1828 root
+tests passing**. The api suite is separately **3035/3035 across 320 files**
+(3 skipped), and is now fully represented in CI.
 
 **Final tally: ~7,955 LOC removed** (7,400 from `src/data/`, 555 from the
-manifest cache cluster), zero behavior change, zero build-speed change, 207 MB
-of build output reclaimed, 3 prompt-hygiene regressions fixed, and a dead-code
+manifest cache cluster), zero behavior change, zero build-speed change, 3
+prompt-hygiene regressions fixed, 125 ungated tests now in CI, and a dead-code
 audit that had to be corrected twice.
 
 ---
@@ -442,20 +443,55 @@ largely happened.
 | 7   | Extract `BodyCache`/`fetchJson` cluster                      | **−555**                | Low  | 3× tsc + tests | ✅ done — 20 files                                          |
 | 8   | Fix the 5 failing em-dash tests                              | 3 regressions fixed     | Low  | full suite     | ✅ done — suite fully green                                 |
 | 9   | Profile `public/data/` weight                                | 0                       | None | analysis only  | ✅ done — recommend leaving it in git                       |
+| 10  | Gate the 125 ungated api tests in CI                         | 0                       | Low  | local vitest   | ✅ done — 322/322 files now covered                         |
 
 **Bottom line:** 7,400 LOC deleted from `src/data/` plus 555 net from the
 manifest cluster = **~7,955 LOC removed**, zero behavior change, zero
-build-speed change, 207 MB reclaimed, and a fully green test suite.
+build-speed change, 207 MB reclaimed, a fully green test suite, and 125
+previously-ungated tests now running in CI.
 
 **Do not** delete the 3 routes, **do not** touch `cyberpulse-ingest.ts`, **do
 not** remove the 4 dependencies, **do not** mass-migrate `src/data/` to JSON,
-and **do not** git-lfs `public/data/`.
+and **do not** git-lfs `public/data/`. `dist/` is gitignored build output and
+is out of scope for repo weight.
 
 ### Remaining known-broken items
 
 None. `npm run check:all` exits 0: 3 typechecks clean, `lint` clean, and
-`test:run` **1828/1828 passing across 141 files** — the first fully green run
-of this project.
+`test:run` **1828/1828 passing across 141 files**.
+
+### Step 10 — [DONE] Closed a CI coverage gap: 125 ungated tests
+
+Investigating the "188 failing api tests" seen in earlier phases turned up
+something more useful than a bug.
+
+**First: those 188 failures were not real.** Re-running the full api suite on
+a settled tree gives **3035/3035 passing across 320 files** (3 skipped). The
+earlier failures were an artifact of another process editing
+`telegram-leak-monitor.ts` / `post-process.ts` / `scheduled.ts` _while_ the
+suite ran — half-written files that have since been committed
+(`f855be119`). Nothing to fix.
+
+**What the investigation did find: `test/providers/` and
+`test/queue-consumer.test.ts` never ran in CI.** The `test-api` job enumerates
+its paths by hand:
+
+```
+npx vitest run test/lib test/case-study test/durable-objects test/health.test.ts
+npx vitest run test/routes
+```
+
+Two top-level entries were simply omitted, so **21 files / 125 tests** — all 20
+provider adapter suites plus the queue consumer — have been running nowhere.
+`npm run check:all` doesn't catch it either, since it only runs the root
+jsdom suite.
+
+All 125 pass. Added them as a third step, with a comment warning that the path
+list is hand-maintained so the next top-level test dir doesn't silently go
+ungated again.
+
+Verified coverage is now exhaustive and non-overlapping: **322/322 test files,
+each in exactly one step, no phantom paths.**
 
 ### Step 8 — [DONE] Fixed the 5 pre-existing em-dash test failures
 
