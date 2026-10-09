@@ -126,26 +126,15 @@ export const HUB_META: readonly HubMeta[] = [
   },
   {
     id: 'campaigns',
-    label: 'Campaigns & Briefings',
-    blurb: 'Active and historical campaigns, attribution, briefings, and assessments.',
+    label: 'Briefings',
+    blurb: 'Analyst briefings — concise reads on campaigns, attribution, and assessments.',
+    // The id stays `campaigns` because 9 call sites (redirects, back-link
+    // tests, sidebar) still route to `?cat=campaigns`; only the display copy
+    // changed, since campaigns/* pages were removed and briefings is all
+    // that's left under this hub.
     icon: GitBranch,
     tone: 'text-orange-700 dark:text-orange-300 border-orange-500/30 bg-orange-500/10',
     pages: [
-      {
-        path: '/threatintel/campaigns/cross',
-        tabId: 'cross',
-        label: 'Cross-Campaign',
-        desc: 'Find connections across campaigns, actors, and IOCs.',
-        compVar: 'CrossCampaignCorrelation',
-      },
-      {
-        path: '/threatintel/campaigns/reference',
-        tabId: 'reference',
-        label: 'Campaign Reference',
-        desc: 'Curated tracker of active/dormant/concluded campaigns with writeup links and TTPs.',
-        compVar: 'CampaignsReference',
-        badge: 'new',
-      },
       {
         path: '/threatintel/briefings',
         tabId: 'briefings',

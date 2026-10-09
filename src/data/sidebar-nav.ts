@@ -36,7 +36,6 @@ import {
   KeyRound,
   Layers,
   LayoutDashboard,
-  Link as LinkIcon,
   List,
   Lock as LockIcon,
   Map,
@@ -141,7 +140,6 @@ const PAGE_ICON_OVERRIDES: Record<string, LucideIcon> = {
   '/threatintel/actors/hub': Users,
   '/threatintel/actors/attribution': Telescope,
   // Campaigns
-  '/threatintel/campaigns/cross': LinkIcon,
   // IOCs
   '/threatintel/iocs/live': Radar,
   '/threatintel/iocs/enrichment': Search,

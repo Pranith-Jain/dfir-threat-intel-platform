@@ -225,11 +225,9 @@ const AttackFlowLibrary = lazy(() => import('./pages/threatintel/AttackFlowLibra
 const Attribution = lazy(() => import('./pages/threatintel/AttributionFramework'));
 const AwesomeLists = lazy(() => import('./pages/dfir/AwesomeLists'));
 const C2Tracker = lazy(() => import('./pages/threatintel/C2Tracker'));
-const CampaignsReference = lazy(() => import('./pages/threatintel/CampaignsReference'));
 const CertStreamLive = lazy(() => import('./pages/threatintel/CertStreamLive'));
 const CloudThreatLandscape = lazy(() => import('./pages/threatintel/CloudThreatLandscape'));
 const Copilot = lazy(() => import('./pages/threatintel/Copilot'));
-const CrossCampaignCorrelation = lazy(() => import('./pages/threatintel/CrossCampaignCorrelation'));
 const CryptoScamFeed = lazy(() => import('./pages/threatintel/CryptoScamFeed'));
 const CuratedToolbox = lazy(() => import('./pages/threatintel/CuratedToolbox'));
 const CuratedCerts = lazy(() => import('./pages/threatintel/CuratedCerts'));
@@ -613,8 +611,6 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   // ── Threat Intel: direct page URLs (auto-added by audit) ──
   { path: '/threatintel/actors/hub', Component: ActorHub },
   { path: '/threatintel/actors/attribution', Component: Attribution },
-  { path: '/threatintel/campaigns/cross', Component: CrossCampaignCorrelation },
-  { path: '/threatintel/campaigns/reference', Component: CampaignsReference },
   { path: '/threatintel/darkweb/watch', Component: DarkWeb },
   { path: '/threatintel/darkweb/markets', Component: DarknetMarketsTimeline },
   { path: '/threatintel/darkweb/darknetlist', Component: DarknetList },
@@ -968,6 +964,9 @@ const REDIRECTS: ReadonlyArray<{ path: string; to: string; preserveQuery?: boole
   { path: '/threatintel/predictive/assessments', to: '/threatintel/catalog?cat=predictive' },
   { path: '/threatintel/estate', to: '/threatintel/catalog?cat=monitoring-estate' },
   // Campaigns / actor / IOC pages removed in the same pass.
+  { path: '/threatintel/campaigns/cross', to: '/threatintel/briefings' },
+  { path: '/threatintel/cross-campaign', to: '/threatintel/briefings' },
+  { path: '/threatintel/campaigns/reference', to: '/threatintel/briefings' },
   { path: '/threatintel/campaigns/active', to: '/threatintel/catalog?cat=campaigns' },
   { path: '/threatintel/campaigns/lifecycle', to: '/threatintel/catalog?cat=campaigns' },
   { path: '/threatintel/campaigns/generator', to: '/threatintel/catalog?cat=campaigns' },
@@ -1102,7 +1101,6 @@ const REDIRECTS: ReadonlyArray<{ path: string; to: string; preserveQuery?: boole
   // ── Campaign Hub ───────────────────────────────────────────────
   { path: '/threatintel/campaign-lifecycle', to: '/threatintel/campaigns/lifecycle' },
   { path: '/threatintel/attribution', to: '/threatintel/actors/attribution' },
-  { path: '/threatintel/cross-campaign', to: '/threatintel/campaigns/cross' },
 
   // ── Phishing Hub ────────────────────────────────────────────────
   { path: '/threatintel/phishing-wordlists', to: '/threatintel/phishing/urls' },

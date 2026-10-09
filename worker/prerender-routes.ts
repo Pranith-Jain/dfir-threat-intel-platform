@@ -37,8 +37,6 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/threatintel/catalog', '/__prerendered/threatintel__catalog'],
   ['/threatintel/actors/hub', '/__prerendered/threatintel__actors__hub'],
   ['/threatintel/actors/attribution', '/__prerendered/threatintel__actors__attribution'],
-  ['/threatintel/campaigns/cross', '/__prerendered/threatintel__campaigns__cross'],
-  ['/threatintel/campaigns/reference', '/__prerendered/threatintel__campaigns__reference'],
   ['/threatintel/breach-hub', '/__prerendered/threatintel__breach-hub'],
   ['/threatintel/darkweb/watch', '/__prerendered/threatintel__darkweb__watch'],
   ['/threatintel/darkweb/markets', '/__prerendered/threatintel__darkweb__markets'],

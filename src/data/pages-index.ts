@@ -3426,20 +3426,6 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     keywords: ['catalog', 'actor', 'profiles'],
   },
   {
-    path: '/threatintel/campaigns/cross',
-    label: 'Cross-campaign',
-    description: 'Cross-campaign correlation.',
-    sectionLabel: 'Threat Intel · Campaigns',
-    group: 'threatintel',
-  },
-  {
-    path: '/threatintel/campaigns/reference',
-    label: 'Reference',
-    description: 'Campaign reference library - named campaign histories, known threat-actor ops, and TTP baselines.',
-    sectionLabel: 'Threat Intel · Campaigns',
-    group: 'threatintel',
-  },
-  {
     path: '/threatintel/breach-hub',
     label: 'Breach Hub',
     description: 'Breach disclosures, forum tracking, and breach-watch monitoring.',

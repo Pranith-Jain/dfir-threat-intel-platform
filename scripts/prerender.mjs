@@ -60,8 +60,6 @@ const ROUTES = [
   '/threatintel/catalog',
   '/threatintel/actors/hub',
   '/threatintel/actors/attribution',
-  '/threatintel/campaigns/cross',
-  '/threatintel/campaigns/reference',
   '/threatintel/cves/advisories',
   '/threatintel/cves/cves',
   '/threatintel/cves/resources',
