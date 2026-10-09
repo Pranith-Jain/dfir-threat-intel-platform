@@ -42,6 +42,34 @@ describe('extractOnionHostname', () => {
   });
 });
 
+const V2_ONION = 'facebookwkhpilnemxj7asaniu7vnjjbiltxjqhye3mhbshg7kx5tfyd.onion';
+const V3_ONION = '2gzyxa5ihm7nsggfxnu52rck2vv4rvmdlkiu3zzui5du4xyclen53wid.onion';
+
+describe('isValidOnionAddress — exact lengths only (#300)', () => {
+  // The two validators disagreed before #300: this one accepted exactly 16 or
+  // 56, while darkweb-osint's inline copy used {16,56} and accepted anything in
+  // between. Pin the exact-length rule so the dedupe cannot regress to a range.
+
+  it('rejects lengths between v2 and v3', () => {
+    for (const n of [15, 17, 20, 40, 55]) {
+      expect(isValidOnionAddress('a'.repeat(n) + '.onion')).toBe(false);
+    }
+  });
+
+  it('rejects a bare hostname with no .onion suffix', () => {
+    expect(isValidOnionAddress('facebookwkhpilnemxj7asaniu7vnjjbiltxjqhye3mhbshg7kx5tfyd')).toBe(false);
+  });
+
+  it('rejects a double suffix', () => {
+    expect(isValidOnionAddress(`${V2_ONION}.onion`)).toBe(false);
+  });
+
+  it('accepts uppercase and surrounding whitespace', () => {
+    expect(isValidOnionAddress(V2_ONION.toUpperCase())).toBe(true);
+    expect(isValidOnionAddress(`  ${V2_ONION}  `)).toBe(true);
+  });
+});
+
 describe('tor2webUrl', () => {
   it('builds correct tor2web URL', () => {
     const result = tor2webUrl('facebookwkhpilnemxj7asaniu7vnjjbiltxjqhye3mhbshg7kx5tfyd.onion', 'tor2web.io');
@@ -49,15 +77,72 @@ describe('tor2webUrl', () => {
   });
 
   it('strips protocol prefix from input', () => {
-    const result = tor2webUrl('http://example.onion', 'onion.ws');
-    expect(result).toBe('https://example.onion.onion.ws/');
+    const result = tor2webUrl('http://facebookwkhpilnemxj7asaniu7vnjjbiltxjqhye3mhbshg7kx5tfyd.onion', 'onion.ws');
+    expect(result).toBe('https://facebookwkhpilnemxj7asaniu7vnjjbiltxjqhye3mhbshg7kx5tfyd.onion.onion.ws/');
   });
 
   it('uses the subdomain form, not a path segment', () => {
     // Regression guard: tor2web gateways are addressed as a subdomain of the
     // onion host (`<onion>.<gateway>`). The path form (`<onion>/<gateway>`)
     // requests a path on the onion address itself and never resolves.
-    expect(tor2webUrl('example.onion', 'tor2web.io')).not.toContain('.onion/');
+    expect(tor2webUrl(V2_ONION, 'tor2web.io')).not.toContain('.onion/');
+  });
+
+  // ── #300: the builder validates, not just the callers ──────────────────
+  // Before this, tor2webUrl concatenated whatever it was given, and safety came
+  // entirely from the caller. These assert the guard now lives in the builder.
+
+  it('throws on a non-onion host rather than building a URL from it', () => {
+    expect(() => tor2webUrl('example.com', 'tor2web.io')).toThrow(/Invalid \.onion/);
+    expect(() => tor2webUrl('evil.com', 'tor2web.io')).toThrow(/Invalid \.onion/);
+  });
+
+  it('throws on an onion-suffix host whose label is not a valid length', () => {
+    // `example.onion` is 7 chars — not v2 (16) or v3 (56). The old builder
+    // accepted it and produced a gateway URL that resolves to whatever that
+    // subdomain happens to be, i.e. not to the intended onion service.
+    expect(() => tor2webUrl('example.onion', 'tor2web.io')).toThrow(/Invalid \.onion/);
+    expect(() => tor2webUrl('a'.repeat(20) + '.onion', 'tor2web.io')).toThrow(/Invalid \.onion/);
+  });
+
+  it('throws on base32 characters outside the onion alphabet', () => {
+    // a-z2-7 only: 0, 1, 8 and 9 are not base32, so an address containing them
+    // is not a real onion address even at the right length.
+    expect(() => tor2webUrl('0'.repeat(16) + '.onion', 'tor2web.io')).toThrow(/Invalid \.onion/);
+    expect(() => tor2webUrl('a'.repeat(15) + '8' + '.onion', 'tor2web.io')).toThrow(/Invalid \.onion/);
+  });
+
+  it('throws when the input carries a path or port', () => {
+    // Both reach the URL authority component via concatenation: a path would be
+    // dropped, and a port would change the destination port. Neither is a valid
+    // bare onion address, so both are rejected.
+    expect(() => tor2webUrl(`${V2_ONION}/admin`, 'tor2web.io')).toThrow(/Invalid \.onion/);
+    expect(() => tor2webUrl(`${V2_ONION}:8443`, 'tor2web.io')).toThrow(/Invalid \.onion/);
+  });
+
+  it('strips credentials rather than forwarding them to the gateway', () => {
+    // The old builder removed the scheme with a regex, leaving
+    // `user:pass@<onion>` in the string — so the credentials were concatenated
+    // into the authority and SENT to the gateway. Normalising through URL
+    // parsing drops them, which is the property that matters here.
+    expect(tor2webUrl(`http://user:pass@${V2_ONION}`, 'tor2web.io')).toBe(`https://${V2_ONION}.tor2web.io/`);
+  });
+
+  it('throws on an attacker-supplied gateway', () => {
+    // The gateway also lands in the authority component. It is a module
+    // constant at every call site, but the builder should not depend on that.
+    expect(() => tor2webUrl(V2_ONION, 'evil.example.com/path')).toThrow(/Invalid tor2web gateway/);
+    expect(() => tor2webUrl(V2_ONION, 'has space')).toThrow(/Invalid tor2web gateway/);
+    expect(() => tor2webUrl(V2_ONION, 'a.com/x#y')).toThrow(/Invalid tor2web gateway/);
+  });
+
+  it('accepts an uppercase onion address and normalises it', () => {
+    expect(tor2webUrl(V2_ONION.toUpperCase(), 'tor2web.io')).toBe(`https://${V2_ONION}.tor2web.io/`);
+  });
+
+  it('still accepts the real v2 and v3 addresses unchanged', () => {
+    expect(tor2webUrl(V2_ONION, 'tor2web.io')).toBe(`https://${V2_ONION}.tor2web.io/`);
+    expect(tor2webUrl(V3_ONION, 'tor2web.io')).toBe(`https://${V3_ONION}.tor2web.io/`);
   });
 });
 

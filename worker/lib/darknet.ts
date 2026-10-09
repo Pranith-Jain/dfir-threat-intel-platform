@@ -163,13 +163,37 @@ export interface ChainAbuseResult {
 
 // ─── Tor ──────────────────────────────────────────────────────────────────
 
+/**
+ * Build the tor2web gateway URL for an onion address.
+ *
+ * SECURITY (#300): this was pure string concatenation — `https://${clean}.${gateway}/`
+ * with no validation of `onionUrl`. Both current callers happened to validate
+ * first via `extractOnionHostname()`, so there was no live exploit path, but the
+ * safety lived in the CALLER rather than in the builder. Any future caller
+ * (a new handler, a refactored flow) would have inherited an open URL-
+ * concatenation sink by default, which is the wrong place for a guard to live.
+ *
+ * The `.onion` check now happens HERE, so a caller that forgets it still cannot
+ * produce a URL pointing at an attacker-chosen host. The caller-side checks stay
+ * as defence in depth and as the thing that produces a clean error message.
+ *
+ * Also normalises the input to a bare hostname first: a scheme, trailing slash,
+ * path, port, or embedded credential is stripped or rejected rather than being
+ * concatenated into the authority component, where it could change which host
+ * the request actually reaches.
+ *
+ * Throws on a non-.onion input. Callers that want a null-returning check use
+ * `extractOnionHostname`.
+ */
 export function tor2webUrl(onionUrl: string, gateway: string): string {
-  let clean = onionUrl.trim();
-  if (clean.startsWith('http://') || clean.startsWith('https://')) {
-    clean = clean.replace(/^https?:\/\//, '');
+  const host = extractOnionHostname(onionUrl);
+  if (!host) throw new Error(`Invalid .onion address: ${onionUrl}`);
+  // The gateway is an internal constant in every call site, but it lands in the
+  // authority component too, so it gets the same treatment.
+  if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i.test(gateway)) {
+    throw new Error(`Invalid tor2web gateway: ${gateway}`);
   }
-  clean = clean.replace(/\/+$/, '');
-  return `https://${clean}.${gateway}/`;
+  return `https://${host}.${gateway.toLowerCase()}/`;
 }
 
 export function parseHtmlBasic(html: string): {
@@ -203,8 +227,25 @@ export function parseHtmlBasic(html: string): {
   return { title, links, bodyText };
 }
 
+/**
+ * Valid onion address: base32 (a-z2-7) of EXACTLY 16 (v2) or 56 (v3) characters.
+ *
+ * #300 deduped the two validators that disagreed: this one accepted only 16 or
+ * 56, while `darkweb-osint.ts`'s inline `onionHost()` used `{16,56}` and so
+ * accepted lengths like 20 or 40 that are not valid onion addresses. They now
+ * share this implementation, so the two entry points cannot drift again.
+ *
+ * The length is exact rather than a range deliberately: a wrong-length address
+ * would produce a tor2web URL that resolves to somebody else's gateway-hosted
+ * subdomain, not to an error.
+ */
 export function isValidOnionAddress(address: string): boolean {
-  return /^[a-z2-7]{16}\.onion$/i.test(address) || /^[a-z2-7]{56}\.onion$/i.test(address);
+  const a = address.trim().toLowerCase();
+  if (a.endsWith('.onion')) {
+    const label = a.slice(0, -'.onion'.length);
+    return (label.length === 16 || label.length === 56) && /^[a-z2-7]+$/.test(label);
+  }
+  return false;
 }
 
 export function extractOnionHostname(input: string): string | null {
@@ -238,13 +279,45 @@ export async function torFetchOnion(
   if (!hostname) throw new Error(`Invalid .onion address: ${onionUrl}`);
   const gw = TOR2WEB_GATEWAYS[gatewayIndex] ?? TOR2WEB_GATEWAYS[0];
   const url = tor2webUrl(hostname, gw);
-  const res = await fetch(url, {
-    headers: { 'User-Agent': UA, Accept: 'text/html,*/*' },
-    redirect: 'follow',
-    signal: AbortSignal.timeout(12_000),
-  });
+  const res = await fetchOnionPage(url);
   const html = await fetchTextBounded(res);
   return { html, statusCode: res.status, fetchedVia: `${hostname}.${gw}` };
+}
+
+/**
+ * Fetch a tor2web page with BOUNDED redirects.
+ *
+ * SECURITY (#300): this used `redirect: 'follow'`, letting the platform follow
+ * an unbounded number of hops with no re-validation. A tor2web gateway is a
+ * third party we do not control — if one is compromised, buggy, or configured
+ * with an open redirect, it can send us anywhere, and an unbounded chain is also
+ * a subrequest/latency budget problem on a 12s timeout.
+ *
+ * `manual` + a hop cap: an allow-listed onion host cannot silently become an
+ * arbitrary target. The cap is generous (tor2web legitimately redirects between
+ * its own gateways) but finite.
+ */
+const ONION_MAX_REDIRECTS = 3;
+
+async function fetchOnionPage(url: string): Promise<Response> {
+  let current = url;
+  for (let hop = 0; hop <= ONION_MAX_REDIRECTS; hop++) {
+    const res = await fetch(current, {
+      headers: { 'User-Agent': UA, Accept: 'text/html,*/*' },
+      redirect: 'manual',
+      signal: AbortSignal.timeout(12_000),
+    });
+    if (res.status < 300 || res.status >= 400) return res;
+    const location = res.headers.get('location');
+    if (!location) return res;
+    try {
+      await res.body?.cancel();
+    } catch {
+      /* best-effort */
+    }
+    current = new URL(location, current).toString();
+  }
+  throw new Error('too many redirects from tor2web gateway');
 }
 
 export async function torScrapeOnion(onionUrl: string, gatewayIndex = 0): Promise<ScrapedPage> {
@@ -252,11 +325,7 @@ export async function torScrapeOnion(onionUrl: string, gatewayIndex = 0): Promis
   if (!hostname) throw new Error(`Invalid .onion address: ${onionUrl}`);
   const gw = TOR2WEB_GATEWAYS[gatewayIndex] ?? TOR2WEB_GATEWAYS[0];
   const url = tor2webUrl(hostname, gw);
-  const res = await fetch(url, {
-    headers: { 'User-Agent': UA, Accept: 'text/html,*/*' },
-    redirect: 'follow',
-    signal: AbortSignal.timeout(12_000),
-  });
+  const res = await fetchOnionPage(url);
   const html = await fetchTextBounded(res);
   const { title, links, bodyText } = parseHtmlBasic(html);
   return {

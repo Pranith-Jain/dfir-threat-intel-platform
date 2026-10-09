@@ -21,7 +21,7 @@
 // `tor2webUrl` is shared with the darknet vertical rather than re-declared
 // here — a third copy of this builder previously drifted to the broken path
 // form (`<onion>/<gateway>`), which never resolves.
-import { tor2webUrl } from './darknet';
+import { tor2webUrl, extractOnionHostname } from './darknet';
 
 const UA = 'pranithjain-darkweb-osint/1.0';
 const TOR2WEB_GATEWAYS = ['tor2web.io', 'onion.ws', 'onion.sh', 'tor2web.org'] as const;
@@ -74,18 +74,17 @@ export interface CrawlTree {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
+/**
+ * Extract a validated v2/v3 onion hostname, or null.
+ *
+ * #300: this used to carry its own inline regex — `/^[a-z2-7]{16,56}\.onion$/`
+ * — which disagreed with `isValidOnionAddress` in ./darknet (exactly 16 or 56).
+ * It accepted lengths in between, so an invalid address could produce a tor2web
+ * URL resolving to a stranger's gateway subdomain. Now delegates to the shared
+ * validator; the two entry points cannot drift again.
+ */
 function onionHost(input: string): string | null {
-  let clean = input.trim().toLowerCase();
-  if (clean.startsWith('http://') || clean.startsWith('https://')) {
-    try {
-      clean = new URL(clean).hostname;
-    } catch {
-      return null;
-    }
-  }
-  clean = clean.replace(/\/+$/, '');
-  if (/^[a-z2-7]{16,56}\.onion$/i.test(clean)) return clean;
-  return null;
+  return extractOnionHostname(input);
 }
 
 function extractEmails(text: string): string[] {
