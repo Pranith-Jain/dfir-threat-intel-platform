@@ -3,8 +3,23 @@ import type { Env } from '../env';
 import { logError } from '../lib/logger';
 import { badRequest, notFound, badGateway } from '../lib/api-error';
 
-const MALTRAIL_RAW = 'https://raw.githubusercontent.com/stamparm/maltrail/master/trails/static/malware';
-const MALTRAIL_API = 'https://api.github.com/repos/stamparm/maltrail/contents/trails/static/malware';
+/**
+ * Maltrail's committed IOC files live under `data/` on the `master` branch.
+ *
+ * These two constants pointed at `trails/static/malware`, a path that has
+ * never existed in stamparm/maltrail (`git log` on that path upstream returns
+ * zero commits). Every request 404'd, `maltrailListHandler` surfaced it as a
+ * 502, and `/threatintel/malware/maltrail` rendered a raw error for every
+ * visitor. Nothing tested it, so it rotted silently.
+ *
+ * Note the contents are NOT per-actor trails: upstream ships generic malware
+ * lists (drop.txt, mass_scanner.txt, ua.txt, whitelist.txt, cdn_ranges.txt,
+ * worst_asns.txt, ...). `parseActorFromFilename` still derives a label from
+ * the filename, which for these reads as a list name rather than a threat
+ * actor — see the note on that function.
+ */
+const MALTRAIL_RAW = 'https://raw.githubusercontent.com/stamparm/maltrail/master/data';
+const MALTRAIL_API = 'https://api.github.com/repos/stamparm/maltrail/contents/data';
 
 interface MaltrailTrailFile {
   name: string;
@@ -14,8 +29,13 @@ interface MaltrailTrailFile {
 }
 
 /**
- * Parse actor name(s) from a Maltrail trail filename.
- * Convention: `<actor>_<sub>...` or `<actor>.txt`
+ * Human label for a Maltrail list file.
+ *
+ * This originally parsed `<actor>_<sub>.txt` per-actor trails, but upstream
+ * ships generic lists (drop, mass_scanner, ua, whitelist, ...), so the
+ * "actor" it derives is really the list name. Kept as `actors[]` because the
+ * response shape and the page's type both depend on it; the values are list
+ * labels, not threat-actor names.
  */
 function parseActorFromFilename(name: string): string[] {
   const base = name.replace(/\.txt$/i, '');

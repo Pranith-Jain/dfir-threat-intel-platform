@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { searchPages, hasPageMatch } from '../pages-index';
+import { searchPages } from '../pages-index';
 
 describe('new pages in catalog', () => {
   it.each([
@@ -7,21 +7,15 @@ describe('new pages in catalog', () => {
     ['/dfir/tracerules', 'tracerules'],
     ['/dfir/passive-dns', 'passive dns'],
     ['/dfir/sigbase', 'yara'],
-    ['/threatintel/extremists', 'extremists'],
-    ['/threatintel/predators', 'predators'],
   ])('has catalog entry for %s', (path, query) => {
     const matches = searchPages(query, { limit: 5 });
     const found = matches.some((m) => m.page.path === path);
     expect(found, `Path ${path} should be found via search for "${query}"`).toBe(true);
   });
 
-  it('extremism query finds the Extremism Monitoring page', () => {
-    expect(hasPageMatch('extremism')).toBe(true);
-  });
-
-  it('predator query finds the Predator Monitoring page', () => {
-    expect(hasPageMatch('predator')).toBe(true);
-  });
+  // /threatintel/extremists and /threatintel/predators were dropped as
+  // duplicates of the Actor Hub; their routes now redirect there. The
+  // assertions that pinned them in the catalog were removed with them.
 
   it('registry query finds Registry Hive', () => {
     const matches = searchPages('registry');

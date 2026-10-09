@@ -25,12 +25,14 @@ describe('backCategoryFor', () => {
       expect(backCategoryFor('/threatintel/metrics')).toBeNull();
     });
 
-    it('maps /threatintel/most-wanted to the actors hub', () => {
-      expect(backCategoryFor('/threatintel/most-wanted')).toBe('/threatintel/catalog?cat=actors');
-    });
-
-    it('maps /threatintel/apt-tracker to the actors hub', () => {
-      expect(backCategoryFor('/threatintel/apt-tracker')).toBe('/threatintel/catalog?cat=actors');
+    // /threatintel/most-wanted and /threatintel/apt-tracker were dropped as
+    // duplicates of the Actor Hub and now redirect to /threatintel/actors/hub.
+    // A redirect target has no hub of its own, so backCategoryFor returns null
+    // and the page falls back to the surface root — same as /threatintel/metrics
+    // above.
+    it('returns null for retired actor pages that now redirect to the hub', () => {
+      expect(backCategoryFor('/threatintel/most-wanted')).toBeNull();
+      expect(backCategoryFor('/threatintel/apt-tracker')).toBeNull();
     });
 
     it('returns null for paths that are not registered tools', () => {

@@ -122,49 +122,6 @@ export const HUB_META: readonly HubMeta[] = [
           'knowledge base',
         ],
       },
-      {
-        path: '/threatintel/apt-tracker',
-        tabId: 'apt-tracker',
-        label: 'APT Tracker',
-        desc: 'APT group tracker organised by region - China, Russia, Iran, North Korea, NATO, Middle East, Israel.',
-        compVar: 'AptTracker',
-      },
-      {
-        path: '/threatintel/most-wanted',
-        tabId: 'most-wanted',
-        label: 'Most Wanted Actors',
-        desc: 'Top-priority threat actors - LockBit, Cl0p, Scattered Spider, BlackCat, and other high-impact groups.',
-        compVar: 'MostWanted',
-      },
-      {
-        path: '/threatintel/extremists',
-        tabId: 'extremists',
-        label: 'Extremist Groups',
-        desc: 'Ideology-driven extremist group tracking with indicators and monitoring sources.',
-        compVar: 'Extremists',
-      },
-      {
-        path: '/threatintel/predators',
-        tabId: 'predators',
-        desc: 'Online predator categories, regional risk, and intervention resources.',
-        label: 'Online Predators',
-        compVar: 'Predators',
-      },
-      {
-        path: '/threatintel/apt-actors',
-        tabId: 'apt-actors',
-        label: 'APT Actor Database',
-        desc: 'ETDA Threat Group Cards - 416+ threat actors with attribution, tools, sectors, and operations.',
-        compVar: 'ETDAActors',
-      },
-      {
-        path: '/threatintel/aptmap',
-        tabId: 'aptmap',
-        label: 'APTmap Malware Analysis',
-        desc: 'Cross-sample malware analysis across 18,000+ samples - file types, PE metadata, DLL imports, certificates, and APT-to-tool relationships.',
-        compVar: 'Aptmap',
-        badge: 'new',
-      },
     ],
   },
   {
@@ -174,28 +131,6 @@ export const HUB_META: readonly HubMeta[] = [
     icon: GitBranch,
     tone: 'text-orange-700 dark:text-orange-300 border-orange-500/30 bg-orange-500/10',
     pages: [
-      {
-        path: '/threatintel/campaigns/active',
-        tabId: 'active',
-        label: 'Active Campaigns',
-        desc: 'Active campaign tracker with status, severity, and IOC rollups.',
-        compVar: 'Campaigns',
-      },
-      {
-        path: '/threatintel/campaigns/lifecycle',
-        tabId: 'lifecycle',
-        label: 'Campaign Lifecycle',
-        desc: 'Discovery → exploitation → actions on objectives.',
-        compVar: 'CampaignLifecycle',
-      },
-      {
-        path: '/threatintel/campaigns/generator',
-        tabId: 'generator',
-        label: 'Campaign Generator',
-        desc: 'AI-powered campaign generation for tabletop exercises.',
-        compVar: 'CampaignGenerator',
-        badge: 'new',
-      },
       {
         path: '/threatintel/campaigns/cross',
         tabId: 'cross',
@@ -272,32 +207,11 @@ export const HUB_META: readonly HubMeta[] = [
         compVar: 'ThreatMap',
       },
       {
-        path: '/threatintel/iocs/cross',
-        tabId: 'cross',
-        label: 'Cross-Correlate',
-        desc: 'Cross-source IOC correlation - single-feed vs multi-feed confidence.',
-        compVar: 'CrossCorrelate',
-      },
-      {
         path: '/threatintel/iocs/correlation',
         tabId: 'correlation',
         label: 'IOC Correlation',
         desc: 'IOC correlation analysis with timeline.',
         compVar: 'IocCorrelation',
-      },
-      {
-        path: '/threatintel/iocs/aggregated',
-        tabId: 'aggregated',
-        label: 'Aggregated Feeds',
-        desc: 'Aggregated feed browser - what each provider ships.',
-        compVar: 'AggregatedFeeds',
-      },
-      {
-        path: '/threatintel/iocs/observable',
-        tabId: 'observable',
-        label: 'Observable DB',
-        desc: 'Every indicator seen, with provenance.',
-        compVar: 'ObservableDb',
       },
     ],
   },
@@ -344,13 +258,6 @@ export const HUB_META: readonly HubMeta[] = [
         label: 'Malware IOCs',
         desc: 'Malware IOC feeds across 50+ families.',
         compVar: 'MalwareIocs',
-      },
-      {
-        path: '/threatintel/malware/vault',
-        tabId: 'vault',
-        label: 'Malware Vault',
-        desc: 'Malware sample vault with hashes and metadata.',
-        compVar: 'MalwareVault',
       },
       {
         path: '/threatintel/malware/sandbox',
@@ -537,14 +444,6 @@ export const HUB_META: readonly HubMeta[] = [
         compVar: 'TelegramHub',
         badge: 'new',
       },
-      {
-        path: '/threatintel/social/x-hub',
-        tabId: 'x-hub',
-        label: 'X/Twitter Hub',
-        desc: 'X/Twitter intelligence - firehose, live stream, and watchlist monitoring.',
-        compVar: 'XHub',
-        keywords: ['x', 'twitter', 'firehose', 'live', 'watch'],
-      },
     ],
   },
   {
@@ -595,13 +494,6 @@ export const HUB_META: readonly HubMeta[] = [
         label: 'Cybercrime',
         desc: 'Cybercrime ecosystem intelligence - actors, services, pricing.',
         compVar: 'CyberCrime',
-      },
-      {
-        path: '/threatintel/darkweb/bitcoin',
-        tabId: 'bitcoin',
-        label: 'Physical Bitcoin Attacks',
-        desc: 'Physical Bitcoin attack tracking - wrench attacks, kidnappings.',
-        compVar: 'PhysicalBitcoinAttacks',
       },
       {
         path: '/threatintel/darkweb/infostealer',
@@ -990,14 +882,6 @@ export const HUB_META: readonly HubMeta[] = [
         compVar: 'ACH',
       },
       {
-        path: '/threatintel/research-hub/library',
-        tabId: 'library',
-        label: 'Reports & Reading Library',
-        desc: 'Curated collection of 28 annual reports, frameworks, standards, and learning resources.',
-        compVar: 'ReportsLibrary',
-        badge: 'new',
-      },
-      {
         path: '/threatintel/research-hub/agentic',
         tabId: 'agentic',
         label: 'Agentic Research',
@@ -1010,13 +894,6 @@ export const HUB_META: readonly HubMeta[] = [
         label: 'RedHunt Labs Research',
         desc: 'RedHunt Labs research publications - vulnerability disclosures, threat reports, and tool releases.',
         compVar: 'RedhuntLabs',
-      },
-      {
-        path: '/threatintel/research-hub/research',
-        tabId: 'research',
-        label: 'Research Hub Home',
-        desc: 'Research hub landing - aggregated research content, reports, and analysis.',
-        compVar: 'ResearchHub',
       },
     ],
   },
@@ -1228,14 +1105,7 @@ export const HUB_META: readonly HubMeta[] = [
         desc: 'SecOps tools catalog - SIEM, EDR, SOAR, log shippers.',
         compVar: 'SecopsCatalog',
       },
-      {
-        path: '/threatintel/osint/threat-actor-monitor',
-        tabId: 'threat-actor-monitor',
-        label: 'Threat Actor Monitor',
-        desc: 'Real-time APT monitoring across 30 OSINT feeds with MITRE ATT&CK + Kill Chain mapping.',
-        compVar: 'ThreatActorMonitor',
-        badge: 'new',
-      },
+
       {
         path: '/threatintel/osint/directory',
         tabId: 'directory',
@@ -1293,13 +1163,6 @@ export const HUB_META: readonly HubMeta[] = [
         compVar: 'McpSearch',
         badge: 'new',
       },
-      {
-        path: '/threatintel/tools/misp',
-        tabId: 'misp',
-        label: 'MISP Browser',
-        desc: 'MISP galaxy and event browser.',
-        compVar: 'MispBrowser',
-      },
       // NOTE: the old /threatintel/tools/mcp hub entry was merged into
       // /threatintel/mcp-search above (single canonical MCP page).
       {
@@ -1312,29 +1175,12 @@ export const HUB_META: readonly HubMeta[] = [
       },
 
       {
-        path: '/threatintel/tools/actionable-iocs',
-        tabId: 'actionable-iocs',
-        label: 'Actionable IOCs',
-        desc: 'PostgREST-style IOC query interface per type.',
-        compVar: 'ThreatLandscapeIocs',
-        badge: 'new',
-      },
-      {
         path: '/threatintel/cves/cves?tab=kev',
         tabId: 'kev',
         label: 'CISA KEV Catalog',
         desc: 'Search and filter the CISA Known Exploited Vulnerabilities catalog (tab of CVE Intel).',
         compVar: 'CveIntelKev',
         badge: 'new',
-      },
-
-      {
-        path: '/threatintel/investigation-suite',
-        tabId: 'investigation-suite',
-        label: 'Investigation Suite',
-        desc: 'Investigation management - active cases, watchlists, and workspaces.',
-        compVar: 'InvestigationSuite',
-        keywords: ['investigation', 'cases', 'watchlist', 'workspace'],
       },
 
       {
@@ -1359,13 +1205,6 @@ export const HUB_META: readonly HubMeta[] = [
         label: 'Unified Search',
         desc: 'Cross-source search across the entire platform.',
         compVar: 'UnifiedSearch',
-      },
-      {
-        path: '/threatintel/tools/settings',
-        tabId: 'settings',
-        label: 'Integrations & Settings',
-        desc: 'What integrations are wired in and what capability each one unlocks for the platform.',
-        compVar: 'Settings',
       },
       {
         path: '/threatintel/tools/directory',
@@ -1479,13 +1318,6 @@ export const HUB_META: readonly HubMeta[] = [
         badge: 'live',
       },
       {
-        path: '/threatintel/predictive/pir',
-        tabId: 'pir',
-        label: 'PIR Dashboard',
-        desc: 'Priority Intelligence Requirements dashboard.',
-        compVar: 'PirDashboard',
-      },
-      {
         path: '/threatintel/predictive/metrics',
         tabId: 'metrics',
         label: 'Metrics',
@@ -1506,28 +1338,6 @@ export const HUB_META: readonly HubMeta[] = [
         desc: 'AI-driven threat forecasting from current trends.',
         compVar: 'PredictiveIntel',
       },
-      {
-        path: '/threatintel/predictive/analyze',
-        tabId: 'analyze',
-        label: 'Analyze',
-        desc: 'Intelligence analysis workspace.',
-        compVar: 'Analyze',
-      },
-      {
-        path: '/threatintel/predictive/assessments',
-        tabId: 'assessments',
-        label: 'Assessments',
-        desc: 'Security assessments and risk scoring.',
-        compVar: 'Assessments',
-      },
-      {
-        path: '/threatintel/predictive/observe',
-        tabId: 'observe',
-        label: 'Observe',
-        desc: 'Observation dashboard - what is happening right now.',
-        compVar: 'Observe',
-        badge: 'live',
-      },
 
       {
         path: '/threatintel/live-center',
@@ -1535,14 +1345,6 @@ export const HUB_META: readonly HubMeta[] = [
         label: 'Live Center - Web OSINT',
         desc: 'Browser-based live OSINT tools with install, example, and reference URL per tool.',
         compVar: 'LiveCenter',
-      },
-      {
-        path: '/threatintel/dashboard-hub',
-        tabId: 'dashboard-hub',
-        label: 'Dashboard Hub',
-        desc: 'Threat intelligence dashboards - TI weekly report, CTI operations, and live threat landscape.',
-        compVar: 'DashboardHub',
-        keywords: ['dashboard', 'ti', 'cti', 'threat', 'report'],
       },
     ],
   },
@@ -1587,13 +1389,6 @@ export const HUB_META: readonly HubMeta[] = [
         desc: 'Live ransomware victim and group monitoring with sector/region filtering.',
         compVar: 'RansomwareLive',
         badge: 'live',
-      },
-      {
-        path: '/threatintel/estate',
-        tabId: 'estate',
-        label: 'Estate Config',
-        desc: 'Manage your digital estate - assets, tech stack, sector, and data types for personalised correlation.',
-        compVar: 'EstateConfig',
       },
     ],
   },

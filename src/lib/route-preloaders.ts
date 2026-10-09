@@ -53,14 +53,12 @@ export const routePreloaders: Record<string, Preloader> = {
   },
   '/threatintel/ransomware-hub': () => import('../pages/threatintel/RansomwareHub'),
   '/threatintel/predictive/certstream': () => import('../pages/threatintel/CertStreamLive'),
-  '/threatintel/campaigns/generator': () => import('../pages/threatintel/CampaignGenerator'),
 
   // Live-snap cards on the portfolio home (highest-traffic entry points).
   // Warming these on hover/focus removes the chunk-load round-trip the user
   // would otherwise see between click and first paint.
   '/threatintel/predictive/global-pulse': () => import('../pages/threatintel/GlobalPulse'),
   '/threatintel/detections/detections': () => import('../pages/threatintel/Detections'),
-  '/threatintel/iocs/cross': () => import('../pages/threatintel/CrossCorrelate'),
   // /threatintel/briefings reuses the DFIR Briefings component, so its
   // lazy chunk lives in pages/dfir/. Warm that chunk on hover.
   '/threatintel/briefings': () => import('../pages/dfir/Briefings'),
