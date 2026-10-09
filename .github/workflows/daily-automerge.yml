@@ -40,6 +40,13 @@ jobs:
       contents: write
       pull-requests: write
     steps:
+      # gh resolves the repository from the git remote — without a checkout
+      # every gh call dies with "fatal: not a git repository".
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
       - name: Merge eligible PRs
         env:
           GH_TOKEN: ${{ github.token }}
