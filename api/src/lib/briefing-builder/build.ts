@@ -263,9 +263,9 @@ export async function buildBriefing(
     dbugsBundle,
   ] = await Promise.all([
     wrap(withLastGood(mtiEnv, 'briefing-kev', fetchKev), [] as KevEntry[]),
-    fetchFeedResilient(mtiEnv, 'urlhaus'),
-    fetchFeedResilient(mtiEnv, 'malwarebazaar'),
-    fetchFeedResilient(mtiEnv, 'threatfox'),
+    fetchFeedResilient(mtiEnv, 'urlhaus', { startMs, endMs }),
+    fetchFeedResilient(mtiEnv, 'malwarebazaar', { startMs, endMs }),
+    fetchFeedResilient(mtiEnv, 'threatfox', { startMs, endMs }),
     fetchFeedResilient(mtiEnv, 'tweetfeed'),
     // AI/LLM threat intel. Two indicator feeds + the narrative payload, so the
     // briefing covers LLM-abuse campaigns (ClickFix lures, malicious MCP

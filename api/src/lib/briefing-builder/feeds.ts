@@ -220,7 +220,11 @@ export async function fetchNvdByIds(cveIds: string[], apiKey?: string): Promise<
   return out;
 }
 
-async function fetchAbuseFeed(source: SourceId, timeoutMs = 15_000): Promise<IocEntry[]> {
+async function fetchAbuseFeed(
+  source: SourceId,
+  opts: { startMs?: number; endMs?: number; timeoutMs?: number } = {}
+): Promise<IocEntry[]> {
+  const { startMs, endMs, timeoutMs = 15_000 } = opts;
   const meta = FEED_SOURCES[source];
   const sep = meta.url.includes('?') ? '&' : '?';
   const url = `${meta.url}${sep}_briefing=${Date.now()}`;
@@ -231,14 +235,29 @@ async function fetchAbuseFeed(source: SourceId, timeoutMs = 15_000): Promise<Ioc
   } as RequestInit);
   if (!res.ok) throw new Error(`${source} feed ${res.status}`);
   const body = await res.text();
-  const summary = buildSummary(source, body, UNCAPPED);
+  // `cap` exists to bound how many entries the parser materialises. We used to
+  // pass UNCAPPED and filter to the reporting window afterwards, which meant
+  // regex-parsing every row of a 7.6 MB urlhaus CSV (~33k lines) and a 1.6 MB
+  // threatfox CSV (~7k) on every build — ~40k entries constructed to keep the
+  // ~2k that fall in a 24h window. That is what pushed the daily build past the
+  // free-plan 10ms CPU limit.
+  //
+  // The window is bounded, so cap generously above the expected in-window count
+  // (feeds are mostly last-24h already, but ordering is not guaranteed) and let
+  // the caller's own `matchTimestamp` filter still run afterwards for safety.
+  const cap = startMs !== undefined && endMs !== undefined ? 8_000 : UNCAPPED;
+  const summary = buildSummary(source, body, cap);
   return summary.entries;
 }
 
-export async function fetchFeedResilient(env: Env | undefined, source: SourceId): Promise<IocEntry[]> {
+export async function fetchFeedResilient(
+  env: Env | undefined,
+  source: SourceId,
+  window?: { startMs: number; endMs: number }
+): Promise<IocEntry[]> {
   const key = `briefing-feed-${source}`;
   try {
-    const entries = await fetchAbuseFeed(source);
+    const entries = await fetchAbuseFeed(source, { startMs: window?.startMs, endMs: window?.endMs });
     if (entries.length > 0) {
       if (env) await writeLastGood(env, key, entries, { ttlSeconds: LASTGOOD_TTL_SEC });
       return entries;
@@ -332,7 +351,12 @@ export async function fetchMaliciousPackages(
       // Defense in depth: c.sha comes from the GitHub API response, but
       // validate it's a hex SHA before interpolating into the URL so a
       // compromised upstream can't inject path traversal / query params.
-      if (!/^[0-9a-f]{7,40}$/i.test(c.sha)) return Promise.resolve({ sha: c.sha, date: c.commit?.author?.date ?? '', files: [] as Array<{ filename: string; status: string }> });
+      if (!/^[0-9a-f]{7,40}$/i.test(c.sha))
+        return Promise.resolve({
+          sha: c.sha,
+          date: c.commit?.author?.date ?? '',
+          files: [] as Array<{ filename: string; status: string }>,
+        });
       return fetchResilient(`${OSSF_GH_BASE}/commits/${c.sha}`, { headers }, { attempts: 2, timeoutMs: 10_000 }).then(
         async (r) => {
           if (!r.ok)
