@@ -124,25 +124,22 @@ export class ProviderCache {
         /* fall through to KV */
       }
     }
-    if (!this.kv) return null;
-    const key = this.buildKey(provider, indicator);
-    try {
-      const cached = (await this.kv.get(key, 'json')) as ProviderResult | null;
-      if (cached) {
-        // Populate the per-colo cache so the same indicator queried again in
-        // this colo doesn't hit KV
-        const ttl = ProviderCache.ttlSeconds(indicator.type, provider);
-        const cacheResp = new Response(JSON.stringify(cached), {
-          headers: { 'cache-control': `public, max-age=${ttl}` },
-        });
-        if (cache)
-          void safeNullLog('cache-put-provider', cache.put(new Request(this.cacheUrl(provider, indicator)), cacheResp));
-        return { ...cached, cached: true };
-      }
-      return cached;
-    } catch {
-      return null;
-    }
+    // No KV L2 read here on purpose.
+    //
+    // This tier used to do `kv.get(provider:<provider>:<indicator>)`, but the
+    // corresponding KV write was removed from set() to stay under the free-plan
+    // 1,000 writes/day quota (see set()'s comment). Nothing has written those
+    // keys since, so every Cache-API miss was paying a BILLED KV read that was
+    // guaranteed to return null — on the free plan reads bill per key whether or
+    // not the key exists (100k/day). Across the four entry points that build a
+    // ProviderCache (ioc-providers, enrich-bulk, sample-scan, url-risk,
+    // ioc-verdict) that is one wasted read per provider lookup, on the hot IOC
+    // path, for data that cannot exist.
+    //
+    // The Cache API tier above is the only durable layer, which is exactly what
+    // set() now maintains. `kv` is still held for delete(), which purges any
+    // legacy keys written before the write tier was removed.
+    return null;
   }
 
   /**
@@ -164,7 +161,10 @@ export class ProviderCache {
       // Await so callers that `await cache.set(...)` (and tests) see the
       // write complete before a subsequent read. Production callers that
       // want fire-and-forget can wrap this in executionCtx.waitUntil.
-      await safeNullLog('cache-put-provider-set', cache.put(new Request(this.cacheUrl(provider, indicator)), cacheResp));
+      await safeNullLog(
+        'cache-put-provider-set',
+        cache.put(new Request(this.cacheUrl(provider, indicator)), cacheResp)
+      );
     }
   }
 

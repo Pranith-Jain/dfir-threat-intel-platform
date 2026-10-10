@@ -37,10 +37,17 @@ const DEFAULT_SINCE_DAYS = 7;
  * row in the window before it can rank anything. Left unbounded, a single
  * `?since=1970-01-01T00:00:00Z` widens that to the entire snapshot table.
  *
- * 30 days matches the table's own retention window, so clamping here costs no
- * real fidelity — everything older is already deleted by the nightly sweep.
+ * 14 days, not the table's full 30-day retention window.
+ *
+ * The clamp bounds TWO scans, not one. The window query is now an indexed read
+ * of the persisted deltas (migration 0052), but `total_rows` in the same
+ * response still counts raw snapshot rows across the window, and that count is
+ * proportional to the window: at 30 days it walks ~450k rows (~90k for the
+ * 7-day default). Callers only ever pass the default or a slightly wider
+ * window in practice, so a 14-day ceiling costs no real fidelity while cutting
+ * the worst case by more than half.
  */
-const MAX_SINCE_DAYS = 30;
+const MAX_SINCE_DAYS = 14;
 
 function parseSince(s: string | undefined): string | null {
   if (!s) return null;

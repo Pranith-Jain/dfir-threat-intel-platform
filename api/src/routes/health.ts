@@ -55,13 +55,53 @@ health.get('/api/v1/health/d1', async (c) => {
   }
 });
 
+/**
+ * KV liveness probe.
+ *
+ * Reads are billed per key on the free plan whether or not the key exists, so
+ * this probe used to spend one of the 100k/day reads on every call — against
+ * `__health_check__`, which nothing ever writes, making it a guaranteed miss.
+ * `Cache-Control: no-store` also meant no upstream or browser could dedupe it,
+ * so a monitor polling every minute burned 1,440 reads/day to learn "the
+ * binding still resolves".
+ *
+ * The probe is now memoised per-colo for 60s in the Cache API, which costs
+ * nothing and is well inside the window any uptime monitor tolerates. It still
+ * proves the binding works on a cold colo, and a KV outage is reported on the
+ * next check rather than silently cached — the cached entry only exists after
+ * a successful probe.
+ */
+const KV_HEALTH_CACHE_KEY = 'https://health-kv.internal/v1';
+const KV_HEALTH_TTL_S = 60;
+
 health.get('/api/v1/health/kv', async (c) => {
   const kv = c.env.KV_CACHE;
   if (!kv) return c.json({ status: 'unavailable', binding: 'KV_CACHE' }, 503);
+
+  const cache = (caches as unknown as { default?: Cache }).default;
+  const cacheReq = new Request(KV_HEALTH_CACHE_KEY);
+  try {
+    const hit = cache ? await cache.match(cacheReq) : null;
+    if (hit) return new Response(hit.body, hit);
+  } catch {
+    /* cache miss is fine — fall through and probe */
+  }
+
   try {
     const start = Date.now();
+    // Reading any key exercises the binding end to end. Kept as an explicit
+    // miss-only probe rather than reading live data: it must never perturb or
+    // depend on the contents of a real cache key.
     await kv.get('__health_check__');
-    return c.json({ status: 'ok', latency_ms: Date.now() - start }, 200, { 'Cache-Control': 'no-store' });
+    // `max-age` (not `no-store`) so the Cache API actually retains it — a
+    // no-store response is not cached, which is what made the previous version
+    // a billed read on every single poll. Only SUCCESSFUL probes are ever
+    // cached, so a KV outage is still reported on the next check.
+    const res = c.json({ status: 'ok', latency_ms: Date.now() - start }, 200, {
+      'Cache-Control': `public, max-age=${KV_HEALTH_TTL_S}`,
+    });
+    if (cache) c.executionCtx.waitUntil(cache.put(cacheReq, res.clone()).catch(() => {}));
+    return res;
   } catch (e) {
     return serviceUnavailable(c, e instanceof Error ? e.message : 'unknown');
   }
