@@ -208,7 +208,17 @@ export async function buildBriefing(
     if (findings.some((f) => f.source === 'ossf/malicious-packages')) sources.push('ossf/malicious-packages');
     if (findings.some((f) => f.source === 'Daily-Hunt')) sources.push('Daily-Hunt');
     sources.push(...iocSources);
-    const ioc_dump = buildIocDump(r.iocBuckets, r.iocsTotal);
+    // ioc_dump is intentionally NOT persisted here. It is a plain-text
+    // re-serialization of the `iocs` buckets that are stored right below it,
+    // and for a 24h window that duplication costs ~196 KB per daily row
+    // (2,026 indicators: 666 urls / 617 hashes / 449 ips / 294 domains).
+    //
+    // That payload is what pushed the build past the free-plan CPU limit:
+    // a 509 KB body had to be JSON.stringify'd on write and re-parsed on
+    // every read, inside a 10ms CPU budget. `briefings.ts` already derives
+    // the dump on read via `ensureIocDump()` for exactly this case, so
+    // /iocs.txt and the page keep working unchanged - they just build it
+    // lazily from `iocs` instead of reading a copy we paid to store.
     return {
       slug,
       type,
@@ -222,7 +232,6 @@ export async function buildBriefing(
       stats,
       sections,
       iocs: r.iocBuckets,
-      ...(ioc_dump ? { ioc_dump } : {}),
       mitre_techniques: Array.from(techniqueSet).sort(),
       sources,
     };
@@ -956,7 +965,9 @@ export async function buildBriefing(
   if (dailyHuntFindings.length > 0) sources.push('Daily-Hunt');
   sources.push(...iocSources);
 
-  const ioc_dump = buildIocDump(iocs, iocsRawTotal);
+  // ioc_dump is derived on read by `ensureIocDump()` in routes/briefings.ts
+  // rather than stored here — see the note in buildBriefing. For a weekly
+  // window the duplication was ~1.7 MB per row.
 
   return {
     slug,
@@ -971,7 +982,6 @@ export async function buildBriefing(
     stats,
     sections,
     iocs,
-    ...(ioc_dump ? { ioc_dump } : {}),
     mitre_techniques: Array.from(techniqueSet).sort(),
     sources,
     ...(degraded ? { degraded: true } : {}),

@@ -163,7 +163,21 @@ export async function findRelatedBriefings(
   options?: RelatedBriefingOptions
 ): Promise<RelatedBriefingRef[]> {
   const limit = Math.min(Math.max(options?.limit ?? 5, 1), 20);
-  const maxCandidates = Math.min(Math.max(options?.maxCandidates ?? 40, 1), 200);
+  /**
+   * Candidate pool for the "related briefings" stamp.
+   *
+   * Every candidate has all four IOC buckets pulled out with json_extract and
+   * JSON.parse'd. With an average stored body of ~800 KB that is roughly 20 MB
+   * of JSON parsed per build, and it ran the daily briefing past the
+   * free-plan 10ms CPU limit ("Worker exceeded CPU time limit").
+   *
+   * Ranking keeps only `limit` (5) matches, newest-first, so a deep pool buys
+   * almost nothing — the extra 35 candidates are parsed only to be discarded.
+   * 12 still spans several weeks of dailies plus the recent weeklies, which is
+   * more than enough to find real overlap. Raise it only alongside a cheaper
+   * scoring path (e.g. comparing hashes, not every indicator).
+   */
+  const maxCandidates = Math.min(Math.max(options?.maxCandidates ?? 12, 1), 200);
 
   const rows = await db
     .prepare(
