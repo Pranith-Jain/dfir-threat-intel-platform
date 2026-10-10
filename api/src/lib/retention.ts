@@ -121,8 +121,10 @@ export const RETENTION_POLICY: RetentionPolicy[] = [
   // These seven tables were never added to the policy, so they grew without
   // limit. That matters because unbounded growth turns every full scan into an
   // ever-larger rows_read charge: the threat graph alone is read by
-  // `live-iocs.ts` via `json_extract(sources,...) LIKE 'feed:%' ORDER BY
-  // last_seen DESC`, which is a full scan with no usable index.
+  // `live-iocs.ts`, which was a full scan with no usable index until
+  // migration 0053 added `idx_nodes_feed_last_seen` and rewrote the
+  // predicate. `graph_nodes.first_seen` is also the sweep key below and had
+  // no index, so the retention DELETE was itself a full scan.
   //
   // ORDER MATTERS: edges before nodes. graph_edges has no FOREIGN KEY to
   // graph_nodes, so nothing cascades — sweeping nodes first would leave the

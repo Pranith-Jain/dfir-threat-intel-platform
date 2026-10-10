@@ -1,6 +1,7 @@
 import type { KVNamespace } from '@cloudflare/workers-types';
 import type { Candidate, CaseStudyType } from '../types';
 import { logError } from '../../lib/logger';
+import { kvBulkGetText } from '../../lib/safe-catch';
 
 const THIRTY_DAYS_SECONDS = 30 * 24 * 3600;
 
@@ -93,11 +94,46 @@ export async function listCandidates(ns: KVNamespace, type: CaseStudyType): Prom
 }
 
 /**
- * All pending candidates across every type — reads each type's blob
- * in parallel (13 reads) instead of the old unbounded `.list()` + N gets.
+ * Read every type's blob in ONE bulk get.
+ *
+ * A Workers KV bulk `get(keys[])` is a single subrequest regardless of key
+ * count, while N individual gets are N subrequests — and subrequests are the
+ * scarce resource (50/invocation on the free plan). `listAllCandidates` and
+ * `countAllCandidates` both walk all 23 candidate types, so the old
+ * `Promise.all(ALL_TYPES.map(readTypeBlob))` spent 23 subrequests to fetch 23
+ * keys that were always requested together. One bulk read replaces that with
+ * 1. `kvBulkGetText` also returns raw text so one malformed blob cannot fail
+ * the batch — it degrades to an empty array for just that type.
+ *
+ * Types whose blob is absent still fall back to `readTypeBlob`, which runs the
+ * one-time legacy per-key migration. That is the rare path (it only fires for
+ * keys written before the blob migration) and it must stay per-type because
+ * each migration writes its own key back.
+ */
+async function readAllTypeBlobs(ns: KVNamespace): Promise<Candidate[][]> {
+  const raw = await kvBulkGetText(ns, ALL_TYPES.map(blobKey));
+  return Promise.all(
+    ALL_TYPES.map(async (type) => {
+      const text = raw.get(blobKey(type));
+      if (text != null) {
+        try {
+          const parsed = JSON.parse(text) as Candidate[];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          logError('candidate blob parse failed', e);
+          return [];
+        }
+      }
+      return readTypeBlob(ns, type);
+    })
+  );
+}
+
+/**
+ * All pending candidates across every type — one bulk KV read, not N.
  */
 export async function listAllCandidates(ns: KVNamespace): Promise<Candidate[]> {
-  const perType = await Promise.all(ALL_TYPES.map((t) => readTypeBlob(ns, t)));
+  const perType = await readAllTypeBlobs(ns);
   return perType.flat();
 }
 
@@ -110,8 +146,8 @@ export async function deleteCandidate(ns: KVNamespace, type: CaseStudyType, stab
   );
 }
 
-/** Count all candidates across every type — reads all type blobs in parallel. */
+/** Count all candidates across every type — one bulk KV read, not N. */
 export async function countAllCandidates(ns: KVNamespace): Promise<number> {
-  const perType = await Promise.all(ALL_TYPES.map((t) => readTypeBlob(ns, t)));
+  const perType = await readAllTypeBlobs(ns);
   return perType.reduce((sum, arr) => sum + arr.length, 0);
 }

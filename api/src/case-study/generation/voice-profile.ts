@@ -26,6 +26,8 @@
  */
 
 import type { PostIndexEntry, Post } from '../types';
+import { kvBulkGetText } from '../../lib/safe-catch';
+import { kv } from '../kv-keys';
 
 export interface VoiceProfile {
   /** Number of posts analyzed. */
@@ -388,18 +390,34 @@ export async function buildVoiceProfileFromIndex(ns: KVNamespace, maxPosts = 50)
   // Sort by publishedAt desc, take the most recent N
   const recent = [...index].sort((a, b) => (b.publishedAt ?? '').localeCompare(a.publishedAt ?? '')).slice(0, maxPosts);
 
-  // Fetch post bodies (parallel, capped)
+  // Fetch post bodies — ONE bulk read instead of N individual gets.
+  //
+  // Two problems were fixed here:
+  //   1. KEY BUG. The old code read `post:${entry.slug}`, but the canonical
+  //      key is `posts:${slug}` (`kv.post()` in kv-keys.ts, written by
+  //      `putPost`). Every one of those reads missed and returned null, so
+  //      `posts` was ALWAYS empty and `buildVoiceProfile([])` produced a
+  //      profile from zero real examples. Now routed through `kv.post()`,
+  //      which is also the fix if the key format ever changes again — the
+  //      old literal was a second, silently-drifting source of truth.
+  //   2. SUBREQUEST COST. 50 sequential gets is 50 subrequests out of the
+  //      free plan's 50/invocation budget — the entire request budget for
+  //      one rebuild. `kvBulkGetText` does it in 1.
   const posts: Post[] = [];
-  await Promise.all(
-    recent.map(async (entry: PostIndexEntry) => {
-      try {
-        const post = await ns.get<Post>(`post:${entry.slug}`, 'json');
-        if (post?.body) posts.push(post);
-      } catch {
-        // skip unreadable posts
-      }
-    })
+  const raw = await kvBulkGetText(
+    ns,
+    recent.map((entry: PostIndexEntry) => kv.post(entry.slug))
   );
+  for (const entry of recent) {
+    const text = raw.get(kv.post(entry.slug));
+    if (!text) continue;
+    try {
+      const post = JSON.parse(text) as Post;
+      if (post?.body) posts.push(post);
+    } catch {
+      // skip unreadable posts
+    }
+  }
 
   const profile = buildVoiceProfile(posts);
 

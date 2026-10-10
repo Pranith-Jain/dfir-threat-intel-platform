@@ -113,6 +113,24 @@ export async function deleteSavedReport(c: Context<{ Bindings: Env }>): Promise<
   return c.json({ ok: true });
 }
 
+/** Max IOCs accepted by a single correlate request (matches the old slice). */
+const MAX_CORRELATION_IOCS = 20;
+/** Max reports returned per IOC — the old per-IOC `LIMIT 10`. */
+const PER_IOC_REPORT_CAP = 10;
+/**
+ * How many newest rows the single combined scan considers.
+ *
+ * The old code ran one query PER IOC with `LIMIT 10`, so each IOC saw its own
+ * 10 newest matches regardless of how many other IOCs were in flight. A single
+ * OR-ed statement cannot express a per-IOC limit, so it instead takes the
+ * `CORRELATION_ROW_WINDOW` newest matching rows globally and caps each IOC at
+ * 10 below. Any IOC with 10+ matches inside this window is capped exactly as
+ * before; an IOC sparser than that is found unless it falls outside the
+ * window, which needs 200 reports all matching the caller's IOC set before
+ * the truncation can bite.
+ */
+const CORRELATION_ROW_WINDOW = 200;
+
 /** Cross-report correlation — find IOCs that appear in multiple reports. */
 export async function correlateIocs(c: Context<{ Bindings: Env }>): Promise<Response> {
   const body = await c.req.json<{ iocs: string[] }>();
@@ -121,41 +139,65 @@ export async function correlateIocs(c: Context<{ Bindings: Env }>): Promise<Resp
   }
 
   const db = c.env.BRIEFINGS_DB!;
-  const correlations: Record<
-    string,
-    { count: number; reports: Array<{ id: string; title: string; created_at: string }> }
-  > = {};
 
   // Search for each IOC in saved reports (limit to avoid query explosion).
   // Scoped to visible rows so foreign reports never leak into correlations.
+  //
+  // This used to loop the IOCs and issue one `report_json LIKE ?` query per
+  // IOC — up to 20 SEPARATE full scans of saved_reports per request, each
+  // materializing the report_json blob for up to 10 rows. `report_json` is an
+  // unindexable JSON blob, so every one of those scans read the entire table
+  // and D1 billed all 20 of them.
+  //
+  // OR-ing the predicates into a single statement makes it ONE scan of the
+  // table regardless of how many IOCs were asked about, and SQLite evaluates
+  // the ORs per row rather than re-walking the table per IOC. The per-IOC
+  // bucketing then happens in JS.
   const vis = ownerVisibilityFilter(c);
-  for (const ioc of body.iocs.slice(0, 20)) {
-    const { results } = await db
-      .prepare(
-        `SELECT id, title, created_at, report_json FROM saved_reports
-         WHERE report_json LIKE ? AND ${vis.clause} ORDER BY created_at DESC LIMIT 10`
-      )
-      .bind(`%${ioc}%`, ...vis.bindings)
-      .all();
+  const iocs = body.iocs
+    .slice(0, MAX_CORRELATION_IOCS)
+    .map(String)
+    .filter((s) => s.length > 0);
+  if (iocs.length === 0) return c.json({ correlations: {}, searched: 0 });
 
-    if (results.length > 1) {
-      // Verify the IOC actually appears in the report JSON (not just partial match).
-      const matches = results.filter((r) => {
-        const json = r.report_json as string;
-        return json.includes(ioc);
+  const orClause = iocs.map(() => 'report_json LIKE ?').join(' OR ');
+  const { results } = await db
+    .prepare(
+      `SELECT id, title, created_at, report_json FROM saved_reports
+       WHERE (${orClause}) AND ${vis.clause} ORDER BY created_at DESC LIMIT ?`
+    )
+    .bind(...iocs.map((ioc) => `%${ioc}%`), ...vis.bindings, CORRELATION_ROW_WINDOW)
+    .all();
+
+  // Newest-first scan, so the first PER_IOC_REPORT_CAP rows seen for an IOC
+  // are its newest ones — reproducing the old per-query `LIMIT 10` ordering.
+  const perIoc: Record<string, { count: number; reports: Array<{ id: string; title: string; created_at: string }> }> =
+    {};
+  const seen: Record<string, number> = {};
+
+  for (const r of results) {
+    const json = r.report_json as string;
+    for (const ioc of iocs) {
+      const n = seen[ioc] ?? 0;
+      if (n >= PER_IOC_REPORT_CAP) continue;
+      // The SQL LIKE already over-matches (it does not know about JSON
+      // string escaping), so keep the exact `includes` verification the
+      // original loop applied.
+      if (!json.includes(ioc)) continue;
+      seen[ioc] = n + 1;
+      const bucket = (perIoc[ioc] ??= { count: 0, reports: [] });
+      bucket.count++;
+      bucket.reports.push({
+        id: r.id as string,
+        title: r.title as string,
+        created_at: r.created_at as string,
       });
-      if (matches.length > 1) {
-        correlations[ioc] = {
-          count: matches.length,
-          reports: matches.map((m) => ({
-            id: m.id as string,
-            title: m.title as string,
-            created_at: m.created_at as string,
-          })),
-        };
-      }
     }
   }
+
+  // Only IOCs genuinely present in MORE THAN ONE report are correlations —
+  // a single occurrence is not a cross-report signal (same rule as before).
+  const correlations = Object.fromEntries(Object.entries(perIoc).filter(([, v]) => v.count > 1));
 
   return c.json({ correlations, searched: body.iocs.length });
 }

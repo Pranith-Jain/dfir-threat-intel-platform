@@ -1,27 +1,61 @@
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { feedStatusHandler } from './feed-status';
+import { d1Cached, d1CacheKey } from '../lib/d1-cache';
 
 interface FeedStatusBody {
   rows?: unknown[];
   overall?: string;
 }
 
+interface LeakStats {
+  total_leaks: number;
+  leaks_24h: number;
+  leaks_7d: number;
+  watched_channels: number;
+  unreviewed_channels: number;
+}
+
+/**
+ * Dashboard leak counts, KV-cached.
+ *
+ * Three of the five counters below are `COUNT(*)` over `telegram_leak_entries`
+ * — the largest table in the schema — and one of them (`total_leaks`) has no
+ * WHERE clause at all, so it is an unconditional full scan billed on every
+ * request. D1 bills ROWS READ, so that is the full row count charged to
+ * produce a single integer.
+ *
+ * The counts are only ever read as "how many leaks has this system seen",
+ * which is unchanged for long stretches between scrape ticks, so they are
+ * exactly what a TTL cache is for. At 300s the dashboard costs ~1 D1 query
+ * per 5 minutes per colo-invocation instead of one full-table scan per page
+ * view.
+ */
+const LEAK_STATS_KEY = d1CacheKey('intel-dashboard:leak-stats', 'all');
+const LEAK_STATS_TTL_S = 300;
+
 export async function intelDashboardHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const db = c.env.BRIEFINGS_DB;
 
   const [leakStats, feedStatus] = await Promise.allSettled([
     db
-      ? db
-          .prepare(
-            `SELECT
-               (SELECT COUNT(*) FROM telegram_leak_entries) as total_leaks,
-               (SELECT COUNT(*) FROM telegram_leak_entries WHERE discovered_at > datetime('now', '-1 day')) as leaks_24h,
-               (SELECT COUNT(*) FROM telegram_leak_entries WHERE discovered_at > datetime('now', '-7 days')) as leaks_7d,
-               (SELECT COUNT(*) FROM telegram_watched_channels WHERE active = 1) as watched_channels,
-               (SELECT COUNT(*) FROM telegram_discovered_channels WHERE reviewed = 0) as unreviewed_channels`
-          )
-          .first()
+      ? d1Cached<LeakStats>(
+          c.env,
+          LEAK_STATS_KEY,
+          LEAK_STATS_TTL_S,
+          () =>
+            db
+              .prepare(
+                `SELECT
+                   (SELECT COUNT(*) FROM telegram_leak_entries) as total_leaks,
+                   (SELECT COUNT(*) FROM telegram_leak_entries WHERE discovered_at > datetime('now', '-1 day')) as leaks_24h,
+                   (SELECT COUNT(*) FROM telegram_leak_entries WHERE discovered_at > datetime('now', '-7 days')) as leaks_7d,
+                   (SELECT COUNT(*) FROM telegram_watched_channels WHERE active = 1) as watched_channels,
+                   (SELECT COUNT(*) FROM telegram_discovered_channels WHERE reviewed = 0) as unreviewed_channels`
+              )
+              .first<LeakStats>() as Promise<LeakStats>,
+          { waitUntil: (p) => c.executionCtx.waitUntil(p) }
+        )
       : Promise.resolve(null),
     // Call the feed-status handler IN-PROCESS. The previous version did
     // `fetch('https://pranithjain.qzz.io/api/v1/feed-status')` — a worker

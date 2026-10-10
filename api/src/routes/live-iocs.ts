@@ -1321,11 +1321,35 @@ async function finalizeLiveIocs(
   const db = (env as { BRIEFINGS_DB?: D1Database } | undefined)?.BRIEFINGS_DB;
   if (db) {
     try {
+      // Indexable predicate — see migrations/0053_d1_query_cost_indexes.sql.
+      //
+      // This used to be `json_extract(sources,'$[0]') LIKE 'feed:%'`, which is
+      // a JSON function over an unindexed column and therefore a guaranteed
+      // FULL SCAN of graph_nodes (an unbounded, append-mostly table) on every
+      // compose of the flagship /threatintel surface — plus a temp B-tree sort,
+      // because last_seen had no index either.
+      //
+      // Two rewrites make it index-served:
+      //   1. `LIKE 'feed:%'` → `substr(...,1,5) = 'feed:'`. This is not
+      //      cosmetic. SQLite only applies its LIKE optimization to an
+      //      indexed column when `case_sensitive_like` is ON, and D1 does not
+      //      guarantee that pragma — with it off, an expression index on the
+      //      json_extract is SILENTLY IGNORED and the plan stays a scan.
+      //      A plain equality is always index-eligible. Verified with
+      //      EXPLAIN QUERY PLAN on SQLite 3.54 against the real schema.
+      //   2. Equality (not a range/LIKE) also lets the composite index
+      //      supply the `ORDER BY last_seen DESC` ordering directly, so the
+      //      temp B-tree sort disappears too.
+      //
+      // Semantics are unchanged: every writer builds feed sources from the
+      // literal template `feed:${name}` (feed-scheduler.ts:548,
+      // digitalside.ts:164), so the first source is always lowercase `feed:`.
+      // The 5-char prefix test is exactly `LIKE 'feed:%'` for those values.
       const feedIocs = await db
         .prepare(
           `SELECT value, type, sources, last_seen, properties
            FROM graph_nodes
-           WHERE json_extract(sources, '$[0]') LIKE 'feed:%'
+           WHERE substr(json_extract(sources, '$[0]'), 1, 5) = 'feed:'
            ORDER BY last_seen DESC
            LIMIT ?`
         )

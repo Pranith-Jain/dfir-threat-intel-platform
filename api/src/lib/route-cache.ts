@@ -18,6 +18,31 @@ export async function routeCacheGet<T>(key: string): Promise<T | null> {
   return null;
 }
 
+/**
+ * Drop a cached value from BOTH tiers.
+ *
+ * Deleting only KV is a common and easy-to-miss half-fix: the L1
+ * `caches.default` shadow is per-colo and free, which makes it the tier most
+ * readers actually hit, so leaving it populated means the colo that ran the
+ * write keeps serving stale data until the shadow TTL lapses while every
+ * other colo has already refreshed. Always drop both.
+ *
+ * Never throws — a failed delete just means the entry ages out on its own
+ * TTL, which is better than failing the caller's write.
+ */
+export async function routeCacheDelete(kv: KVNamespace | undefined | null, key: string): Promise<void> {
+  try {
+    await (caches as unknown as { default: Cache }).default.delete(req(key));
+  } catch {
+    /* best-effort */
+  }
+  try {
+    await kv?.delete(key);
+  } catch {
+    /* best-effort */
+  }
+}
+
 export function routeCachePut(key: string, data: unknown, ttlSeconds: number): Promise<void> {
   return (caches as unknown as { default: Cache }).default
     .put(
@@ -97,13 +122,28 @@ export function kvBackedPut(
   ttlSeconds: number,
   waitUntil?: (p: Promise<unknown>) => void
 ): Promise<void> {
-  // L1 write — awaited so a same-colo re-read is a hit.
+  // L1 write — started first so a same-colo re-read is a hit.
   const l1 = routeCachePut(key, data, ttlSeconds);
   // L2 write — fire-and-forget if a waitUntil ctx is available, else awaited.
   if (kv) {
     const l2 = kv.put(key, JSON.stringify(data), { expirationTtl: ttlSeconds }).catch(() => {});
-    if (waitUntil) waitUntil(l2);
-    else return Promise.all([l1, l2]).then(() => undefined);
+    if (waitUntil) {
+      // Hono's `c.executionCtx` THROWS when a context has no ExecutionContext
+      // (cron, subrequest, and unit tests that mount a bare Hono app), and
+      // callers routinely pass `(p) => c.executionCtx.waitUntil(p)` straight
+      // through. Without this guard a throw here escapes mid-function: the L2
+      // write is left floating and `l1` is never returned or awaited, so a
+      // cache write silently degrades into a race — an in-flight L1 put can
+      // land after a later invalidate() and resurrect stale data.
+      try {
+        waitUntil(l2);
+        return l1;
+      } catch {
+        // No usable waitUntil — fall through and await both writes properly.
+        return Promise.all([l1, l2]).then(() => undefined);
+      }
+    }
+    return Promise.all([l1, l2]).then(() => undefined);
   }
   return l1;
 }
@@ -176,10 +216,8 @@ export async function cachedJson<T>(
     c.executionCtx.waitUntil(cache.put(cacheReq, response.clone()));
     return response;
   } catch (e) {
-    return c.json(
-      { error: 'upstream_fetch_failed', message: e instanceof Error ? e.message : String(e) },
-      502,
-      { 'cache-control': 'no-store' }
-    );
+    return c.json({ error: 'upstream_fetch_failed', message: e instanceof Error ? e.message : String(e) }, 502, {
+      'cache-control': 'no-store',
+    });
   }
 }
