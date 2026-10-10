@@ -298,7 +298,7 @@ function topVendors(findings: BriefingFinding[], n: number): string[] {
     .map(([v]) => v);
 }
 
-function buildExecutiveSummary(args: {
+export function buildExecutiveSummary(args: {
   type: BriefingType;
   range_label: string;
   findings: BriefingFinding[];

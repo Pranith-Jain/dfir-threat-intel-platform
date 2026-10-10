@@ -43,6 +43,7 @@ import {
   upsertStatusSnapshot,
   readLatestSnapshot,
   computeStatusDeltas,
+  persistStatusDeltas,
 } from '../api/src/lib/breach-forum-status';
 import { getCuratedForums } from '../api/src/routes/breach-forums';
 import { buildDeepDarkCti } from '../api/src/routes/deepdarkcti';
@@ -352,10 +353,37 @@ export async function executeCronJob(
           try {
             if (env.BRIEFINGS_DB) {
               // Try Cache-API first (primed by previous route hits or gp:warm)
+              //
+              // `caches.default` is dereferenced GUARDED, and the match itself is
+              // caught separately. This block runs inside the CronJobDO (see
+              // handleScheduled → executeCronJob), and the Cache API is not
+              // guaranteed there: `caches` can be absent, and even when the
+              // global exists `caches.default.match()` can reject. Either
+              // failure threw out of the whole `try`, which meant the KV-warm
+              // fallback below NEVER RAN and `telegramFeed` stayed undefined —
+              // the scanner was skipped every hour with only a swallowed
+              // console.warn to show for it. That is exactly the
+              // 2026-10-01 → present stall in telegram_leak_entries.
+              //
+              // Same convention as api/src/lib/blocklist-builder.ts and
+              // lastgood.ts: the cache is a pure optimisation, so losing it must
+              // cost a KV read and nothing else.
+              const tgCache = (() => {
+                try {
+                  return (caches as unknown as { default?: Cache }).default ?? null;
+                } catch {
+                  return null;
+                }
+              })();
               const tgCacheKey = await getTelegramFeedCacheKey(env as unknown as ApiEnv);
-              const tgCached = await caches.default.match(tgCacheKey);
+              const tgCached = await tgCache?.match(tgCacheKey).catch(() => undefined);
               if (tgCached) {
-                const cached = (await tgCached.json()) as TelegramFeedResponse;
+                // Parse guarded: a truncated/!JSON cache body must not abort the
+                // block and skip the KV-warm fallback underneath it.
+                const cached = await tgCached
+                  .json()
+                  .then((b) => b as TelegramFeedResponse)
+                  .catch(() => null);
                 // Only use cache if it has items — stale empty cache means
                 // t.me was blocked; force a direct fetch instead.
                 if (cached?.items?.length) {
@@ -364,9 +392,9 @@ export async function executeCronJob(
               }
               if (!telegramFeed) {
                 // Fallback to gp:warm KV slice (written by queue consumer)
-                const kvWarm = (
-                  env.KV_CACHE ? await env.KV_CACHE.get('gp:warm:telegram', 'json') : null
-                ) as TelegramFeedResponse | null;
+                const kvWarm = await env.KV_CACHE?.get('gp:warm:telegram', 'json')
+                  .then((b) => b as TelegramFeedResponse | null)
+                  .catch(() => null);
                 if (kvWarm?.items?.length) {
                   telegramFeed = kvWarm;
                 }
@@ -632,6 +660,7 @@ export async function executeCronJob(
                 const briefing = await buildBriefing('weekly', undefined, {
                   nvdApiKey: env.NVD_API_KEY,
                   env: env as unknown as ApiEnv,
+                  skipLlm: true,
                 });
                 const w = await writeBriefing(db, briefing);
                 console.log(
@@ -683,6 +712,7 @@ export async function executeCronJob(
                   briefing = await buildBriefing('daily', undefined, {
                     nvdApiKey: env.NVD_API_KEY,
                     env: env as unknown as ApiEnv,
+                    skipLlm: true,
                   });
                 } catch (e) {
                   console.error(
@@ -1053,6 +1083,16 @@ export async function executeCronJob(
               const shouldWrite = !prev || deltas.length > 0 || ageHrs >= 6;
               if (shouldWrite) {
                 await upsertStatusSnapshot(env.BRIEFINGS_DB as D1Database, snapshot);
+              }
+              // Persist the transitions we just computed. Until now these were
+              // discarded after `deltas.length` was used for the write gate,
+              // and the read route re-derived the identical result on every
+              // request with a window-function CTE — ~1.1M rows_read per call
+              // (~7.7M/day), which overran the 5M/day free-tier limit and
+              // hard-blocked all D1 queries (error 7500). Storing them turns
+              // that read into an indexed range scan (migration 0052).
+              if (deltas.length > 0) {
+                await persistStatusDeltas(env.BRIEFINGS_DB as D1Database, deltas);
               }
               console.log(
                 JSON.stringify({

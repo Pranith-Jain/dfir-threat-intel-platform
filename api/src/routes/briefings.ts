@@ -280,9 +280,16 @@ export async function buildBriefingHandler(c: AdminCtx) {
         200
       );
     }
+    // skipLlm: this endpoint exists to get a briefing ON DISK. The LLM summary
+    // is cosmetic (buildLlmExecutiveSummary already falls back to a template),
+    // and with the providers degraded it burns ~13 subrequests and a long
+    // chain of timeouts before giving up — which is how a manual recovery
+    // could fail with "Exceeded CPU Limit" while never writing a row. Persist
+    // the briefing first; enrich later if desired.
     const briefing = await buildBriefing(typeRaw as BriefingType, undefined, {
       nvdApiKey: c.env.NVD_API_KEY,
       env: c.env,
+      skipLlm: true,
     });
     const result = await writeBriefing(db, briefing);
     await purgeBriefingDetailCache(briefing.slug);
@@ -337,7 +344,11 @@ export async function backfillBriefingsHandler(c: AdminCtx) {
   for (let i = 0; i < days; i += 1) {
     const anchor = new Date(Date.now() - i * 86400_000);
     try {
-      const briefing = await buildBriefing('daily', anchor, { nvdApiKey: c.env.NVD_API_KEY, env: c.env });
+      const briefing = await buildBriefing('daily', anchor, {
+        nvdApiKey: c.env.NVD_API_KEY,
+        env: c.env,
+        skipLlm: true,
+      });
       const result = await writeBriefing(db, briefing, { skipIfExists: !force });
       (result.written ? writtenDaily : skippedDaily).push(briefing.slug);
     } catch (err) {
@@ -349,7 +360,11 @@ export async function backfillBriefingsHandler(c: AdminCtx) {
   for (let i = 0; i < weeks; i += 1) {
     const anchor = new Date(Date.now() - i * 7 * 86400_000);
     try {
-      const briefing = await buildBriefing('weekly', anchor, { nvdApiKey: c.env.NVD_API_KEY, env: c.env });
+      const briefing = await buildBriefing('weekly', anchor, {
+        nvdApiKey: c.env.NVD_API_KEY,
+        env: c.env,
+        skipLlm: true,
+      });
       const result = await writeBriefing(db, briefing, { skipIfExists: !force });
       (result.written ? writtenWeekly : skippedWeekly).push(briefing.slug);
     } catch (err) {

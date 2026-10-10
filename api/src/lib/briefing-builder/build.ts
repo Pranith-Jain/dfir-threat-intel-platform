@@ -37,6 +37,7 @@ import {
   buildStats,
   buildIocDump,
   buildLlmExecutiveSummary,
+  buildExecutiveSummary,
   severityFromCvss,
   deriveMitreTechniques,
   withinRange,
@@ -91,7 +92,7 @@ function normalizeSeverity(label: string, score: number | null): Severity {
 export async function buildBriefing(
   type: BriefingType,
   anchor: Date = new Date(),
-  opts: { nvdApiKey?: string; env?: Env; live?: boolean } = {}
+  opts: { nvdApiKey?: string; env?: Env; live?: boolean; skipLlm?: boolean } = {}
 ): Promise<Briefing> {
   let rangeStart: Date;
   let rangeEnd: Date;
@@ -182,20 +183,39 @@ export async function buildBriefing(
     }
     const ransomwareGroups = [...groupCounts.entries()].map(([group, count]) => ({ group, count })).slice(0, 12);
     const stats = buildStats(findings, sections, r.iocsTotal, rwFindings.length);
-    const executive_summary = await buildLlmExecutiveSummary(
-      {
-        type,
-        range_label: rangeLabel,
-        findings,
-        iocs: r.iocBuckets,
-        iocsRawTotal: r.iocsTotal,
-        iocSources,
-        ransomwareGroups,
-        ransomwareSectors: [],
-        ransomwareTotal: rwFindings.length,
-      },
-      opts.env
-    );
+    // The executive summary is a 2-3 sentence nicety: buildLlmExecutiveSummary
+    // falls back to a deterministic template, so skipping the LLM degrades
+    // nothing structurally. Left enabled it costs up to ~13 subrequests
+    // (5 Gemini models x 4 Groq models x fallback order) inside the build's
+    // 50-subrequest budget, and when the providers are down it burns that
+    // budget on timeouts before falling back anyway. `skipLlm` lets the cron
+    // and admin paths persist the briefing first and enrich later.
+    const executive_summary = opts.skipLlm
+      ? buildExecutiveSummary({
+          type,
+          range_label: rangeLabel,
+          findings,
+          iocs: r.iocBuckets,
+          iocsRawTotal: r.iocsTotal,
+          iocSources,
+          ransomwareGroups,
+          ransomwareSectors: [],
+          ransomwareTotal: rwFindings.length,
+        })
+      : await buildLlmExecutiveSummary(
+          {
+            type,
+            range_label: rangeLabel,
+            findings,
+            iocs: r.iocBuckets,
+            iocsRawTotal: r.iocsTotal,
+            iocSources,
+            ransomwareGroups,
+            ransomwareSectors: [],
+            ransomwareTotal: rwFindings.length,
+          },
+          opts.env
+        );
     const techniqueSet = new Set<string>();
     for (const f of findings) for (const t of f.mitre_techniques) techniqueSet.add(t);
     const sources: string[] = [];
