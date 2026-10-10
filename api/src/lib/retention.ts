@@ -89,6 +89,12 @@ export const RETENTION_POLICY: RetentionPolicy[] = [
   // Breach-forum status snapshots (hourly cron appends ~670 rows/hour;
   // without a sweep this table alone would pin the 500 MB free-tier cap).
   { table: 'breach_forum_status', column: 'observed_at', format: 'iso' },
+  // Persisted transitions (migration 0052). Same 30d window as the snapshots
+  // they are derived from — anything older is already purged from
+  // breach_forum_status and can never be served. Bounded by construction
+  // (only real status changes are written), but still swept so a forum that
+  // flaps hourly cannot grow the table indefinitely.
+  { table: 'breach_forum_deltas', column: 'observed_at', format: 'iso' },
 
   // CT monitor
   { table: 'ct_certs', column: 'first_seen', format: 'iso' },

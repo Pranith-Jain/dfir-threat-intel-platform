@@ -23,6 +23,7 @@
 
 import type { DDCEntry } from './deepdarkcti-parser';
 import type { D1Database } from '@cloudflare/workers-types';
+import { logError } from './logger';
 
 export type ForumStatus =
   // deepdarkCTI vocabulary
@@ -270,6 +271,66 @@ export async function upsertStatusSnapshot(db: D1Database, snapshot: StatusSnaps
   await db.batch(batch);
 }
 
+/**
+ * Persist the transitions computed for a snapshot.
+ *
+ * The hourly cron already derives these in memory (`computeStatusDeltas`) and
+ * previously discarded them, keeping only `deltas.length` for its
+ * write-on-change gate. Persisting them is what lets `readRecentDeltas` serve
+ * an indexed lookup instead of re-deriving the whole history per request.
+ *
+ * No-op on an empty list, so the common "nothing changed" run issues no
+ * statements at all. Idempotent via the (name, observed_at) primary key, so a
+ * retried cron run cannot double-count a transition.
+ */
+export async function persistStatusDeltas(db: D1Database, deltas: StatusDelta[]): Promise<void> {
+  if (deltas.length === 0) return;
+  await ensureBreachForumDeltasTable(db);
+  const stmt = db.prepare(
+    `INSERT OR REPLACE INTO breach_forum_deltas
+       (name, source, status_from, status_to, url, onion, category, observed_at, previous_observed_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  );
+  const batch = deltas.map((d) =>
+    stmt.bind(
+      d.name,
+      d.source,
+      d.from,
+      d.to,
+      d.url ?? null,
+      d.onion ? 1 : 0,
+      d.category ?? null,
+      d.observed_at,
+      d.previous_observed_at ?? null
+    )
+  );
+  // D1 caps a batch at 100 statements; a single snapshot diff is far below
+  // that (~tens), but chunk so a large curated-list change cannot throw.
+  for (let i = 0; i < batch.length; i += 100) {
+    await db.batch(batch.slice(i, i + 100));
+  }
+}
+
+/**
+ * Defensive CREATE TABLE — matches migrations/0052_breach_forum_deltas.sql.
+ *
+ * The D1 pool-workers test runtime does not auto-apply migrations, and a
+ * freshly built test env can reach this without 0052 having run; without the
+ * table the persist step would throw and take the whole snapshot job with it.
+ */
+export async function ensureBreachForumDeltasTable(db: D1Database): Promise<void> {
+  await db
+    .prepare(
+      `CREATE TABLE IF NOT EXISTS breach_forum_deltas (
+         name TEXT NOT NULL, source TEXT NOT NULL, status_from TEXT NOT NULL, status_to TEXT NOT NULL,
+         url TEXT, onion INTEGER NOT NULL DEFAULT 0, category TEXT,
+         observed_at TEXT NOT NULL, previous_observed_at TEXT,
+         PRIMARY KEY (name, observed_at))`
+    )
+    .run();
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_bfd_observed_at ON breach_forum_deltas(observed_at DESC)').run();
+}
+
 export interface ReadDeltasOptions {
   /** ISO 8601 lower bound. Defaults to last 7 days. */
   since?: string;
@@ -278,13 +339,17 @@ export interface ReadDeltasOptions {
 }
 
 /**
- * Read the transitions within a time window. Returns one row per
- * (name, observed_at) — the same forum transitioning twice in a window
- * produces two rows. Newest first.
+ * LEGACY read path — retained only as a fallback.
+ *
+ * This is the query that overran the account's daily D1 read budget. Do NOT
+ * call it directly; `readRecentDeltas` uses it only when the persisted
+ * `breach_forum_deltas` table has never been written (i.e. before the first
+ * cron run after cutover), so the route degrades to "slow but correct"
+ * instead of empty during rollout.
+ *
+ * See migration 0052 for why this exists at all.
  */
-export async function readRecentDeltas(db: D1Database, opts: ReadDeltasOptions = {}): Promise<StatusDelta[]> {
-  const since = opts.since ?? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const limit = Math.max(1, Math.min(opts.limit ?? 100, 500));
+async function readRecentDeltasLegacy(db: D1Database, since: string, limit: number): Promise<StatusDelta[]> {
   // Self-join: each transition needs the previous snapshot's status
   // for the same name. The "previous" is the most recent prior row in
   // observed_at order whose status differs. We pull the last 2 rows
@@ -366,4 +431,79 @@ export async function readRecentDeltas(db: D1Database, opts: ReadDeltasOptions =
     a.observed_at < b.observed_at ? 1 : a.observed_at > b.observed_at ? -1 : a.name.localeCompare(b.name)
   );
   return deltas.slice(0, limit);
+}
+
+/**
+ * Read the transitions within a time window. Returns one row per
+ * (name, observed_at) — the same forum transitioning twice in a window
+ * produces two rows. Newest first.
+ *
+ * Reads `breach_forum_deltas`, which the hourly cron populates from the
+ * transitions it already computes in memory (migration 0052). That table holds
+ * only real transitions — a few hundred rows — so this is an indexed range scan
+ * plus a LIMIT.
+ *
+ * The previous implementation re-derived the same transitions on every request
+ * with a window-function CTE over the full snapshot history. That statement
+ * measured ~1.1M rows_read per execution (~7.7M/day) and was, on its own,
+ * enough to exceed the 5M/day free-tier limit and hard-block every D1 query
+ * (error 7500) until the 00:00 UTC reset.
+ *
+ * If the table has never been written, fall back to the legacy derivation so
+ * the route still returns data rather than an empty list while the first cron
+ * run (or the 0052 backfill) has yet to populate it.
+ */
+export async function readRecentDeltas(db: D1Database, opts: ReadDeltasOptions = {}): Promise<StatusDelta[]> {
+  const since = opts.since ?? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const limit = Math.max(1, Math.min(opts.limit ?? 100, 500));
+
+  try {
+    const hasHistory = await db
+      .prepare('SELECT observed_at FROM breach_forum_deltas ORDER BY observed_at DESC LIMIT 1')
+      .first<{ observed_at: string }>();
+    if (hasHistory?.observed_at) {
+      const rows = await db
+        .prepare(
+          `SELECT name, source, status_from, status_to, url, onion, category, observed_at, previous_observed_at
+       FROM breach_forum_deltas
+       WHERE observed_at >= ?
+       ORDER BY observed_at DESC
+       LIMIT ?`
+        )
+        .bind(since, limit)
+        .all<{
+          name: string;
+          source: 'ddc' | 'curated';
+          status_from: string;
+          status_to: string;
+          url: string | null;
+          onion: number;
+          category: string | null;
+          observed_at: string;
+          previous_observed_at: string | null;
+        }>();
+
+      return (rows.results ?? []).map((r) => ({
+        name: r.name,
+        source: r.source,
+        category: r.category ?? undefined,
+        url: r.url ?? undefined,
+        onion: !!r.onion,
+        from: r.status_from as ForumStatus,
+        to: r.status_to as ForumStatus,
+        observed_at: r.observed_at,
+        previous_observed_at: r.previous_observed_at ?? undefined,
+      }));
+    }
+  } catch (_catchErr) {
+    // Missing table is the EXPECTED state between deploy and the first cron
+    // run (or before 0052 is applied), so it falls through quietly rather than
+    // filling the logs on every request. Anything else is worth surfacing.
+    const msg = _catchErr instanceof Error ? _catchErr.message : String(_catchErr);
+    if (!/no such table/i.test(msg)) {
+      logError('breach_forum_deltas read failed', _catchErr);
+    }
+  }
+
+  return readRecentDeltasLegacy(db, since, limit);
 }
