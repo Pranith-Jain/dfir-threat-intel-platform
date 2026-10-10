@@ -267,27 +267,46 @@ export async function executeCronJob(
             }
           }
 
-          // === CVE-recent + ransomware-recent warm — FIRST (before the pipeline) =
-          // These MUST land at the top of the hourly branch: the rest of the
-          // pipeline (telegram/x/reddit scans, fireAndForget fan-out, CTI
-          // collector) can exhaust the DO alarm's 30s CPU budget, and these
-          // warms are the only thing preventing free-plan `exceededCpu` 503s
-          // on self-fetches of /api/v1/cve-recent and /api/v1/ransomware-recent
-          // (GlobalPulse, fusion-exposure, ioc-enrich-deep). Same reasoning as
-          // enqueueGpFeeds above — "moved to TOP because the old position was
-          // never reached".
+          // === CVE-recent + ransomware-recent warm — via the queue ==========
+          // Each is an UNCONDITIONAL ~25-subrequest fan-out (NVD paging, CISA
+          // KEV, EPSS, several Telegram CVE relays) with no cache short-circuit.
+          // Run inline, the PAIR consumed the entire free-plan 50-subrequest
+          // budget before the branch reached anything else — measured on the
+          // 2026-10-10T06:00 tick, the watched-channel scrape came back with
+          // 22/25 channels unreachable and the X health probe threw "Too many
+          // subrequests", both purely because these two had already spent it.
+          //
+          // A queue message each gives each its own consumer invocation → its
+          // own 50-subrequest budget. Same pattern, and same reasoning, as the
+          // cve-digest warm immediately below (which was moved for exactly this
+          // class of reason in d478aa94f) and the gp:warm slices above.
+          //
+          // If FEEDS_QUEUE is unbound (local dev / a stripped config) we fall
+          // back to the inline warm rather than silently skipping the refresh:
+          // an untested dev run is the right place to see the cost, and losing
+          // the slice would read as "no CVEs exist" to every consumer of it.
+          const warmViaQueue = async (field: 'cveRecentWarm' | 'ransomwareRecentWarm', job: string) => {
+            if (env.FEEDS_QUEUE) {
+              await env.FEEDS_QUEUE.send({ [field]: true });
+              console.log(JSON.stringify({ job: `${job}-enqueue`, status: 'sent' }));
+              return;
+            }
+            const warm =
+              field === 'cveRecentWarm'
+                ? await warmCveRecentCache(env as unknown as ApiEnv)
+                : await warmRansomwareRecentCache(env as unknown as ApiEnv);
+            console.log(JSON.stringify({ job, count: warm.count, ok: warm.ok, mode: 'inline-no-queue' }));
+          };
           try {
-            const warm = await warmCveRecentCache(env as unknown as ApiEnv);
-            console.log(JSON.stringify({ job: 'cve-recent-warm', count: warm.count, ok: warm.ok }));
+            await warmViaQueue('cveRecentWarm', 'cve-recent-warm');
           } catch (e) {
             logCronFail('cve-recent-warm')(e);
           }
           // Daily CVE digest (last 24h) — via the queue, NOT inline. The build
           // fans out over ctiwatch paging + VulnTracker + EPSS (~20
-          // subrequests), and running it here after cve-recent's own ~25-fetch
-          // fan-out starved it two hours running (skipped-empty both times).
-          // A queue message gets its own consumer invocation → its own
-          // 50-subrequest budget (same pattern as the gp:warm slices above).
+          // subrequests), and running it here starved it two hours running
+          // (skipped-empty both times). A queue message gets its own consumer
+          // invocation → its own 50-subrequest budget.
           // The request handler never builds (10ms cap), so this enqueue is
           // what keeps /api/v1/cve-digest from 503ing.
           try {
@@ -301,8 +320,7 @@ export async function executeCronJob(
             logCronFail('cve-digest-enqueue')(e);
           }
           try {
-            const warm = await warmRansomwareRecentCache(env as unknown as ApiEnv);
-            console.log(JSON.stringify({ job: 'ransomware-recent-warm', count: warm.count, ok: warm.ok }));
+            await warmViaQueue('ransomwareRecentWarm', 'ransomware-recent-warm');
           } catch (e) {
             logCronFail('ransomware-recent-warm')(e);
           }
@@ -796,8 +814,21 @@ export async function executeCronJob(
           // ordered, and logged. Every deferred stage is periodic and
           // catches up next hour.
           const BUDGET_SOFT_CAP = 48; // 50 cap minus safety margin
-          const PREFIX_EST = 8; // daily-briefs top block + tg/x/reddit enqueues (+ heal fan-out below)
-          let estUsed = PREFIX_EST + (dailyHealRan ? 20 : 0);
+          // What the stages ABOVE the planner actually cost, not a guess.
+          //
+          // The two ~25-subrequest warms (cve-recent / ransomware-recent) now
+          // run in the queue, so they are no longer part of this invocation —
+          // that change is what made the rest of this accounting honest. What
+          // remains before the planner: the gp/live-iocs enqueues (bounded by
+          // their skip-if-fresh markers), the promptintel warm (2), the Telegram
+          // leak scan (cache + KV read, no upstream), and the watched-channel
+          // scrape — which fetches up to MAX_WATCHED_PER_RUN (25) t.me
+          // previews at concurrency 4 on every 3rd hour. 8 fit the common
+          // (non-3rd) hour; the scrape hours are charged separately below so
+          // they can't silently overdraw the stages below them.
+          const PREFIX_EST = 8; // enqueues + promptintel + telegram leak scan
+          const WATCH_SCRAPE_EST = 25; // t.me previews, hours where hour % 3 === 0
+          let estUsed = PREFIX_EST + (csNow.getUTCHours() % 3 === 0 ? WATCH_SCRAPE_EST : 0) + (dailyHealRan ? 20 : 0);
           const canSpend = (cost: number): boolean => estUsed + cost <= BUDGET_SOFT_CAP;
           const spend = (cost: number): void => {
             estUsed += cost;

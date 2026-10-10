@@ -186,6 +186,22 @@ const AI_STRICT_PREFIXES = [
   '/api/v1/estate', // single-tenant whiteboard — D1 config/asset/alert writes (2026-09-30 audit)
   '/api/v1/tool-chains', // POST run — chains of timed outbound fetches (2026-09-30 audit)
   '/api/v1/tg-saved-searches', // global-shared D1 writes
+  // 2026-10-10 audit: prefix families whose every mutating member was on the
+  // global bucket only.
+  '/api/v1/export', // 8 renderers (stix/misp/sigma/yara/snort/suricata/csv/pfsense) — CPU each
+  '/api/v1/soc/playbooks', // CRUD + :id/execute — execution runs a stored step list
+  '/api/v1/flowviz', // analyze / analyze-stream / assistant / validate — each runs Workers AI
+  // Credential endpoints. `/api/v1/auth/login` is mounted through a sub-router,
+  // so the same-origin exemption applies to it exactly as to any /api/v1 read:
+  // a caller who forges an Origin header reaches it with NO API key. It also
+  // had no throttle of its own — nothing in routes/auth.ts tracks failed
+  // attempts — so the only bound was the global 30/min. That is 30 password
+  // guesses per minute per IP against a real credential, which is a
+  // credential-stuffing budget, not a UX one. 10/min is still generous for
+  // interactive use and is the tightest bucket this limiter has for a
+  // non-admin path. A per-account lockout belongs in the handler; this is the
+  // edge-level backstop until then.
+  '/api/v1/auth',
 ];
 /** Exact-match costly POSTs. */
 const AI_STRICT_EXACT = new Set<string>([
@@ -240,10 +256,70 @@ const AI_STRICT_EXACT = new Set<string>([
   '/api/v1/phishing/fingerprint', // KV write per call
   '/api/v1/webamon/scan', // third-party scan-job initiation
   '/api/v1/si/render', // resvg-wasm PNG render (CPU)
+
+  // ── 2026-10-10 endpoint audit: writes that were on the global bucket only ──
+  //
+  // Every entry below is a POST/PUT/PATCH/DELETE that reached the handler with
+  // no bucket tighter than the global 30/min (120/min keyed). Each one either
+  // fans out to upstream services, burns CPU, or writes shared state, so a
+  // caller who has cleared the auth gate (or forged same-origin headers) could
+  // drive 30x more of them per minute than the AI bucket allows. They are
+  // grouped by what they cost rather than listed alphabetically, so the reason
+  // for each stays visible when the list is next audited.
+  //
+  // Outbound-fetch relays — the caller picks the target, so each call is an
+  // egress request charged to this account and an abuse surface against the
+  // upstream operator:
+  '/api/v1/phishing/fetch-page', // SSRF-pinned, but still an arbitrary-URL relay
+  '/api/v1/infra-search', // up to 3 Overpass public instances per call
+  '/api/v1/open-dir/scan', // directory-enumeration fan-out
+  '/api/v1/mcp/proxy', // forwards the caller's payload to the MCP server
+  '/api/v1/intodns/debug-email', // live DNS/MX probes
+  '/api/v1/osv/scan', // per-package upstream OSV lookups
+  '/api/v1/bloom/check', // bloom-filter build/lookup over upstream data
+  '/api/v1/fortibleed/batch', // batch port/DNS/ASN checks
+  '/api/v1/stealer/parse', // multi-source dump fan-out (telegram + reddit + forum)
+  '/api/v1/si/enrich-ip-stix-batch', // batch IP enrichment
+  // CPU / correlation work — expensive per call, no upstream quota but real time:
+  '/api/v1/report-analyzer/render', // Browser Rendering render (paid binding)
+  '/api/v1/cti/render/graph', // graphviz render
+  '/api/v1/attack-chain/reconstruct',
+  '/api/v1/threat-intel/campaign/analyze',
+  '/api/v1/threat-intel/correlate',
+  '/api/v1/ssvc/triage',
+  '/api/v1/analytics-report',
+  // Server-side work amplifiers — one call executes a stored list of steps:
+  '/api/v1/automation/run',
+  '/api/v1/intel-bundle', // STIX build: enrichment + Vectorize upsert + D1
+  '/api/v1/intel-bundle/build',
+  '/api/v1/cyberpulse/scan', // drives the full upstream ingestion + D1 writes
+  // Global-shared D1 writes (no per-user ownership, so a flood is not self-limiting):
+  '/api/v1/campaigns',
+  '/api/v1/watchlist/digest',
+  '/api/v1/cti/exposure',
+  '/api/v1/yara/generate',
+  '/api/v1/yara/validate',
+  // Second pass, driven by the route-classification guard
+  // (src/test/route-classification-coverage.test.ts) that flagged what the
+  // first pass missed. Only genuinely costly paths belong here — the guard's
+  // CHEAP_CRUD_EXEMPT is the other half of that decision, and two candidates
+  // (`cti/parse`, `threat-intel/actor-dna/match`) were pure in-process compute
+  // and went there instead.
+  '/api/v1/misp', // caller-supplied baseUrl+apiKey → outbound request (relay)
+  '/api/v1/cti/export/stix', // STIX serialisation over a D1 scan
+  '/api/v1/telegram-custom-channels', // shared KV list rewrite; DELETE shares the path
+  '/api/v1/flowviz/analyze', // graph build that runs a Workers AI model
 ]);
 function isAiStrict(pathname: string, method: string): boolean {
   if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') return false;
   if (AI_STRICT_EXACT.has(pathname)) return true;
+  // An exact entry also covers its sub-paths. This was exact-only, so
+  // `DELETE /api/v1/campaigns/:id` and `DELETE /api/v1/threat-intel/feedback/:id`
+  // fell out of the bucket their own collection was in — the DELETE on a
+  // resource was unprotected while the POST that created it was capped.
+  for (const p of AI_STRICT_EXACT) {
+    if (pathname.startsWith(`${p}/`)) return true;
+  }
   return AI_STRICT_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 

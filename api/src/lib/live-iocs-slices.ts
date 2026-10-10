@@ -90,9 +90,48 @@ export interface FeedQueueMessage {
    * would put five third-party upstreams on the read path.
    */
   aiLlmWarm?: true;
+  /**
+   * Rebuild the `/api/v1/cve-recent` cache slice.
+   *
+   * Each of these two warms is an UNCONDITIONAL ~25-subrequest fan-out (NVD
+   * paging, CISA KEV, EPSS, several Telegram CVE relays) — `warmCveRecentCache`
+   * has no cache short-circuit, it rebuilds from upstream on every call. Two of
+   * them inline in the hourly alarm is ~50 subrequests before the rest of the
+   * branch starts, which is the whole free-plan budget: measured on the
+   * 2026-10-10T06:00 tick, the invocation was already exhausted by
+   * `watched-channel scrape` (22/25 channels unreachable) and
+   * `x-health-diagnostic` (probe itself threw "Too many subrequests").
+   *
+   * So each gets its own message → its own consumer invocation → its own
+   * 50-subrequest budget. Same reasoning, and same shape, as `digestWarm`
+   * above; these two were simply missed when that one was moved.
+   */
+  cveRecentWarm?: true;
+  /** Rebuild the `/api/v1/ransomware-recent` slice. See `cveRecentWarm`. */
+  ransomwareRecentWarm?: true;
 }
 
 export const SLICE_KEY_PREFIX = 'live-iocs:slice:';
+
+/**
+ * Which "recent" slice a queue message asks the consumer to rebuild, if any.
+ *
+ * Extracted from the consumer so the dispatch rule is testable on its own: the
+ * consumer is a long `if (msg.body?.X)` chain that can only be exercised inside
+ * the worker pool (it pulls the whole D1 binding surface), and a mistake here is
+ * silent — a mismatched field name means the warm simply never runs and the
+ * slice goes stale with nothing logged anywhere.
+ *
+ * Deliberately one job per message. Returning both would put the two ~25-
+ * subrequest warms back in a single invocation, which is the pairing this
+ * change exists to split up.
+ */
+export function recentWarmJob(body: FeedQueueMessage | undefined): 'cve-recent-warm' | 'ransomware-recent-warm' | null {
+  if (!body) return null;
+  if (body.cveRecentWarm === true) return 'cve-recent-warm';
+  if (body.ransomwareRecentWarm === true) return 'ransomware-recent-warm';
+  return null;
+}
 
 /** Cache API request key for a source's slice (internal URL — never fetched). */
 export function sliceKey(sourceId: string): Request {

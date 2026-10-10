@@ -14,11 +14,13 @@ import type { Env } from './env';
 import type { Env as ApiEnv } from '../api/src/env';
 import apiApp from '../api/src/index';
 import { runFeedSourceById, feedBatchId, type FeedDeps, type FeedResult } from '../api/src/routes/live-iocs';
-import { writeBatchSlice, type FeedQueueMessage } from '../api/src/lib/live-iocs-slices';
+import { writeBatchSlice, recentWarmJob, type FeedQueueMessage } from '../api/src/lib/live-iocs-slices';
 import { buildAiLlmIntel } from '../api/src/lib/ai-llm-intel';
 import { writeAiLlmSlice } from '../api/src/routes/ai-llm-intel';
 import { gpWarmKey } from '../api/src/routes/global-pulse';
 import { warmCveDigestCache } from '../api/src/routes/cve-digest';
+import { warmCveRecentCache } from '../api/src/routes/cve-recent';
+import { warmRansomwareRecentCache } from '../api/src/routes/ransomware-recent';
 import { concurrentMap } from '../api/src/lib/concurrent-map';
 import { signInternalToken } from '../api/src/lib/internal-token';
 import { fetchXAccountPosts, X_ACCOUNTS } from '../api/src/routes/cyberpulse-ingest';
@@ -174,6 +176,39 @@ export async function handleQueue(
             console.error(
               JSON.stringify({ job: 'cve-digest-warm', error: e instanceof Error ? e.message : String(e) })
             );
+            msg.retry({ delaySeconds: 300 });
+            return;
+          }
+          msg.ack();
+          return;
+        }
+
+        // ── cve-recent / ransomware-recent slice warms ─────────────────────
+        // Both are unconditional ~25-subrequest fan-outs (NVD paging, CISA KEV,
+        // EPSS, Telegram CVE relays) with no cache short-circuit — they rebuild
+        // from upstream on every call. Run inline in the hourly alarm the pair
+        // consumed the entire free-plan 50-subrequest budget before the branch
+        // reached the watched-channel scrape (22/25 channels unreachable) or
+        // the X health probe (both threw "Too many subrequests" on the
+        // 2026-10-10T06:00 tick). A message each gives each its own budget.
+        const recentWarm = recentWarmJob(msg.body);
+        if (recentWarm) {
+          const job = recentWarm;
+          try {
+            const warm =
+              job === 'cve-recent-warm'
+                ? await warmCveRecentCache(env as unknown as ApiEnv)
+                : await warmRansomwareRecentCache(env as unknown as ApiEnv);
+            console.log(JSON.stringify({ job, count: warm.count, ok: warm.ok }));
+            // `ok:false` means every source came back empty. Acking that would
+            // park a stale/empty slice for the whole TTL — retry so the next
+            // attempt runs from a fresh budget.
+            if (!warm.ok) {
+              msg.retry({ delaySeconds: 300 });
+              return;
+            }
+          } catch (e) {
+            console.error(JSON.stringify({ job, error: e instanceof Error ? e.message : String(e) }));
             msg.retry({ delaySeconds: 300 });
             return;
           }
