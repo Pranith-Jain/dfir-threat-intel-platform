@@ -103,6 +103,22 @@ beforeEach(async () => {
   }
   await db.prepare('DELETE FROM cyberpulse_incidents').run();
   await db.prepare('DELETE FROM cyberpulse_scan_log').run();
+
+  // The handler now fronts both aggregates with a per-colo Cache API entry
+  // (cyberpulse:stats:v1:d<N> / cyberpulse:trending:v1) because they were the
+  // account's single largest D1 rows_read consumer. `caches.default` persists
+  // across tests in this pool, so a seeded fixture would otherwise be masked by
+  // the previous test's cached payload. Evict the two keys explicitly so each
+  // case reads the D1 state it just seeded.
+  for (const key of [
+    'cyberpulse:trending:v1',
+    'cyberpulse:stats:v1:d1',
+    'cyberpulse:stats:v1:d7',
+    'cyberpulse:stats:v1:d30',
+    'cyberpulse:stats:v1:d90',
+  ]) {
+    await caches.default.delete(`https://route-cache.internal/v1/${encodeURIComponent(key)}`);
+  }
 });
 
 describe('GET /api/v1/cyberpulse/stats — rollup marginals', () => {
@@ -306,5 +322,94 @@ describe('GET /api/v1/cyberpulse/stats — rollup marginals', () => {
     expect(s.by_sector).toEqual([]);
     expect(s.by_country).toEqual([]);
     expect(s.last_scan).toBeNull();
+  });
+});
+
+/**
+ * The aggregate endpoints are the account's largest D1 rows_read consumer, so
+ * they sit behind a per-colo Cache API entry. This pins the property that
+ * actually saves the quota: a repeat request inside the TTL is served without
+ * re-running the aggregates at all.
+ *
+ * The counter is installed by spying on D1 `prepare`, so it observes the real
+ * statements the handler issues rather than a hand-maintained list of them.
+ */
+describe('GET /api/v1/cyberpulse — aggregate caching', () => {
+  it('serves a repeat /stats request inside the TTL without re-querying D1', async () => {
+    await seed([
+      {
+        id: 'a',
+        type: 'ransomware',
+        severity: 'critical',
+        sector: 'Finance',
+        country: 'US',
+        platform: 'telegram',
+        daysAgo: 1,
+      },
+    ]);
+
+    const realDb = testEnv.BRIEFINGS_DB as unknown as { prepare: (sql: string) => unknown };
+    let prepares = 0;
+    const spy = {
+      prepare(sql: string) {
+        prepares += 1;
+        return (realDb.prepare as (s: string) => unknown)(sql);
+      },
+    };
+    (testEnv as unknown as { BRIEFINGS_DB: unknown }).BRIEFINGS_DB = spy;
+
+    try {
+      // Cold: pays the full aggregate cost.
+      const cold = await getStats();
+      expect(cold.total).toBe(1);
+      expect(prepares).toBeGreaterThan(0);
+
+      // Warm: same colo, inside AGGREGATE_CACHE_TTL_S — must issue zero queries.
+      const afterCold = prepares;
+      const warm = await getStats();
+      expect(warm.total).toBe(1);
+      expect(prepares).toBe(afterCold);
+    } finally {
+      (testEnv as unknown as { BRIEFINGS_DB: unknown }).BRIEFINGS_DB = realDb;
+    }
+  });
+
+  it('serves a repeat /trending request inside the TTL without re-querying D1', async () => {
+    await seed([
+      {
+        id: 'a',
+        type: 'ransomware',
+        severity: 'critical',
+        sector: 'Finance',
+        country: 'US',
+        platform: 'telegram',
+        daysAgo: 1,
+        actor: 'ShadowByte',
+        victim: 'Acme',
+      },
+    ]);
+
+    const realDb = testEnv.BRIEFINGS_DB as unknown as { prepare: (sql: string) => unknown };
+    let prepares = 0;
+    const spy = {
+      prepare(sql: string) {
+        prepares += 1;
+        return (realDb.prepare as (s: string) => unknown)(sql);
+      },
+    };
+    (testEnv as unknown as { BRIEFINGS_DB: unknown }).BRIEFINGS_DB = spy;
+
+    try {
+      const cold = await SELF.fetch('https://x/api/v1/cyberpulse/trending');
+      expect(cold.status).toBe(200);
+      expect(prepares).toBeGreaterThan(0);
+
+      const afterCold = prepares;
+      const warm = await SELF.fetch('https://x/api/v1/cyberpulse/trending');
+      expect(warm.status).toBe(200);
+      expect(prepares).toBe(afterCold);
+    } finally {
+      (testEnv as unknown as { BRIEFINGS_DB: unknown }).BRIEFINGS_DB = realDb;
+    }
   });
 });

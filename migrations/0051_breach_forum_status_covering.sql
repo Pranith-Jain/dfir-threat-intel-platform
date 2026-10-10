@@ -1,0 +1,37 @@
+-- Covering index for the breach-forum status-delta window query.
+--
+-- Context: on 2026-10-10, `wrangler d1 insights` showed
+-- `readRecentDeltas` (api/src/lib/breach-forum-status.ts) as the account's
+-- single largest D1 rows_read consumer at ~1,101,145 rows per execution and
+-- ~7.7M rows in 24h. `breach_forum_status` held 446,769 rows over a 30-day
+-- retention window, so this one statement was consuming more than the entire
+-- 5M/day free-tier read allowance on its own.
+--
+-- The statement selects seven columns (name, source, status, url, onion,
+-- category, observed_at) for every row in the window and partitions by
+-- `name ORDER BY observed_at`. The existing indexes are:
+--   idx_bfs_observed_at            (observed_at)
+--   idx_bfs_name_recent            (name, observed_at DESC)
+--   idx_breach_forum_status_name_source (name, source, observed_at DESC)
+-- None of them carries the remaining five columns, so SQLite located each row
+-- through the index and then had to fetch the table row to read the values —
+-- doubling the rows billed for the scan, on top of the sorter work.
+--
+-- This index is (name, observed_at DESC) with the rest of the row appended, so
+-- it is BOTH the covering index (no table-row fetches at all) and already in
+-- the exact order the window functions need. Appending columns to an existing
+-- prefix is what makes it a drop-in superset of idx_bfs_name_recent rather
+-- than a second index competing for the same prefix.
+--
+-- Write cost: the table is append-only at roughly 600 rows/hour (~14k/day),
+-- so this index adds well under 1% to the 100k/day write budget, which is
+-- currently at 2% (1.97k/100k).
+--
+-- Apply with:
+--   npx wrangler d1 execute pranithjain-briefings --remote --file=migrations/0051_breach_forum_status_covering.sql
+--
+-- Safe to run repeatedly (IF NOT EXISTS) and safe to run live: it is additive
+-- and does not rewrite the table.
+
+CREATE INDEX IF NOT EXISTS idx_bfs_name_recent_cover
+  ON breach_forum_status(name, observed_at DESC, source, status, url, onion, category);

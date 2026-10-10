@@ -836,10 +836,20 @@ async function getBotChannelMap(kv: KVNamespace): Promise<Map<string, number>> {
 /**
  * Try reading a channel's messages from the Bot-API KV cache.
  * Returns null if no Bot API data exists for the handle's chat ID.
+ *
+ * `channelMap` is passed in rather than loaded here on purpose. This function
+ * runs once per channel inside the fetch loops, and KV read quota is billed
+ * per key on the free plan (100k/day), so re-reading `tg:bot-channel-map`
+ * inside it cost one billed read per channel per build — the same key,
+ * fetched ~32x, twice over (once in each of the two bot-cache loops). The
+ * callers already load the map once, so it is threaded through instead.
  */
-async function fetchFromBotApiCache(kv: KVNamespace, handle: string): Promise<ParsedMessage[] | null> {
-  const map = await getBotChannelMap(kv);
-  const chatId = map.get(handle) ?? map.get(handle.toLowerCase());
+async function fetchFromBotApiCache(
+  kv: KVNamespace,
+  handle: string,
+  channelMap: Map<string, number>
+): Promise<ParsedMessage[] | null> {
+  const chatId = channelMap.get(handle) ?? channelMap.get(handle.toLowerCase());
   if (!chatId) return null;
 
   try {
@@ -941,6 +951,12 @@ export async function fetchTelegramFeed(kv?: KVNamespace, env?: Env): Promise<Te
   const liveBudget = gitHubCache && gitHubCache.size > 0 ? LIVE_FETCH_BUDGET_PER_INVOCATION : Number.MAX_SAFE_INTEGER;
   let liveUsed = 0;
 
+  // Loaded ONCE for the whole build. fetchFromBotApiCache needs this map per
+  // channel, but KV reads are billed per key on the free plan, so letting it
+  // fetch the map itself meant re-reading the same `tg:bot-channel-map` key
+  // once per channel — ~32 identical billed reads per build.
+  const botChannelMap = kv ? await getBotChannelMap(kv) : new Map<string, number>();
+
   async function worker() {
     while (queue.length > 0) {
       const ch = queue.shift();
@@ -972,7 +988,7 @@ export async function fetchTelegramFeed(kv?: KVNamespace, env?: Env): Promise<Te
       }
       // 4. Bot API KV cache as the last line of defence.
       if (messages.length === 0 && kv && env) {
-        const botMsgs = await fetchFromBotApiCache(kv, ch.handle);
+        const botMsgs = await fetchFromBotApiCache(kv, ch.handle, botChannelMap);
         if (botMsgs) {
           messages = botMsgs;
         } else {
@@ -1015,7 +1031,7 @@ export async function fetchTelegramFeed(kv?: KVNamespace, env?: Env): Promise<Te
   // in the hardcoded CHANNELS list (bot-admin channels the user added manually).
   if (kv && env) {
     try {
-      const map = await getBotChannelMap(kv);
+      const map = botChannelMap;
       const knownHandles = new Set(queue.map((c) => c.handle.toLowerCase()));
       for (const [rawHandle, _chatId] of map) {
         // Case-insensitive compare: bot-map keys keep the channel's display
@@ -1023,7 +1039,7 @@ export async function fetchTelegramFeed(kv?: KVNamespace, env?: Env): Promise<Te
         // raw compare re-added the whole channel as a `[Bot]` duplicate.
         const handle = rawHandle.toLowerCase();
         if (knownHandles.has(handle)) continue;
-        const botMsgs = await fetchFromBotApiCache(kv, handle);
+        const botMsgs = await fetchFromBotApiCache(kv, handle, map);
         if (!botMsgs || botMsgs.length === 0) continue;
         const quality = scoreChannel(botMsgs);
         let textCount = 0;

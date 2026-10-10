@@ -18,6 +18,18 @@ import type { GlobalPulseResponse } from '../../api/src/routes/global-pulse/type
 
 const MAX_CONNECTIONS = 50;
 
+/**
+ * Alarm poll interval for pollFeeds.
+ *
+ * Derived from the per-colo Cache-API entry's own TTL (CACHE_TTL in
+ * global-pulse/config.ts) rather than picked independently. pollFeeds tries
+ * the Cache API first and only pays a KV read on a miss, so polling faster
+ * than the entry's TTL guarantees a share of polls land on an expired entry
+ * and re-read a payload that was already served from cache microseconds
+ * earlier. Keeping the two in step removes those guaranteed-miss reads.
+ */
+const POLL_INTERVAL_MS = 120_000;
+
 // ── On-demand self-heal (no cron) ──────────────────────────────────────────
 // The DO used to only READ the cache, so the page's freshness was gated on the
 // hourly queue-warm + `*/30` full-rebuild crons. When those lagged or failed,
@@ -33,8 +45,24 @@ const MAX_CONNECTIONS = 50;
 // rebuild per window so concurrent visitors can't stampede it. The page drives
 // its own freshness: open it and every layer refills within ~10-20s, no cron
 // required. The crons stay as the background safety net for idle periods.
-const REBUILD_STALE_MS = 5 * 60_000; // serve data older than this → rebuild (was 10m; 5m keeps map "live")
-const REBUILD_THROTTLE_MS = 4 * 60_000; // at most one rebuild per instance per this window (was 8m; matches 5m stale + 30s poll)
+// Rebuild cadence.
+//
+// These were 5m (stale) / 4m (throttle). A rebuild is NOT cheap: the in-process
+// `?force=1` build reads one `gp:warm:<key>` per entry in GP_FEEDS — 29 KV
+// reads — and KV reads are billed per key on the free plan (100k/day). At a
+// 4-minute throttle that is up to 360 rebuilds/day ≈ 10.4k billed reads, all
+// re-fetching the SAME 29 keys.
+//
+// Those keys are only rewritten hourly, by the queue consumer that warms one
+// feed per invocation (`global-pulse/config.ts` GP_FEEDS + enqueueGpFeeds).
+// Rebuilding every 4 minutes therefore re-read 29 keys ~12x more often than
+// their contents can possibly have changed. Aligning the rebuild to a quarter
+// of the upstream cadence keeps the map just as fresh (the source data cannot
+// be newer than one cron tick regardless) while cutting those rebuilds from
+// ~360/day to ~96/day ≈ 2.8k reads. The WS still pushes a new snapshot to
+// connected clients on every rebuild, so the live experience is unchanged.
+const REBUILD_STALE_MS = 15 * 60_000; // serve data older than this → rebuild
+const REBUILD_THROTTLE_MS = 12 * 60_000; // at most one rebuild per instance per window
 
 // Extends the platform DurableObject base class so `this.ctx` and `this.env`
 // are inherited (typed DurableObjectState and Env respectively). The previous
@@ -123,7 +151,14 @@ export class GlobalPulseDO extends DurableObject<Env> {
     // the HTTP read path (maybeNudgeDo → /rebuild-if-stale) can still land
     // and refresh KV even when the DO would otherwise be hibernated. This
     // closes the "1 viewer leaves, next viewer sees 30m stale" gap.
-    const next = new Date(Date.now() + 30_000);
+    //
+    // Poll interval is POLL_INTERVAL_MS (120s), not 30s: pollFeeds reads the
+    // per-colo Cache API first and only falls back to a billed KV get when that
+    // entry is cold. GLOBAL_PULSE's CACHE_TTL is 120s, so a 30s alarm missed
+    // that entry on roughly every other tick and paid a KV read for a payload
+    // it already had. Matching the alarm to the entry TTL removes the
+    // guaranteed-miss polls (~1.4k billed reads/day at 30s).
+    const next = new Date(Date.now() + POLL_INTERVAL_MS);
     this.ctx.storage?.setAlarm(next.getTime()).catch(() => {});
 
     // Page visit → refresh stale data on-demand (cron-free). Runs in the
@@ -141,7 +176,7 @@ export class GlobalPulseDO extends DurableObject<Env> {
     const graceMs = 5 * 60_000;
     const hasRecentActivity = Date.now() - this.lastRebuildAt < graceMs;
     if (this.sessions.size > 0 || hasRecentActivity) {
-      const next = new Date(Date.now() + 30_000);
+      const next = new Date(Date.now() + POLL_INTERVAL_MS);
       this.ctx.storage?.setAlarm(next.getTime()).catch(() => {});
     }
     // Fully idle → clear snapshot to free memory; next connect re-polls cold.

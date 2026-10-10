@@ -595,11 +595,28 @@ export async function globalPulseHandler(c: Context<{ Bindings: Env }>): Promise
       // only overwrite when the new payload is at least as complete.
       if (kv) {
         const newNonZero = payload.layers ? nonZeroLayers(payload.layers) : 0;
-        const existing = await readKvJson<GlobalPulseResponse>(kv, GP_RESPONSE_KEY);
+        // ONE read serves both purposes below. This block used to issue two
+        // `kv.get` calls for GP_RESPONSE_KEY in a row — one via readKvJson for
+        // the layer-count comparison, then a second one for the write-on-change
+        // byte comparison. On the free plan KV reads are billed per key
+        // (100k/day) and this runs on every rebuild, so the duplicate was pure
+        // waste. Keeping the RAW text means the write-on-change check stays a
+        // literal byte comparison (re-serializing the parsed object could
+        // reorder keys and trigger a spurious put, and writes are just as
+        // scarce at 1k/day).
+        const existingRaw = await kv.get(GP_RESPONSE_KEY).catch(() => null);
+        let existing: GlobalPulseResponse | null = null;
+        if (existingRaw) {
+          try {
+            existing = JSON.parse(existingRaw) as GlobalPulseResponse;
+          } catch {
+            /* unparseable stored value — treat as absent and overwrite below */
+          }
+        }
         const existingNonZero = existing?.layers ? nonZeroLayers(existing.layers) : 0;
         if (existingNonZero > newNonZero) {
           // keep the fuller map — skip the put
-        } else if ((await kv.get(GP_RESPONSE_KEY)) !== json) {
+        } else if (existingRaw !== json) {
           await kv.put(GP_RESPONSE_KEY, json, { expirationTtl: GP_RESPONSE_TTL });
         }
         // Last-good: the sync build is now a complete map (route caches +

@@ -12,10 +12,30 @@ import type { Env } from '../env';
 import { logError } from '../lib/logger';
 import { internalError, serviceUnavailable } from '../lib/api-error';
 import { requireAdmin } from '../lib/admin-auth';
+import { cachedJson } from '../lib/route-cache';
 import { runCyberPulseIngestion } from './cyberpulse-ingest';
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;
+
+/**
+ * Per-colo Cache-API TTL for the aggregate endpoints.
+ *
+ * These two handlers are the single largest D1 `rows_read` consumer on the
+ * account — measured against production on 2026-10-10, ONE /stats request cost
+ * 56,769 rows and ONE /trending request cost 12,818 (the CyberPulse page fires
+ * both, plus /incidents, on every load). At the observed 2.35M rows/day that
+ * works out to roughly one page load every 35 minutes for the whole account,
+ * i.e. this dashboard was consuming essentially the entire 5M free-tier
+ * budget by itself.
+ *
+ * The underlying data is a rolling window over incidents that are only
+ * ingested every 30 minutes, so a few minutes of staleness is invisible to the
+ * UI. Caching per-colo in the Cache API costs ZERO KV and ZERO D1 reads and is
+ * what actually collapses the repeat loads; the aggregates themselves are left
+ * untouched so the numbers stay identical.
+ */
+const AGGREGATE_CACHE_TTL_S = 300;
 
 // ─── GET /api/v1/cyberpulse/incidents ──────────────────────────────────────
 
@@ -184,75 +204,79 @@ export async function cyberpulseStatsHandler(c: Context<{ Bindings: Env }>): Pro
   const daysBack = Math.min(90, Math.max(1, Number(url.searchParams.get('days') ?? '30')));
   const cutoff = new Date(Date.now() - daysBack * 86_400_000).toISOString();
 
-  // 9 scans -> 5. The rollup replaces total / by_type / by_severity /
-  // by_platform / by_sector (5 scans) with a single pass. by_country stays
-  // separate (unconstrained cardinality — see ROLLUP_DIMS), as do top_actors,
-  // top_victims and daily_trend, whose grouping keys are all unbounded.
-  // victim_country is the explicit secondary sort key in the by_country query so
-  // equal counts order stably, matching the tiebreaker buildMarginals applies
-  // to the rollup dimensions.
-  const [rollup, byCountry, dailyTrend, topActors, topVictims] = await Promise.all([
-    db
-      .prepare(
-        `SELECT incident_type, severity, source_platform, victim_sector, COUNT(*) AS n
+  // Per-colo Cache API in front of the whole aggregate (see AGGREGATE_CACHE_TTL_S).
+  // `days` is part of the key, so the 7/30/90-day toggles stay independent.
+  return cachedJson(c, `cyberpulse:stats:v1:d${daysBack}`, AGGREGATE_CACHE_TTL_S, async () => {
+    // 9 scans -> 5. The rollup replaces total / by_type / by_severity /
+    // by_platform / by_sector (5 scans) with a single pass. by_country stays
+    // separate (unconstrained cardinality — see ROLLUP_DIMS), as do top_actors,
+    // top_victims and daily_trend, whose grouping keys are all unbounded.
+    // victim_country is the explicit secondary sort key in the by_country query so
+    // equal counts order stably, matching the tiebreaker buildMarginals applies
+    // to the rollup dimensions.
+    const [rollup, byCountry, dailyTrend, topActors, topVictims] = await Promise.all([
+      db
+        .prepare(
+          `SELECT incident_type, severity, source_platform, victim_sector, COUNT(*) AS n
        FROM cyberpulse_incidents WHERE discovered_at > ?
        GROUP BY incident_type, severity, source_platform, victim_sector`
-      )
-      .bind(cutoff)
-      .all<RollupRow>(),
-    db
-      .prepare(
-        'SELECT victim_country, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? AND victim_country IS NOT NULL GROUP BY victim_country ORDER BY count DESC, victim_country ASC'
-      )
-      .bind(cutoff)
-      .all(),
-    db
-      .prepare(
-        `SELECT DATE(discovered_at) as day, COUNT(*) as count
+        )
+        .bind(cutoff)
+        .all<RollupRow>(),
+      db
+        .prepare(
+          'SELECT victim_country, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? AND victim_country IS NOT NULL GROUP BY victim_country ORDER BY count DESC, victim_country ASC'
+        )
+        .bind(cutoff)
+        .all(),
+      db
+        .prepare(
+          `SELECT DATE(discovered_at) as day, COUNT(*) as count
       FROM cyberpulse_incidents WHERE discovered_at > ?
       GROUP BY DATE(discovered_at) ORDER BY day`
-      )
-      .bind(cutoff)
-      .all(),
-    db
-      .prepare(
-        `SELECT threat_actor, COUNT(*) as count
+        )
+        .bind(cutoff)
+        .all(),
+      db
+        .prepare(
+          `SELECT threat_actor, COUNT(*) as count
       FROM cyberpulse_incidents WHERE discovered_at > ? AND threat_actor IS NOT NULL
       GROUP BY threat_actor ORDER BY count DESC LIMIT 10`
-      )
-      .bind(cutoff)
-      .all(),
-    db
-      .prepare(
-        `SELECT victim_name, COUNT(*) as count
+        )
+        .bind(cutoff)
+        .all(),
+      db
+        .prepare(
+          `SELECT victim_name, COUNT(*) as count
       FROM cyberpulse_incidents WHERE discovered_at > ? AND victim_name IS NOT NULL
       GROUP BY victim_name ORDER BY count DESC LIMIT 10`
-      )
-      .bind(cutoff)
-      .all(),
-  ]);
+        )
+        .bind(cutoff)
+        .all(),
+    ]);
 
-  const rollupRows = rollup.results;
-  const total = rollupRows.reduce((sum, r) => sum + r.n, 0);
-  const marginals = buildMarginals(rollupRows);
+    const rollupRows = rollup.results;
+    const total = rollupRows.reduce((sum, r) => sum + r.n, 0);
+    const marginals = buildMarginals(rollupRows);
 
-  // Get last scan timestamp for freshness indicator
-  const lastScan = await db
-    .prepare('SELECT scanned_at FROM cyberpulse_scan_log ORDER BY scanned_at DESC LIMIT 1')
-    .first<{ scanned_at: string }>();
+    // Get last scan timestamp for freshness indicator
+    const lastScan = await db
+      .prepare('SELECT scanned_at FROM cyberpulse_scan_log ORDER BY scanned_at DESC LIMIT 1')
+      .first<{ scanned_at: string }>();
 
-  return c.json({
-    period_days: daysBack,
-    total,
-    by_type: marginals.incident_type,
-    by_severity: marginals.severity,
-    by_platform: marginals.source_platform,
-    by_sector: marginals.victim_sector,
-    by_country: byCountry.results,
-    daily_trend: dailyTrend.results,
-    top_actors: topActors.results,
-    top_victims: topVictims.results,
-    last_scan: lastScan?.scanned_at ?? null,
+    return {
+      period_days: daysBack,
+      total,
+      by_type: marginals.incident_type,
+      by_severity: marginals.severity,
+      by_platform: marginals.source_platform,
+      by_sector: marginals.victim_sector,
+      by_country: byCountry.results,
+      daily_trend: dailyTrend.results,
+      top_actors: topActors.results,
+      top_victims: topVictims.results,
+      last_scan: lastScan?.scanned_at ?? null,
+    };
   });
 }
 
@@ -268,63 +292,67 @@ export async function cyberpulseTrendingHandler(c: Context<{ Bindings: Env }>): 
   const weekAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
   const twoWeeksAgo = new Date(Date.now() - 14 * 86_400_000).toISOString();
 
-  const [thisWeekActors, lastWeekActors, thisWeekVictims, lastWeekVictims] = await Promise.all([
-    db
-      .prepare(
-        'SELECT threat_actor, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? AND threat_actor IS NOT NULL GROUP BY threat_actor'
-      )
-      .bind(weekAgo)
-      .all(),
-    db
-      .prepare(
-        'SELECT threat_actor, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? AND discovered_at <= ? AND threat_actor IS NOT NULL GROUP BY threat_actor'
-      )
-      .bind(twoWeeksAgo, weekAgo)
-      .all(),
-    db
-      .prepare(
-        'SELECT victim_name, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? AND victim_name IS NOT NULL GROUP BY victim_name'
-      )
-      .bind(weekAgo)
-      .all(),
-    db
-      .prepare(
-        'SELECT victim_name, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? AND discovered_at <= ? AND victim_name IS NOT NULL GROUP BY victim_name'
-      )
-      .bind(twoWeeksAgo, weekAgo)
-      .all(),
-  ]);
+  // Per-colo Cache API in front of the four aggregates (see AGGREGATE_CACHE_TTL_S).
+  // The window is fixed at 7d/14d so the cache key needs no variant.
+  return cachedJson(c, 'cyberpulse:trending:v1', AGGREGATE_CACHE_TTL_S, async () => {
+    const [thisWeekActors, lastWeekActors, thisWeekVictims, lastWeekVictims] = await Promise.all([
+      db
+        .prepare(
+          'SELECT threat_actor, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? AND threat_actor IS NOT NULL GROUP BY threat_actor'
+        )
+        .bind(weekAgo)
+        .all(),
+      db
+        .prepare(
+          'SELECT threat_actor, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? AND discovered_at <= ? AND threat_actor IS NOT NULL GROUP BY threat_actor'
+        )
+        .bind(twoWeeksAgo, weekAgo)
+        .all(),
+      db
+        .prepare(
+          'SELECT victim_name, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? AND victim_name IS NOT NULL GROUP BY victim_name'
+        )
+        .bind(weekAgo)
+        .all(),
+      db
+        .prepare(
+          'SELECT victim_name, COUNT(*) as count FROM cyberpulse_incidents WHERE discovered_at > ? AND discovered_at <= ? AND victim_name IS NOT NULL GROUP BY victim_name'
+        )
+        .bind(twoWeeksAgo, weekAgo)
+        .all(),
+    ]);
 
-  const lastActorMap = new Map(
-    (lastWeekActors.results as { threat_actor: string; count: number }[]).map((r) => [r.threat_actor, r.count])
-  );
-  const lastVictimMap = new Map(
-    (lastWeekVictims.results as { victim_name: string; count: number }[]).map((r) => [r.victim_name, r.count])
-  );
+    const lastActorMap = new Map(
+      (lastWeekActors.results as { threat_actor: string; count: number }[]).map((r) => [r.threat_actor, r.count])
+    );
+    const lastVictimMap = new Map(
+      (lastWeekVictims.results as { victim_name: string; count: number }[]).map((r) => [r.victim_name, r.count])
+    );
 
-  const trendingActors = (thisWeekActors.results as { threat_actor: string; count: number }[])
-    .map((r) => ({
-      name: r.threat_actor,
-      this_week: r.count,
-      last_week: lastActorMap.get(r.threat_actor) ?? 0,
-      delta: r.count - (lastActorMap.get(r.threat_actor) ?? 0),
-    }))
-    .filter((r) => r.delta > 0 || r.this_week >= 3)
-    .sort((a, b) => b.delta - a.delta || b.this_week - a.this_week)
-    .slice(0, 10);
+    const trendingActors = (thisWeekActors.results as { threat_actor: string; count: number }[])
+      .map((r) => ({
+        name: r.threat_actor,
+        this_week: r.count,
+        last_week: lastActorMap.get(r.threat_actor) ?? 0,
+        delta: r.count - (lastActorMap.get(r.threat_actor) ?? 0),
+      }))
+      .filter((r) => r.delta > 0 || r.this_week >= 3)
+      .sort((a, b) => b.delta - a.delta || b.this_week - a.this_week)
+      .slice(0, 10);
 
-  const trendingVictims = (thisWeekVictims.results as { victim_name: string; count: number }[])
-    .map((r) => ({
-      name: r.victim_name,
-      this_week: r.count,
-      last_week: lastVictimMap.get(r.victim_name) ?? 0,
-      delta: r.count - (lastVictimMap.get(r.victim_name) ?? 0),
-    }))
-    .filter((r) => r.delta > 0)
-    .sort((a, b) => b.delta - a.delta)
-    .slice(0, 10);
+    const trendingVictims = (thisWeekVictims.results as { victim_name: string; count: number }[])
+      .map((r) => ({
+        name: r.victim_name,
+        this_week: r.count,
+        last_week: lastVictimMap.get(r.victim_name) ?? 0,
+        delta: r.count - (lastVictimMap.get(r.victim_name) ?? 0),
+      }))
+      .filter((r) => r.delta > 0)
+      .sort((a, b) => b.delta - a.delta)
+      .slice(0, 10);
 
-  return c.json({ trending_actors: trendingActors, trending_victims: trendingVictims });
+    return { trending_actors: trendingActors, trending_victims: trendingVictims };
+  });
 }
 
 // ─── GET /api/v1/cyberpulse/scan-log ───────────────────────────────────────

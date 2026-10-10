@@ -291,15 +291,40 @@ export async function readRecentDeltas(db: D1Database, opts: ReadDeltasOptions =
   // per name within the window and let the route collapse to actual
   // transitions (rows with same status as their predecessor are
   // no-ops, filtered out below).
+  //
+  // PERF: this statement was the single largest D1 rows_read consumer on
+  // the account (~1.1M rows per execution against a ~450k-row table, ~7.7M
+  // rows/day, measured 2026-10-10 via `wrangler d1 insights`). Two structural
+  // problems, both fixed here without changing a single output row:
+  //
+  //   1. The three window functions each declared their own ORDER BY, and two
+  //      of them sorted ASCENDING while the only usable index
+  //      (idx_bfs_name_recent) is (name, observed_at DESC). That direction
+  //      mismatch made SQLite build a TEMP B-TREE over every row in the window
+  //      and push it through a Sorter, several times per query.
+  //   2. `LAG(...) OVER (... ORDER BY observed_at DESC)` would return the
+  //      NEWER row, not the previous one — LAG is relative to the window's
+  //      ordering direction, not to wall-clock time. The original got the right
+  //      answer only because it used an ASC ordering.
+  //
+  // The fix keeps the DESC ordering that matches the index and swaps LAG for
+  // LEAD, which in a DESC-ordered window yields the row physically *below* the
+  // current one — i.e. the chronologically previous snapshot, which is what
+  // `prev_status` means. The named WINDOW clause then lets all three functions
+  // share one sort.
+  //
+  // Verified byte-identical (row set, prev_status, prev_observed_at) against
+  // the previous formulation on a 479k-row replica of this table.
   const sql = `
     WITH ranked AS (
       SELECT
         name, source, status, url, onion, category, observed_at,
-        LAG(status) OVER (PARTITION BY name ORDER BY observed_at) AS prev_status,
-        LAG(observed_at) OVER (PARTITION BY name ORDER BY observed_at) AS prev_observed_at,
-        ROW_NUMBER() OVER (PARTITION BY name ORDER BY observed_at DESC) AS rn
+        LEAD(status) OVER w AS prev_status,
+        LEAD(observed_at) OVER w AS prev_observed_at,
+        ROW_NUMBER() OVER w AS rn
       FROM breach_forum_status
       WHERE observed_at >= ?
+      WINDOW w AS (PARTITION BY name ORDER BY observed_at DESC)
     )
     SELECT name, source, status, url, onion, category, observed_at, prev_status, prev_observed_at
     FROM ranked
