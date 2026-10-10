@@ -3,13 +3,13 @@
   "repo": "trailofbits/skills",
   "category": "skill",
   "scope": ["agentic", "binary", "code", "webapp"],
-  "stars": 7437,
+  "stars": 7455,
   "description": "Trail of Bits Claude Code skills for security research, vulnerability detection, and audit workflows",
   "homepage": null,
   "added": "2026-09-13",
-  "checkedAt": "2026-10-09T03:19:25Z",
-  "pushedAt": "2026-10-07",
-  "daysIdle": 2,
+  "checkedAt": "2026-10-10T03:19:01Z",
+  "pushedAt": "2026-10-09",
+  "daysIdle": 1,
   "archived": false,
   "license": "CC-BY-SA-4.0",
   "upstream": {
@@ -23,41 +23,41 @@
       "description": "An audit firm's review practice published as plugins: how to approach an unfamiliar codebase, what to look at in it, and how to write up what you found."
     },
     "derived": {
-      "checked_at": "2026-10-09T03:19:25Z",
+      "checked_at": "2026-10-10T03:19:01Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-10-07",
-        "days_since_push": 2,
-        "total_commits": 206,
-        "last100_span_days": 153,
-        "last100_authors": 39,
-        "last_commit_sha": "82fe822",
-        "last_commit_message": "static-analysis: Scan files over 1 MB, and report the ones still skipped (#343)\n\nsemgrep skips any file larger than --max-target-bytes and reports nothing about\nit: no paths.skipped entry, no error, and the file simply absent from\npaths.scanned. run-scans.sh never set the flag, so semgrep's 1,000,000-byte\ndefault applied and a scan that never opened a file recorded `findings: 0` next\nto a plausible filesScanned count.\n\nReproduced on semgrep 1.178.0 against a 1,050,060-byte bundle carrying a\ndocument.write(location.hash) sink, beside a 36-byte sibling so the scan opened\nsomething and coveredNothing stayed empty:\n\n  before   findings 0, filesScanned 1, coveredNothing []\n  after    findings 1, filesScanned 2, maxTargetBytes 20000000\n\nThe limit is now explicit at 20,000,000 bytes and settable with\n--max-target-bytes N, where 0 means no limit as it does in semgrep. Bytes only:\nthe oversized report below compares the limit against a file size, and semgrep's\n'1.5MB' spelling would have to be parsed a second way that could disagree.\n\nA higher default moves the cliff rather than removing it, so the files still\nover it are named as `oversized` in scans.json, scoped to the --include globs a\nscan actually passed. The report phase of the workflow and the report template\ncarry it for the reason they carry coveredNothing: a gap only stderr knows about\nis a gap the report calls coverage. Cross-language rulesets take no --include and\nsemgrep decides for itself what it can parse, so their share is not enumerable\nhere; references/scan-modes.md says so and maxTargetBytes is in the report.\n\nEleven assertions added to tests/run_scan_tests.sh (104 in total), and one to\nthe workflow harness with the mutation that proves it load-bearing.\n\nRefs #298\n\nSigned-off-by: Udaya Tejas <udayatejas2004@gmail.com>\nCo-authored-by: kz-tob <kara.zaffarano@trailofbits.com>",
-        "last_commit_at": "2026-09-28",
+        "pushed_at": "2026-10-09",
+        "days_since_push": 1,
+        "total_commits": 209,
+        "last100_span_days": 163,
+        "last100_authors": 38,
+        "last_commit_sha": "442fc9d",
+        "last_commit_message": "Use Codex for PR reviews (#356)",
+        "last_commit_at": "2026-10-09",
         "releases": 0,
         "latest_release_at": null,
         "days_since_release": null,
-        "days_idle": 2,
+        "days_idle": 1,
         "relocated": false
       },
       "identity": {
         "canonical_repo": "trailofbits/skills",
-        "stars": 7437,
+        "stars": 7455,
         "forks": 634,
         "created_at": "2026-01-14",
         "is_fork": false,
         "contributors": 59,
-        "top_contributor_share": 0.34,
+        "top_contributor_share": 0.33,
         "homepage": null,
         "description": "Trail of Bits Claude Code skills for security research, vulnerability detection, and audit workflows",
         "topics": ["agent-skills"]
       },
       "licence": { "file": null, "api_spdx": "CC-BY-SA-4.0", "readme_claim": null, "conflict": null },
       "shape": {
-        "loc": 89553,
+        "loc": 89779,
         "code_files": 248,
-        "files": 1443,
+        "files": 1445,
         "has_ci": true,
         "has_tests": true,
         "has_dockerfile": true,
@@ -71,7 +71,8 @@
       },
       "substrate": { "bundled": [], "manifests": [] },
       "rebadge": [],
-      "risk": { "licence": false, "install": true, "phones_home": false, "opaque": false, "host_access": false }
+      "risk": { "licence": false, "install": true, "phones_home": false, "opaque": false, "host_access": false },
+      "risk_where": { "install": "plugins/devcontainer-setup/skills/devcontainer-setup/resources/Dockerfile:76" }
     }
   }
 }
