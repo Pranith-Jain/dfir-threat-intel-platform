@@ -671,10 +671,31 @@ export async function executeCronJob(
                     reason: 'the 00:30 dedicated build did not produce this row',
                   })
                 );
-                const briefing = await buildBriefing('daily', undefined, {
-                  nvdApiKey: env.NVD_API_KEY,
-                  env: env as unknown as ApiEnv,
-                });
+                // buildBriefing fans out to ~10 upstreams and makes up to 15
+                // individual NVD lookups. On the free plan that can exceed the
+                // 50-subrequest cap, which throws. This block used to be
+                // unguarded, so the throw propagated out of the waitUntil and
+                // the failure was never logged anywhere - the briefing simply
+                // stopped appearing and nothing said why. Catch it, name the
+                // cause, and let the rest of the hourly job continue.
+                let briefing;
+                try {
+                  briefing = await buildBriefing('daily', undefined, {
+                    nvdApiKey: env.NVD_API_KEY,
+                    env: env as unknown as ApiEnv,
+                  });
+                } catch (e) {
+                  console.error(
+                    JSON.stringify({
+                      job: 'briefing-heal',
+                      type: 'daily',
+                      slug: yesterdaySlug,
+                      status: 'build-failed',
+                      error: e instanceof Error ? e.message : String(e),
+                    })
+                  );
+                  throw e;
+                }
                 const w = await writeBriefing(db, briefing);
                 console.log(
                   JSON.stringify({

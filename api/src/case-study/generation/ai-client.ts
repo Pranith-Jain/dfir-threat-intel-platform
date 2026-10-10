@@ -15,9 +15,18 @@ import { logError } from '../../lib/logger';
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL: string = 'openai/gpt-oss-120b';
-export const GROQ_MODEL_FALLBACK: string = 'llama-3.3-70b-versatile';
+/**
+ * Model ladder. `llama-3.1-8b-instant` and `llama-3.3-70b-versatile` were
+ * moved to paid Enterprise-only tiers by Groq on 2026-08-24; on a free-tier
+ * key they answer `404 model_not_found`. They used to be GROQ_MODEL_FALLBACK
+ * and GROQ_MODEL_TINY here, so every LLM call burned two doomed requests
+ * (each up to the full 15s timeout) before reaching a working model — which
+ * is what pushed the daily briefing build past the free-plan 50-subrequest
+ * cap and left it unpersisted. Both slots now use live, cheap models.
+ */
+export const GROQ_MODEL_FALLBACK: string = 'meta-llama/llama-4-scout-17b-16e-instruct';
 const GROQ_MODEL_FAST: string = 'openai/gpt-oss-20b';
-const GROQ_MODEL_TINY: string = 'llama-3.1-8b-instant';
+const GROQ_MODEL_TINY: string = 'qwen/qwen3-32b';
 const GROQ_TIMEOUT_MS = 15_000;
 
 const GOOGLE_GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
@@ -220,7 +229,14 @@ async function runGroq(key: string, input: CompletionInput, model?: string): Pro
         { role: 'user', content: input.user },
       ],
       ...(isReasoning
-        ? { max_completion_tokens: input.maxTokens ?? 4000, reasoning_effort: 'medium' }
+        ? {
+            // A reasoning pass spends from the same budget as the answer, so a
+            // small maxTokens (the briefing summary asks for 400) can be fully
+            // consumed before any content is emitted. Floor the reasoning
+            // budget so short prompts still return text.
+            max_completion_tokens: Math.max(input.maxTokens ?? 4000, 2048),
+            reasoning_effort: 'medium',
+          }
         : { max_tokens: input.maxTokens ?? 4000 }),
       temperature: input.temperature ?? 0.5,
     };
@@ -245,9 +261,16 @@ async function runGroq(key: string, input: CompletionInput, model?: string): Pro
     logError('runGroq failed', new Error(msg));
     throw new Error(msg);
   }
-  const j = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-  const text = j?.choices?.[0]?.message?.content;
-  if (typeof text !== 'string' || !text.trim()) throw new Error('groq empty response');
+  const j = (await res.json()) as {
+    choices?: Array<{ message?: { content?: string | null; reasoning_content?: string | null } }>;
+  };
+  const msg = j?.choices?.[0]?.message;
+  // Reasoning models (gpt-oss-*) put their thinking in `reasoning_content`
+  // and leave `content` empty when the completion budget is consumed by the
+  // reasoning pass. Accept either, so a short maxTokens doesn't read as a
+  // provider failure and push us onto the next model for nothing.
+  const text = msg?.content?.trim() || msg?.reasoning_content?.trim() || '';
+  if (!text) throw new Error('groq empty response');
   return text;
 }
 
