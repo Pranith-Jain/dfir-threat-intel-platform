@@ -20,9 +20,10 @@
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';
-import { badRequest, serviceUnavailable } from '../lib/api-error';
+import { badRequest } from '../lib/api-error';
 import { trackEvent, visitorCountry } from '../lib/analytics';
 import { readRecentDeltas, type StatusDelta } from '../lib/breach-forum-status';
+import { getThreatDb } from '../lib/do-database';
 import { safeNullLog } from '../lib/safe-catch';
 
 const CACHE_TTL_SECONDS = 600;
@@ -105,16 +106,13 @@ export async function breachForumStatusHandler(c: Context<{ Bindings: Env }>): P
     /* cache miss is fine */
   }
 
-  const db = c.env.BRIEFINGS_DB;
-  if (!db) {
-    return serviceUnavailable(c, 'database not configured');
-  }
+  const db = getThreatDb(c.env);
 
   const [deltas, totalRow] = await Promise.all([
     readRecentDeltas(db, { since, limit }),
     safeNullLog(
       'd1-count-breach-forum',
-      // Counts SNAPSHOTS in the window, from breach_forum_snapshots.
+      // Counts SNAPSHOTS in the window from breach_forum_snapshots.
       //
       // This has been rewritten twice, each time because the previous form was
       // the account's largest read consumer:
@@ -123,25 +121,35 @@ export async function breachForumStatusHandler(c: Context<{ Bindings: Env }>): P
       //      scan of a table holding up to ~10^6 snapshot rows (~631k rows_read
       //      per execution) to populate one cosmetic field.
       //   v2 `... WHERE observed_at >= ?` — bounded by the window, but still
-      //      counted FORUM ROWS, and the table holds all 1,494 forums x every
-      //      snapshot in the window. At ~15 snapshots/day that is ~22k rows to
-      //      read per call, still ~854k/day.
-      //   v3 (now) count one row per snapshot instead. The snapshot count is
-      //      the same health signal — arguably a better one, since it measures
-      //      observation cadence rather than being multiplied by forum count —
-      //      and reads ~15-160 rows instead of ~22,000.
+      //      counted FORUM ROWS: the table holds all 1,494 forums x every
+      //      snapshot in the window, ~22k rows per call, ~854k/day.
+      //   v3 (now) count one row per snapshot instead. Same health signal —
+      //      arguably better, since it measures observation cadence instead of
+      //      being multiplied by forum count — and reads ~15-160 rows.
       //
-      // Falls back to the historical table if the snapshot log is not present
-      // (pre-0054), so a partial rollout degrades instead of erroring.
-      db
-        .prepare(
-          `SELECT
-             (SELECT COUNT(*) FROM breach_forum_snapshots WHERE observed_at >= ?) AS n,
-             (SELECT COUNT(*) FROM breach_forum_status WHERE observed_at >= ?) AS legacy_n`
-        )
-        .bind(since, since)
-        .first<{ n: number; legacy_n: number }>()
-        .then((r) => ({ n: r?.n || r?.legacy_n || 0 }))
+      // The legacy table is consulted ONLY when the snapshot log yields
+      // nothing, as a genuine second query rather than a sibling subquery. An
+      // earlier version put both in one statement:
+      //
+      //     SELECT (SELECT COUNT(*) FROM breach_forum_snapshots ...) AS n,
+      //            (SELECT COUNT(*) FROM breach_forum_status   ...) AS legacy_n
+      //
+      // which looks like a conditional fallback but is not — SQLite evaluates
+      // BOTH scalar subqueries on every row-less result, so the 446k-row legacy
+      // scan happened anyway, on every request. That reintroduced exactly the
+      // v2 cost the change was meant to remove.
+      (async () => {
+        const row = await db
+          .prepare('SELECT COUNT(*) AS n FROM breach_forum_snapshots WHERE observed_at >= ?')
+          .bind(since)
+          .first<{ n: number }>();
+        if (row?.n) return { n: row.n };
+        const legacy = await db
+          .prepare('SELECT COUNT(*) AS n FROM breach_forum_status WHERE observed_at >= ?')
+          .bind(since)
+          .first<{ n: number }>();
+        return { n: legacy?.n ?? 0 };
+      })()
     ),
   ]);
 
