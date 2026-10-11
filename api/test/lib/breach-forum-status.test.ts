@@ -731,3 +731,81 @@ describe('upsertStatusSnapshot write amplification', () => {
     expect(deltas[0]!.name).toBe('bravo');
   });
 });
+
+/**
+ * Regression: repeated removal deltas (migration 0054).
+ *
+ * `breach_forum_current` is cumulative — it holds one row per currently-tracked
+ * forum, not a per-snapshot history. `computeStatusDeltas` emits a removal
+ * delta for every forum in `previous` but absent from `current`, so a departed
+ * forum MUST be deleted from the current-state table. Without that delete it
+ * stays in `previous` forever and re-emits an identical `-> unknown` delta on
+ * every run: breach_forum_deltas grows unbounded (keyed by name+observed_at,
+ * so each repeat is a new row) and the route reports phantom disappearances
+ * hourly.
+ *
+ * The pre-0054 model did not have this problem: `readLatestSnapshot` returned
+ * only the newest full snapshot, so an absent forum ceased to exist.
+ */
+describe('departed forums do not repeat their removal delta', () => {
+  const db = testEnv.BRIEFINGS_DB as unknown as D1Database;
+
+  beforeEach(async () => {
+    await ensureBreachForumCurrentTable(db);
+    await db.prepare('DELETE FROM breach_forum_current').run();
+    await db.prepare('DELETE FROM breach_forum_deltas').run();
+  });
+
+  const forum = (name: string, status = 'online') => ({
+    name,
+    source: 'ddc' as const,
+    status: status as ForumStatus,
+    onion: false,
+  });
+
+  it('removes the departed forum from current state', async () => {
+    await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', [forum('alpha'), forum('bravo')]));
+
+    // bravo drops out of the feed.
+    await upsertStatusSnapshot(db, snap('2026-06-01T01:00:00Z', [forum('alpha')]));
+
+    const names = await db.prepare('SELECT name FROM breach_forum_current ORDER BY name').all<{ name: string }>();
+    expect(names.results.map((r) => r.name)).toEqual(['alpha']);
+  });
+
+  it('emits the removal delta exactly ONCE, not every run', async () => {
+    // Seed both forums, then three snapshots where bravo is consistently absent.
+    await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', [forum('alpha'), forum('bravo')]));
+    for (const [i, at] of ['2026-06-01T01:00:00Z', '2026-06-01T02:00:00Z', '2026-06-01T03:00:00Z'].entries()) {
+      const prev = await readLatestSnapshot(db);
+      const next = snap(at!, [forum('alpha')]);
+      const deltas = computeStatusDeltas(prev!, next);
+      for (const d of deltas) await persistStatusDeltas(db, [d]);
+      await upsertStatusSnapshot(db, next);
+      // First run only should see bravo's removal.
+      if (i === 0) expect(deltas.map((d) => d.name)).toEqual(['bravo']);
+    }
+
+    const removals = await db
+      .prepare(`SELECT name FROM breach_forum_deltas WHERE status_to = 'unknown'`)
+      .all<{ name: string }>();
+    expect(removals.results).toHaveLength(1);
+  });
+
+  it('still emits a removal delta the first time a forum disappears', async () => {
+    await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', [forum('alpha'), forum('bravo')]));
+    const prev = await readLatestSnapshot(db);
+    const deltas = computeStatusDeltas(prev!, snap('2026-06-01T01:00:00Z', [forum('alpha')]));
+    expect(deltas).toHaveLength(1);
+    expect(deltas[0]!.name).toBe('bravo');
+    expect(deltas[0]!.to).toBe('unknown');
+  });
+
+  it('re-adding a departed forum is treated as a first observation again', async () => {
+    await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', [forum('alpha'), forum('bravo')]));
+    await upsertStatusSnapshot(db, snap('2026-06-01T01:00:00Z', [forum('alpha')]));
+    const prev = await readLatestSnapshot(db);
+    const deltas = computeStatusDeltas(prev!, snap('2026-06-01T02:00:00Z', [forum('alpha'), forum('bravo')]));
+    expect(deltas.map((d) => `${d.name}:${d.from}->${d.to}`)).toEqual(['bravo:unknown->online']);
+  });
+});

@@ -236,7 +236,10 @@ export async function readLatestSnapshot(db: D1Database): Promise<StatusSnapshot
       }));
       // Freshest row's change time stands in for the snapshot timestamp; only
       // the rows matter to the diff, and the timestamp feeds the staleness check.
-      const observedAt = results.reduce((max, r) => (r.observed_at > max ? r.observed_at : max), results[0]!.observed_at);
+      const observedAt = results.reduce(
+        (max, r) => (r.observed_at > max ? r.observed_at : max),
+        results[0]!.observed_at
+      );
       return { observed_at: observedAt, rows };
     }
   } catch (_catchErr) {
@@ -350,16 +353,14 @@ export async function upsertStatusSnapshot(db: D1Database, snapshot: StatusSnaps
 
   let existing = new Map<string, StatusRow>();
   try {
-    const cur = await db
-      .prepare('SELECT name, source, status, url, onion, category FROM breach_forum_current')
-      .all<{
-        name: string;
-        source: 'ddc' | 'curated';
-        status: string;
-        url: string | null;
-        onion: number;
-        category: string | null;
-      }>();
+    const cur = await db.prepare('SELECT name, source, status, url, onion, category FROM breach_forum_current').all<{
+      name: string;
+      source: 'ddc' | 'curated';
+      status: string;
+      url: string | null;
+      onion: number;
+      category: string | null;
+    }>();
     existing = new Map(
       (cur.results ?? []).map((r) => [
         r.name,
@@ -390,8 +391,42 @@ export async function upsertStatusSnapshot(db: D1Database, snapshot: StatusSnaps
     await db.batch(
       chunk(
         changed.map((r) =>
-          stmt.bind(r.name, r.source, r.status, r.url ?? null, r.onion ? 1 : 0, r.category ?? null, snapshot.observed_at)
+          stmt.bind(
+            r.name,
+            r.source,
+            r.status,
+            r.url ?? null,
+            r.onion ? 1 : 0,
+            r.category ?? null,
+            snapshot.observed_at
+          )
         ),
+        100
+      ).flat()
+    );
+  }
+
+  // Drop forums that have left the feed.
+  //
+  // REQUIRED for correctness, not tidiness. `computeStatusDeltas` emits a
+  // removal delta for every forum present in `previous` but absent from
+  // `current`. Before this table existed, `readLatestSnapshot` returned only the
+  // newest full snapshot, so a forum that stopped being reported simply ceased
+  // to appear in `previous` and the removal delta fired exactly once.
+  //
+  // `breach_forum_current` is cumulative — without this delete a forum that
+  // drops out stays in the table forever, so it stays in `previous` forever and
+  // re-emits an identical `-> unknown` removal delta on EVERY subsequent run.
+  // breach_forum_deltas is keyed (name, observed_at), so each repeat inserts a
+  // new row: the delta log grows without bound and the route reports phantom
+  // disappearances hourly.
+  const present = new Set(snapshot.rows.map((r) => r.name));
+  const departed = [...existing.keys()].filter((name) => !present.has(name));
+  if (departed.length > 0) {
+    const del = db.prepare('DELETE FROM breach_forum_current WHERE name = ?');
+    await db.batch(
+      chunk(
+        departed.map((name) => del.bind(name)),
         100
       ).flat()
     );
