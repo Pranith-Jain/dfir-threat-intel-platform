@@ -3,6 +3,199 @@
     "Adversary": {
       "Aliases": [],
       "Associated_Groups": [],
+      "Description": "No specific adversary identified; potential for exploitation by unauthenticated attackers.",
+      "Known_Campaigns": [],
+      "Motivation": "Exploitation of vulnerability for denial-of-service and privilege escalation.",
+      "Sophistication": "Medium",
+      "Strategic_Objectives": "Disrupt services and potentially access sensitive data.",
+      "TTPs_Employed": []
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Exploitation of the GSSAPI Key Exchange vulnerability in OpenSSH.",
+        "Detection": "Monitor for abnormal SSH child process crashes. • Check for segmentation faults or program aborts in logs.",
+        "Remediation": "Apply the patch provided by Canonical. • Disable GSSAPIKeyExchange in SSH configuration.",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "Gaining access to systems through exploitation of vulnerabilities.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exploiting a vulnerability to execute code on a client system.",
+            "technique_id": "T1203",
+            "technique_name": "Exploitation for Client Execution"
+          }
+        ],
+        "Techniques": ["T1203"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Potential for privilege separation violations and data exposure.",
+        "Detection": "Monitor IPC communications for unusual data transfers. • Check for unauthorized access to root monitor processes.",
+        "Remediation": "Apply security patches promptly. • Regularly audit SSH configurations and logs.",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "Gathering information and data from systems.",
+            "tactic_id": "TA0009",
+            "tactic_name": "Collection"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Collecting data from local systems.",
+            "technique_id": "T1005",
+            "technique_name": "Data from Local System"
+          }
+        ],
+        "Techniques": ["T1005"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": [],
+      "Description": "Exploitation of a coding error in OpenSSH GSSAPI Key Exchange.",
+      "Exploits": ["CVE-2026-3497"],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": [],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [
+      "Monitor for SSH child process crashes.",
+      "Check logs for segmentation faults or program aborts."
+    ],
+    "Extracted_Entities": {
+      "Assets": ["Linux servers"],
+      "Breach_Types": [],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Canonical"],
+      "Countries": [],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["GSSAPI", "Key Exchange", "OpenSSH", "vulnerability", "CVE-2026-3497"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": ["Canonical patch for CVE-2026-3497"],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Technology"],
+      "Software": ["OpenSSH"],
+      "Technologies": ["SSH", "GSSAPI"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": ["CVE-2026-3497"]
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": ["SSH"],
+      "Description": "Linux servers running vulnerable OpenSSH configurations.",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [
+      "Apply the patch provided by Canonical.",
+      "Disable GSSAPIKeyExchange in SSH configuration."
+    ],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Exploitation of CVE-2026-3497"],
+      "Tools": []
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "High",
+    "Threat_Actors": [],
+    "Timestamp": "2026-03-13T05:13:19Z",
+    "Title": "CVE-2026-3497: OpenSSH GSSAPI Key Exchange Vulnerability",
+    "Tools": ["OpenSSH"],
+    "Victim": {
+      "Access_Vectors": ["Network"],
+      "Data_Types_At_Risk": ["Heap data"],
+      "Description": "Linux distributions, primarily Ubuntu and Debian, with GSSAPI Key Exchange enabled.",
+      "Geography": "Global",
+      "Impact_Severity": "High",
+      "Industry": "Technology",
+      "Security_Posture": "Vulnerable if unpatched",
+      "Targeted_Assets": ["Linux servers"]
+    },
+    "diamond_model_summary": "The incident involves a vulnerability in the GSSAPI Key Exchange patch for OpenSSH, identified as CVE-2026-3497. The adversary is not specifically identified but could be any unauthenticated attacker exploiting the flaw. The capability involves exploiting a coding error in OpenSSH, leading to denial-of-service and privilege separation violations. The infrastructure affected includes Linux servers, primarily Ubuntu and Debian, with GSSAPI Key Exchange enabled. Victims are organizations using these Linux distributions, with potential impacts on data confidentiality and service availability.",
+    "doc_summary": "A critical vulnerability, CVE-2026-3497, was discovered in the GSSAPI Key Exchange patch for OpenSSH, affecting multiple Linux distributions, primarily Ubuntu and Debian. The flaw allows unauthenticated attackers to crash SSH child processes using a crafted packet, leading to denial-of-service conditions and privilege separation boundary violations. The issue was identified by security researcher Jeremy Brown and disclosed by Marc Deslauriers from Canonical. The vulnerability arises from a coding error in the GSSAPI key exchange server loop, where the non-terminating function sshpkt_disconnect() is mistakenly called instead of ssh_packet_disconnect(). This results in the system reading an uninitialized stack variable, leading to memory corruption. Canonical has provided a patch to replace the erroneous function call. System administrators are advised to update OpenSSH packages or disable the GSSAPIKeyExchange feature to mitigate the threat.",
+    "enrichment": null,
+    "id": "a6c4316c7b93b93fcbaa4cb2063a9a6f561bff70",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The kill chain for this incident involves exploitation of a vulnerability in the GSSAPI Key Exchange patch for OpenSSH. The adversary can gain initial access by sending a crafted SSH packet, exploiting the coding error to crash SSH child processes and potentially access sensitive data. The exploitation stage is critical, with the potential for privilege separation violations and data exposure. Detection involves monitoring for abnormal SSH process behavior, while remediation includes applying patches and disabling vulnerable features.",
+    "operational_tags": ["High Priority"],
+    "priority_score": 74,
+    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident is primarily focused on the TTPs involved in exploiting the OpenSSH vulnerability. The lack of specific hash values, IP addresses, or domain names makes detection challenging. However, monitoring for abnormal SSH process behavior and applying patches can mitigate the threat. The incident highlights the importance of timely patching and configuration management to prevent exploitation of known vulnerabilities.",
+    "relevance_score": 43,
+    "sequence": 19800,
+    "source": "https://gbhackers.com/openssh-gssapi-flaw-can-be-exploited/",
+    "slug": "CVE-2026-3497__OpenSSH_GSSAPI_Key_Exchange_Vulnerability-019800",
+    "shard": 5
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
       "Description": "No significant information detected",
       "Known_Campaigns": [],
       "Motivation": "",
@@ -103672,181 +103865,6 @@
     "sequence": 19306,
     "source": "https://www.bleepingcomputer.com/news/artificial-intelligence/openai-says-you-can-trust-chatgpt-answers-as-it-kicks-off-ads-rollout-preparation/",
     "slug": "OpenAI_Testing_Ads_in_ChatGPT-019306",
-    "shard": 5
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "No significant information detected",
-      "Known_Campaigns": [],
-      "Motivation": "",
-      "Sophistication": "",
-      "Strategic_Objectives": "",
-      "TTPs_Employed": []
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "The vulnerability allowed unauthorized access to private photo links.",
-        "Detection": "Monitor HTML responses for unauthorized data exposure. • Check server logs for unauthorized access attempts.",
-        "Remediation": "Implement strict server-side authorization checks. • Conduct regular security audits of backend systems.",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "Gaining access to private data without proper authorization.",
-            "tactic_id": "TA0006",
-            "tactic_name": "Credential Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exploiting valid accounts to access restricted data.",
-            "technique_id": "T1078",
-            "technique_name": "Valid Accounts"
-          }
-        ],
-        "Techniques": ["T1078"]
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Actions on Objectives",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "No significant information detected",
-      "Exploits": [],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": [],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": ["private photos"],
-      "Breach_Types": ["data exposure"],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["Meta"],
-      "Countries": [],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["private profile", "data leak", "vulnerability", "authorization failure"],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": [],
-      "Software": ["Instagram"],
-      "Technologies": ["CDN"],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": []
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "No significant information detected",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["server-side authorization failure", "data exposure"],
-      "Tools": []
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "Critical",
-    "Threat_Actors": [],
-    "Timestamp": "2026-01-31T09:27:00Z",
-    "Title": "Instagram Private Profile Data Leak Incident",
-    "Tools": ["Instagram"],
-    "Victim": {
-      "Access_Vectors": [],
-      "Data_Types_At_Risk": [],
-      "Description": "No significant information detected",
-      "Geography": "",
-      "Impact_Severity": "",
-      "Industry": "",
-      "Security_Posture": "",
-      "Targeted_Assets": []
-    },
-    "diamond_model_summary": "The incident involves a vulnerability in Instagram's private profile feature, where unauthorized access to private photo links was possible due to a server-side authorization failure. The adversary is not identified, but the capability involved exploiting backend authorization weaknesses. The infrastructure includes Instagram's servers, and the victims are users with private profiles. Meta's response was criticized for lack of root cause analysis.",
-    "doc_summary": "A security researcher, Jatin Banga, discovered a vulnerability in Instagram's private profile feature, where links to private photos were exposed in the HTML response to unauthenticated users. The issue was reported to Meta on October 12, 2025, and was initially classified as a CDN caching problem. However, Banga argued it was a server-side authorization failure. Despite Meta closing the case as 'not applicable', the exploit ceased to work by October 16, 2025. The incident highlights a critical privacy leak in Instagram's backend, affecting at least 28% of tested private profiles. Meta's response and lack of root cause analysis have been criticized, and the vulnerability's duration of exploitation remains unknown.",
-    "enrichment": { "processed_at": "2026-02-18T00:37:23.170010+00:00", "source_fields": ["title"], "version": "v1" },
-    "id": "17da1bea8ab1a5619ced27c6ab2a319d",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The kill chain for this incident primarily involves the exploitation stage, where unauthorized access to private photo links was achieved through a server-side authorization failure. Detection involves monitoring HTML responses and server logs for unauthorized data exposure. Remediation includes implementing strict server-side authorization checks and conducting regular security audits. The incident highlights the importance of robust backend security measures.",
-    "operational_tags": ["High Priority"],
-    "priority_score": 85,
-    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident is limited due to the lack of specific indicators such as hashes, IP addresses, or domains. The primary focus is on the TTPs related to server-side authorization failures and data exposure. Detection and remediation efforts should focus on monitoring server responses and implementing strict authorization checks. The incident underscores the need for comprehensive security measures to prevent unauthorized data access.",
-    "relevance_score": 41,
-    "sequence": 19305,
-    "source": "https://www.bleepingcomputer.com/news/security/researcher-reveals-evidence-of-private-instagram-profiles-leaking-photos/",
-    "slug": "Instagram_Private_Profile_Data_Leak_Incident-019305",
     "shard": 5
   }
 ]
