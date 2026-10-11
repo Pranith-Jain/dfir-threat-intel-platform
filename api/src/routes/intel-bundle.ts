@@ -27,6 +27,7 @@ import { enrichCves, type CveEnrichment } from '../lib/cve-enrich';
 import { extractLlm, EMPTY_LLM_ENTITIES, type LlmEntities } from '../lib/extract-llm';
 import { buildStixBundle, type BuildResult, type ReportInput, type Tlp } from '../lib/stix-build';
 import { pinnedFetchFollow, SsrfError } from '../lib/ssrf-guard';
+import { routeCacheGet, routeCachePut } from '../lib/route-cache';
 import { requireAdmin } from '../lib/admin-auth';
 import { safeJsonBody } from '../lib/safe-body';
 import { payloadTooLarge } from '../lib/api-error';
@@ -291,16 +292,23 @@ export async function intelBundleHandler(c: Context<{ Bindings: Env }>): Promise
     return jsonResponse(c, { error: 'persistence_unavailable' }, 503);
   }
 
-  // Cache hit: serve directly.
+  // L1: per-colo Cache API. Every IntelCard on /threatintel pages fires a
+  // GET for its (source, ref), and the bundle is immutable once written —
+  // a 300 s shadow collapses same-colo repeat renders to zero D1 reads.
+  const l1Key = `intel-bundle:l1:${sourceId}:${itemRef}`;
+  const cachedBundle = await routeCacheGet<{ bundle: unknown; view: unknown }>(l1Key);
+  if (cachedBundle) {
+    return jsonResponse(c, { ...cachedBundle, cache: 'hit' }, 200, 300);
+  }
+
+  // L2: D1.
   const row = await readBundle(db, sourceId, itemRef);
   if (row) {
     try {
-      return jsonResponse(
-        c,
-        { bundle: JSON.parse(row.bundle_json), view: JSON.parse(row.view_json), cache: 'hit' },
-        200,
-        300
-      );
+      const parsed = { bundle: JSON.parse(row.bundle_json), view: JSON.parse(row.view_json) };
+      // Write-through to L1 so the next render in this colo is a cache hit.
+      routeCachePut(l1Key, parsed, 300).catch(() => {});
+      return jsonResponse(c, { ...parsed, cache: 'hit' }, 200, 300);
     } catch (_catchErr) {
       logError('intelBundleHandler failed', _catchErr);
       // Corrupt row — fall through to recompute below.
@@ -412,13 +420,22 @@ export async function intelBundlePostHandler(c: Context<{ Bindings: Env }>): Pro
   const db = c.env.BRIEFINGS_DB;
   if (!db) return jsonResponse(c, { error: 'persistence_unavailable' }, 503);
 
+  // L1 Cache-API short-circuit — same as the GET path.
+  const l1Key = `intel-bundle:l1:${body.source}:${body.ref}`;
+  const cachedBundle = await routeCacheGet<{ bundle: unknown; view: unknown }>(l1Key);
+  if (cachedBundle) {
+    return jsonResponse(c, { ...cachedBundle, cache: 'hit' }, 200, 300);
+  }
+
   // D1 hit short-circuit — same as the GET path.
   const row = await readBundle(db, body.source, body.ref);
   if (row) {
     try {
+      const parsed = { bundle: JSON.parse(row.bundle_json), view: JSON.parse(row.view_json) };
+      routeCachePut(l1Key, parsed, 300).catch(() => {});
       return jsonResponse(
         c,
-        { bundle: JSON.parse(row.bundle_json), view: JSON.parse(row.view_json), cache: 'hit' },
+        { ...parsed, cache: 'hit' },
         200,
         300
       );
@@ -682,6 +699,13 @@ export async function intelBundleByIdHandler(c: Context<{ Bindings: Env }>): Pro
   const db = c.env.BRIEFINGS_DB;
   if (!db) return jsonResponse(c, { error: 'persistence_unavailable' }, 503);
 
+  // L1 Cache-API shadow — same reasoning as the source+ref GET path.
+  const l1Key = `intel-bundle:l1:id:${id}`;
+  const cachedBundle = await routeCacheGet<{ bundle: unknown; view: unknown }>(l1Key);
+  if (cachedBundle) {
+    return jsonResponse(c, { ...cachedBundle, cache: 'hit' }, 200, 300);
+  }
+
   const row = await db
     .prepare('SELECT bundle_json, view_json FROM intel_bundles WHERE id = ? LIMIT 1')
     .bind(id)
@@ -689,16 +713,9 @@ export async function intelBundleByIdHandler(c: Context<{ Bindings: Env }>): Pro
   if (!row) return jsonResponse(c, { error: 'not_found' }, 404);
 
   try {
-    return jsonResponse(
-      c,
-      {
-        bundle: JSON.parse(row.bundle_json),
-        view: JSON.parse(row.view_json),
-        cache: 'hit',
-      },
-      200,
-      300
-    );
+    const parsed = { bundle: JSON.parse(row.bundle_json), view: JSON.parse(row.view_json) };
+    routeCachePut(l1Key, parsed, 300).catch(() => {});
+    return jsonResponse(c, { ...parsed, cache: 'hit' }, 200, 300);
   } catch (_catchErr) {
     logError('intelBundleByIdHandler failed', _catchErr);
     return jsonResponse(c, { error: 'corrupt_view_json' }, 500);
