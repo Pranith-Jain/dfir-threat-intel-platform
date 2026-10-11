@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { env as testEnv } from 'cloudflare:test';
+import type { D1Database } from '@cloudflare/workers-types';
 import {
   buildStatusSnapshot,
   computeStatusDeltas,
@@ -444,5 +445,140 @@ describe('persisted status deltas', () => {
     // Empty table and empty window are indistinguishable here; the point is
     // that an empty input must not throw or fabricate rows.
     expect(read).toEqual([]);
+  });
+});
+
+/**
+ * Regression tests for the 2026-10-08..11 briefing outage.
+ *
+ * `readRecentDeltas` used to gate its fast path on `if (hasHistory?.observed_at)`
+ * and fall through to `readRecentDeltasLegacy` otherwise — a window-function
+ * query that materializes the whole 30-day `breach_forum_status` snapshot
+ * (~750k rows/execution, measured via `wrangler d1 insights`). The persisted
+ * table was only ever created inside `persistStatusDeltas`, which returns early
+ * on an empty delta list, so the loop had no exit:
+ *
+ *     no deltas -> no CREATE TABLE -> empty/missing probe -> legacy scan
+ *
+ * That scan exhausted the 5M/day free-tier read budget. D1 answers an exhausted
+ * budget with error 7500 and refuses EVERY query account-wide, so the briefing
+ * INSERT failed too — the root cause of "no briefings for three days" was a
+ * breach-forum read amplifier, not the briefing pipeline itself.
+ *
+ * These tests assert the fast path is never re-entered once the table exists,
+ * and that a D1 failure degrades instead of firing the expensive query.
+ */
+describe('readRecentDeltas cost-safety (7500 regression)', () => {
+  const db = testEnv.BRIEFINGS_DB as unknown as D1Database;
+
+  beforeEach(async () => {
+    await ensureBreachForumDeltasTable(db);
+    await db.prepare('DELETE FROM breach_forum_deltas').run();
+  });
+
+  // The load-bearing one: an existing-but-empty table used to fall through to
+  // the legacy scan. It must return [] instead.
+  it('does NOT fall back to the legacy scan when the table exists but is empty', async () => {
+    const rows = await db.prepare('SELECT COUNT(*) AS n FROM breach_forum_deltas').first<{ n: number }>();
+    expect(rows?.n).toBe(0); // precondition: table present, empty
+
+    // Spy on prepare() so any legacy-shaped statement is caught. The legacy
+    // path is identifiable by its window functions over breach_forum_status.
+    const seen: string[] = [];
+    const realPrepare = db.prepare.bind(db);
+    const spy = {
+      prepare(sql: string) {
+        seen.push(sql);
+        return realPrepare(sql);
+      },
+      batch: db.batch.bind(db),
+      exec: db.exec.bind(db),
+    } as unknown as D1Database;
+
+    const out = await readRecentDeltas(spy, { since: '2026-05-01T00:00:00Z', limit: 100 });
+    expect(out).toEqual([]);
+
+    const legacy = seen.filter((s) => /LAG\(|LEAD\(|ROW_NUMBER\(/i.test(s));
+    expect(legacy, `must not issue a window-function scan; saw:\n${legacy.join('\n')}`).toHaveLength(0);
+  });
+
+  // Under error 7500 the old catch ALSO fell through to the legacy query —
+  // so a failing database made the amplifier run harder, exactly when it could
+  // least afford it.
+  it('degrades to [] on a transient D1 error instead of firing the legacy scan', async () => {
+    const seen: string[] = [];
+    const boom = {
+      prepare(sql: string) {
+        seen.push(sql);
+        throw new Error('D1_ERROR: Too many subrequests by single Worker invocation');
+      },
+      batch: async () => {
+        throw new Error('unused');
+      },
+      exec: async () => {
+        throw new Error('unused');
+      },
+    } as unknown as D1Database;
+
+    const out = await readRecentDeltas(boom, { since: '2026-05-01T00:00:00Z', limit: 100 });
+    expect(out).toEqual([]);
+    expect(seen.some((s) => /LAG\(|LEAD\(|ROW_NUMBER\(/i.test(s))).toBe(false);
+  });
+
+  // The one case that legitimately still uses the legacy path: pre-migration,
+  // table genuinely absent. Otherwise the route returns nothing.
+  it('still uses the legacy derivation only when the table is genuinely missing', async () => {
+    await db.prepare('DROP TABLE IF EXISTS breach_forum_deltas').run();
+    try {
+      await db
+        .prepare(
+          `INSERT INTO breach_forum_status (name, source, status, url, onion, category, observed_at)
+           VALUES ('alpha', 'ddc', 'online', 'http://alpha', 0, 'test', '2026-06-01T00:00:00Z')`
+        )
+        .run();
+      await db
+        .prepare(
+          `INSERT INTO breach_forum_status (name, source, status, url, onion, category, observed_at)
+           VALUES ('alpha', 'ddc', 'seized', 'http://alpha', 0, 'test', '2026-06-02T00:00:00Z')`
+        )
+        .run();
+
+      const out = await readRecentDeltas(db, { since: '2026-05-01T00:00:00Z', limit: 100 });
+      // Legacy derivation still finds the transition rather than returning [].
+      expect(out.some((d) => d.name === 'alpha')).toBe(true);
+    } finally {
+      await ensureBreachForumDeltasTable(db);
+    }
+  });
+
+  // Once populated, the fast path returns the same transitions without any
+  // window-function scan.
+  it('serves populated deltas from the indexed path with no window function', async () => {
+    await persistStatusDeltas(db, [
+      {
+        name: 'alpha',
+        source: 'ddc',
+        from: 'online',
+        to: 'seized',
+        onion: false,
+        observed_at: '2026-06-02T00:00:00Z',
+      },
+    ]);
+
+    const seen: string[] = [];
+    const realPrepare = db.prepare.bind(db);
+    const spy = {
+      prepare(sql: string) {
+        seen.push(sql);
+        return realPrepare(sql);
+      },
+      batch: db.batch.bind(db),
+      exec: db.exec.bind(db),
+    } as unknown as D1Database;
+
+    const out = await readRecentDeltas(spy, { since: '2026-05-01T00:00:00Z', limit: 100 });
+    expect(out).toHaveLength(1);
+    expect(out[0]!.name).toBe('alpha');
+    expect(seen.some((s) => /LAG\(|LEAD\(|ROW_NUMBER\(/i.test(s))).toBe(false);
   });
 });

@@ -457,11 +457,31 @@ export async function readRecentDeltas(db: D1Database, opts: ReadDeltasOptions =
   const since = opts.since ?? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const limit = Math.max(1, Math.min(opts.limit ?? 100, 500));
 
+  let tableMissing = false;
   try {
     const hasHistory = await db
       .prepare('SELECT observed_at FROM breach_forum_deltas ORDER BY observed_at DESC LIMIT 1')
       .first<{ observed_at: string }>();
-    if (hasHistory?.observed_at) {
+
+    // Reaching this line means the table EXISTS (the probe did not throw). An
+    // empty result therefore means "no transitions recorded yet", which is a
+    // legitimate steady state — NOT a reason to re-derive the whole history.
+    //
+    // The old check was `if (hasHistory?.observed_at)`, so an EMPTY table fell
+    // through to readRecentDeltasLegacy. Combined with the table only ever
+    // being created inside persistStatusDeltas (which returns early when the
+    // delta list is empty), that closed a loop with no exit:
+    //
+    //     no deltas -> no CREATE TABLE -> empty probe -> legacy ~750k-row scan
+    //
+    // That scan is what blew the 5M/day free-tier read budget on 2026-10-08..11.
+    // D1 answers an exhausted budget with error 7500 and refuses EVERY query
+    // account-wide, which is why the briefing INSERT failed too and briefings
+    // disappeared for three days. An empty table now returns [] and the hourly
+    // cron fills it in.
+    if (!hasHistory?.observed_at) return [];
+
+    {
       const rows = await db
         .prepare(
           `SELECT name, source, status_from, status_to, url, onion, category, observed_at, previous_observed_at
@@ -496,14 +516,24 @@ export async function readRecentDeltas(db: D1Database, opts: ReadDeltasOptions =
       }));
     }
   } catch (_catchErr) {
-    // Missing table is the EXPECTED state between deploy and the first cron
-    // run (or before 0052 is applied), so it falls through quietly rather than
-    // filling the logs on every request. Anything else is worth surfacing.
+    // Only a genuinely missing table justifies the legacy path — i.e. the window
+    // between deploying this code and applying migration 0052.
+    //
+    // Every OTHER error used to fall through to readRecentDeltasLegacy too,
+    // which is backwards under load: when D1 is already failing (error 7500,
+    // daily read budget exhausted) the probe throws, and the "fallback" then
+    // fires the ~750k-row window query that CAUSED the exhaustion. One failing
+    // database made the amplifier run harder. Transient errors (network blip,
+    // a contended statement) paid the same toll for a cache-miss's worth of
+    // data. Degrade to empty instead; the next request re-probes.
     const msg = _catchErr instanceof Error ? _catchErr.message : String(_catchErr);
-    if (!/no such table/i.test(msg)) {
+    if (/no such table/i.test(msg)) {
+      tableMissing = true;
+    } else {
       logError('breach_forum_deltas read failed', _catchErr);
+      return [];
     }
   }
 
-  return readRecentDeltasLegacy(db, since, limit);
+  return tableMissing ? readRecentDeltasLegacy(db, since, limit) : [];
 }

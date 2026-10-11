@@ -44,6 +44,7 @@ import {
   readLatestSnapshot,
   computeStatusDeltas,
   persistStatusDeltas,
+  ensureBreachForumDeltasTable,
 } from '../api/src/lib/breach-forum-status';
 import { getCuratedForums } from '../api/src/routes/breach-forums';
 import { buildDeepDarkCti } from '../api/src/routes/deepdarkcti';
@@ -770,6 +771,10 @@ export async function executeCronJob(
                   nvdApiKey: env.NVD_API_KEY,
                   env: env as unknown as ApiEnv,
                   live: true,
+                  // Same reasoning as the dedicated build: this heal shares the
+                  // hourly invocation's 50-subrequest budget, and the LLM
+                  // summary is worth far less than the row it could cost.
+                  skipLlm: true,
                 });
                 await writeBriefing(db, briefing);
                 dailyHealRan = true;
@@ -1122,6 +1127,20 @@ export async function executeCronJob(
               // (~7.7M/day), which overran the 5M/day free-tier limit and
               // hard-blocked all D1 queries (error 7500). Storing them turns
               // that read into an indexed range scan (migration 0052).
+              //
+              // The table is created UNCONDITIONALLY, before the deltas gate.
+              //
+              // It used to be created inside persistStatusDeltas, which returns
+              // early when `deltas.length === 0`. So on any quiet hour the table
+              // was never created, `readRecentDeltas` probed a missing/empty
+              // table and fell back to the legacy ~750k-row scan — and the very
+              // run that would have created it was the one gated out. A few quiet
+              // hours were enough to keep the amplifier running, and its cost
+              // (error 7500) is what silently broke every other D1 write,
+              // briefings included. An idempotent CREATE IF NOT EXISTS on an
+              // hourly cron is free once it exists; being unconditionally
+              // present is the entire point.
+              await ensureBreachForumDeltasTable(env.BRIEFINGS_DB as D1Database);
               if (deltas.length > 0) {
                 await persistStatusDeltas(env.BRIEFINGS_DB as D1Database, deltas);
               }
@@ -1694,6 +1713,19 @@ export async function executeCronJob(
           const briefing = await buildBriefing(type, undefined, {
             nvdApiKey: env.NVD_API_KEY,
             env: env as unknown as ApiEnv,
+            // The 30 00 * * * / 45 0 * * 1 build is the PRIMARY producer of
+            // briefing rows, and it was the one call site e22c69672 missed when
+            // it added `skipLlm` to "every persistence path" — the two cron
+            // heals and all three admin/backfill paths got it, this one did not.
+            //
+            // Left unset, the build pays up to ~13 subrequests (5 Gemini models,
+            // then 4 Groq models, then the provider fallback order) for an
+            // executive summary that buildLlmExecutiveSummary already falls
+            // back to a deterministic template for. With the providers degraded
+            // that is a chain of 15-20s timeouts spent inside the free plan's
+            // 50-subrequest budget — the budget the briefing INSERT itself
+            // needs. A cosmetic summary must never be able to cost the row.
+            skipLlm: true,
           });
           console.log(
             JSON.stringify({
