@@ -1,0 +1,130 @@
+{
+  "type": "cyber",
+  "date": "2026-10-11",
+  "threatLevel": "",
+  "executiveSummary": "The OT/ICS risk posture remains elevated due to actively exploited edge-access vulnerabilities (Citrix NetScaler, F5 BIG-IP APM, and Fortinet FortiMail), a sector-wide brute-force/credential campaign against FortiGate SSL VPNs, and multiple ICS-specific advisories affecting industrial switches and telemetry software. Concurrent CISA red-team reporting again validated IT-to-OT pivot paths at a Water and Wastewater operator, underscoring the urgency of identity hardening and network segmentation. Citrix NetScaler ADC/Gateway unauthenticated RCEs (CVE-2026-88771/88772) and a DoS (CVE-2026-88779) are under active exploitation; national CSIRTs urge immediate patching and compromise assessment. Security Advisory Advisory F5 BIG-IP APM (CVE-2026-94127) pre-auth RCE is being exploited where APM acts as an OAuth Authorization Server; hotfixes and forensic checks are advised. Security Advisory CISA disclosed critical issues in Red Lion N-Tron 700 Series industrial Ethernet switches, enabling remote takeover, config theft, and reboots; upgrade and harden management planes. ICS Advisory \"FortiBleed\" campaign targets FortiGate SSL VPNs across critical sectors using password-stuffing and hash cracking to create new admin accounts and enable ransomware affiliates; restrict exposure, reset credentials, and enforce phishing-resistant MFA. Supporting Report CISA red-team results show complete enterprise compromise and discovered IT-to-OT pathways at a WWS operator; enforce MFA/JIT, AD/ADCS hardening, and strict OT egress control. Security Advisory Oracle PeopleSoft CVE-2026-35273 is being mass-exploited by ShinyHunters (WAF bypass via URL encoding), impacting government and aviation data; patch and hunt back to June '26. View Article European research highlights 8,500+ internet-exposed renewable OT management interfaces (start/stop/reset actions) across 35+ countries; remove exposure and enforce MFA/VPN controls. View Article",
+  "keyFindings": [
+    {
+      "title": "Edge-access devices remain the most urgent risk vector for OT operators (NetScal",
+      "summary": "Edge-access devices remain the most urgent risk vector for OT operators (NetScaler, F5 APM, FortiMail/FortiGate) due to pre-auth RCEs and mass credential attacks. Security Advisory"
+    },
+    {
+      "title": "OT network components face direct exposure",
+      "summary": "Red Lion N-Tron 700 Series switches with default credentials, unauth SNMP/TFTP, and reboot endpoints can cause immediate plant network disruption. ICS Advisory"
+    },
+    {
+      "title": "Water/Wastewater",
+      "summary": "CISA red-team confirmed viable IT-to-OT paths via bastion hosts and mismanaged identity, validating the need for hard OT egress controls and identity governance. Security Advisory"
+    },
+    {
+      "title": "Utilities and public services face increased pressure from ransomware and automa",
+      "summary": "Utilities and public services face increased pressure from ransomware and automated agents; utilities attacks rose in Q3 trend data and Wikimedia reported agent abuse driving partial outages. View Article"
+    },
+    {
+      "title": "ICS telemetry software misconfiguration (openPDC/openHistorian STTP publisher) r",
+      "summary": "ICS telemetry software misconfiguration (openPDC/openHistorian STTP publisher) risks unauthorized data access; upgrades require manual binding review. ICS Advisory"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "HIGH Week-to-date",
+        "label": "Overall Threat Level",
+        "trend": "Driven by exploited edge RCEs and OT switch advisories"
+      },
+      {
+        "value": "7",
+        "label": "Escalate Events",
+        "trend": "NetScaler, F5 APM, Red Lion N-Tron, FortiBleed, CISA Red Team, Kaspersky GPO, CISA Weekly"
+      },
+      {
+        "value": "3+",
+        "label": "Actively Exploited Edge Vulns",
+        "trend": "Citrix NetScaler, F5 APM, FortiMail"
+      },
+      {
+        "value": "3",
+        "label": "New/Updated OT ICS Advisories",
+        "trend": "Red Lion N-Tron; openPDC/openHistorian; Satel Netco Design"
+      },
+      {
+        "value": "8+",
+        "label": "Impacted Sectors",
+        "trend": "Energy, WWS, Aviation, Gov, Mfg, Healthcare, Education, IT"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Citrix NetScaler ADC/Gateway F5 BIG-IP APM Fortinet FortiGate SSL VPN; FortiMail Red Lion Controls N-Tron 700 (HMS Networks) Grid Protection Alliance: openPDC, openHistorian Satel Netco Design Oracle PeopleSoft Apple iOS (P7 DarkSword/WebKit) 7-Zip (Igor Pavlov) Ollama model server GitHub APIs (C2 abuse in Blinder Tunnel) Wikimedia platforms (agent abuse) Kaspersky-reported MovieReaper (Windows) MacSync stealer (macOS) Checkmk, Tomcat, Fluent Bit, Brocade SANnav (CISA weekly)"
+    ],
+    "sectors": [
+      "Energy (renewables, grid telemetry) Water and Wastewater Systems (WWS) Aviation and transportation Government services Critical manufacturing Healthcare and education (ransomware spillover) Telecommunications and IT services"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "ShinyHunters mass exploitation of Oracle PeopleSoft (CVE-2026-35273) with WAF-bypass URL encoding; multi-sector data theft including aviation/government. View Article View Article",
+        "Iran-aligned \"Blinder Tunnel\" targeting aviation/telecoms using developer toolchain lures and GitHub-based C2/dead drops. View Article",
+        "P7 DarkSword iOS exploit kit leveraging hijacked JS tags and multi-zero-day chains; risks to CI staff mobile endpoints. View Article",
+        "China-linked capability theft via industrial-scale AI model distillation campaigns; raises medium-term risk to CI operations. Security Advisory",
+        "China-linked CNE combining automated and hands-on-keyboard TTPs to steal sensitive data across CI sectors. Security Advisory",
+        "Q3 ransomware hits new global record; utilities among rising targets; triple-extortion growth observed. View Article"
+      ]
+    }
+  ],
+  "relevance": "Edge-access compromise remains the clearest route toward OT environments, particularly where remote operations rely on VPN/ADC/APM devices. The Red Lion N-Tron advisory is directly OT-disruptive, while telemetry exposure in openPDC/openHistorian and the large-scale exposure of renewable management portals create credible safety and grid stability concerns. Enterprise compromises (PeopleSoft mass exploitation, FortiBleed, GPO weaponization) heighten the likelihood of identity abuse and lateral movement into OT if segmentation and account governance are weak.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Citrix NetScaler ADC/Gateway: CVE-2026-88771/88772 (RCE), CVE-2026-88779 (DoS) - actively exploited. Security Advisory",
+        "F5 BIG-IP APM: CVE-2026-94127 (pre-auth RCE) - actively exploited. Advisory",
+        "Fortinet FortiMail: CVE-2026-104286 (path traversal) - KEV-listed actively exploited. CISA KEV Vendor Advisory",
+        "Oracle PeopleSoft: CVE-2026-35273 - mass exploitation with WAF-bypass; patch and hunt since June '26. View Article",
+        "Red Lion N-Tron 700: multiple critical OT issues - update to 3.11.1+. ICS Advisory",
+        "openPDC/openHistorian (GPA): CVE-2026-85479 - STTP publisher unauth access defaults; verify bindings post-upgrade. ICS Advisory",
+        "Satel Netco Design: multiple vulns (incl. traversal→RCE risk) - update to v2.1.7. ICS Advisory",
+        "Ollama: CVE-2026-103663 (path traversal→root exec on restart) - patch and restrict /api/pull. Security Advisory",
+        "7-Zip 26.04: unspecified security fixes - update and verify checksums. View Article",
+        "CISA Weekly Bulletin (sb26-271): multiple high-severity CVEs across perimeter/logging infra - prioritize vendor fixes. Security Bulletin"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "T1190 Exploit Public-Facing Application: NetScaler, F5 APM, PeopleSoft, FortiMail",
+      "T1133 External Remote Services: VPN/ADC/APM abuse for initial access",
+      "T1078 Valid Accounts: FortiBleed credential-stuffing; admin account creation",
+      "T1090 Proxy and tunneling: Chisel/Blackwood; GitHub API as dead-drop",
+      "T1547 Persistence via GPO/Startup/LaunchAgents (Windows/macOS)",
+      "T1041/T1105 Data exfiltration and C2 over web/solana RPC",
+      "T1059 Scripting (PowerShell/.NET AppDomainManager; AppleScript/zsh)"
+    ],
+    "mitreIds": [
+      "T1190",
+      "T1133",
+      "T1078",
+      "T1090",
+      "T1547",
+      "T1041",
+      "T1105",
+      "T1059"
+    ]
+  },
+  "outlook72h": "Expect continued scanning and exploitation attempts against NetScaler and F5 APM; prioritize emergency patch windows and compromise assessments. Increased credential-stuffing on FortiGate SSL VPNs likely; enforce phishing-resistant MFA and monitor for new admin creation. OT switch management services (SNMP/TFTP/web) will draw opportunistic probes following Red Lion advisory publication; tighten ACLs and alert on config changes/reboots. Renewable operators with previously exposed portals may see follow-on attempts; verify removal from internet and implement vendor cloud hardening.",
+  "relatedCves": [
+    "CVE-2026-88771",
+    "CVE-2026-88779",
+    "CVE-2026-94127",
+    "CVE-2026-35273",
+    "CVE-2026-104286",
+    "CVE-2026-85479",
+    "CVE-2026-103663",
+    "CVE-2026-91784",
+    "CVE-2026-75818"
+  ]
+}
