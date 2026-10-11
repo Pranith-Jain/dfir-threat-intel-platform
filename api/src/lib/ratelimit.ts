@@ -188,7 +188,6 @@ const AI_STRICT_PREFIXES = [
   '/api/v1/tg-saved-searches', // global-shared D1 writes
   // 2026-10-10 audit: prefix families whose every mutating member was on the
   // global bucket only.
-  '/api/v1/export', // 8 renderers (stix/misp/sigma/yara/snort/suricata/csv/pfsense) — CPU each
   '/api/v1/soc/playbooks', // CRUD + :id/execute — execution runs a stored step list
   '/api/v1/flowviz', // analyze / analyze-stream / assistant / validate — each runs Workers AI
   // Credential endpoints. `/api/v1/auth/login` is mounted through a sub-router,
@@ -246,11 +245,9 @@ const AI_STRICT_EXACT = new Set<string>([
   '/api/v1/x-firehose/probe-batch', // up to 80 timelines on operator cookies
   '/api/v1/sample/scan',
   '/api/v1/email-osnit/bulk', // 10x full profile fan-out
-  '/api/v1/tracer/expand', // Etherscan-keyed + set fetches
   // Shared writes / quota-sensitive singles
   '/api/v1/ti-dashboard/build', // LLM + INSERT OR REPLACE weekly_reports
   '/api/v1/auth/register', // open registration — bot-farm throttle
-  '/api/v1/one-time-secret', // KV write per call
   '/api/v1/threat-intel/feedback', // aggregate-mutating writes
   '/api/v1/domain/history/snapshot', // live RDAP/WHOIS + D1 insert
   '/api/v1/phishing/fingerprint', // KV write per call

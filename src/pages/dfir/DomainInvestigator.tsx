@@ -1,6 +1,7 @@
 import { TabLoader } from '../../components/ui/TabLoader';
 import { Tabs } from '../../components/ui/Tabs';
-import { Suspense, lazy, useState } from 'react';
+import { Suspense, lazy } from 'react';
+import { useHubTab } from '../../hooks/useHubTab';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { Globe } from 'lucide-react';
 
@@ -21,7 +22,7 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
 ];
 
 export default function DomainInvestigator(): JSX.Element {
-  const [activeTab, setActiveTab] = useState<TabId>('dns');
+  const [activeTab, setActiveTab] = useHubTab(TABS, 'dns');
 
   return (
     <DataPageLayout

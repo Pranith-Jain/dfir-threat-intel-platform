@@ -91,8 +91,8 @@ export default function EmlExtractor(): JSX.Element {
         <>
           Drop or paste a raw <code>.eml</code> file. Each attachment is decoded (base64 / quoted-printable), hashed
           (SHA-256 + SHA-1 + MD5), and gets a one-click pivot to{' '}
-          <Link to="/dfir/file" className="text-brand-600 dark:text-brand-400 hover:underline">
-            File / Hash Lookup
+          <Link to="/dfir/ioc-investigate" className="text-brand-600 dark:text-brand-400 hover:underline">
+            IOC Investigator
           </Link>{' '}
           for multi-engine reputation. Pure client-side - nothing leaves your browser.
           <p className="text-xs text-muted font-mono mt-2">

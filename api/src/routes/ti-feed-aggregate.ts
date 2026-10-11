@@ -13,7 +13,7 @@
 import { Hono } from 'hono';
 import { logError } from '../lib/logger';
 import type { D1Database, KVNamespace } from '@cloudflare/workers-types';
-import { routeCacheGet, routeCachePut } from '../lib/route-cache';
+import { cachedJson, routeCacheGet, routeCachePut } from '../lib/route-cache';
 
 interface FeedEnv {
   BRIEFINGS_DB: D1Database;
@@ -332,50 +332,56 @@ feed.get('/feed-trending', async (c) => {
 feed.get('/feed-stats', async (c) => {
   const db = c.env.BRIEFINGS_DB;
 
-  const stats = await Promise.all([
-    db
-      .prepare('SELECT COUNT(*) as cnt FROM ransomware_groups')
-      .first<{ cnt: number }>()
-      .catch(() => ({ cnt: 0 })),
-    db
-      .prepare('SELECT COUNT(*) as cnt FROM cve_recent')
-      .first<{ cnt: number }>()
-      .catch(() => ({ cnt: 0 })),
-    db
-      .prepare('SELECT COUNT(*) as cnt FROM live_iocs')
-      .first<{ cnt: number }>()
-      .catch(() => ({ cnt: 0 })),
-    db
-      .prepare('SELECT COUNT(*) as cnt FROM briefings')
-      .first<{ cnt: number }>()
-      .catch(() => ({ cnt: 0 })),
-    db
-      .prepare("SELECT COUNT(*) as cnt FROM ransomware_groups WHERE created_at > datetime('now', '-24 hours')")
-      .first<{ cnt: number }>()
-      .catch(() => ({ cnt: 0 })),
-    db
-      .prepare("SELECT COUNT(*) as cnt FROM cve_recent WHERE published_at > datetime('now', '-24 hours')")
-      .first<{ cnt: number }>()
-      .catch(() => ({ cnt: 0 })),
-    db
-      .prepare("SELECT COUNT(*) as cnt FROM live_iocs WHERE first_seen > datetime('now', '-24 hours')")
-      .first<{ cnt: number }>()
-      .catch(() => ({ cnt: 0 })),
-  ]);
+  // Cache the 7 full-table COUNT(*) scans behind the per-colo Cache API.
+  // The underlying tables are only written by the cron ingesters (hourly /
+  // 4-hourly), so 5 minutes of staleness is invisible. On a cold colo this
+  // costs the same 7 scans as before; every subsequent hit is zero D1 reads.
+  return cachedJson(c, 'ti:feed-stats:v1', 300, async () => {
+    const stats = await Promise.all([
+      db
+        .prepare('SELECT COUNT(*) as cnt FROM ransomware_groups')
+        .first<{ cnt: number }>()
+        .catch(() => ({ cnt: 0 })),
+      db
+        .prepare('SELECT COUNT(*) as cnt FROM cve_recent')
+        .first<{ cnt: number }>()
+        .catch(() => ({ cnt: 0 })),
+      db
+        .prepare('SELECT COUNT(*) as cnt FROM live_iocs')
+        .first<{ cnt: number }>()
+        .catch(() => ({ cnt: 0 })),
+      db
+        .prepare('SELECT COUNT(*) as cnt FROM briefings')
+        .first<{ cnt: number }>()
+        .catch(() => ({ cnt: 0 })),
+      db
+        .prepare("SELECT COUNT(*) as cnt FROM ransomware_groups WHERE created_at > datetime('now', '-24 hours')")
+        .first<{ cnt: number }>()
+        .catch(() => ({ cnt: 0 })),
+      db
+        .prepare("SELECT COUNT(*) as cnt FROM cve_recent WHERE published_at > datetime('now', '-24 hours')")
+        .first<{ cnt: number }>()
+        .catch(() => ({ cnt: 0 })),
+      db
+        .prepare("SELECT COUNT(*) as cnt FROM live_iocs WHERE first_seen > datetime('now', '-24 hours')")
+        .first<{ cnt: number }>()
+        .catch(() => ({ cnt: 0 })),
+    ]);
 
-  return c.json({
-    totals: {
-      ransomware_groups: stats[0]?.cnt ?? 0,
-      cves: stats[1]?.cnt ?? 0,
-      iocs: stats[2]?.cnt ?? 0,
-      briefings: stats[3]?.cnt ?? 0,
-    },
-    last_24h: {
-      ransomware_groups: stats[4]?.cnt ?? 0,
-      cves: stats[5]?.cnt ?? 0,
-      iocs: stats[6]?.cnt ?? 0,
-    },
-    generated_at: new Date().toISOString(),
+    return {
+      totals: {
+        ransomware_groups: stats[0]?.cnt ?? 0,
+        cves: stats[1]?.cnt ?? 0,
+        iocs: stats[2]?.cnt ?? 0,
+        briefings: stats[3]?.cnt ?? 0,
+      },
+      last_24h: {
+        ransomware_groups: stats[4]?.cnt ?? 0,
+        cves: stats[5]?.cnt ?? 0,
+        iocs: stats[6]?.cnt ?? 0,
+      },
+      generated_at: new Date().toISOString(),
+    };
   });
 });
 

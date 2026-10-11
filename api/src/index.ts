@@ -41,7 +41,6 @@ import { detectionRulesHandler } from './routes/detection-rules';
 import { breachDisclosuresHandler } from './routes/breach-disclosures';
 import { ransomwareRecentHandler } from './routes/ransomware-recent';
 import { ransomwareMapHandler } from './routes/ransomware-map';
-import { cryptoTraceHandler } from './routes/crypto-trace';
 import {
   torStatusHandler,
   torFetchOnionHandler,
@@ -53,16 +52,6 @@ import {
   onionLookupHandler,
   btcAbuseCheckHandler,
 } from './routes/darknet';
-import {
-  tracerExpandHandler,
-  tracerLabelHandler,
-  tracerLabelAddHandler,
-  tracerCalldataHandler,
-  tracerGraphSaveHandler,
-  tracerGraphListHandler,
-  tracerGraphGetHandler,
-  tracerGraphDeleteHandler,
-} from './routes/tracer';
 import {
   cryptoWatchAddHandler,
   cryptoWatchListHandler,
@@ -495,7 +484,6 @@ import {
   agentKnowledgeGraphHandler,
   agentDeleteHandler,
 } from './routes/agent';
-import { agentHistoryHandler } from './routes/agent-history';
 import { tieEnrichHandler, tieEnrichStateHandler, tieEnrichStreamHandler } from './routes/tie-enrich';
 import { attackNavigatorHandler } from './routes/attack-navigator';
 import { a3mMatrixHandler } from './routes/a3m-matrix';
@@ -585,54 +573,6 @@ import {
   telegramLeakBotWebhookStatusHandler,
 } from './routes/telegram-leak-bot';
 import { exploitDbHandler } from './routes/exploit-db';
-import { fusionExposureHandler } from './routes/fusion-exposure';
-import {
-  riskRegisterListHandler,
-  riskRegisterGetHandler,
-  riskRegisterCreateHandler,
-  riskRegisterUpdateHandler,
-  riskRegisterDeleteHandler,
-  riskRegisterStatsHandler,
-} from './routes/risk-register';
-import { attackPathGraphHandler } from './routes/attack-path-graph';
-import {
-  grcListFrameworks,
-  grcGetFramework,
-  grcUpdateFramework,
-  grcListControls,
-  grcGetControl,
-  grcCreateControl,
-  grcUpdateControl,
-  grcDeleteControl,
-  grcListEvidence,
-  grcGetEvidence,
-  grcCreateEvidence,
-  grcUpdateEvidence,
-  grcDeleteEvidence,
-  grcStats,
-} from './routes/grc-evidence';
-import { vocList, vocGet, vocCreate, vocUpdate, vocDelete, vocStats } from './routes/vulnerability-ops';
-import {
-  ransomList,
-  ransomGet,
-  ransomCreate,
-  ransomUpdate,
-  ransomDelete,
-  ransomStats,
-} from './routes/ransomware-quant';
-import {
-  ptmListPatches,
-  ptmGetPatch,
-  ptmCreatePatch,
-  ptmUpdatePatch,
-  ptmDeletePatch,
-  ptmListWindows,
-  ptmGetWindow,
-  ptmCreateWindow,
-  ptmUpdateWindow,
-  ptmDeleteWindow,
-  ptmStats,
-} from './routes/patch-task-mgr';
 import {
   socListPlaybooks,
   socGetPlaybook,
@@ -922,14 +862,11 @@ for (const base of ADMIN_GATED_PREFIXES) {
 }
 // Single-path / costly-AI gates. `/api/v1/rules/*` and `/api/v1/yara/*` match
 // the generate/validate sub-paths but NOT the public `/api/v1/rules` feed.
-app.use('/api/v1/tracer/labels', requireAdminMiddleware);
 app.use('/api/v1/graph/ingest', requireAdminMiddleware);
 app.use('/api/v1/threat-intel/novelty/batch', requireAdminMiddleware);
 app.use('/api/v1/report/parse', requireAdminMiddleware);
-app.use('/api/v1/tracer/graphs', requireAdminMiddleware);
 app.use('/api/v1/crypto-monitor', requireAdminMiddleware);
 app.use('/api/v1/crypto-monitor/*', requireAdminMiddleware);
-app.use('/api/v1/tracer/graphs/*', requireAdminMiddleware);
 // Public — AI investigation tools use Workers AI (internal billing gate).
 // app.use('/api/v1/ai-summary', requireAdminMiddleware);
 app.use('/api/v1/yara/*', requireAdminMiddleware);
@@ -978,12 +915,6 @@ import {
   searchSchema,
   waybackSchema,
   googleDorksSchema,
-  cryptoTraceSchema,
-  tracerExpandSchema,
-  tracerLabelSchema,
-  tracerLabelAddSchema,
-  tracerCalldataSchema,
-  tracerGraphSaveSchema,
   cryptoWatchAddSchema,
   ctCertsSchema,
   iocLifecycleSchema,
@@ -1074,16 +1005,6 @@ import {
 // ── Health Checks ──────────────────────────────────────────────────
 
 import { apiVersion } from './lib/api-version';
-import {
-  exportStixHandler,
-  exportMispHandler,
-  exportSigmaHandler,
-  exportYaraHandler,
-  exportSnortHandler,
-  exportSuricataHandler,
-  exportCsvHandler,
-  exportPfSenseHandler,
-} from './routes/export';
 import {
   siIndexHandler,
   siSkillsHandler,
@@ -1329,7 +1250,6 @@ app.get('/api/v1/cyberpulse/ingest', cyberpulseIngestHandler);
 app.post('/api/v1/cyberpulse/scan', cyberpulseScanHandler);
 app.get('/api/v1/ransomware-recent', ransomwareRecentHandler);
 app.get('/api/v1/ransomware-map', ransomwareMapHandler);
-app.get('/api/v1/crypto-trace', validate('query', cryptoTraceSchema), cryptoTraceHandler);
 app.get('/api/v1/darknet/tor-status', torStatusHandler);
 app.get('/api/v1/darknet/tor-fetch-onion', torFetchOnionHandler);
 app.get('/api/v1/darknet/tor-scrape-onion', torScrapeOnionHandler);
@@ -1340,14 +1260,6 @@ app.get('/api/v1/darknet/tor-exit-details', torExitDetailsHandler);
 app.get('/api/v1/darknet/onion-lookup', onionLookupHandler);
 app.get('/api/v1/darknet/btc-abuse-check', btcAbuseCheckHandler);
 app.get('/api/v1/supply-chain/package', validate('query', depsDevPackageSchema), depsDevPackageHandler);
-app.post('/api/v1/tracer/expand', validate('json', tracerExpandSchema), tracerExpandHandler);
-app.get('/api/v1/tracer/label', validate('query', tracerLabelSchema), tracerLabelHandler);
-app.post('/api/v1/tracer/labels', validate('json', tracerLabelAddSchema), tracerLabelAddHandler);
-app.get('/api/v1/tracer/calldata', validate('query', tracerCalldataSchema), tracerCalldataHandler);
-app.post('/api/v1/tracer/graphs', validate('json', tracerGraphSaveSchema), tracerGraphSaveHandler);
-app.get('/api/v1/tracer/graphs', tracerGraphListHandler);
-app.get('/api/v1/tracer/graphs/:id', tracerGraphGetHandler);
-app.delete('/api/v1/tracer/graphs/:id', tracerGraphDeleteHandler);
 app.post('/api/v1/crypto-monitor/watch', validate('json', cryptoWatchAddSchema), cryptoWatchAddHandler);
 app.get('/api/v1/crypto-monitor/watches', cryptoWatchListHandler);
 app.delete('/api/v1/crypto-monitor/watch/:address/:chain', cryptoWatchRemoveHandler);
@@ -1543,7 +1455,6 @@ app.get('/api/v1/agent/metrics', agentMetricsHandler);
 app.get('/api/v1/agent/provider-health', agentProviderHealthHandler);
 app.get('/api/v1/agent/memory', agentMemoryHandler);
 app.get('/api/v1/agent/knowledge-graph', agentKnowledgeGraphHandler);
-app.get('/api/v1/agent/history', agentHistoryHandler);
 app.get('/api/v1/agent/:id/stream', agentStreamHandler);
 app.get('/api/v1/agent/:id', agentStateHandler);
 app.post('/api/v1/tie/enrich', tieEnrichHandler);
@@ -1976,65 +1887,6 @@ app.post('/api/v1/open-dir/scan', validate('json', openDirScanSchema), openDirec
 // ── Exposed Host Intelligence ────────────────────────────────────
 app.get('/api/v1/exposed-host', exposedHostHandler);
 app.get('/api/v1/exploit-db', validate('query', exploitDbSchema), exploitDbHandler);
-app.get('/api/v1/fusion-exposure', fusionExposureHandler);
-
-// ── Risk Register ───────────────────────────────────────────────────
-app.get('/api/v1/risk-register', riskRegisterListHandler);
-app.get('/api/v1/risk-register/stats', riskRegisterStatsHandler);
-app.get('/api/v1/risk-register/:id', riskRegisterGetHandler);
-app.post('/api/v1/risk-register', riskRegisterCreateHandler);
-app.put('/api/v1/risk-register/:id', riskRegisterUpdateHandler);
-app.delete('/api/v1/risk-register/:id', riskRegisterDeleteHandler);
-
-// ── Attack Path Graph ────────────────────────────────────────────────
-app.get('/api/v1/attack-path-graph', attackPathGraphHandler);
-
-// ── GRC Compliance Evidence ──────────────────────────────────────────
-app.get('/api/v1/grc/frameworks', grcListFrameworks);
-app.get('/api/v1/grc/frameworks/:id', grcGetFramework);
-app.put('/api/v1/grc/frameworks/:id', grcUpdateFramework);
-app.get('/api/v1/grc/controls', grcListControls);
-app.get('/api/v1/grc/controls/:id', grcGetControl);
-app.post('/api/v1/grc/controls', grcCreateControl);
-app.put('/api/v1/grc/controls/:id', grcUpdateControl);
-app.delete('/api/v1/grc/controls/:id', grcDeleteControl);
-app.get('/api/v1/grc/evidence', grcListEvidence);
-app.get('/api/v1/grc/evidence/:id', grcGetEvidence);
-app.post('/api/v1/grc/evidence', grcCreateEvidence);
-app.put('/api/v1/grc/evidence/:id', grcUpdateEvidence);
-app.delete('/api/v1/grc/evidence/:id', grcDeleteEvidence);
-app.get('/api/v1/grc/stats', grcStats);
-
-// ── Vulnerability Ops (VOC) ─────────────────────────────────────────
-app.get('/api/v1/voc', vocList);
-app.get('/api/v1/voc/stats', vocStats);
-app.get('/api/v1/voc/:id', vocGet);
-app.post('/api/v1/voc', vocCreate);
-app.put('/api/v1/voc/:id', vocUpdate);
-app.delete('/api/v1/voc/:id', vocDelete);
-
-// ── Ransomware Quantification ───────────────────────────────────────
-app.get('/api/v1/ransomware', ransomList);
-app.get('/api/v1/ransomware/stats', ransomStats);
-app.get('/api/v1/ransomware/:id', ransomGet);
-app.post('/api/v1/ransomware', ransomCreate);
-app.put('/api/v1/ransomware/:id', ransomUpdate);
-app.delete('/api/v1/ransomware/:id', ransomDelete);
-
-// ── Patch & Task Manager (PTM) ──────────────────────────────────────
-app.get('/api/v1/ptm/patches', ptmListPatches);
-app.get('/api/v1/ptm/patches/:id', ptmGetPatch);
-app.post('/api/v1/ptm/patches', ptmCreatePatch);
-app.put('/api/v1/ptm/patches/:id', ptmUpdatePatch);
-app.delete('/api/v1/ptm/patches/:id', ptmDeletePatch);
-app.get('/api/v1/ptm/windows', ptmListWindows);
-app.get('/api/v1/ptm/windows/:id', ptmGetWindow);
-app.post('/api/v1/ptm/windows', ptmCreateWindow);
-app.put('/api/v1/ptm/windows/:id', ptmUpdateWindow);
-app.delete('/api/v1/ptm/windows/:id', ptmDeleteWindow);
-app.get('/api/v1/ptm/stats', ptmStats);
-
-// ── SOC Automation ──────────────────────────────────────────────────
 app.get('/api/v1/soc/playbooks', socListPlaybooks);
 app.get('/api/v1/soc/playbooks/:id', socGetPlaybook);
 app.post('/api/v1/soc/playbooks', socCreatePlaybook);
@@ -2120,14 +1972,6 @@ app.delete('/api/v1/notebooks/:notebookId/entries/:entryId', deleteEntryHandler)
 // Handlers live in routes/export.ts: each parses the body via safeJsonBody
 // (400 on malformed input, not a 500), validates the minimal shape it needs,
 // and returns a download with the correct Content-Type + Content-Disposition.
-app.post('/api/v1/export/stix', exportStixHandler);
-app.post('/api/v1/export/misp', exportMispHandler);
-app.post('/api/v1/export/sigma', exportSigmaHandler);
-app.post('/api/v1/export/yara', exportYaraHandler);
-app.post('/api/v1/export/snort', exportSnortHandler);
-app.post('/api/v1/export/suricata', exportSuricataHandler);
-app.post('/api/v1/export/csv', exportCsvHandler);
-app.post('/api/v1/export/pfsense', exportPfSenseHandler);
 
 // SI: server-side SVG rendering. GET with ?slug=<skill> returns image/svg+xml directly;
 // POST with JSON/YAML body returns the same SVG wrapped in JSON (with bytes + widgetCount).
@@ -2505,11 +2349,6 @@ import leaderboardRoutes from './routes/leaderboard';
 app.route('/api/v1/auth', authRoutes);
 app.route('/api/v1/orgs', orgRoutes);
 app.route('/api/v1/leaderboard', leaderboardRoutes);
-
-// One-Time Secret — encrypted secret sharing with burn-after-reading
-import { createSecretHandler, getSecretHandler } from './routes/one-time-secret';
-app.post('/api/v1/one-time-secret', createSecretHandler);
-app.get('/api/v1/one-time-secret/:id', getSecretHandler);
 
 // Threat Intelligence vertical routes
 import tiFeedAggregateRoutes from './routes/ti-feed-aggregate';

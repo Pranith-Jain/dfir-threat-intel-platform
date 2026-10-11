@@ -4,7 +4,6 @@ import { searchPages } from '../pages-index';
 describe('new pages in catalog', () => {
   it.each([
     ['/dfir/dnscope', 'dnscope'],
-    ['/dfir/tracerules', 'tracerules'],
     ['/dfir/passive-dns', 'passive dns'],
     ['/dfir/sigbase', 'yara'],
   ])('has catalog entry for %s', (path, query) => {

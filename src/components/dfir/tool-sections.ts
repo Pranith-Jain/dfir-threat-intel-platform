@@ -51,12 +51,10 @@ import {
   Target,
   BookOpen,
   FolderOpen,
-  Download,
   Map as MapIcon,
   Bot,
   Bug,
   FileText,
-  AlertTriangle,
   type LucideIcon,
 } from 'lucide-react';
 import type { FeatureFlag } from '../../lib/features';
@@ -524,72 +522,6 @@ export const SECTIONS: Section[] = [
       },
     ],
   },
-  // ── CTEM & Exposure Management ─────────────────────────────────────
-  {
-    id: 'ctem',
-    group: 'specialized',
-    label: 'CTEM & Exposure Management',
-    blurb:
-      'Fusion scoring, attack path analysis, risk register, GRC evidence, vuln ops, ransomware quantification, patch management, SOC automation.',
-    tools: [
-      {
-        path: '/dfir/fusion-exposure',
-        useCase: 'Rank exposures by composite CVSS/KEV/EPSS/Exploit-DB score.',
-        label: 'Fusion Exposure Worklist',
-        desc: '4-dimension weighted scoring · per-dimension breakdown · ranked worklist · source links',
-        icon: Crosshair,
-      },
-      {
-        path: '/dfir/risk-register',
-        useCase: 'Log a risk with FAIR quantification and track it through treatment.',
-        label: 'Risk Register',
-        desc: 'Inherent · current · residual levels · FAIR quantification · treatment plans · lifecycle states',
-        icon: AlertTriangle,
-      },
-      {
-        path: '/dfir/attack-path',
-        useCase: 'Find the shortest path from an exposed asset to a crown jewel.',
-        label: 'Attack Path Graph',
-        desc: 'BFS shortest-path · choke-point detection · force-directed SVG graph · demo fallback',
-        icon: GitBranch,
-      },
-      {
-        path: '/dfir/grc-evidence',
-        useCase: 'Map controls to a framework and attach evidence artifacts.',
-        label: 'GRC Compliance Evidence',
-        desc: 'Framework selector (SOC2/ISO27001/NIST/PCI/HIPAA) · control tree · evidence status workflow',
-        icon: ShieldCheck,
-      },
-      {
-        path: '/dfir/vulnerability-ops',
-        useCase: 'Track a vuln from intake through triage to SLA deadline.',
-        label: 'Vulnerability Ops (VOC)',
-        desc: 'Intake · triage · SLA deadlines · severity/status/source filters · recurrence tracking',
-        icon: Bug,
-      },
-      {
-        path: '/dfir/ransomware-quant',
-        useCase: 'Model the financial impact of a ransomware scenario.',
-        label: 'Ransomware Quantification',
-        desc: '7 cost dimensions · insurance recovery · scenario save/load · cost bar charts',
-        icon: Coins,
-      },
-      {
-        path: '/dfir/patch-task-mgr',
-        useCase: 'Schedule a critical patch during the next maintenance window.',
-        label: 'Patch & Task Manager',
-        desc: 'Vendor advisory intake · maintenance windows · approval · deploy tracking',
-        icon: Server,
-      },
-      {
-        path: '/dfir/soc-automation',
-        useCase: 'Build and run a SOC playbook with one click.',
-        label: 'SOC Automation Engine',
-        desc: 'Playbook CRUD · configurable actions (webhook/email/slack/KB/MCP) · run history · per-action results',
-        icon: Bot,
-      },
-    ],
-  },
   // ── OSINT group ───────────────────────────────────────────────────
   {
     id: 'identity-search',
@@ -670,7 +602,11 @@ export const SECTIONS: Section[] = [
         utility: true,
       },
       {
-        path: '/dfir/tracer',
+        // Removed 2026-10-11 with the /dfir/tracer route + its 8 API handlers.
+        // The card rendered a <Link> to a route that no longer exists, so it
+        // was a guaranteed 404 from the DFIR catalog. Redirects preserve the
+        // URL for inbound links; the catalog entry has no such need.
+        path: '/dfir/catalog',
         useCase: 'Trace fund flows hop-by-hop and map an actor’s on-chain footprint.',
         workflow:
           'Seed an address → click nodes to expand counterparties → confirm hops → inspect tx calldata / find the cash-out path → save, export, or pin to an investigation → watch the address for new movement.',
@@ -777,13 +713,6 @@ export const SECTIONS: Section[] = [
         label: 'YARA Workbench',
         desc: 'YARA + Sigma + rule-converter + detection-lab + AI-rule-gen · collaborative editor · 100% client-side',
         icon: ShieldCheck,
-      },
-      {
-        path: '/dfir/tracerules',
-        useCase: 'Browse and copy detection queries across KQL, Sigma, and XQL.',
-        label: 'TRACERULES Query Arsenal',
-        desc: 'Curated query library · KQL · Sigma · XQL · filter by tactic, technique, format · one-click copy for SIEM use',
-        icon: Shield,
       },
       {
         path: '/dfir/cve-prioritizer',
@@ -1051,21 +980,6 @@ export const SECTIONS: Section[] = [
     ],
   },
   {
-    id: 'dark-web',
-    group: 'recon',
-    label: 'Dark Web Workbench',
-    blurb: 'PGP operations, .onion gateway links, and reference resources for dark web investigations.',
-    tools: [
-      {
-        path: '/dfir/pgp-tool',
-        useCase: 'Encrypt, decrypt, sign, or verify PGP messages during an investigation.',
-        label: 'PGP Tool',
-        desc: 'Encrypt · Decrypt · Sign · Verify · Generate keys · OpenPGP.js · 100% client-side',
-        icon: Lock,
-      },
-    ],
-  },
-  {
     id: 'reference',
     group: 'recon',
     label: 'Personal & Privacy',
@@ -1180,20 +1094,13 @@ export const SECTIONS: Section[] = [
       },
     ],
   },
-  // ─── Export Hub ────────────────────────────────────────────────────
+  // ─── Reporting ─────────────────────────────────────────────────────
   {
-    id: 'export-hub',
-    label: 'Export Hub',
-    blurb: 'Export IOCs to 8 standard formats - STIX, MISP, Sigma, YARA, Snort, Suricata, CSV, pfSense.',
+    id: 'reporting',
+    label: 'Reporting',
+    blurb: 'Draft multi-section investigation reports and export findings to partner formats.',
     group: 'specialized',
     tools: [
-      {
-        path: '/dfir/export-hub',
-        useCase: 'Export IOCs to STIX 2.1 for sharing with partners.',
-        label: 'Export Hub',
-        desc: 'Export IOCs to 8 standard formats: STIX 2.1, MISP Event, Sigma, YARA, Snort, Suricata, CSV, pfSense Alias. Open standards, no paid services.',
-        icon: Download,
-      },
       {
         path: '/dfir/report-composer',
         useCase: 'Draft a multi-section investigation report in the browser.',

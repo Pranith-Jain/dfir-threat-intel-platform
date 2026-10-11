@@ -164,7 +164,6 @@ const PILLARS: Pillar[] = [
       { label: 'Asset & Attack Surface', to: '/dfir/asset-intel' },
       { label: 'Cloud Security', to: '/dfir/iam-hub' },
       { label: 'IAM & RBAC Hub', to: '/dfir/iam-hub' },
-      { label: 'Fusion Exposure Worklist', to: '/dfir/fusion-exposure' },
     ],
   },
   {

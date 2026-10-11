@@ -218,13 +218,6 @@ export const googleDorksSchema = z.object({
   num: z.string().max(4).optional(),
 });
 
-// ── Crypto Trace ─────────────────────────────────────────────────
-
-export const cryptoTraceSchema = z.object({
-  address: z.string().min(1, 'address is required').max(200, 'address too long'),
-  chain: z.enum(['bitcoin', 'ethereum', 'monero']).optional(),
-});
-
 // ── CT Monitor ───────────────────────────────────────────────────
 
 export const ctCertsSchema = z.object({
@@ -1108,70 +1101,6 @@ export const githubSecuritySchema = z.object({
   package: z.string().max(100).optional(),
   recent: z.enum(['true', 'false']).optional(),
 });
-
-// ── Crypto Tracer (Phase A/B) ───────────────────────────────────
-
-export const tracerExpandSchema = z
-  .object({
-    address: z.string().min(1, 'address is required').max(200, 'address too long'),
-    chain: z.enum(['evm', 'btc', 'tron', 'solana']),
-    direction: z.enum(['in', 'out', 'both']).optional(),
-    from: z.string().datetime().optional(),
-    to: z.string().datetime().optional(),
-    around: z.string().datetime().optional(),
-    toleranceMin: z.number().int().positive().max(10080).optional(),
-    token: z.string().max(20).optional(),
-    minAmount: z.number().nonnegative().optional(),
-    maxTransfers: z.number().int().positive().max(100).optional(),
-  })
-  .refine((d) => !d.around || d.toleranceMin !== undefined, {
-    message: 'toleranceMin is required when around is set',
-    path: ['toleranceMin'],
-  });
-export type TracerExpandInput = z.infer<typeof tracerExpandSchema>;
-
-export const tracerLabelSchema = z.object({
-  address: z.string().min(1, 'address is required').max(200, 'address too long'),
-  chain: z.enum(['evm', 'btc', 'tron', 'solana']),
-});
-export type TracerLabelInput = z.infer<typeof tracerLabelSchema>;
-
-export const tracerLabelAddSchema = z.object({
-  address: z.string().min(1, 'address is required').max(200, 'address too long'),
-  chain: z.enum(['evm', 'btc', 'tron', 'solana']),
-  label: z.string().min(1, 'label is required').max(80, 'label too long'),
-  category: z.enum([
-    'exchange',
-    'mixer',
-    'bridge',
-    'defi',
-    'contract',
-    'ransomware',
-    'scammer',
-    'sanctioned',
-    'wallet',
-  ]),
-});
-export type TracerLabelAddInput = z.infer<typeof tracerLabelAddSchema>;
-
-export const tracerCalldataSchema = z.object({
-  chain: z.enum(['evm', 'tron']),
-  hash: z.string().min(1, 'hash is required').max(80, 'hash too long'),
-});
-export type TracerCalldataInput = z.infer<typeof tracerCalldataSchema>;
-
-// ── Crypto Tracer — saved graphs (Phase C) ──────────────────────
-export const tracerGraphSaveSchema = z.object({
-  title: z.string().min(1, 'title is required').max(120, 'title too long'),
-  seed_address: z.string().min(1).max(200),
-  chain: z.enum(['evm', 'btc', 'tron', 'solana']),
-  graph_json: z
-    .string()
-    .min(1)
-    .max(512 * 1024, 'graph too large — prune it first'),
-  investigation_id: z.string().max(64).optional(),
-});
-export type TracerGraphSaveInput = z.infer<typeof tracerGraphSaveSchema>;
 
 // ── Crypto monitor (Phase E) ────────────────────────────────────
 export const cryptoWatchAddSchema = z

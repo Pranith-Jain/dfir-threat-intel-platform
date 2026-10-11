@@ -1,6 +1,7 @@
 import { TabLoader } from '../../components/ui/TabLoader';
 import { Tabs } from '../../components/ui/Tabs';
-import { Suspense, lazy, useState } from 'react';
+import { Suspense, lazy } from 'react';
+import { useHubTab } from '../../hooks/useHubTab';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { Phone } from 'lucide-react';
 
@@ -15,7 +16,7 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
 ];
 
 export default function PhoneHub(): JSX.Element {
-  const [activeTab, setActiveTab] = useState<TabId>('osint');
+  const [activeTab, setActiveTab] = useHubTab(TABS, 'osint');
 
   return (
     <DataPageLayout

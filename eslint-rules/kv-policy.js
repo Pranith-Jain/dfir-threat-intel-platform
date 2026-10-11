@@ -17,7 +17,6 @@ export const KV_ALLOW_FILES = [
   'api/src/lib/blog-kv.ts',
   'worker/lib/blog-kv.ts',
   // ── cross-colo correctness state (must stay on KV) ──
-  'api/src/routes/one-time-secret.ts',
   'api/src/routes/telegram-feed.ts',
   'api/src/routes/telegram-archive.ts',
   'api/src/routes/telegram-leak-monitor.ts',
@@ -63,7 +62,6 @@ export const KV_ALLOW_FILES = [
   'api/src/routes/pir.ts', // alert store behind shadow helpers
   'api/src/lib/verify-url-cache.ts',
   'api/src/routes/threatsignal-rss.ts', // per-source RSS shadow + KV L2 legs
-  'api/src/routes/fusion-exposure.ts', // EPSS/exploit-index shadows + KV L2
   'api/src/routes/ssvc-triage.ts',
   'api/src/routes/dossier.ts',
   // ── matrix/navigator/graph routes: cache-first, raw get = cold-miss L2 leg ──
@@ -74,10 +72,6 @@ export const KV_ALLOW_FILES = [
   'api/src/routes/snapshot.ts',
   // ── workspace-CRUD family: routeCache fronts, raw get = L2 blob/index legs ──
   'api/src/routes/soc-automation.ts',
-  'api/src/routes/grc-evidence.ts',
-  'api/src/routes/patch-task-mgr.ts',
-  'api/src/routes/ransomware-quant.ts',
-  'api/src/routes/vulnerability-ops.ts',
   // ── cron/admin/user-tool mutations (low frequency by design) ──
   'worker/scheduled.ts',
   'worker/index.ts', // daily-briefs KV branch (shadowed read + ASSETS fallback)
@@ -89,7 +83,6 @@ export const KV_ALLOW_FILES = [
   'api/src/routes/watchlist.ts',
   'api/src/routes/feedback.ts', // aggregate RMW + shadow evictions
   'api/src/routes/assessments.ts',
-  'api/src/routes/risk-register.ts',
   'api/src/routes/campaigns.ts',
   'api/src/routes/external-resources.ts',
   'api/src/routes/observable-db.ts',

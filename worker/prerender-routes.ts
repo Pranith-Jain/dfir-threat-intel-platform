@@ -168,14 +168,6 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/dfir/pi-taxonomy', '/__prerendered/dfir__pi-taxonomy'],
   ['/dfir/mcp-audit', '/__prerendered/dfir__mcp-audit'],
   ['/dfir/cve-prioritizer', '/__prerendered/dfir__cve-prioritizer'],
-  ['/dfir/fusion-exposure', '/__prerendered/dfir__fusion-exposure'],
-  ['/dfir/risk-register', '/__prerendered/dfir__risk-register'],
-  ['/dfir/attack-path', '/__prerendered/dfir__attack-path'],
-  ['/dfir/grc-evidence', '/__prerendered/dfir__grc-evidence'],
-  ['/dfir/vulnerability-ops', '/__prerendered/dfir__vulnerability-ops'],
-  ['/dfir/ransomware-quant', '/__prerendered/dfir__ransomware-quant'],
-  ['/dfir/patch-task-mgr', '/__prerendered/dfir__patch-task-mgr'],
-  ['/dfir/soc-automation', '/__prerendered/dfir__soc-automation'],
 
   // ── DFIR: cloud security ──────────────────────────────────────
   ['/dfir/iam-hub', '/__prerendered/dfir__iam-hub'],
@@ -204,7 +196,6 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/dfir/zero-trust-ai-agents', '/__prerendered/dfir__zero-trust-ai-agents'],
 
   // ── DFIR: dark web workbench ──────────────────────────────────
-  ['/dfir/pgp-tool', '/__prerendered/dfir__pgp-tool'],
 
   // ── DFIR: investigator workbenches ────────────────────────────
   ['/dfir/domain-investigator', '/__prerendered/dfir__domain-investigator'],
@@ -219,11 +210,9 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/dfir/vuln-toolkit', '/__prerendered/dfir__vuln-toolkit'],
   ['/dfir/sec-headers-live', '/__prerendered/dfir__sec-headers-live'],
   ['/dfir/osint-mapper', '/__prerendered/dfir__osint-mapper'],
-  ['/dfir/notebooks', '/__prerendered/dfir__notebooks'],
 
   // ── DFIR: triage & forensic tools ────────────────────────────
   ['/dfir/dnscope', '/__prerendered/dfir__dnscope'],
-  ['/dfir/tracerules', '/__prerendered/dfir__tracerules'],
   ['/dfir/phone-hub', '/__prerendered/dfir__phone-hub'],
   ['/dfir/infostealer-intel', '/__prerendered/dfir__infostealer-intel'],
 
@@ -297,15 +286,11 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/dfir/asset-intel', '/__prerendered/dfir__asset-intel'],
   ['/dfir/blocklists', '/__prerendered/dfir__blocklists'],
   ['/dfir/ct-monitor', '/__prerendered/dfir__ct-monitor'],
-  ['/dfir/file', '/__prerendered/dfir__file'],
   ['/dfir/host-graph', '/__prerendered/dfir__host-graph'],
 
   // ── Phase 5: New gap features ─────────────────────────────────
-  ['/dfir/export-hub', '/__prerendered/dfir__export-hub'],
   ['/dfir/ai-suite', '/__prerendered/dfir__ai-suite'],
-  ['/dfir/crypto-tracer', '/__prerendered/dfir__crypto-tracer'],
   ['/dfir/report-hub', '/__prerendered/dfir__report-hub'],
-  ['/dfir/pivex', '/__prerendered/dfir__pivex'],
   ['/dfir/phishops', '/__prerendered/dfir__phishops'],
   ['/dfir/phishbook', '/__prerendered/dfir__phishbook'],
   ['/dfir/ai-threats', '/__prerendered/dfir__ai-threats'],
@@ -333,11 +318,7 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/threatintel/external/threatmon', '/__prerendered/threatintel__external__threatmon'],
   // ── Previously shell-only static pages (SEO/CWV: crawlable first paint) ─
   ['/argus', '/__prerendered/argus'],
-  ['/dfir/agent-history', '/__prerendered/dfir__agent-history'],
-  ['/dfir/csrf-poc', '/__prerendered/dfir__csrf-poc'],
   ['/dfir/detection-chokepoints', '/__prerendered/dfir__detection-chokepoints'],
-  ['/dfir/one-time-secret', '/__prerendered/dfir__one-time-secret'],
-  ['/dfir/xss-payloads', '/__prerendered/dfir__xss-payloads'],
   ['/threatintel/detection-wiki', '/__prerendered/threatintel__detection-wiki'],
   ['/threatintel/threat-actor-monitor', '/__prerendered/threatintel__threat-actor-monitor'],
   ['/threatintel/alerts', '/__prerendered/threatintel__alerts'],

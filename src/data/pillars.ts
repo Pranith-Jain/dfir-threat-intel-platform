@@ -98,7 +98,6 @@ export const HUB_PILLAR: Readonly<Record<string, string>> = {
   'dfir:ioc-triage': 'iocs-enrichment',
   'dfir:domain-network': 'iocs-enrichment',
   'dfir:identity-osint': 'iocs-enrichment',
-  'dfir:ctem': 'iocs-enrichment',
 
   // ── Vulnerabilities & Detection ───────────────────────────────────
   'threatintel:cves': 'vulns-detection',
@@ -109,7 +108,6 @@ export const HUB_PILLAR: Readonly<Record<string, string>> = {
 
   // ── Ransomware & Dark Web ─────────────────────────────────────────
   'threatintel:darkweb': 'ransomware-darkweb',
-  'dfir:dark-web': 'ransomware-darkweb',
 
   // ── Malware & Artifacts ───────────────────────────────────────────
   'threatintel:malware': 'malware-artifacts',

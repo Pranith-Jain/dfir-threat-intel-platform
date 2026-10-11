@@ -127,14 +127,6 @@ function adminMountPrefixes(): string[] {
  * new path added here should be argued for, not appended to make a test green.
  */
 const CHEAP_CRUD_EXEMPT = [
-  '/api/v1/voc',
-  '/api/v1/ransomware',
-  '/api/v1/ptm/patches',
-  '/api/v1/ptm/windows',
-  '/api/v1/grc/controls',
-  '/api/v1/grc/evidence',
-  '/api/v1/grc/frameworks',
-  '/api/v1/risk-register',
   '/api/v1/external-resources',
   '/api/v1/watchlist/actors',
   // Second-pass candidates that the guard flagged but that turned out to be

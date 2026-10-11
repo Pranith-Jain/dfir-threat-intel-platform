@@ -23,6 +23,7 @@ import { validateInternalToken, ALLOWED_INTERNAL_CALLERS } from './internal-toke
 import { feedTokenUnlocks } from './feed-token';
 import { getAllowedOrigins } from './site-config';
 import { logError } from './logger';
+import type { D1Database } from '@cloudflare/workers-types';
 
 /**
  * Failed auth attempt tracker. Per-IP, in-memory, auto-expiring.
@@ -227,14 +228,90 @@ function isSameOrigin(c: Context<{ Bindings: Env }>): boolean {
 /**
  * Look up a hashed key in D1. Returns the key metadata or null.
  * The last_used_at update is fire-and-forget (see authenticate middleware).
+ *
+ * D1-read-cached via the per-colo Cache API (free, does NOT count against
+ * the KV quota). On the free plan every D1 row-read counts against a 5M/day
+ * hard block, and this lookup ran on EVERY authenticated request — the single
+ * most-repeated query on the account. Caching the positive result for 300s
+ * collapses same-colo repeat auth to one Cache-API match.
+ *
+ * Trade-off: key revocation is delayed by up to 300s in the colo that last
+ * served the key. Acceptable for API-key auth — revocation is an operational
+ * action, not an instant-response requirement, and the 5-minute window is
+ * bounded by the TTL. The negative (not-found) result is deliberately NOT
+ * cached: a fresh key must work immediately, and brute-force attempts should
+ * still pay the D1 read so the failed-auth tracker counts them.
  */
+const AUTH_CACHE_TTL_S = 300;
+
+function authCacheApi(): Cache | null {
+  try {
+    return (caches as unknown as { default: Cache }).default;
+  } catch {
+    return null;
+  }
+}
+
+function authCacheKey(hashed: string): Request {
+  return new Request(`https://auth-cache.internal/v1/${hashed}`);
+}
+
 async function lookupKey(db: D1Database, hashed: string): Promise<AuthUser | null> {
+  // L1: per-colo Cache API — free, sub-millisecond, no D1 cost.
+  const cache = authCacheApi();
+  if (cache) {
+    try {
+      const hit = await cache.match(authCacheKey(hashed));
+      if (hit) {
+        const cached = (await hit.json()) as AuthUser | null;
+        // A cached null means "this key was not found last time" — treat as
+        // a miss so the D1 query still runs (fresh keys must work immediately).
+        if (cached && typeof cached === 'object' && 'keyId' in cached) return cached;
+      }
+    } catch {
+      /* fall through to D1 */
+    }
+  }
+
   const row = await db
     .prepare('SELECT id, prefix, role FROM api_keys WHERE key_hash = ? AND revoked_at IS NULL')
     .bind(hashed)
     .first<{ id: string; prefix: string; role: string }>();
   if (!row) return null;
-  return { keyId: row.id, prefix: row.prefix, role: row.role as 'admin' | 'readonly' };
+  const user: AuthUser = { keyId: row.id, prefix: row.prefix, role: row.role as 'admin' | 'readonly' };
+
+  // Write-through to L1 so the next request in this colo is a cache hit.
+  if (cache) {
+    try {
+      await cache.put(
+        authCacheKey(hashed),
+        new Response(JSON.stringify(user), {
+          headers: { 'content-type': 'application/json', 'cache-control': `max-age=${AUTH_CACHE_TTL_S}` },
+        })
+      );
+    } catch {
+      /* best-effort — a cache-write failure just means the next read hits D1 */
+    }
+  }
+  return user;
+}
+
+/**
+ * Invalidate the cached auth entry for a hashed key. Called from the revoke
+ * and admin-key mutation paths so a revoked key stops working within the same
+ * colo immediately rather than waiting out the 300s TTL.
+ *
+ * Best-effort: a failed delete leaves the entry to expire on its own TTL,
+ * which is bounded and acceptable — the cross-colo story is the same TTL.
+ */
+export async function invalidateAuthCache(hashed: string): Promise<void> {
+  const cache = authCacheApi();
+  if (!cache) return;
+  try {
+    await cache.delete(authCacheKey(hashed));
+  } catch {
+    /* best-effort */
+  }
 }
 
 /**
@@ -437,10 +514,23 @@ export async function generateApiKey(
  * Revoke an API key by ID.
  */
 export async function revokeApiKey(db: D1Database, keyId: string): Promise<boolean> {
+  // Read the key_hash before the UPDATE so we can invalidate the auth cache.
+  const row = await db
+    .prepare('SELECT key_hash FROM api_keys WHERE id = ? AND revoked_at IS NULL')
+    .bind(keyId)
+    .first<{ key_hash: string }>();
+
   const result = await db
     .prepare('UPDATE api_keys SET revoked_at = ? WHERE id = ? AND revoked_at IS NULL')
     .bind(new Date().toISOString(), keyId)
     .run();
+
+  // Invalidate the per-colo auth cache so the revoked key stops working
+  // immediately in the colo that served it, instead of waiting out the TTL.
+  if (row?.key_hash && (result.meta.changes ?? 0) > 0) {
+    await invalidateAuthCache(row.key_hash);
+  }
+
   return (result.meta.changes ?? 0) > 0;
 }
 

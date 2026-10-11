@@ -224,9 +224,9 @@ export default function Ransomwhere({ embedded = false }: { embedded?: boolean }
 
             <div className="mt-2 pt-2 border-t border-line-1">
               <Link
-                to={`/dfir/tracer?address=${encodeURIComponent(w.address)}`}
+                to={`/dfir/catalog?address=${encodeURIComponent(w.address)}`}
                 className="inline-flex items-center gap-1 text-micro font-mono text-rose-600 dark:text-rose-400 hover:underline"
-                title="Trace this address in the crypto tracer"
+                title="Find a fund-flow tracer for this address in the DFIR catalog"
               >
                 <Search size={11} /> trace address →
               </Link>

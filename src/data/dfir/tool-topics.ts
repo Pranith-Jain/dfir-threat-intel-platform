@@ -177,14 +177,4 @@ export const TOOL_TOPICS: ToolTopic[] = [
     href: '/threatintel/telegram',
     blurb: 'See the deepdarkCTI-backed Telegram catalogue + cybercrime channel index',
   },
-  {
-    term: 'investigation notebook',
-    href: '/dfir/notebooks',
-    blurb: 'Persistent notes, IOC snapshots, and findings for DFIR investigations',
-  },
-  {
-    term: 'notebook',
-    href: '/dfir/notebooks',
-    blurb: 'Persistent notes, IOC snapshots, and findings for DFIR investigations',
-  },
 ];

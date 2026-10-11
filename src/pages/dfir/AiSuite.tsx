@@ -1,6 +1,7 @@
 import { TabLoader } from '../../components/ui/TabLoader';
 import { Tabs } from '../../components/ui/Tabs';
-import { Suspense, lazy, useState } from 'react';
+import { Suspense, lazy } from 'react';
+import { useHubTab } from '../../hooks/useHubTab';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { Sparkles } from 'lucide-react';
 
@@ -21,7 +22,7 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
 ];
 
 export default function AiSuite(): JSX.Element {
-  const [activeTab, setActiveTab] = useState<TabId>('insight');
+  const [activeTab, setActiveTab] = useHubTab(TABS, 'insight');
 
   return (
     <DataPageLayout

@@ -225,18 +225,6 @@ function buildPivots(query: string): MatchedEntry[] {
     return pivots;
   }
 
-  if (ioc.type === 'btc') {
-    pivots.push({
-      kind: 'tool',
-      label: `Crypto Trace → ${ioc.value.slice(0, 24)}…`,
-      desc: 'On-chain BTC tracing - flow + cluster + exchange-attribution',
-      path: `/dfir/crypto-tracer?address=${enc}`,
-      sectionLabel: 'IOC pivot',
-      matchedBy: 'pivot',
-    });
-    return pivots;
-  }
-
   if (ioc.type === 'actor-slug') {
     pivots.push({
       kind: 'tool',

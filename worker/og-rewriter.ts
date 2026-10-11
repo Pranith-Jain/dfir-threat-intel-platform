@@ -119,7 +119,6 @@ const REDIRECT_CANONICALS: Record<string, string> = {
   '/dfir/atlas': '/threatintel/wiki/llm',
   '/dfir/azure-rbac': '/dfir/iam-hub',
   '/dfir/chrono-ai': '/dfir/ai-suite',
-  '/dfir/crypto-trace': '/dfir/crypto-tracer',
   '/dfir/dashboard': '/dfir',
   '/dfir/decode': '/dfir/codec',
   '/dfir/detection-lab': '/dfir/rule-converter',
@@ -148,7 +147,6 @@ const REDIRECT_CANONICALS: Record<string, string> = {
   '/dfir/phone-osint': '/dfir/phone-hub',
   '/dfir/privacy': '/dfir/privacy-hub',
   '/dfir/querycraft-ai': '/dfir/ai-suite',
-  '/dfir/quicktrace': '/dfir/crypto-tracer',
   '/dfir/report-analyzer': '/dfir/report-hub',
   '/dfir/report-composer': '/dfir/report-hub',
   '/dfir/report-ingest': '/dfir/stix-workbench',
@@ -168,8 +166,6 @@ const REDIRECT_CANONICALS: Record<string, string> = {
   '/dfir/threat-hunt': '/dfir/ioc-investigate',
   '/dfir/tools/:group': '/dfir/catalog',
   '/dfir/tor-gateway': '/dfir/catalog',
-  '/dfir/tracepulse': '/dfir/crypto-tracer',
-  '/dfir/tracer': '/dfir/crypto-tracer',
   '/dfir/username': '/dfir/username-investigator',
   '/dfir/username-osint': '/dfir/username-investigator',
   '/dfir/verdikt-ai': '/dfir/ai-suite',
@@ -777,7 +773,6 @@ export async function resolveBlogJsonLd(url: URL, env: Env): Promise<string> {
  */
 const NOINDEX_PREFIXES = [
   '/dfir/breach',
-  '/dfir/pgp-tool',
   '/dfir/phishing',
   '/threatintel/telegram-leaks/channels',
   '/threatintel/misp-browser',
@@ -833,13 +828,7 @@ export async function injectOgMeta(
   }
   const ogOverride = await resolveOg(url, env);
   const blogLd = await resolveBlogJsonLd(url, env);
-  let ogRewritten = rewriteHtml(
-    html,
-    ogOverride,
-    canonicalUrlFor(url, env),
-    undefined,
-    url.pathname
-  );
+  let ogRewritten = rewriteHtml(html, ogOverride, canonicalUrlFor(url, env), undefined, url.pathname);
   if (blogLd) ogRewritten = ogRewritten.replace(/<\/head>/i, `${blogLd}</head>`);
   if (shouldNoindex(url.pathname)) {
     ogRewritten = ogRewritten.replace(

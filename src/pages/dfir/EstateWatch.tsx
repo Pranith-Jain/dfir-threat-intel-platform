@@ -311,16 +311,6 @@ export default function EstateWatch(): JSX.Element {
               </p>
             </Link>
             <Link
-              to="/dfir/fusion-exposure"
-              className="rounded-xl border border-line-1 p-4 hover:border-brand-500/40 transition-colors"
-            >
-              <Boxes size={16} className="text-brand-600 dark:text-brand-400 mb-2" />
-              <div className="font-display font-semibold text-body text-sm">Fusion Worklist</div>
-              <p className="text-xs text-muted mt-1 leading-relaxed">
-                Vulnerabilities ranked against what is actually exposed, not CVSS alone.
-              </p>
-            </Link>
-            <Link
               to="/threatintel/estate"
               className="rounded-xl border border-line-1 p-4 hover:border-brand-500/40 transition-colors"
             >

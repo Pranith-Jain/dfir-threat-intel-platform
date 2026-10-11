@@ -14,6 +14,7 @@ import { callerOwnerId, ownerVisibilityFilter, ownerCheck } from '../lib/ownersh
 import { badRequest, notFound, serviceUnavailable } from '../lib/api-error';
 import { safeJsonBody } from '../lib/safe-body';
 import { parseBooleanQuery } from '../lib/tg-boolean-search';
+import { routeCacheGet, routeCachePut } from '../lib/route-cache';
 
 function genId(prefix: string): string {
   return `${prefix}_${crypto.randomUUID()}`;
@@ -87,12 +88,27 @@ export async function tgBooleanSearchHandler(c: Context<{ Bindings: Env }>): Pro
   const whereClause = whereParts.length > 0 ? `WHERE ${whereParts.join(' AND ')}` : '';
   const orderClause = sort === 'oldest' ? 'ASC' : 'DESC';
 
-  // Count
-  const countRow = await db
-    .prepare(`SELECT COUNT(*) as total FROM telegram_leak_entries ${whereClause}`)
-    .bind(...params)
-    .first();
-  const total = (countRow?.total as number) ?? 0;
+  // Count — Cache-API shadowed. The WHERE clause routinely contains
+  // leading-wildcard LIKEs over message_text/domains_found (no B-tree index
+  // can serve those; see migration 0048), so the COUNT scans the full
+  // telegram_leak_entries table — the largest table in the schema. Leak data
+  // arrives on an hourly cron, so 300 s of staleness is invisible. The key
+  // is a digest of the exact WHERE + bind params so every distinct query
+  // gets its own independent shadow.
+  const querySig = await crypto.subtle
+    .digest('SHA-256', new TextEncoder().encode(`${whereClause}|${JSON.stringify(params)}`))
+    .then((buf) => Array.from(new Uint8Array(buf).subarray(0, 12), (b) => b.toString(16).padStart(2, '0')).join(''));
+  const countCacheKey = `tg:search:count:v1:${querySig}`;
+
+  let total: number | null = await routeCacheGet<number>(countCacheKey);
+  if (total === null) {
+    const countRow = await db
+      .prepare(`SELECT COUNT(*) as total FROM telegram_leak_entries ${whereClause}`)
+      .bind(...params)
+      .first();
+    total = (countRow?.total as number) ?? 0;
+    routeCachePut(countCacheKey, total, 300).catch(() => {});
+  }
 
   // Fetch
   const { results } = await db
@@ -136,6 +152,22 @@ export async function tgTimelineHandler(c: Context<{ Bindings: Env }>): Promise<
 
   const whereClause = `WHERE ${whereParts.join(' AND ')}`;
 
+  // Timeline + top-channels are two full-table GROUP BY scans over
+  // telegram_leak_entries. Leak data is ingested by an hourly cron, so a
+  // 300 s Cache-API shadow collapses repeat loads to zero D1 reads.
+  const timelineSig = await crypto.subtle
+    .digest('SHA-256', new TextEncoder().encode(`${whereClause}|${JSON.stringify(params)}|${days}`))
+    .then((buf) => Array.from(new Uint8Array(buf).subarray(0, 12), (b) => b.toString(16).padStart(2, '0')).join(''));
+  const timelineCacheKey = `tg:timeline:v1:${timelineSig}`;
+
+  const cachedTimeline = await routeCacheGet<{
+    timeline: unknown[];
+    topChannels: unknown[];
+  }>(timelineCacheKey);
+  if (cachedTimeline) {
+    return c.json({ ...cachedTimeline, days });
+  }
+
   const { results } = await db
     .prepare(
       `
@@ -169,6 +201,8 @@ export async function tgTimelineHandler(c: Context<{ Bindings: Env }>): Promise<
     )
     .bind(...params)
     .all();
+
+  routeCachePut(timelineCacheKey, { timeline: results, topChannels }, 300).catch(() => {});
 
   return c.json({ timeline: results, topChannels, days });
 }

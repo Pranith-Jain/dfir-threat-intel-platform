@@ -1,6 +1,7 @@
 import { TabLoader } from '../../components/ui/TabLoader';
 import { Tabs } from '../../components/ui/Tabs';
-import { Suspense, lazy, useState } from 'react';
+import { Suspense, lazy } from 'react';
+import { useHubTab } from '../../hooks/useHubTab';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { FileText } from 'lucide-react';
 
@@ -17,7 +18,7 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
 ];
 
 export default function StixWorkbench(): JSX.Element {
-  const [activeTab, setActiveTab] = useState<TabId>('build');
+  const [activeTab, setActiveTab] = useHubTab(TABS, 'build');
 
   return (
     <DataPageLayout

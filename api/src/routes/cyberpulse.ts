@@ -12,7 +12,7 @@ import type { Env } from '../env';
 import { logError } from '../lib/logger';
 import { internalError, serviceUnavailable } from '../lib/api-error';
 import { requireAdmin } from '../lib/admin-auth';
-import { cachedJson } from '../lib/route-cache';
+import { cachedJson, routeCacheGet, routeCachePut } from '../lib/route-cache';
 import { runCyberPulseIngestion } from './cyberpulse-ingest';
 
 const DEFAULT_LIMIT = 50;
@@ -100,11 +100,23 @@ export async function cyberpulseIncidentsHandler(c: Context<{ Bindings: Env }>):
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-  const countResult = await db
-    .prepare(`SELECT COUNT(*) as total FROM cyberpulse_incidents ${where}`)
-    .bind(...binds)
-    .first<{ total: number }>();
-  const total = countResult?.total ?? 0;
+  // COUNT(*) is the expensive part of this handler — it scans every row
+  // matching the WHERE clause (up to 36k+ rows on cyberpulse_incidents). The
+  // incidents themselves are only ingested every 30 min by the cron, so a
+  // 300s per-colo Cache-API shadow collapses repeat counts to zero D1 reads.
+  // The key encodes every filter that shapes the count, so the 7/30/90-day
+  // toggles and every filter combination stay independent.
+  const countKey = `cyberpulse:count:v1:${daysBack}:${type || ''}:${severity || ''}:${platform || ''}:${sector || ''}:${actor || ''}:${victim || ''}:${country || ''}:${search || ''}`;
+  let total: number | null = await routeCacheGet<number>(countKey);
+  if (total === null) {
+    const countResult = await db
+      .prepare(`SELECT COUNT(*) as total FROM cyberpulse_incidents ${where}`)
+      .bind(...binds)
+      .first<{ total: number }>();
+    total = countResult?.total ?? 0;
+    // Fire-and-forget cache write — costs the response nothing.
+    routeCachePut(countKey, total, 300).catch(() => {});
+  }
 
   const { results } = await db
     .prepare(

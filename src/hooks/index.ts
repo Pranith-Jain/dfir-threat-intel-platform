@@ -9,5 +9,6 @@ export { useDataFetch } from './useDataFetch';
 export { useCountUp } from './useCountUp';
 export { useReduceMotion } from './useMediaQuery';
 export { useDebounce } from './useDebounce';
+export { useHubTab } from './useHubTab';
 export { useWebSocket } from './useWebSocket';
 export type { WebSocketState, UseWebSocketOptions, UseWebSocketReturn } from './useWebSocket';

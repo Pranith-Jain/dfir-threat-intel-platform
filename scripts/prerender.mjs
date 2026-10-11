@@ -204,14 +204,6 @@ const ROUTES = [
   '/dfir/pi-taxonomy',
   '/dfir/mcp-audit',
   '/dfir/cve-prioritizer',
-  '/dfir/fusion-exposure',
-  '/dfir/risk-register',
-  '/dfir/attack-path',
-  '/dfir/grc-evidence',
-  '/dfir/vulnerability-ops',
-  '/dfir/ransomware-quant',
-  '/dfir/patch-task-mgr',
-  '/dfir/soc-automation',
 
   // ── DFIR: cloud security (7) — 0 API calls ────────────────────
   '/dfir/iam-hub',
@@ -234,7 +226,6 @@ const ROUTES = [
   '/dfir/zero-trust-ai-agents',
 
   // ── DFIR: dark web workbench (2) — 0 API calls ────────────────
-  '/dfir/pgp-tool',
 
   // ── DFIR: investigator workbenches (6) — 0 API calls ──────────
   '/dfir/domain-investigator',
@@ -249,12 +240,9 @@ const ROUTES = [
   '/dfir/vuln-toolkit',
   '/dfir/sec-headers-live',
   '/dfir/osint-mapper',
-  '/dfir/notebooks',
 
   // ── DFIR: triage & forensic tools (5) — 0 API calls ───────────
   '/dfir/dnscope',
-  '/dfir/crypto-tracer',
-  '/dfir/tracerules',
   '/dfir/phone-hub',
   '/dfir/infostealer-intel',
 
@@ -323,7 +311,6 @@ const ROUTES = [
   '/dfir/ai-suite',
 
   // ── H3AD-SEC hunting / detection / ops (5) — prerendered chrome ─
-  '/dfir/pivex',
   '/dfir/phishops',
   '/dfir/phishbook',
 
@@ -349,12 +336,10 @@ const ROUTES = [
   '/dfir/asset-intel',
   '/dfir/blocklists',
   '/dfir/ct-monitor',
-  '/dfir/file',
   '/dfir/host-graph',
   '/dfir/report-hub',
 
   // ── Phase 5: New gap features ─────────────────────────────────
-  '/dfir/export-hub',
 
   // ── ThreatIntel: real pages, not redirects (28) ──────────────
   '/dfir/copilot',
@@ -366,11 +351,7 @@ const ROUTES = [
 
   // ── Previously shell-only static pages (SEO/CWV: crawlable first paint) ─
   '/argus',
-  '/dfir/agent-history',
-  '/dfir/csrf-poc',
   '/dfir/detection-chokepoints',
-  '/dfir/one-time-secret',
-  '/dfir/xss-payloads',
   '/threatintel/detection-wiki',
   '/threatintel/threat-actor-monitor',
   '/threatintel/alerts',

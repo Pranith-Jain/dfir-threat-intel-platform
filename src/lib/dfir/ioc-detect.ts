@@ -147,15 +147,6 @@ export function getIocPivots(ioc: DetectedIoc): Pivot[] {
     });
     return pivots;
   }
-  if (ioc.type === 'btc') {
-    pivots.push({
-      label: 'Crypto Trace',
-      desc: 'On-chain BTC flow + cluster + exchange attribution',
-      path: `/dfir/crypto-tracer?address=${enc}`,
-    });
-    return pivots;
-  }
-
   // Network indicators + hashes - IOC Checker is universal primary pivot.
   pivots.push({
     label: 'IOC Checker',

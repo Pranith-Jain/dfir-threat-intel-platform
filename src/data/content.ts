@@ -689,7 +689,6 @@ const CRUCIBLE_NAV: NavLinkExt = {
     { label: 'Decode', href: '/dfir/decode' },
     { label: 'Encoder', href: '/dfir/encoder' },
     { label: 'DNSCOPE', href: '/dfir/dnscope' },
-    { label: 'TRACERULES', href: '/dfir/tracerules' },
     { label: 'Rule Converter', href: '/dfir/rule-converter' },
     { label: 'Blocklists', href: '/dfir/blocklists' },
     { label: 'Threat Graph', href: '/dfir/threat-graph' },

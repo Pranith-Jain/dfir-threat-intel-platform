@@ -1,6 +1,7 @@
 import { TabLoader } from '../../components/ui/TabLoader';
 import { Tabs } from '../../components/ui/Tabs';
-import { Suspense, lazy, useState } from 'react';
+import { Suspense, lazy } from 'react';
+import { useHubTab } from '../../hooks/useHubTab';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { Lock } from 'lucide-react';
 
@@ -19,7 +20,7 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
 ];
 
 export default function IamHub(): JSX.Element {
-  const [activeTab, setActiveTab] = useState<TabId>('aws');
+  const [activeTab, setActiveTab] = useHubTab(TABS, 'aws');
 
   return (
     <DataPageLayout

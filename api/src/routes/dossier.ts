@@ -227,8 +227,8 @@ function classifyEntity(query: string, queryType: string): DossierEntity {
 
 async function buildCveDossier(c: Context<{ Bindings: Env }>, entity: DossierEntity): Promise<Response> {
   const kv = c.env.KV_CACHE;
-  // L1-first read of the shared EPSS/enrichment blob (same `cve:<id>` keys the
-  // fusion-exposure loop consumes); 1h shadow matches its ~24h data stability.
+  // L1-first read of the shared EPSS/enrichment blob (the same `cve:<id>` keys
+  // ioc-enrich-deep reads); 1h shadow matches its ~24h data stability.
   const cached = kv ? (await kvBackedGet<Record<string, unknown>>(kv, `cve:${entity.value}`, 3600)).value : null;
 
   const data = cached ?? {};

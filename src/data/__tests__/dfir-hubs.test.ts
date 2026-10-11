@@ -105,11 +105,6 @@ describe('dfir-hubs (DFIR catalog registry)', () => {
     }
   });
 
-  it('catalogSearch matches a specific known page (TRACERULES)', () => {
-    const results = catalogSearch('tracerules');
-    expect(results.some((r) => r.path === '/dfir/tracerules')).toBe(true);
-  });
-
   it('catalogSearch returns empty for an empty query', () => {
     expect(catalogSearch('')).toEqual([]);
     expect(catalogSearch('   ')).toEqual([]);
@@ -127,13 +122,7 @@ describe('dfir-hubs (DFIR catalog registry)', () => {
   });
 
   it('newly added pages are findable', () => {
-    for (const p of [
-      '/dfir/dnscope',
-      '/dfir/tracerules',
-      '/dfir/passive-dns',
-      '/dfir/sigbase',
-      '/dfir/cloud-reference',
-    ]) {
+    for (const p of ['/dfir/dnscope', '/dfir/passive-dns', '/dfir/sigbase']) {
       const result = getPageByPath(p);
       expect(result, `${p} is missing from the catalog`).toBeDefined();
     }
@@ -154,7 +143,6 @@ describe('dfir-hubs (DFIR catalog registry)', () => {
       }
     }
     const REDIRECTS = new Set([
-      '/dfir/file',
       '/dfir/infostealer-intel',
       '/dfir/host',
       '/dfir/sigma-convert',

@@ -109,14 +109,6 @@ const AUDITED_WRITES: Array<{ path: string; group: string }> = [
 
 /** Prefix families added by the same audit. */
 const AUDITED_PREFIX_MEMBERS = [
-  '/api/v1/export/stix',
-  '/api/v1/export/misp',
-  '/api/v1/export/sigma',
-  '/api/v1/export/yara',
-  '/api/v1/export/snort',
-  '/api/v1/export/suricata',
-  '/api/v1/export/csv',
-  '/api/v1/export/pfsense',
   '/api/v1/soc/playbooks',
   '/api/v1/soc/playbooks/abc123',
   '/api/v1/soc/playbooks/abc123/execute',
@@ -171,7 +163,7 @@ describe('rate limiter — 2026-10-10 audit coverage', () => {
     const ip = nextIp();
     await seedGlobal(ip, 0);
     await seedStrict(ip, 10);
-    const { nextCalled } = await run('https://api.example.com/api/v1/export/stix', 'GET', ip);
+    const { nextCalled } = await run('https://api.example.com/api/v1/soc/playbooks', 'GET', ip);
     expect(nextCalled).toBe(true);
   });
 
@@ -181,7 +173,7 @@ describe('rate limiter — 2026-10-10 audit coverage', () => {
     const ip = nextIp();
     await seedGlobal(ip, 29);
     await seedStrict(ip, 10);
-    const { nextCalled } = await run('https://api.example.com/api/v1/voc', 'POST', ip);
+    const { nextCalled } = await run('https://api.example.com/api/v1/external-resources', 'POST', ip);
     expect(nextCalled).toBe(true);
   });
 });

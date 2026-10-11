@@ -1,7 +1,7 @@
 import { TabLoader } from '../../components/ui/TabLoader';
 import { Tabs } from '../../components/ui/Tabs';
-import { Suspense, lazy, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
+import { useHubTab } from '../../hooks/useHubTab';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { Users } from 'lucide-react';
 
@@ -20,8 +20,7 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
 ];
 
 export default function UsernameInvestigator(): JSX.Element {
-  const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<TabId>((searchParams.get('tab') as TabId) || 'profiles');
+  const [activeTab, setActiveTab] = useHubTab(TABS, 'profiles');
 
   return (
     <DataPageLayout

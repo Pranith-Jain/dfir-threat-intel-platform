@@ -1,6 +1,7 @@
 import { TabLoader } from '../../components/ui/TabLoader';
 import { Tabs } from '../../components/ui/Tabs';
-import { Suspense, lazy, useState } from 'react';
+import { Suspense, lazy } from 'react';
+import { useHubTab } from '../../hooks/useHubTab';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { FileCode } from 'lucide-react';
 
@@ -15,7 +16,7 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
 ];
 
 export default function YaraWorkbench(): JSX.Element {
-  const [activeTab, setActiveTab] = useState<TabId>('library');
+  const [activeTab, setActiveTab] = useHubTab(TABS, 'library');
 
   return (
     <DataPageLayout

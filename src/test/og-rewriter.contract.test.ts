@@ -194,7 +194,6 @@ describe('blog structured data (worker-injected JSON-LD)', () => {
 describe('credential/login surfaces served noindex (Safe Browsing mitigation)', () => {
   for (const p of [
     '/dfir/breach',
-    '/dfir/pgp-tool',
     '/dfir/phishing',
     '/threatintel/telegram-leaks/channels',
     '/threatintel/misp-browser',
