@@ -3,6 +3,222 @@
     "Adversary": {
       "Aliases": [],
       "Associated_Groups": [],
+      "Description": "The adversary is using infostealer malware to compromise Claude user sessions.",
+      "Known_Campaigns": [],
+      "Motivation": "Financial gain through unauthorized usage of Claude accounts.",
+      "Sophistication": "Moderate, leveraging common infostealer malware.",
+      "Strategic_Objectives": "Access and exploit Claude user accounts for unauthorized usage.",
+      "TTPs_Employed": ["Session hijacking", "Credential theft"]
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Malware delivered via downloads or malicious apps.",
+        "Detection": "Monitor for unusual download activity • Check for unauthorized app installations",
+        "Remediation": "Educate users on safe downloading practices • Implement application whitelisting",
+        "Stage": "Delivery",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to get into your network.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exploitation of vulnerabilities in client applications.",
+            "technique_id": "T1203",
+            "technique_name": "Exploitation for Client Execution"
+          }
+        ],
+        "Techniques": ["T1203"]
+      },
+      {
+        "Description": "Exploitation of infected systems to steal session data.",
+        "Detection": "Monitor for access to credential stores • Check for unusual session activity",
+        "Remediation": "Use strong, unique passwords • Enable multi-factor authentication",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to steal account names and passwords.",
+            "tactic_id": "TA0006",
+            "tactic_name": "Credential Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may search for credentials in files or in the Windows Registry.",
+            "technique_id": "T1555",
+            "technique_name": "Credentials from Password Stores"
+          }
+        ],
+        "Techniques": ["T1555"]
+      },
+      {
+        "Description": "Installation of infostealer malware on victim systems.",
+        "Detection": "Monitor for changes to autostart locations • Check for unauthorized software installations",
+        "Remediation": "Regularly update and patch systems • Use endpoint protection solutions",
+        "Stage": "Installation",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to maintain their foothold.",
+            "tactic_id": "TA0003",
+            "tactic_name": "Persistence"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may use system mechanisms that trigger execution at boot or logon.",
+            "technique_id": "T1547",
+            "technique_name": "Boot or Logon Autostart Execution"
+          }
+        ],
+        "Techniques": ["T1547"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Use of stolen sessions to access and consume Claude accounts.",
+        "Detection": "Monitor for unusual account activity • Check for unauthorized access patterns",
+        "Remediation": "Revoke compromised sessions • Implement session timeout policies",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to gather data of interest to their goal.",
+            "tactic_id": "TA0009",
+            "tactic_name": "Collection"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may communicate using application layer protocols to avoid detection.",
+            "technique_id": "T1071",
+            "technique_name": "Application Layer Protocol"
+          }
+        ],
+        "Techniques": ["T1071"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": ["Session hijacking"],
+      "Description": "The adversary employs infostealer malware to capture active login sessions.",
+      "Exploits": [],
+      "Lateral_Movement_Tools": [],
+      "Malware": ["Infostealer"],
+      "Persistence_Mechanisms": [],
+      "Tools": ["Vidar", "LummaC2", "StealC", "RedLine", "Acreed", "Atomic Stealer (AMOS)"],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [],
+    "Extracted_Entities": {
+      "Assets": ["Claude user accounts"],
+      "Breach_Types": ["Session hijacking"],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Anthropic"],
+      "Countries": [],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["infostealer", "malware", "Claude", "session hijacking"],
+      "Malware_Families": ["Vidar", "LummaC2", "StealC", "RedLine", "Acreed", "Atomic Stealer (AMOS)"],
+      "Malware_Filenames": [],
+      "Patches": [],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Technology"],
+      "Software": ["Claude"],
+      "Technologies": [],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": []
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "The infrastructure involves compromised user devices infected with infostealer malware.",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [
+      "Change all credentials associated with compromised accounts",
+      "Revoke all active sessions and re-authenticate",
+      "Conduct a thorough malware scan and removal",
+      "Educate users on safe downloading practices"
+    ],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Session hijacking", "Credential theft"],
+      "Tools": ["Vidar", "LummaC2", "StealC", "RedLine", "Acreed", "Atomic Stealer (AMOS)"]
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "High",
+    "Threat_Actors": [],
+    "Timestamp": "2026-08-30T10:30:00Z",
+    "Title": "Infostealer Malware Compromises Claude User Sessions",
+    "Tools": ["Vidar", "LummaC2", "StealC", "RedLine", "Acreed", "Atomic Stealer (AMOS)", "Claude"],
+    "Victim": {
+      "Access_Vectors": ["Malware infection"],
+      "Data_Types_At_Risk": ["Login credentials", "Session cookies"],
+      "Description": "Users of the Claude service who have been infected with infostealer malware.",
+      "Geography": "Global",
+      "Impact_Severity": "High",
+      "Industry": "Technology",
+      "Security_Posture": "Compromised",
+      "Targeted_Assets": ["Claude user accounts", "Login sessions"]
+    },
+    "diamond_model_summary": "The incident involves an adversary using infostealer malware to compromise Claude user sessions. The adversary's capability includes deploying malware such as Vidar, LummaC2, StealC, RedLine, and Acreed on Windows, and Atomic Stealer (AMOS) on Macs. The infrastructure is based on compromised user devices, and the victims are Claude users globally. The adversary's motivation appears to be financial gain through unauthorized usage of Claude accounts.",
+    "doc_summary": "Anthropic has alerted users of its Claude service about a security incident involving infostealer malware. The malware, identified as Vidar, LummaC2, StealC, RedLine, and Acreed on Windows, and Atomic Stealer (AMOS) on Macs, has been used to steal active Claude login sessions. This allows attackers to access accounts and consume usage without needing passwords or 2FA. The malware typically arrives via downloads or malicious apps, collecting browser passwords, login cookies, and other credentials. Affected users are being signed out, and unauthorized charges are being refunded. Anthropic stresses that the malware is not related to Claude itself. Users are advised to change credentials, revoke sessions, and remove the malware to prevent further compromise.",
+    "enrichment": null,
+    "id": "2869b5fa999ec042e1b1af0349d2e472",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The attack begins with the delivery of infostealer malware via downloads or malicious apps. Once installed, the malware exploits infected systems to steal session data, bypassing traditional authentication methods. The adversary then uses these stolen sessions to access and consume Claude accounts. The attack highlights the importance of securing user sessions and monitoring for unusual activity.",
+    "operational_tags": ["High Priority", "C2"],
+    "priority_score": 88,
+    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes malware tools such as Vidar, LummaC2, StealC, RedLine, Acreed, and Atomic Stealer (AMOS). These tools are used to steal session data and compromise user accounts. The lack of specific IP addresses or domain names in the incident limits the ability to apply traditional network-based detection methods, emphasizing the need for endpoint security and user education.",
+    "relevance_score": 63,
+    "sequence": 21791,
+    "source": "https://www.bleepingcomputer.com/news/artificial-intelligence/anthropic-warns-infostealer-malware-is-hijacking-claude-sessions-to-drain-usage/",
+    "slug": "Infostealer_Malware_Compromises_Claude_User_Sessions-021791",
+    "shard": 1
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
       "Description": "FulcrumSec is a financially motivated data-extortion group active since 2025, focusing on stealing sensitive corporate data and threatening to publish it.",
       "Known_Campaigns": [],
       "Motivation": "Financial",
@@ -105652,184 +105868,6 @@
     "sequence": 21295,
     "source": "https://thehackernews.com/2026/07/russian-speaking-hacker-uses-google.html",
     "slug": "AI-Assisted_Cyber_Attack_by_Russian_Threat_Actor__bandcampro_-021295",
-    "shard": 1
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "No significant information detected",
-      "Known_Campaigns": [],
-      "Motivation": "",
-      "Sophistication": "",
-      "Strategic_Objectives": "",
-      "TTPs_Employed": []
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Exploitation of heap-based buffer overflow in 7-Zip XZ archive handling",
-        "Detection": "",
-        "Remediation": "Update to 7-Zip version 26.02 or later.",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary is trying to get into your network.",
-            "tactic_id": "TA0001",
-            "tactic_name": "Initial Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exploitation of a vulnerability in client applications to execute code.",
-            "technique_id": "T1203",
-            "technique_name": "Exploitation for Client Execution"
-          }
-        ],
-        "Techniques": ["T1203"]
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Actions on Objectives",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": ["CVE-2026-14266"],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "Heap-based buffer overflow in 7-Zip XZ archive handling",
-      "Exploits": ["CVE-2026-14266"],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": ["7-Zip"],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": ["Computers running 7-Zip"],
-      "Breach_Types": [],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["Trend Micro", "Lunbun LLC"],
-      "Countries": [],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["heap-based buffer overflow", "XZ archive", "remote code execution"],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": ["7-Zip 26.02"],
-      "Phishing_Infrastructure": [],
-      "Sectors": [],
-      "Software": ["7-Zip"],
-      "Technologies": [],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": ["CVE-2026-14266"]
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "No significant information detected",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [
-      "Ensure all systems using 7-Zip are updated to version 26.02 or later.",
-      "Monitor for any unusual activity related to 7-Zip usage."
-    ],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["CVE-2026-14266"],
-      "Tools": ["7-Zip"]
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "High",
-    "Threat_Actors": [],
-    "Timestamp": "2026-07-19T18:30:00Z",
-    "Title": "Heap-Based Buffer Overflow in 7-Zip XZ Archive Handling (CVE-2026-14266)",
-    "Tools": ["7-Zip"],
-    "Victim": {
-      "Access_Vectors": ["Local"],
-      "Data_Types_At_Risk": [],
-      "Description": "Users of 7-Zip software",
-      "Geography": "",
-      "Impact_Severity": "High",
-      "Industry": "",
-      "Security_Posture": "",
-      "Targeted_Assets": ["Computers running 7-Zip"]
-    },
-    "diamond_model_summary": "The incident involves a heap-based buffer overflow vulnerability in 7-Zip's XZ archive handling, identified as CVE-2026-14266. The flaw allows local attackers to execute code within the context of the current process. The vulnerability was discovered by Landon Peng of Lunbun LLC and reported to 7-Zip. Trend Micro's Zero Day Initiative detailed the issue, which was fixed in 7-Zip version 26.02. The vulnerability is rated high severity, with no public proof-of-concept or exploitation in the wild reported as of July 20, 2026.",
-    "doc_summary": "The CVE-2026-14266 vulnerability in 7-Zip involves a heap-based buffer overflow in the XZ archive handling, allowing code execution in the context of the current process. Discovered by Landon Peng of Lunbun LLC and reported to 7-Zip on June 5, 2026, the flaw was detailed by Trend Micro's Zero Day Initiative on July 15, 2026. The vulnerability is rated high severity with a CVSS score of 7.0. The issue was fixed in 7-Zip version 26.02, released on June 25, 2026. The flaw allows local attackers to execute code by opening a crafted XZ archive, but it does not grant additional privileges. The vulnerability affects versions back to at least 21.07. No public proof-of-concept or exploitation in the wild has been reported as of July 20, 2026. Users are advised to update to 7-Zip 26.02 or later to mitigate the risk.",
-    "enrichment": null,
-    "id": "b8d5896fa88c764b985f8d87536094c82f46c67f86d369bb8ca2c7fb75e86c67",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The kill chain for this incident involves the exploitation of a heap-based buffer overflow in 7-Zip's XZ archive handling. The vulnerability allows local attackers to execute code by opening a crafted XZ archive. The exploitation stage is critical, as it enables code execution within the context of the current process. The vulnerability was fixed in 7-Zip version 26.02, and users are advised to update to mitigate the risk. No significant activity was detected in other stages of the kill chain, such as reconnaissance, weaponization, delivery, installation, command and control, or actions on objectives.",
-    "operational_tags": ["High Priority", "CVE-linked"],
-    "priority_score": 69,
-    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident is limited due to the lack of specific indicators such as hashes, IP addresses, or domains. The primary indicator is the vulnerability itself, CVE-2026-14266, which affects 7-Zip's XZ archive handling. The vulnerability allows local attackers to execute code within the context of the current process. The primary remediation is updating to 7-Zip version 26.02 or later. No additional indicators such as tools, TTPs, or network artifacts were identified, limiting the overall scoring on the Pyramid of Pain.",
-    "relevance_score": 41,
-    "sequence": 21294,
-    "source": "https://thehackernews.com/2026/07/new-7-zip-vulnerability-could-let.html",
-    "slug": "Heap-Based_Buffer_Overflow_in_7-Zip_XZ_Archive_Handling__CVE-2026-14266_-021294",
     "shard": 1
   }
 ]
