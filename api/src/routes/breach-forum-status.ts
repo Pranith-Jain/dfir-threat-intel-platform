@@ -114,23 +114,34 @@ export async function breachForumStatusHandler(c: Context<{ Bindings: Env }>): P
     readRecentDeltas(db, { since, limit }),
     safeNullLog(
       'd1-count-breach-forum',
-      // Scoped to the response window, NOT the whole table.
+      // Counts SNAPSHOTS in the window, from breach_forum_snapshots.
       //
-      // This was `SELECT COUNT(*) FROM breach_forum_status` with no WHERE —
-      // an unconditional full scan of a table holding ~10^5-10^6 snapshot rows,
-      // executed on every cache miss purely to populate one cosmetic field. It
-      // measured at ~631,000 rows_read per execution; two executions were
-      // 22% of the account's entire 5M/day free-tier read budget, and it was
-      // the single largest contributor to blowing the limit.
+      // This has been rewritten twice, each time because the previous form was
+      // the account's largest read consumer:
       //
-      // `observed_at >= ?` is served by idx_bfs_observed_at, so the cost is now
-      // bounded by the (already clamped) window rather than by table size.
-      // Semantics improve too: "rows in the window you asked about" is a more
-      // useful health signal than a lifetime table total.
+      //   v1 `SELECT COUNT(*) FROM breach_forum_status` — no WHERE, so a full
+      //      scan of a table holding up to ~10^6 snapshot rows (~631k rows_read
+      //      per execution) to populate one cosmetic field.
+      //   v2 `... WHERE observed_at >= ?` — bounded by the window, but still
+      //      counted FORUM ROWS, and the table holds all 1,494 forums x every
+      //      snapshot in the window. At ~15 snapshots/day that is ~22k rows to
+      //      read per call, still ~854k/day.
+      //   v3 (now) count one row per snapshot instead. The snapshot count is
+      //      the same health signal — arguably a better one, since it measures
+      //      observation cadence rather than being multiplied by forum count —
+      //      and reads ~15-160 rows instead of ~22,000.
+      //
+      // Falls back to the historical table if the snapshot log is not present
+      // (pre-0054), so a partial rollout degrades instead of erroring.
       db
-        .prepare('SELECT COUNT(*) AS n FROM breach_forum_status WHERE observed_at >= ?')
-        .bind(since)
-        .first<{ n: number }>()
+        .prepare(
+          `SELECT
+             (SELECT COUNT(*) FROM breach_forum_snapshots WHERE observed_at >= ?) AS n,
+             (SELECT COUNT(*) FROM breach_forum_status WHERE observed_at >= ?) AS legacy_n`
+        )
+        .bind(since, since)
+        .first<{ n: number; legacy_n: number }>()
+        .then((r) => ({ n: r?.n || r?.legacy_n || 0 }))
     ),
   ]);
 

@@ -86,14 +86,17 @@ export const RETENTION_POLICY: RetentionPolicy[] = [
   { table: 'telegram_discovered_channels', column: 'discovered_at', format: 'iso' },
   { table: 'telegram_leak_entries', column: 'discovered_at', format: 'iso' },
 
-  // Breach-forum status snapshots (hourly cron appends ~670 rows/hour;
-  // without a sweep this table alone would pin the 500 MB free-tier cap).
-  { table: 'breach_forum_status', column: 'observed_at', format: 'iso' },
-  // Persisted transitions (migration 0052). Same 30d window as the snapshots
-  // they are derived from — anything older is already purged from
-  // breach_forum_status and can never be served. Bounded by construction
-  // (only real status changes are written), but still swept so a forum that
-  // flaps hourly cannot grow the table indefinitely.
+  // Breach-forum: migration 0054 stopped appending full snapshots. The cron now
+  // writes only CHANGED forums into breach_forum_current (~10 rows/snapshot
+  // instead of 1,494) plus one row per snapshot into breach_forum_snapshots.
+  //
+  // breach_forum_status is deliberately REMOVED from the sweep: it is frozen
+  // and no longer written, so a sweep would be a large one-off DELETE whose
+  // rows_written cost exceeds the storage it reclaims. Leave the dead rows
+  // unless the space is specifically wanted.
+  { table: 'breach_forum_snapshots', column: 'observed_at', format: 'iso' },
+  // Persisted transitions (migration 0052). Only real status changes are
+  // written, but still swept so a forum that flaps hourly cannot grow forever.
   { table: 'breach_forum_deltas', column: 'observed_at', format: 'iso' },
 
   // CT monitor

@@ -7,6 +7,9 @@ import {
   readRecentDeltas,
   persistStatusDeltas,
   ensureBreachForumDeltasTable,
+  ensureBreachForumCurrentTable,
+  upsertStatusSnapshot,
+  readLatestSnapshot,
   type ForumStatus,
   type StatusDelta,
   type StatusRow,
@@ -580,5 +583,151 @@ describe('readRecentDeltas cost-safety (7500 regression)', () => {
     expect(out).toHaveLength(1);
     expect(out[0]!.name).toBe('alpha');
     expect(seen.some((s) => /LAG\(|LEAD\(|ROW_NUMBER\(/i.test(s))).toBe(false);
+  });
+});
+
+/**
+ * Write-amplification regression tests (migration 0054).
+ *
+ * The account was using 115,375 rows_written/day — 115% of the Workers Free
+ * allowance — and 94% of it came from ONE statement:
+ *
+ *     INSERT OR REPLACE INTO breach_forum_status ...
+ *       x23,075 executions, 115,375 rows  = exactly 5.0 rows each
+ *
+ * The 5.0 is 1 table row + 4 index rows, per forum, for all 1,494 forums, on
+ * every snapshot — to record roughly ten real status changes. Because D1
+ * enforces the daily limit account-wide (not per-statement), breaching it
+ * failed EVERY query, which is what took briefings down alongside it.
+ *
+ * These tests pin the behaviour that makes the cost proportional to what
+ * actually changed rather than to the table size.
+ */
+describe('upsertStatusSnapshot write amplification', () => {
+  const db = testEnv.BRIEFINGS_DB as unknown as D1Database;
+
+  beforeEach(async () => {
+    await ensureBreachForumCurrentTable(db);
+    await db.prepare('DELETE FROM breach_forum_current').run();
+    await db.prepare('DELETE FROM breach_forum_snapshots').run();
+    await db.prepare('DELETE FROM breach_forum_deltas').run();
+  });
+
+  const forum = (name: string, status = 'online') => ({
+    name,
+    source: 'ddc' as const,
+    status: status as ForumStatus,
+    onion: false,
+  });
+
+  it('writes every row on the FIRST snapshot (nothing exists yet)', async () => {
+    const rows = Array.from({ length: 50 }, (_, i) => forum(`f${i}`));
+    const written = await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', rows));
+    // 50 changed + 1 snapshot-log row.
+    expect(written).toBe(51);
+    const n = await db.prepare('SELECT COUNT(*) AS n FROM breach_forum_current').first<{ n: number }>();
+    expect(n?.n).toBe(50);
+  });
+
+  // The core assertion: an unchanged re-snapshot must cost ~nothing.
+  it('writes ZERO forum rows when nothing changed', async () => {
+    const rows = Array.from({ length: 50 }, (_, i) => forum(`f${i}`));
+    await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', rows));
+
+    const written = await upsertStatusSnapshot(db, snap('2026-06-01T01:00:00Z', rows));
+    expect(written).toBe(1); // only the snapshot-log row
+  });
+
+  it('writes only the rows that actually changed', async () => {
+    const rows = Array.from({ length: 50 }, (_, i) => forum(`f${i}`));
+    await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', rows));
+
+    const next = rows.map((r, i) => (i < 3 ? { ...r, status: 'seized' as ForumStatus } : r));
+    const written = await upsertStatusSnapshot(db, snap('2026-06-01T01:00:00Z', next));
+
+    expect(written).toBe(4); // 3 changed + 1 snapshot-log row
+  });
+
+  it('detects a change in a non-status field (url/onion/category/source)', async () => {
+    const base = [{ ...forum('alpha'), url: 'http://a' }];
+    await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', base));
+    expect(await upsertStatusSnapshot(db, snap('2026-06-01T01:00:00Z', base))).toBe(1);
+
+    expect(await upsertStatusSnapshot(db, snap('2026-06-01T02:00:00Z', [{ ...base[0]!, url: 'http://b' }]))).toBe(2);
+  });
+
+  it('adds genuinely new forums without rewriting the existing ones', async () => {
+    await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', [forum('alpha')]));
+    const written = await upsertStatusSnapshot(db, snap('2026-06-01T01:00:00Z', [forum('alpha'), forum('bravo')]));
+    expect(written).toBe(2); // bravo + snapshot-log row
+  });
+
+  // Quantifies the saving against the old implementation.
+  it('costs ~99% fewer writes than the legacy full-snapshot writer', async () => {
+    const SIZE = 1494;
+    const rows = Array.from({ length: SIZE }, (_, i) => forum(`f${i}`));
+    await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', rows));
+
+    // One forum changes out of 1,494.
+    const next = rows.map((r, i) => (i === 7 ? { ...r, status: 'seized' as ForumStatus } : r));
+    const written = await upsertStatusSnapshot(db, snap('2026-06-01T01:00:00Z', next));
+
+    const legacyCost = SIZE * 5; // 1 table row + 4 indexes, as measured live
+    expect(legacyCost).toBe(7470);
+    expect(written).toBe(2);
+    expect(written / legacyCost).toBeLessThan(0.001); // >99.9% reduction
+  });
+
+  it('records one snapshot-log row per snapshot, and ignores a replay', async () => {
+    const rows = [forum('alpha')];
+    await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', rows));
+    await upsertStatusSnapshot(db, snap('2026-06-01T01:00:00Z', rows));
+    // Replay the same observed_at.
+    await upsertStatusSnapshot(db, snap('2026-06-01T01:00:00Z', rows));
+
+    const n = await db.prepare('SELECT COUNT(*) AS n FROM breach_forum_snapshots').first<{ n: number }>();
+    expect(n?.n).toBe(2);
+  });
+
+  it('is idempotent — replaying the same snapshot writes no new forum rows', async () => {
+    const rows = [forum('alpha'), forum('bravo')];
+    await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', rows));
+    const first = await db.prepare('SELECT COUNT(*) AS n FROM breach_forum_current').first<{ n: number }>();
+    await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', rows));
+    const second = await db.prepare('SELECT COUNT(*) AS n FROM breach_forum_current').first<{ n: number }>();
+    expect(second?.n).toBe(first?.n);
+  });
+
+  it('serves readLatestSnapshot from the current-state table', async () => {
+    await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', [forum('alpha', 'online')]));
+    await upsertStatusSnapshot(db, snap('2026-06-01T01:00:00Z', [forum('alpha', 'seized'), forum('bravo')]));
+
+    const prev = await readLatestSnapshot(db);
+    expect(prev).not.toBeNull();
+    const byName = new Map(prev!.rows.map((r) => [r.name, r.status]));
+    expect(byName.get('alpha')).toBe('seized');
+    expect(byName.get('bravo')).toBe('online');
+  });
+
+  // The cron diffs against readLatestSnapshot, so the current-state table has
+  // to be a faithful picture or every snapshot would look like a change.
+  it('yields no deltas when the upstream snapshot is byte-identical', async () => {
+    const rows = [forum('alpha', 'online'), forum('bravo', 'seized')];
+    await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', rows));
+
+    const prev = await readLatestSnapshot(db);
+    const next = snap('2026-06-01T01:00:00Z', rows);
+    expect(computeStatusDeltas(prev!, next)).toEqual([]);
+  });
+
+  it('yields exactly one delta when a single forum changes', async () => {
+    const rows = [forum('alpha', 'online'), forum('bravo', 'seized')];
+    await upsertStatusSnapshot(db, snap('2026-06-01T00:00:00Z', rows));
+
+    const prev = await readLatestSnapshot(db);
+    const next = snap('2026-06-01T01:00:00Z', [forum('alpha', 'online'), forum('bravo', 'online')]);
+    const deltas = computeStatusDeltas(prev!, next);
+    expect(deltas).toHaveLength(1);
+    expect(deltas[0]!.name).toBe('bravo');
   });
 });

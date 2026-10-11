@@ -203,7 +203,49 @@ export function computeStatusDeltas(previous: StatusSnapshot, current: StatusSna
  * the "previous" half of the diff.
  */
 export async function readLatestSnapshot(db: D1Database): Promise<StatusSnapshot | null> {
-  // Find the most recent observed_at, then load all rows for it.
+  // Prefer breach_forum_current: it holds exactly the current state, one row
+  // per forum, so this is a single 1,494-row read with no MAX()/second-query
+  // round trip. Falls back to the historical snapshot table when the new one
+  // has not been seeded yet (pre-0054, or the backfill has not run).
+  try {
+    // NOTE: deliberately no `MAX(observed_at)` here. A bare aggregate with no
+    // GROUP BY collapses the whole table to ONE row with arbitrary values for
+    // the non-aggregated columns — which would silently reduce the previous
+    // state to a single forum and make every other forum look like a
+    // first-observation delta. The max is taken in JS instead.
+    const current = await db
+      .prepare('SELECT name, source, status, url, onion, category, observed_at FROM breach_forum_current')
+      .all<{
+        name: string;
+        source: 'ddc' | 'curated';
+        status: string;
+        url: string | null;
+        onion: number;
+        category: string | null;
+        observed_at: string;
+      }>();
+    const results = current.results ?? [];
+    if (results.length > 0) {
+      const rows: StatusRow[] = results.map((r) => ({
+        name: r.name,
+        source: r.source,
+        status: r.status as ForumStatus,
+        url: r.url ?? undefined,
+        onion: !!r.onion,
+        category: r.category ?? undefined,
+      }));
+      // Freshest row's change time stands in for the snapshot timestamp; only
+      // the rows matter to the diff, and the timestamp feeds the staleness check.
+      const observedAt = results.reduce((max, r) => (r.observed_at > max ? r.observed_at : max), results[0]!.observed_at);
+      return { observed_at: observedAt, rows };
+    }
+  } catch (_catchErr) {
+    const msg = _catchErr instanceof Error ? _catchErr.message : String(_catchErr);
+    // Missing table is the expected pre-0054 state; fall through quietly.
+    if (!/no such table/i.test(msg)) logError('breach_forum_current read failed', _catchErr);
+  }
+
+  // Legacy path — the newest full snapshot out of the historical table.
   const tsRow = await db
     .prepare('SELECT MAX(observed_at) AS latest FROM breach_forum_status')
     .first<{ latest: string | null }>();
@@ -253,10 +295,133 @@ export async function ensureBreachForumStatusTable(db: D1Database): Promise<void
 }
 
 /**
- * Insert all rows of a snapshot in a single batch. Idempotent on
- * (name, source, observed_at) — re-running the same snapshot is safe.
+ * Ensure the current-state + snapshot-log tables exist.
+ *
+ * Idempotent, and safe to call on every hourly tick — after the first run each
+ * statement is a no-op that matches an existing name.
  */
-export async function upsertStatusSnapshot(db: D1Database, snapshot: StatusSnapshot): Promise<void> {
+export async function ensureBreachForumCurrentTable(db: D1Database): Promise<void> {
+  await db
+    .prepare(
+      `CREATE TABLE IF NOT EXISTS breach_forum_current (
+         name TEXT PRIMARY KEY, source TEXT NOT NULL, status TEXT NOT NULL, url TEXT,
+         onion INTEGER NOT NULL DEFAULT 0, category TEXT, observed_at TEXT NOT NULL)`
+    )
+    .run();
+  // One index only. breach_forum_status carried four, and that 4x index tax is
+  // most of why a snapshot cost 5 row-writes per forum.
+  await db.prepare('CREATE INDEX IF NOT EXISTS idx_bfc_observed_at ON breach_forum_current(observed_at)').run();
+  await db
+    .prepare(
+      'CREATE TABLE IF NOT EXISTS breach_forum_snapshots (observed_at TEXT PRIMARY KEY, row_count INTEGER NOT NULL)'
+    )
+    .run();
+}
+
+/** Fields that make a forum row "changed" for write-amplification purposes. */
+function rowSignature(r: StatusRow): string {
+  return [r.source, r.status, r.url ?? '', r.onion ? '1' : '0', r.category ?? ''].join(' ');
+}
+
+/**
+ * Persist a snapshot by writing ONLY what changed.
+ *
+ * Replaces the old `upsertStatusSnapshot`, which rewrote all ~1,494 rows on
+ * every snapshot. Each of those rows cost 5 row-writes (1 table + 4 indexes),
+ * so a snapshot that recorded roughly TEN real changes billed ~7,470 rows —
+ * which is what pushed the account past the 100k/day free write limit and, via
+ * D1's account-wide enforcement, blocked every query including the briefing
+ * INSERT.
+ *
+ * Now:
+ *   - new forum, or any field differs -> one INSERT OR REPLACE
+ *   - unchanged                      -> no statement at all
+ *   - plus ONE row in breach_forum_snapshots so the route's freshness/health
+ *     signal survives without re-storing every forum row per snapshot.
+ *
+ * Returns the number of rows actually written, so the cron can log the saving
+ * instead of having to infer it.
+ *
+ * Idempotent: replaying the same snapshot writes zero changed rows.
+ */
+export async function upsertStatusSnapshot(db: D1Database, snapshot: StatusSnapshot): Promise<number> {
+  await ensureBreachForumCurrentTable(db);
+  if (snapshot.rows.length === 0) return 0;
+
+  let existing = new Map<string, StatusRow>();
+  try {
+    const cur = await db
+      .prepare('SELECT name, source, status, url, onion, category FROM breach_forum_current')
+      .all<{
+        name: string;
+        source: 'ddc' | 'curated';
+        status: string;
+        url: string | null;
+        onion: number;
+        category: string | null;
+      }>();
+    existing = new Map(
+      (cur.results ?? []).map((r) => [
+        r.name,
+        {
+          name: r.name,
+          source: r.source,
+          status: r.status as ForumStatus,
+          url: r.url ?? undefined,
+          onion: !!r.onion,
+          category: r.category ?? undefined,
+        },
+      ])
+    );
+  } catch (_catchErr) {
+    const msg = _catchErr instanceof Error ? _catchErr.message : String(_catchErr);
+    if (!/no such table/i.test(msg)) logError('breach_forum_current preload failed', _catchErr);
+  }
+
+  const changed = snapshot.rows.filter((r) => {
+    const prior = existing.get(r.name);
+    return !prior || rowSignature(prior) !== rowSignature(r);
+  });
+
+  if (changed.length > 0) {
+    const stmt = db.prepare(
+      'INSERT OR REPLACE INTO breach_forum_current (name, source, status, url, onion, category, observed_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    );
+    await db.batch(
+      chunk(
+        changed.map((r) =>
+          stmt.bind(r.name, r.source, r.status, r.url ?? null, r.onion ? 1 : 0, r.category ?? null, snapshot.observed_at)
+        ),
+        100
+      ).flat()
+    );
+  }
+
+  // One row per snapshot. INSERT OR IGNORE keeps a replayed snapshot from
+  // counting as a second observation.
+  await db
+    .prepare('INSERT OR IGNORE INTO breach_forum_snapshots (observed_at, row_count) VALUES (?, ?)')
+    .bind(snapshot.observed_at, snapshot.rows.length)
+    .run();
+
+  return changed.length + 1;
+}
+
+/** D1 caps a batch at 100 statements. */
+function chunk<T>(items: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}
+
+/**
+ * LEGACY full-snapshot writer, retained for reference and rollback only.
+ *
+ * DO NOT CALL. Every row is rewritten, and with four indexes on the table each
+ * one costs five row-writes — this is the function that took the account past
+ * its daily write budget. Superseded by `upsertStatusSnapshot` above.
+ */
+export async function upsertStatusSnapshotLegacy(db: D1Database, snapshot: StatusSnapshot): Promise<void> {
   await ensureBreachForumStatusTable(db);
   if (snapshot.rows.length === 0) return;
   const stmt = db.prepare(

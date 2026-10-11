@@ -1117,8 +1117,22 @@ export async function executeCronJob(
               const prevMs = prev ? Date.parse(prev.observed_at) : NaN;
               const ageHrs = Number.isFinite(prevMs) ? (Date.parse(observedAt) - prevMs) / 3_600_000 : Infinity;
               const shouldWrite = !prev || deltas.length > 0 || ageHrs >= 6;
+              // Rows actually written, vs. what the old full-snapshot write
+              // would have cost. Migration 0054: the snapshot no longer
+              // rewrites all ~1,494 forums on every tick — only the ones whose
+              // status/source/url actually changed.
+              //
+              // This matters because those 1,494 rows were 1 table row + 4
+              // index rows each = 7,470 row_writes per snapshot, ~112k/day
+              // against a 100k/day free allowance. The account breached the
+              // WRITE limit on this one statement (94% of all writes), and D1's
+              // account-wide enforcement then blocked every query — briefings
+              // included.
+              let rowsWritten = 0;
+              let legacyCost = 0;
               if (shouldWrite) {
-                await upsertStatusSnapshot(env.BRIEFINGS_DB as D1Database, snapshot);
+                rowsWritten = await upsertStatusSnapshot(env.BRIEFINGS_DB as D1Database, snapshot);
+                legacyCost = snapshot.rows.length * 5; // 1 table row + 4 indexes
               }
               // Persist the transitions we just computed. Until now these were
               // discarded after `deltas.length` was used for the write gate,
@@ -1150,6 +1164,12 @@ export async function executeCronJob(
                   rows: snapshot.rows.length,
                   deltas: deltas.length,
                   written: shouldWrite,
+                  // Write-amplification telemetry. `legacy_rows` is what this
+                  // same snapshot cost before migration 0054; the ratio is the
+                  // saving. Watch this to confirm the fix is holding in prod.
+                  rows_written: rowsWritten,
+                  legacy_rows: legacyCost,
+                  saved: Math.max(0, legacyCost - rowsWritten),
                   ddc_entries: ddc.entries.filter((e) => /^(Criminal Forums|Dark Markets)$/i.test(e.category)).length,
                   curated_entries: curated.length,
                 })
