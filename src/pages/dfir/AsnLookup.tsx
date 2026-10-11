@@ -1,8 +1,7 @@
 import { logCatch } from '../../lib/log';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Network } from 'lucide-react';
-import { DataPageLayout } from '../../components/DataPageLayout';
+import { AlertTriangle, Network } from 'lucide-react';
 const ASN_RE = /^(AS)?\d{1,10}$/i;
 
 interface RirData {
@@ -92,15 +91,24 @@ export default function AsnLookup(): JSX.Element {
   }, []);
 
   return (
-    <DataPageLayout
-      backTo="/dfir"
-      icon={<Network size={28} />}
-      title="ASN Lookup"
-      description="Query RIPEstat for Autonomous System details. Includes name, RIR, abuse contacts, and announced IP prefixes."
-      loading={loading}
-      error={error}
-      maxWidthClass="max-w-4xl"
-    >
+    <div className="max-w-6xl">
+      <div className="animate-fade-in-up">
+        <h1 className="text-3xl sm:text-4xl font-display font-semibold mb-2">ASN Lookup</h1>
+        <p className="text-muted mb-8 max-w-2xl">Autonomous system ownership, announced prefixes, and abuse contacts for any ASN, IP, or CIDR.</p>
+      </div>
+
+      {/* Was DataPageLayout's `error` prop before this page became a hub
+          tab. Keep it inline so a failed lookup is still surfaced. */}
+      {error && (
+        <div className="rounded-xl border border-rose-300/70 dark:border-rose-800/60 bg-rose-50/60 dark:bg-rose-950/30 p-4 flex items-start gap-3 mb-6">
+          <AlertTriangle size={16} className="text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-rose-700 dark:text-rose-300">Lookup failed</p>
+            <p className="text-xs text-rose-600 dark:text-rose-400 mt-1 font-mono break-all">{error}</p>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={onSubmit} className="mb-10">
         <div className="flex gap-2">
           <div className="flex-1 relative">
@@ -243,6 +251,6 @@ export default function AsnLookup(): JSX.Element {
           </section>
         </div>
       )}
-    </DataPageLayout>
+  </div>
   );
 }

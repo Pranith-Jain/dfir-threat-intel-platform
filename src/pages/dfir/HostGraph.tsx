@@ -2,7 +2,6 @@ import { logCatch } from '../../lib/log';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Search, Network, Building2, Globe, Mail, Database, AlertTriangle, Clock, ExternalLink } from 'lucide-react';
-import { BackLink } from '../../components/BackLink';
 import { CopyButton } from '../../components/dfir/CopyButton';
 
 const API = '/api/v1';
@@ -153,8 +152,7 @@ export default function HostGraphView(): JSX.Element {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 text-heading">
-      <BackLink to="/dfir">back</BackLink>
+    <div className="max-w-6xl">
 
       <h1 className="text-3xl font-display font-semibold mb-2">Host Graph Pivot</h1>
       <p className="text-muted mb-6">

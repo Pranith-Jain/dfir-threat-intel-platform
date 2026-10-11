@@ -212,7 +212,6 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/dfir/osint-mapper', '/__prerendered/dfir__osint-mapper'],
 
   // ── DFIR: triage & forensic tools ────────────────────────────
-  ['/dfir/dnscope', '/__prerendered/dfir__dnscope'],
   ['/dfir/phone-hub', '/__prerendered/dfir__phone-hub'],
   ['/dfir/infostealer-intel', '/__prerendered/dfir__infostealer-intel'],
 
@@ -221,8 +220,6 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
 
   // ── DFIR: tools that fetch /api/v1/* on mount ─────────────────
   ['/dfir/phishing', '/__prerendered/dfir__phishing'],
-  ['/dfir/whois-history', '/__prerendered/dfir__whois-history'],
-  ['/dfir/passive-dns', '/__prerendered/dfir__passive-dns'],
   // /dfir/sql-workspace removed: the page (SqlWorkspace.tsx) has no route in
   // App.tsx, so this mapped to a prerender that was never generated — it was
   // served as the bare SPA shell, cached 24h as "prerendered".
@@ -230,8 +227,6 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/dfir/exposure', '/__prerendered/dfir__exposure'],
   ['/dfir/exposed-host', '/__prerendered/dfir__exposed-host'],
   ['/dfir/cve', '/__prerendered/dfir__cve'],
-  ['/dfir/cert-search', '/__prerendered/dfir__cert-search'],
-  ['/dfir/asn', '/__prerendered/dfir__asn'],
   ['/dfir/breach', '/__prerendered/dfir__breach'],
   ['/dfir/url-preview', '/__prerendered/dfir__url-preview'],
   ['/dfir/subdomain-takeover', '/__prerendered/dfir__subdomain-takeover'],
@@ -241,7 +236,6 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/dfir/email-defense', '/__prerendered/dfir__email-defense'],
   ['/dfir/dmarc-analyzer', '/__prerendered/dfir__dmarc-analyzer'],
   ['/dfir/dlp-scan', '/__prerendered/dfir__dlp-scan'],
-  ['/dfir/wayback', '/__prerendered/dfir__wayback'],
   ['/dfir/log-parser', '/__prerendered/dfir__log-parser'],
   ['/dfir/socmint', '/__prerendered/dfir__socmint'],
   ['/dfir/eml', '/__prerendered/dfir__eml'],
@@ -286,7 +280,6 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/dfir/asset-intel', '/__prerendered/dfir__asset-intel'],
   ['/dfir/blocklists', '/__prerendered/dfir__blocklists'],
   ['/dfir/ct-monitor', '/__prerendered/dfir__ct-monitor'],
-  ['/dfir/host-graph', '/__prerendered/dfir__host-graph'],
 
   // ── Phase 5: New gap features ─────────────────────────────────
   ['/dfir/ai-suite', '/__prerendered/dfir__ai-suite'],

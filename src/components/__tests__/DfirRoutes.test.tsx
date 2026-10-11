@@ -22,8 +22,8 @@ const subRoutes: Array<{ path: string; heading: string; skipComingSoon?: boolean
   { path: '/threatintel/briefings', heading: 'Threat Intel Briefings', skipComingSoon: true },
   { path: '/dfir/cve', heading: 'CVE Lookup', skipComingSoon: true },
   { path: '/dfir/decode', heading: 'Decoder', skipComingSoon: true },
-  { path: '/dfir/asn', heading: 'ASN Lookup', skipComingSoon: true },
-  { path: '/dfir/host-graph', heading: 'Host Graph Pivot', skipComingSoon: true },
+  // /dfir/asn and /dfir/host-graph are tabs of /dfir/domain-investigator now.
+  { path: '/dfir/domain-investigator', heading: 'Domain Security Investigator', skipComingSoon: true },
   { path: '/dfir/breach', heading: 'Breach Checker', skipComingSoon: true },
   { path: '/dfir/exif', heading: 'EXIF Parser', skipComingSoon: true },
   { path: '/threatintel/mitre', heading: 'MITRE ATT&CK', skipComingSoon: true },

@@ -1,7 +1,6 @@
 import { logCatch } from '../../lib/log';
 import { useState, useCallback, useRef, useEffect, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { BackLink } from '../../components/BackLink';
 import {
   Search,
   Globe,
@@ -205,13 +204,7 @@ export default function WhoisHistory(): JSX.Element {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-8 py-12 text-heading">
-      <BackLink
-        to="/dfir"
-        className="inline-flex items-center gap-2 text-sm text-muted hover:text-brand-600 dark:hover:text-brand-400 mb-8 font-mono"
-      >
-        back
-      </BackLink>
+    <div className="max-w-6xl">
 
       <h1 className="text-3xl sm:text-4xl font-display font-semibold mb-2">WHOIS History Explorer</h1>
       <p className="text-muted mb-8">

@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from 'react';
-import { BackLink } from '../../components/BackLink';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
 import { Search, Globe, Server, Clock, AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
 
@@ -65,13 +64,7 @@ export default function PassiveDns(): JSX.Element {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-6 text-heading">
-      <BackLink
-        to="/dfir"
-        className="inline-flex items-center gap-2 text-sm text-muted hover:text-brand-600 dark:hover:text-brand-400 mb-8 font-mono"
-      >
-        all tools
-      </BackLink>
+    <div className="max-w-6xl">
 
       <h1 className="font-display font-bold text-3xl mb-2">Passive DNS Lookup</h1>
       <p className="text-sm font-mono text-muted mb-6 max-w-2xl">

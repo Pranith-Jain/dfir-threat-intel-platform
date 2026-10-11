@@ -101,9 +101,6 @@ const Cairn = lazy(() => import('./pages/threatintel/Cairn'));
 const Nova = lazy(() => import('./pages/threatintel/Nova'));
 const Denali = lazy(() => import('./pages/threatintel/Denali'));
 const AiSecurityPlaybook = lazy(() => import('./pages/threatintel/AiSecurityPlaybook'));
-const CertSearch = lazy(() => import('./pages/dfir/CertSearch'));
-const AsnLookup = lazy(() => import('./pages/dfir/AsnLookup'));
-const HostGraph = lazy(() => import('./pages/dfir/HostGraph'));
 const Breach = lazy(() => import('./pages/dfir/Breach'));
 const ExifParse = lazy(() => import('./pages/dfir/ExifParse'));
 const ExposedHostPage = lazy(() => import('./pages/dfir/ExposedHost'));
@@ -157,7 +154,6 @@ const DataClassification = lazy(() => import('./pages/dfir/DataClassification'))
 const PrivacyHub = lazy(() => import('./pages/dfir/PrivacyHub'));
 const UsernameInvestigator = lazy(() => import('./pages/dfir/UsernameInvestigator'));
 const DomainInvestigator = lazy(() => import('./pages/dfir/DomainInvestigator'));
-const PassiveDns = lazy(() => import('./pages/dfir/PassiveDns'));
 const MalwareAnalyzer = lazy(() => import('./pages/dfir/MalwareAnalyzer'));
 const VulnToolkitCatalog = lazy(() => import('./pages/dfir/VulnToolkitCatalog'));
 const IocInvestigate = lazy(() => import('./pages/dfir/IocInvestigate'));
@@ -165,7 +161,6 @@ const DfirCopilotPage = lazy(() => import('./pages/dfir/DfirCopilot'));
 const YaraWorkbench = lazy(() => import('./pages/dfir/YaraWorkbench'));
 const StixWorkbench = lazy(() => import('./pages/dfir/StixWorkbench'));
 const WifiInvestigation = lazy(() => import('./pages/dfir/WifiInvestigation'));
-const Wayback = lazy(() => import('./pages/dfir/Wayback'));
 const LogParser = lazy(() => import('./pages/dfir/LogParser'));
 const Blocklists = lazy(() => import('./pages/dfir/Blocklists'));
 const MedusaScanner = lazy(() => import('./pages/dfir/MedusaScanner'));
@@ -323,7 +318,6 @@ const RansomwareLive = lazy(() => import('./pages/threatintel/RansomwareLive'));
 const CyberPulse = lazy(() => import('./pages/threatintel/CyberPulse'));
 const AiHoneypotObservatory = lazy(() => import('./pages/threatintel/AiHoneypotObservatory'));
 const AiLlmIntel = lazy(() => import('./pages/threatintel/AiLlmIntel'));
-const WhoisHistory = lazy(() => import('./pages/dfir/WhoisHistory'));
 const OpenDirectory = lazy(() => import('./pages/dfir/OpenDirectory'));
 const ApkAnalyzer = lazy(() => import('./pages/dfir/ApkAnalyzer'));
 const EmailReputation = lazy(() => import('./pages/dfir/EmailReputation'));
@@ -336,7 +330,6 @@ const InfostealerDetail = lazy(() => import('./pages/threatintel/InfostealerDeta
 const InfostealerIntel = lazy(() => import('./pages/dfir/InfostealerIntel'));
 const DmarcAnalyzer = lazy(() => import('./pages/dfir/DmarcAnalyzer'));
 const AssessmentDetail = lazy(() => import('./pages/threatintel/AssessmentDetail'));
-const Dnscope = lazy(() => import('./pages/dfir/Dnscope'));
 const DfirCatalog = lazy(() => import('./pages/dfir/Catalog'));
 
 const Anarchy = lazy(() => import('./pages/Anarchy'));
@@ -427,7 +420,6 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/dfir', Component: DFIR },
   { path: '/dfir/orkl', Component: OrklPage },
   { path: '/dfir/phishing', Component: Phishing },
-  { path: '/dfir/whois-history', Component: WhoisHistory },
   { path: '/dfir/open-directory', Component: OpenDirectory },
   { path: '/dfir/exposure', Component: Exposure },
   { path: '/dfir/exposed-host', Component: ExposedHostPage },
@@ -440,12 +432,9 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/dfir/cve', Component: Cve },
   { path: '/dfir/vuln-toolkit', Component: VulnToolkitCatalog },
   { path: '/dfir/codec', Component: CodecHub },
-  { path: '/dfir/cert-search', Component: CertSearch },
-  { path: '/dfir/asn', Component: AsnLookup },
   { path: '/dfir/iam-hub', Component: IamHub },
   { path: '/dfir/image-intel', Component: ImageIntel },
   { path: '/dfir/phone-hub', Component: PhoneHub },
-  { path: '/dfir/host-graph', Component: HostGraph },
   { path: '/dfir/breach', Component: Breach },
   { path: '/dfir/exif', Component: ExifParse },
   { path: '/dfir/url-preview', Component: UrlPreview },
@@ -516,14 +505,12 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/dfir/privacy-hub', Component: PrivacyHub },
   { path: '/dfir/username-investigator', Component: UsernameInvestigator },
   { path: '/dfir/domain-investigator', Component: DomainInvestigator },
-  { path: '/dfir/passive-dns', Component: PassiveDns },
   { path: '/dfir/malware-analyzer', Component: MalwareAnalyzer },
   { path: '/dfir/ioc-investigate', Component: IocInvestigate },
   { path: '/dfir/copilot', Component: DfirCopilotPage },
   { path: '/dfir/yara-workbench', Component: YaraWorkbench },
   { path: '/dfir/stix-workbench', Component: StixWorkbench },
   { path: '/dfir/wifi-investigation', Component: WifiInvestigation },
-  { path: '/dfir/wayback', Component: Wayback },
   { path: '/dfir/log-parser', Component: LogParser },
   { path: '/dfir/socmint', Component: Socmint },
   { path: '/dfir/infostealer-intel', Component: InfostealerIntel },
@@ -540,7 +527,6 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/dfir/web-log', Component: WebLogAnalyzer },
   { path: '/dfir/prefetch', Component: PrefetchAnalyzer },
   { path: '/dfir/ai-suite', Component: AiSuite },
-  { path: '/dfir/dnscope', Component: Dnscope },
 
   { path: '/dfir/catalog', Component: DfirCatalog },
   { path: '/dfir/eml', Component: EmlExtractor },
@@ -828,13 +814,20 @@ const REDIRECTS: ReadonlyArray<{ path: string; to: string; preserveQuery?: boole
   // Tab-hub aliases - same component, different default tab
   { path: '/dfir/domain', to: '/dfir/domain-investigator?tab=dns' },
   { path: '/dfir/domain-lookup', to: '/dfir/domain-investigator?tab=dns', preserveQuery: true }, // ?domain=<d> seeds DNS tab
-  { path: '/dfir/asn-lookup', to: '/dfir/asn', preserveQuery: true }, // ?asn=/?q= pre-fill the lookup
+  { path: '/dfir/asn-lookup', to: '/dfir/domain-investigator?tab=asn', preserveQuery: true }, // ?asn=/?q= pre-fill the lookup
   { path: '/dfir/breach-check', to: '/dfir/breach', preserveQuery: true }, // ?email= handled by Breach deep-link fallback
   { path: '/dfir/file-analyze', to: '/dfir/ioc-investigate?tab=table', preserveQuery: true }, // hash lookups land on the IOC table
   // File Analyzer retired - the uploader was folded into IOC Investigator, which
   // accepts the same hash inputs. Kept as a redirect so external links resolve.
   { path: '/dfir/file', to: '/dfir/ioc-investigate?tab=table', preserveQuery: true },
   { path: '/dfir/domain-rep', to: '/dfir/domain-investigator?tab=reputation' },
+  { path: '/dfir/dnscope', to: '/dfir/domain-investigator?tab=infrastructure', preserveQuery: true },
+  { path: '/dfir/host-graph', to: '/dfir/domain-investigator?tab=host-graph', preserveQuery: true },
+  { path: '/dfir/passive-dns', to: '/dfir/domain-investigator?tab=passive-dns', preserveQuery: true },
+  { path: '/dfir/cert-search', to: '/dfir/domain-investigator?tab=certs', preserveQuery: true },
+  { path: '/dfir/whois-history', to: '/dfir/domain-investigator?tab=whois-history', preserveQuery: true },
+  { path: '/dfir/asn', to: '/dfir/domain-investigator?tab=asn', preserveQuery: true },
+  { path: '/dfir/wayback', to: '/dfir/domain-investigator?tab=wayback', preserveQuery: true },
   { path: '/dfir/webcheck', to: '/dfir/domain-investigator?tab=web' },
   { path: '/dfir/web-scan', to: '/dfir/domain-investigator?tab=web' },
   { path: '/dfir/full-spectrum', to: '/dfir/domain-investigator?tab=full' },

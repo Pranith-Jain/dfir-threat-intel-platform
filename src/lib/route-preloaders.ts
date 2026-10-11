@@ -32,7 +32,6 @@ export const routePreloaders: Record<string, Preloader> = {
   '/dfir/domain-investigator': () => import('../pages/dfir/DomainInvestigator'),
   '/dfir/cve': () => import('../pages/dfir/Cve'),
   '/dfir/diamond': () => import('../pages/dfir/Diamond'),
-  '/dfir/host-graph': () => import('../pages/dfir/HostGraph'),
 
   // Threat-intel app nav
   '/threatintel': () => import('../pages/threatintel/Home'),

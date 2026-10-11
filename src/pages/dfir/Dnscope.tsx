@@ -1,6 +1,5 @@
 import { logCatch } from '../../lib/log';
 import { useState, useCallback } from 'react';
-import { DataPageLayout } from '../../components/DataPageLayout';
 import { Globe, Search, ShieldCheck, Loader2, AlertTriangle } from 'lucide-react';
 import { IntodnsPanel } from '../../components/dfir/IntodnsPanel';
 
@@ -152,13 +151,12 @@ export default function Dnscope(): JSX.Element {
   }, [domain]);
 
   return (
-    <DataPageLayout
-      backTo="/dfir"
-      icon={<Globe size={28} />}
-      title="DNSCOPE"
-      description="Deep domain infrastructure mapping via live DNS, RDAP, certificate transparency, email auth, and threat intelligence - all in one scan."
-      maxWidthClass="max-w-6xl"
-    >
+    <div className="max-w-6xl">
+      <div className="animate-fade-in-up">
+        <h1 className="text-3xl sm:text-4xl font-display font-semibold mb-2">DNSCOPE</h1>
+        <p className="text-muted mb-8 max-w-2xl">Deep domain infrastructure mapping via live DNS, RDAP, certificate transparency, email auth, and threat intelligence - all in one scan.</p>
+      </div>
+
       {error && (
         <div className="rounded-xl border border-rose-300/70 dark:border-rose-800/60 bg-rose-50/60 dark:bg-rose-950/30 p-4 flex items-start gap-3 mb-6">
           <AlertTriangle size={16} className="text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
@@ -256,6 +254,6 @@ export default function Dnscope(): JSX.Element {
       <p className="mt-8 text-micro font-mono text-muted text-center">
         H3AD-X / DNSCOPE - Live multi-source domain scan
       </p>
-    </DataPageLayout>
+  </div>
   );
 }

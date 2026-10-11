@@ -39,4 +39,4 @@
  * `SECTIONS` import from here - that reintroduces the bundle cost this file
  * exists to avoid.
  */
-export const MAIN_TOOL_COUNT = 104;
+export const MAIN_TOOL_COUNT = 98;

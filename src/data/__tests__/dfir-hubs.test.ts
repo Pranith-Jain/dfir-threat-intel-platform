@@ -122,7 +122,11 @@ describe('dfir-hubs (DFIR catalog registry)', () => {
   });
 
   it('newly added pages are findable', () => {
-    for (const p of ['/dfir/dnscope', '/dfir/passive-dns', '/dfir/sigbase']) {
+    // dnscope / passive-dns / cert-search / whois-history / asn / wayback /
+    // host-graph used to be listed here. They are tabs of
+    // /dfir/domain-investigator now, so they are covered by
+    // hub-tab-deeplinks.test.ts rather than as catalog pages.
+    for (const p of ['/dfir/domain-investigator', '/dfir/sigbase']) {
       const result = getPageByPath(p);
       expect(result, `${p} is missing from the catalog`).toBeDefined();
     }

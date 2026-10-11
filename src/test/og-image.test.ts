@@ -193,7 +193,7 @@ describe('resolveOg dynamic image wiring', () => {
 
   it('gives two sibling pages DIFFERENT cards', async () => {
     const a = await resolveOg(new URL('https://pranithjain.qzz.io/dfir/cve'), {} as never);
-    const b = await resolveOg(new URL('https://pranithjain.qzz.io/dfir/asn'), {} as never);
+    const b = await resolveOg(new URL('https://pranithjain.qzz.io/dfir/domain-investigator'), {} as never);
     expect(a?.image).not.toBe(b?.image);
   });
 

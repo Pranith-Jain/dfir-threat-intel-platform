@@ -1,7 +1,6 @@
 import { logCatch } from '../../lib/log';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { BackLink } from '../../components/BackLink';
 import { History, Search, Loader2, ExternalLink, AlertTriangle, CheckCircle2 } from 'lucide-react';
 interface Snapshot {
   timestamp: string; // YYYYMMDDhhmmss
@@ -190,13 +189,7 @@ export default function Wayback(): JSX.Element {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-12 text-heading">
-      <BackLink
-        to="/dfir"
-        className="inline-flex items-center gap-2 text-sm text-muted hover:text-brand-600 dark:hover:text-brand-400 mb-8 font-mono"
-      >
-        back
-      </BackLink>
+    <div className="max-w-6xl">
 
       <div className="animate-fade-in-up">
         <h1 className="text-3xl sm:text-4xl font-display font-semibold mb-2 flex items-center gap-3">

@@ -37,7 +37,6 @@ import {
   FolderTree,
   Paperclip,
   Scale,
-  History,
   Coins,
   Database,
   Smartphone,
@@ -359,20 +358,6 @@ export const SECTIONS: Section[] = [
         icon: Globe,
       },
       {
-        path: '/dfir/whois-history',
-        useCase: 'Track ownership changes and find related domains.',
-        label: 'WHOIS History Explorer',
-        desc: 'Registration timeline · ownership transfers · registrar changes · pivot by registrant email/org/nameserver · inspired by etugen.io',
-        icon: Globe,
-      },
-      {
-        path: '/dfir/asn',
-        useCase: 'Map an IP to its ASN and abuse contacts.',
-        label: 'ASN Lookup',
-        desc: 'BGP · prefixes · abuse contacts',
-        icon: Network,
-      },
-      {
         path: '/dfir/exposure',
         useCase: 'Enumerate subdomains and open ports fast.',
         label: 'Exposure Scanner',
@@ -385,20 +370,6 @@ export const SECTIONS: Section[] = [
         label: 'Subdomain Takeover',
         desc: 'CNAME chain + 15 dangling-service fingerprints',
         icon: Unplug,
-      },
-      {
-        path: '/dfir/cert-search',
-        useCase: 'Find subdomains via certificate transparency.',
-        label: 'Certificate Search',
-        desc: 'CT log enumeration via SSLMate Cert Spotter. find subdomains by their issued certs',
-        icon: ShieldCheck,
-      },
-      {
-        path: '/dfir/dnscope',
-        useCase: 'Deep-dive domain infrastructure across 14 data dimensions.',
-        label: 'DNSCOPE Infrastructure Map',
-        desc: 'WHOIS · DNS · email · ASN · passive DNS · certificates · subdomains · lookalikes · ports · fingerprints · cloud · CDN · URLScan · 14 parallel modules',
-        icon: Globe,
       },
     ],
   },
@@ -551,13 +522,6 @@ export const SECTIONS: Section[] = [
         icon: Search,
       },
       {
-        path: '/dfir/wayback',
-        useCase: 'Build an archive timeline for a URL.',
-        label: 'Wayback Machine Pivot',
-        desc: 'Internet Archive CDX timeline · first/last seen · status-code distribution · snapshot links',
-        icon: History,
-      },
-      {
         path: '/dfir/socmint',
         useCase: 'Pivot an email or handle to OSINT sources.',
         label: 'SOCMINT Pivots',
@@ -579,13 +543,6 @@ export const SECTIONS: Section[] = [
     label: 'Network & URL Intel',
     blurb: 'IP geo, URL reputation, crypto tracing.',
     tools: [
-      {
-        path: '/dfir/host-graph',
-        useCase: 'Map an IP to its ASN, prefix, abuse contact, and peers.',
-        label: 'Host Graph',
-        desc: 'IP / ASN / CIDR enrichment · RDAP · abuse contact · prefix tree · clickable graph to pivot across network footprint',
-        icon: Network,
-      },
       {
         path: '/dfir/url-preview',
         useCase: 'Safely preview a suspicious link.',

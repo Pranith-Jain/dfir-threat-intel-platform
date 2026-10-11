@@ -657,13 +657,6 @@ const DFIR_PAGES: readonly PageEntry[] = [
     group: 'dfir',
   },
   {
-    path: '/dfir/host-graph',
-    label: 'Host Graph',
-    description: 'Graph view of host-to-host and host-to-infrastructure relationships.',
-    sectionLabel: 'DFIR · Investigate',
-    group: 'dfir',
-  },
-  {
     path: '/dfir/report-ingest',
     label: 'Report Ingest',
     description: 'Paste a threat report and auto-extract IOCs, TTPs, and entities.',
@@ -758,13 +751,6 @@ const DFIR_PAGES: readonly PageEntry[] = [
     group: 'dfir',
   },
   {
-    path: '/dfir/asn',
-    label: 'ASN Lookup',
-    description: 'ASN, prefix, and registrant lookup for an IP or range.',
-    sectionLabel: 'DFIR · Investigate',
-    group: 'dfir',
-  },
-  {
     path: '/dfir/cve',
     label: 'CVE Lookup',
     description: 'Single-CVE detail - description, CVSS, affected products, KEV status, exploits.',
@@ -841,31 +827,6 @@ const DFIR_PAGES: readonly PageEntry[] = [
     group: 'dfir',
   },
   {
-    path: '/dfir/whois-history',
-    label: 'WHOIS History',
-    description: 'Historical WHOIS for a domain - registrant changes, nameserver pivots.',
-    sectionLabel: 'DFIR · Investigate',
-    group: 'dfir',
-    keywords: ['whois', 'rdap'],
-  },
-  {
-    path: '/dfir/passive-dns',
-    label: 'Passive DNS',
-    description:
-      'Historical DNS resolution data for a domain or IP - detect migrations, fast-flux, and infrastructure reuse.',
-    sectionLabel: 'DFIR · Investigate',
-    group: 'dfir',
-    keywords: ['passive dns', 'pdns', 'infrastructure', 'fast-flux', 'migration'],
-  },
-  {
-    path: '/dfir/cert-search',
-    label: 'Cert Search',
-    description: 'Certificate transparency search - find certs by domain, issuer, or fingerprint.',
-    sectionLabel: 'DFIR · Investigate',
-    group: 'dfir',
-    keywords: ['ct', 'certificate', 'transparency', 'ssl', 'tls'],
-  },
-  {
     path: '/dfir/ct-monitor',
     label: 'CT Monitor',
     description: 'Live certificate-transparency monitor for watched domains.',
@@ -887,14 +848,6 @@ const DFIR_PAGES: readonly PageEntry[] = [
     sectionLabel: 'DFIR · Investigate',
     group: 'dfir',
     keywords: ['directory', 'listing', 'exposure'],
-  },
-  {
-    path: '/dfir/wayback',
-    label: 'Wayback Machine',
-    description: 'Wayback Machine lookup - historical snapshots of a URL.',
-    sectionLabel: 'DFIR · Investigate',
-    group: 'dfir',
-    keywords: ['archive', 'historical'],
   },
   {
     path: '/dfir/brand-impersonation',
@@ -1286,15 +1239,6 @@ const DFIR_PAGES: readonly PageEntry[] = [
     description: 'Alias - redirects to the Asset Intel page.',
     sectionLabel: 'DFIR · Triage',
     group: 'dfir',
-  },
-  {
-    path: '/dfir/dnscope',
-    label: 'DNSCOPE',
-    description:
-      'Deep domain infrastructure mapping - WHOIS, DNS, certificates, subdomains, lookalikes, ports, CDN, and threat intel.',
-    sectionLabel: 'DFIR · Investigation',
-    group: 'dfir',
-    keywords: ['dns', 'domain', 'infrastructure', 'whois', 'certificates'],
   },
 
   {

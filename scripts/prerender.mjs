@@ -159,8 +159,6 @@ const ROUTES = [
   '/dfir/threat-graph',
   '/dfir/ir-playbooks',
   '/dfir/stealer-parser',
-  '/dfir/whois-history',
-  '/dfir/passive-dns',
   '/dfir/open-directory',
 
   // ── DFIR: static catalogs & education (8) — 0 API calls ───────
@@ -242,7 +240,6 @@ const ROUTES = [
   '/dfir/osint-mapper',
 
   // ── DFIR: triage & forensic tools (5) — 0 API calls ───────────
-  '/dfir/dnscope',
   '/dfir/phone-hub',
   '/dfir/infostealer-intel',
 
@@ -255,8 +252,6 @@ const ROUTES = [
   '/dfir/exposure',
   '/dfir/exposed-host',
   '/dfir/cve',
-  '/dfir/cert-search',
-  '/dfir/asn',
   '/dfir/breach',
   '/dfir/traceix',
   '/dfir/nhi-scan',
@@ -282,7 +277,6 @@ const ROUTES = [
   '/dfir/email-defense',
   '/dfir/dmarc-analyzer',
   '/dfir/dlp-scan',
-  '/dfir/wayback',
   '/dfir/log-parser',
   '/dfir/socmint',
   '/dfir/eml',
@@ -336,7 +330,6 @@ const ROUTES = [
   '/dfir/asset-intel',
   '/dfir/blocklists',
   '/dfir/ct-monitor',
-  '/dfir/host-graph',
   '/dfir/report-hub',
 
   // ── Phase 5: New gap features ─────────────────────────────────

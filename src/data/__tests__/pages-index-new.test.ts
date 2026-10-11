@@ -3,8 +3,10 @@ import { searchPages } from '../pages-index';
 
 describe('new pages in catalog', () => {
   it.each([
-    ['/dfir/dnscope', 'dnscope'],
-    ['/dfir/passive-dns', 'passive dns'],
+    // /dfir/dnscope and /dfir/passive-dns were folded into
+    // /dfir/domain-investigator as tabs; hub-tab-deeplinks.test.ts covers
+    // their ?tab= redirects, so only the surviving page is pinned here.
+    ['/dfir/domain-investigator', 'domain investigator'],
     ['/dfir/sigbase', 'yara'],
   ])('has catalog entry for %s', (path, query) => {
     const matches = searchPages(query, { limit: 5 });
