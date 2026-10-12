@@ -8,6 +8,7 @@ const TIMEOUT_MS = 10_000;
 
 const ALLOWED_HOSTS = new Set([
   // Government and CERT
+  'ip-api.com',
   'www.cisa.gov',
   'cisa.gov',
   'nvd.nist.gov',
