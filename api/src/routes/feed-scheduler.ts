@@ -7,6 +7,7 @@ import { ensureGraphTables, upsertNode, type NodeType } from './threat-graph';
 import { recordIocObservation } from './ioc-lifecycle';
 import { pinnedFetchFollow } from '../lib/ssrf-guard';
 import { safeNull } from '../lib/safe-catch';
+import { deliverToJobChannels, type DeliveryOutcome } from '../lib/feed-delivery';
 import type { D1Database } from '@cloudflare/workers-types';
 
 const FEED_JOBS_TABLE = 'feed_jobs';
@@ -422,7 +423,17 @@ export async function runFeedJobHandler(c: Context<{ Bindings: Env }>): Promise<
 
     await appendJobHistory(db, history);
 
-    return c.json({ job, run: history });
+    // Fan out to any attached alert channels. Wrapped so a dead webhook cannot
+    // turn a successful fetch into a failed job — the fetch already succeeded
+    // and its history row is already written.
+    let delivery: DeliveryOutcome[] = [];
+    try {
+      delivery = await deliverToJobChannels(c.env, job.id, job.name, lines, job.tags ?? []);
+    } catch (err) {
+      logError('feed delivery fan-out failed', err);
+    }
+
+    return c.json({ job, run: history, delivery });
   } catch (err) {
     logError('handler failed', err);
     const errMsg = err instanceof Error ? err.message : String(err);

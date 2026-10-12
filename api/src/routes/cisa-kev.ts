@@ -36,6 +36,7 @@ interface CvssEntry {
   score: number;
   severity: string;
 }
+export type { CvssEntry };
 
 interface KevResponse {
   total: number;
@@ -55,7 +56,14 @@ interface KevResponse {
   timestamp: string;
 }
 
-async function loadCvssMap(env: Env): Promise<Map<string, CvssEntry>> {
+/**
+ * NVD CVSS base score per CVE, cached 6 h.
+ *
+ * Exported because the detection-coverage route needs the same map for its
+ * severity banding, and two routes each running their own NVD paginated
+ * fan-out would double the upstream load for an identical answer.
+ */
+export async function loadCvssMap(env: Env): Promise<Map<string, CvssEntry>> {
   const map = new Map<string, CvssEntry>();
 
   // Check KV cache first

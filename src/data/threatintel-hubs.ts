@@ -310,6 +310,14 @@ export const HUB_META: readonly HubMeta[] = [
         compVar: 'FeedReliability',
       },
       {
+        path: '/threatintel/detection-coverage',
+        tabId: 'coverage',
+        label: 'Detection Coverage',
+        desc: 'Joins CISA KEV and EPSS against published detection rules to show which exploited vulnerabilities your SIEM has no rule for.',
+        compVar: 'DetectionCoverage',
+        badge: 'live',
+      },
+      {
         path: '/threatintel/feeds/threatcluster',
         tabId: 'threatcluster',
         label: 'ThreatCluster Feeds',

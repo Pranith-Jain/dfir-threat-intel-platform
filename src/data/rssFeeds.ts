@@ -75,6 +75,16 @@ export const rssFeeds: RSSFeed[] = [
     language: 'en',
   },
   {
+    id: 'trail-of-bits',
+    name: 'Trail of Bits Blog',
+    url: 'https://blog.trailofbits.com/feed/',
+    description:
+      'Security research, audit write-ups and Patch the Planet disclosures from the Trail of Bits / OpenAI Daybreak open-source security programme.',
+    category: 'threat-intel',
+    source: 'blog.trailofbits.com',
+    language: 'en',
+  },
+  {
     id: 'cisa-ics-advisories',
     name: 'CISA ICS Advisories',
     url: 'https://www.cisa.gov/cybersecurity-advisories/ics-advisories.xml',
@@ -1534,6 +1544,7 @@ export const landingThreatIndia: string[] = [];
 export const landingThreatVendor = [
   'talos',
   'unit42',
+  'trail-of-bits',
   'mandiant',
   'crowdstrike',
   'eset',

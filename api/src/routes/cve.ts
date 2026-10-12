@@ -5,6 +5,7 @@ import { createCveController } from '../controllers';
 import { createKvCveRepository } from '../infrastructure/persistence/kv-cve-repository';
 import { vulncheckCve } from '../lib/vulncheck';
 import { computeSsvcV } from '../lib/ssvc-v';
+import { normaliseCveId } from '../lib/cve-id';
 
 export async function cveSearchHandler(c: Context<{ Bindings: Env }>) {
   const repo = createKvCveRepository(c.env.KV_CACHE);
@@ -14,7 +15,10 @@ export async function cveSearchHandler(c: Context<{ Bindings: Env }>) {
   // Enrich with VulnCheck real-world exploitation intel (initial-access index)
   // when a token is configured and the base lookup succeeded.
   const token = c.env.VULNCHECK_API_TOKEN;
-  const id = c.req.query('id');
+  // Normalise before use: VulnCheck keys on the canonical id, so an
+  // abbreviated `?id=2025-1974` would otherwise enrich nothing while still
+  // returning a base record, leaving the caller to assume enrichment ran.
+  const id = normaliseCveId(c.req.query('id'));
   if (res.status === 200 && id) {
     let data: Record<string, unknown> | null = null;
     try {

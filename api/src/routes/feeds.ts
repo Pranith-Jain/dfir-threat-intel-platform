@@ -51,6 +51,7 @@ const ALLOWED_HOSTS = new Set([
   'blog.talosintelligence.com',
   'talosintelligence.com',
   'unit42.paloaltonetworks.com',
+  'blog.trailofbits.com',
   'www.welivesecurity.com',
   'welivesecurity.com',
   'securelist.com',

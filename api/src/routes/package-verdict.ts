@@ -3,6 +3,9 @@ import type { Env } from '../env';
 import { logError } from '../lib/logger';
 import { badRequest } from '../lib/api-error';
 import { fetchResilient } from '../lib/fetch-resilient';
+import { assessPackageRisk, remediationSla, type RiskAssessment } from '../lib/package-risk';
+import { enrichForRisk } from '../lib/package-risk-enrich';
+import { buildPurl } from '../lib/purl';
 
 /**
  * Package verdict checker — inspired by projectdiscovery/depx.
@@ -24,6 +27,8 @@ interface Advisory {
   modified: string;
   published?: string;
   withdrawn?: boolean;
+  /** Present on OSV records; absent means no fixed version is known. */
+  fixed?: boolean;
 }
 
 interface VerdictResponse {
@@ -39,6 +44,17 @@ interface VerdictResponse {
     package_name: string;
     registry_url: string;
     advisories: Advisory[];
+    /** Additive. The binary `verdict` above is unchanged. */
+    risk?: RiskAssessment;
+    remediation?: { window: string; action: string };
+    enrichment?: {
+      cvss: number | null;
+      epss: number | null;
+      kev: boolean;
+      cveCount: number;
+      degraded: boolean;
+      reason?: string;
+    };
     checked_ecosystems?: string[];
     matched_ecosystems?: string[];
   };
@@ -193,12 +209,29 @@ export async function packageVerdictHandler(c: Context<{ Bindings: Env }>): Prom
     const verdict = isMalicious ? 'malicious' : advisories.length > 0 ? 'clean' : 'unknown';
     const confidence = isMalicious ? 'high' : advisories.length > 0 ? 'medium' : 'low';
 
+    // ── composite risk ──────────────────────────────────────────────
+    // The binary verdict above stays exactly as it was: it is a correct answer
+    // to "is this package in the malicious registry" and several callers depend
+    // on it. The risk score is additive, so nothing that reads `verdict` changes
+    // behaviour.
+    const enrich = await enrichForRisk(c.env, advisories).catch(() => null);
+    const risk = assessPackageRisk({
+      malicious: isMalicious,
+      cvss: enrich?.cvss ?? null,
+      epss: enrich?.epss ?? null,
+      kev: enrich?.kev ?? false,
+      hasUnfixedAdvisory: advisories.some((a) => !a.withdrawn && !a.fixed),
+      newestAdvisoryAgeDays: enrich?.newestAgeDays ?? null,
+      advisoryCount: advisories.length,
+    });
+    const sla = remediationSla(risk.verdict);
+
     const response: VerdictResponse = {
       schema_version: '1',
       command: 'check',
       data: {
         ref: `${ecosystem}:${packageName}`,
-        purl: `pkg:${ecosystem}/${packageName}`,
+        purl: buildPurl({ type: ecosystem, name: packageName }),
         verdict,
         confidence,
         ids: advisories.map((a) => a.id),
@@ -206,6 +239,17 @@ export async function packageVerdictHandler(c: Context<{ Bindings: Env }>): Prom
         package_name: packageName,
         registry_url: `${REGISTRY_URLS[ecosystem] ?? ''}${packageName}`,
         advisories,
+        risk,
+        remediation: sla,
+        enrichment: enrich
+          ? {
+              cvss: enrich.cvss,
+              epss: enrich.epss,
+              kev: enrich.kev,
+              cveCount: enrich.cves.length,
+              degraded: enrich.degraded,
+            }
+          : { cvss: null, epss: null, kev: false, cveCount: 0, degraded: true, reason: 'risk enrichment unavailable' },
       },
       timestamp: new Date().toISOString(),
     };
