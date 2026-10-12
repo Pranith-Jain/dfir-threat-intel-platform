@@ -25,9 +25,12 @@ export interface Env {
   /** DFIR MCP server DO. */
   DFIR_MCP: DurableObjectNamespace;
   /** Radar deep-crawl DO. */
-  RADAR_CRAWLER?: DurableObjectNamespace;
-  /** Global Pulse real-time DO. */
+  RADAR_CRAWLER?: DurableObjectNamespace; /** Global Pulse real-time DO. */
   GLOBAL_PULSE_DO?: DurableObjectNamespace;
+  /** Threat-data DO — SQLite storage for briefings, telegram leaks,
+   *  cyberpulse incidents, and breach-forum status. Replaces D1 for these
+   *  four verticals to avoid the free-plan 5M-row/day hard block. */
+  THREAT_DATA_DO?: DurableObjectNamespace;
   BRIEFINGS_DB?: D1Database;
   /** Emergency valve for the external-read API-key gate. When set to the string
    *  `'true'` (a Worker secret, so it can be toggled without a redeploy),

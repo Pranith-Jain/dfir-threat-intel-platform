@@ -9,11 +9,30 @@
  * the sparse `summary`/`sections` columns (empty for built briefings); the real
  * content lives in the `body` blob.
  */
+import type { D1Database } from '@cloudflare/workers-types';
 import type { Env } from './env';
 import type { OgImageData } from './og-image';
 import type { OgImageType } from './og-path';
 import { readBriefing } from '../api/src/lib/briefing-builder';
+import { getThreatDb } from '../api/src/lib/do-database';
 import { ogMetaForPath, readBlogPostShadowed } from './og-rewriter';
+
+/**
+ * The store the briefing tables actually live in right now.
+ *
+ * `getThreatDb` prefers the ThreatDataDO and falls back to the `BRIEFINGS_DB`
+ * D1 binding, so this is THE accessor for anything that reads or writes a
+ * briefing. It throws when neither binding is present; the OG path has to
+ * degrade to a static card instead, hence the null wrapper rather than the raw
+ * call.
+ */
+function threatDbOrNull(env: Env): D1Database | null {
+  try {
+    return getThreatDb(env as unknown as { THREAT_DATA_DO?: DurableObjectNamespace; BRIEFINGS_DB?: D1Database });
+  } catch {
+    return null;
+  }
+}
 
 /** Minimal blog record shape in CASE_STUDIES KV (mirrors og-rewriter's read). */
 interface BlogOgRecord {
@@ -41,8 +60,14 @@ export async function loadOgData(env: Env, type: OgImageType, slug: string): Pro
   }
 
   if (type === 'briefing') {
-    if (!env.BRIEFINGS_DB) return null;
-    const b = await readBriefing(env.BRIEFINGS_DB, slug);
+    // `getThreatDb`, NOT `env.BRIEFINGS_DB` — the briefing tables are moving to
+    // the ThreatDataDO and every read route resolves them through that
+    // accessor. Reading the D1 binding directly here means the OG card looks up
+    // a briefing the routes can't see (and vice versa) the moment the DO is
+    // bound: a 200 card sitting in front of a "not yet generated" page.
+    const db = threatDbOrNull(env);
+    if (!db) return null;
+    const b = await readBriefing(db, slug);
     if (!b) return null;
     return {
       title: b.title,

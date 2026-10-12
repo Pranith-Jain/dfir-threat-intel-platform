@@ -5,6 +5,7 @@ import { badRequest, internalError } from '../lib/api-error';
 import { requireAdmin } from '../lib/admin-auth';
 import type { TelegramFeedItem } from './telegram-feed';
 import { fetchHtml, fetchTelegramFeed, parseChannelHtml } from './telegram-feed';
+import { getThreatDb } from '../lib/do-database';
 
 /**
  * Safely extract the number of affected rows from a D1 batch result entry.
@@ -585,7 +586,7 @@ export async function scrapeWatchedChannels(db: D1Database): Promise<{
 // ─── API handlers ────────────────────────────────────────────────────────────
 
 export async function telegramLeakSearchHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
-  const db = c.env.BRIEFINGS_DB;
+  const db = getThreatDb(c.env);
   if (!db) return internalError(c, 'D1 not configured');
 
   const q = c.req.query('q');
@@ -637,7 +638,7 @@ export async function telegramLeakSearchHandler(c: Context<{ Bindings: Env }>): 
 }
 
 export async function telegramDiscoveredChannelsHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
-  const db = c.env.BRIEFINGS_DB;
+  const db = getThreatDb(c.env);
   if (!db) return internalError(c, 'D1 not configured');
 
   const reviewed = c.req.query('reviewed');
@@ -666,7 +667,7 @@ export async function telegramDiscoveredChannelsHandler(c: Context<{ Bindings: E
 }
 
 export async function telegramWatchedChannelsHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
-  const db = c.env.BRIEFINGS_DB;
+  const db = getThreatDb(c.env);
   if (!db) return internalError(c, 'D1 not configured');
 
   try {
@@ -699,7 +700,7 @@ export async function telegramApproveChannelHandler(c: Context<{ Bindings: Env }
   const gate = requireAdmin(c);
   if ('error' in gate) return gate.error;
 
-  const db = c.env.BRIEFINGS_DB;
+  const db = getThreatDb(c.env);
   if (!db) return internalError(c, 'D1 not configured');
 
   const body = (await c.req.json()) as { handle?: string; category?: string };
@@ -755,7 +756,7 @@ export async function telegramRejectChannelHandler(c: Context<{ Bindings: Env }>
   const gate = requireAdmin(c);
   if ('error' in gate) return gate.error;
 
-  const db = c.env.BRIEFINGS_DB;
+  const db = getThreatDb(c.env);
   if (!db) return internalError(c, 'D1 not configured');
 
   const body = (await c.req.json()) as { handle?: string };
@@ -802,7 +803,7 @@ export async function telegramRejectChannelHandler(c: Context<{ Bindings: Env }>
 // ─── stats endpoint ──────────────────────────────────────────────────────────
 
 export async function telegramLeakStatsHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
-  const db = c.env.BRIEFINGS_DB;
+  const db = getThreatDb(c.env);
   if (!db) return internalError(c, 'D1 not configured');
 
   try {
@@ -896,7 +897,7 @@ export async function cleanupLeakEntries(db: D1Database, maxAgeDays = 30): Promi
 // ─── manual trigger (one-time diagnostic, will be removed) ──────────────────
 
 export async function telegramLeakScanTriggerHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
-  const db = c.env.BRIEFINGS_DB;
+  const db = getThreatDb(c.env);
   const kv = c.env.KV_CACHE;
   if (!db) return internalError(c, 'D1 not configured');
 
@@ -919,7 +920,7 @@ export async function telegramLeakScanTriggerHandler(c: Context<{ Bindings: Env 
 // ─── Telegram Leak Geo ──────────────────────────────────────────────────────
 
 export async function telegramLeakGeoHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
-  const db = c.env.BRIEFINGS_DB;
+  const db = getThreatDb(c.env);
   if (!db) return internalError(c, 'D1 not configured');
 
   try {

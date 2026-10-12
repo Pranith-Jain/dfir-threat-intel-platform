@@ -57,6 +57,32 @@ skipping the live fan-out entirely. The live path remains the fallback for a
 window with no/missing dailies. Do NOT reintroduce the weekly live fan-out first;
 the rollup is the source of truth for a weekly.
 
+**The DAILY build is now budgeted (`subrequest-budget.ts`, 2026-10-12).**
+The weekly fix above was necessary but not sufficient: the daily branch is the
+only one that reaches the live fan-out, and its cost had drifted past 50 as
+sources were added (dbu.gs, the AI-honeypot + LLM-abuse feeds, Daily-Hunt,
+Webamon, the OSSF per-commit file lists). Symptoms were indistinguishable from an
+upstream outage — no row, `GET /briefings/today` 404 "not yet generated", and
+`POST /api/v1/briefings/build` answering **503** for the operator.
+
+Two rules make this class of failure impossible to repeat:
+
+1. **`skipLlm` is honoured on BOTH branches.** It was originally wired into the
+   weekly-rollup branch only, so the daily build spent 9-13 subrequests walking
+   Gemini's 5 models and Groq's 4 for a sentence `buildExecutiveSummary`
+   produces deterministically. Every persistence path passes `skipLlm: true`;
+   do not add a call site that wants the LLM narrative without one.
+2. **Every fan-out source goes through `admit`/`admitWrap`/`admitOpt`,** which
+   charge `BUILD_SOURCE_COST` up front and resolve the source's fallback when
+   the budget is out. Sources are listed in `buildBriefing` in PRIORITY order
+   because `Promise.all` evaluates its array left to right — that ordering is
+   the admission order. Reordering it silently changes what gets dropped.
+   Anything deferred logs `briefing-build-budget` with its name.
+
+Adding a source means adding a `BUILD_SOURCE_COST` entry. The ceiling test in
+`api/test/lib/briefing-subrequest-budget.test.ts` fails if the fan-out's summed
+cost (plus the 5-CVE KEV enrichment tail) stops fitting the budget.
+
 ## Guardrails
 
 **Type:** Hardened with anti-gaming rules
@@ -67,6 +93,9 @@ the rollup is the source of truth for a weekly.
   empty/degraded/missing — so a healthy hour is effectively free.
 - Do NOT do more than one build per invocation to "catch up" — that blows the
   50-subrequest cap. A backlog of stale rows drains over successive hourly ticks.
+- Do NOT add a source to the daily fan-out without a `BUILD_SOURCE_COST` entry
+  and a re-run of `briefing-subrequest-budget.test.ts`. An unbudgeted source is
+  a silent 503.
 - Do NOT add per-provider cache ops inside the IOC fan-out; it must use ONE batched KV
   read + write (`primeBatch`/`flushBatch`).
 - Do NOT raise the assumed subrequest budget above 50 to make the count pass — the cap

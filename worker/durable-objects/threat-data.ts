@@ -37,7 +37,7 @@ import type { Env } from '../env';
 export class ThreatDataDO extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
-    ctx.blockConcurrencyWhile(async () => {
+    const ready = ctx.blockConcurrencyWhile(async () => {
       const sql = this.ctx.storage.sql;
       // ── briefings ──────────────────────────────────────────────────────
       sql.exec(`
@@ -110,7 +110,9 @@ export class ThreatDataDO extends DurableObject<Env> {
           UNIQUE(handle, source_message)
         )
       `);
-      sql.exec('CREATE INDEX IF NOT EXISTS idx_tdc_reviewed ON telegram_discovered_channels(reviewed, discovered_at DESC)');
+      sql.exec(
+        'CREATE INDEX IF NOT EXISTS idx_tdc_reviewed ON telegram_discovered_channels(reviewed, discovered_at DESC)'
+      );
 
       // ── cyberpulse incidents ───────────────────────────────────────────
       sql.exec(`
@@ -225,6 +227,100 @@ export class ThreatDataDO extends DurableObject<Env> {
         )
       `);
     });
+
+    // One-shot import of the briefings that predate this DO, chained off the
+    // schema setup so it can never race the CREATE TABLEs.
+    ctx.waitUntil(ready.then(() => this.#importLegacyBriefings(env)));
+  }
+
+  /**
+   * Seed the DO's `briefings` table from D1, once.
+   *
+   * WHY THIS IS NEEDED: this DO starts EMPTY — a `new_sqlite_classes` migration
+   * creates a fresh SQLite database, it does not copy one. Everything switched
+   * to reading briefings through `getThreatDb` the moment the binding appeared,
+   * so binding it without seeding makes the entire history invisible: the list
+   * returns zero items and every existing slug 404s, on a table that plainly
+   * still has 30 rows sitting in D1. A silently empty briefings page is a worse
+   * outage than a stale one.
+   *
+   * Idempotent by construction: the `COUNT(*)` guard means this is a no-op the
+   * moment the DO holds any row, so it runs once on the first cold start after
+   * the binding lands and never again. That also makes it self-healing — a DO
+   * that is ever reset re-seeds from D1 rather than coming back empty.
+   *
+   * Paged at 4 rows because the bodies are large (~16 MB across the 30-row
+   * retention window, up to 1.75 MB in a single weekly row); one unbounded
+   * `SELECT` would hand the runtime a 16 MB result set inside a cold start.
+   */
+  async #importLegacyBriefings(env: Env): Promise<void> {
+    const d1 = env.BRIEFINGS_DB;
+    if (!d1) return;
+    const sql = this.ctx.storage.sql;
+    try {
+      const counted = sql.exec('SELECT COUNT(*) AS n FROM briefings').one() as { n?: number } | null;
+      if ((counted?.n ?? 0) > 0) return; // already seeded, or the DO is live
+
+      const PAGE = 4;
+      let imported = 0;
+      for (;;) {
+        const { results } = await d1
+          .prepare(
+            `SELECT slug, type, title, date, date_range, range_start, range_end,
+                    stats_json, sources_json, body, created_at
+               FROM briefings ORDER BY date DESC LIMIT ? OFFSET ?`
+          )
+          .bind(PAGE, imported)
+          .all<{
+            slug: string;
+            type: string;
+            title: string;
+            date: string;
+            date_range: string;
+            range_start: string;
+            range_end: string;
+            stats_json: string | null;
+            sources_json: string | null;
+            body: string;
+            created_at: string | null;
+          }>();
+        if (!results || results.length === 0) break;
+        for (const r of results) {
+          sql.exec(
+            `INSERT OR IGNORE INTO briefings
+               (slug, type, title, date, date_range, range_start, range_end, stats_json, sources_json, body, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            r.slug,
+            r.type,
+            r.title,
+            r.date,
+            r.date_range,
+            r.range_start,
+            r.range_end,
+            r.stats_json,
+            r.sources_json,
+            r.body,
+            r.created_at ?? new Date().toISOString()
+          );
+          imported += 1;
+        }
+        if (results.length < PAGE) break;
+      }
+      const total = sql.exec('SELECT COUNT(*) AS n FROM briefings').one() as { n?: number } | null;
+      console.log(
+        JSON.stringify({ job: 'threat-data-do', status: 'briefings-imported', rows: imported, total: total?.n ?? 0 })
+      );
+    } catch (e) {
+      // Never fatal: a failed seed costs history, not availability. The DO keeps
+      // serving whatever it has and the next cold start retries.
+      console.error(
+        JSON.stringify({
+          job: 'threat-data-do',
+          status: 'briefings-import-failed',
+          error: e instanceof Error ? e.message : String(e),
+        })
+      );
+    }
   }
 
   /**

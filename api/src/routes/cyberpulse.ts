@@ -14,6 +14,7 @@ import { internalError, serviceUnavailable } from '../lib/api-error';
 import { requireAdmin } from '../lib/admin-auth';
 import { cachedJson, routeCacheGet, routeCachePut } from '../lib/route-cache';
 import { runCyberPulseIngestion } from './cyberpulse-ingest';
+import { getThreatDb } from '../lib/do-database';
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;
@@ -41,8 +42,9 @@ const AGGREGATE_CACHE_TTL_S = 300;
 
 export async function cyberpulseIncidentsHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const env = c.env as unknown as Record<string, unknown>;
-  const db = env.BRIEFINGS_DB as import('@cloudflare/workers-types').D1Database | undefined;
-  if (!db) return serviceUnavailable(c, 'database not configured');
+  const db = getThreatDb(
+    env as { THREAT_DATA_DO?: DurableObjectNamespace; BRIEFINGS_DB?: import('@cloudflare/workers-types').D1Database }
+  );
 
   const url = new URL(c.req.url);
   const type = url.searchParams.get('type');
@@ -209,8 +211,9 @@ export function buildMarginals(rows: RollupRow[]): Record<(typeof ROLLUP_DIMS)[n
 
 export async function cyberpulseStatsHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const env = c.env as unknown as Record<string, unknown>;
-  const db = env.BRIEFINGS_DB as import('@cloudflare/workers-types').D1Database | undefined;
-  if (!db) return serviceUnavailable(c, 'database not configured');
+  const db = getThreatDb(
+    env as { THREAT_DATA_DO?: DurableObjectNamespace; BRIEFINGS_DB?: import('@cloudflare/workers-types').D1Database }
+  );
 
   const url = new URL(c.req.url);
   const daysBack = Math.min(90, Math.max(1, Number(url.searchParams.get('days') ?? '30')));
@@ -296,8 +299,9 @@ export async function cyberpulseStatsHandler(c: Context<{ Bindings: Env }>): Pro
 
 export async function cyberpulseTrendingHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const env = c.env as unknown as Record<string, unknown>;
-  const db = env.BRIEFINGS_DB as import('@cloudflare/workers-types').D1Database | undefined;
-  if (!db) return serviceUnavailable(c, 'database not configured');
+  const db = getThreatDb(
+    env as { THREAT_DATA_DO?: DurableObjectNamespace; BRIEFINGS_DB?: import('@cloudflare/workers-types').D1Database }
+  );
 
   // Trending = actors/victims with the most incidents in the last 7 days
   // that weren't present (or had fewer) in the prior 7 days
@@ -371,8 +375,9 @@ export async function cyberpulseTrendingHandler(c: Context<{ Bindings: Env }>): 
 
 export async function cyberpulseScanLogHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const env = c.env as unknown as Record<string, unknown>;
-  const db = env.BRIEFINGS_DB as import('@cloudflare/workers-types').D1Database | undefined;
-  if (!db) return serviceUnavailable(c, 'database not configured');
+  const db = getThreatDb(
+    env as { THREAT_DATA_DO?: DurableObjectNamespace; BRIEFINGS_DB?: import('@cloudflare/workers-types').D1Database }
+  );
 
   const limit = Math.min(100, Math.max(1, Number(new URL(c.req.url).searchParams.get('limit') ?? '20')));
 

@@ -6,6 +6,7 @@ import { ReportBuilderDO } from './durable-objects/report-builder';
 import { InvestigatorAgentDO } from './durable-objects/investigator-agent';
 import { RadarCrawlerDO } from './durable-objects/radar-crawler';
 import { GlobalPulseDO } from './durable-objects/global-pulse';
+import { ThreatDataDO } from './durable-objects/threat-data';
 import { generateNonce, injectScriptNonce, withSecurityHeaders } from './csp';
 import { fetchPrerenderedOrShell } from './router';
 import { surfaceForHostname } from './surface';
@@ -31,6 +32,7 @@ export {
   RadarCrawlerDO,
   GlobalPulseDO,
   CronJobDO,
+  ThreatDataDO,
 };
 export type { Env };
 

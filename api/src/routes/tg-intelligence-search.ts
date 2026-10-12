@@ -11,10 +11,11 @@
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { callerOwnerId, ownerVisibilityFilter, ownerCheck } from '../lib/ownership';
-import { badRequest, notFound, serviceUnavailable } from '../lib/api-error';
+import { badRequest, notFound } from '../lib/api-error';
 import { safeJsonBody } from '../lib/safe-body';
 import { parseBooleanQuery } from '../lib/tg-boolean-search';
 import { routeCacheGet, routeCachePut } from '../lib/route-cache';
+import { getThreatDb } from '../lib/do-database';
 
 function genId(prefix: string): string {
   return `${prefix}_${crypto.randomUUID()}`;
@@ -23,8 +24,7 @@ function genId(prefix: string): string {
 // ─── Boolean Search ───
 
 export async function tgBooleanSearchHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
-  const db = c.env.BRIEFINGS_DB;
-  if (!db) return serviceUnavailable(c, 'database not available');
+  const db = getThreatDb(c.env);
 
   const q = c.req.query('q') || '';
   const mode = c.req.query('mode') || 'boolean';
@@ -130,8 +130,7 @@ export async function tgBooleanSearchHandler(c: Context<{ Bindings: Env }>): Pro
 // ─── Timeline Data ───
 
 export async function tgTimelineHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
-  const db = c.env.BRIEFINGS_DB;
-  if (!db) return serviceUnavailable(c, 'database not available');
+  const db = getThreatDb(c.env);
 
   const q = c.req.query('q') || '';
   const channel = c.req.query('channel');
@@ -210,8 +209,7 @@ export async function tgTimelineHandler(c: Context<{ Bindings: Env }>): Promise<
 // ─── Saved Searches CRUD ───
 
 export async function tgSavedSearchesListHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
-  const db = c.env.BRIEFINGS_DB;
-  if (!db) return serviceUnavailable(c, 'database not available');
+  const db = getThreatDb(c.env);
 
   const vis = ownerVisibilityFilter(c);
   const { results } = await db
@@ -225,8 +223,7 @@ export async function tgSavedSearchesListHandler(c: Context<{ Bindings: Env }>):
 }
 
 export async function tgSavedSearchCreateHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
-  const db = c.env.BRIEFINGS_DB;
-  if (!db) return serviceUnavailable(c, 'database not available');
+  const db = getThreatDb(c.env);
 
   const body = await safeJsonBody<{
     name: string;
@@ -270,8 +267,7 @@ export async function tgSavedSearchCreateHandler(c: Context<{ Bindings: Env }>):
 }
 
 export async function tgSavedSearchDeleteHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
-  const db = c.env.BRIEFINGS_DB;
-  if (!db) return serviceUnavailable(c, 'database not available');
+  const db = getThreatDb(c.env);
 
   const id = c.req.param('id');
   const row = await db

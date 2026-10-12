@@ -69,6 +69,7 @@ import { checkXHealth } from '../api/src/lib/twitter-auth-graphql';
 import { fetchRedditFeed } from '../api/src/routes/reddit-feed';
 import type { D1Database, ScheduledEvent, ExecutionContext } from '@cloudflare/workers-types';
 import { acquireCronLease, releaseCronLease, heartbeatCronLease } from './durable-objects/cron-lock';
+import { getThreatDb } from '../api/src/lib/do-database';
 
 // Lease TTL for the cron single-flight gate. Generous so it covers the
 // worst-case job window (the briefing build runs well past the old 120s) —
@@ -217,7 +218,7 @@ export async function executeCronJob(
   if (cron === '0 * * * *') {
     ctx.waitUntil(
       (async () => {
-        const db = env.BRIEFINGS_DB as D1Database | undefined;
+        const db = getThreatDb(env as { THREAT_DATA_DO?: DurableObjectNamespace; BRIEFINGS_DB?: D1Database });
         // Heartbeat the cron lease every 5 min so long-running jobs
         // (briefing builds, intel bundles) don't lose the lease.
         const heartbeatInt = setInterval(() => {
@@ -370,7 +371,8 @@ export async function executeCronJob(
           // instead of issuing a second t.me burst that gets throttled to 0.
           let telegramFeed: Awaited<ReturnType<typeof fetchTelegramFeed>> | undefined;
           try {
-            if (env.BRIEFINGS_DB) {
+            {
+              const tgDb = getThreatDb(env as { THREAT_DATA_DO?: DurableObjectNamespace; BRIEFINGS_DB?: D1Database });
               // Try Cache-API first (primed by previous route hits or gp:warm)
               //
               // `caches.default` is dereferenced GUARDED, and the match itself is
@@ -433,7 +435,7 @@ export async function executeCronJob(
                 }
               }
               if (telegramFeed?.items?.length) {
-                const result = await runTelegramLeakScanner(env.BRIEFINGS_DB, telegramFeed.items);
+                const result = await runTelegramLeakScanner(tgDb, telegramFeed.items);
                 if (result.leaks_found > 0 || result.channels_discovered > 0) {
                   console.log(
                     JSON.stringify({
@@ -472,8 +474,9 @@ export async function executeCronJob(
           // when every channel returns 0 messages. Rotation via last_scraped
           // still covers the full list — just over 3h instead of 1h.
           try {
-            if (env.BRIEFINGS_DB && csNow.getUTCHours() % 3 === 0) {
-              const w = await scrapeWatchedChannels(env.BRIEFINGS_DB);
+            if (csNow.getUTCHours() % 3 === 0) {
+              const wscDb = getThreatDb(env as { THREAT_DATA_DO?: DurableObjectNamespace; BRIEFINGS_DB?: D1Database });
+              const w = await scrapeWatchedChannels(wscDb);
               if (w.channels_scraped > 0) {
                 console.log(
                   JSON.stringify({
@@ -547,7 +550,8 @@ export async function executeCronJob(
           // of doing GraphQL direct fetches, preserving the 50-subrequest budget
           // for the rest of the hourly pipeline.
           try {
-            if (env.BRIEFINGS_DB) {
+            {
+              const cpDb = getThreatDb(env as { THREAT_DATA_DO?: DurableObjectNamespace; BRIEFINGS_DB?: D1Database });
               // Read X accounts from KV (warmed by queue consumer).
               // Fail open: if the KV key is stale or missing, runCyberPulseIngestion
               // falls back to its own GraphQL fetches.
@@ -599,7 +603,7 @@ export async function executeCronJob(
               // disabling "keyword search" monitoring on the hourly tick (only
               // the */30 cron ingested them). runCyberPulseIngestion dedupes by
               // incident, so passing them is safe alongside the */30 run.
-              const cpResults = await runCyberPulseIngestion(env, env.BRIEFINGS_DB, {
+              const cpResults = await runCyberPulseIngestion(env, cpDb, {
                 telegramItems: telegramFeed?.items,
                 socialItems: socialItems as unknown as CyberPulsePrefetch['socialItems'],
                 redditItems: redditItems as unknown as CyberPulsePrefetch['redditItems'],
@@ -1107,12 +1111,13 @@ export async function executeCronJob(
           // Saves ~75-85% of this table's writes with zero signal loss —
           // the change ITSELF is the signal (see breach-forum-status.ts).
           try {
-            if (env.BRIEFINGS_DB) {
+            {
+              const bfdDb = getThreatDb(env as { THREAT_DATA_DO?: DurableObjectNamespace; BRIEFINGS_DB?: D1Database });
               const ddc = await buildDeepDarkCti(env.KV_CACHE, ctx);
               const curated = getCuratedForums();
               const observedAt = new Date().toISOString();
               const snapshot = buildStatusSnapshot(ddc, curated, observedAt);
-              const prev = await readLatestSnapshot(env.BRIEFINGS_DB as D1Database).catch(() => null);
+              const prev = await readLatestSnapshot(bfdDb).catch(() => null);
               const deltas = prev ? computeStatusDeltas(prev, snapshot) : [];
               const prevMs = prev ? Date.parse(prev.observed_at) : NaN;
               const ageHrs = Number.isFinite(prevMs) ? (Date.parse(observedAt) - prevMs) / 3_600_000 : Infinity;
@@ -1131,7 +1136,7 @@ export async function executeCronJob(
               let rowsWritten = 0;
               let legacyCost = 0;
               if (shouldWrite) {
-                rowsWritten = await upsertStatusSnapshot(env.BRIEFINGS_DB as D1Database, snapshot);
+                rowsWritten = await upsertStatusSnapshot(bfdDb, snapshot);
                 legacyCost = snapshot.rows.length * 5; // 1 table row + 4 indexes
               }
               // Persist the transitions we just computed. Until now these were
@@ -1154,9 +1159,9 @@ export async function executeCronJob(
               // briefings included. An idempotent CREATE IF NOT EXISTS on an
               // hourly cron is free once it exists; being unconditionally
               // present is the entire point.
-              await ensureBreachForumDeltasTable(env.BRIEFINGS_DB as D1Database);
+              await ensureBreachForumDeltasTable(bfdDb);
               if (deltas.length > 0) {
-                await persistStatusDeltas(env.BRIEFINGS_DB as D1Database, deltas);
+                await persistStatusDeltas(bfdDb, deltas);
               }
               console.log(
                 JSON.stringify({
@@ -1618,13 +1623,15 @@ export async function executeCronJob(
             /* fail open */
           }
 
-          const cpResults = await runCyberPulseIngestion(env, env.BRIEFINGS_DB, {
+          const cp30Db = getThreatDb(env as { THREAT_DATA_DO?: DurableObjectNamespace; BRIEFINGS_DB?: D1Database });
+          const cpResults = await runCyberPulseIngestion(env, cp30Db, {
             telegramItems: telegramItems as unknown as CyberPulsePrefetch['telegramItems'],
             socialItems: socialItems as unknown as CyberPulsePrefetch['socialItems'],
             redditItems: redditItems as unknown as CyberPulsePrefetch['redditItems'],
             xAccountPosts: xAccountPosts as unknown as CyberPulsePrefetch['xAccountPosts'],
           });
           const totalCreated = cpResults.reduce((s, r) => s + r.incidents_created, 0);
+
           console.log(
             JSON.stringify({
               job: 'cp-30-ingest',
@@ -1713,8 +1720,29 @@ export async function executeCronJob(
     await releaseLease();
     return;
   }
-  if (!env.BRIEFINGS_DB) {
-    console.warn(JSON.stringify({ job: 'briefing-build', status: 'skipped', reason: 'BRIEFINGS_DB not bound' }));
+  // Same accessor the read routes use (`getThreatDb`: ThreatDataDO when bound,
+  // the BRIEFINGS_DB D1 binding otherwise). It used to reach for
+  // `env.BRIEFINGS_DB` directly, which is harmless only while the DO is
+  // unbound: bind it and the 00:30 build keeps writing dailies into D1 while
+  // `/api/v1/briefings/*` reads the DO — the row lands, the list never shows
+  // it, and the page reports "not yet generated" for a briefing that exists.
+  // One accessor for both sides is the only thing that can't drift.
+  const db = (() => {
+    try {
+      return getThreatDb(env as { THREAT_DATA_DO?: DurableObjectNamespace; BRIEFINGS_DB?: D1Database });
+    } catch (e) {
+      console.warn(
+        JSON.stringify({
+          job: 'briefing-build',
+          status: 'skipped',
+          reason: 'no briefing store bound',
+          error: e instanceof Error ? e.message : String(e),
+        })
+      );
+      return null;
+    }
+  })();
+  if (!db) {
     await releaseLease();
     return;
   }
@@ -1728,7 +1756,6 @@ export async function executeCronJob(
   ctx.waitUntil(
     (async () => {
       try {
-        const db = env.BRIEFINGS_DB as D1Database;
         try {
           const briefing = await buildBriefing(type, undefined, {
             nvdApiKey: env.NVD_API_KEY,

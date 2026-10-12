@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { listBriefings, readBriefing, type Briefing } from '../lib/briefing-builder';
+import { getThreatDb } from '../lib/do-database';
 import { getSiteUrl } from '../lib/site-config';
 
 /**
@@ -73,7 +74,7 @@ function itemDescription(b: Briefing): string {
 }
 
 export async function briefingsRssHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
-  const db = c.env.BRIEFINGS_DB;
+  const db = getThreatDb(c.env);
   if (!db) {
     return c.text('briefings database not bound', 503, { 'cache-control': 'no-store' });
   }

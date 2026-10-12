@@ -10,6 +10,7 @@ import { normalizeGroup } from '../group-normalize';
 import { computeDailyWindow, computeLiveDailyWindow } from '../briefing-window';
 import { fetchCveFeedHighSeverity, type CveFeedEntry } from '../../routes/cve-recent';
 import { BRIEFING_MAX_AGE_DAYS, IOC_FEED_SOURCES, RELATED_LIMIT, RELATED_MAX_CANDIDATES } from './config';
+import { BUILD_SOURCE_COST as COST, BUILD_SUBREQUEST_BUDGET, createBuildSubrequestBudget } from './subrequest-budget';
 import { stampRelatedBriefings } from './related';
 import {
   withLastGood,
@@ -259,88 +260,118 @@ export async function buildBriefing(
 
   const wrap = <T>(p: Promise<T>, fallback: T) =>
     p.then((v) => ({ ok: true, v })).catch(() => ({ ok: false, v: fallback }));
-  /** Like `wrap` but unwraps an optional slice read. */
-  const wrapOpt = <T>(p: Promise<T | null>) =>
-    p.then((v) => ({ ok: v !== null, v })).catch(() => ({ ok: false, v: null as T | null }));
+
+  // ── Subrequest budget ───────────────────────────────────────────────────
+  // The free plan aborts the WHOLE invocation at 50 subrequests (HTTP 503, no
+  // row persisted), and this fan-out's real cost had drifted past it as
+  // sources were added. Every source below is degradable, so the budget admits
+  // them in priority order — `Promise.all` evaluates its array left to right,
+  // which is what makes the ordering below the admission order — and a source
+  // that no longer fits resolves to its fallback and drops out of the briefing
+  // instead of taking the run with it. See subrequest-budget.ts.
+  const budget = createBuildSubrequestBudget();
+  const skipped: string[] = [];
+  /**
+   * Charge `cost` and run `p`; when the budget is out, resolve `fallback` and
+   * record the source as deferred. `p` is a thunk so a rejected admission never
+   * starts the fetch.
+   */
+  const admit = <T>(source: string, cost: number, p: () => Promise<T>, fallback: T): Promise<T> => {
+    if (!budget.afford(cost)) {
+      skipped.push(source);
+      return Promise.resolve(fallback);
+    }
+    return p();
+  };
+  /** Like `admit` but resolves the `{ok, v}` envelope `wrap` produces. */
+  const admitWrap = <T>(source: string, cost: number, p: () => Promise<T>, fallback: T) => {
+    if (!budget.afford(cost)) {
+      skipped.push(source);
+      return Promise.resolve({ ok: false, v: fallback });
+    }
+    return wrap(p(), fallback);
+  };
+  /** The optional AI/LLM slice read: `null` simply omits its sections. */
+  const admitOpt = <T>(source: string, cost: number, p: () => Promise<T | null>) => {
+    if (!budget.afford(cost)) {
+      skipped.push(source);
+      return Promise.resolve({ ok: false, v: null as T | null });
+    }
+    return p()
+      .then((v) => ({ ok: v !== null, v }))
+      .catch(() => ({ ok: false, v: null as T | null }));
+  };
+
+  const EMPTY_RANSOMWARE = {
+    generated_at: '',
+    source: '',
+    count: 0,
+    groups: [],
+    sectors: [],
+    victims: [] as RansomwareVictim[],
+  };
+  const EMPTY_VT = {
+    digest: null,
+    archive: [] as VulnTrackerDayCounts[],
+    blog: [] as VulnTrackerBlogPost[],
+    ok: false,
+  };
   const mtiEnv = opts.env;
+  // ── Admission order IS priority order, most load-bearing source first.
+  // `Promise.all` evaluates its array left to right, so this is the order the
+  // budget is charged in and therefore the order sources are dropped when it
+  // runs dry. Deliberately: the CVE spine first, then the IOC core, then the
+  // enrichment tiers that add colour to a briefing that is already usable
+  // without them.
   const [
     kevR,
+    nvdR,
+    ransomwareBundle,
     urlhaus,
     malwarebazaar,
     threatfox,
-    tweetfeed,
+    vulntrackerBundle,
+    cvefeedItems,
     aiHoneypots,
     llmThreatintel,
-    aiLlmIntel,
-    nvdR,
-    ransomwareBundle,
+    tweetfeed,
     mtiCveItems,
-    cvefeedItems,
     webamonIntel,
-    malpkgEntries,
+    aiLlmIntel,
+    ossfMaliciousPackages,
     dailyHuntFamilies,
-    vulntrackerBundle,
     dbugsBundle,
   ] = await Promise.all([
-    wrap(withLastGood(mtiEnv, 'briefing-kev', fetchKev), [] as KevEntry[]),
-    fetchFeedResilient(mtiEnv, 'urlhaus', { startMs, endMs }),
-    fetchFeedResilient(mtiEnv, 'malwarebazaar', { startMs, endMs }),
-    fetchFeedResilient(mtiEnv, 'threatfox', { startMs, endMs }),
-    fetchFeedResilient(mtiEnv, 'tweetfeed'),
-    // AI/LLM threat intel. Two indicator feeds + the narrative payload, so the
-    // briefing covers LLM-abuse campaigns (ClickFix lures, malicious MCP
-    // servers, prompt injection) alongside classic malware. All three are
-    // fetch-resilient with a last-good mirror, and each adds exactly 1
-    // subrequest — the build's fan-out stays inside the free-plan cap.
-    fetchFeedResilient(mtiEnv, 'ai-honeypots'),
-    fetchFeedResilient(mtiEnv, 'llm-threatintel'),
-    // Read the warmed slice, never build it here: this fan-out runs inside the
-    // daily briefing build, and an inline build would put 5 third-party
-    // upstreams on the briefing's subrequest budget for a payload the hourly
-    // cron already keeps warm. Null when cold → the section is simply omitted.
-    wrapOpt(readAiLlmIntelSlice()),
-    wrap(
-      withLastGood(mtiEnv, `briefing-nvd?s=${startMs}&e=${endMs}`, async () => {
-        try {
-          const r = await fetchNvdRecent(rangeStart, rangeEnd, opts.nvdApiKey);
-          if (r.length > 0) return r;
-        } catch {
-          /* noop */
-        }
-        return fetchCirclRecent(rangeStart, rangeEnd);
-      }),
+    admitWrap('kev', COST.kev, () => withLastGood(mtiEnv, 'briefing-kev', fetchKev), [] as KevEntry[]),
+    admitWrap(
+      'nvd',
+      COST.nvd,
+      () =>
+        withLastGood(mtiEnv, `briefing-nvd?s=${startMs}&e=${endMs}`, async () => {
+          try {
+            const r = await fetchNvdRecent(rangeStart, rangeEnd, opts.nvdApiKey);
+            if (r.length > 0) return r;
+          } catch {
+            /* noop */
+          }
+          return fetchCirclRecent(rangeStart, rangeEnd);
+        }),
       [] as NvdCve[]
     ),
-    mtiEnv
-      ? fetchRansomwareRecent(mtiEnv)
-          .then((r) => r?.body)
-          .catch(() => ({
-            generated_at: '',
-            source: '',
-            count: 0,
-            groups: [],
-            sectors: [],
-            victims: [] as RansomwareVictim[],
-          }))
-      : Promise.resolve({
-          generated_at: '',
-          source: '',
-          count: 0,
-          groups: [],
-          sectors: [],
-          victims: [] as RansomwareVictim[],
-        }),
-    mtiEnv
-      ? fetchMtiSource(mtiEnv, 'cve', { limit: 200 })
-          .then((r) => (r.ok ? (r.items as MtiCveRecord[]) : []))
-          .catch(() => [] as MtiCveRecord[])
-      : Promise.resolve([] as MtiCveRecord[]),
-    fetchCveFeedHighSeverity().catch(() => [] as CveFeedEntry[]),
-    mtiEnv?.WEBAMON_API_KEY
-      ? getCampaignIntel(mtiEnv).catch(() => null as WebamonCampaignIntel | null)
-      : Promise.resolve(null as WebamonCampaignIntel | null),
-    fetchMaliciousPackages(mtiEnv, { since: rangeStart, until: rangeEnd }).catch(() => [] as MaliciousPackageEntry[]),
-    fetchDailyHuntIocFamilies(mtiEnv, { since: rangeStart, until: rangeEnd }).catch(() => [] as DailyHuntIocFamily[]),
+    admit(
+      'ransomware',
+      COST.ransomware,
+      () =>
+        mtiEnv
+          ? fetchRansomwareRecent(mtiEnv)
+              .then((r) => r?.body)
+              .catch(() => EMPTY_RANSOMWARE)
+          : Promise.resolve(EMPTY_RANSOMWARE),
+      EMPTY_RANSOMWARE
+    ),
+    admit('urlhaus', COST.iocFeed, () => fetchFeedResilient(mtiEnv, 'urlhaus', { startMs, endMs }), []),
+    admit('malwarebazaar', COST.iocFeed, () => fetchFeedResilient(mtiEnv, 'malwarebazaar', { startMs, endMs }), []),
+    admit('threatfox', COST.iocFeed, () => fetchFeedResilient(mtiEnv, 'threatfox', { startMs, endMs }), []),
     // VulnTracker is date-addressed: the digest for THIS window's date, plus
     // the 30-day archive (volume trend) and the blog RSS (narrative). The three
     // surfaces degrade independently inside fetchVulnTrackerDaily — only the
@@ -351,22 +382,107 @@ export async function buildBriefing(
     // fixed 3 subrequests on the daily path. Weekly reads the D1 daily rollup
     // instead and skips the fan-out entirely, so it must not pay for a
     // date-addressed fetch it can't window correctly.
-    type === 'daily'
-      ? fetchVulnTrackerDaily(dateLabel).catch(() => ({
-          digest: null,
-          archive: [] as VulnTrackerDayCounts[],
-          blog: [] as VulnTrackerBlogPost[],
-          ok: false,
-        }))
-      : Promise.resolve({
-          digest: null,
-          archive: [] as VulnTrackerDayCounts[],
-          blog: [] as VulnTrackerBlogPost[],
-          ok: false,
-        }),
-    fetchDbugsRecent().catch(() => ({ vulns: [] as DbugsVuln[], ok: false })),
+    admit(
+      'vulntracker',
+      COST.vulnTracker,
+      () => (type === 'daily' ? fetchVulnTrackerDaily(dateLabel).catch(() => EMPTY_VT) : Promise.resolve(EMPTY_VT)),
+      EMPTY_VT
+    ),
+    admit('cvefeed', COST.single, () => fetchCveFeedHighSeverity().catch(() => [] as CveFeedEntry[]), []),
+    // AI/LLM threat intel. Two indicator feeds + the narrative payload, so the
+    // briefing covers LLM-abuse campaigns (ClickFix lures, malicious MCP
+    // servers, prompt injection) alongside classic malware. All three are
+    // fetch-resilient with a last-good mirror, and each adds exactly 1
+    // subrequest — the build's fan-out stays inside the free-plan cap.
+    admit('ai-honeypots', COST.iocFeed, () => fetchFeedResilient(mtiEnv, 'ai-honeypots'), []),
+    admit('llm-threatintel', COST.iocFeed, () => fetchFeedResilient(mtiEnv, 'llm-threatintel'), []),
+    admit('tweetfeed', COST.iocFeed, () => fetchFeedResilient(mtiEnv, 'tweetfeed'), []),
+    admit(
+      'mti-cve',
+      COST.single,
+      () =>
+        mtiEnv
+          ? fetchMtiSource(mtiEnv, 'cve', { limit: 200 })
+              .then((r) => (r.ok ? (r.items as MtiCveRecord[]) : []))
+              .catch(() => [] as MtiCveRecord[])
+          : Promise.resolve([] as MtiCveRecord[]),
+      []
+    ),
+    admit(
+      'webamon',
+      COST.webamon,
+      () =>
+        mtiEnv?.WEBAMON_API_KEY
+          ? getCampaignIntel(mtiEnv).catch(() => null as WebamonCampaignIntel | null)
+          : Promise.resolve(null as WebamonCampaignIntel | null),
+      null
+    ),
+    // Read the warmed slice, never build it here: this fan-out runs inside the
+    // daily briefing build, and an inline build would put 5 third-party
+    // upstreams on the briefing's subrequest budget for a payload the hourly
+    // cron already keeps warm. Null when cold → the section is simply omitted.
+    admitOpt('ai-llm-intel', COST.aiLlmSlice, () => readAiLlmIntelSlice()),
+    admit(
+      'ossf-malicious-packages',
+      COST.ossfMaliciousPackages,
+      () =>
+        fetchMaliciousPackages(mtiEnv, { since: rangeStart, until: rangeEnd }).catch(
+          () => [] as MaliciousPackageEntry[]
+        ),
+      []
+    ),
+    admit(
+      'daily-hunt',
+      COST.dailyHunt,
+      () =>
+        fetchDailyHuntIocFamilies(mtiEnv, { since: rangeStart, until: rangeEnd }).catch(
+          () => [] as DailyHuntIocFamily[]
+        ),
+      []
+    ),
+    admit('dbu.gs', COST.single, () => fetchDbugsRecent().catch(() => ({ vulns: [] as DbugsVuln[], ok: false })), {
+      vulns: [] as DbugsVuln[],
+      ok: false,
+    }),
   ]);
-  let degraded = !kevR.ok && !nvdR.ok;
+
+  // The LLM narrative is the single most expensive optional thing in the
+  // build (the provider chain walks Gemini's 5 models and Groq's 4 before
+  // falling back — ~9-13 subrequests). Admit it here, alongside the rest, so
+  // its cost is visible in the same budget line and so `skipLlm` — which every
+  // persistence path passes — is honoured on the DAILY branch too. It was only
+  // ever wired into the weekly-rollup branch above, so the daily build paid
+  // for the round-trip no matter what the caller asked for; with the providers
+  // degraded that was enough on its own to push the build past the free-plan
+  // cap, which is how the dailies stopped persisting and the manual admin
+  // build started answering 503. A caller that does want the LLM summary still
+  // gets it whenever the fan-out left room.
+  const wantLlm = !opts.skipLlm && budget.afford(COST.llmSummary);
+  if (!opts.skipLlm && !wantLlm) skipped.push('llm-summary');
+
+  if (skipped.length > 0) {
+    // Loud, because a silently short briefing is indistinguishable from a
+    // quiet news day — the same failure shape as the 503 this budget exists
+    // to prevent.
+    console.warn(
+      JSON.stringify({
+        job: 'briefing-build-budget',
+        slug,
+        type,
+        status: 'sources-deferred',
+        deferred: skipped,
+        spent: budget.spent(),
+        limit: BUILD_SUBREQUEST_BUDGET,
+      })
+    );
+  }
+  // A source the budget dropped was never ATTEMPTED, so it must not be reported
+  // as an upstream outage. Only a source that actually ran and failed counts
+  // toward `degraded` — otherwise a budget-starved run would ship the "KEV and
+  // NVD were unreachable, this is not an all-clear" banner, which is both
+  // untrue and, on a budget-starved day, the most alarming thing it could say.
+  const deferred = new Set(skipped);
+  let degraded = !kevR.ok && !nvdR.ok && !deferred.has('kev') && !deferred.has('nvd');
   const kev = kevR.v;
   const nvdRecent = nvdR.v;
 
@@ -379,11 +495,24 @@ export async function buildBriefing(
   // Only fetch individual CVEs when the bulk result has data (NVD/CIRCL
   // was reachable). When nvdRecent is empty the API is down — individual
   // lookups will also fail and would waste subrequests on the free plan.
+  //
+  // Bounded twice over. The per-CVE loop is the one place in the build whose
+  // cost is data-dependent (one NVD call per KEV CVE the window didn't already
+  // cover, up to ~15), and it runs AFTER every other source has been charged —
+  // so it only gets what the fan-out left, capped at a handful either way. An
+  // unrescued CVE still lands in the briefing; it just carries the KEV row's
+  // own description and score instead of NVD's.
+  const MAX_KEV_NVD_LOOKUPS = 5;
   if (nvdRecent.length > 0) {
-    const missingKevCves = kevWindow.map((k) => k.cveID).filter((id) => !nvdMap.has(id));
-    if (missingKevCves.length > 0) {
+    const missingKevCves = kevWindow
+      .map((k) => k.cveID)
+      .filter((id) => !nvdMap.has(id))
+      .slice(0, MAX_KEV_NVD_LOOKUPS);
+    if (missingKevCves.length > 0 && budget.afford(missingKevCves.length * COST.nvdById)) {
       const enriched = await fetchNvdByIds(missingKevCves, opts.nvdApiKey).catch(() => new Map<string, NvdCve>());
       for (const [k, v] of enriched) nvdMap.set(k, v);
+    } else if (missingKevCves.length > 0) {
+      skipped.push('nvd-by-id');
     }
   }
   const kevFindings = kevWindow.map((k) => findingFromKev(k, nvdMap.get(k.cveID)));
@@ -723,7 +852,7 @@ export async function buildBriefing(
   // through for the version-range detail.
   const malpkgFindings: BriefingFinding[] = [];
   const malpkgByEco: Record<string, number> = {};
-  for (const p of malpkgEntries) {
+  for (const p of ossfMaliciousPackages) {
     malpkgByEco[p.ecosystem] = (malpkgByEco[p.ecosystem] ?? 0) + 1;
     const added = p.publishedAt ? ` First disclosed ${p.publishedAt.slice(0, 10)}.` : '';
     malpkgFindings.push({
@@ -958,9 +1087,13 @@ export async function buildBriefing(
     ransomwareSectors,
     ransomwareTotal: ransomwareFindings.length,
   };
+  // `skipLlm` is honoured here as well as on the weekly-rollup branch above —
+  // see the `wantLlm` admission next to the fan-out for why that matters.
   const executive_summary = degraded
     ? `This ${type} briefing is incomplete: both CISA KEV and NVD were unreachable from the edge at build time (${rangeLabel}). This is an upstream-availability gap, NOT an all-clear — do not read the absence of findings as "no new vulnerabilities". The briefing rebuilds automatically every hour and will be replaced as soon as the feeds respond.`
-    : await buildLlmExecutiveSummary(summaryArgs, opts.env);
+    : wantLlm
+      ? await buildLlmExecutiveSummary(summaryArgs, opts.env)
+      : buildExecutiveSummary(summaryArgs);
   const techniqueSet = new Set<string>();
   for (const f of findings) for (const t of f.mitre_techniques) techniqueSet.add(t);
   for (const f of dailyHuntFindings) for (const t of f.mitre_techniques) techniqueSet.add(t);

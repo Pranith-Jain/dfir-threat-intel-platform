@@ -8,13 +8,14 @@ import type { Env } from '../env';
 import { logError } from '../lib/logger';
 import { badRequest, notFound, internalError, serviceUnavailable } from '../lib/api-error';
 import { readBriefing } from '../lib/briefing-builder/build';
+import { getThreatDb } from '../lib/do-database';
 import { renderBriefingMarkdown } from '../lib/briefing-markdown-renderer';
 
 export async function briefingRenderHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const slug = c.req.param('slug');
   if (!slug) return badRequest(c, 'missing slug');
   try {
-    const db = c.env.BRIEFINGS_DB;
+    const db = getThreatDb(c.env);
     if (!db) return serviceUnavailable(c, 'BRIEFINGS_DB not bound');
     const briefing = await readBriefing(db, slug);
     if (!briefing) return notFound(c, `briefing ${slug} not found`);

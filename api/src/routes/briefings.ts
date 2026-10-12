@@ -17,6 +17,7 @@ import { buildIocDump } from '../lib/briefing-builder/aggregate';
 import { extractBriefingTags } from '../lib/briefing-tags';
 import { requireAdmin as requireSharedAdmin, safeEqual } from '../lib/admin-auth';
 import { badRequest, notFound, internalError, serviceUnavailable } from '../lib/api-error';
+import { getThreatDb } from '../lib/do-database';
 
 /**
  * Walk every finding in the briefing and attach auto-extracted tags
@@ -55,7 +56,7 @@ function ensureIocDump(b: Briefing): Briefing {
 }
 
 function dbOrError(c: Context<{ Bindings: Env }>): D1Database | null {
-  const db = c.env.BRIEFINGS_DB;
+  const db = getThreatDb(c.env);
   if (!db) return null;
   return db;
 }
@@ -254,7 +255,7 @@ function requireAdmin(c: AdminCtx): { error: Response } | { ok: true } {
  * Set BRIEFINGS_ADMIN_TOKEN as a Worker secret. If unset, this handler is disabled.
  */
 export async function buildBriefingHandler(c: AdminCtx) {
-  const db = c.env.BRIEFINGS_DB;
+  const db = getThreatDb(c.env);
   if (!db) return serviceUnavailable(c, 'briefings database not bound');
   const auth = requireAdmin(c);
   if ('error' in auth) return auth.error;
@@ -324,7 +325,7 @@ export async function buildBriefingHandler(c: AdminCtx) {
  *   500 if absolutely nothing succeeded.
  */
 export async function backfillBriefingsHandler(c: AdminCtx) {
-  const db = c.env.BRIEFINGS_DB;
+  const db = getThreatDb(c.env);
   if (!db) return serviceUnavailable(c, 'briefings database not bound');
   const auth = requireAdmin(c);
   if ('error' in auth) return auth.error;
@@ -576,7 +577,7 @@ export async function briefingsForActorHandler(c: Context<{ Bindings: Env }>) {
 }
 
 export async function sweepBriefingsHandler(c: AdminCtx) {
-  const db = c.env.BRIEFINGS_DB;
+  const db = getThreatDb(c.env);
   if (!db) return serviceUnavailable(c, 'briefings database not bound');
   const auth = requireAdmin(c);
   if ('error' in auth) return auth.error;
@@ -611,7 +612,7 @@ export async function sweepBriefingsHandler(c: AdminCtx) {
  * acceptable for an operator action.
  */
 export async function deleteBriefingHandler(c: AdminCtx) {
-  const db = c.env.BRIEFINGS_DB;
+  const db = getThreatDb(c.env);
   if (!db) return serviceUnavailable(c, 'briefings database not bound');
   const auth = requireAdmin(c);
   if ('error' in auth) return auth.error;
@@ -647,7 +648,7 @@ export async function deleteBriefingHandler(c: AdminCtx) {
  * have json_extract → NULL, so `= 0` is false and they're never touched.
  */
 export async function pruneEmptyBriefingsHandler(c: AdminCtx) {
-  const db = c.env.BRIEFINGS_DB;
+  const db = getThreatDb(c.env);
   if (!db) return serviceUnavailable(c, 'briefings database not bound');
   const auth = requireAdmin(c);
   if ('error' in auth) return auth.error;

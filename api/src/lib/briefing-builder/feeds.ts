@@ -302,11 +302,13 @@ const OSSF_GH_BASE = 'https://api.github.com/repos/ossf/malicious-packages';
  * would surface the entire catalog every day. The Commits API gives us the
  * exact set of packages disclosed in the window.
  *
- * Subrequest budget: 1 commits-list call + N per-commit file-list calls
- * (capped at `MAX_COMMITS`). Worst case ~1 + 5 = 6 subrequests, keeping
- * the daily build's total fan-out safely under the free-plan 50 cap.
+ * Subrequest budget: 1 commits-list call + N per-commit file-list calls (capped
+ * at `MAX_COMMITS`). Every commit is a separate GitHub API request and they all
+ * land on the briefing build's shared 50-subrequest budget, so the cap is
+ * deliberately low — a day with more than a handful of new advisories ships the
+ * first `MAX_COMMITS` of them.
  */
-const MAX_COMMITS = 5;
+const MAX_COMMITS = 3;
 
 export async function fetchMaliciousPackages(
   env?: Env,
