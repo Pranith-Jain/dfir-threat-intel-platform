@@ -93,12 +93,28 @@ function splitCsvLine(line: string): string[] {
 }
 
 /** Parse non-empty, non-comment lines from a CSV body */
-function csvLines(body: string): string[][] {
-  return body
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l.length > 0 && !l.startsWith('#'))
-    .map(splitCsvLine);
+/**
+ * Iterate a CSV body row by row.
+ *
+ * A GENERATOR, deliberately. This used to be `split → map trim → filter →
+ * map splitCsvLine`, which materialised four intermediate arrays over the whole
+ * body before the caller's `cap` had any effect. On URLhaus' 7.9 MB
+ * `csv_recent` feed that measured ~19 MB of retained arrays per call, and
+ * /api/v1/threat-map called it twice per feed — enough to push the Worker into
+ * the 128 MB ceiling and return error 1102.
+ *
+ * Yielding lazily means the caller stops the walk at its own cap and the rows
+ * past that point are never built. Every call site keeps the same
+ * `for (const cols of csvLines(body))` shape and sees the same rows in the same
+ * order, so this is behaviour-preserving for the parsers that post-filter and
+ * genuinely need to scan further to fill their cap.
+ */
+function* csvLines(body: string): Generator<string[]> {
+  for (const line of body.split('\n')) {
+    const l = line.trim();
+    if (l.length === 0 || l.startsWith('#')) continue;
+    yield splitCsvLine(l);
+  }
 }
 
 // ─── URLhaus ────────────────────────────────────────────────────────────────

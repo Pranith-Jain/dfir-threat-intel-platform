@@ -23,18 +23,33 @@ import { trackEvent, visitorCountry } from '../lib/analytics';
  * Cached 1h in Cache API so each visitor doesn't re-trigger the geolocation.
  */
 
-/** Exported so /api/v1/snapshot can read the same cached payload directly. */
-// v5: bumped MAX_IPS 500→1000 + per-source slice caps so the map shows
-// real volume per feed instead of every source converging on ~80 entries
-// (which was a downstream effect of the conservative caps below).
-export const THREAT_MAP_CACHE_KEY = 'https://threat-map-cache.internal/v5-1k';
+/**
+ * Exported so /api/v1/snapshot can read the same cached payload directly.
+ *
+ * v6: the 7.9 MB URLhaus feed is now parsed once instead of twice, MAX_IPS
+ * dropped 1000 -> 400, and geolocation is cached per IP. All three change the
+ * payload's shape and volume, so the cache key is bumped — serving a v5 body
+ * for the `stale-while-revalidate` window (4h) would show the old working set
+ * and hide whether the fix actually took effect.
+ */
+export const THREAT_MAP_CACHE_KEY = 'https://threat-map-cache.internal/v6-single-parse';
 const CACHE_KEY = THREAT_MAP_CACHE_KEY;
 const CACHE_TTL_SECONDS = 3600;
-// ip-api.com batch is 100; we do up to 10 batches (still well under the
-// 50-subrequest-per-invocation Workers cap).
-const MAX_IPS = 1000;
+// ip-api.com batch is 100 per request.
+//
+// MAX_IPS was 1000, which meant 10 SEQUENTIAL round-trips to a free-tier
+// endpoint (45 req/min from one egress IP) inside a single invocation. Combined
+// with the duplicate parses that is what tipped this route into error 1102.
+// 400 covers the map's needs — it renders aggregated countries, not an
+// exhaustive list — in 4 batches.
+const MAX_IPS = 400;
 const MAX_PER_TYPE = 60; // per non-IP IOC type (urls / domains / hashes)
 const FETCH_TIMEOUT_MS = 12_000;
+// A single batch that takes the full timeout, times the whole geolocation
+// budget. Without this a partially-hung endpoint can hold the invocation open
+// for batches x FETCH_TIMEOUT_MS.
+const GEO_BUDGET_MS = 20_000;
+const GEO_CACHE_TTL = 86_400;
 
 interface CountryAgg {
   countryCode: string;
@@ -75,6 +90,17 @@ interface IpApiBatchResult {
   countryCode?: string;
 }
 
+/**
+ * Per-IP geolocation cache key.
+ *
+ * Keyed on the IP alone, so a warm cache is shared across every caller that
+ * needs the same country. An IPv6 address contains colons, which are legal in a
+ * URL path, so no encoding is needed here.
+ */
+function GEO_CACHE_KEY(ip: string): string {
+  return `https://threat-map-geo.internal/${ip}`;
+}
+
 async function fetchText(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, {
@@ -93,10 +119,45 @@ async function fetchText(url: string): Promise<string | null> {
   }
 }
 
+/**
+ * Geolocate IPs in batches of 100 against ip-api.com.
+ *
+ * Results are cached per IP for a day. Country assignment for an IP does not
+ * change hour to hour, so a warm cache turns the whole stage into Cache-API
+ * reads and a cold one only pays for the IPs it has never seen. The previous
+ * shape re-geolocated the entire working set on every cache miss, which is the
+ * difference between one invocation doing 4 requests and doing several hundred
+ * across an hour of misses.
+ */
 async function geolocateBatch(ips: string[]): Promise<Map<string, { country: string; countryCode: string }>> {
   const out = new Map<string, { country: string; countryCode: string }>();
-  for (let i = 0; i < ips.length; i += 100) {
-    const batch = ips.slice(i, i + 100);
+  if (ips.length === 0) return out;
+
+  const pending: string[] = [];
+
+  // Warm pass: Cache API, no network.
+  await Promise.all(
+    ips.map(async (ip) => {
+      const hit = await caches.default.match(new Request(GEO_CACHE_KEY(ip))).catch(() => null);
+      if (!hit) {
+        pending.push(ip);
+        return;
+      }
+      const v = (await hit.json()) as { country: string; countryCode: string } | null;
+      if (v?.countryCode) out.set(ip, v);
+    })
+  );
+
+  if (pending.length === 0) return out;
+
+  const startedAt = Date.now();
+  const writes: Promise<void>[] = [];
+
+  for (let i = 0; i < pending.length; i += 100) {
+    // Budget guard: better to return partial country coverage quickly than to
+    // risk the invocation being killed for the payload it is trying to build.
+    if (Date.now() - startedAt > GEO_BUDGET_MS) break;
+    const batch = pending.slice(i, i + 100);
     try {
       const res = await fetch('http://ip-api.com/batch?fields=query,status,country,countryCode', {
         method: 'POST',
@@ -105,24 +166,34 @@ async function geolocateBatch(ips: string[]): Promise<Map<string, { country: str
         signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       });
       if (res.status === 429) {
-        // ip-api.com free tier is 45 req/min from a single IP; the
-        // Worker shares one egress IP per POP so we can hit this
-        // bursting on /api/v1/threat-map. Skip the remaining batches
-        // — partial coverage is better than blocking forever.
+        // ip-api.com free tier is 45 req/min from a single IP; the Worker
+        // shares one egress IP per POP so we hit this on bursts. Stop and
+        // keep whatever resolved.
         break;
       }
       if (!res.ok) continue;
       const data = (await res.json()) as IpApiBatchResult[];
       for (const row of data) {
         if (row.status === 'success' && row.query && row.countryCode && row.country) {
-          out.set(row.query, { country: row.country, countryCode: row.countryCode });
+          const value = { country: row.country, countryCode: row.countryCode };
+          out.set(row.query, value);
+          writes.push(
+            caches.default.put(
+              new Request(GEO_CACHE_KEY(row.query)),
+              new Response(JSON.stringify(value), {
+                headers: { 'content-type': 'application/json', 'cache-control': `public, max-age=${GEO_CACHE_TTL}` },
+              })
+            )
+          );
         }
       }
     } catch (_catchErr) {
       logError('geolocateBatch failed', _catchErr);
-      /* skip batch on failure */
+      // Skip this batch; the next one may still succeed.
     }
   }
+
+  await Promise.allSettled(writes);
   return out;
 }
 
@@ -142,6 +213,20 @@ export async function fetchThreatMap(): Promise<ThreatMapResponse> {
     fetchText('https://bazaar.abuse.ch/export/csv/recent/'),
   ]);
 
+  // Parse each feed ONCE, then bucket from that single result.
+  //
+  // This previously called parseUrlhaus twice and parseThreatfox twice — once
+  // for the IP pass and again for the url/domain/hash pass — re-walking a 7.9 MB
+  // CSV each time. With csvLines now lazy the second walk stopped at its cap,
+  // but the duplicate work and the duplicate entry arrays were still being
+  // held simultaneously, which is what pushed this route past the Worker's
+  // memory ceiling (error 1102).
+  const PARSE_CAP = MAX_IPS + MAX_PER_TYPE * 4;
+
+  const urlhausEntries = urlhausText ? parseUrlhaus(urlhausText, PARSE_CAP) : [];
+  const threatfoxEntries = threatfoxText ? parseThreatfox(threatfoxText, PARSE_CAP) : [];
+  const malwarebazaarEntries = malwarebazaarText ? parseMalwarebazaar(malwarebazaarText, PARSE_CAP) : [];
+
   // Build a map of IP → set of sources, capped at MAX_IPS unique IPs.
   const ipSources = new Map<string, Set<string>>();
   const addIp = (ip: string, source: string) => {
@@ -150,23 +235,19 @@ export async function fetchThreatMap(): Promise<ThreatMapResponse> {
     ipSources.get(ip)!.add(source);
   };
 
-  if (urlhausText) {
-    // URLhaus entries are URLs; extract host and only add if it parses as IPv4.
-    for (const e of parseUrlhaus(urlhausText, 600)) {
-      if (e.type !== 'url') continue;
-      try {
-        const host = new URL(e.value).hostname;
-        if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(host)) addIp(host, 'urlhaus');
-      } catch (_catchErr) {
-        logError('fetchThreatMap failed', _catchErr);
-        /* skip malformed url */
-      }
+  for (const e of urlhausEntries) {
+    if (e.type !== 'url') continue;
+    try {
+      const host = new URL(e.value).hostname;
+      if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(host)) addIp(host, 'urlhaus');
+    } catch {
+      // Skip a malformed URL rather than failing the whole map. A URLhaus row
+      // with an unparseable value is upstream's problem, not ours, and one bad
+      // row should not cost the other 33,000.
     }
   }
-  if (threatfoxText) {
-    for (const e of parseThreatfox(threatfoxText, 600)) {
-      if (e.type === 'ipv4') addIp(e.value, 'threatfox');
-    }
+  for (const e of threatfoxEntries) {
+    if (e.type === 'ipv4') addIp(e.value, 'threatfox');
   }
   // Ipsum is consensus-scored, so the IPs here have hits from 3+ source lists.
   if (ipsumText) {
@@ -234,24 +315,22 @@ export async function fetchThreatMap(): Promise<ThreatMapResponse> {
   };
 
   if (urlhausText) {
-    for (const e of parseUrlhaus(urlhausText, MAX_PER_TYPE * 2)) {
+    for (const e of urlhausEntries) {
       if (e.type !== 'url') continue;
       pushSample(urlBucket, { value: e.value, source: 'urlhaus', context: e.context, timestamp: e.timestamp });
     }
   }
-  if (threatfoxText) {
-    for (const e of parseThreatfox(threatfoxText, MAX_PER_TYPE * 4)) {
-      if (e.type === 'url') {
-        pushSample(urlBucket, { value: e.value, source: 'threatfox', context: e.context, timestamp: e.timestamp });
-      } else if (e.type === 'domain') {
-        pushSample(domainBucket, { value: e.value, source: 'threatfox', context: e.context, timestamp: e.timestamp });
-      } else if (e.type === 'hash') {
-        pushSample(hashBucket, { value: e.value, source: 'threatfox', context: e.context, timestamp: e.timestamp });
-      }
+  for (const e of threatfoxEntries) {
+    if (e.type === 'url') {
+      pushSample(urlBucket, { value: e.value, source: 'threatfox', context: e.context, timestamp: e.timestamp });
+    } else if (e.type === 'domain') {
+      pushSample(domainBucket, { value: e.value, source: 'threatfox', context: e.context, timestamp: e.timestamp });
+    } else if (e.type === 'hash') {
+      pushSample(hashBucket, { value: e.value, source: 'threatfox', context: e.context, timestamp: e.timestamp });
     }
   }
   if (malwarebazaarText) {
-    for (const e of parseMalwarebazaar(malwarebazaarText, MAX_PER_TYPE * 2)) {
+    for (const e of malwarebazaarEntries) {
       if (e.type === 'hash') {
         pushSample(hashBucket, { value: e.value, source: 'malwarebazaar', context: e.context, timestamp: e.timestamp });
       }
@@ -288,18 +367,34 @@ export async function threatMapHandler(c: Context<{ Bindings: Env }>) {
   }
 
   const body = await fetchThreatMap();
+
+  /**
+   * Do not cache a degenerate payload.
+   *
+   * If every upstream fetch failed we still return 200 with empty arrays, and
+   * caching that would pin an empty map in front of every visitor for the full
+   * TTL — turning a transient upstream blip into an hour of "the map is
+   * broken". Returning it uncached means the next request retries.
+   */
+  const degenerate = body.total_ips === 0 && body.countries.length === 0;
+
   const json = JSON.stringify(body);
   const response = new Response(json, {
     status: 200,
     headers: {
       'content-type': 'application/json',
-      'cache-control': `public, max-age=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS * 4}`,
+      'cache-control': degenerate
+        ? 'no-store'
+        : `public, max-age=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS * 4}`,
       'x-cache': 'MISS',
+      ...(degenerate ? { 'x-degraded': 'all upstream feeds empty' } : {}),
     },
   });
-  c.executionCtx.waitUntil(cache.put(cacheReq, response.clone()));
+  if (!degenerate) {
+    c.executionCtx.waitUntil(cache.put(cacheReq, response.clone()));
+  }
   trackEvent(c.env, 'threat_map_fetch', {
-    blobs: ['miss'],
+    blobs: degenerate ? ['miss', 'degraded'] : ['miss'],
     doubles: [body.total_ips, body.countries.length],
     indexes: [visitorCountry(c.req.raw)],
   });
