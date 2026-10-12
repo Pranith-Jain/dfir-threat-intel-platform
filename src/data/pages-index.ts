@@ -2033,6 +2033,15 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     group: 'threatintel',
   },
   {
+    path: '/threatintel/detection-coverage',
+    label: 'Detection Coverage',
+    description:
+      'Joins CISA KEV and EPSS against published detection rules to show which known-exploited vulnerabilities your SIEM has no rule for.',
+    sectionLabel: 'Threat Intel · Detection',
+    group: 'threatintel',
+    keywords: ['kev', 'detection', 'sigma', 'sentinel', 'splunk', 'elastic', 'siem', 'coverage', 'gap', 'epss'],
+  },
+  {
     path: '/threatintel/source-reliability',
     label: 'Source Reliability',
     description: 'Source reliability scoring - historical accuracy, citation count, and decay.',
@@ -3200,6 +3209,15 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     sectionLabel: 'Threat Intel · AI Security',
     group: 'threatintel',
     keywords: ['ai', 'advisory', 'release', 'exploit', 'research', 'hacktron'],
+  },
+  {
+    path: '/threatintel/glasswing',
+    label: 'Project Glasswing Ledger',
+    description:
+      "CVEs disclosed through Anthropic's AI vulnerability-discovery programme, with the project and weakness class the CVE record drops.",
+    sectionLabel: 'Threat Intel · AI Security',
+    group: 'threatintel',
+    keywords: ['ai', 'glasswing', 'anthropic', 'disclosure', 'cve', 'ai-discovered', 'weakness', 'ecosystem'],
   },
   {
     path: '/threatintel/predictive/global-pulse',

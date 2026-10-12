@@ -81,6 +81,13 @@ const CARDS = [
     desc: 'CVE firehose, tool release trains, ExploitDB PoCs, plus Hacktron/Unit42/CSA research.',
     key: 'advisories',
   },
+  {
+    to: '/threatintel/glasswing',
+    icon: Bot,
+    title: 'Project Glasswing Ledger',
+    desc: "CVEs Anthropic's AI programme disclosed, with the project and weakness class the CVE record drops.",
+    key: 'glasswing',
+  },
 ];
 
 export default function AiSecurityHub(): JSX.Element {

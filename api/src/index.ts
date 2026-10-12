@@ -276,6 +276,14 @@ import {
   getFeedJobsHistoryAllHandler,
 } from './routes/feed-scheduler';
 import {
+  createJobChannelHandler,
+  deleteChannelHandler,
+  deliveryLogHandler,
+  listJobChannelsHandler,
+  testChannelHandler,
+  updateChannelHandler,
+} from './routes/feed-channels';
+import {
   listObservablesHandler,
   getObservableHandler,
   saveObservableHandler,
@@ -418,6 +426,9 @@ import {
 } from './routes/feedback';
 import { sourceReliabilityHandler } from './lib/confidence';
 import { maturityHandler } from './lib/maturity';
+import { buildFilterCatalogResponse } from './lib/filter-catalog';
+import { cveInsightsHandler } from './routes/cve-insights';
+import { threatTargetingHandler } from './routes/threat-targeting';
 import { crossCampaignCorrelationHandler } from './routes/cross-campaign';
 
 import {
@@ -851,6 +862,14 @@ const ADMIN_GATED_PREFIXES = [
   '/api/v1/watches',
   '/api/v1/feed-scheduler',
   '/api/v1/feed-scheduler-history',
+  // Alert channels live under their own prefix rather than nested under
+  // feed-scheduler, because they have a different lifecycle (created and
+  // deleted often) — so they need their own admin gate entry. Admin-only for a
+  // sharper reason than config privacy: `POST /feed-channels/:id/test` makes
+  // the worker issue an outbound request to an operator-supplied URL, which is
+  // a request-forgery primitive if it is reachable by anyone else.
+  '/api/v1/feed-channels',
+  '/api/v1/feed-delivery-log',
   '/api/v1/ct-monitor',
   '/api/v1/dashboard',
   '/api/v1/rag',
@@ -1030,6 +1049,7 @@ import { webamonDtbRouter } from './routes/webamon-dtb';
 import { aiThreatsRouter } from './routes/ai-threats-edge-tools';
 import { aiEscapeRouter } from './routes/ai-escape';
 import { aiSecurityRouter } from './routes/ai-security';
+import { glasswingRouter } from './routes/anthropic-glasswing';
 import { ransomwareGroupsRouter } from './routes/ransomware-groups';
 import { anarchyRouter } from './routes/anarchy';
 import { ossFeedsRouter } from './routes/oss-feeds-edge-tools';
@@ -1503,6 +1523,16 @@ app.delete('/api/v1/feed-scheduler/:id', deleteFeedJobHandler);
 app.post('/api/v1/feed-scheduler/:id/run', runFeedJobHandler);
 app.get('/api/v1/feed-scheduler/:id/history', getFeedJobHistoryHandler);
 app.get('/api/v1/feed-scheduler-history', getFeedJobsHistoryAllHandler);
+
+// Feed alert channels — the outbound half of the scheduler. A job fetches and
+// counts indicators; these decide whether anyone hears about it. Requires
+// migration 0056.
+app.get('/api/v1/feed-delivery-log', deliveryLogHandler);
+app.get('/api/v1/feed-scheduler/:jobId/channels', listJobChannelsHandler);
+app.post('/api/v1/feed-scheduler/:jobId/channels', createJobChannelHandler);
+app.patch('/api/v1/feed-channels/:channelId', updateChannelHandler);
+app.delete('/api/v1/feed-channels/:channelId', deleteChannelHandler);
+app.post('/api/v1/feed-channels/:channelId/test', testChannelHandler);
 app.get('/api/v1/observable-db', listObservablesHandler);
 app.get('/api/v1/observable-db/tags', getObservableTagsHandler);
 app.get('/api/v1/observable-db/:id', getObservableHandler);
@@ -1846,6 +1876,11 @@ app.delete('/api/v1/threat-intel/feedback/:id', feedbackDeleteHandler);
 app.get('/api/v1/source-reliability', sourceReliabilityHandler);
 app.get('/api/v1/maturity', maturityHandler);
 
+// Machine-readable filter catalogue. Lets a client discover what each route
+// accepts without reading the source, and pairs with the X-Unknown-Params
+// header that names any parameter a handler ignored.
+app.get('/api/v1/filters', (c) => c.json(buildFilterCatalogResponse()));
+
 // ── ACH Generator ───────────────────────────────────────────────
 app.post('/api/v1/threat-intel/ach', validate('json', achGenerateSchema), achHandler);
 
@@ -1900,9 +1935,35 @@ app.get('/api/v1/soc/stats', socStats);
 app.get('/api/v1/security-updates', validate('query', securityUpdatesSchema), securityUpdatesHandler);
 app.get('/api/v1/cisa-kev', validate('query', cisaKevSchema), cisaKevHandler);
 import { stixIpEnrichHandler, stixIpEnrichBatchHandler } from './routes/stix-ip-enrich';
+import {
+  detectionCoverageHandler,
+  detectionCoverageCveHandler,
+  detectionCoverageLibraryHandler,
+  detectionCoverageTechniquesHandler,
+  detectionCoverageUpdatesHandler,
+} from './routes/detection-coverage';
 app.get('/api/v1/si/enrich-ip-stix', stixIpEnrichHandler);
 app.post('/api/v1/si/enrich-ip-stix-batch', stixIpEnrichBatchHandler);
 app.get('/api/v1/cert-in', validate('query', certInSchema), certInHandler);
+
+// Threat-targeting country view. Victim-side geography, merged from replicated
+// breach records and live ransomware victims. Requires
+// `node scripts/build-threat-targeting.mjs`.
+app.get('/api/v1/threat-intel/targeting', threatTargetingHandler);
+
+// CVE facets, detection latency and hot ranking. Reads the existing cve-recent
+// feed rather than fetching its own — see the route header for why this is not
+// extra query params on cve-recent.
+app.get('/api/v1/cve/insights', cveInsightsHandler);
+
+// CVE -> detection-rule coverage. Answers "this is known-exploited, but does my
+// SIEM have a published rule for it" by joining the live KEV/EPSS feed against
+// the rule corpora indexed by scripts/build-detection-coverage.mjs.
+app.get('/api/v1/detection-coverage', detectionCoverageHandler);
+app.get('/api/v1/detection-coverage/techniques', detectionCoverageTechniquesHandler);
+app.get('/api/v1/detection-coverage/updates', detectionCoverageUpdatesHandler);
+app.get('/api/v1/detection-coverage/cve/:cveId', detectionCoverageCveHandler);
+app.get('/api/v1/detection-coverage/library', detectionCoverageLibraryHandler);
 app.get('/api/v1/supply-chain-attacks', validate('query', supplyChainAttacksSchema), supplyChainAttacksHandler);
 app.get('/api/v1/k8s-cve', validate('query', k8sCveSchema), k8sCveHandler);
 app.get('/api/v1/misp-galaxy-actors', validate('query', mispGalaxyActorsSchema), mispGalaxyActorsHandler);
@@ -2023,6 +2084,11 @@ app.route('/api/v1', aiEscapeRouter);
 // AI Security hub — matrix + incidents + escape parity + vulns + advisories + research.
 // Static manifest in public/data/ai-security/ (daily sync, reviewed via PR).
 app.route('/api/v1', aiSecurityRouter);
+
+// Anthropic Project Glasswing CVD ledger. The AI-discovered-vulnerability
+// provenance that NVD and GHSA both flatten away. Static replica in
+// public/data/threat-intel/glasswing/ (scripts/sync-anthropic-glasswing.mjs).
+app.route('/api/v1', glasswingRouter);
 
 // OSS Feed Registry — curated catalog of 145+ free open-source threat intel feeds.
 // Data from github.com/Bert-JanP/Open-Source-Threat-Intel-Feeds (BSD-3-Clause).

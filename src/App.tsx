@@ -93,6 +93,7 @@ const ExposureCheck = lazy(() => import('./pages/threatintel/Exposure'));
 const RansomwareGroups = lazy(() => import('./pages/threatintel/RansomwareGroups'));
 const AiEscape = lazy(() => import('./pages/threatintel/AiEscape'));
 const AiSecurityHub = lazy(() => import('./pages/threatintel/AiSecurityHub'));
+const Glasswing = lazy(() => import('./pages/threatintel/Glasswing'));
 const AiIncidents = lazy(() => import('./pages/threatintel/AiIncidents'));
 const AiSecurityMatrix = lazy(() => import('./pages/threatintel/AiSecurityMatrix'));
 const AiVulns = lazy(() => import('./pages/threatintel/AiVulns'));
@@ -193,6 +194,7 @@ const LiveFeed = lazy(() => import('./pages/threatintel/LiveFeed'));
 const CveDetail = lazy(() => import('./pages/threatintel/CveDetail'));
 const TelegramHub = lazy(() => import('./pages/threatintel/TelegramHub'));
 const SourceHealth = lazy(() => import('./pages/threatintel/SourceHealth'));
+const DetectionCoverage = lazy(() => import('./pages/threatintel/DetectionCoverage'));
 const SocDashboard = lazy(() => import('./pages/threatintel/SocDashboard'));
 // ── Threat Intel: direct page components (auto-added by audit) ──
 const ACH = lazy(() => import('./pages/threatintel/ACH'));
@@ -459,6 +461,7 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/campaigns/:id', Component: CampaignDetail },
   { path: '/threatintel/telegram', Component: TelegramHub },
   { path: '/threatintel/source-health', Component: SourceHealth },
+  { path: '/threatintel/detection-coverage', Component: DetectionCoverage },
   { path: '/threatintel/soc-dashboard', Component: SocDashboard },
   { path: '/threatintel/research/:slug', Component: ResearchPostPage },
   { path: '/threatintel/ransomware-live', Component: RansomwareLive },
@@ -564,6 +567,7 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/ai-security-matrix', Component: AiSecurityMatrix },
   { path: '/threatintel/ai-vulns', Component: AiVulns },
   { path: '/threatintel/ai-advisories', Component: AiAdvisories },
+  { path: '/threatintel/glasswing', Component: Glasswing },
   { path: '/threatintel/darkweb/recon', Component: DarkWebRecon },
   { path: '/threatintel/darkweb/playbook', Component: DarkWebPlaybook },
   { path: '/threatintel/onion-watch', Component: OnionWatch },

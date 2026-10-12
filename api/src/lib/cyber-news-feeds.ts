@@ -1,4 +1,5 @@
 import { fetchResilient } from './fetch-resilient';
+import { extractCveIds } from './cve-id';
 
 export interface CyberNewsItem {
   title: string;
@@ -8,6 +9,16 @@ export interface CyberNewsItem {
   source: string;
   tier: number;
   image_url?: string;
+  /**
+   * CVE ids mentioned in the title or summary, canonicalised.
+   *
+   * Present because most vendor headlines name the bug's product and not its
+   * identifier ("Bricksforge WordPress Plugin Vulnerability Exploited in the
+   * Wild"), which leaves the item unjoinable to the CVE it is about. Extracting
+   * them at ingest is the only place both sides are available; doing it later
+   * means re-fetching and re-parsing every feed.
+   */
+  cves?: string[];
 }
 
 export interface CyberNewsResult {
@@ -42,6 +53,10 @@ const FEEDS: Record<string, FeedSource> = {
   'NCSC UK': { url: 'https://www.ncsc.gov.uk/api/1/services/v1/report-rss-feed.xml', tier: 1 },
   'Krebs on Security': { url: 'https://krebsonsecurity.com/feed/', tier: 1 },
   'Palo Alto Unit 42': { url: 'https://unit42.paloaltonetworks.com/feed/', tier: 1 },
+  // Trail of Bits runs the Patch the Planet arm of OpenAI's Daybreak programme
+  // and files the bulk of its findings as public GHSA/PR rather than blog
+  // posts, so its feed is unusually high-signal for CVE-adjacent work.
+  'Trail of Bits': { url: 'https://blog.trailofbits.com/feed/', tier: 1 },
   Mandiant: { url: 'https://www.mandiant.com/resources/blog/recent.xml', tier: 1 },
   'Cisco Talos': { url: 'https://blog.talosintelligence.com/feed/', tier: 1 },
   'SANS ISC': { url: 'https://isc.sans.edu/rssfeed.xml', tier: 1 },
@@ -171,15 +186,24 @@ async function fetchFeed(name: string, source: FeedSource, signal?: AbortSignal)
 
   return items
     .filter((item) => item.title && item.link)
-    .map((item): CyberNewsItem => ({
-      title: item.title!,
-      link: item.link!,
-      description: item.description ? cleanHtml(item.description) : '',
-      pub_date: item.pubDate ?? '',
-      source: name,
-      tier: source.tier,
-      image_url: extractImage(item),
-    }));
+    .map((item): CyberNewsItem => {
+      const description = item.description ? cleanHtml(item.description) : '';
+      // Scan title AND summary. Vendor headlines usually name the product only
+      // ("Bricksforge Plugin Vulnerability Exploited"), with the identifier
+      // appearing a sentence later in the summary — title-only extraction finds
+      // almost nothing.
+      const cves = extractCveIds(`${item.title ?? ''}\n${description}`);
+      return {
+        title: item.title!,
+        link: item.link!,
+        description,
+        pub_date: item.pubDate ?? '',
+        source: name,
+        tier: source.tier,
+        image_url: extractImage(item),
+        ...(cves.length > 0 ? { cves } : {}),
+      };
+    });
 }
 
 /**
@@ -218,4 +242,66 @@ export async function fetchCyberNews(opts?: {
     total: articles.length,
     articles: articles.slice(0, limit),
   };
+}
+
+/**
+ * Group news items by the CVE they discuss.
+ *
+ * A single exploited CVE generates a dozen headlines within a day across
+ * different publishers, and a flat list hides that: an analyst counting
+ * "articles about CVE-2026-88771" gets twelve, not twelve separate events.
+ * `cves` is the grouping key precisely because it collapses the duplicates
+ * that titles alone cannot.
+ *
+ * Items with no extractable CVE are returned under a single `unattributed`
+ * bucket rather than dropped, so the totals still reconcile.
+ */
+export function clusterNewsByCve(
+  articles: CyberNewsItem[]
+): Array<{
+  cveId: string | null;
+  count: number;
+  sources: number;
+  firstSeen: string;
+  lastSeen: string;
+  items: CyberNewsItem[];
+}> {
+  const groups = new Map<string, CyberNewsItem[]>();
+
+  for (const article of articles) {
+    const ids = article.cves ?? [];
+    // An item naming several CVEs belongs to each of them; there is no way to
+    // tell which is the subject from a headline, and dropping it from the others
+    // would under-report coverage of a multi-bug advisory.
+    if (ids.length === 0) {
+      const list = groups.get('') ?? [];
+      list.push(article);
+      groups.set('', list);
+      continue;
+    }
+    for (const id of ids) {
+      const list = groups.get(id) ?? [];
+      list.push(article);
+      groups.set(id, list);
+    }
+  }
+
+  return [...groups.entries()]
+    .map(([cveId, items]) => {
+      const dates = items
+        .map((i) => i.pub_date)
+        .filter(Boolean)
+        .sort();
+      return {
+        cveId: cveId === '' ? null : cveId,
+        count: items.length,
+        // Distinct publishers, which is the signal that this is genuinely
+        // corroborating coverage rather than one outlet posting repeatedly.
+        sources: new Set(items.map((i) => i.source)).size,
+        firstSeen: dates[0] ?? '',
+        lastSeen: dates[dates.length - 1] ?? '',
+        items,
+      };
+    })
+    .sort((a, b) => b.count - a.count || b.sources - a.sources || (a.cveId ?? '').localeCompare(b.cveId ?? ''));
 }
