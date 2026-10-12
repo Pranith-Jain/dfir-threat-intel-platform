@@ -1,179 +1,176 @@
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "pranithjain",
-	"main": "worker/index.ts",
-	"compatibility_date": "2026-06-01",
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
-	// Workers Logs + Traces with head-based sampling. The cron fan-out and IOC
-	// enrichment paths are high-volume; 0.1 keeps dashboard visibility without
-	// the cost of ingesting every invocation. Tunable if a specific incident
-	// needs full fidelity (bump to 1.0 temporarily, then revert).
-	"observability": {
-		"enabled": true,
-		"head_sampling_rate": 0.1
-	},
-	"workers_dev": false,
-	"preview_urls": false,
-	// Worker routes for the three tools front doors.
-	//
-	// These must be declared here rather than only in the dashboard, because
-	// `wrangler deploy` reconciles triggers from this file: a host absent from
-	// `routes` gets its trigger dropped on the next deploy. That is how the
-	// tools hosts ended up broken — they had proxied DNS but no Worker route,
-	// so `/` happened to resolve while every deeper path had no origin and
-	// returned 522.
-	//
-	// Pattern routes (`host/*`) rather than `custom_domain: true`: the tools
-	// hosts already carry explicit proxied A records, and Cloudflare rejects a
-	// Custom Domain on a hostname that has them. Pattern routes coexist with
-	// existing DNS, so no DNS surgery is needed.
-	//
-	// The apex (`pranithjain.qzz.io`) is intentionally NOT listed: it is
-	// already a Custom Domain on this Worker, managed in the dashboard. Adding
-	// it here as a route would conflict with that.
-	//
-	// Keep this list in sync with `vars.TOOLS_HOSTS` below, which is what the
-	// worker and client use to decide which surface to render.
-	"routes": [
-		{ "pattern": "crucible.pranithjain.qzz.io/*", "zone_name": "pranithjain.qzz.io" },
-		{ "pattern": "panopticon.pranithjain.qzz.io/*", "zone_name": "pranithjain.qzz.io" },
-		{ "pattern": "scout.pranithjain.qzz.io/*", "zone_name": "pranithjain.qzz.io" },
-		{ "pattern": "argus.pranithjain.qzz.io/*", "zone_name": "pranithjain.qzz.io" },
-		{ "pattern": "agent.pranithjain.qzz.io/*", "zone_name": "pranithjain.qzz.io" },
-		{ "pattern": "copilot.pranithjain.qzz.io/*", "zone_name": "pranithjain.qzz.io" },
-		{ "pattern": "brief.pranithjain.qzz.io/*", "zone_name": "pranithjain.qzz.io" }
-	],
-	"assets": {
-		"directory": "./dist",
-		"binding": "ASSETS",
-		"not_found_handling": "single-page-application",
-		"html_handling": "drop-trailing-slash",
-		// run_worker_first: by default Cloudflare serves matched static assets
-		// directly without invoking the Worker. That broke SSR Phase 2 — the
-		// Worker's PRERENDERED_ROUTES handler never ran for `/` because CF
-		// intercepted it and served dist/index.html (the SPA shell) instead.
-		// With this true, the Worker handles every request and explicitly
-		// calls env.ASSETS.fetch() when it wants an asset.
-		"run_worker_first": true
-	},
-	"kv_namespaces": [
-		{
-			"binding": "KV_CACHE",
-			"id": "5125e769e49f4a1586f81d1935f9856a"
-		},
-		{
-			"binding": "CASE_STUDIES",
-			"id": "e6876bf17dcb4845aac079f355978235",
-			"remote": true
-		}
-	],
-	"d1_databases": [
-		{
-			"binding": "BRIEFINGS_DB",
-			"database_name": "pranithjain-briefings",
-			"database_id": "1ef56666-b41c-4d20-9bd4-841b4d214be8"
-		}
-	],
-	"ai": {
-		"binding": "AI"
-	},
-	"vectorize": [
-		{
-			"binding": "VECTORIZE",
-			"index_name": "intel-corpus"
-		}
-	],
-	"durable_objects": {
-		"bindings": [
-			{ "name": "LIVE_FEED_DO", "class_name": "LiveFeedDO" },
-			{ "name": "DFIR_MCP", "class_name": "DfirMcpServer" },
-			{ "name": "CRON_LOCK_DO", "class_name": "CronLockDO" },
-			{ "name": "REPORT_BUILDER", "class_name": "ReportBuilderDO" },
-			{ "name": "INVESTIGATOR_AGENT", "class_name": "InvestigatorAgentDO" },
-			{ "name": "RADAR_CRAWLER", "class_name": "RadarCrawlerDO" },
-		{ "name": "GLOBAL_PULSE_DO", "class_name": "GlobalPulseDO" },
-		{ "name": "CRON_JOB_DO", "class_name": "CronJobDO" },
-		{ "name": "THREAT_DATA_DO", "class_name": "ThreatDataDO" }
-		]
-	},
-	"triggers": {
-		"crons": [
-			"0 * * * *",
-			"5 0 * * *",
-			"30 0 * * *",
-			"45 0 * * 1",
-			"*/30 * * * *"
-		]
-	},
-	"migrations": [
-		{ "tag": "v1", "new_sqlite_classes": ["LiveFeedDO"] },
-		{ "tag": "v2", "new_sqlite_classes": ["DfirMcpServer"] },
-		{ "tag": "v3", "new_sqlite_classes": ["CronLockDO"] },
-		{ "tag": "v4", "new_sqlite_classes": ["ReportBuilderDO"] },
-		{ "tag": "v5", "new_sqlite_classes": ["InvestigatorAgentDO"] },
-		{ "tag": "v6", "new_sqlite_classes": ["RadarCrawlerDO"] },
-		{ "tag": "v7", "new_sqlite_classes": ["GlobalPulseDO"] },
-		{ "tag": "v8", "new_sqlite_classes": [] },
-		{ "tag": "v9", "new_sqlite_classes": ["CronJobDO"] },
-		{ "tag": "v10", "new_sqlite_classes": ["ThreatDataDO"] }
-	],
-	"vars": {
-		"ALLOW_DEV_ORIGINS": "false",
-		"SITE_URL": "https://pranithjain.qzz.io",
-		// Path-prefix → hostname map for the tools surfaces (comma-separated
-		// `pathPrefix=hostname`). Mirrors TOOL_HOSTS_BY_PATH in
-		// src/lib/surface.ts — keep the two identical. Unset/empty disables the
-		// split and serves the portfolio surface + apex canonical everywhere.
-		// Only add a prefix once that hostname resolves: a canonical pointing
-		// at a host with no DNS record is worse than the duplicate it fixes.
-		"TOOLS_HOSTS": "/dfir=crucible.pranithjain.qzz.io,/threatintel=panopticon.pranithjain.qzz.io,/radar=scout.pranithjain.qzz.io,/argus=argus.pranithjain.qzz.io,/dfir/agent-suite=agent.pranithjain.qzz.io,/threatintel/tools/copilot=copilot.pranithjain.qzz.io,/daily-briefs=brief.pranithjain.qzz.io"
-	},
-	"analytics_engine_datasets": [
-		{ "binding": "AJ_analytics", "dataset": "PJ" }
-	],
-	// Browser Rendering for JS-rendered page extraction (report-analyzer).
-	// Requires Cloudflare Workers paid plan + Browser Rendering add-on.
-	"browser": {
-		"binding": "BROWSER"
-	},
-	// Self-referencing service binding: lets the MCP server (a Durable Object,
-	// with no per-call ExecutionContext) call our own /api/* in-process via
-	// env.SELF.fetch() instead of re-entering the public origin over DNS+TLS.
-	"services": [
-		{ "binding": "SELF", "service": "pranithjain" }
-	],
-	// Live-IOC per-source feed fan-out (PR2, dormant until PR3 wires the producer).
-	// The consumer runs one feed source per message and writes its KV slice
-	// (live-iocs:slice:<id>); a poison/exhausted message lands in the DLQ.
-	// Both queues must exist before deploy: `wrangler queues create live-iocs-feeds`
-	// and `wrangler queues create live-iocs-feeds-dlq`.
-	"queues": {
-		"producers": [
-			{ "binding": "FEEDS_QUEUE", "queue": "live-iocs-feeds" }
-		],
-		"consumers": [
-			{
-				"queue": "live-iocs-feeds",
-				// max_batch_size 1: ONE message per consumer invocation. This is what
-				// GUARANTEES each feed (live-iocs source OR a gp:warm feed) gets its
-				// own 50-subrequest budget — without it, a heavy gp feed (e.g. `ioc`
-				// → the live-iocs ~34-source fan-out) co-batched with another heavy
-				// feed under BATCH_CONCURRENCY would re-trip "Too many subrequests"
-				// inside the consumer. Sources are individually cheap, so batch_size 1
-				// just means more (free-tier-cheap) invocations.
-				"max_batch_size": 1,
-				"max_batch_timeout": 5,
-				"max_retries": 3,
-				// max_concurrency 10 (free-plan max) drains the hourly 48-message burst
-				// (25 gp:warm + 23 live-iocs feeds) in ~half the time vs 5, keeping
-				// the avg backlog/lag low. Each message is its own invocation with its
-				// own 50-subrequest budget (max_batch_size:1), so higher concurrency
-				// does NOT raise any single invocation's subrequest count.
-				"max_concurrency": 10,
-				"dead_letter_queue": "live-iocs-feeds-dlq"
-			}
-		]
-	}
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pranithjain",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  // Workers Logs + Traces with head-based sampling. The cron fan-out and IOC
+  // enrichment paths are high-volume; 0.1 keeps dashboard visibility without
+  // the cost of ingesting every invocation. Tunable if a specific incident
+  // needs full fidelity (bump to 1.0 temporarily, then revert).
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1,
+  },
+  "workers_dev": false,
+  "preview_urls": false,
+  // Worker routes for the three tools front doors.
+  //
+  // These must be declared here rather than only in the dashboard, because
+  // `wrangler deploy` reconciles triggers from this file: a host absent from
+  // `routes` gets its trigger dropped on the next deploy. That is how the
+  // tools hosts ended up broken — they had proxied DNS but no Worker route,
+  // so `/` happened to resolve while every deeper path had no origin and
+  // returned 522.
+  //
+  // Pattern routes (`host/*`) rather than `custom_domain: true`: the tools
+  // hosts already carry explicit proxied A records, and Cloudflare rejects a
+  // Custom Domain on a hostname that has them. Pattern routes coexist with
+  // existing DNS, so no DNS surgery is needed.
+  //
+  // The apex (`pranithjain.qzz.io`) is intentionally NOT listed: it is
+  // already a Custom Domain on this Worker, managed in the dashboard. Adding
+  // it here as a route would conflict with that.
+  //
+  // Keep this list in sync with `vars.TOOLS_HOSTS` below, which is what the
+  // worker and client use to decide which surface to render.
+  "routes": [
+    { "pattern": "crucible.pranithjain.qzz.io/*", "zone_name": "pranithjain.qzz.io" },
+    { "pattern": "panopticon.pranithjain.qzz.io/*", "zone_name": "pranithjain.qzz.io" },
+    { "pattern": "scout.pranithjain.qzz.io/*", "zone_name": "pranithjain.qzz.io" },
+    { "pattern": "argus.pranithjain.qzz.io/*", "zone_name": "pranithjain.qzz.io" },
+    { "pattern": "agent.pranithjain.qzz.io/*", "zone_name": "pranithjain.qzz.io" },
+    { "pattern": "copilot.pranithjain.qzz.io/*", "zone_name": "pranithjain.qzz.io" },
+    { "pattern": "brief.pranithjain.qzz.io/*", "zone_name": "pranithjain.qzz.io" },
+  ],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "html_handling": "drop-trailing-slash",
+    // run_worker_first: by default Cloudflare serves matched static assets
+    // directly without invoking the Worker. That broke SSR Phase 2 — the
+    // Worker's PRERENDERED_ROUTES handler never ran for `/` because CF
+    // intercepted it and served dist/index.html (the SPA shell) instead.
+    // With this true, the Worker handles every request and explicitly
+    // calls env.ASSETS.fetch() when it wants an asset.
+    "run_worker_first": true,
+  },
+  "kv_namespaces": [
+    {
+      "binding": "KV_CACHE",
+      "id": "5125e769e49f4a1586f81d1935f9856a",
+    },
+    {
+      "binding": "CASE_STUDIES",
+      "id": "e6876bf17dcb4845aac079f355978235",
+      "remote": true,
+    },
+  ],
+  "d1_databases": [
+    {
+      "binding": "BRIEFINGS_DB",
+      "database_name": "pranithjain-briefings",
+      "database_id": "1ef56666-b41c-4d20-9bd4-841b4d214be8",
+    },
+  ],
+  "ai": {
+    "binding": "AI",
+  },
+  "vectorize": [
+    {
+      "binding": "VECTORIZE",
+      "index_name": "intel-corpus",
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "name": "LIVE_FEED_DO", "class_name": "LiveFeedDO" },
+      { "name": "DFIR_MCP", "class_name": "DfirMcpServer" },
+      { "name": "CRON_LOCK_DO", "class_name": "CronLockDO" },
+      { "name": "REPORT_BUILDER", "class_name": "ReportBuilderDO" },
+      { "name": "INVESTIGATOR_AGENT", "class_name": "InvestigatorAgentDO" },
+      { "name": "RADAR_CRAWLER", "class_name": "RadarCrawlerDO" },
+      { "name": "GLOBAL_PULSE_DO", "class_name": "GlobalPulseDO" },
+      { "name": "CRON_JOB_DO", "class_name": "CronJobDO" },
+      // ThreatDataDO is implemented and exported (worker/index.ts), but its
+      // binding is deliberately NOT enabled yet. A `new_sqlite_classes`
+      // migration creates an EMPTY database, so binding it hands every one
+      // of these tables an empty replacement the moment getThreatDb starts
+      // preferring the DO over D1:
+      //   breach_forum_status       490,095 rows
+      //   cyberpulse_incidents       13,637 rows
+      //   telegram_leak_entries          653 rows
+      //   telegram_watched_channels       85 rows
+      // Only `briefings` has a seed path (ThreatDataDO#importLegacyBriefings).
+      // Add the equivalent import for the other six tables before enabling.
+      // { "name": "THREAT_DATA_DO", "class_name": "ThreatDataDO" }
+    ],
+  },
+  "triggers": {
+    "crons": ["0 * * * *", "5 0 * * *", "30 0 * * *", "45 0 * * 1", "*/30 * * * *"],
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["LiveFeedDO"] },
+    { "tag": "v2", "new_sqlite_classes": ["DfirMcpServer"] },
+    { "tag": "v3", "new_sqlite_classes": ["CronLockDO"] },
+    { "tag": "v4", "new_sqlite_classes": ["ReportBuilderDO"] },
+    { "tag": "v5", "new_sqlite_classes": ["InvestigatorAgentDO"] },
+    { "tag": "v6", "new_sqlite_classes": ["RadarCrawlerDO"] },
+    { "tag": "v7", "new_sqlite_classes": ["GlobalPulseDO"] },
+    { "tag": "v8", "new_sqlite_classes": [] },
+    { "tag": "v9", "new_sqlite_classes": ["CronJobDO"] },
+    // v10 (ThreatDataDO) ships with the binding above — do not split them.
+  ],
+  "vars": {
+    "ALLOW_DEV_ORIGINS": "false",
+    "SITE_URL": "https://pranithjain.qzz.io",
+    // Path-prefix → hostname map for the tools surfaces (comma-separated
+    // `pathPrefix=hostname`). Mirrors TOOL_HOSTS_BY_PATH in
+    // src/lib/surface.ts — keep the two identical. Unset/empty disables the
+    // split and serves the portfolio surface + apex canonical everywhere.
+    // Only add a prefix once that hostname resolves: a canonical pointing
+    // at a host with no DNS record is worse than the duplicate it fixes.
+    "TOOLS_HOSTS": "/dfir=crucible.pranithjain.qzz.io,/threatintel=panopticon.pranithjain.qzz.io,/radar=scout.pranithjain.qzz.io,/argus=argus.pranithjain.qzz.io,/dfir/agent-suite=agent.pranithjain.qzz.io,/threatintel/tools/copilot=copilot.pranithjain.qzz.io,/daily-briefs=brief.pranithjain.qzz.io",
+  },
+  "analytics_engine_datasets": [{ "binding": "AJ_analytics", "dataset": "PJ" }],
+  // Browser Rendering for JS-rendered page extraction (report-analyzer).
+  // Requires Cloudflare Workers paid plan + Browser Rendering add-on.
+  "browser": {
+    "binding": "BROWSER",
+  },
+  // Self-referencing service binding: lets the MCP server (a Durable Object,
+  // with no per-call ExecutionContext) call our own /api/* in-process via
+  // env.SELF.fetch() instead of re-entering the public origin over DNS+TLS.
+  "services": [{ "binding": "SELF", "service": "pranithjain" }],
+  // Live-IOC per-source feed fan-out (PR2, dormant until PR3 wires the producer).
+  // The consumer runs one feed source per message and writes its KV slice
+  // (live-iocs:slice:<id>); a poison/exhausted message lands in the DLQ.
+  // Both queues must exist before deploy: `wrangler queues create live-iocs-feeds`
+  // and `wrangler queues create live-iocs-feeds-dlq`.
+  "queues": {
+    "producers": [{ "binding": "FEEDS_QUEUE", "queue": "live-iocs-feeds" }],
+    "consumers": [
+      {
+        "queue": "live-iocs-feeds",
+        // max_batch_size 1: ONE message per consumer invocation. This is what
+        // GUARANTEES each feed (live-iocs source OR a gp:warm feed) gets its
+        // own 50-subrequest budget — without it, a heavy gp feed (e.g. `ioc`
+        // → the live-iocs ~34-source fan-out) co-batched with another heavy
+        // feed under BATCH_CONCURRENCY would re-trip "Too many subrequests"
+        // inside the consumer. Sources are individually cheap, so batch_size 1
+        // just means more (free-tier-cheap) invocations.
+        "max_batch_size": 1,
+        "max_batch_timeout": 5,
+        "max_retries": 3,
+        // max_concurrency 10 (free-plan max) drains the hourly 48-message burst
+        // (25 gp:warm + 23 live-iocs feeds) in ~half the time vs 5, keeping
+        // the avg backlog/lag low. Each message is its own invocation with its
+        // own 50-subrequest budget (max_batch_size:1), so higher concurrency
+        // does NOT raise any single invocation's subrequest count.
+        "max_concurrency": 10,
+        "dead_letter_queue": "live-iocs-feeds-dlq",
+      },
+    ],
+  },
 }
