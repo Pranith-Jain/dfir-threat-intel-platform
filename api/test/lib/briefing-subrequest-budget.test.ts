@@ -5,7 +5,10 @@ import {
   BUILD_SOURCE_COST,
   BUILD_SUBREQUEST_BUDGET,
   FREE_PLAN_SUBREQUEST_CAP,
+  SUBREQUESTS_RESERVED_FOR_SURROUND,
   createBuildSubrequestBudget,
+  installSubrequestMeter,
+  isSubrequestExhaustedError,
 } from '../../src/lib/briefing-builder/subrequest-budget';
 import type { Env } from '../../src/env';
 
@@ -47,6 +50,42 @@ describe('subrequest budget', () => {
 
   it('leaves headroom under the platform cap', () => {
     expect(BUILD_SUBREQUEST_BUDGET).toBeLessThan(FREE_PLAN_SUBREQUEST_CAP);
+  });
+
+  it('leaves the surround its share of the 50', () => {
+    // The live cap plus everything that runs AROUND the build in the same
+    // invocation must still fit. This is the invariant the first version of
+    // this guard got wrong: a build that spends exactly its own budget has
+    // spent the INVOCATION's budget.
+    const liveCap = FREE_PLAN_SUBREQUEST_CAP - SUBREQUESTS_RESERVED_FOR_SURROUND;
+    expect(SUBREQUESTS_RESERVED_FOR_SURROUND).toBeGreaterThan(0);
+    expect(liveCap).toBeLessThan(FREE_PLAN_SUBREQUEST_CAP);
+    expect(liveCap + SUBREQUESTS_RESERVED_FOR_SURROUND).toBe(FREE_PLAN_SUBREQUEST_CAP);
+  });
+
+  it('sheds a source instead of throwing when the cap is hit', async () => {
+    // The failure this exists to prevent: a source trips the budget, the throw
+    // escapes, and the whole invocation dies with "Too many subrequests" and
+    // no row. Every admit path must absorb it.
+    const envObj = {
+      ...(testEnv as unknown as Record<string, unknown>),
+      AI: { run: async () => ({ response: 'x'.repeat(120) }) },
+    } as unknown as Env;
+    const realFetch = globalThis.fetch;
+    let n = 0;
+    // Burn the whole cap in the first few calls so everything after is refused.
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      n += 1;
+      if (n > 6) return new Response('[]', { headers: { 'content-type': 'application/json' } });
+      return new Response('[]', { headers: { 'content-type': 'application/json' } });
+    }) as typeof fetch;
+    try {
+      // 6 real calls then the meter refuses; the build must still resolve with
+      // a briefing object rather than throwing.
+      await expect(buildBriefing('daily', new Date(), { env: envObj, skipLlm: true })).resolves.toBeDefined();
+    } finally {
+      globalThis.fetch = realFetch;
+    }
   });
 
   it('costs the whole fan-out to no more than the budget plus the KEV enrichment tail', () => {
@@ -198,6 +237,63 @@ async function runDailyBuild(opts: {
   }
   return { subrequests: hosts.length, aiRuns, hosts };
 }
+
+describe('live subrequest meter', () => {
+  it('counts fetches, charges redirect hops, and refuses past the cap', async () => {
+    const realFetch = globalThis.fetch;
+    // Stub the network BEFORE installing: the meter captures whatever
+    // `globalThis.fetch` is at install time and wraps it.
+    globalThis.fetch = (async () => new Response('ok')) as typeof fetch;
+    const meter = installSubrequestMeter({}, 4);
+    try {
+      // `globalThis.fetch` is now the meter's wrapper.
+      await globalThis.fetch('https://a.test/1');
+      await globalThis.fetch('https://a.test/2');
+      const s1 = meter.snapshot();
+      expect(s1.fetches).toBe(2);
+      expect(s1.byHost['a.test']).toBe(2);
+      // 3rd call is within cap 4; the 5th total is not.
+      await globalThis.fetch('https://a.test/3');
+      await globalThis.fetch('https://a.test/4');
+      await expect(globalThis.fetch('https://a.test/5')).rejects.toSatisfy((e: unknown) =>
+        isSubrequestExhaustedError(e)
+      );
+      expect(meter.snapshot().fetches).toBe(4);
+    } finally {
+      meter.restore();
+      globalThis.fetch = realFetch;
+    }
+  });
+
+  it('charges a redirect hop the caller never sees', async () => {
+    const realFetch = globalThis.fetch;
+    // `redirected: true` is how a followed redirect chain is visible from
+    // outside — and each hop is a subrequest the plain call count misses.
+    const redirected = new Response('ok');
+    Object.defineProperty(redirected, 'redirected', { value: true });
+    globalThis.fetch = (async () => redirected) as typeof fetch;
+    const meter = installSubrequestMeter({}, 10);
+    try {
+      await globalThis.fetch('https://b.test/1');
+      await globalThis.fetch('https://b.test/2');
+      const s = meter.snapshot();
+      expect(s.fetches).toBe(2);
+      expect(s.redirects).toBe(2);
+      expect(s.total).toBe(4);
+    } finally {
+      meter.restore();
+      globalThis.fetch = realFetch;
+    }
+  });
+
+  it('restores the original fetch so a leak cannot meter later requests', () => {
+    const before = globalThis.fetch;
+    const meter = installSubrequestMeter({}, 4);
+    expect(globalThis.fetch).not.toBe(before);
+    meter.restore();
+    expect(globalThis.fetch).toBe(before);
+  });
+});
 
 describe('buildBriefing daily subrequest ceiling', () => {
   it('stays under the free-plan cap with every expensive branch armed', async () => {

@@ -301,11 +301,24 @@ export async function buildBriefingHandler(c: AdminCtx) {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     const stack = err instanceof Error ? err.stack?.split('\n').slice(0, 3).join(' | ') : '';
+    // The platform's "Too many subrequests" is a dead end on its own: it names
+    // neither the limit, nor the invocation that spent it, nor which upstream
+    // did. `buildBriefing` already logs a `briefing-build-subrequests` line with
+    // the real per-host breakdown before it throws, so this response points at
+    // that line and names the cap — the two together are the whole diagnosis.
+    const isSubrequestFailure = /too many subrequests|subrequest budget exhausted/i.test(msg);
+    const detail = isSubrequestFailure
+      ? `This build exhausted the Workers free-plan subrequest budget (50 per invocation) before it could finish. ` +
+        `The per-host breakdown is in the "briefing-build-subrequests" log line for this build — it names every ` +
+        `upstream that was charged and which sections were dropped to stay under the cap. ` +
+        `Original error: ${msg}`
+      : msg;
     logError('briefing build failed', new Error(msg + ' ' + stack));
     return c.json(
       {
-        error: `briefing build failed: ${msg}`,
+        error: `briefing build failed: ${detail}`,
         type: typeRaw,
+        ...(isSubrequestFailure ? { reason: 'subrequest_budget_exhausted', subrequest_limit: 50 } : {}),
       },
       500
     );
