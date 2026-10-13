@@ -1,0 +1,133 @@
+{
+  "type": "cyber",
+  "date": "2026-10-13",
+  "threatLevel": "",
+  "executiveSummary": "Overall OT/ICS cyber threat level: HIGH Perimeter device exploitation risk remains acute. Unauthenticated RCE and DoS in Citrix NetScaler ADC/Gateway are actively exploited, with multiple government CERTs publishing IOCs and emergency guidance. Organizations should patch immediately, invalidate sessions, and hunt for persistence. Security Advisory CISA KEV F5 BIG-IP APM OAuth stack is under in-the-wild exploitation (CVE-2026-94127), enabling unauthenticated RCE on commonly deployed access gateways. Prioritize vendor hotfixes or the interim iRule and restrict APM OAuth endpoints. Security Advisory Real-world OT impacts observed: attackers remotely triggered forced defrost cycles on Danfoss industrial refrigeration controllers across European supermarkets, causing physical spoilage. Immediately remove controllers from the public internet, update/replace obsolete units, and enforce authenticated remote access. View Article Multiple ICS/OT gateway and protocol stack flaws surfaced in CISA weekly bulletins, including unauthenticated remote control and command injection on Advantech EKI-1242EIMS and critical issues in Advantech WISE-6610 LoRaWAN gateways. Segment, block mgmt ports, and schedule urgent firmware updates. CISA Bulletin CISA Bulletin ShinyHunters mass-exploitation of Oracle PeopleSoft (CVE-2026-35273) impacted government and transportation; WAF-evasion via URL encoding observed. Patch immediately and hunt for data theft and cloud pivots. View Article Strategic risk: U.S. and allied agencies warn of China-linked campaigns blending automated and hands-on tradecraft against critical infrastructure operators; proactive hunting and segmentation remain essential. Joint Advisory Overall Threat Level HIGH Events to Escalate 14 Items to Monitor 16 Discarded/Informational 16 Actively Exploited/KEV 10+ Vendors Implicated 30+",
+  "keyFindings": [
+    {
+      "title": "Citrix NetScaler ADC/Gateway unauthenticated RCE/DoS exploitation is widespread;",
+      "summary": "Citrix NetScaler ADC/Gateway unauthenticated RCE/DoS exploitation is widespread; patching and compromise assessment are urgent. Security Advisory"
+    },
+    {
+      "title": "F5 BIG-IP APM OAuth vulnerability (CVE-2026-94127) enables unauthenticated RCE w",
+      "summary": "F5 BIG-IP APM OAuth vulnerability (CVE-2026-94127) enables unauthenticated RCE when OAuth AS and APM policies are combined. Security Alert"
+    },
+    {
+      "title": "Operational OT incident",
+      "summary": "Internet-exposed Danfoss controllers abused to induce defrost at scale across EU supermarket chains. View Article"
+    },
+    {
+      "title": "CISA bulletins highlight critical ICS device and middleware flaws (Advantech EKI",
+      "summary": "CISA bulletins highlight critical ICS device and middleware flaws (Advantech EKI-1242EIMS, WISE-6610; DDS stacks) with remote exploitation potential. CISA Bulletin"
+    },
+    {
+      "title": "PeopleSoft CVE-2026-35273 widely exploited by ShinyHunters with WAF-bypass; conf",
+      "summary": "PeopleSoft CVE-2026-35273 widely exploited by ShinyHunters with WAF-bypass; confirmed data theft and aviation-adjacent extortion. View Article"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "HIGH",
+        "label": "Overall Threat Level"
+      },
+      {
+        "value": "14",
+        "label": "Events to Escalate"
+      },
+      {
+        "value": "16",
+        "label": "Items to Monitor"
+      },
+      {
+        "value": "16",
+        "label": "Discarded/Informational"
+      },
+      {
+        "value": "10+",
+        "label": "Actively Exploited/KEV"
+      },
+      {
+        "value": "30+",
+        "label": "Vendors Implicated"
+      },
+      {
+        "value": "Severe",
+        "label": "Edge/Gateway Pressure"
+      },
+      {
+        "value": "Elevated",
+        "label": "OT Asset Exposure"
+      },
+      {
+        "value": "High",
+        "label": "IT-to-OT Pivot Risk"
+      },
+      {
+        "value": "Fast",
+        "label": "Exploitation Tempo"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Citrix NetScaler ADC/Gateway",
+      "F5 BIG-IP APM",
+      "Advantech EKI-1242EIMS",
+      "Advantech WISE-6610",
+      "Danfoss AK-SM/AK-SC controllers",
+      "openPDC / openHistorian (STTP)",
+      "Satel Netco Design",
+      "Oracle PeopleSoft",
+      "Fortinet FortiMail",
+      "DDS/RTPS middleware (eProsima Fast DDS)"
+    ],
+    "sectors": [
+      "Energy and Electric Power (telemetry platforms, DER risks) Water and Wastewater Systems (IT-to-OT pivot paths observed) Retail and Cold Chain (industrial refrigeration controllers) Transportation and Aviation (PeopleSoft exploitation; aviation-adjacent extortion) Government Services (PeopleSoft, KEV patch mandates) Communications/Network Operations (comms mgmt applications, VPN/ADC gateways)"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "ShinyHunters continues mass exploitation and extortion, focusing on PeopleSoft with WAF-evasion tactics; arrests ongoing but activity persists. View Article View Article",
+        "Chinese government-linked clusters blend automated and hands-on tradecraft against critical infrastructure and adjacent suppliers; botnets/VPN and living-off-the-land techniques noted. Joint Advisory",
+        "Ransomware operators weaponize Active Directory via domain-root GPO hijacking to disable firewalls, push notes, and prepare disruption, with potential OT workstation impact where trusts exist. Kaspersky Report"
+      ]
+    }
+  ],
+  "relevance": "Edge attacks (Citrix, F5) and enterprise app exploitation (PeopleSoft) create credible ingress to environments supporting critical operations. CISA assessments show practical IT-to-OT pivots through AD, cloud identity, and mis-segmented jump paths, while real-world OT manipulation of Danfoss controllers demonstrates consequences of Internet exposure and legacy controller insecurity. High exposure: Remote access gateways, SSL VPNs, ADCs, APMs Critical OT assets surfaced in bulletins: Industrial protocol gateways, LoRaWAN gateways, DDS/RTPS middleware Observed impacts: Physical spoilage (refrigeration), potential operator access disruption, data theft enabling targeted OT phishing",
+  "cveWatch": [],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Exploit Public-Facing Application (T1190): Citrix NetScaler, F5 BIG-IP APM, PeopleSoft web tiers",
+      "Valid Accounts (T1078) and Abuse of Single Sign-On/OAuth tokens",
+      "Phishing (T1566) and Social Engineering for remote tools (Luna Moth)",
+      "Web Shell (T1505.003) on edge appliances; config tampering/persistence",
+      "Credential Access and ADCS abuse (e.g., ESC1), DCSync (T1003, T1550)",
+      "Lateral Movement via Remote Services (T1021), VPN abuse, and cloud pivots",
+      "Command and Control over Web Protocols (T1071), proxy infrastructures"
+    ],
+    "mitreIds": [
+      "T1190",
+      "T1078",
+      "T1566",
+      "T1505.003",
+      "T1003",
+      "T1550",
+      "T1021",
+      "T1071"
+    ]
+  },
+  "outlook72h": "Expect sustained probing and exploitation attempts against Citrix NetScaler and F5 BIG-IP APM; prioritize emergency patch windows and compromise assessments. Likely follow-on opportunistic attacks against Internet-exposed ICS gateways and refrigeration/industrial controllers; conduct external exposure sweeps and implement ACLs/VPNs. Continued PeopleSoft targeting with encoding-based WAF evasion; monitor HR/SSO logs for anomalous sessions and large exports; rotate credentials/tokens. Elevated risk of IT-to-OT pivot in organizations with weak segmentation; validate jump host controls, block OT egress, and tighten identity paths.",
+  "relatedCves": [
+    "CVE-2026-94127",
+    "CVE-2026-35273",
+    "CVE-2026-88771",
+    "CVE-2026-88779",
+    "CVE-2026-104286",
+    "CVE-2026-103663",
+    "CVE-2026-72898"
+  ]
+}
