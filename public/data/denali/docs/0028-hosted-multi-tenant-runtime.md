@@ -171,10 +171,20 @@ development instance.
 
 Vercel receives only:
 
-| Variable                     | Purpose                         | Secret |
-| ---------------------------- | ------------------------------- | ------ |
-| `VITE_CLERK_PUBLISHABLE_KEY` | Initialize Clerk in the browser | No     |
-| `MODAL_API_ORIGIN`           | Server-side rewrite target      | No     |
+| Variable                     | Purpose                                    | Secret                   |
+| ---------------------------- | ------------------------------------------ | ------------------------ |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Initialize Clerk in the browser            | No                       |
+| `MODAL_API_ORIGIN`           | Server-side rewrite target                 | No                       |
+| `VITE_POSTHOG_PROJECT_TOKEN` | Optional anonymous browser event ingestion | No; public project token |
+| `VITE_POSTHOG_HOST`          | Optional PostHog ingestion origin          | No                       |
+
+PostHog receives only sanitized browser usage metadata. Its random browser/session identifiers
+are not linked to Clerk users, Organizations, Denali tenants, or customer records. Page paths
+use a static allowlist with query strings and hashes removed; click text and attributes are
+masked. Person profiles, session replay, feature flags, surveys, and automatic error/performance
+capture are disabled. The [product analytics runbook](../development/product-analytics.md)
+documents configuration, acceptance, and the event boundary. This browser telemetry does not
+change the same-origin Denali API request path or backend secret ownership.
 
 Modal receives core backend configuration:
 

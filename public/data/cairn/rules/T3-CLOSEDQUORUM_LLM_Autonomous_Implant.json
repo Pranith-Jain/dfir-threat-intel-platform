@@ -1,0 +1,112 @@
+{
+  "name": "T3-CLOSEDQUORUM_LLM_Autonomous_Implant",
+  "tier": "T3",
+  "confidence": 90,
+  "artifactType": "llm_tasked_c2",
+  "artifactClass": "rat",
+  "description": "Detects CLOSEDQUORUM: autonomous LLM-orchestrated Go implant with multi-model consensus C2, LSASS dump, process injection, browser/wallet credential theft, Discord exfil (A4 archetype)",
+  "family": "CLOSEDQUORUM",
+  "archetypes": null,
+  "reference": "VT SHA256 250d4fa37488af9b025333fa17705573d721467b203765bc360890b4f5a90cd7; static analysis 2026-06-17; system prompt, decision schema, and DWARF function names confirmed from binary; renamed from BALZAK 2026-07-03",
+  "strings": [
+    {
+      "id": "$balzak_name",
+      "pattern": "balzak",
+      "nocase": true
+    },
+    {
+      "id": "$lsass_verdict",
+      "pattern": "Lsass Dumper",
+      "nocase": true
+    },
+    {
+      "id": "$overlay_tag",
+      "pattern": "'overlay'",
+      "nocase": true
+    },
+    {
+      "id": "$checks_disk",
+      "pattern": "checks-disk-space",
+      "nocase": true
+    },
+    {
+      "id": "$evader_tag",
+      "pattern": "EVADER",
+      "nocase": true
+    },
+    {
+      "id": "$deepseek_dns",
+      "pattern": "api.deepseek.com",
+      "nocase": true
+    },
+    {
+      "id": "$openrouter",
+      "pattern": "openrouter.ai",
+      "nocase": true
+    },
+    {
+      "id": "$mistral",
+      "pattern": "api.mistral.ai",
+      "nocase": true
+    },
+    {
+      "id": "$dev_deepseek",
+      "pattern": "deepseekAPIKey",
+      "nocase": true
+    },
+    {
+      "id": "$dev_gemini",
+      "pattern": "geminiAPIKey",
+      "nocase": true
+    },
+    {
+      "id": "$discord_exfil",
+      "pattern": "cdn.discordapp.com",
+      "nocase": true
+    },
+    {
+      "id": "$prompt",
+      "pattern": "You are an advanced malware strategist. Provide ONLY executable decisions.",
+      "nocase": false
+    },
+    {
+      "id": "$schema",
+      "pattern": "decision: \"inject\"|\"persist\"|\"steal\"|\"move\"",
+      "nocase": false
+    },
+    {
+      "id": "$orchestrator",
+      "pattern": "main.ModelOrchestrator",
+      "nocase": false
+    },
+    {
+      "id": "$intermodel",
+      "pattern": "main.interModelDiscussion",
+      "nocase": false
+    },
+    {
+      "id": "$lsass_fn",
+      "pattern": "main.lsassDump",
+      "nocase": false
+    },
+    {
+      "id": "$wallets_fn",
+      "pattern": "main.extractCryptoWallets",
+      "nocase": false
+    },
+    {
+      "id": "$discord_fn",
+      "pattern": "main.sendToDiscord",
+      "nocase": false
+    },
+    {
+      "id": "$inject_fn",
+      "pattern": "main.earlyBirdInject",
+      "nocase": false
+    }
+  ],
+  "condition": "($balzak_name and $lsass_verdict and $overlay_tag) or ($lsass_verdict and ($deepseek_dns or $openrouter or $mistral) and $overlay_tag and $evader_tag) or ($dev_deepseek and $dev_gemini) or ($discord_exfil and $deepseek_dns and $openrouter and $overlay_tag) or $prompt or ($schema and $orchestrator) or ($lsass_fn and $wallets_fn and $discord_fn) or ($intermodel and $inject_fn)",
+  "source": "github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "sourceUrl": "https://github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "license": "MIT"
+}

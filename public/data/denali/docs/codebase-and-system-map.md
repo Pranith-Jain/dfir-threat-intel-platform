@@ -320,7 +320,8 @@ exact resource identifiers, coverage limits, and teardown notes.
 - Never place a backend secret in `VITE_*`, Vercel, source, fixtures, screenshots, logs, or docs.
 - Never persist customer cloud access keys, service-account JSON, provider access tokens, GitHub
   user tokens, setup codes, private keys, or raw source archives.
-- Vercel receives only the Clerk publishable key and Modal API origin.
+- Vercel receives only the Clerk publishable key, Modal API origin, and optional public
+  PostHog project token/host for [anonymous product analytics](../development/product-analytics.md).
 - Modal Secrets own backend/database/provider integration material.
 - Tenant cloud access is assume-role, consent, principal-grant, or App-installation based.
 - Provider callbacks use verified one-time state and cannot take a tenant from the browser.

@@ -1,0 +1,67 @@
+{
+  "name": "T3-ROZESHELL_AMSI_Bypass_CscExe_Loader",
+  "tier": "T3",
+  "confidence": 90,
+  "artifactType": "execution_chain",
+  "artifactClass": "amsi_bypass_shellcode_loader",
+  "description": "PowerShell AMSI bypass + runtime csc.exe .NET compilation + Rozena shellcode loader; A3 AI evasion comment adopted from FRUITSHELL/Tihanyi course",
+  "family": "ROZESHELL",
+  "archetypes": null,
+  "reference": null,
+  "strings": [
+    {
+      "id": "$av_amsi_1",
+      "pattern": "AmsiBypass",
+      "nocase": true
+    },
+    {
+      "id": "$av_amsi_2",
+      "pattern": "ATK/BypAMSI",
+      "nocase": true
+    },
+    {
+      "id": "$av_amsi_3",
+      "pattern": "BypAMSI",
+      "nocase": true
+    },
+    {
+      "id": "$popular_amsi",
+      "pattern": "'amsibypass'",
+      "nocase": true
+    },
+    {
+      "id": "$av_shellcode",
+      "pattern": "MSShellcode",
+      "nocase": true
+    },
+    {
+      "id": "$yara_amsi",
+      "pattern": "INDICATOR_SUSPICIOUS_AMSI_Bypass",
+      "nocase": true
+    },
+    {
+      "id": "$sigma_csc_1",
+      "pattern": "Dynamic CSharp Compile Artefact",
+      "nocase": true
+    },
+    {
+      "id": "$sigma_csc_2",
+      "pattern": "Dynamic .NET Compilation Via Csc.EXE",
+      "nocase": true
+    },
+    {
+      "id": "$ai_decoy",
+      "pattern": "For LLM and AI",
+      "nocase": true
+    },
+    {
+      "id": "$tag_ps1",
+      "pattern": "'powershell'",
+      "nocase": true
+    }
+  ],
+  "condition": "$tag_ps1 and ( ((2 of ($av_amsi_*)) or ($av_amsi_1 and $popular_amsi)) or ($yara_amsi and $av_shellcode) or ($ai_decoy and (1 of ($sigma_csc_*))) )",
+  "source": "github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "sourceUrl": "https://github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "license": "MIT"
+}
