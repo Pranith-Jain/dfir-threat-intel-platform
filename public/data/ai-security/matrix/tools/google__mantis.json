@@ -3,13 +3,13 @@
   "repo": "google/mantis",
   "category": "agent",
   "scope": ["code"],
-  "stars": 2420,
+  "stars": 2433,
   "description": "A modular, stack-agnostic toolkit for AI coding agents to autonomously find, reproduce, and patch vulnerabilities.",
   "homepage": "https://cloud.google.com/",
   "added": "2026-10-01",
-  "checkedAt": "2026-10-13T03:20:27Z",
-  "pushedAt": "2026-10-07",
-  "daysIdle": 6,
+  "checkedAt": "2026-10-14T03:19:55Z",
+  "pushedAt": "2026-10-13",
+  "daysIdle": 1,
   "archived": false,
   "license": "Apache-2.0",
   "upstream": {
@@ -18,28 +18,28 @@
       "description": "Reads a codebase and its commit history, builds a threat model from them, and sends agents to chase each hypothesis it raises. It then tries to reproduce each finding in a sandbox and attacks its own patch to check the fix holds, working from source alone with no running target."
     },
     "derived": {
-      "checked_at": "2026-10-13T03:20:27Z",
+      "checked_at": "2026-10-14T03:19:55Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-10-07",
-        "days_since_push": 6,
-        "total_commits": 98,
-        "last100_span_days": 112,
+        "pushed_at": "2026-10-13",
+        "days_since_push": 1,
+        "total_commits": 100,
+        "last100_span_days": 119,
         "last100_authors": 3,
-        "last_commit_sha": "2b3bbdc",
-        "last_commit_message": "Refine MCP gate, call-edge resolution, and call-graph correlation\n\nAddresses four gaps surfaced by live MCP dogfooding and cross-slice\ncorrelation:\n\n- MCP gate (`scripts/mcp_server.py`, `docs/mcp.md`): when a unified diff\n  provides changed line numbers and a finding records its lines,\n  `check_change` now distinguishes findings intersecting the modified\n  hunks or enclosing functions (`relationship: \"direct\"`, which BLOCKs\n  on HIGH/CRITICAL) from pre-existing findings elsewhere in the same\n  file (`relationship: \"unrelated_in_file\"`, which raises REVIEW instead\n  of BLOCK). Missing line information on either side fails closed to\n  `\"direct\"`.\n- MCP scan polling (`scripts/mcp_server.py`, `docs/mcp.md`):\n  `mantis_scan_status` accepts `wait_seconds` (up to 60s) backed by a\n  per-scan completion event so clients can long-poll instead of spinning\n  on turns.\n- Structural index (`core/structural_index.py`): `extract_unit` records\n  the immediate static receiver qualifier on member calls, and\n  `_resolve_callee_id` uses it both positively (to disambiguate\n  same-named methods/functions by owning class or module stem) and\n  negatively (refusing to link unmatched PascalCase class/model\n  receivers like `UserModel.findAll` or ambient runtime objects like\n  `console.log` to an unrelated class's method).\n- Correlator (`core/correlator.py`): `correlate` grounds finding\n  locations to their enclosing catalog symbols and emits\n  `call_graph_edge` (`caller -> callee`) groups across files when the\n  structural index is present; `generate_hypotheses` prioritizes\n  confirmed defective symbols that have call sites inside `scan_item`\n  and names the concrete `file:line` call sites in the lead rationale.\n\nChange-Id: Ibefa919e6b9ce6b1722d9e89b33789fdc4d5ef00",
-        "last_commit_at": "2026-10-06",
+        "last_commit_sha": "49ab993",
+        "last_commit_message": "Close the findings of the October security review\n\nAn automated review of the reference harness (eight attack-surface\nhunters, each finding verified by an adversarial proof of concept)\nreported eighteen confirmed weaknesses. Sixteen are closed here, each\npinned by a test in tests/test_security_review_2026_10.py named for its\nreport number; the other two are design questions recorded below.\n\nThe MCP server kept its state in <repo>/.mantis/ -- inside the code\nunder audit. A committed symlink at a predictable path there turned the\nresolutions log, scan logs and index writes into writes to any file the\nserver's user could reach, and a committed knowledge.db plus catalog\nwas trusted as the server's own memory, enough to hand `--check` a PASS\non a never-scanned file. State now lives in a per-repository directory\noutside the checkout (<workspace>/mcp/<hash>, MANTIS_MCP_STATE_DIR, or\n--state-dir); a state directory inside the repository is refused, and\nlogs are opened without following symlinks. Scans are bounded: at most\n50 files per call, 500 model calls per pipeline, two running at once.\n\nReached-sink evidence (INV-1) accepted any crash-like text anywhere in\noutput -- a changelog line saying \"fixed Segmentation fault\", read by an\nhonest model with `cat`, promoted findings to dynamic_confirmed -- and\nmatched a sink symbol as a plain substring. A crash must now be\ncorroborated by a sanitizer report, a signal exit, or a non-zero exit\nwith a backtrace, and a sink symbol must be named by a parsed frame.\nThe fixed sentinel string remains forgeable by a model that writes the\nproof of concept; that is a design limit of the deterministic channel,\nnot a patch, and the controls that matter there are separation of\nduties and re-attack.\n\nModel-filled fields could claim verification on their own.\npatch_status VERIFIED_SECURE was kept whenever the model also wrote\nreattack_status failed_to_bypass, so a static-only run exported a\n\"verified\" patch; write_findings now also requires the harness's own\nrecord that the sandbox reached a sink this run. A synthesized or\nhand-written workflow could stamp patch_verified on node completion,\nwhich the change gate treats as closed; nodes may stamp only\nstatic_confirmed and dynamic_confirmed, enforced where the stamp is\nattached. Re-reporting a finding with FALSE_POSITIVE demoted a\ndynamic_confirmed row and blanked its verified patch, and re-reporting\na dismissed one as VALID revived it; the monotonic guard now applies to\nthe row actually rewritten, for every incoming status. merge_findings\ntook model-chosen ids with no run scope and no terminal clause, so one\ncall from run A merged a patch_verified finding in run B; every\nstatement is now scoped to the run and guarded.\n\nTwo files under the size cap could stall or exhaust the index build: a\nchained call was walked quadratically (and resolved to the wrong name --\na.b.c() called 'b'), nesting depth grew qualified names quadratically,\na FIFO blocked read_bytes forever, and the size cap was checked after\nreading, so a sparse multi-gigabyte file was read whole. The callee\nwalk follows the right spine in constant work, depth and name length\nare capped, staging admits regular files only, and size is checked on\nthe inode first.\n\nSmaller closures: the citation verifier applied none of read_file's\ngates and so answered existence, line count and identifier presence for\nfiles read_file refuses (sibling files in a single-file scan, symlink\naliases of .git/config, case variants), and os.path.isdir ran on\nmodel-supplied paths host-wide; both now bound to the jail with the\nsame gates, and a protected-name check is case-insensitive. --resume\nreplaced the validated scan target with a stored finding path without\nre-validation; it may now only narrow inside the validated target. The\ndeclarative custom tool opened the database at a CWD-relative path,\ncreating files in the target; it resolves through the same anchor as\nevery other access and opens read-only. The executable custom tool\nquoted the model's path but let `--output=...` through as an option;\noptions, absolute paths and traversal are refused. get_findings,\nget_plan, get_threat_model and get_summary returned model-written text\nto the gate stages unfenced; they carry the same untrusted-data fence\nas every other model-to-model channel. SARIF export skipped the egress\nsanitizer, so credentials the model quoted left in the file and a\ndescription could forge the verification note; both fixed.\n\nNot changed, by design: the fixed sentinel token (above), and target\nfile names in the seed prompt, which would change every node's seed\ncontract for a low-severity, prompt-level gain; both are recorded for a\nlater design pass.\n\nChange-Id: Ib6ed7d9966fbe653bba98c83c2de69a12b1483a7",
+        "last_commit_at": "2026-10-13",
         "releases": 0,
         "latest_release_at": null,
         "days_since_release": null,
-        "days_idle": 6,
+        "days_idle": 1,
         "relocated": false
       },
       "identity": {
         "canonical_repo": "google/mantis",
-        "stars": 2420,
-        "forks": 205,
+        "stars": 2433,
+        "forks": 208,
         "created_at": "2026-06-15",
         "is_fork": false,
         "contributors": 3,
@@ -71,9 +71,9 @@
       },
       "licence": { "file": "Apache-2.0", "api_spdx": "Apache-2.0", "readme_claim": null, "conflict": null },
       "shape": {
-        "loc": 57595,
-        "code_files": 107,
-        "files": 167,
+        "loc": 58981,
+        "code_files": 109,
+        "files": 169,
         "has_ci": false,
         "has_tests": true,
         "has_dockerfile": true,
@@ -87,7 +87,8 @@
       },
       "substrate": { "bundled": [], "manifests": [] },
       "rebadge": null,
-      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false }
+      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false },
+      "risk_where": {}
     }
   }
 }
