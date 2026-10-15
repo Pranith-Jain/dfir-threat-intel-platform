@@ -1,0 +1,134 @@
+{
+  "type": "cyber",
+  "date": "2026-10-14",
+  "threatLevel": "",
+  "executiveSummary": "Edge-access device exploitation and OT gateway vulnerabilities remain the most credible near-term paths to operational disruption. Multiple actively exploited VPN/ADC gateways (Ivanti Connect Secure, Citrix NetScaler, SonicWall SMA) and two CISA weekly bulletins with critical OT gateway issues (Advantech) elevate risk of IT-to-OT pivots. A coordinated cyberattack in France manipulated supermarket refrigeration OT across hundreds of stores, confirming real-world cyber-physical impact. Ivanti Connect Secure authentication-bypass (CVE-2026-104935) is under active exploitation; CISA added it to KEV and urges immediate patching, rebuilds, and credential rotation. Security Advisory View Article Citrix NetScaler ADC/Gateway pre-auth RCE and DoS vulnerabilities are being exploited in the wild; CERT-FR provides hunting artifacts and Mandiant/GTIG IOCs, while CISA added a NetScaler flaw to KEV. Security Advisory KEV Update Advantech industrial protocol gateways (EKI-1242EIMS/IEIMS) expose multiple pre-auth command execution and missing-auth paths; additional OT-adjacent issues (WISE-6610, AVEVA PIM, eProsima DDS) were flagged in CISA weekly bulletins. CISA Bulletin CISA Bulletin Coordinated attacks in France raised refrigeration setpoints across major supermarket chains; BSI warns small/very small operators (refrigeration, inverters, water points) about exposed OT interfaces. Supporting Report View Article CISA red-teaming at a Water/Wastewater utility demonstrated realistic IT-to-OT pivot via a bastion host; hardened identity, segmentation, and token hygiene are emphasized. Security Advisory High-severity improper authorization in Inductive Automation Ignition enables Designer-level code execution on gateways; patch to 8.1.55/8.3.9 and restrict gateway exposure. ICS Advisory",
+  "keyFindings": [
+    {
+      "title": "Edge VPN/ADC devices remain the highest-likelihood ingress vector into CI and po",
+      "summary": "Edge VPN/ADC devices remain the highest-likelihood ingress vector into CI and potential OT networks; multiple KEV-listed vulnerabilities are under active exploitation. Security Advisory"
+    },
+    {
+      "title": "Advantech ICS protocol gateways expose pre-auth RCE and missing-auth flaws that ",
+      "summary": "Advantech ICS protocol gateways expose pre-auth RCE and missing-auth flaws that could enable remote takeover and reconfiguration in water/wastewater and industrial networks. CISA Bulletin"
+    },
+    {
+      "title": "Confirmed OT manipulation in French retail refrigeration demonstrates real-world",
+      "summary": "Confirmed OT manipulation in French retail refrigeration demonstrates real-world safety and financial impacts from exposed/weakly secured control systems. Supporting Report"
+    },
+    {
+      "title": "High-severity improper authorization in Inductive Automation Ignition allows Des",
+      "summary": "High-severity improper authorization in Inductive Automation Ignition allows Designer-level code execution within the gateway process; urgent patching and strict exposure controls are required. ICS Advisory"
+    },
+    {
+      "title": "Microsoft's Patch Tuesday fixes 1,400+ CVEs including an in-the-wild Windows She",
+      "summary": "Microsoft's Patch Tuesday fixes 1,400+ CVEs including an in-the-wild Windows Shell bypass; Windows-based OT operator/engineering stations demand prioritized testing and updates. View Article"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "HIGH",
+        "label": "Overall Threat Level",
+        "trend": "Driven by active edge-device exploitation and OT gateway flaws"
+      },
+      {
+        "value": "29",
+        "label": "Intelligence Events (This Brief)",
+        "trend": "Escalate: 9 • Monitor: 13 • Ignore: 7"
+      },
+      {
+        "value": "8",
+        "label": "Actively Exploited/KEV Items",
+        "trend": "Ivanti, NetScaler, SonicWall, Metabase, PeopleSoft"
+      },
+      {
+        "value": "10+",
+        "label": "Vendors with OT/ICS Relevance",
+        "trend": "Advantech, Inductive Automation, Danfoss, AVEVA, more"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Ivanti Connect Secure",
+      "Citrix NetScaler ADC/Gateway",
+      "SonicWall SMA 1000",
+      "Advantech EKI / WISE gateways",
+      "Inductive Automation Ignition",
+      "Danfoss AK-SM 800A",
+      "AVEVA Pipeline Integrity Monitor",
+      "Metabase",
+      "Microsoft Windows / .NET",
+      "Swann Cameras (SWIFI-SE2KIC)",
+      "SAP (MII, S/4HANA, NetWeaver)",
+      "eProsima Fast DDS"
+    ],
+    "sectors": [
+      "Water and Wastewater",
+      "Energy and Utilities",
+      "Retail Food (Cold Chain)",
+      "Critical Manufacturing",
+      "Transportation/Aviation",
+      "Government",
+      "Space/Communications",
+      "IT & Data Center"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "State-linked ecosystem: Joint US/Allied advisory details PRC-linked operators leveraging botnets, VPN infrastructure, and LOTL techniques against U.S. CI sectors, indicating persistent interest in CI footholds. Security Advisory",
+        "ShinyHunters data-extortion: Continued law-enforcement action; mass exploitation of Oracle PeopleSoft (CVE-2026-35273) with WAF-bypass observed in campaigns impacting aviation and government. View Article",
+        "Crimeware: MovieReaper torrent-based campaign with Solana-backed C2; lateral movement risk to CI enterprises via infected endpoints. Vendor Research",
+        "Ransomware tradecraft: GPO weaponization for \"PAYLOAD\" extortion effects at a manufacturing firm bypassed file-based detections via trusted AD/SYSVOL mechanisms. Incident Report"
+      ]
+    }
+  ],
+  "relevance": "Risk this week concentrates on: (1) compromise of perimeter remote-access and ADC devices commonly brokering connectivity into sensitive networks; (2) exploitable industrial protocol gateways (Advantech) that directly bridge field protocols (Modbus/OPC UA) to IP networks; and (3) confirmed cyber-physical tampering in retail refrigeration. High-severity HMI/SCADA vulnerabilities (Inductive Ignition) and enterprise Windows zero-days reinforce the IT-to-OT pivot risk where operator/engineering assets and historians run on Windows.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Advantech EKI-1242EIMS/IEIMS protocol gateways: unauthenticated command execution; missing auth for critical mgmt; OPC UA DoS; firmware signing gaps. CISA Bulletin",
+        "Advantech WISE-6610 LoRaWAN gateways: remote command injection (public exploits). CISA Bulletin",
+        "Inductive Automation Ignition (8.1.0-8.1.54, 8.3.0-8.3.8): improper authorization to Designer-level code execution; patch to 8.1.55/8.3.9+. ICS Advisory",
+        "SAP Patch Day: critical issues incl. SAP MII; immediate patching advised. View Article",
+        "Metabase unauth SQLi actively exploited; admin takeover observable in logs; patch or block reset endpoint. Security Advisory",
+        "Swann SWIFI-SE2KIC cameras: missing auth allows local-network video access; segment and update. ICS Advisory"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Initial Access via Edge Devices: Exploitation of VPN/ADC gateways (Ivanti, NetScaler, SMA) [ATT&CK T1190, T1133]. Security Advisory",
+      "Privilege Escalation & Lateral Movement: ADCS ESC1 certificate abuse, DCSync, Seamless SSO misuse, and token abuse in hybrid cloud/AD. [T1550, T1558, T1552]. Security Advisory",
+      "Defense Evasion via GPO Weaponization: Domain-root GPO changes to deliver extortion effects; trusted SYSVOL pathways. [T1484.001, T1112]. Incident Report",
+      "Web App Exploitation: Unauth SQLi for Metabase admin takeover; WAF-bypass via URL-encoding for PeopleSoft. [T1190, T1059]. Security Advisory",
+      "OT Gateway Compromise: Pre-auth command injection/missing auth to reconfigure protocol gateways and bridge OT/IT. [ICS ATT&CK: Inhibit Response Function, Modify Control Logic]. CISA Bulletin"
+    ],
+    "mitreIds": [
+      "T1190",
+      "T1133",
+      "T1550",
+      "T1558",
+      "T1552",
+      "T1484.001",
+      "T1112",
+      "T1059"
+    ]
+  },
+  "outlook72h": "Expect continued scanning and exploitation attempts against vulnerable Ivanti, NetScaler, and SonicWall gateways; prioritize remediation windows and pre-patch compromise checks. Monitor for opportunistic targeting of exposed OT controllers (refrigeration/BMS) following France incidents; proactively remove public exposure and enforce MFA/IP allowlists. Track for exploitation of Advantech ICS gateways and related OT middleware; deploy industrial firewalls and NIDS signatures on OT boundaries. Accelerate validation/rollout of Windows and Ignition patches on OT-adjacent systems during maintenance windows. Harden WAF/API gateways against Metabase SQLi patterning and PeopleSoft encoding-bypass TTPs; hunt logs for historical indicators since June 2026.",
+  "relatedCves": [
+    "CVE-2026-104935",
+    "CVE-2026-92817",
+    "CVE-2026-35273",
+    "CVE-2026-96951",
+    "CVE-2026-103663",
+    "CVE-2026-63316",
+    "CVE-2026-75818",
+    "CVE-2026-88779"
+  ]
+}
