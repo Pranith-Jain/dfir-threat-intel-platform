@@ -3,13 +3,13 @@
   "repo": "h5i-dev/h5i",
   "category": "agent",
   "scope": ["webapp", "api", "recon"],
-  "stars": 771,
+  "stars": 778,
   "description": "An agent-native web security workspace. Find vulnerabilities through red-teaming. Formally verify properties of Rust codes in Lean 4.",
   "homepage": "https://h5i.dev",
   "added": "2026-09-23",
-  "checkedAt": "2026-10-14T03:19:47Z",
-  "pushedAt": "2026-10-12",
-  "daysIdle": 2,
+  "checkedAt": "2026-10-15T03:20:22Z",
+  "pushedAt": "2026-10-14",
+  "daysIdle": 1,
   "archived": false,
   "license": "Apache-2.0",
   "upstream": {
@@ -18,28 +18,28 @@
       "description": "Gives an agent a browser that controls its own network traffic, so the model can capture, edit, replay and compare the requests a web app sends without a proxy in between. Each session runs under a network policy and records every fetch it allowed or refused."
     },
     "derived": {
-      "checked_at": "2026-10-14T03:19:47Z",
+      "checked_at": "2026-10-15T03:20:22Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-10-12",
-        "days_since_push": 2,
-        "total_commits": 719,
-        "last100_span_days": 36,
+        "pushed_at": "2026-10-14",
+        "days_since_push": 1,
+        "total_commits": 720,
+        "last100_span_days": 38,
         "last100_authors": 1,
-        "last_commit_sha": "fd85ba1",
-        "last_commit_message": "add animation (#724)\n\n* animate extraction in the prove act\n\n* write the theorems under the extracted lean\n\n* keep the theorems in their own file",
-        "last_commit_at": "2026-10-12",
+        "last_commit_sha": "5d03fc8",
+        "last_commit_message": "h5i-app-std: add a proven HashMap without new axioms (#715)\n\nA hash map written in the Aeneas subset (`Vec<Vec<(K, V)>>` buckets) and\nextracted like the rest of the crate, so it is verified rather than modeled.\n\n- `hashmap::HashMap`: new, with_capacity, default, get, contains_key,\n  insert, remove, len, is_empty, from_vec. Fixed bucket count, no rehash.\n- `KeyHash` replaces `std::hash::Hash` (no hasher, no random seed), with\n  impls for u8, u32, u64, usize, bool and Vec<u8> (FNV-1a). Composite keys\n  are derived-PartialEq structs: Aeneas models the tuple `==` as an axiom.\n- `H5iAppLib.Buckets`: hash-agnostic lemmas on buckets as maps.\n- `StdSpecs`: a `@[step]` spec for every operation, stated over\n  `hashmap.lookup` (the `mapGet` of the entries) under `hashmap.Inv`. The\n  specs only ask that `key_hash` never fail (`HashModel`), not that it\n  avoid collisions. `HashModel.ofTotal` covers a kernel's own impls.\n- `insert` moves `k` and `v` in both arms: a drop flag made the extraction\n  inside a kernel differ from the crate's own, and the specs must fit both.\n\nChecked with `h5i app check` (standard axioms only) and with a scratch\nkernel that includes h5i_app_std with `std-specs = true`.",
+        "last_commit_at": "2026-10-14",
         "releases": 41,
         "latest_release_at": "2026-10-08",
-        "days_since_release": 6,
-        "days_idle": 2,
+        "days_since_release": 7,
+        "days_idle": 1,
         "relocated": false
       },
       "identity": {
         "canonical_repo": "h5i-dev/h5i",
-        "stars": 771,
-        "forks": 73,
+        "stars": 778,
+        "forks": 75,
         "created_at": "2026-03-11",
         "is_fork": false,
         "contributors": 22,
@@ -71,9 +71,9 @@
       },
       "licence": { "file": "Apache-2.0", "api_spdx": "Apache-2.0", "readme_claim": "Apache-2.0", "conflict": null },
       "shape": {
-        "loc": 214463,
-        "code_files": 309,
-        "files": 702,
+        "loc": 214724,
+        "code_files": 310,
+        "files": 704,
         "has_ci": true,
         "has_tests": true,
         "has_dockerfile": false,
@@ -87,7 +87,8 @@
       },
       "substrate": { "bundled": [], "manifests": [] },
       "rebadge": [],
-      "risk": { "licence": false, "install": true, "phones_home": false, "opaque": false, "host_access": false }
+      "risk": { "licence": false, "install": true, "phones_home": false, "opaque": false, "host_access": false },
+      "risk_where": { "install": "README.md:45" }
     }
   }
 }
