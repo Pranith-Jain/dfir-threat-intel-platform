@@ -1,0 +1,125 @@
+{
+  "type": "cyber",
+  "date": "2026-10-15",
+  "threatLevel": "",
+  "executiveSummary": "Adversaries are actively targeting Siemens S7 PLCs using AI-assisted scripts and public S7 libraries to read/write logic over S7comm, elevating the risk of unsafe process changes across multiple U.S. critical infrastructure sectors. Security Advisory France experienced coordinated manipulation of internet-exposed industrial refrigeration controllers (Danfoss/Dixell/Copeland), with mass setpoint changes disrupting cold chains; similar exposures exist globally in food/pharma logistics. View Article Ivanti Connect Secure VPN zero-day (CVE-2026-104935) is under active exploitation enabling unauthenticated RCE and credential theft; immediate patching, factory reset/rebuild, and full credential rotation are urged. Security Advisory Supporting Report Citrix NetScaler ADC/Gateway vulnerabilities are being widely exploited; DTLS-enabled VPNs are particularly exposed. Organizations should patch immediately and assess for compromise. Security Advisory View Article OT gateways and drives with critical flaws: Advantech WISE-6610 and EKI-1242EIMS industrial gateways contain RCE and missing-auth functions; Danfoss iC7 drives allow unsigned firmware/apps via service interfaces-enabling device takeover and process disruption. Security Advisory Security Advisory Microsoft's October patch cycle shipped a record volume including an exploited Windows Shell SFB (CVE-2026-96951); prioritize patching HMIs/engineering workstations and domain controllers bridging IT-OT. View Article",
+  "keyFindings": [
+    {
+      "title": "Active PLC targeting",
+      "summary": "AI-assisted scripts abusing S7comm to manipulate Siemens S7 logic across multiple sectors. Security Advisory"
+    },
+    {
+      "title": "Real-world OT impact",
+      "summary": "Mass setpoint changes on internet-exposed refrigeration controllers disrupted cold chains in France. View Article"
+    },
+    {
+      "title": "Perimeter exploitation surge",
+      "summary": "Ivanti Connect Secure zero-day exploitation documented; observed credential theft and AD recon. Security Advisory"
+    },
+    {
+      "title": "NetScaler ADC/Gateway actively exploited; DTLS-enabled VPNs at heightened risk. ",
+      "summary": "NetScaler ADC/Gateway actively exploited; DTLS-enabled VPNs at heightened risk. View Article"
+    },
+    {
+      "title": "Advantech WISE-6610 and EKI-1242EIMS",
+      "summary": "remotely exploitable command injection/mgmt-plane flaws threaten field telemetry and protocol gateway integrity. Security Advisory"
+    },
+    {
+      "title": "Danfoss iC7 drives permit unsigned code upload via service interfaces, enabling ",
+      "summary": "Danfoss iC7 drives permit unsigned code upload via service interfaces, enabling unsafe actuation if abused. Security Advisory"
+    },
+    {
+      "title": "Ignition SCADA (Inductive Automation)",
+      "summary": "authZ flaw allows Designer-level code execution from Vision sessions on affected versions. ICS Advisory"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "",
+        "label": "Overall OT Cyber Threat Level"
+      },
+      {
+        "value": "12",
+        "label": "Events Requiring Escalation"
+      },
+      {
+        "value": "6+",
+        "label": "Actively Exploited Perimeter CVEs"
+      },
+      {
+        "value": "10+",
+        "label": "New/Notable OT/ICS Issues"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Perimeter: Ivanti Connect Secure; Citrix NetScaler ADC/Gateway; F5 BIG-IP APM; Cisco Secure Email Gateway OT/ICS: Siemens S7 PLCs; Danfoss iC7 VFDs; Advantech WISE-6610 and EKI-1242EIMS gateways; Inductive Automation Ignition Enterprise Platforms impacting OT-adjacent hosts: Microsoft Windows/Office/Outlook (.NET/WDAC, Shell SFB); Nextcloud richdocumentscode; curl/libcurl Facilities/CCTV: Swann SWIFI-SE2KIC (local RTSP exposure)"
+    ],
+    "sectors": [
+      "Energy; Water and Wastewater; Critical Manufacturing; Food and Agriculture (cold chain); Transportation; Healthcare; Government Services"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "Ransomware: Gunra affiliates exploit FortiGate/SSL-VPNs, perform AD takeover, exfiltrate, then encrypt-Linux variant has PRNG weakness for potential recovery. Security Advisory",
+        "APT/Intrusion: NightEagle leverages Exchange webshells, Microsoft dev tunnels, RDP/rdp2tcp, and DCSync to compromise AD and move laterally. View Article",
+        "Enterprise Domain Abuse: \"PAYLOAD\" incident weaponized GPOs for encryptionless extortion, disabling firewalls and pushing ransom notes fleetwide. View Article",
+        "ShinyHunters: Mass exploitation of Oracle PeopleSoft (CVE-2026-35273) with WAF bypass reported across sectors; risk to identity/HR systems at CI operators. View Article"
+      ]
+    }
+  ],
+  "relevance": "The current threat picture combines direct device targeting (Siemens S7 PLCs) with a surge in exploited perimeter devices that underpin access into OT environments (Ivanti, NetScaler, F5). Real-world sabotage of refrigeration controllers underscores the operational impact potential when OT assets are internet-exposed or reachable from poorly segmented enterprise networks. Vulnerabilities in protocol gateways (Advantech) and motor drives (Danfoss iC7) increase the blast radius for adversaries who gain a foothold. Prioritize exposure elimination, strict IT/OT segmentation (ISA/IEC 62443), and rapid remediation of actively exploited edge devices.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Ivanti Connect Secure (CVE-2026-104935) - unauth RCE & credential theft. Security Advisory",
+        "Citrix NetScaler ADC/Gateway (multiple; KEV-listed) - active exploitation. Security Advisory",
+        "F5 BIG-IP APM (CVE-2026-94127) - OAuth header overflow → unauth RCE; exploitation observed. View Article",
+        "Cisco Secure Email Gateway (CVE-2026-76519) - crafted attachments → root RCE; active attacks. View Article",
+        "Inductive Automation Ignition (CVE-2026-92817) - privilege escalation to code exec in gateway context. ICS Advisory",
+        "Advantech WISE-6610 LoRaWAN gateways - public exploit command injection (RCE). Security Advisory",
+        "Advantech EKI-1242EIMS - unauth RCE via edgserver:5058; unsigned firmware acceptance; critical mgmt functions w/o auth. Security Advisory",
+        "Danfoss iC7 drives - unsigned app/firmware upload via service interfaces. Security Advisory",
+        "Nextcloud richdocumentscode - unauth command injection; web shells observed. View Article",
+        "curl/libcurl 8.23.0 - high-severity HTTP/2 UAF (CVE-2026-92392) affecting embedded/edge transfer paths. View Article"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Exploit Public-Facing Applications (ATT&CK T1190): Ivanti, NetScaler, F5, Nextcloud web shell drops",
+      "Valid Accounts & Credential Access (T1078, T1003): VPN/IdP abuse; Kerberoasting post-Ivanti compromise",
+      "Command and Scripting Interpreter (T1059): PowerShell/CMD in ransomware and APT intrusions; ClickFix chains (ROMULUS)",
+      "Web Shell (T1505.003) and Reverse Tunnels (rdp2tcp/dev tunnels) for lateral movement",
+      "AD/GPO Abuse (T1484): Domain-root GPO weaponization (encryptionless extortion)",
+      "ICS ATT&CK: Modify Controller Logic (T0831) and Unauthorized Command Message (T0828) on Siemens S7; Impair Process Control via gateway/drives misconfiguration"
+    ],
+    "mitreIds": [
+      "T1190",
+      "T1078",
+      "T1003",
+      "T1059",
+      "T1505.003",
+      "T1484",
+      "T0831",
+      "T0828"
+    ]
+  },
+  "outlook72h": "Expect sustained scanning and exploitation attempts against Ivanti and NetScaler as patch releases propagate; prioritize eviction and monitoring of VPN subnets. High likelihood of opportunistic attacks against exposed OT controllers following media/advisory coverage-reassess external exposure and firewall rules immediately. Windows exploitation of Shell SFB likely to rise via phishing; enforce ASR and accelerate patching on OT-adjacent Windows hosts. Track vendor updates for Advantech gateway and Danfoss iC7 mitigations; pre-stage rollback/config backups for rapid restoration.",
+  "relatedCves": [
+    "CVE-2026-104935",
+    "CVE-2026-96951",
+    "CVE-2026-35273",
+    "CVE-2026-94127",
+    "CVE-2026-76519",
+    "CVE-2026-92817",
+    "CVE-2026-92392",
+    "CVE-2026-72898"
+  ]
+}
