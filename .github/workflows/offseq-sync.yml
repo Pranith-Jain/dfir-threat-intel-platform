@@ -1,0 +1,130 @@
+name: OffSeq Threat Radar sync (30 min)
+
+# Keeps https://pranithjain.qzz.io/threatintel/feeds/offseq fresh.
+#
+# OffSeq (radar.offseq.com) aggregates ~40 upstream sources and AI-enriches
+# every threat. The data is served from static assets built by
+# scripts/sync-offseq.mjs + scripts/build-offseq.mjs, so "auto sync" means
+# re-running those two on a schedule and landing the result on main.
+#
+# Runs every 30 minutes. Most runs find nothing new and exit after the PR
+# step (no PR created → no merge, no deploy). When data did change, the PR
+# auto-merges and the same run builds + deploys so the live site tracks main
+# without a manual deploy (GITHUB_TOKEN pushes do not trigger deploy.yml).
+#
+# Self-contained: does NOT touch the other verticals in threat-intel-sync.yml,
+# so a flaky upstream there can't block this cadence and vice versa.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: offseq-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        run: npm ci --no-fund || npm install --no-fund
+
+      - name: Sync OffSeq Threat Radar (radar.offseq.com)
+        continue-on-error: true
+        run: node scripts/sync-offseq.mjs
+
+      - name: Build OffSeq manifest
+        continue-on-error: true
+        run: node scripts/build-offseq.mjs
+
+      - name: Open PR if data changed
+        id: pr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore(offseq): sync threat radar from radar.offseq.com"
+          title: "OffSeq Threat Radar sync — ${{ github.event.schedule || 'manual' }}"
+          body: |
+            Automated 30-min sync of the OffSeq Threat Radar feed.
+
+            Re-runs `scripts/sync-offseq.mjs` (radar.offseq.com public API,
+            ~40 upstream sources, AI-enriched summaries, KEV correlation,
+            Mirage honeypot telemetry) and `scripts/build-offseq.mjs`
+            (manifest rebuild into `public/data/threat-intel/offseq/`).
+
+            The PR is auto-merged by the same run (data-only changes; main is
+            unprotected), and the run then builds + deploys so the live site
+            tracks main.
+
+            Trigger: `${{ github.event_name }}`
+            Run:     `${{ github.run_id }}`
+          branch: chore/offseq-sync
+          delete-branch: true
+          add-paths: |
+            public/data/threat-intel/offseq/
+
+      - name: Auto-merge sync PR
+        if: steps.pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr merge "${{ steps.pr.outputs.pull-request-number }}" \
+            --merge --delete-branch
+
+      # ── Self-deploy (only when the sync PR actually landed) ──────────
+      - name: Checkout merged main
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Setup Node for deploy
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install for deploy
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: |
+          npm ci --no-fund || npm install --no-fund
+          cd api && npm ci --legacy-peer-deps
+
+      - name: Build
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: npm run build
+
+      - name: Deploy to Cloudflare Workers
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: npx wrangler deploy
+
+      - name: Smoke test offseq index
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: |
+          for i in 1 2 3 4 5; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" https://pranithjain.qzz.io/api/v1/threat-intel/offseq)
+            echo "attempt $i: HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 5
+          done
+          echo "offseq index did not return 200 after deploy" && exit 1
