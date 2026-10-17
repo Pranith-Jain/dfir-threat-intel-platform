@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AttackHeatmap } from '../../components/threatintel/AttackHeatmap';
@@ -401,7 +401,7 @@ export default function Metrics(): JSX.Element {
       } catch (e) {
         logCatch(e);
         if (cancelled) return;
-        const msg = e instanceof Error ? e.message : typeof e === 'string' ? e : String(e);
+        const msg = errMessage(e);
         setState((s) => ({ ...s, loading: false, error: msg }));
       }
     })();

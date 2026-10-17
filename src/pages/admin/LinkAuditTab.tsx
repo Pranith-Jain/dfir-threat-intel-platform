@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { getJson, postJson } from './adminApi';
+import { errMessage } from '../../lib/log';
 
 interface AuditPost {
   slug: string;
@@ -80,7 +81,7 @@ export default function LinkAuditTab() {
         after = r.nextAfter ?? '';
       }
     } catch (e) {
-      setActionMsg(e instanceof Error ? e.message : 'audit failed');
+      setActionMsg(errMessage(e, 'audit failed'));
     } finally {
       setLoading(false);
     }
@@ -95,7 +96,7 @@ export default function LinkAuditTab() {
       // Remove the post from the audit list (now fixed) or update counts.
       setAudits((prev) => prev.filter((a) => a.slug !== slug));
     } catch (e) {
-      setActionMsg(e instanceof Error ? e.message : `fix failed for ${slug}`);
+      setActionMsg(errMessage(e, `fix failed for ${slug}`));
     } finally {
       setFixing((prev) => ({ ...prev, [slug]: false }));
     }

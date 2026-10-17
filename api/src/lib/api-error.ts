@@ -61,11 +61,7 @@ export function badRequest(c: Context, message = 'bad request'): Response {
 }
 
 /** 400 with per-field error map */
-export function validationError(
-  c: Context,
-  fields: Record<string, string>,
-  message = 'validation failed'
-): Response {
+export function validationError(c: Context, fields: Record<string, string>, message = 'validation failed'): Response {
   return c.json({ error: 'validation_error', message, fields } as ApiErrorBody, 400, headers());
 }
 
@@ -117,12 +113,22 @@ export function internalError(c: Context, err: unknown): Response {
   return c.json({ error: 'internal_error', message } as ApiErrorBody, 500, headers());
 }
 
-/** 502 Bad Gateway — upstream returned an error */
+/**
+ * 502 Bad Gateway — upstream returned an error.
+ *
+ * `message` is **client-visible**. Routes that echo `err.message` here are
+ * echoing whatever the runtime produced, which for a Workers `fetch` failure
+ * is a generic string ("fetch failed") — fine to show, and useful for users
+ * deciding whether to retry. Anything richer than that (a raw upstream
+ * response body, a URL, credentials in a query string) belongs in `logError`
+ * instead; `safeErrorMessage` exists for the cases where even the generic
+ * text should be withheld outside development.
+ */
 export function badGateway(c: Context, message = 'upstream error'): Response {
   return c.json({ error: 'bad_gateway', message } as ApiErrorBody, 502, headers());
 }
 
-/** 503 Service Unavailable — upstream dependency failed */
+/** 503 Service Unavailable — upstream dependency failed. `message` is client-visible; see `badGateway`. */
 export function serviceUnavailable(c: Context, message = 'service unavailable'): Response {
   return c.json({ error: 'service_unavailable', message } as ApiErrorBody, 503, headers());
 }

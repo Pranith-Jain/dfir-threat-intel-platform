@@ -58,6 +58,7 @@ import { checkDuplicate, registerInvestigation } from '../../api/src/lib/agent/r
 import { extractGraphFromSteps } from '../../api/src/lib/agent/ioc-graph';
 import { truncateData } from '../lib/truncate-data';
 import { createVersionedReport, addVersion, getVersionDiff } from '../../api/src/lib/agent/report-versioning';
+import { errMessage } from '../lib/err';
 
 /** Map a specialist finding to an action-card IOC entry type. */
 function classifyFindingIocType(f: SpecialistFinding): IocEntry['type'] | null {
@@ -267,7 +268,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
         this.connectionAgentIds.set(conn.id, msg.agentId);
       }
     } catch (_catchErr) {
-      console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('handler failed:', errMessage(_catchErr));
     }
   }
 
@@ -293,7 +294,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
       try {
         conn.send(payload);
       } catch (_catchErr) {
-        console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('handler failed:', errMessage(_catchErr));
       }
     }
   }
@@ -333,7 +334,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
         await this.schedule(0.1, 'runStep');
       }
     } catch (err) {
-      const errMsg = err instanceof Error ? err.message : String(err);
+      const errMsg = errMessage(err);
       console.error(`agent ${state.id}: step failed`, errMsg);
       state.status = 'error';
       state.error = errMsg;
@@ -445,7 +446,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
             }
           }
         } catch (_pivotErr) {
-          console.error('pivot chain failed:', _pivotErr instanceof Error ? _pivotErr.message : String(_pivotErr));
+          console.error('pivot chain failed:', errMessage(_pivotErr));
         }
       }
 
@@ -472,7 +473,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
             }
           }
         } catch (_skillErr) {
-          console.error('cti skill load failed:', _skillErr instanceof Error ? _skillErr.message : String(_skillErr));
+          console.error('cti skill load failed:', errMessage(_skillErr));
         }
       }
 
@@ -488,7 +489,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
           state.currentSpecialist = currentRole;
         }
       } catch (_catchErr) {
-        console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('handler failed:', errMessage(_catchErr));
       }
 
       if (!state.priorIntelligence) {
@@ -506,7 +507,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
             }
           }
         } catch (_catchErr) {
-          console.error('memory lookup failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('memory lookup failed:', errMessage(_catchErr));
         }
       }
 
@@ -845,10 +846,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
       state.usedParallelBurst = true;
       return state;
     } catch (err) {
-      console.error(
-        'parallel burst failed, falling back to sequential:',
-        err instanceof Error ? err.message : String(err)
-      );
+      console.error('parallel burst failed, falling back to sequential:', errMessage(err));
       return null;
     }
   }
@@ -949,7 +947,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
           }
         }
 
-        console.error('handler failed:', err instanceof Error ? err.message : String(err));
+        console.error('handler failed:', errMessage(err));
         // Session-banned-tool stop condition (fix #7): track consecutive
         // failures per tool. After MAX_TOOL_FAILURES_PER_SESSION, ban it for
         // the rest of this investigation so the noDegradedTools guardrail
@@ -959,7 +957,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
           tool: call.tool,
           args: call.args,
           status: 'error',
-          error: err instanceof Error ? err.message : String(err),
+          error: errMessage(err),
           durationMs: Date.now() - start,
           nextActions: this.sessionBannedTools.has(call.tool)
             ? nextActionsFor(call.tool, 'error').filter((t) => !this.sessionBannedTools.has(t))
@@ -1009,7 +1007,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
         set = new Set(degraded);
       }
     } catch (err) {
-      console.error('degradedToolsSet failed:', err instanceof Error ? err.message : String(err));
+      console.error('degradedToolsSet failed:', errMessage(err));
     }
     this.degradedToolsCache = { at: now, note: '', set };
     // Union with session-banned tools (fix #7) so the noDegradedTools guardrail
@@ -1056,7 +1054,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
         hint = await getCalibrationHint(db);
       }
     } catch (err) {
-      console.error('calibrationHint failed:', err instanceof Error ? err.message : String(err));
+      console.error('calibrationHint failed:', errMessage(err));
     }
     this.calibrationHintCache = { at: now, hint };
     return hint;
@@ -1328,8 +1326,8 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
         qaStep.status = 'done';
         qaStep.completedAt = new Date().toISOString();
       } catch (qaErr) {
-        console.error('handler failed:', qaErr instanceof Error ? qaErr.message : String(qaErr));
-        qaStep.observation = `QA failed: ${qaErr instanceof Error ? qaErr.message : String(qaErr)}. Original report preserved.`;
+        console.error('handler failed:', errMessage(qaErr));
+        qaStep.observation = `QA failed: ${errMessage(qaErr)}. Original report preserved.`;
         qaStep.status = 'error';
         qaStep.completedAt = new Date().toISOString();
         state.report = result.report;
@@ -1360,7 +1358,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
             `Self-eval: ${selfEval.overallScore}/5 (${selfEval.modelUsed}). Top gap: ${selfEval.topGap.slice(0, 100)}`;
         }
       } catch (selfEvalErr) {
-        console.error('self-eval failed:', selfEvalErr instanceof Error ? selfEvalErr.message : String(selfEvalErr));
+        console.error('self-eval failed:', errMessage(selfEvalErr));
       }
 
       // ── Introspection: extract tool failures for the UI ────────────
@@ -1373,7 +1371,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
           state.dataGaps = failures;
         }
       } catch (introErr) {
-        console.error('introspection failed:', introErr instanceof Error ? introErr.message : String(introErr));
+        console.error('introspection failed:', errMessage(introErr));
       }
 
       const toolCounts = new Map<string, number>();
@@ -1605,17 +1603,17 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
       } catch (socErr) {
         // Non-fatal — the investigation is still complete even if SOC
         // playbook creation fails.
-        console.error('Agent → SOC feedback loop failed:', socErr instanceof Error ? socErr.message : String(socErr));
+        console.error('Agent → SOC feedback loop failed:', errMessage(socErr));
       }
 
       this.costTrackers.delete(state.id);
     } catch (err) {
-      console.error('handler failed:', err instanceof Error ? err.message : String(err));
+      console.error('handler failed:', errMessage(err));
       synthesizeStep.status = 'error';
       synthesizeStep.completedAt = new Date().toISOString();
       state.steps.push(synthesizeStep);
       state.status = 'error';
-      state.error = err instanceof Error ? `Synthesis failed: ${err.message}` : `Synthesis failed: ${String(err)}`;
+      state.error = `Synthesis failed: ${errMessage(err)}`;
       state.completedAt = new Date().toISOString();
     }
 
