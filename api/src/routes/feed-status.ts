@@ -222,7 +222,7 @@ export const PROBE_SOURCES: Record<string, string[]> = {
   'stealer-forum-intel': ['hudson-rock'],
   // dbu.gs (B) sits alongside the A-grade advisory sources: it is a gap-filler,
   // so NVD/KEV remain the probe's reliability anchor and the aggregate stays A.
-  'cve-recent': ['nvd', 'cisa-kev', 'dbugs', 'exploitgrid'],
+  'cve-recent': ['nvd', 'cisa-kev', 'dbugs', 'exploitgrid', 'threatwire'],
   // The 24h digest is anchored on ctiwatch (B) with VulnTracker volume for
   // context — best-evidence-wins keeps it at B.
   'cve-digest': ['ctiwatch', 'vulntracker', 'offseq-radar'],
@@ -290,18 +290,26 @@ export const PROBES: FeedProbeSpec[] = [
       const kevCount = find('cisa-kev-added-30d')?.count ?? 0;
       const dbugsCount = find('dbugs')?.count ?? 0;
       const exploitGridCount = find('exploitgrid')?.count ?? 0;
+      const threatWireCount = find('threatwire')?.count ?? 0;
       const status: Status = nvdCount > 0 && kevCount > 0 ? 'ok' : count > 0 ? 'degraded' : 'down';
       return {
         status,
         reason:
           nvdCount > 0 && kevCount > 0
-            ? `NVD ${nvdCount} + KEV ${kevCount} entries${dbugsCount > 0 || exploitGridCount > 0 ? ` + ${dbugsCount} dbu.gs / ${exploitGridCount} exploitgrid gap-fills` : ''}`
+            ? `NVD ${nvdCount} + KEV ${kevCount} entries${dbugsCount > 0 || exploitGridCount > 0 || threatWireCount > 0 ? ` + ${dbugsCount} dbu.gs / ${exploitGridCount} exploitgrid / ${threatWireCount} threatwire gap-fills` : ''}`
             : nvdCount === 0
               ? 'NVD rate-limited — serving KEV only'
               : 'KEV unreachable — serving NVD only',
         // Gap-filler counts ride along as metrics so a drop to 0 is visible here
         // rather than only as a missing row on the CVE list.
-        metrics: { count, nvd: nvdCount, kev: kevCount, dbugs: dbugsCount, exploitgrid: exploitGridCount },
+        metrics: {
+          count,
+          nvd: nvdCount,
+          kev: kevCount,
+          dbugs: dbugsCount,
+          exploitgrid: exploitGridCount,
+          threatwire: threatWireCount,
+        },
         ageS,
       };
     },

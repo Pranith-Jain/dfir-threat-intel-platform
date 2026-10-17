@@ -309,6 +309,19 @@ export const SOURCE_RELIABILITY_REGISTRY: Record<string, SourceReliabilityEntry>
     // proof-of-concept-only. C, not B: treat as a lead, not a confirmed weapon.
     known_bias: 'Community submissions, no validation step; `severity` classifies the exploit, not a CVSS score',
   },
+  threatwire: {
+    id: 'threatwire',
+    name: 'ThreatWire',
+    // An editorial wire, not a disclosure venue: it reads vendor advisories,
+    // NVD, CVE.org and GitHub advisories, then states plainly what is
+    // confirmed (KEV membership, PoC availability, fix status) and what is
+    // not. Its flags are only attached when a post covers a single CVE, so
+    // it is a B for corroboration rather than an A primary observation.
+    reliability: 'B',
+    category: 'secondary',
+    description: 'Editorial CVE wire with explicit PoC/KEV/zero-day/patch status per record',
+    known_bias: 'Editorial selection — covers what it chooses to write about, not the whole corpus',
+  },
   vulntracker: {
     id: 'vulntracker',
     name: 'VulnTracker',
