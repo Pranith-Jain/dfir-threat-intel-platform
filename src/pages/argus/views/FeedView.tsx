@@ -19,6 +19,7 @@ import type { Actor, FeedItem } from '../types';
 import { ACTORS } from '../data/actors';
 import { cssVar } from '../lib';
 import { AiSummaryCard } from '../../../components/intel/AiSummaryCard';
+import { unwrapBingNewsLink } from '../../../services/rssService';
 import { PostAnalysisButton } from '../../../components/threatintel/PostAnalysisButton';
 
 interface Props {
@@ -74,9 +75,12 @@ const RSS_SOURCES = [
   { url: 'https://securelist.com/feed/', name: 'SecureList (Kaspersky)', category: 'vendor' as const },
 
   // ── News & Investigation ──
-  // BleepingComputer 403s datacenter egress — Google News mirror instead.
+  // BleepingComputer 403s datacenter egress. Mirrored via Bing News — was a
+  // Google News mirror, but news.google.com 503s Worker egress, and the URL
+  // here must match the /api/v1/argus/rss allowlist in worker/argus-feed.ts or
+  // the proxy rejects this source outright.
   {
-    url: 'https://news.google.com/rss/search?q=site:bleepingcomputer.com&hl=en-US&gl=US&ceid=US:en',
+    url: 'https://www.bing.com/news/search?q=site%3Ableepingcomputer.com&format=RSS&mkt=en-US',
     name: 'BleepingComputer',
     category: 'news' as const,
   },
@@ -121,7 +125,9 @@ function parseRSS(xml: string, sourceName: string, sourceCategory: FeedItem['cat
   // RSS 2.0
   for (const item of doc.querySelectorAll('item')) {
     const title = item.querySelector('title')?.textContent?.trim() || '';
-    const link = item.querySelector('link')?.textContent?.trim() || '';
+    // One of the sources is a Bing News mirror (the origin 403s datacenter
+    // egress), so links arrive click-wrapped — resolve to the publisher.
+    const link = unwrapBingNewsLink(item.querySelector('link')?.textContent?.trim() || '');
     const pubDate = item.querySelector('pubDate')?.textContent?.trim() || '';
     const description = item.querySelector('description')?.textContent?.trim() || '';
     if (!title || !link) continue;

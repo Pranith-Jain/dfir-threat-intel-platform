@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Sparkles, AlertTriangle, ExternalLink, Copy, Check, Trash2 } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { ShareBar } from '../../components/intel/ShareBar';
+import { turnstileHeaders } from '../../lib/turnstile';
 
 interface KillChainStep {
   phase: string;
@@ -138,7 +139,10 @@ export default function CampaignDetail(): JSX.Element {
   const handleDelete = async () => {
     if (!window.confirm('Delete this campaign? This cannot be undone.')) return;
     try {
-      const r = await fetch(`/api/v1/campaigns/${id}`, { method: 'DELETE' });
+      const r = await fetch(`/api/v1/campaigns/${id}`, {
+        method: 'DELETE',
+        headers: await turnstileHeaders('delete-campaign'),
+      });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       setDeleted(true);
     } catch (e) {

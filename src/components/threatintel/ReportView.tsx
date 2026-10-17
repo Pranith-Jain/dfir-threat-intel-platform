@@ -3,6 +3,7 @@ import { FileDown, FileText, ShieldAlert } from 'lucide-react';
 import type { Report, Tlp } from '../../lib/threatintel/report-client';
 import { ShareBar } from '../intel/ShareBar';
 import { DataTable, type DataTableColumn } from '../ui/DataTable';
+import { sanitizeUrl } from '../../lib/sanitize-url';
 
 const TLP_CLASS: Record<Tlp, string> = {
   CLEAR: 'bg-slate-500 text-white',
@@ -238,7 +239,7 @@ export function ReportView({ report, onExportPdf, onExportMd }: Props): JSX.Elem
                 </span>
                 {s.url ? (
                   <a
-                    href={s.url}
+                    href={sanitizeUrl(s.url) || undefined}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-brand-600 dark:text-brand-400 hover:underline transition-colors"

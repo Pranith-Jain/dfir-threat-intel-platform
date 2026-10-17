@@ -35,3 +35,17 @@ export function relativeAgo(iso?: string, emptyLabel = ''): string {
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   return `${Math.floor(diff / 86400)}d ago`;
 }
+
+/**
+ * Feed-row variant of {@link relativeAgo}.
+ *
+ * The feed builders write a zero-date sentinel (`1970-01-01…`) for rows with no
+ * real timestamp. Ageing that honestly prints "20y ago" on every seeded row, so
+ * those pages label it instead. This lives here rather than in each page because
+ * three feed pages had grown byte-identical copies of the same guard — and a
+ * fourth copy is exactly what happens when the rule lives in three places.
+ */
+export function relativeAgoSeeded(iso?: string, opts: { missing?: string; invalid?: string } = {}): string {
+  if (!iso || iso.startsWith('1970')) return opts.missing ?? 'seed';
+  return relativeAgo(iso, opts.invalid ?? 'unknown');
+}

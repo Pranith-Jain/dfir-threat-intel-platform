@@ -8,6 +8,7 @@ import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
 import { usePostSummaries } from '../../components/intel/usePostSummaries';
 import { PostSummary } from '../../components/intel/PostSummary';
+import { turnstileHeaders } from '../../lib/turnstile';
 import {
   RefreshCw,
   ExternalLink,
@@ -379,7 +380,7 @@ export default function XWatch(): JSX.Element {
         try {
           const r = await fetch('/api/v1/x-firehose/probe-batch', {
             method: 'POST',
-            headers: { 'content-type': 'application/json' },
+            headers: { 'content-type': 'application/json', ...(await turnstileHeaders('x-probe-batch')) },
             body: JSON.stringify({ handles: chunk, since_days: sinceDays }),
             signal: AbortSignal.any([ctrl.signal, AbortSignal.timeout(120_000)]),
           });

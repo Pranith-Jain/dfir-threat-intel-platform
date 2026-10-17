@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search, RefreshCw, ExternalLink, ChevronRight, ChevronDown, FolderTree, Info, Shield } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { relativeAgoSeeded } from '../../lib/relativeTime';
 
 interface OwaspNode {
   title: string;
@@ -44,20 +45,6 @@ const TYPE_PILL: Record<string, string> = {
   tool: 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800',
   ctf: 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800',
 };
-
-function relativeTime(iso: string | undefined): string {
-  if (!iso || iso.startsWith('1970')) return 'seed';
-  const t = Date.parse(iso);
-  if (Number.isNaN(t)) return 'unknown';
-  const diff = Date.now() - t;
-  const m = Math.floor(diff / 60_000);
-  if (m < 1) return 'just now';
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  const d = Math.floor(h / 24);
-  return `${d}d ago`;
-}
 
 function flatten(nodes: OwaspNode[], depth = 0): { node: OwaspNode; depth: number }[] {
   const out: { node: OwaspNode; depth: number }[] = [];
@@ -267,7 +254,7 @@ export default function OwaspAiLandscape(): JSX.Element {
             <RefreshCw className="h-3.5 w-3.5" /> refresh
           </button>
           <span className="rounded border border-line-2 px-2 py-1 text-muted font-mono">
-            synced <span className="text-body">{relativeTime(meta?.fetchedAt)}</span>
+            synced <span className="text-body">{relativeAgoSeeded(meta?.fetchedAt)}</span>
           </span>
           {meta?.ok === false && (
             <span
