@@ -65,7 +65,11 @@ const BYPASS_EXACT = new Set<string>([
   '/api/v1/health',
   '/api/v1/health/detailed',
   '/api/v1/features',
-  '/api/v1/pageviews',
+  // NOTE: '/api/v1/pageviews' is deliberately NOT bypassed. `?inc=1` performs
+  // an uncapped D1 upsert (the route is explicitly not guarded against
+  // inflation), so leaving it bypassed turned the edge into an unmetered write
+  // primitive. The global 30/min keyless bucket applies instead — a real
+  // visitor's once-per-session beacon never notices, a flood is bounded.
   // Cached read-only aggregators — all served from edge cache; even cold-
   // cache hits do bounded upstream work and don't expose anything an
   // abuser couldn't get from RSS directly.
@@ -324,12 +328,30 @@ function isAiStrict(pathname: string, method: string): boolean {
  * Costly endpoints that are hit via GET (and must NOT be left on the global
  * bucket alone). Method-agnostic on purpose: `/api/v1/si/render` is costly
  * as both GET (deep-link render) and POST (manifest render).
+ *
+ * `/api/v1/intel-bundle` is special-cased: its GET read path is the hot
+ * per-IntelCard probe, D1/L1-cached and parameter-free — it must stay on the
+ * read bypass. Only the compute branch (caller-supplied `title`+`body` on a
+ * cache miss, which runs the full enrichment pipeline + Vectorize upsert +
+ * D1 write) is costly, so it is charged the strict bucket. Without this, a
+ * keyless caller could loop cache-miss GETs and fan out upstream enrichment
+ * unmetered, because the exact path sits in BYPASS_EXACT.
  */
 const COSTLY_GET_EXACT = new Set<string>([
   '/api/v1/si/render', // resvg-wasm PNG render (CPU)
   '/api/v1/whoxy/reverse', // paid $0.01/query upstream
   '/api/v1/traceix/lookup', // multi-engine AV hash lookup upstream
+  // Scans up to 4 ports of a caller-supplied host (#301): the POST /batch
+  // sibling is on the strict POST bucket, but the GET flows through the SPA
+  // (Socradar fortibleed tab) keylessly and was left on the global 30/min —
+  // i.e. 30 platform-egress scans of an arbitrary third-party host per minute.
+  '/api/v1/fortibleed/check',
 ]);
+
+function isCostlyGet(url: URL): boolean {
+  if (COSTLY_GET_EXACT.has(url.pathname)) return true;
+  return url.pathname === '/api/v1/intel-bundle' && url.searchParams.has('title') && url.searchParams.has('body');
+}
 
 function isBypassed(pathname: string): boolean {
   if (BYPASS_EXACT.has(pathname)) return true;
@@ -379,7 +401,7 @@ export async function rateLimit(c: Context<{ Bindings: Env }>, next: Next): Prom
   // for GET/HEAD/OPTIONS, so read bypasses are unaffected — except for
   // COSTLY_GET_EXACT, which is method-agnostic by design.
   const adminStrict = isAdminStrict(url.pathname, c.req.method);
-  const aiStrict = isAiStrict(url.pathname, c.req.method) || COSTLY_GET_EXACT.has(url.pathname);
+  const aiStrict = isAiStrict(url.pathname, c.req.method) || isCostlyGet(url);
   if (isBypassed(url.pathname) && !adminStrict && !aiStrict) return next();
 
   // Skip rate limiting in the vitest-pool-workers test environment and for

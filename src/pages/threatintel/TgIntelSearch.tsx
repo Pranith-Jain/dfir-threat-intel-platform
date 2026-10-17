@@ -6,6 +6,7 @@
  */
 
 import { logCatch } from '../../lib/log';
+import { turnstileHeaders } from '../../lib/turnstile';
 import { useEffect, useState, useCallback, useRef, type FormEvent } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import {
@@ -225,7 +226,7 @@ function TgIntelSearch() {
     if (!saveName.trim() || !query.trim()) return;
     await fetch(`${api}/tg-saved-searches`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(await turnstileHeaders('tg-saved-search-save')) },
       body: JSON.stringify({ name: saveName, query, mode, sort_order: 'newest' }),
     });
     setSaveName('');
@@ -233,7 +234,10 @@ function TgIntelSearch() {
     fetchSaved();
   };
   const handleDeleteSaved = async (id: string) => {
-    await fetch(`${api}/tg-saved-searches/${id}`, { method: 'DELETE' });
+    await fetch(`${api}/tg-saved-searches/${id}`, {
+      method: 'DELETE',
+      headers: await turnstileHeaders('tg-saved-search-delete', 'DELETE'),
+    });
     fetchSaved();
   };
   const loadSaved = (s: SavedSearch) => {

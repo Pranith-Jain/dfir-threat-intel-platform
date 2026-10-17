@@ -177,3 +177,95 @@ describe('rate limiter — 2026-10-10 audit coverage', () => {
     expect(nextCalled).toBe(true);
   });
 });
+
+/**
+ * 2026-10-16 hardening: the two gaps this suite's own method (seed one bucket,
+ * hold the other under its limit) is designed to expose.
+ *
+ * 1. `GET /api/v1/intel-bundle` sat in BYPASS_EXACT because the read path is a
+ *    hot, D1/L1-cached per-IntelCard probe — but the SAME path also accepts
+ *    `title`+`body` on a cache miss and then runs the whole enrichment pipeline
+ *    (upstream fan-out + Vectorize upsert + D1 write). GETs are excluded from
+ *    isAiStrict() by method, so nothing bounded that branch. `isCostlyGet()`
+ *    now charges the strict bucket to exactly that branch.
+ * 2. `GET /api/v1/pageviews?inc=1` was bypassed while performing an uncapped D1
+ *    upsert, so the edge was an unmetered write primitive.
+ */
+describe('GET-side and bypass-list hardening', () => {
+  // Distinct /24 from the suite above (203.0.113.0/24, TEST-NET-3) so seeded
+  // counters can never collide with those tests' IPs.
+  let seq = 0;
+  const nextIp = () => `203.0.113.${10 + seq++}`;
+
+  it('throttles the intel-bundle COMPUTE branch (title+body) on the strict bucket', async () => {
+    const ip = nextIp();
+    await seedGlobal(ip, 0); // far below the global 30/min limit
+    await seedStrict(ip, 10); // at the AI-strict 10/min limit
+    const { res, nextCalled } = await run(
+      'https://api.example.com/api/v1/intel-bundle?source=rss%3Aexample&ref=item&title=hi&body=body',
+      'GET',
+      ip
+    );
+    expect(nextCalled).toBe(false);
+    expect((res as Response | undefined)?.status).toBe(429);
+  });
+
+  it('leaves the intel-bundle CACHED read path bypassed even at the strict limit', async () => {
+    // Guards against fixing the compute branch by tightening the read path:
+    // every IntelCard on /threatintel pages fires this GET.
+    const ip = nextIp();
+    await seedGlobal(ip, 999);
+    await seedStrict(ip, 10);
+    const { res, nextCalled } = await run(
+      'https://api.example.com/api/v1/intel-bundle?source=rss%3Aexample&ref=item',
+      'GET',
+      ip
+    );
+    expect(nextCalled).toBe(true);
+    expect(res).toBeUndefined();
+  });
+
+  it('rate-limits pageviews (uncapped ?inc=1 D1 upsert) on the global bucket', async () => {
+    const ip = nextIp();
+    await seedGlobal(ip, 30);
+    const { res, nextCalled } = await run('https://api.example.com/api/v1/pageviews?inc=1', 'GET', ip);
+    expect(nextCalled).toBe(false);
+    expect((res as Response | undefined)?.status).toBe(429);
+  });
+
+  it('throttles GET /fortibleed/check (4-port scan of a caller-supplied host) on the strict bucket', async () => {
+    // #301: the POST /batch sibling was on the strict bucket, but the GET
+    // check — the SPA flow — sat on the global 30/min, i.e. 30 platform-egress
+    // scans of an arbitrary third-party host per minute per IP.
+    const ip = nextIp();
+    await seedGlobal(ip, 0); // far below the global 30/min limit
+    await seedStrict(ip, 10); // at the AI-strict 10/min limit
+    const { res, nextCalled } = await run(
+      'https://api.example.com/api/v1/fortibleed/check?target=example.com',
+      'GET',
+      ip
+    );
+    expect(nextCalled).toBe(false);
+    expect((res as Response | undefined)?.status).toBe(429);
+  });
+
+  it('still admits fortibleed/check while both counters are under the limit', async () => {
+    const ip = nextIp();
+    await seedGlobal(ip, 0);
+    await seedStrict(ip, 0);
+    const { res, nextCalled } = await run(
+      'https://api.example.com/api/v1/fortibleed/check?target=example.com',
+      'GET',
+      ip
+    );
+    expect(nextCalled).toBe(true);
+    expect(res).toBeUndefined();
+  });
+
+  it('still serves a first pageview normally', async () => {
+    const ip = nextIp();
+    await seedGlobal(ip, 0);
+    const { nextCalled } = await run('https://api.example.com/api/v1/pageviews?inc=1', 'GET', ip);
+    expect(nextCalled).toBe(true);
+  });
+});

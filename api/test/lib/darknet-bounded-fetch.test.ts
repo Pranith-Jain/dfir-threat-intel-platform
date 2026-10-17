@@ -79,3 +79,55 @@ describe('darknet bounded fetch', () => {
     expect(result.fetchedVia).toBe(`${ONION}.tor2web.io`);
   });
 });
+
+/**
+ * #300 hardening: tor2web gateways are third parties we do not control, so
+ * their redirects must be followed manually (re-checking each hop), never
+ * `redirect: 'follow'`, and never without a bound.
+ */
+describe('darknet bounded redirects (#300)', () => {
+  it('follows a redirect chain manually and returns the final page', async () => {
+    let calls = 0;
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => {
+      calls += 1;
+      if (calls === 1) {
+        return new Response('', { status: 302, headers: { location: `https://${ONION}.tor2web.io/next` } });
+      }
+      return onionResponse('<html><head><title>Final</title></head><body>ok</body></html>');
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await torFetchOnion(ONION);
+
+    expect(calls).toBe(2);
+    expect(result.html).toContain('Final');
+    // The runtime must never fetch redirects itself — each hop goes through
+    // the manual loop so it can be counted and bounded.
+    for (const call of fetchMock.mock.calls) {
+      expect(call[1]?.redirect).toBe('manual');
+    }
+  });
+
+  it('refuses an unbounded redirect chain instead of following it forever', async () => {
+    const fetchMock = vi.fn(
+      async () => new Response('', { status: 302, headers: { location: `https://${ONION}.tor2web.io/loop` } })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(torFetchOnion(ONION)).rejects.toThrow(/too many redirects/);
+    // 1 initial request + ONION_MAX_REDIRECTS hops, then refuse — not an
+    // open-ended chain.
+    expect(fetchMock.mock.calls.length).toBeLessThanOrEqual(6);
+  });
+
+  it('treats a redirect with no Location header as the final response', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('', { status: 302 }))
+    );
+
+    const result = await torFetchOnion(ONION);
+
+    expect(result.statusCode).toBe(302);
+  });
+});

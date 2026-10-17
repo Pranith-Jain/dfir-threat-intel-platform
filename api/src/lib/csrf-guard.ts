@@ -52,10 +52,26 @@ import { getAllowedOrigins } from './site-config';
  *    routes (e.g. /api/v1/admin/*) and for MCP, which authenticates in
  *    `DfirMcpServer.onConnect` before any tool runs.
  *
+ * ── What now closes this, and what is still open ─────────────────────────
+ *
+ * The shared-state write prefixes listed in `api/src/lib/turnstile.ts`
+ * (TURNSTILE_PREFIXES: estate, SOC playbooks, saved reports, workspaces,
+ * watchlists, campaigns, tool chains, cyberpulse scan, X probe batch) carry an
+ * opt-in bot gate ahead of the handler. Once the operator sets
+ * `TURNSTILE_SECRET`, a keyless non-browser caller on those routes must either
+ * present an API key or clear a real Cloudflare Turnstile challenge — no
+ * forgeable header suffices. The gate is off until that secret exists, and the
+ * internal-token exemption is HMAC-verified, so it does not reopen the header
+ * gap described above.
+ *
+ * Everything NOT on that prefix list still relies on this header check (CSRF
+ * defence-in-depth for browsers) plus the rate limiter. Widening the gate means
+ * adding a prefix there AND teaching the SPA caller to send a token — the two
+ * halves move together.
+ *
  * Genuine protection therefore comes from: `authenticate('required')` on
- * sensitive routes, rate limiting, and Cloudflare-level controls — not from
- * these headers. Closing this properly needs a real capability (Turnstile or
- * equivalent), not a header check.
+ * sensitive routes, the Turnstile gate on shared-state writes, rate limiting,
+ * and Cloudflare-level controls — not from these headers.
  */
 export async function csrfGuard(c: Context<{ Bindings: Env }>, next: Next): Promise<Response | void> {
   const method = c.req.method;

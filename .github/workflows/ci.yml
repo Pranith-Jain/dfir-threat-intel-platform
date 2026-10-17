@@ -44,8 +44,11 @@ jobs:
       # hexagonal refactor). --max-warnings 0 keeps it that way — any new
       # warning fails CI. If a deliberate, hard-to-avoid warning is added,
       # raise this to that exact count (with a note) rather than leaving slack.
+      # --concurrency=auto mirrors `npm run lint`: same rules, same output, just
+      # spread across worker threads. This scan was ~25 min single-threaded on a
+      # dev machine, which is long enough that people stop waiting for it.
       - name: Lint (zero-warning baseline)
-        run: npx eslint . --report-unused-disable-directives --max-warnings 0
+        run: npx eslint . --concurrency=auto --report-unused-disable-directives --max-warnings 0
 
   typecheck:
     name: TypeScript
@@ -187,6 +190,50 @@ jobs:
           # comment posting, not for scanning.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # Advisory only — dependency advisories are reported, never auto-fixed.
+  #
+  # Why advisory rather than blocking: every remaining advisory in both trees is
+  # either inapplicable to how this repo uses the package or only reachable from
+  # a dev/CI-only path, and a `npm audit fix --force` that "clears" the list
+  # would do it by swapping a package for an older major. Known-and-accepted:
+  #
+  #   @modelcontextprotocol/sdk 1.29.0 (was nested inside agents@0.17, which
+  #     pinned that exact version) — GHSA-6qxp-vccf-f47h, OAuth client
+  #     credential leakage, on a path this repo never uses (server-only import).
+  #     Now unified onto one patched copy by an `overrides` entry in
+  #     package.json; `api/test/lib/mcp-internal-auth.test.ts` guards the
+  #     SDK/McpAgent pairing so a future bump fails a test, not production.
+  #   basic-ftp / extract-zip (under @cloudflare/puppeteer → @puppeteer/browsers)
+  #     Browser-binary installer only — it unpacks a zip from Cloudflare's own
+  #     CDN during dev/CI. Never part of the deployed Worker bundle, which uses
+  #     the `browser` binding instead.
+  #   undici (under miniflare/jsdom, dev-only) — pinned forward via the
+  #     `overrides` block in both package.json files.
+  #
+  # The step fails; `continue-on-error` keeps the PR green and puts a warning in
+  # the status block instead, so a NEW advisory is noticed without a red X
+  # nobody can action.
+  dependency-audit:
+    name: Dependency audit (advisory)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci --no-fund
+      - name: install api deps
+        working-directory: api
+        run: npm ci --legacy-peer-deps
+      # --omit=dev: prod deps are what actually ship in the Worker bundle.
+      - name: prod dependency audit (root)
+        run: npm audit --omit=dev || echo "::warning::root prod dependency advisory (see workflow comment for the accepted list)"
+      - name: prod dependency audit (api)
+        working-directory: api
+        run: npm audit --omit=dev || echo "::warning::api prod dependency advisory (see workflow comment for the accepted list)"
+
   build:
     name: Build + budget check
     runs-on: ubuntu-latest
@@ -231,3 +278,36 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/check-deploy-secrets.mjs && exit 0 || echo "::warning::Cloudflare deploy secret missing — pushes to main will FAIL at the deploy step until it is set."
+
+  # Advisory only — reports dead code / dependency drift, never blocks a PR.
+  #
+  # Why advisory rather than blocking: the codebase still carries 1,100+
+  # findings (511 unused exports + 577 unused exported types — mostly modules
+  # exporting symbols that only their own file (or a test) consumes, 10 unused
+  # files, a couple of unused devDependencies, 3 unlisted deps that resolve
+  # through the root install in practice, 10 duplicate exports). A blocking
+  # gate would be red on day one and get disabled; the point of this job is to
+  # surface NEW drift (a dependency nothing imports, a file left behind by a
+  # refactor) in the PR status block.
+  #
+  # `knip.json` records the intentional exclusions and the workspace layout
+  # (root + `api`, the latter being a separate nested package with its own
+  # lockfile). Run `npm run knip` locally to see the full list.
+  knip:
+    name: Dead code + dep drift (advisory)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci --no-fund
+      # knip resolves imports in api/ + worker/, which need api/node_modules to
+      # avoid spurious "unlisted dependency" findings from the root install.
+      - name: install api deps
+        working-directory: api
+        run: npm ci --legacy-peer-deps
+      - name: knip (advisory)
+        run: npm run knip || echo "::warning::knip findings (dead code / dep drift) — see the job log; tune knip.json if a finding is intentional."

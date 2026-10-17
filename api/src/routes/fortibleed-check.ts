@@ -6,13 +6,25 @@
  *
  * Detection method: HTTP response fingerprinting for FortiGate login pages
  * and SSL certificate analysis.
+ *
+ * Abuse-channel hardening (#301): this endpoint is an open port-scanner by
+ * design, so every layer that can bound its cost does:
+ *   - targets are SSRF-validated before any connection, and each fetch is
+ *     pinned + redirect-bounded via lib/ssrf-guard (a redirect could otherwise
+ *     walk the probe onto an internal host after the initial check);
+ *   - results are cached per target in the Cache API, so repeat scans of the
+ *     same host are served, not re-probed;
+ *   - the GET sits on the strict limiter bucket (lib/ratelimit.ts) and the
+ *     batch POST is behind the Turnstile capacity gate when it is enabled
+ *     (lib/turnstile.ts) — callers can always use an API key instead.
  */
 
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';
 import { badRequest } from '../lib/api-error';
-import { assertPublicHost } from '../lib/ssrf-guard';
+import { assertPublicHost, pinnedFetch, pinnedFetchFollow } from '../lib/ssrf-guard';
+import { cachedJson, routeCacheGet, routeCachePut } from '../lib/route-cache';
 
 interface FortiGateResult {
   target: string;
@@ -97,9 +109,13 @@ async function detectFortiGate(target: string): Promise<FortiGateResult> {
           ? baseUrl
           : `${target.startsWith('http') ? target.split('://')[0] : 'https'}://${target}:${port}`;
 
-      const res = await fetch(url, {
+      // Pinned + redirect-bounded (#301): `assertPublicHost` above validated
+      // the hostname once, but `redirect: 'follow'` would let the probed host
+      // (or anything it redirects through) walk this probe onto an internal
+      // address after that check. pinnedFetchFollow re-validates and re-pins
+      // every hop and caps the chain; the signal bounds the whole chain.
+      const res = await pinnedFetchFollow(url, {
         signal: AbortSignal.timeout(8000),
-        redirect: 'follow',
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; FortiBleed-Checker/1.0)' },
       });
 
@@ -184,9 +200,11 @@ async function detectFortiGate(target: string): Promise<FortiGateResult> {
 }
 
 async function fetchCertInfo(target: string, port: number): Promise<string | null> {
-  // Simple SSL check via fetch — in production would use TLS library
+  // Live TLS probe — pinned for the same reason as the port loop, and
+  // `manual` redirects: a certificate probe has no business following a
+  // redirect at all.
   try {
-    const res = await fetch(`https://${target}:${port}`, {
+    const res = await pinnedFetch(`https://${target}:${port}`, {
       signal: AbortSignal.timeout(5000),
       method: 'HEAD',
     });
@@ -197,18 +215,42 @@ async function fetchCertInfo(target: string, port: number): Promise<string | nul
   }
 }
 
+/**
+ * How long a completed scan is cached per target. FortiGate version banners
+ * and exposure do not change minute-to-minute; 15 minutes keeps the tool
+ * useful for follow-up clicks while bounding how often one target can make
+ * this platform egress probe it.
+ */
+const FORTIBLEED_CACHE_TTL_S = 900;
+
+/** Per-target cache key, shared between the single and batch handlers. */
+function fortibleedCacheKey(target: string): string {
+  return `fortibleed:check:${target.trim().toLowerCase()}`;
+}
+
 export async function fortibleedCheckHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
-  const target = c.req.query('target') || '';
+  const target = (c.req.query('target') || '').trim();
   if (!target) return badRequest(c, 'target parameter required');
 
-  const result = await detectFortiGate(target);
-  return c.json(result);
+  // Cache-first (#301): repeat scans of the same host are the expected pattern
+  // (a visitor re-checking a finding), and a cache hit spends none of the
+  // egress/subrequest budget that makes this endpoint an abuse channel.
+  return cachedJson(c, fortibleedCacheKey(target), FORTIBLEED_CACHE_TTL_S, () => detectFortiGate(target));
 }
 
 export async function fortibleedBatchHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const body = (await c.req.json()) as { targets: string[] };
   if (!body.targets?.length) return badRequest(c, 'targets array required');
 
-  const results = await Promise.all(body.targets.slice(0, 10).map((t) => detectFortiGate(t)));
+  const results = await Promise.all(
+    body.targets.slice(0, 10).map(async (t) => {
+      const key = fortibleedCacheKey(t);
+      const hit = await routeCacheGet<FortiGateResult>(key);
+      if (hit) return hit;
+      const result = await detectFortiGate(t);
+      c.executionCtx.waitUntil(routeCachePut(key, result, FORTIBLEED_CACHE_TTL_S));
+      return result;
+    })
+  );
   return c.json({ results, total: results.length });
 }
