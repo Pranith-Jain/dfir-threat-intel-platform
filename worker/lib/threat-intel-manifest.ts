@@ -578,6 +578,160 @@ export interface DphishIndicatorBody extends DphishIndexEntry {
   detection: boolean | null;
 }
 
+// ─── OffSeq Threat Radar (radar.offseq.com) ─────────────────────────────
+
+export type OffseqSeverity = 'critical' | 'high' | 'medium' | 'low' | 'unknown';
+
+export interface OffseqThreatIndexEntry {
+  slug: string;
+  externalId: string | null;
+  source: string | null;
+  type: string | null;
+  title: string | null;
+  severity: OffseqSeverity | null;
+  cvssScore: number | null;
+  publishedDate: string | null;
+  cveId: string | null;
+  cveIds: string[];
+  exploited: boolean;
+  knownExploitsInWild: boolean;
+  tags: string[];
+  url: string | null;
+  sizeBytes: number;
+}
+
+export interface OffseqThreatIndex {
+  source: string;
+  sourceUrl: string;
+  description: string;
+  license: string;
+  syncedAt: string;
+  days: number;
+  overview: Record<string, unknown> | null;
+  counts: {
+    threats: number;
+    exploited: number;
+    byType: Record<string, number>;
+    bySeverity: Record<string, number>;
+  };
+  tags: { name: string; count: number }[];
+  threats: OffseqThreatIndexEntry[];
+}
+
+export interface OffseqThreatBody extends OffseqThreatIndexEntry {
+  description: string | null;
+  cvssVector: string | null;
+  mirageCountries: string[];
+  patchAvailable: boolean;
+  knownThreatActors: string[];
+  affectedCountries: string[];
+  references: string[];
+  aiSummary: string | null;
+  aiImpact: string | null;
+}
+
+// ─── CTIWatch (ctiwatch.com) ───────────────────────────────────────────
+
+export interface CtiwatchIocEntry {
+  id: string | null;
+  type: string | null;
+  value: string | null;
+  confidence_score: number | null;
+  is_active: boolean;
+  first_seen: string | null;
+  last_seen: string | null;
+  tags: string[];
+  context: string | null;
+  source_name: string | null;
+  threat_actor: string | null;
+}
+
+export interface CtiwatchVulnEntry {
+  cve_id: string | null;
+  title: string | null;
+  severity: string | null;
+  cvss_score: number | null;
+  cvss_vector: string | null;
+  is_kev: boolean;
+  exploit_status: string | null;
+  published_date: string | null;
+  cwe: string[];
+  vendor: string | null;
+  product: string | null;
+  priority_score: number | null;
+  epss: number | null;
+  tags: string[];
+}
+
+export interface CtiwatchVictimEntry {
+  id: string | null;
+  name: string | null;
+  group: string | null;
+  country: string | null;
+  sector: string | null;
+  attack_date: string | null;
+  website: string | null;
+  source: string | null;
+}
+
+export interface CtiwatchActorEntry {
+  id: string | null;
+  name: string | null;
+  country: string | null;
+  aliases: string[];
+  motivation: string | null;
+  sophistication: string | null;
+  source: string | null;
+  active: boolean;
+  description: string | null;
+}
+
+export interface CtiwatchCampaignEntry {
+  id: string | null;
+  name: string | null;
+  type: string | null;
+  impact: string | null;
+  is_active: boolean;
+  started: string | null;
+  description: string | null;
+}
+
+export interface CtiwatchIndex {
+  source: string;
+  sourceUrl: string;
+  description: string;
+  license: string;
+  syncedAt: string;
+  stats: Record<string, unknown> | null;
+  victimStats: Record<string, unknown> | null;
+  counts: {
+    iocs: number;
+    vulnerabilities: number;
+    kev: number;
+    actors: number;
+    victims: number;
+    campaigns: number;
+  };
+  iocs: CtiwatchIocEntry[];
+  vulnerabilities: CtiwatchVulnEntry[];
+  kev: CtiwatchVulnEntry[];
+  actors: CtiwatchActorEntry[];
+  victims: CtiwatchVictimEntry[];
+  campaigns: CtiwatchCampaignEntry[];
+}
+
+export interface CtiwatchVulnBody extends CtiwatchVulnEntry {
+  description: string | null;
+  references: string[];
+  affected_products: unknown[];
+  sizeBytes: number;
+}
+
+export interface CtiwatchVictimBody extends CtiwatchVictimEntry {
+  description: string | null;
+  sizeBytes: number;
+}
+
 // ─── Destroylist (phishdestroy/destroylist) ────────────────────────────
 
 /** index.json emitted by scripts/build-destroylist.mjs. */
@@ -768,6 +922,13 @@ const tcVictimCache: BodyCache<TcVictimBody> = { map: new Map(), hits: 0, misses
 const tcEntityCache: BodyCache<TcEntityBody> = { map: new Map(), hits: 0, misses: 0 };
 const tiActorCache: BodyCache<TiThreaticonActorBody> = { map: new Map(), hits: 0, misses: 0 };
 const dphishBodyCache: BodyCache<DphishIndicatorBody> = { map: new Map(), hits: 0, misses: 0 };
+const offseqThreatCache: BodyCache<OffseqThreatBody> = { map: new Map(), hits: 0, misses: 0 };
+let cachedOffseqIndex: OffseqThreatIndex | null = null;
+let cachedOffseqIndexAt: number | null = null;
+const ctiwatchVulnCache: BodyCache<CtiwatchVulnBody> = { map: new Map(), hits: 0, misses: 0 };
+const ctiwatchVictimCache: BodyCache<CtiwatchVictimBody> = { map: new Map(), hits: 0, misses: 0 };
+let cachedCtiwatchIndex: CtiwatchIndex | null = null;
+let cachedCtiwatchIndexAt: number | null = null;
 const ltShardCache: BodyCache<LivingThreatIncidentBody[]> = { map: new Map(), hits: 0, misses: 0 };
 const maFeedCache: BodyCache<MaFeedEntry[]> = { map: new Map(), hits: 0, misses: 0 };
 let cachedIndex: TiIndex | null = null;
@@ -1124,6 +1285,124 @@ export async function getDphishIndicator(assets: Fetcher, slug: string): Promise
   );
   if (!body) return null;
   return recordHit(dphishBodyCache, key, body, MAX_BODY_CACHE);
+}
+
+// ─── OffSeq loaders ────────────────────────────────────────────────────
+
+export async function loadOffseqIndex(
+  assets: Fetcher,
+  opts: { forceRefresh?: boolean } = {}
+): Promise<OffseqThreatIndex> {
+  if (cachedOffseqIndex && !opts.forceRefresh) return cachedOffseqIndex;
+  const idx = await fetchJson<OffseqThreatIndex>(assets, `${DATA_PREFIX}/offseq/index.json`);
+  if (!idx) {
+    throw new Error(
+      `OffSeq manifest not found at ${DATA_PREFIX}/offseq/index.json — ` +
+        'did the build run? Run `node scripts/sync-offseq.mjs && node scripts/build-offseq.mjs`.'
+    );
+  }
+  cachedOffseqIndex = idx;
+  cachedOffseqIndexAt = Date.now();
+  return idx;
+}
+
+export async function getOffseqThreat(assets: Fetcher, slug: string): Promise<OffseqThreatBody | null> {
+  const key = slug.toLowerCase();
+  const hit = trackHit(offseqThreatCache, key);
+  if (hit) return hit;
+  const body = await fetchJson<OffseqThreatBody>(assets, `${DATA_PREFIX}/offseq/threats/${safeFilename(key)}.json`);
+  if (!body) return null;
+  return recordHit(offseqThreatCache, key, body, MAX_BODY_CACHE);
+}
+
+export interface TiListOffseqOptions {
+  type?: string;
+  severity?: string;
+  exploitedOnly?: boolean;
+  keyword?: string;
+  limit?: number;
+}
+
+export function filterOffseqThreats(idx: OffseqThreatIndex, opts: TiListOffseqOptions = {}): OffseqThreatIndexEntry[] {
+  const { type, severity, exploitedOnly, keyword, limit = 100 } = opts;
+  const needle = keyword?.toLowerCase();
+  const out: OffseqThreatIndexEntry[] = [];
+  for (const t of idx.threats) {
+    if (type && t.type !== type) continue;
+    if (severity && t.severity !== severity) continue;
+    if (exploitedOnly && !t.exploited) continue;
+    if (needle) {
+      const hay = `${t.title ?? ''} ${t.slug} ${t.cveId ?? ''} ${t.tags.join(' ')}`.toLowerCase();
+      if (!hay.includes(needle)) continue;
+    }
+    out.push(t);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+// ─── CTIWatch loaders ─────────────────────────────────────────────────
+
+export async function loadCtiwatchIndex(
+  assets: Fetcher,
+  opts: { forceRefresh?: boolean } = {}
+): Promise<CtiwatchIndex> {
+  if (cachedCtiwatchIndex && !opts.forceRefresh) return cachedCtiwatchIndex;
+  const idx = await fetchJson<CtiwatchIndex>(assets, `${DATA_PREFIX}/ctiwatch/index.json`);
+  if (!idx) {
+    throw new Error(
+      `CTIWatch manifest not found at ${DATA_PREFIX}/ctiwatch/index.json — ` +
+        'did the build run? Run `node scripts/sync-ctiwatch.mjs && node scripts/build-ctiwatch.mjs`.'
+    );
+  }
+  cachedCtiwatchIndex = idx;
+  cachedCtiwatchIndexAt = Date.now();
+  return idx;
+}
+
+export async function getCtiwatchVulnerability(assets: Fetcher, cveId: string): Promise<CtiwatchVulnBody | null> {
+  const key = cveId.toLowerCase();
+  const hit = trackHit(ctiwatchVulnCache, key);
+  if (hit) return hit;
+  const body = await fetchJson<CtiwatchVulnBody>(
+    assets,
+    `${DATA_PREFIX}/ctiwatch/vulnerabilities/${safeFilename(cveId)}.json`
+  );
+  if (!body) return null;
+  return recordHit(ctiwatchVulnCache, key, body, MAX_BODY_CACHE);
+}
+
+export async function getCtiwatchVictim(assets: Fetcher, id: string): Promise<CtiwatchVictimBody | null> {
+  const key = id.toLowerCase();
+  const hit = trackHit(ctiwatchVictimCache, key);
+  if (hit) return hit;
+  const body = await fetchJson<CtiwatchVictimBody>(assets, `${DATA_PREFIX}/ctiwatch/victims/${safeFilename(id)}.json`);
+  if (!body) return null;
+  return recordHit(ctiwatchVictimCache, key, body, MAX_BODY_CACHE);
+}
+
+export interface TiListCtiwatchVulnsOptions {
+  kevOnly?: boolean;
+  severity?: string;
+  keyword?: string;
+  limit?: number;
+}
+
+export function filterCtiwatchVulns(idx: CtiwatchIndex, opts: TiListCtiwatchVulnsOptions = {}): CtiwatchVulnEntry[] {
+  const { kevOnly, severity, keyword, limit = 100 } = opts;
+  const needle = keyword?.toLowerCase();
+  const out: CtiwatchVulnEntry[] = [];
+  const list = kevOnly ? idx.kev : idx.vulnerabilities;
+  for (const v of list) {
+    if (severity && (v.severity ?? '').toUpperCase() !== severity.toUpperCase()) continue;
+    if (needle) {
+      const hay = `${v.cve_id ?? ''} ${v.title ?? ''} ${v.tags.join(' ')}`.toLowerCase();
+      if (!hay.includes(needle)) continue;
+    }
+    out.push(v);
+    if (out.length >= limit) break;
+  }
+  return out;
 }
 
 // ─── Destroylist loaders ──────────────────────────────────────────────
@@ -1834,6 +2113,17 @@ export function tiCacheStats(): {
     indexAgeMs: number | null;
     bodies: { size: number; hits: number; misses: number };
   };
+  offseq: {
+    indexLoaded: boolean;
+    indexAgeMs: number | null;
+    threats: { size: number; hits: number; misses: number };
+  };
+  ctiwatch: {
+    indexLoaded: boolean;
+    indexAgeMs: number | null;
+    vulns: { size: number; hits: number; misses: number };
+    victims: { size: number; hits: number; misses: number };
+  };
   destroylist: {
     indexLoaded: boolean;
     indexAgeMs: number | null;
@@ -1894,6 +2184,21 @@ export function tiCacheStats(): {
       indexLoaded: cachedDphishIndex !== null,
       indexAgeMs: cachedDphishIndexAt ? Date.now() - cachedDphishIndexAt : null,
       bodies: { size: dphishBodyCache.map.size, hits: dphishBodyCache.hits, misses: dphishBodyCache.misses },
+    },
+    offseq: {
+      indexLoaded: cachedOffseqIndex !== null,
+      indexAgeMs: cachedOffseqIndexAt ? Date.now() - cachedOffseqIndexAt : null,
+      threats: { size: offseqThreatCache.map.size, hits: offseqThreatCache.hits, misses: offseqThreatCache.misses },
+    },
+    ctiwatch: {
+      indexLoaded: cachedCtiwatchIndex !== null,
+      indexAgeMs: cachedCtiwatchIndexAt ? Date.now() - cachedCtiwatchIndexAt : null,
+      vulns: { size: ctiwatchVulnCache.map.size, hits: ctiwatchVulnCache.hits, misses: ctiwatchVulnCache.misses },
+      victims: {
+        size: ctiwatchVictimCache.map.size,
+        hits: ctiwatchVictimCache.hits,
+        misses: ctiwatchVictimCache.misses,
+      },
     },
     destroylist: {
       indexLoaded: cachedDestroylistIndex !== null,
@@ -1963,6 +2268,16 @@ export function _resetTiCacheForTests(): void {
   dphishBodyCache.hits = dphishBodyCache.misses = 0;
   cachedDphishIndex = null;
   cachedDphishIndexAt = null;
+  offseqThreatCache.map.clear();
+  offseqThreatCache.hits = offseqThreatCache.misses = 0;
+  cachedOffseqIndex = null;
+  cachedOffseqIndexAt = null;
+  ctiwatchVulnCache.map.clear();
+  ctiwatchVictimCache.map.clear();
+  ctiwatchVulnCache.hits = ctiwatchVulnCache.misses = 0;
+  ctiwatchVictimCache.hits = ctiwatchVictimCache.misses = 0;
+  cachedCtiwatchIndex = null;
+  cachedCtiwatchIndexAt = null;
   destroylistBucketCache.map.clear();
   destroylistBucketCache.hits = destroylistBucketCache.misses = 0;
   cachedDestroylistIndex = null;

@@ -49,6 +49,8 @@ import {
   filterDphishIndicators,
   filterLists,
   filterLivingThreatIncidents,
+  filterCtiwatchVulns,
+  filterOffseqThreats,
   filterMaFeed,
   filterTcClusters,
   filterTcEntities,
@@ -61,6 +63,9 @@ import {
   getDarknetCategory,
   getDarknetSite,
   getDphishIndicator,
+  getCtiwatchVulnerability,
+  getCtiwatchVictim,
+  getOffseqThreat,
   getLivingThreatIncident,
   getMaFeed,
   getTcCluster,
@@ -78,6 +83,8 @@ import {
   loadKevSnapshot,
   loadLivingThreatIndex,
   loadMaIndex,
+  loadCtiwatchIndex,
+  loadOffseqIndex,
   loadTcEntities,
   loadTcIocs,
   loadTcMispEvents,
@@ -896,6 +903,129 @@ export async function registerTiManifestsTools(h: McpToolHost): Promise<void> {
           error: 'dphish_indicator_not_found',
           slug,
           hint: 'Call ti_list_dphish to see available indicator slugs.',
+        });
+      }
+      return untrustedToolResult(body);
+    }
+  );
+
+  // ── OffSeq Threat Radar (radar.offseq.com) ─────────────────────
+  // Aggregated threat feed with AI-enriched summaries, KEV correlation
+  // and Mirage honeypot exploitation telemetry. Data ships in
+  // public/data/threat-intel/offseq/.
+
+  h.tools(
+    'ti_list_offseq_threats',
+    'List recent threats from the OffSeq Threat Radar (radar.offseq.com): AI-enriched threat records across ~40 upstream sources (CVEs, malware, breaches, security news) with severity, CVSS, KEV/exploitation telemetry (Mirage honeypot), tags, and CVE ids. Filter by type, severity, exploited-only, or keyword. Use ti_get_offseq_threat for the full body (AI summary, impact, references, affected countries).',
+    {
+      type: z
+        .string()
+        .optional()
+        .describe('Filter by threat type (e.g. "vulnerability", "malware", "breach", "security-news")'),
+      severity: z.string().optional().describe('Filter by severity (critical, high, medium, low)'),
+      exploited: z.boolean().optional().describe('Only threats with observed in-the-wild exploitation'),
+      keyword: z.string().optional().describe('Case-insensitive substring match against title / CVE id / tags'),
+      limit: z.number().int().min(1).max(500).optional().describe('Max threats to return (default 50)'),
+    },
+    async ({ type, severity, exploited, keyword, limit }) => {
+      const idx = await loadOffseqIndex(ASSETS);
+      const threats = filterOffseqThreats(idx, {
+        type,
+        severity,
+        exploitedOnly: exploited,
+        keyword,
+        limit: limit ?? 50,
+      });
+      return untrustedToolResult({
+        source: idx.source,
+        sourceUrl: idx.sourceUrl,
+        syncedAt: idx.syncedAt,
+        counts: idx.counts,
+        returned: threats.length,
+        threats,
+      });
+    }
+  );
+
+  h.tools(
+    'ti_get_offseq_threat',
+    'Return the full OffSeq threat body for one slug: title, description, severity, CVSS, CVE ids, AI-generated summary and impact, Mirage exploitation telemetry (countries), patch availability, known threat actors, affected countries, references, and tags. Use ti_list_offseq_threats to discover slugs.',
+    {
+      slug: z.string().describe('Threat slug (lowercased). Get these from ti_list_offseq_threats.'),
+    },
+    async ({ slug }) => {
+      const body = await getOffseqThreat(ASSETS, slug);
+      if (!body) {
+        return untrustedToolResult({
+          error: 'offseq_threat_not_found',
+          slug,
+          hint: 'Call ti_list_offseq_threats to see available slugs.',
+        });
+      }
+      return untrustedToolResult(body);
+    }
+  );
+
+  // ── CTIWatch (ctiwatch.com) ────────────────────────────────────
+  // Public vulnerability + IOC database (2M+ IOCs, 400k+ CVEs, 4k+ KEV,
+  // 10k+ threat actors, 35k+ victims). Data ships in
+  // public/data/threat-intel/ctiwatch/.
+
+  h.tools(
+    'ti_list_ctiwatch_vulns',
+    'List recent CVEs from CTIWatch (ctiwatch.com): CVE id, title, severity, CVSS, KEV flag, exploit status, published date, CWEs, vendor/product, priority score, and EPSS. Filter by KEV-only, severity, or keyword. Use ti_get_ctiwatch_vuln for the full body (description, references, affected products).',
+    {
+      kevOnly: z.boolean().optional().describe('Only KEV-listed CVEs'),
+      severity: z.string().optional().describe('Filter by severity (CRITICAL, HIGH, MEDIUM, LOW)'),
+      keyword: z.string().optional().describe('Case-insensitive substring match against CVE id / title / tags'),
+      limit: z.number().int().min(1).max(500).optional().describe('Max CVEs to return (default 50)'),
+    },
+    async ({ kevOnly, severity, keyword, limit }) => {
+      const idx = await loadCtiwatchIndex(ASSETS);
+      const vulns = filterCtiwatchVulns(idx, { kevOnly, severity, keyword, limit: limit ?? 50 });
+      return untrustedToolResult({
+        source: idx.source,
+        sourceUrl: idx.sourceUrl,
+        syncedAt: idx.syncedAt,
+        counts: idx.counts,
+        returned: vulns.length,
+        vulnerabilities: vulns,
+      });
+    }
+  );
+
+  h.tools(
+    'ti_get_ctiwatch_vuln',
+    'Return the full CTIWatch vulnerability body for one CVE id: title, description, severity, CVSS, KEV flag, exploit status, published date, CWEs, vendor/product, priority score, EPSS, references, and affected products. Use ti_list_ctiwatch_vulns to discover CVE ids.',
+    {
+      cveId: z.string().describe('CVE id (e.g. "CVE-2026-1234"). Get these from ti_list_ctiwatch_vulns.'),
+    },
+    async ({ cveId }) => {
+      const body = await getCtiwatchVulnerability(ASSETS, cveId);
+      if (!body) {
+        return untrustedToolResult({
+          error: 'ctiwatch_vuln_not_found',
+          cveId,
+          hint: 'Call ti_list_ctiwatch_vulns to see available CVE ids.',
+        });
+      }
+      return untrustedToolResult(body);
+    }
+  );
+
+  h.tools(
+    'ti_get_ctiwatch_victim',
+    'Return the full CTIWatch victim record for one id: name, group, country, sector, attack date, website, and description. Use the CTIWatch index (ti_list is not paginated for victims — fetch /api/v1/threat-intel/ctiwatch and read .victims).',
+    {
+      id: z.string().describe('Victim id (UUID). Get these from the ctiwatch index .victims array.'),
+    },
+    async ({ id }) => {
+      const body = await getCtiwatchVictim(ASSETS, id);
+      if (!body) {
+        return untrustedToolResult({
+          error: 'ctiwatch_victim_not_found',
+          id,
+          hint: 'Fetch /api/v1/threat-intel/ctiwatch and read .victims for available ids.',
         });
       }
       return untrustedToolResult(body);

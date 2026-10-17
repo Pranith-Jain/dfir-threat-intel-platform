@@ -333,6 +333,16 @@ export const SOURCE_RELIABILITY_REGISTRY: Record<string, SourceReliabilityEntry>
     // of NVD-sourced data rather than a primary disclosure venue. B, not A.
     known_bias: 'Anonymous scope caps at offset=1000; unknown query params are silently ignored upstream',
   },
+  'offseq-radar': {
+    id: 'offseq-radar',
+    name: 'OffSeq Threat Radar',
+    reliability: 'B',
+    category: 'secondary',
+    description:
+      'Aggregated threat-intel feed (~40 upstream sources) with AI-enriched summaries, KEV correlation and Mirage honeypot exploitation telemetry (150k+ unique threats)',
+    known_bias:
+      'Aggregator of third-party feeds; AI summaries are generated rather than primary disclosure; anonymous tier limited to ~100 req/window',
+  },
   cvedetector: {
     id: 'cvedetector',
     name: 'CVE Detector (Telegram)',

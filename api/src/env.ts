@@ -99,6 +99,21 @@ export interface Env {
    *  Set via `wrangler secret put BRIEFINGS_ADMIN_TOKEN`. Optional — when
    *  unset, the briefings admin handlers return 404. */
   BRIEFINGS_ADMIN_TOKEN?: string;
+  /** Turnstile widget secret. Set via `wrangler secret put TURNSTILE_SECRET`.
+   *  Optional and deliberately fail-open-when-absent: until it is set the
+   *  bot-challenge gate in lib/turnstile.ts is a no-op and the site behaves
+   *  exactly as before. Once set, keyless MUTATIONS on the shared-state routes
+   *  must carry a verified `cf-turnstile-response` token — see lib/turnstile.ts
+   *  for why the header-based same-origin grant is not an authorization proof. */
+  TURNSTILE_SECRET?: string;
+  /** Turnstile site key (public — served to the browser via /api/v1/features
+   *  and rendered into every widget). Optional; when absent the frontend never
+   *  loads the Turnstile script and sends no token. */
+  TURNSTILE_SITE_KEY?: string;
+  /** Comma-separated hostnames siteverify results must match, e.g.
+   *  `pranithjain.qzz.io,www.pranithjain.qzz.io`. Empty = don't check the
+   *  hostname (still requires `success === true`). */
+  TURNSTILE_HOSTNAMES?: string;
   /** ransomware.live PRO API key (set via `wrangler secret put`). Optional —
    *  the /api/v1/rl/* proxy degrades to 503 when unset. */
   RANSOMWARELIVE_API_KEY?: string;
@@ -270,6 +285,11 @@ export interface Env {
    *  A free key lifts the pagination ceiling entirely, which matters on a
    *  heavy patch day where a 24h window exceeds 1000 CVEs. */
   CTIWATCH_API_KEY?: string;
+  /** OffSeq Threat Radar API key (optional). Anonymous access works for the
+   *  public /api/threats endpoints; a key lifts the ~100 req/window ceiling
+   *  and unlocks the documented /api/v1 tier. Set via
+   *  `wrangler secret put OFFSEQ_API_KEY`. */
+  OFFSEQ_API_KEY?: string;
   /** VulnTracker API key for the full /all-cves feed. Optional — see
    *  api/src/lib/vulntracker.ts. The digest-only endpoints need no key, so
    *  this only unlocks the complete per-CVE list. */

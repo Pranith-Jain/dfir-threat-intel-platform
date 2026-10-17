@@ -225,7 +225,7 @@ export const PROBE_SOURCES: Record<string, string[]> = {
   'cve-recent': ['nvd', 'cisa-kev', 'dbugs', 'exploitgrid'],
   // The 24h digest is anchored on ctiwatch (B) with VulnTracker volume for
   // context — best-evidence-wins keeps it at B.
-  'cve-digest': ['ctiwatch', 'vulntracker'],
+  'cve-digest': ['ctiwatch', 'vulntracker', 'offseq-radar'],
   'cve-trends': ['cvemon'],
   'malware-samples': ['abusech-malwarebazaar'],
   'ransomware-recent': ['ransomlook'],
@@ -359,7 +359,7 @@ export const PROBES: FeedProbeSpec[] = [
             : ctw?.ok === false
               ? 'CTIWatch unreachable (session mint failed)'
               : 'no CVEs in window or cache cold',
-        metrics: { count },
+        metrics: { count, offseq_count: intField(body, 'offseq_count') ?? 0 },
         ageS,
       };
     },

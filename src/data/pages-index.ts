@@ -3411,6 +3411,24 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     keywords: ['dphish', 'phishing', 'taxii', 'stix', 'domain', 'url', 'ioc', 'indicator', 'attachment', 'feed'],
   },
   {
+    path: '/threatintel/feeds/offseq',
+    label: 'OffSeq Threat Radar',
+    description:
+      'Aggregated threat-intel feed from radar.offseq.com - ~40 upstream sources, AI-enriched summaries, KEV correlation, and Mirage honeypot exploitation telemetry, with severity, CVSS, CVE ids, and tags.',
+    sectionLabel: 'Threat Intel · Feeds',
+    group: 'threatintel',
+    keywords: ['offseq', 'radar', 'threat', 'feed', 'cve', 'kev', 'ai', 'exploitation', 'mirage', 'malware', 'breach'],
+  },
+  {
+    path: '/threatintel/feeds/ctiwatch',
+    label: 'CTIWatch',
+    description:
+      'CTIWatch public threat-intel database - 2M+ IOCs with confidence scoring, 400k+ CVEs, 4k+ KEV, 10k+ threat actors, 35k+ ransomware victims, and active campaigns, with source attribution.',
+    sectionLabel: 'Threat Intel · Feeds',
+    group: 'threatintel',
+    keywords: ['ctiwatch', 'ioc', 'cve', 'kev', 'threat actor', 'victim', 'ransomware', 'campaign', 'feed'],
+  },
+  {
     path: '/threatintel/feeds/destroylist',
     label: 'Destroylist Blacklist',
     description:

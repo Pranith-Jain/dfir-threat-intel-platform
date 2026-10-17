@@ -1,0 +1,50 @@
+{
+  "slug": "prior-to-1383-downloadevents-manually-wraps-a-monitor-name-value-in-single-quote-4dba65",
+  "externalId": "gcve-osv-ghsa-v9cj-6fp2-33q4",
+  "source": "GCVE Database",
+  "type": "vulnerability",
+  "title": "Prior to 1.38.3, downloadEvents() manually wraps a monitor Name value in single quotes instead of using escapeshellarg() before placing it in shell… (CVE-2026-102608)",
+  "description": "ZoneMinder versions prior to 1.38.3 contain a command injection vulnerability in the downloadEvents() function. This occurs because the monitor Name value is manually wrapped in single quotes instead of using a proper escaping function before being used in shell commands. An attacker with monitor-create or monitor-edit permissions can store a monitor Name containing shell metacharacters, which can then be exploited by a user with Events View permission exporting events. This allows arbitrary command execution as the web server user. The issue is fixed in version 1.38.3.",
+  "severity": "critical",
+  "cvssScore": 9,
+  "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:H/I:H/A:H",
+  "publishedDate": "2026-10-16T21:32:59.000Z",
+  "cveId": "CVE-2026-102608",
+  "cveIds": ["CVE-2026-102608"],
+  "tags": ["gcve", "osv", "ghsa-v9cj-6fp2-33q4", "cve-2026-102608", "ghsa"],
+  "knownExploitsInWild": false,
+  "exploited": false,
+  "mirageCountries": [],
+  "patchAvailable": false,
+  "knownThreatActors": [],
+  "affectedCountries": [],
+  "references": [
+    {
+      "title": "",
+      "url": "https://github.com/ZoneMinder/zoneminder/security/advisories/GHSA-88m4-hrgp-m9v3",
+      "type": "other"
+    },
+    { "title": "", "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-102608", "type": "advisory" },
+    {
+      "title": "",
+      "url": "https://github.com/ZoneMinder/zoneminder/commit/2de2ae44a1d751bad4b020c5573b2d58c59c1525",
+      "type": "other"
+    },
+    {
+      "title": "",
+      "url": "https://github.com/ZoneMinder/zoneminder/commit/b3a7c05f079c87badf4b0ce052da0acfd4047a4b",
+      "type": "other"
+    },
+    {
+      "title": "",
+      "url": "https://github.com/ZoneMinder/zoneminder/commit/b5605e01c14354fc8e2dcae8cefd90c3674880d9",
+      "type": "other"
+    },
+    { "title": "", "url": "https://github.com/ZoneMinder/zoneminder/releases/tag/1.38.3", "type": "other" },
+    { "title": "", "url": "https://www.scriptkittens.com/blog/two-sinks-one-shell", "type": "other" }
+  ],
+  "url": "https://radar.offseq.com/threats/prior-to-1383-downloadevents-manually-wraps-a-monitor-name-value-in-single-quote-4dba65",
+  "aiSummary": "ZoneMinder before version 1.38.3 has a command injection vulnerability (CVE-2026-102608) in the downloadEvents() function. The vulnerability arises because the monitor Name value is manually wrapped in single quotes rather than properly escaped using escapeshellarg() before being incorporated into shell commands. This flaw allows an attacker who can create or edit monitors to inject shell metacharacters into the monitor Name. When a user with Events View permission exports events for that monitor, the crafted Name value is passed to both ffmpeg concatenation and archive commands (tar or zip), breaking out of the manual quoting and enabling arbitrary command execution with the privileges of the web server user. The vulnerability is addressed in ZoneMinder version 1.38.3.",
+  "aiImpact": "Successful exploitation allows an attacker with limited permissions (monitor-create or monitor-edit) to execute arbitrary shell commands as the web server user when another user with Events View permission exports events. This can lead to full compromise of the web server environment, including confidentiality, integrity, and availability impacts as indicated by the CVSS score of 9.0 (critical).",
+  "sizeBytes": 3480
+}

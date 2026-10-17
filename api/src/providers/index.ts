@@ -1,5 +1,5 @@
 import type { ProviderId, ProviderAdapter, ProviderEnv } from './types';
-import { PROVIDER_SUPPORT, PROVIDER_TIMEOUT_MS, PROVIDER_TIER } from './types';
+import { PROVIDER_SUPPORT, PROVIDER_TIMEOUT_MS, PROVIDER_TIER, providerTimeoutMs } from './types';
 import { virustotal } from './virustotal';
 import { abuseipdb } from './abuseipdb';
 import { shodan } from './shodan';
@@ -68,8 +68,9 @@ import { destroylist } from './destroylist';
 import { stalkphish } from './stalkphish';
 import { apivoid } from './apivoid';
 import { metadefender } from './metadefender';
+import { ctiwatch } from './ctiwatch';
 
-export { PROVIDER_SUPPORT, PROVIDER_TIMEOUT_MS, PROVIDER_TIER };
+export { PROVIDER_SUPPORT, PROVIDER_TIMEOUT_MS, PROVIDER_TIER, providerTimeoutMs };
 
 export const ADAPTERS: Record<ProviderId, ProviderAdapter> = {
   virustotal,
@@ -140,6 +141,7 @@ export const ADAPTERS: Record<ProviderId, ProviderAdapter> = {
   stalkphish,
   apivoid,
   metadefender,
+  ctiwatch,
 };
 
 /**
@@ -225,6 +227,7 @@ export const PROVIDER_LABELS: Record<string, string> = {
   stalkphish: 'StalkPhish',
   apivoid: 'APIVoid',
   metadefender: 'MetaDefender',
+  ctiwatch: 'CTIWatch',
 };
 
 export function buildProviderEnv(env: {
@@ -256,6 +259,7 @@ export function buildProviderEnv(env: {
   STALKPHISH_API_KEY?: string;
   APIVOID_API_KEY?: string;
   METADEFENDER_API_KEY?: string;
+  CTIWATCH_API_KEY?: string;
   ASSETS?: Fetcher;
 }): ProviderEnv {
   return {
@@ -287,6 +291,7 @@ export function buildProviderEnv(env: {
     STALKPHISH_API_KEY: env.STALKPHISH_API_KEY,
     APIVOID_API_KEY: env.APIVOID_API_KEY,
     METADEFENDER_API_KEY: env.METADEFENDER_API_KEY,
+    CTIWATCH_API_KEY: env.CTIWATCH_API_KEY,
     ASSETS: env.ASSETS,
   };
 }

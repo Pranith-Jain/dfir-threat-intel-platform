@@ -32,6 +32,7 @@ export const WEIGHTS: Record<IndicatorType, Partial<Record<ProviderId, number>>>
     dshield: 3,
     dphish: 3,
     destroylist: 3,
+    ctiwatch: 3,
   },
   ipv6: {
     maltiverse: 4,
@@ -60,6 +61,7 @@ export const WEIGHTS: Record<IndicatorType, Partial<Record<ProviderId, number>>>
     dshield: 3,
     dphish: 3,
     destroylist: 3,
+    ctiwatch: 3,
   },
   domain: {
     maltiverse: 4,
@@ -79,6 +81,7 @@ export const WEIGHTS: Record<IndicatorType, Partial<Record<ProviderId, number>>>
     kaspersky: 3,
     dphish: 4,
     destroylist: 4,
+    ctiwatch: 3,
   },
   url: {
     maltiverse: 4,
@@ -95,6 +98,7 @@ export const WEIGHTS: Record<IndicatorType, Partial<Record<ProviderId, number>>>
     kaspersky: 3,
     dphish: 4,
     destroylist: 4,
+    ctiwatch: 3,
   },
   hash: {
     maltiverse: 4,
@@ -107,8 +111,9 @@ export const WEIGHTS: Record<IndicatorType, Partial<Record<ProviderId, number>>>
     hashlookup: 3,
     tweetfeed: 2,
     kaspersky: 4,
+    ctiwatch: 3,
   },
-  email: { maltiverse: 2, otx: 1, virustotal: 1, emailrep: 4, stopforumspam: 2 },
+  email: { maltiverse: 2, otx: 1, virustotal: 1, emailrep: 4, stopforumspam: 2, ctiwatch: 2 },
   cve: {},
   unknown: {},
 };

@@ -2,7 +2,7 @@
   "$schema": "https://modelcontextprotocol.io/schemas/manifest/v1.json",
   "name": "DFIR-ThreatIntel-MCP",
   "version": "1.0.0",
-  "description": "DFIR + Threat Intel MCP server. 418 tools across IOC check, CVE/KEV, actor enrichment, domain/ASN/WHOIS pivots, ransomware + breach monitoring, phishing analysis, supply-chain attacks, YARA/Sigma authoring, MITRE ATT&CK extraction, Hudson Rock infostealer search, passive DNS, IOC watchlists, investigation notebooks, shift handover, prompt vault, and the full SCStelz/security-investigator playbook library (KQL queries, skills, automations, knowledge-base docs).",
+  "description": "DFIR + Threat Intel MCP server. 423 tools across IOC check, CVE/KEV, actor enrichment, domain/ASN/WHOIS pivots, ransomware + breach monitoring, phishing analysis, supply-chain attacks, YARA/Sigma authoring, MITRE ATT&CK extraction, Hudson Rock infostealer search, passive DNS, IOC watchlists, investigation notebooks, shift handover, prompt vault, and the full SCStelz/security-investigator playbook library (KQL queries, skills, automations, knowledge-base docs).",
   "transport": "streamable-http",
   "endpoint": "https://pranithjain.qzz.io/api/mcp",
   "auth": {
@@ -16,7 +16,7 @@
       "listChanged": false
     }
   },
-  "toolCount": 418,
+  "toolCount": 423,
   "generatedAt": "2026-10-02T03:15:26+05:30",
   "tools": [
     {
@@ -1685,6 +1685,16 @@
       "category": "other"
     },
     {
+      "name": "ti_get_ctiwatch_victim",
+      "description": "Return the full CTIWatch victim record for one id: name, group, country, sector, attack date, website, and description. Use the CTIWatch index (ti_list is not paginated for victims — fetch /api/v1/threat-intel/ctiwatch and read .victims).",
+      "category": "other"
+    },
+    {
+      "name": "ti_get_ctiwatch_vuln",
+      "description": "Return the full CTIWatch vulnerability body for one CVE id: title, description, severity, CVSS, KEV flag, exploit status, published date, CWEs, vendor/product, priority score, EPSS, references, and affected products. Use ti_list_ctiwatch_vulns to discover CVE ids.",
+      "category": "other"
+    },
+    {
       "name": "ti_get_cve",
       "description": "Return the full CVE body with CVSS vector, CWE IDs, references, and (where populated) BSI description and LLM summary/recommended action. Use ti_list_cves first to discover CVE IDs.",
       "category": "other"
@@ -1720,8 +1730,18 @@
       "category": "other"
     },
     {
+      "name": "ti_get_offseq_threat",
+      "description": "Return the full OffSeq threat body for one slug: title, description, severity, CVSS, CVE ids, AI-generated summary and impact, Mirage exploitation telemetry (countries), patch availability, known threat actors, affected countries, references, and tags. Use ti_list_offseq_threats to discover slugs.",
+      "category": "other"
+    },
+    {
       "name": "ti_get_threaticon_actor",
       "description": "Return the full Threaticon actor profile: executive summary, key capabilities, goals & targeting, MITRE ATT&CK tactics and techniques (T-numbers), software/tooling, IOC patterns, recommended actions, campaigns & victims, targeted sectors and countries, aliases, and confidence. Use ti_list_threaticon_actors to discover slugs.",
+      "category": "other"
+    },
+    {
+      "name": "ti_list_ctiwatch_vulns",
+      "description": "List recent CVEs from CTIWatch (ctiwatch.com): CVE id, title, severity, CVSS, KEV flag, exploit status, published date, CWEs, vendor/product, priority score, and EPSS. Filter by KEV-only, severity, or keyword. Use ti_get_ctiwatch_vuln for the full body (description, references, affected products).",
       "category": "other"
     },
     {
@@ -1762,6 +1782,11 @@
     {
       "name": "ti_list_malwareanalyzer",
       "description": "List URL entries from the MalwareAnalyzer by Cyble public feeds (malwareanalyzer.com): verdict=malicious URLs (live malicious feed) or newly-observed scans. Each entry has url, hostname, apex, verdict, score, brands, categories, and scan time. Filter by verdict, category, or keyword. For per-IOC intelligence on any indicator, call ti_malwareanalyzer_lookup.",
+      "category": "other"
+    },
+    {
+      "name": "ti_list_offseq_threats",
+      "description": "List recent threats from the OffSeq Threat Radar (radar.offseq.com): AI-enriched threat records across ~40 upstream sources (CVEs, malware, breaches, security news) with severity, CVSS, KEV/exploitation telemetry (Mirage honeypot), tags, and CVE ids. Filter by type, severity, exploited-only, or keyword. Use ti_get_offseq_threat for the full body (AI summary, impact, references, affected countries).",
       "category": "other"
     },
     {

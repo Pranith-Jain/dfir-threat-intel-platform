@@ -68,7 +68,8 @@ export type ProviderId =
   | 'destroylist'
   | 'stalkphish'
   | 'apivoid'
-  | 'metadefender';
+  | 'metadefender'
+  | 'ctiwatch';
 
 export type Verdict = 'clean' | 'suspicious' | 'malicious' | 'unknown';
 
@@ -176,6 +177,11 @@ export interface ProviderEnv {
    *  daily limits). Powers the `metadefender` hash reputation provider;
    *  degrades to 'unsupported' when unset. */
   METADEFENDER_API_KEY?: string;
+  /** CTIWatch API key (free at ctiwatch.com/settings/api-keys; format
+   *  `ctw_` + 64 hex). Optional — the `ctiwatch` IOC provider mints an
+   *  anonymous session cookie when unset (see api/src/lib/ctiwatch.ts), so
+   *  lookups work without it; a key lifts the anonymous request/row quotas. */
+  CTIWATCH_API_KEY?: string;
   /** Static ASSETS binding (Worker) — used by the `dphish` provider to read
    *  the replicated dPhish indicator manifest (public/data/threat-intel/dphish/)
    *  with zero network egress. Optional so provider unit tests compile without
@@ -189,6 +195,22 @@ export type ProviderAdapter = (indicator: Indicator, env: ProviderEnv, signal: A
 // of OTX timeouts on free-tier lookups. Providers run in parallel, so this
 // only delays the response if EVERY provider is slow.
 export const PROVIDER_TIMEOUT_MS = 8000;
+
+/**
+ * Per-provider timeout overrides for upstreams that are simply slower than
+ * the shared budget. Webamon's search index answers in 10–15s on cold
+ * queries, so at 8s every enrichment call aborted before the result
+ * arrived and the provider reported `error` for every domain. Providers run
+ * in parallel, so a single override does not slow anything else down.
+ */
+export const PROVIDER_TIMEOUT_OVERRIDES: Partial<Record<ProviderId, number>> = {
+  webamon: 20_000,
+};
+
+/** Timeout for one provider, honoring {@link PROVIDER_TIMEOUT_OVERRIDES}. */
+export function providerTimeoutMs(id: ProviderId): number {
+  return PROVIDER_TIMEOUT_OVERRIDES[id] ?? PROVIDER_TIMEOUT_MS;
+}
 
 /** Which indicator types each provider supports. Used by the route to skip unsupported. */
 export const PROVIDER_SUPPORT: Record<ProviderId, IndicatorType[]> = {
@@ -260,6 +282,7 @@ export const PROVIDER_SUPPORT: Record<ProviderId, IndicatorType[]> = {
   stalkphish: ['url', 'domain', 'ipv4'],
   apivoid: ['ipv4', 'ipv6', 'domain', 'url'],
   metadefender: ['hash'],
+  ctiwatch: ['ipv4', 'ipv6', 'domain', 'url', 'hash', 'email'],
 };
 
 /**
@@ -344,4 +367,9 @@ export const PROVIDER_TIER: Record<ProviderId, ProviderTier> = {
   // daily community limits). Same gating as stalkphish.
   apivoid: 2,
   metadefender: 2,
+  // Tier 1: the IOC database behind the CVE digest's upstream (~96
+  // aggregated collection sources, confidence-graded). One session-cached
+  // lookup per check, result-cached by the shared batched KV, so it always
+  // runs rather than waiting for tier-2 corroboration.
+  ctiwatch: 1,
 };

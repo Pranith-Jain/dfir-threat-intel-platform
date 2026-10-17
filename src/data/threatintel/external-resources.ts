@@ -1045,6 +1045,24 @@ export const RESOURCES: ExternalResource[] = [
       "Phishing URL statistics and reputation data. Score, first/last seen, target brand, hosting country. Free API, no authentication required. Integrated into this platform's IOC checker.",
   },
   {
+    id: 'offseq-radar',
+    name: 'OffSeq Threat Radar',
+    url: 'https://radar.offseq.com/',
+    kind: 'dashboard',
+    tags: ['threat-intel', 'vulnerability', 'ai-security', 'osint'],
+    description:
+      "Aggregated threat-intel feed (~40 upstream sources) with AI-enriched summaries, KEV correlation and Mirage honeypot exploitation telemetry. Free public API; integrated into this platform's 24h CVE digest and as a replicated threat feed vertical.",
+  },
+  {
+    id: 'ctiwatch',
+    name: 'CTIWatch',
+    url: 'https://ctiwatch.com/',
+    kind: 'dashboard',
+    tags: ['threat-intel', 'vulnerability', 'osint', 'dfir'],
+    description:
+      "Public vulnerability + IOC database (2M+ IOCs, 400k+ CVEs, 4k+ KEV, 10k+ threat actors). Free anonymous API with session bootstrap; integrated into this platform's IOC checker and as a replicated threat feed vertical.",
+  },
+  {
     id: 'digitalside-intel',
     name: 'Digital Side Threat Intel',
     url: 'https://github.com/davidonzo/Threat-Intel',

@@ -241,6 +241,8 @@ const UnifiedKillChain = lazy(() => import('./pages/threatintel/UnifiedKillChain
 const ThreatClusterFeeds = lazy(() => import('./pages/threatintel/ThreatCluster'));
 const ThreaticonFeeds = lazy(() => import('./pages/threatintel/Threaticon'));
 const DphishFeeds = lazy(() => import('./pages/threatintel/Dphish'));
+const OffseqFeeds = lazy(() => import('./pages/threatintel/Offseq'));
+const CtiwatchFeeds = lazy(() => import('./pages/threatintel/Ctiwatch'));
 const DestroylistFeeds = lazy(() => import('./pages/threatintel/Destroylist'));
 const LivingThreatFeeds = lazy(() => import('./pages/threatintel/LivingThreat'));
 const MalwareAnalyzerFeeds = lazy(() => import('./pages/threatintel/MalwareAnalyzer'));
@@ -597,6 +599,8 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   },
   { path: '/threatintel/feeds/threaticon', Component: ThreaticonFeeds },
   { path: '/threatintel/feeds/dphish', Component: DphishFeeds },
+  { path: '/threatintel/feeds/offseq', Component: OffseqFeeds },
+  { path: '/threatintel/feeds/ctiwatch', Component: CtiwatchFeeds },
   { path: '/threatintel/cairn', Component: Cairn },
   { path: '/threatintel/nova', Component: Nova },
   { path: '/threatintel/denali', Component: Denali },

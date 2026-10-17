@@ -350,6 +350,22 @@ export const HUB_META: readonly HubMeta[] = [
         badge: 'live',
       },
       {
+        path: '/threatintel/feeds/offseq',
+        tabId: 'offseq',
+        label: 'OffSeq Threat Radar',
+        desc: 'Aggregated threat-intel feed from radar.offseq.com - ~40 upstream sources, AI-enriched summaries, KEV correlation and Mirage honeypot exploitation telemetry.',
+        compVar: 'OffseqFeeds',
+        badge: 'live',
+      },
+      {
+        path: '/threatintel/feeds/ctiwatch',
+        tabId: 'ctiwatch',
+        label: 'CTIWatch',
+        desc: 'CTIWatch public database - 2M+ IOCs, 400k+ CVEs, 4k+ KEV, 10k+ threat actors, 35k+ victims, with confidence scoring and source attribution.',
+        compVar: 'CtiwatchFeeds',
+        badge: 'live',
+      },
+      {
         path: '/threatintel/feeds/destroylist',
         tabId: 'destroylist',
         label: 'Destroylist Blacklist',

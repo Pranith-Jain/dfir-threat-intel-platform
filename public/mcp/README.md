@@ -1,6 +1,6 @@
 # DFIR-ThreatIntel MCP - tool catalog
 
-**418 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
+**423 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
 
 ## Quick start
 
@@ -14,7 +14,7 @@
 
 ## Tools by category
 
-### other (304)
+### other (309)
 
 - `ai_advisories` - AI advisory firehose — per-package GHSA advisories, cvelistV5 CVE commits matched to known AI CVEs, tool release trains (garak, PyRIT, promptfoo, litellm, vllm, ollama, langchain, MCP SDK, MITRE ATLAS, OWASP GenAI), ExploitDB PoCs.
 - `ai_playbook_cve_refs` - CVE references cited by the AI Security Playbook, enriched against our local CISA KEV snapshot so you can see which are known-exploited. Enrichment comes from our own feed, never upstream.
@@ -243,6 +243,8 @@
 - `threatmon_infostealer_search` - Search ThreatMon IntelHub for compromised credentials and infected devices linked to a domain via real stealer malware logs. Returns compromised URLs, IPs, usernames, dates, and employee/user classification. Data sourced from ~2.18B compromised users and ~10.47B leaked credentials.
 - `ti_brief_sector` - Return a sector-specific threat brief (Financial, Healthcare, or Government) from the threat-intel vertical. Each brief includes an executive summary, top N sector-relevant threats with risk assessments and recommended actions.
 - `ti_export_stix` - Export IOC family indicators as a STIX 2.1 bundle. Reads the IOC family body from the threat-intel manifest, converts each indicator to a STIX indicator object with pattern, and wraps in a bundle with TLP marking. Importable into OpenCTI, MISP, or any TAXII 2.1 consumer.
+- `ti_get_ctiwatch_victim` - Return the full CTIWatch victim record for one id: name, group, country, sector, attack date, website, and description. Use the CTIWatch index (ti_list is not paginated for victims — fetch /api/v1/threat-intel/ctiwatch and read .victims).
+- `ti_get_ctiwatch_vuln` - Return the full CTIWatch vulnerability body for one CVE id: title, description, severity, CVSS, KEV flag, exploit status, published date, CWEs, vendor/product, priority score, EPSS, references, and affected products. Use ti_list_ctiwatch_vulns to discover CVE ids.
 - `ti_get_cve` - Return the full CVE body with CVSS vector, CWE IDs, references, and (where populated) BSI description and LLM summary/recommended action. Use ti_list_cves first to discover CVE IDs.
 - `ti_get_darknet_category` - Return all sites in a darknetlist.is category (markets, search, forums, news, security, communications, crypto, tools, ai) with full details: onion URLs, status, latency, HTTP codes, fingerprints.
 - `ti_get_darknet_site` - Return the full site body from the darknetlist.is directory: name, DWD ID, category, onion URL, clearnet URL (if any), live status, mirror counts, latency, HTTP code, page size, and fingerprint. Use ti_list_darknet first to discover site slugs (DWD IDs).
@@ -250,7 +252,9 @@
 - `ti_get_dphish_indicator` - Return the full dPhish indicator body for one slug: STIX id, observable value, category, pattern (STIX or YARA), description, created/modified dates, validity window, revoked status, confidence, OpenCTI score, labels, and indicator types. Use ti_list_dphish to discover slugs (e.g. "melbetegypt.com-1a2b3c").
 - `ti_get_ioc` - Return the full IOC family body with indicators, MITRE techniques, context, and (where populated) LLM summary. Use ti_list_iocs first to discover family slugs.
 - `ti_get_living_threat_incident` - Return the full Living Threat Repository incident for one slug: per-kill-chain-stage analyses with ATT&CK tactic/technique mappings, per-stage detection + remediation notes, CVEs, threat actors, tools, behavioral / data-exfiltration indicators, detection rules, diamond-model + kill-chain summaries, priority/relevance scores, pyramid of pain, and post-incident recommendations. Use ti_list_living_threat to discover slugs (e.g. "amnesiastealer-macos-malware-021625").
+- `ti_get_offseq_threat` - Return the full OffSeq threat body for one slug: title, description, severity, CVSS, CVE ids, AI-generated summary and impact, Mirage exploitation telemetry (countries), patch availability, known threat actors, affected countries, references, and tags. Use ti_list_offseq_threats to discover slugs.
 - `ti_get_threaticon_actor` - Return the full Threaticon actor profile: executive summary, key capabilities, goals & targeting, MITRE ATT&CK tactics and techniques (T-numbers), software/tooling, IOC patterns, recommended actions, campaigns & victims, targeted sectors and countries, aliases, and confidence. Use ti_list_threaticon_actors to discover slugs.
+- `ti_list_ctiwatch_vulns` - List recent CVEs from CTIWatch (ctiwatch.com): CVE id, title, severity, CVSS, KEV flag, exploit status, published date, CWEs, vendor/product, priority score, and EPSS. Filter by KEV-only, severity, or keyword. Use ti_get_ctiwatch_vuln for the full body (description, references, affected products).
 - `ti_list_cves` - List CVEs from the threat-intel vertical (NVD + CISA KEV). CVEs are enriched with priority scoring (CVSS + KEV + recency). Filter by severity, KEV-only, vendor, recency, or keyword.
 - `ti_list_darknet` - List Tor-accessible sites from the darknetlist.is directory (markets, forums, news, security, comms, crypto, tools, AI). Each site has live up/down status, onion URL, response code, and fingerprint. Filter by category, status, recommended, or keyword.
 - `ti_list_detection_lists` - List SOC/DFIR detection lists (suspicious named pipes, ports, user-agents, mutexes, ransomware extensions, etc.) sourced from mthcht/awesome-lists. Each list is a curated CSV of indicators with metadata (tool, severity, category, reference). Filter by category or keyword.
@@ -259,6 +263,7 @@
 - `ti_list_kev` - Return the full CISA Known Exploited Vulnerabilities (KEV) snapshot — actively exploited CVEs with required actions and due dates. Each entry includes vendor, product, short description, required action, and due date.
 - `ti_list_living_threat` - List incidents from the Living Threat Repository (living-threat.rabitanoor.com): real-world incidents mapped to MITRE ATT&CK tactic/technique chains, with severity, priority score, CVEs/actor/tool counts. Filter by tactic, technique ID (e.g. T1190), severity, actor name, keyword, or minimum priority score. Use ti_get_living_threat_incident to fetch the full incident (per-kill-chain-stage analyses, detection + remediation notes, hunt-pack guidance).
 - `ti_list_malwareanalyzer` - List URL entries from the MalwareAnalyzer by Cyble public feeds (malwareanalyzer.com): verdict=malicious URLs (live malicious feed) or newly-observed scans. Each entry has url, hostname, apex, verdict, score, brands, categories, and scan time. Filter by verdict, category, or keyword. For per-IOC intelligence on any indicator, call ti_malwareanalyzer_lookup.
+- `ti_list_offseq_threats` - List recent threats from the OffSeq Threat Radar (radar.offseq.com): AI-enriched threat records across ~40 upstream sources (CVEs, malware, breaches, security news) with severity, CVSS, KEV/exploitation telemetry (Mirage honeypot), tags, and CVE ids. Filter by type, severity, exploited-only, or keyword. Use ti_get_offseq_threat for the full body (AI summary, impact, references, affected countries).
 - `ti_list_threaticon_actors` - List threat-actor profiles from the Threaticon catalog (threaticon.com): name, MITRE ATT&CK ID, status, TLP, confidence, types, origin country, and per-actor technique/tool/geo counts. Filter by type, country, TLP, status, MITRE presence, or keyword. Use ti_get_threaticon_actor to fetch the full profile.
 - `ti_malwareanalyzer_lookup` - Live reputation lookup for a single IOC (IPv4/IPv6, domain, URL, or hash) against MalwareAnalyzer by Cyble (malwareanalyzer.com, keyless): verdict, 0-100 score, first/last seen, prevalence, tags like benigne/malicious categories. Use for enrichment during an investigation. For bulk URL feeds use ti_list_malwareanalyzer.
 - `ti_search_malwarebazaar` - Search MalwareBazaar (abuse.ch) for malware samples by tag or signature. Returns SHA-256, MD5, file name, type, malware family signature, tags, and timestamps. Tries tag search first, falls back to signature. Free API — no key required.

@@ -819,6 +819,123 @@ threatIntelRouter.get('/threat-intel/dphish/indicators/:slug', async (c) => {
   }
 });
 
+// ─── OffSeq Threat Radar (radar.offseq.com) ─────────────────────────────
+// Aggregated threat-intel feed with AI-enriched summaries, KEV correlation
+// and Mirage honeypot exploitation telemetry. Build: scripts/sync-offseq.mjs
+// && scripts/build-offseq.mjs. Served through env.ASSETS.
+
+threatIntelRouter.get('/threat-intel/offseq', async (c) => {
+  const assets = c.env.ASSETS;
+  if (!assets) return internalError(c, 'ti_offseq_no_assets');
+  try {
+    const mod = await loadTiMod();
+    const idx = await mod.loadOffseqIndex(assets);
+    return c.json({ ...idx, cache: mod.tiCacheStats().offseq });
+  } catch (e) {
+    logError('handler failed', e);
+    return internalError(c, `ti_offseq_index_failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+});
+
+threatIntelRouter.get('/threat-intel/offseq/threats', async (c) => {
+  const assets = c.env.ASSETS;
+  if (!assets) return internalError(c, 'ti_offseq_no_assets');
+  try {
+    const mod = await loadTiMod();
+    const idx = await mod.loadOffseqIndex(assets);
+    const type = c.req.query('type') || undefined;
+    const severity = c.req.query('severity') || undefined;
+    const exploitedOnly = c.req.query('exploited') === 'true' || c.req.query('exploited') === '1';
+    const keyword = c.req.query('q') || c.req.query('keyword') || undefined;
+    const limit = Math.min(200, Math.max(1, Number(c.req.query('limit') ?? 50)));
+    const out = mod.filterOffseqThreats(idx, { type, severity, exploitedOnly, keyword, limit });
+    return c.json({ count: out.length, threats: out });
+  } catch (e) {
+    logError('handler failed', e);
+    return internalError(c, `ti_offseq_threats_failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+});
+
+threatIntelRouter.get('/threat-intel/offseq/threats/:slug', async (c) => {
+  const assets = c.env.ASSETS;
+  if (!assets) return internalError(c, 'ti_offseq_no_assets');
+  const slug = c.req.param('slug');
+  try {
+    const mod = await loadTiMod();
+    const body = await mod.getOffseqThreat(assets, slug);
+    if (!body) return notFound(c, `ti_offseq_threat_not_found: ${slug}`);
+    return c.json(body);
+  } catch (e) {
+    logError('handler failed', e);
+    return internalError(c, `ti_offseq_threat_failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+});
+
+// ─── CTIWatch (ctiwatch.com) ───────────────────────────────────────────
+// Public vulnerability + IOC database. Build: scripts/sync-ctiwatch.mjs &&
+// scripts/build-ctiwatch.mjs. Served through env.ASSETS.
+
+threatIntelRouter.get('/threat-intel/ctiwatch', async (c) => {
+  const assets = c.env.ASSETS;
+  if (!assets) return internalError(c, 'ti_ctiwatch_no_assets');
+  try {
+    const mod = await loadTiMod();
+    const idx = await mod.loadCtiwatchIndex(assets);
+    return c.json({ ...idx, cache: mod.tiCacheStats().ctiwatch });
+  } catch (e) {
+    logError('handler failed', e);
+    return internalError(c, `ti_ctiwatch_index_failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+});
+
+threatIntelRouter.get('/threat-intel/ctiwatch/vulnerabilities', async (c) => {
+  const assets = c.env.ASSETS;
+  if (!assets) return internalError(c, 'ti_ctiwatch_no_assets');
+  try {
+    const mod = await loadTiMod();
+    const idx = await mod.loadCtiwatchIndex(assets);
+    const kevOnly = c.req.query('kev') === 'true' || c.req.query('kev') === '1';
+    const severity = c.req.query('severity') || undefined;
+    const keyword = c.req.query('q') || c.req.query('keyword') || undefined;
+    const limit = Math.min(500, Math.max(1, Number(c.req.query('limit') ?? 100)));
+    const out = mod.filterCtiwatchVulns(idx, { kevOnly, severity, keyword, limit });
+    return c.json({ count: out.length, vulnerabilities: out });
+  } catch (e) {
+    logError('handler failed', e);
+    return internalError(c, `ti_ctiwatch_vulns_failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+});
+
+threatIntelRouter.get('/threat-intel/ctiwatch/vulnerabilities/:cveId', async (c) => {
+  const assets = c.env.ASSETS;
+  if (!assets) return internalError(c, 'ti_ctiwatch_no_assets');
+  const cveId = c.req.param('cveId');
+  try {
+    const mod = await loadTiMod();
+    const body = await mod.getCtiwatchVulnerability(assets, cveId);
+    if (!body) return notFound(c, `ti_ctiwatch_vuln_not_found: ${cveId}`);
+    return c.json(body);
+  } catch (e) {
+    logError('handler failed', e);
+    return internalError(c, `ti_ctiwatch_vuln_failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+});
+
+threatIntelRouter.get('/threat-intel/ctiwatch/victims/:id', async (c) => {
+  const assets = c.env.ASSETS;
+  if (!assets) return internalError(c, 'ti_ctiwatch_no_assets');
+  const id = c.req.param('id');
+  try {
+    const mod = await loadTiMod();
+    const body = await mod.getCtiwatchVictim(assets, id);
+    if (!body) return notFound(c, `ti_ctiwatch_victim_not_found: ${id}`);
+    return c.json(body);
+  } catch (e) {
+    logError('handler failed', e);
+    return internalError(c, `ti_ctiwatch_victim_failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+});
+
 // ─── Destroylist (phishdestroy/destroylist, MIT) ────────────────────────
 // Phishing & scam domain blacklist — primary curated feed replicated as
 // hash-bucketed sorted arrays in public/data/threat-intel/destroylist/
