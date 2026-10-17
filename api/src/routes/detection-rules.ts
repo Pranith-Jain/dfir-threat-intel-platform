@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';
+import { githubHeaders, type GithubEnv } from '../lib/github-api';
 
 /**
  * Detection-rule registry: aggregates metadata + recent commits for the major
@@ -269,13 +270,11 @@ interface GhRepo {
 // instead of "0 stars" implying an empty repo.
 type FetchResult<T> = { value: T; rate_limited: boolean };
 
-async function fetchRepoMeta(repo: string): Promise<FetchResult<GhRepo | null>> {
+async function fetchRepoMeta(repo: string, env?: GithubEnv): Promise<FetchResult<GhRepo | null>> {
   try {
     const res = await fetch(`https://api.github.com/repos/${repo}`, {
-      headers: {
-        accept: 'application/vnd.github+json',
-        'user-agent': 'pranithjain-dfir/1.0',
-      },
+      headers: githubHeaders(env),
+
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       cf: { cacheTtl: CACHE_TTL_SECONDS, cacheEverything: true },
     });
@@ -345,10 +344,13 @@ async function fetchRecentCommits(source: SourceConfig): Promise<FetchResult<Rec
  * Response wrapping so the snapshot handler can compose it directly without
  * a worker-internal HTTP call (which Cloudflare 522s on same-worker recursion).
  */
-export async function fetchDetectionRules(): Promise<DetectionRulesResponse> {
+export async function fetchDetectionRules(env?: GithubEnv): Promise<DetectionRulesResponse> {
   const results = await Promise.all(
     SOURCES.map(async (source) => {
-      const [metaResult, commitsResult] = await Promise.all([fetchRepoMeta(source.repo), fetchRecentCommits(source)]);
+      const [metaResult, commitsResult] = await Promise.all([
+        fetchRepoMeta(source.repo, env),
+        fetchRecentCommits(source),
+      ]);
       const meta = metaResult.value;
       const entry: SourceEntry = {
         id: source.id,
@@ -410,7 +412,7 @@ export async function detectionRulesHandler(c: Context<{ Bindings: Env }>) {
     });
   }
 
-  const body = await fetchDetectionRules();
+  const body = await fetchDetectionRules(c.env);
 
   const json = JSON.stringify(body);
   const response = new Response(json, {

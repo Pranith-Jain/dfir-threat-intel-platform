@@ -43,6 +43,12 @@ const KV_GUEST_TOKEN_TTL = 2 * 3600;
 // user_id lookup TTL — cached in caches.default (no KV quota).
 const KV_USERID_TTL = 7 * 24 * 3600;
 const CACHE_TWEETS_TTL = 30 * 60;
+/**
+ * TTL for a window-empty-but-upstream-has-data build (guest timeline serving
+ * only old snapshots). Short so the degraded state is visible and self-heals
+ * on the next request instead of being pinned for the full window.
+ */
+const DEGRADED_TWEETS_TTL = 5 * 60;
 const FETCH_TIMEOUT_MS = 15_000;
 const MAX_TWEETS_PER_CALL = 40;
 
@@ -118,6 +124,23 @@ export interface TwitterTimelineResponse {
   stale?: boolean;
   /** Set when the underlying call returned a known error worth surfacing. */
   upstream_error?: string;
+  /**
+   * Which upstream produced `items`. `graphql` is X's anonymous guest
+   * timeline; `tweetfeed` is the TweetFeed firehose fallback used when the
+   * guest timeline yields nothing in-window (see x-tweets.ts).
+   */
+  source?: 'graphql' | 'tweetfeed';
+  /**
+   * True when the guest timeline returned items but every one fell outside the
+   * freshness window — i.e. X served a frozen snapshot rather than a live
+   * timeline. Without this the caller sees `items: []` and cannot tell "quiet
+   * account" apart from "upstream is stale" (measured 2026-10-17: three active
+   * accounts returned 99-100 tweets each, none within 7 days, newest ~1 year
+   * old).
+   */
+  stale_guest_timeline?: boolean;
+  /** Newest tweet date the upstream offered (ISO). Present when stale. */
+  newest_available_at?: string;
 }
 
 export class TwitterRateLimited extends Error {
@@ -508,6 +531,16 @@ export async function fetchUserTimeline(
     // Newest-first so the FE doesn't have to re-sort
     .sort((a, b) => b.created_at_ms - a.created_at_ms);
 
+  // Distinguish "account posted nothing in-window" from "upstream served a
+  // frozen snapshot". X's guest-token timeline has been observed returning
+  // 99-100 tweets for active accounts with every single one outside the
+  // freshness window (newest ~1 year old, 2026-10-17). A bare `items: []`
+  // read as "quiet account" and hid that. Surface the distinction, and cache
+  // the degraded build for minutes rather than the full half hour so a fix
+  // on X's side shows up quickly.
+  const newestParsedMs = allItems.reduce((m, it) => Math.max(m, it.created_at_ms), 0);
+  const staleGuestTimeline = items.length === 0 && allItems.length > 0;
+
   const body: TwitterTimelineResponse = {
     handle: lower,
     user_id: userInfo.id,
@@ -517,15 +550,23 @@ export async function fetchUserTimeline(
     items,
     generated_at: new Date().toISOString(),
     cached: false,
+    ...(staleGuestTimeline
+      ? {
+          stale_guest_timeline: true,
+          newest_available_at: newestParsedMs ? new Date(newestParsedMs).toISOString() : undefined,
+          upstream_error: `guest timeline returned only out-of-window tweets (${allItems.length} parsed, 0 within ${sinceDays}d)`,
+        }
+      : {}),
   };
 
   // Cache successful responses; failures are NOT cached so the next visit retries.
   try {
+    const ttl = staleGuestTimeline ? DEGRADED_TWEETS_TTL : CACHE_TWEETS_TTL;
     const cacheable = new Response(JSON.stringify(body), {
       status: 200,
       headers: {
         'content-type': 'application/json',
-        'cache-control': `public, max-age=${CACHE_TWEETS_TTL}, s-maxage=${CACHE_TWEETS_TTL}`,
+        'cache-control': `public, max-age=${ttl}, s-maxage=${ttl}`,
       },
     });
     await edgeCache.put(cacheKey, cacheable);

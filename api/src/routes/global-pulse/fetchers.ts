@@ -1,6 +1,7 @@
 import type { PulseEvent } from './types';
 import { COUNTRY_COORDS } from './geo';
 import { logError } from '../../lib/logger';
+import { advisoriesUrl, githubHeaders, type GithubEnv } from '../../lib/github-api';
 
 /* ─── USGS Earthquakes ──────────────────────────────────────────────────── */
 
@@ -572,7 +573,7 @@ export async function fetchUrlhaus(): Promise<PulseEvent[]> {
 
 /* ─── Supply Chain Attacks (supplychainattack.org primary, GHSA fallback) ─ */
 
-export async function fetchSupplyChain(): Promise<PulseEvent[]> {
+export async function fetchSupplyChain(env?: GithubEnv): Promise<PulseEvent[]> {
   // PRIMARY: supplychainattack.org incident catalog (npm/PyPI/container/
   // AI-agents). Currently 402-gated; on any failure fall back to the GitHub
   // malware advisory set below. Non-geo (lat/lng 0) — surfaces in the
@@ -626,23 +627,19 @@ export async function fetchSupplyChain(): Promise<PulseEvent[]> {
   } catch (_catchErr) {
     logError('primary supplychainattack.org failed', _catchErr);
   }
-  return fetchSupplyChainGhsaFallback();
+  return fetchSupplyChainGhsaFallback(env);
 }
 
 /** FALLBACK: GitHub malware advisories when the primary catalog is down. */
-async function fetchSupplyChainGhsaFallback(): Promise<PulseEvent[]> {
+async function fetchSupplyChainGhsaFallback(env?: GithubEnv): Promise<PulseEvent[]> {
   try {
-    const res = await fetch(
-      'https://api.github.com/advisories?type=malware&per_page=30&sort=published&direction=desc',
-      {
-        signal: AbortSignal.timeout(8000),
-        headers: {
-          'user-agent': 'pranithjain-dfir/1.0',
-          accept: 'application/vnd.github+json',
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      }
-    );
+    const res = await fetch(advisoriesUrl({ type: 'malware', per_page: 30, sort: 'published', direction: 'desc' }), {
+      signal: AbortSignal.timeout(8000),
+      // Authenticated when GITHUB_TOKEN is set: this is the dashboard's
+      // only malware-advisory source once supplychainattack.org stays 402-gated,
+      // and an anonymous 403 empties the supply-chain card silently.
+      headers: githubHeaders(env),
+    });
     if (!res.ok) return [];
     const data = (await res.json()) as Array<{
       ghsa_id?: string;

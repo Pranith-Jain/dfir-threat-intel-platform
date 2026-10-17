@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';
+import { githubHeaders } from '../lib/github-api';
 import { badRequest, notFound, badGateway } from '../lib/api-error';
 
 /**
@@ -77,7 +78,9 @@ export async function maltrailListHandler(c: Context<{ Bindings: Env }>): Promis
     }
 
     const res = await fetch(MALTRAIL_API, {
-      headers: { Accept: 'application/vnd.github.v3+json', 'User-Agent': 'pranithjain.qzz.io' },
+      // Trail listing is api.github.com (counts against the shared 60/h
+      // anonymous quota) — authenticate when GITHUB_TOKEN is set.
+      headers: githubHeaders(c.env, { accept: 'application/vnd.github.v3+json' }),
       signal: AbortSignal.timeout(15_000),
     });
     if (!res.ok) {

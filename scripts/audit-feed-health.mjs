@@ -49,7 +49,7 @@ const AS_JSON = argv.has('--json');
 const REFRESH = argv.has('--refresh');
 
 const UA = { 'user-agent': 'pranithjain-dfir/1.0 (feed-health-audit)', accept: '*/*' };
-const TIMEOUT_MS = 20_000;
+const TIMEOUT_MS = 60_000;
 
 /** Live-IOC registry sources whose URL lives inside a bespoke closure. */
 const REGISTRY_EXTRAS = {
@@ -146,7 +146,8 @@ async function readRegistryUrls() {
   // the FOLLOWING entry for the quoted-key layout, collapsing ~35 sources. Both
   // forms are matched independently, then de-duped by id.
   const ONE_LINE = /([A-Za-z0-9_-]+|'[a-z0-9-]+'):\s*\{\s*url:\s*'([^']+)'\s*\},?\n/g;
-  const MULTI_LINE = /'?([A-Za-z0-9_-]+)'?:\s*\{\s*\n\s*url:\s*'([^']+)',?\s*(?:\n\s*fallbackUrls:\s*\[([^\]]*)\],?)?\s*\n\s*\}/g;
+  const MULTI_LINE =
+    /'?([A-Za-z0-9_-]+)'?:\s*\{\s*\n\s*url:\s*'([^']+)',?\s*(?:\n\s*fallbackUrls:\s*\[([^\]]*)\],?)?\s*\n\s*\}/g;
 
   const byId = new Map();
   const add = (rawId, url, fbBlock) => {
@@ -196,19 +197,21 @@ async function readRetiredFeeds() {
 
 async function probe(url) {
   const ac = new AbortController();
-  const timer = setTimeout(() => ac.abort(), TIMEOUT_MS);
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    ac.abort();
+  }, TIMEOUT_MS);
   const t0 = Date.now();
   try {
     const res = await fetch(url, { signal: ac.signal, redirect: 'follow', headers: UA });
     const body = res.ok ? await res.text() : '';
     const head = body.trimStart().slice(0, 16);
     const html = head.startsWith('<!DOCTYPE') || head.startsWith('<html');
-    const rows = body
-      .split('\n')
-      .filter((l) => {
-        const t = l.trim();
-        return t.length > 0 && !t.startsWith('#') && !t.startsWith(';') && !t.startsWith('!');
-      }).length;
+    const rows = body.split('\n').filter((l) => {
+      const t = l.trim();
+      return t.length > 0 && !t.startsWith('#') && !t.startsWith(';') && !t.startsWith('!');
+    }).length;
     return {
       ok: res.ok && !html && rows > 0,
       status: res.status,
@@ -225,7 +228,16 @@ async function probe(url) {
             : undefined,
     };
   } catch (e) {
-    return { ok: false, bytes: 0, rows: 0, html: false, ms: Date.now() - t0, note: e instanceof Error ? e.message.slice(0, 60) : 'error' };
+    // An abort is almost always OUR 20s deadline, not a dead upstream — say so
+    // (a slow link otherwise reads exactly like feed rot, and the two have
+    // opposite fixes). The byte progress is unknowable here because the abort
+    // kills the body read too.
+    const note = timedOut
+      ? `timeout after ${TIMEOUT_MS / 1000}s — slow link or oversized feed? re-probe before treating as rot`
+      : e instanceof Error
+        ? e.message.slice(0, 60)
+        : 'error';
+    return { ok: false, bytes: 0, rows: 0, html: false, ms: Date.now() - t0, note };
   } finally {
     clearTimeout(timer);
   }
@@ -294,9 +306,7 @@ async function main() {
   const CONCURRENCY = 6;
   for (let i = 0; i < targets.length; i += CONCURRENCY) {
     const slice = targets.slice(i, i + CONCURRENCY);
-    const probed = await Promise.all(
-      slice.map(async (t) => ({ ...t, ...(await probeWithFallback(t)) }))
-    );
+    const probed = await Promise.all(slice.map(async (t) => ({ ...t, ...(await probeWithFallback(t)) })));
     results.push(...probed);
     if (!AS_JSON) process.stderr.write('.');
   }
@@ -349,7 +359,9 @@ async function main() {
   console.log(`  ${'─'.repeat(96)}`);
   for (const r of results.sort((a, b) => a.id.localeCompare(b.id))) {
     if (r.skipped) {
-      console.log(`  ~ ${r.id.padEnd(26)} ${'—'.padEnd(4)} ${'skipped'.padStart(8)}         (key-gated, not a plain GET)`);
+      console.log(
+        `  ~ ${r.id.padEnd(26)} ${'—'.padEnd(4)} ${'skipped'.padStart(8)}         (key-gated, not a plain GET)`
+      );
       continue;
     }
     const icon = r.ok ? ICONS.ok : ICONS.bad;
@@ -393,7 +405,9 @@ async function main() {
   }
 
   if (unhealthy.length) {
-    console.log(`\n  ${ICONS.bad} ${unhealthy.length} registered feed(s) unhealthy — a source is dead, stubbed, or returning HTML.`);
+    console.log(
+      `\n  ${ICONS.bad} ${unhealthy.length} registered feed(s) unhealthy — a source is dead, stubbed, or returning HTML.`
+    );
     for (const r of unhealthy) console.log(`      ${r.id}: ${r.note}`);
     process.exit(1);
   }

@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';
+import { githubHeaders } from '../lib/github-api';
 
 import { fetchResilient } from '../lib/fetch-resilient';
 import { readLastGood, writeLastGood } from '../lib/lastgood';
@@ -332,10 +333,9 @@ export async function volexityThreatIntelHandler(c: Context<{ Bindings: Env }>):
   const limit = limitRaw ? Math.min(parseInt(limitRaw, 10) || MAX_FOLDER_LIST_LIMIT, MAX_FOLDER_LIST_LIMIT) : undefined;
 
   const cache = (caches as unknown as { default: Cache }).default;
-  const ghHeaders: Record<string, string> = {
-    'User-Agent': 'pranithjain-dfir/1.0',
-    accept: 'application/vnd.github+json',
-  };
+  // api.github.com (git trees API) — shares the Worker egress quota; a 403
+  // here blanks the whole VOLT file tree. Authenticated when GITHUB_TOKEN set.
+  const ghHeaders: Record<string, string> = githubHeaders(c.env);
 
   // ─────────── load the repo tree (ONE subrequest, dual-cached) ───────────
   // Both modes need the tree: folder-list mode returns it; folder mode validates

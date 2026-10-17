@@ -110,7 +110,7 @@ async function signedSelfFetch(
  * map so the DO cron can additionally persist a last-good copy.
  */
 export async function buildGlobalPulseSync(
-  env: Pick<Env, 'SELF' | 'KV_CACHE' | 'INTERNAL_TOKEN_SECRET' | 'BRIEFINGS_DB'>,
+  env: Pick<Env, 'SELF' | 'KV_CACHE' | 'INTERNAL_TOKEN_SECRET' | 'BRIEFINGS_DB' | 'GITHUB_TOKEN'>,
   _waitUntil?: (p: Promise<unknown>) => void,
   full = false
 ): Promise<{ payload: GlobalPulseResponse; warm: Record<string, unknown>; sync: number }> {
@@ -207,7 +207,7 @@ export async function buildGlobalPulseSync(
   [botnetC2, supplyChain, dshieldAttackers, compromisedIPs, blocklistAttackers, cisaKev, urlhausMalware] =
     await Promise.all([
       consume(3) ? fetchBotnetC2() : Promise.resolve([] as PulseEvent[]),
-      consume() ? fetchSupplyChain() : Promise.resolve([] as PulseEvent[]),
+      consume() ? fetchSupplyChain(env) : Promise.resolve([] as PulseEvent[]),
       consume() ? fetchDShieldAttackers() : Promise.resolve([] as PulseEvent[]),
       consume() ? fetchCompromisedIPs() : Promise.resolve([] as PulseEvent[]),
       consume() ? fetchBlocklistAttackers() : Promise.resolve([] as PulseEvent[]),

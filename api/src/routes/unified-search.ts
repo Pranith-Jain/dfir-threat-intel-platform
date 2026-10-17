@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
 import { logError } from '../lib/logger';
 import { lookupCve } from '../lib/cve-lookup';
+import type { GithubEnv } from '../lib/github-api';
 import { ACTOR_ALIASES } from '../data/threat-actor-aliases';
 import { rankSections } from '../lib/search/rank';
 import { safeNullLog } from '../lib/safe-catch';
@@ -405,11 +406,11 @@ async function searchMalwareSamples(needle: string): Promise<SearchSection> {
 }
 
 // ── Live CVE lookup ─────────────────────────────────────────────────────────
-async function searchCveLookup(needle: string): Promise<SearchSection> {
+async function searchCveLookup(needle: string, env?: GithubEnv): Promise<SearchSection> {
   const isCve = /^CVE-\d{4}-\d{4,7}$/i.test(needle.trim());
   if (!isCve) return { label: 'CVE Lookup (live)', kind: 'cves', total: 0, items: [] };
 
-  const result = await lookupCve(needle.trim().toUpperCase());
+  const result = await lookupCve(needle.trim().toUpperCase(), undefined, env);
   if (!result.ok) return { label: 'CVE Lookup (live)', kind: 'cves', total: 0, items: [] };
 
   const { data } = result;
@@ -700,7 +701,7 @@ export async function unifiedSearchHandler(ctx: Context<{ Bindings: import('../e
     searchBreaches(needle),
     searchMalwareSamples(needle),
     searchMalpedia(needle),
-    searchCveLookup(needle),
+    searchCveLookup(needle, ctx.env),
     searchIocCheck(needle, ctx.env),
     searchActorKb(needle),
     searchScrapedIntelHandles(needle, ctx.env),

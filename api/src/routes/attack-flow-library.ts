@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';
+import { githubHeaders } from '../lib/github-api';
 import { notFound, badGateway } from '../lib/api-error';
 import { fetchResilient } from '../lib/fetch-resilient';
 import { shouldWriteLastGood } from '../lib/lastgood-debounce';
@@ -182,11 +183,10 @@ async function loadManifest(
     const res = await fetchResilient(
       MANIFEST_API,
       {
-        headers: {
-          'User-Agent': 'pranithjain-dfir/1.0',
-          // GitHub Contents API requires this Accept header; returns JSON listing.
-          accept: 'application/vnd.github+json',
-        },
+        // GitHub Contents API requires the vnd.github+json Accept; the shared
+        // githubHeaders() also attaches GITHUB_TOKEN when configured, because
+        // an anonymous 403 here takes the entire corpus offline.
+        headers: githubHeaders(c.env, { accept: 'application/vnd.github+json' }),
         cf: { cacheTtl: MANIFEST_CACHE_TTL_SECONDS, cacheEverything: true },
       } as RequestInit,
       { attempts: 3, timeoutMs: 15_000 }
