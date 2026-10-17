@@ -561,12 +561,27 @@ never mention it.
 "fact extraction" pass (deterministic extraction is now code) and the
 QA-triggered repair pass (there is no gate to repair).
 
+**Live CVE sources** (`/api/v1/cve-recent`, page `/threatintel/cve-list`):
+NVD published + CISA KEV, then gap-fillers MyThreatIntel, cvefeed.io, the CVE
+Telegram channels, dbu.gs, ExploitGrid and **ThreatWire**
+(`api/src/lib/threatwire.ts`, RSS `/feed.xml`). ThreatWire contributes unseen
+ids and annotates known ones with explicit `threatwire_kev` / `threatwire_poc`
+/ `threatwire_zero_day` / `threatwire_patched` flags — extracted **only when a
+post covers exactly one CVE**, because a multi-CVE roundup makes "Fixed in
+15.5.28" ambiguous. Every row carries `listed_by` + `listed_by_count`
+(corroboration: which independent sources list the id, authority-ordered by
+`CVE_SOURCE_ORDER`); the UI badges that and can filter to ≥2 sources. Adding a
+tier means updating `CVE_SOURCE_ORDER`, the `applyCorroboration` label map, and
+`PROBE_SOURCES['cve-recent']` in `feed-status.ts`.
+
 **CVE trending** (`api/src/lib/cvemon.ts`, `/api/v1/cve-trends`): Intruder's
 cvemon feed is the only source that measures social _attention_ rather than
-severity. Surfaced as its own "Trending" tab in `/threatintel/cve-intel`
-and merged into `/api/v1/cve-recent` as tier 8 (hype fields annotate any
-merged id). "Trending but not yet in KEV" is the interesting case — that is
-the window where a write-up has value.
+severity. Surfaced as its own "Trending" tab in `/threatintel/cve-intel`.
+It is **not** merged into `/api/v1/cve-recent` — trending rows there padded the
+"recent" list with ids that had no disclosure date, so the live CVE surface now
+carries only new/exploited records plus per-row `listed_by` corroboration.
+"Trending but not yet in KEV" is the interesting case — that is the window
+where a write-up has value; it belongs on the Trending tab, not in the feed.
 
 ### Admin content-generation UI (/admin/generate + tabs)
 
