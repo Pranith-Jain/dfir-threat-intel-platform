@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search, ExternalLink, RefreshCw } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { errMessage } from '../../lib/log';
 
 interface OsintPortalEntry {
   slug: string;
@@ -56,7 +57,7 @@ function hostnameOf(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, '');
   } catch (_catchErr) {
-    console.error('hostnameOf failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('hostnameOf failed:', errMessage(_catchErr));
     return url;
   }
 }

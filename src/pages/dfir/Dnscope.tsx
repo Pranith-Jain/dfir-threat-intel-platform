@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useCallback } from 'react';
 import { Globe, Search, ShieldCheck, Loader2, AlertTriangle } from 'lucide-react';
 import { IntodnsPanel } from '../../components/dfir/IntodnsPanel';
@@ -61,7 +61,7 @@ export default function Dnscope(): JSX.Element {
           const p = JSON.parse(body) as { message?: string; error?: string };
           msg = p.message ?? p.error ?? msg;
         } catch (_catchErr) {
-          console.error('Dnscope failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('Dnscope failed:', errMessage(_catchErr));
           /* */
         }
         throw new Error(msg);
@@ -144,7 +144,7 @@ export default function Dnscope(): JSX.Element {
       setSections(built);
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : String(err));
+      setError(errMessage(err));
     } finally {
       setScanning(false);
     }
@@ -154,7 +154,10 @@ export default function Dnscope(): JSX.Element {
     <div className="max-w-6xl">
       <div className="animate-fade-in-up">
         <h1 className="text-3xl sm:text-4xl font-display font-semibold mb-2">DNSCOPE</h1>
-        <p className="text-muted mb-8 max-w-2xl">Deep domain infrastructure mapping via live DNS, RDAP, certificate transparency, email auth, and threat intelligence - all in one scan.</p>
+        <p className="text-muted mb-8 max-w-2xl">
+          Deep domain infrastructure mapping via live DNS, RDAP, certificate transparency, email auth, and threat
+          intelligence - all in one scan.
+        </p>
       </div>
 
       {error && (
@@ -254,6 +257,6 @@ export default function Dnscope(): JSX.Element {
       <p className="mt-8 text-micro font-mono text-muted text-center">
         H3AD-X / DNSCOPE - Live multi-source domain scan
       </p>
-  </div>
+    </div>
   );
 }

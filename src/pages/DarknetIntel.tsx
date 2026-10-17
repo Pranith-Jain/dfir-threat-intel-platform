@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DataPageLayout } from '../components/DataPageLayout';
+import { errMessage } from '../lib/log';
 import {
   Shield,
   Search as SearchIcon,
@@ -183,7 +184,7 @@ function ProvidersTab() {
         if (!cancelled) setSources(d.providers);
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'fetch failed');
+        if (!cancelled) setError(errMessage(e, 'fetch failed'));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -288,7 +289,7 @@ function useToolFetcher() {
       const r = await fn();
       setResult(r);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'request failed');
+      setError(errMessage(e, 'request failed'));
     } finally {
       setLoading(false);
     }

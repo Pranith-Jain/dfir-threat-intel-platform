@@ -7,6 +7,7 @@ import { FaqStructuredData } from '../../components/FaqStructuredData';
 import { PageMeta } from '../../components/PageMeta';
 import { Input } from '../../components/ui/Input';
 import { RADAR_FAQ } from '../../data/radar-faq';
+import { errMessage } from '../../lib/log';
 
 export default function RadarHome() {
   const [url, setUrl] = useState('');
@@ -39,8 +40,8 @@ export default function RadarHome() {
       if (!ctrl.signal.aborted) navigate(`/radar/scan/${data.id}`);
     } catch (err) {
       if (isAbortError(err)) return;
-      console.error('RadarHome failed:', err instanceof Error ? err.message : String(err));
-      setError(err instanceof Error ? err.message : 'Scan failed');
+      console.error('RadarHome failed:', errMessage(err));
+      setError(errMessage(err, 'Scan failed'));
     } finally {
       if (!ctrl.signal.aborted) setScanning(false);
     }

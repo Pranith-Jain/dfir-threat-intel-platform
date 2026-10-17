@@ -20,6 +20,7 @@ import {
   type TierPolicy,
 } from '../../data/data-classification';
 import { downloadBlob } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 
 export default function DataClassification(): JSX.Element {
   const [state, setState] = useState<ClassificationState>(emptyState);
@@ -34,7 +35,7 @@ export default function DataClassification(): JSX.Element {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (_catchErr) {
-      console.error('DataClassification failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('DataClassification failed:', errMessage(_catchErr));
       /* quota */
     }
   }, [state]);

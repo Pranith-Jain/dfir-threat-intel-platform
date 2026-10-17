@@ -3,6 +3,7 @@ import { sanitizeUrl } from '../../lib/sanitize-url';
 import { Plus, Trash2, FileDown, Edit2, X, ExternalLink, ScrollText } from 'lucide-react';
 import { CopyButton } from '../../components/ui/CopyButton';
 import { downloadBlob } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 
 interface YaraRule {
   id: string;
@@ -47,7 +48,7 @@ function loadRules(): YaraRule[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch (_catchErr) {
-    console.error('loadRules failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('loadRules failed:', errMessage(_catchErr));
     return [];
   }
 }
@@ -61,7 +62,7 @@ export default function YaraManager(): JSX.Element {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(rules));
     } catch (_catchErr) {
-      console.error('YaraManager failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('YaraManager failed:', errMessage(_catchErr));
       /* quota / private mode */
     }
   }, [rules]);

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { sanitizeUrl } from '../../lib/sanitize-url';
 import { useNoindex } from '../../lib/use-noindex';
 import { Upload, Loader2, AlertTriangle, Shield, ExternalLink, Globe, FileText, Activity } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 interface SandboxResult {
   source: string;
@@ -58,10 +59,7 @@ export default function SandboxIntegration(): JSX.Element {
           const p = JSON.parse(body) as { error?: string };
           msg = p.error ?? msg;
         } catch (_catchErr) {
-          console.error(
-            'SandboxIntegration failed:',
-            _catchErr instanceof Error ? _catchErr.message : String(_catchErr)
-          );
+          console.error('SandboxIntegration failed:', errMessage(_catchErr));
           /* ok */
         }
         throw new Error(msg);
@@ -70,8 +68,8 @@ export default function SandboxIntegration(): JSX.Element {
       if (!ct.includes('json')) throw new Error('Server returned non-JSON response');
       setResult(await res.json());
     } catch (err) {
-      console.error('SandboxIntegration failed:', err instanceof Error ? err.message : String(err));
-      setError(err instanceof Error ? err.message : String(err));
+      console.error('SandboxIntegration failed:', errMessage(err));
+      setError(errMessage(err));
     } finally {
       setLoading(false);
     }

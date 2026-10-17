@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useState } from 'react';
 import { DataPageLayout, useInsideDataPageLayout } from '../../components/DataPageLayout';
 import { Search, RefreshCw, AlertTriangle, FileText, ExternalLink } from 'lucide-react';
@@ -91,7 +91,7 @@ export default function TelegramLeaks(): JSX.Element {
         if (!cancelled && d?.channels) setChannels(d.channels.map((c) => c.handle));
       })
       .catch((err) => {
-        setError((prev) => prev ?? (err instanceof Error ? err.message : String(err)));
+        setError((prev) => prev ?? errMessage(err));
       });
     return () => {
       cancelled = true;

@@ -1,3 +1,4 @@
+import { errMessage } from './err';
 interface EnvWithFullhunt {
   FULLHUNT_API_KEY?: string;
 }
@@ -47,8 +48,8 @@ export async function fullhuntDomainDetails(env: EnvWithFullhunt, domain: string
     result.data = (await res.json()) as FullhuntDomainResult;
     result.success = true;
   } catch (e) {
-    console.error('fullhuntDomainDetails failed:', e instanceof Error ? e.message : String(e));
-    result.error = e instanceof Error ? e.message : String(e);
+    console.error('fullhuntDomainDetails failed:', errMessage(e));
+    result.error = errMessage(e);
   }
 
   return result;
@@ -78,8 +79,8 @@ export async function fullhuntSubdomains(env: EnvWithFullhunt, domain: string) {
     result.data = await res.json();
     result.success = true;
   } catch (e) {
-    console.error('fullhuntSubdomains failed:', e instanceof Error ? e.message : String(e));
-    result.error = e instanceof Error ? e.message : String(e);
+    console.error('fullhuntSubdomains failed:', errMessage(e));
+    result.error = errMessage(e);
   }
 
   return result;

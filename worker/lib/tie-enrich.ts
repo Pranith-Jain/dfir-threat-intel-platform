@@ -1,3 +1,4 @@
+import { errMessage } from './err';
 export interface TieEnrichResult {
   ioc: string;
   iocType: 'ip' | 'hash' | 'domain' | 'url';
@@ -25,7 +26,7 @@ async function fetchJson(
     if (!res.ok) return { ok: false, ms };
     return { data: await res.json(), ok: true, ms };
   } catch (_catchErr) {
-    console.error('fetchJson failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('fetchJson failed:', errMessage(_catchErr));
     return { ok: false, ms: Date.now() - t0 };
   }
 }

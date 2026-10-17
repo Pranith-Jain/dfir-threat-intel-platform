@@ -3,6 +3,7 @@ import type { Severity as Sev } from '../../components/severity';
 import { BackLink } from '../../components/BackLink';
 import { AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, Info } from 'lucide-react';
 import { Textarea } from '../../components/ui/Input';
+import { errMessage } from '../../lib/log';
 
 /**
  * OpenAPI / Swagger Security Auditor - 100% client-side.
@@ -140,12 +141,12 @@ function analyze(text: string): Analysis | null {
   try {
     doc = JSON.parse(trimmed) as Record<string, unknown>;
   } catch (_catchErr) {
-    console.error('analyze failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('analyze failed:', errMessage(_catchErr));
     try {
       doc = parseYaml(trimmed) as Record<string, unknown>;
       if (!doc || typeof doc !== 'object') throw new Error('not an object');
     } catch (e) {
-      console.error('analyze failed:', e instanceof Error ? e.message : String(e));
+      console.error('analyze failed:', errMessage(e));
       return {
         error: `Could not parse as JSON or YAML (${(e as Error).message}). Tip: export the spec as JSON.`,
         spec: '',

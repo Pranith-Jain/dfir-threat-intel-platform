@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useRef } from 'react';
 import { BackLink } from '../../components/BackLink';
 import { ShieldAlert, ShieldCheck, Loader2, ExternalLink } from 'lucide-react';
@@ -57,7 +57,7 @@ function parseManifest(text: string): { packages: Pkg[]; kind: string } {
       }
       return { packages: dedupe(out), kind: 'npm package.json' };
     } catch (_catchErr) {
-      console.error('parseManifest failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('parseManifest failed:', errMessage(_catchErr));
       /* fall through to text parsers */
     }
   }

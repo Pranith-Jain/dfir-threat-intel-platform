@@ -1,6 +1,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import type { Env } from '../env';
 import { safeEqual } from '../../api/src/lib/safe-equal';
+import { errMessage } from '../lib/err';
 
 /**
  * Single-flight lease, backed by a Durable Object.
@@ -39,7 +40,7 @@ export class CronLockDO extends DurableObject<Env> {
     try {
       body = (await request.json()) as typeof body;
     } catch (_catchErr) {
-      console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('handler failed:', errMessage(_catchErr));
       return Response.json({ error: 'bad request body' }, { status: 400 });
     }
     const { op, cron, ttlMs, token } = body;
@@ -162,7 +163,7 @@ export async function acquireCronLease(
     });
     return (await res.json()) as { acquired: boolean; token?: string };
   } catch (_catchErr) {
-    console.error('acquireCronLease failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('acquireCronLease failed:', errMessage(_catchErr));
     return { acquired: true, failOpen: true };
   }
 }
@@ -181,7 +182,7 @@ export async function heartbeatCronLease(env: Env, cron: string, token: string, 
       console.error(JSON.stringify({ job: 'cron-lease-heartbeat', status: 'lease-lost', cron }));
     }
   } catch (_catchErr) {
-    console.error('heartbeatCronLease failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('heartbeatCronLease failed:', errMessage(_catchErr));
     /* best-effort */
   }
 }
@@ -193,7 +194,7 @@ export async function releaseCronLease(env: Env, cron: string, token: string): P
       body: JSON.stringify({ op: 'release', cron, token }),
     });
   } catch (_catchErr) {
-    console.error('releaseCronLease failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('releaseCronLease failed:', errMessage(_catchErr));
     /* best-effort — the TTL reclaims the lease */
   }
 }

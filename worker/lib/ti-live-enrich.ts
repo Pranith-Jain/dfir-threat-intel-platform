@@ -17,6 +17,8 @@
  *   - ransomware.live: no key needed (public API)
  */
 
+import { errMessage } from './err';
+
 const FETCH_TIMEOUT_MS = 20_000;
 
 // ── OTX (AlienVault) ─────────────────────────────────────────────────────
@@ -127,7 +129,7 @@ export async function searchOtxPulses(query: string, apiKey?: string): Promise<O
             .filter((i) => i.indicator)
             .map((i) => ({ type: i.type, value: i.indicator, description: i.description }));
         } catch (_catchErr) {
-          console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('handler failed:', errMessage(_catchErr));
           return [];
         }
       };
@@ -143,12 +145,12 @@ export async function searchOtxPulses(query: string, apiKey?: string): Promise<O
     result.total = pulses.length;
     result.diagnostics.push({ provider: 'otx', status: 'ok', ms: Date.now() - t0 });
   } catch (e) {
-    console.error('handler failed:', e instanceof Error ? e.message : String(e));
+    console.error('handler failed:', errMessage(e));
     result.diagnostics.push({
       provider: 'otx',
       status: 'failed',
       ms: Date.now() - t0,
-      error: e instanceof Error ? e.message : String(e),
+      error: errMessage(e),
     });
   }
 
@@ -246,12 +248,12 @@ export async function searchThreatfox(searchTerm: string): Promise<ThreatfoxSear
     result.total = result.iocs.length;
     result.diagnostics.push({ provider: 'threatfox', status: 'ok', ms: Date.now() - t0 });
   } catch (e) {
-    console.error('handler failed:', e instanceof Error ? e.message : String(e));
+    console.error('handler failed:', errMessage(e));
     result.diagnostics.push({
       provider: 'threatfox',
       status: 'failed',
       ms: Date.now() - t0,
-      error: e instanceof Error ? e.message : String(e),
+      error: errMessage(e),
     });
   }
 
@@ -349,12 +351,12 @@ export async function searchMalwarebazaar(query: string): Promise<MalwarebazaarS
     result.total = result.samples.length;
     result.diagnostics.push({ provider: 'malwarebazaar', status: 'ok', ms: Date.now() - t0 });
   } catch (e) {
-    console.error('handler failed:', e instanceof Error ? e.message : String(e));
+    console.error('handler failed:', errMessage(e));
     result.diagnostics.push({
       provider: 'malwarebazaar',
       status: 'failed',
       ms: Date.now() - t0,
-      error: e instanceof Error ? e.message : String(e),
+      error: errMessage(e),
     });
   }
 
@@ -449,7 +451,7 @@ export async function searchRansomwareLive(groupName: string): Promise<Ransomwar
           victim_count: data._victim_count ?? 0,
         };
       } catch (_catchErr) {
-        console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('handler failed:', errMessage(_catchErr));
         return null;
       }
     };
@@ -480,7 +482,7 @@ export async function searchRansomwareLive(groupName: string): Promise<Ransomwar
         }
       }
     } catch (_catchErr) {
-      console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('handler failed:', errMessage(_catchErr));
       /* ignore */
     }
 
@@ -504,12 +506,12 @@ export async function searchRansomwareLive(groupName: string): Promise<Ransomwar
     result.total = result.groups.length;
     result.diagnostics.push({ provider: 'ransomware.live', status: 'ok', ms: Date.now() - t0 });
   } catch (e) {
-    console.error('handler failed:', e instanceof Error ? e.message : String(e));
+    console.error('handler failed:', errMessage(e));
     result.diagnostics.push({
       provider: 'ransomware.live',
       status: 'failed',
       ms: Date.now() - t0,
-      error: e instanceof Error ? e.message : String(e),
+      error: errMessage(e),
     });
   }
 

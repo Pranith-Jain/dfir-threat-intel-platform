@@ -6,6 +6,7 @@ import { sanitizeUrl } from '../../lib/sanitize-url';
 import { LiveFreshnessPill } from '../../components/LiveFreshnessPill';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
+import { errMessage } from '../../lib/log';
 
 type BwCategory = 'ransomware' | 'data_breach' | 'combo_list' | 'source_code' | 'credential_leak' | 'other';
 type BwSeverity = 'critical' | 'high' | 'medium' | 'low' | 'unknown';
@@ -356,7 +357,7 @@ export default function BreachWatch(): JSX.Element {
         setPage(0);
         if (!isInitial) setSelectedSlug(null);
       } catch (e: unknown) {
-        setError(e instanceof Error ? e.message : String(e));
+        setError(errMessage(e));
       } finally {
         setLoading(false);
       }
@@ -406,7 +407,7 @@ export default function BreachWatch(): JSX.Element {
       setBreaches((prev) => [...prev, ...data.breaches]);
       setPage(next);
     } catch (e: unknown) {
-      console.error('loadMore failed:', e instanceof Error ? e.message : String(e));
+      console.error('loadMore failed:', errMessage(e));
     } finally {
       setLoadingMore(false);
     }

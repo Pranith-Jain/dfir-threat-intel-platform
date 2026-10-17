@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type JSX } from 'react';
 import { sanitizeUrl } from '../../lib/sanitize-url';
 import {
@@ -182,7 +182,7 @@ export default function GlobalPulse(): JSX.Element {
       // AbortError is expected when a newer refresh superseded this one —
       // not a real error, don't surface it to the UI.
       if (e instanceof DOMException && e.name === 'AbortError') return;
-      console.error('GlobalPulse load failed:', e instanceof Error ? e.message : String(e));
+      console.error('GlobalPulse load failed:', errMessage(e));
       if (loadIdRef.current === myId) setError((e as Error).message);
     } finally {
       if (loadIdRef.current === myId) setLoading(false);

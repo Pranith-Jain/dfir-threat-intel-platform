@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
@@ -236,7 +236,7 @@ export default function AiEscape(): JSX.Element {
       if (gRes.ok) setGuardrails(((await gRes.json()) as { guardrails: Guardrail[] }).guardrails ?? []);
       if (tRes.ok) setTrackers(((await tRes.json()) as { trackers: Tracker[] }).trackers ?? []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }
@@ -330,7 +330,7 @@ export default function AiEscape(): JSX.Element {
       void loadQueue();
     } catch (e) {
       logCatch(e);
-      setSubmitMsg(`Submit failed: ${e instanceof Error ? e.message : String(e)}`);
+      setSubmitMsg(`Submit failed: ${errMessage(e)}`);
     } finally {
       setSubmitting(false);
     }

@@ -4,6 +4,7 @@ import { Hash as HashIcon, Loader2 } from 'lucide-react';
 import { CopyButton } from '../../components/ui/CopyButton';
 import { BackLink } from '../../components/BackLink';
 import { fileTooLarge, yieldToPaint } from '../../lib/dfir/file-guard';
+import { errMessage } from '../../lib/log';
 
 /** Compact MD5 (RFC 1321). Web Crypto has no MD5; DFIR still needs it for
  *  cross-referencing legacy hash sets. */
@@ -108,9 +109,9 @@ export default function HashCalculator(): JSX.Element {
       ]);
       setOut({ MD5: md5(bytes), 'SHA-1': s1, 'SHA-256': s256, 'SHA-384': s384, 'SHA-512': s512 });
     } catch (ex) {
-      console.error('run failed:', ex instanceof Error ? ex.message : String(ex));
+      console.error('run failed:', errMessage(ex));
       setOut({});
-      setErr(ex instanceof Error ? ex.message : String(ex));
+      setErr(errMessage(ex));
     } finally {
       setBusy(false);
     }

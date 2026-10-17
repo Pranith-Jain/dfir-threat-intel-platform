@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { Radio, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 /**
  * Bulk-OTX rotation sweep panel.
@@ -142,7 +143,7 @@ export default function ActorOtxSweep({ actors, limit = 10 }: Props) {
       }
     } catch (err) {
       if ((err as { name?: string }).name !== 'AbortError') {
-        setError(err instanceof Error ? err.message : String(err));
+        setError(errMessage(err));
       }
     } finally {
       setRunning(false);

@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Search, Users, ExternalLink, Download, Bot, Loader2, Shield, Globe, X } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { downloadBlob } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 
 interface ForumRef {
   forum: string;
@@ -101,7 +102,7 @@ export default function ScrapedIntelUsernames(): JSX.Element {
       }
       setData(body as SearchResponse);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getJson } from './adminApi';
+import { errMessage } from '../../lib/log';
 
 interface CalendarSlot {
   slotAt: string;
@@ -131,8 +132,8 @@ export default function CalendarTab() {
       const r = await getJson<CalendarResponse>('/calendar');
       setData(r);
     } catch (e) {
-      console.error('CalendarTab failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : String(e));
+      console.error('CalendarTab failed:', errMessage(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

@@ -1,3 +1,4 @@
+import { errMessage } from '../log';
 export type DecodeFormat = 'base64' | 'url' | 'unknown';
 
 export function detectEncoding(input: string): DecodeFormat {
@@ -25,7 +26,7 @@ export function decodeBase64(input: string): { ok: true; result: string } | { ok
     const result = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
     return { ok: true, result };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : 'invalid base64' };
+    return { ok: false, error: errMessage(err, 'invalid base64') };
   }
 }
 
@@ -33,7 +34,7 @@ export function decodeUrl(input: string): { ok: true; result: string } | { ok: f
   try {
     return { ok: true, result: decodeURIComponent(input) };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : 'invalid url encoding' };
+    return { ok: false, error: errMessage(err, 'invalid url encoding') };
   }
 }
 

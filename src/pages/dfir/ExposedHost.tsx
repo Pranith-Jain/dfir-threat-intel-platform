@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useCallback, useRef, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -136,7 +136,7 @@ export default function ExposedHostView(): JSX.Element {
         .catch(() => {});
     } catch (e) {
       logCatch(e);
-      setError(e instanceof Error ? e.message : 'Lookup failed');
+      setError(errMessage(e, 'Lookup failed'));
     } finally {
       setLoading(false);
     }

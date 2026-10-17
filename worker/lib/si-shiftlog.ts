@@ -29,6 +29,8 @@
  *   - REST  /api/v1/si/shiftlog
  */
 
+import { errMessage } from './err';
+
 export interface EnvWithDb {
   BRIEFINGS_DB?: D1Database;
 }
@@ -151,7 +153,7 @@ function safeJsonArray(v: unknown): string[] {
     const parsed = JSON.parse(v);
     return Array.isArray(parsed) ? parsed.map(String) : [];
   } catch (_catchErr) {
-    console.error('safeJsonArray failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('safeJsonArray failed:', errMessage(_catchErr));
     return [];
   }
 }
@@ -215,7 +217,12 @@ export async function shiftlogGet(env: EnvWithDb, id: string): Promise<ShiftLogE
   const db = env.BRIEFINGS_DB;
   if (!db) throw new Error('BRIEFINGS_DB D1 binding missing');
   await ensureSchema(db);
-  const row = await db.prepare('SELECT id, shift, author, started_at, ended_at, open_cases, iocs, escalations, notes, created_at, updated_at FROM shiftlog_entries WHERE id = ?1').bind(id).first();
+  const row = await db
+    .prepare(
+      'SELECT id, shift, author, started_at, ended_at, open_cases, iocs, escalations, notes, created_at, updated_at FROM shiftlog_entries WHERE id = ?1'
+    )
+    .bind(id)
+    .first();
   return row ? rowToEntry(row) : null;
 }
 

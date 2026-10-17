@@ -7,6 +7,7 @@ import { SocBar, SocDonut, type BarItem, type DonutSlice } from '../../component
 import { downloadCsv, dayKey, formatNumber } from '../../components/threatintel/soc/utils';
 import { CHART_RANK, CHART_DAILY, CHART_IOC_KIND, CHART_CRIT } from '../../components/threatintel/soc/tone';
 import { sourceWeight } from '../../lib/dfir/source-meta';
+import { errMessage } from '../../lib/log';
 
 /* ─── Data shape (matches /api/v1/live-iocs) ───────────────────────── */
 
@@ -102,9 +103,9 @@ export default function SocIocs(): JSX.Element {
       const r = (await fetchJson('/api/v1/live-iocs', { signal, cache: 'no-store' })) as LiveIocsResponse;
       setData(r);
     } catch (e) {
-      console.error('SocIocs failed:', e instanceof Error ? e.message : String(e));
+      console.error('SocIocs failed:', errMessage(e));
       if ((e as { name?: string }).name !== 'AbortError') {
-        setError(e instanceof Error ? e.message : 'Failed to load.');
+        setError(errMessage(e, 'Failed to load.'));
       }
     } finally {
       setLoading(false);

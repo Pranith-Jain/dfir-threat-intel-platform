@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useEffect, useCallback } from 'react';
 import { Server, Database, Shield, Loader2, RefreshCw } from 'lucide-react';
 import { CopyButton } from '../../components/dfir/CopyButton';
@@ -47,7 +47,7 @@ export default function TaxiiServer(): JSX.Element {
       const data = (await res.json()) as { collections?: TaxiiCollection[] };
       setCollections(data.collections ?? []);
     } catch (_catchErr) {
-      console.error('TaxiiServer failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('TaxiiServer failed:', errMessage(_catchErr));
       /* silent */
     } finally {
       setLoading(false);

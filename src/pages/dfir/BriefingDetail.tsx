@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useMemo, useState } from 'react';
 import { sanitizeUrl } from '../../lib/sanitize-url';
 import { useParams } from 'react-router-dom';
@@ -307,7 +307,7 @@ function IocDumpPanel({
       const blob = await res.blob();
       downloadBlob(blob, `${slug}-iocs.txt`);
     } catch (_catchErr) {
-      console.error('IocDumpPanel failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('IocDumpPanel failed:', errMessage(_catchErr));
       // Last-resort: fall back to the inlined content (still a valid txt).
       const blob = new Blob([dump.content], { type: 'text/plain;charset=utf-8' });
       downloadBlob(blob, `${slug}-iocs.txt`);
@@ -600,7 +600,7 @@ export default function BriefingDetail(): JSX.Element {
             const parsed = JSON.parse(body) as { error?: string };
             msg = parsed.error ?? msg;
           } catch (_catchErr) {
-            console.error('BriefingDetail failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+            console.error('BriefingDetail failed:', errMessage(_catchErr));
             /* use default */
           }
           throw new Error(msg);

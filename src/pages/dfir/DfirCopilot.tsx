@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import {
@@ -184,7 +184,7 @@ export default function DfirCopilot(): JSX.Element {
       setResult(await res.json());
     } catch (e) {
       logCatch(e);
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

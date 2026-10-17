@@ -3,6 +3,7 @@ import { Bug, Search, ExternalLink, Flame } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { sanitizeUrl } from '../../lib/sanitize-url';
+import { errMessage } from '../../lib/log';
 
 interface Vuln {
   id: string;
@@ -56,7 +57,7 @@ export default function AiVulns(): JSX.Element {
       setTotal(j.total ?? 0);
       setKevTotal(j.kev ?? 0);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useMemo, useState } from 'react';
 import { sanitizeUrl } from '../../lib/sanitize-url';
 import { Link } from 'react-router-dom';
@@ -92,7 +92,7 @@ export default function XLive(): JSX.Element {
     try {
       return Number(localStorage.getItem('x-live.since-hours') ?? '24') || 24;
     } catch (_catchErr) {
-      console.error('XLive failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('XLive failed:', errMessage(_catchErr));
       return 24;
     }
   });

@@ -6,6 +6,7 @@ import { fileTooLarge } from '../../lib/dfir/file-guard';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
 import { BackLink } from '../../components/BackLink';
 import { useDebounce } from '../../hooks/useDebounce';
+import { errMessage } from '../../lib/log';
 
 interface FileRow {
   domain: string;
@@ -52,8 +53,8 @@ export default function IosBackupExplorer(): JSX.Element {
       setFiles(rows);
       setDomains([...dc.entries()].sort((a, b) => b[1] - a[1]).slice(0, 40));
     } catch (e) {
-      console.error('open failed:', e instanceof Error ? e.message : String(e));
-      setErr(e instanceof Error ? e.message : String(e));
+      console.error('open failed:', errMessage(e));
+      setErr(errMessage(e));
       setFiles(null);
     } finally {
       // Free the WASM-backed handle - rows/domains are already materialized

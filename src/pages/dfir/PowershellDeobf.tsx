@@ -7,6 +7,7 @@ import { hasIocCandidates } from '../../lib/dfir/ioc-detect';
 import { CopyChip } from '../../components/dfir/CopyButton';
 import { RelatedWikiArticles } from '../../components/dfir/RelatedWikiArticles';
 import { SEVERITY_TONE } from '../../components/severity';
+import { errMessage } from '../../lib/log';
 
 const SAMPLES: { label: string; value: string }[] = [
   {
@@ -102,7 +103,7 @@ export default function PowershellDeobf(): JSX.Element {
     try {
       sessionStorage.setItem('ioc-extractor-pipe', result.output);
     } catch (_catchErr) {
-      console.error('PowershellDeobf failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('PowershellDeobf failed:', errMessage(_catchErr));
       // sessionStorage can throw in private-mode/quota-exceeded; fall back to URL param truncation
     }
     navigate('/dfir/extract?from=ps-deob');

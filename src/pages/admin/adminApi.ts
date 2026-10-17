@@ -4,6 +4,7 @@
 // without per-component error handling.
 
 import { readAdminToken, clearAdminToken, adminAuthHeaders } from '../../lib/admin-token';
+import { errMessage } from '../../lib/log';
 
 const BASE = '/api/v1/admin';
 
@@ -40,7 +41,7 @@ async function extractError(r: Response): Promise<string> {
       detail = extra ? `${body.error}: ${extra}` : body.error;
     }
   } catch (_catchErr) {
-    console.error('extractError failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('extractError failed:', errMessage(_catchErr));
     /* ignore parse errors */
   }
   return detail;
@@ -246,7 +247,7 @@ export async function probeAuth(): Promise<boolean> {
     const r = await fetch(`${BASE}/health`, { headers: headers(), credentials: 'same-origin' });
     return r.status !== 401;
   } catch (_catchErr) {
-    console.error('probeAuth failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('probeAuth failed:', errMessage(_catchErr));
     return false;
   }
 }

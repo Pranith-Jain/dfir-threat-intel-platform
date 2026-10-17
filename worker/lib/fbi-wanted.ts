@@ -1,3 +1,4 @@
+import { errMessage } from './err';
 export async function fbiWantedSearch(q: string) {
   const result: { success: boolean; data?: unknown; error?: string; total?: number } = { success: false };
   try {
@@ -14,8 +15,8 @@ export async function fbiWantedSearch(q: string) {
     result.total = data.total;
     result.success = true;
   } catch (e) {
-    console.error('fbiWantedSearch failed:', e instanceof Error ? e.message : String(e));
-    result.error = e instanceof Error ? e.message : String(e);
+    console.error('fbiWantedSearch failed:', errMessage(e));
+    result.error = errMessage(e);
   }
   return result;
 }
@@ -34,8 +35,8 @@ export async function fbiWantedList(page = 1, pageSize = 20) {
     result.data = await res.json();
     result.success = true;
   } catch (e) {
-    console.error('fbiWantedList failed:', e instanceof Error ? e.message : String(e));
-    result.error = e instanceof Error ? e.message : String(e);
+    console.error('fbiWantedList failed:', errMessage(e));
+    result.error = errMessage(e);
   }
   return result;
 }

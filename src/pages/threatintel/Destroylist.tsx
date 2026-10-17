@@ -3,6 +3,7 @@ import { DataPageLayout } from '../../components/DataPageLayout';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { relativeAgo } from '../../lib/relativeTime';
 import { CheckCircle2, ExternalLink, Loader2, Search, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 /**
  * Destroylist — phishing & scam domain blacklist explorer
@@ -80,7 +81,7 @@ export default function Destroylist(): JSX.Element {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setCheckResult((await res.json()) as CheckResult);
     } catch (e) {
-      setCheckError(e instanceof Error ? e.message : String(e));
+      setCheckError(errMessage(e));
     } finally {
       setChecking(false);
     }
@@ -101,7 +102,7 @@ export default function Destroylist(): JSX.Element {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setSearchResult((await res.json()) as SearchResult);
     } catch (e) {
-      setSearchError(e instanceof Error ? e.message : String(e));
+      setSearchError(errMessage(e));
     } finally {
       setSearching(false);
     }

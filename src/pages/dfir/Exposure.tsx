@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useEffect, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Radar } from 'lucide-react';
@@ -46,7 +46,7 @@ export default function Exposure(): JSX.Element {
       recordHistory({ tool: 'exposure', indicator: r2.domain, verdict: r2.verdict, score: r2.score });
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : 'scan failed');
+      setError(errMessage(err, 'scan failed'));
     } finally {
       setLoading(false);
     }

@@ -15,6 +15,7 @@ import {
 import apiApp from '../../api/src/index';
 import { signInternalToken } from '../../api/src/lib/internal-token';
 import type { GlobalPulseResponse } from '../../api/src/routes/global-pulse/types';
+import { errMessage } from '../lib/err';
 
 const MAX_CONNECTIONS = 50;
 
@@ -227,7 +228,7 @@ export class GlobalPulseDO extends DurableObject<Env> {
         })
       );
     } catch (_catchErr) {
-      console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('handler failed:', errMessage(_catchErr));
       /* best-effort — the next alarm / connect retries */
     }
   }
@@ -259,7 +260,7 @@ export class GlobalPulseDO extends DurableObject<Env> {
       const body = JSON.parse(bodyText) as GlobalPulseResponse;
       this.applySnapshot(body);
     } catch (_catchErr) {
-      console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('handler failed:', errMessage(_catchErr));
       /* cache miss */
     }
   }
@@ -322,7 +323,7 @@ export class GlobalPulseDO extends DurableObject<Env> {
       try {
         ws.send(payload);
       } catch (_catchErr) {
-        console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('handler failed:', errMessage(_catchErr));
         this.sessions.delete(id);
       }
     }

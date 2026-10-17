@@ -1,6 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { adminAuthHeaders } from '../../lib/admin-token';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
+import { errMessage } from '../../lib/log';
 
 const RelationshipGraph = lazy(() => import('../../components/dfir/RelationshipGraph'));
 
@@ -102,7 +103,7 @@ export default function AgentMetrics(): JSX.Element {
         setGraph(kg);
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+        if (!cancelled) setError(errMessage(e));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

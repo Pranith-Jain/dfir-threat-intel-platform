@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useCallback, useRef } from 'react';
 import { BackLink } from '../../components/BackLink';
 import { ShareBar } from '../../components/intel/ShareBar';
@@ -153,7 +153,7 @@ export default function VerdiktAi(): JSX.Element {
     } catch (err) {
       logCatch(err);
       if (ctrl.signal.aborted) return;
-      setError(err instanceof Error ? err.message : String(err));
+      setError(errMessage(err));
     } finally {
       if (!ctrl.signal.aborted) setLoading(false);
     }

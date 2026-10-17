@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getJson, postJson, postJsonWithBody } from './adminApi';
 import { SearchFilter } from './SearchFilter';
+import { errMessage } from '../../lib/log';
 
 interface Candidate {
   key: string;
@@ -43,7 +44,7 @@ function hostOf(u: string): string {
   try {
     return new URL(u).hostname.replace(/^www\./, '');
   } catch (_catchErr) {
-    console.error('hostOf failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('hostOf failed:', errMessage(_catchErr));
     return u;
   }
 }
@@ -105,8 +106,8 @@ export default function PendingTab() {
       const d = await getJson<{ pending: Candidate[] }>('/candidates');
       setPending(d.pending);
     } catch (e) {
-      console.error('PendingTab failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'failed to load');
+      console.error('PendingTab failed:', errMessage(e));
+      setError(errMessage(e, 'failed to load'));
     } finally {
       setLoading(false);
     }
@@ -130,8 +131,8 @@ export default function PendingTab() {
       }
       await load();
     } catch (e) {
-      console.error('approve failed:', e instanceof Error ? e.message : String(e));
-      setActionMsg(`approve failed: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('approve failed:', errMessage(e));
+      setActionMsg(`approve failed: ${errMessage(e)}`);
     }
   }
 
@@ -142,8 +143,8 @@ export default function PendingTab() {
       setActionMsg(`Skipped ${id}`);
       await load();
     } catch (e) {
-      console.error('skip failed:', e instanceof Error ? e.message : String(e));
-      setActionMsg(`skip failed: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('skip failed:', errMessage(e));
+      setActionMsg(`skip failed: ${errMessage(e)}`);
     }
   }
 
@@ -155,8 +156,8 @@ export default function PendingTab() {
       setActionMsg(`Cleared ${res.cleared} candidate(s)`);
       await load();
     } catch (e) {
-      console.error('clearAll failed:', e instanceof Error ? e.message : String(e));
-      setActionMsg(`clear all failed: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('clearAll failed:', errMessage(e));
+      setActionMsg(`clear all failed: ${errMessage(e)}`);
     }
   }
 

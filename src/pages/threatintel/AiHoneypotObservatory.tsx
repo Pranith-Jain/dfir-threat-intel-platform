@@ -13,6 +13,8 @@ import {
   Skull,
   Wifi,
 } from 'lucide-react';
+import { relativeAgo } from '../../lib/relativeTime';
+import { errMessage } from '../../lib/log';
 
 /**
  * AI Honeypot Observatory - LLM/AI endpoint honeypot intelligence.
@@ -146,18 +148,6 @@ function formatHits(n: number): string {
   return String(n);
 }
 
-function relativeTime(dateStr: string): string {
-  if (!dateStr) return '';
-  const diff = Date.now() - Date.parse(dateStr);
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
-}
-
 export default function AiHoneypotObservatory(): JSX.Element {
   const [feed, setFeed] = useState<FeedData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -183,9 +173,9 @@ export default function AiHoneypotObservatory(): JSX.Element {
       if (ctrl.signal.aborted) return;
       setFeed(data);
     } catch (e) {
-      console.error('AiHoneypotObservatory failed:', e instanceof Error ? e.message : String(e));
+      console.error('AiHoneypotObservatory failed:', errMessage(e));
       if (ctrl.signal.aborted) return;
-      setError(e instanceof Error ? e.message : 'Failed to load feed');
+      setError(errMessage(e, 'Failed to load feed'));
     } finally {
       if (!ctrl.signal.aborted) setLoading(false);
     }
@@ -254,7 +244,7 @@ export default function AiHoneypotObservatory(): JSX.Element {
           >
             ai-honeypots.com
           </a>
-          {feed?.published && <span className="ml-2 text-muted">Published {relativeTime(feed.published)}</span>}
+          {feed?.published && <span className="ml-2 text-muted">Published {relativeAgo(feed.published)}</span>}
         </span>
         <div className="ml-auto flex items-center gap-2">
           <a

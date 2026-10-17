@@ -7,11 +7,12 @@
  * against that host at call time.
  */
 
-import { apiFetch, apiFetchSse, untrustedToolResult } from './core';
+import { adminApiFetch, apiFetch, apiFetchSse, untrustedToolResult } from './core';
 import { kqlToAhUrl, kqlToAhUrlMarkdown } from '../lib/kql-to-ah-url';
 import { z } from 'zod';
 
 import type { McpToolHost } from './host';
+import { errMessage } from '../lib/err';
 
 export function registerApiProxyTools(h: McpToolHost): void {
   // ── IOC Check ────────────────────────────────────────────────────────
@@ -497,7 +498,7 @@ export function registerApiProxyTools(h: McpToolHost): void {
         });
       } catch (err) {
         return untrustedToolResult({
-          error: `breach.vip request failed: ${err instanceof Error ? err.message : String(err)}`,
+          error: `breach.vip request failed: ${errMessage(err)}`,
           results: [],
         });
       }
@@ -697,7 +698,7 @@ export function registerApiProxyTools(h: McpToolHost): void {
       if (!text && !url) {
         throw new Error('Either text or url must be provided');
       }
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/report/parse', h.apiKey, {
+      const data = await adminApiFetch<Record<string, unknown>>(h, '/api/v1/report/parse', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ text, url }),
@@ -792,7 +793,7 @@ export function registerApiProxyTools(h: McpToolHost): void {
         .describe('Types of alerts to generate'),
     },
     async ({ domain, alert_types }) => {
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/ct-monitor/watch', h.apiKey, {
+      const data = await adminApiFetch<Record<string, unknown>>(h, '/api/v1/ct-monitor/watch', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ domain, alert_types }),
@@ -1055,8 +1056,8 @@ export function registerApiProxyTools(h: McpToolHost): void {
         }
         return untrustedToolResult({ url, kqlBytes: kql.length, encodedBytes: url.length - 50 });
       } catch (e) {
-        console.error('handler failed:', e instanceof Error ? e.message : String(e));
-        return untrustedToolResult({ error: 'encode_failed', message: e instanceof Error ? e.message : String(e) });
+        console.error('handler failed:', errMessage(e));
+        return untrustedToolResult({ error: 'encode_failed', message: errMessage(e) });
       }
     }
   );

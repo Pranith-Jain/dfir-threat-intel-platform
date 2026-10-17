@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Search, Loader2, Globe, Shield, AlertTriangle, ExternalLink } from 'lucide-react';
@@ -70,7 +70,7 @@ export default function DomainMonitor(): JSX.Element {
       setResults(data);
     } catch (e) {
       logCatch(e);
-      if (!signal.aborted) setError(e instanceof Error ? e.message : 'check failed');
+      if (!signal.aborted) setError(errMessage(e, 'check failed'));
     } finally {
       if (!signal.aborted) setLoading(false);
     }

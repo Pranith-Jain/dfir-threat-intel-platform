@@ -5,6 +5,7 @@ import { useDataFetch } from '../../hooks/useDataFetch';
 import { api } from '../../lib/api-client';
 import { renderMarkdown } from '../../components/dfir/report-view-helpers';
 import { ExternalLink, Loader2, ScanSearch, Search, ShieldCheck } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 /**
  * Denali — evidence-led, provider-neutral AI security (transilienceai, Apache-2.0).
@@ -161,7 +162,7 @@ export default function Denali(): JSX.Element {
       const activities = JSON.parse(activitiesText) as unknown;
       setEvalResult(await api.post<EvalResult>('/api/v1/denali/evaluate/activity', { activities }));
     } catch (e) {
-      setEvalError(e instanceof Error ? e.message : 'Evaluation failed');
+      setEvalError(errMessage(e, 'Evaluation failed'));
     } finally {
       setEvaluating(false);
     }

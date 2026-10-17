@@ -4,6 +4,7 @@ import { DataPageLayout } from '../../components/DataPageLayout';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
 import { PageMeta } from '../../components/PageMeta';
 import { Search, Globe, Loader2, ExternalLink, Shield, AlertTriangle } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 interface CerastResult {
   domain: string;
@@ -39,7 +40,7 @@ function fmtDate(s: string): string {
     if (isNaN(d.getTime())) return s;
     return d.toISOString().slice(0, 16).replace('T', ' ');
   } catch (_catchErr) {
-    console.error('fmtDate failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('fmtDate failed:', errMessage(_catchErr));
     return s;
   }
 }

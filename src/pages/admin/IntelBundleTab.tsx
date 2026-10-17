@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getJson } from './adminApi';
+import { errMessage } from '../../lib/log';
 
 /**
  * Inspect the LLM-enrichment slice of a persisted intel-bundle row.
@@ -56,8 +57,8 @@ export default function IntelBundleTab() {
       );
       setData(out);
     } catch (e) {
-      console.error('inspect failed:', e instanceof Error ? e.message : String(e));
-      const msg = e instanceof Error ? e.message : String(e);
+      console.error('inspect failed:', errMessage(e));
+      const msg = errMessage(e);
       setError(msg);
     } finally {
       setLoading(false);

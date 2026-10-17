@@ -5,6 +5,7 @@ import { DataPageLayout } from '../../components/DataPageLayout';
 import { fetchJsonCached } from '../../lib/api-client';
 import { ClusterTabs, RANSOMWARE_TABS } from '../../components/threatintel/ClusterTabs';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
+import { errMessage } from '../../lib/log';
 
 interface Wallet {
   address: string;
@@ -40,7 +41,7 @@ function safeHref(url: string): string | null {
     const u = new URL(url);
     return u.protocol === 'http:' || u.protocol === 'https:' ? u.toString() : null;
   } catch (_catchErr) {
-    console.error('safeHref failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('safeHref failed:', errMessage(_catchErr));
     return null;
   }
 }

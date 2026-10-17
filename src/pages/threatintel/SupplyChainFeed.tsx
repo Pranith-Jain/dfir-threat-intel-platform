@@ -3,6 +3,7 @@ import { DataPageLayout } from '../../components/DataPageLayout';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
 import { fetchJsonCached } from '../../lib/api-client';
+import { errMessage } from '../../lib/log';
 import {
   AlertTriangle,
   CheckCircle,
@@ -140,7 +141,7 @@ export default function SupplyChainFeed(): JSX.Element {
       if (ecoFilter) params.set('ecosystem', ecoFilter);
       setFeed(await fetchJsonCached<FeedResponse>(`/api/v1/depx/feed?${params}`, 30_000));
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }
@@ -162,7 +163,7 @@ export default function SupplyChainFeed(): JSX.Element {
         : new URLSearchParams({ ecosystem: 'npm', package: input });
       setCheckResult(await fetchJsonCached<CheckResponse>(`/api/v1/depx/feed/check?${params}`, 15_000));
     } catch (e) {
-      setCheckError(e instanceof Error ? e.message : String(e));
+      setCheckError(errMessage(e));
     } finally {
       setCheckLoading(false);
     }

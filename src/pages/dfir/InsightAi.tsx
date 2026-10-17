@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useCallback } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { ShareBar } from '../../components/intel/ShareBar';
@@ -124,7 +124,7 @@ export default function InsightAi(): JSX.Element {
       setActiveTab(firstMode!);
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : String(err));
+      setError(errMessage(err));
     } finally {
       setLoading(false);
     }

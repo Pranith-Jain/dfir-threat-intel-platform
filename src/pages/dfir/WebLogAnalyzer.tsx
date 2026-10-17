@@ -5,6 +5,7 @@ import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
 import { FileCheck, Upload, FileSearch, ShieldAlert } from 'lucide-react';
 import { downloadBlob } from '../../lib/download';
 import { sanitizeInvisibleText, scanInvisibleText } from '../../lib/invisible-prompt';
+import { errMessage } from '../../lib/log';
 
 interface Row {
   n: number;
@@ -78,7 +79,7 @@ function analyze(text: string): { rows: Row[]; total: number; parsed: number } {
     try {
       decoded = decodeURIComponent(m[4]!);
     } catch (_catchErr) {
-      console.error('analyze failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('analyze failed:', errMessage(_catchErr));
       /* keep raw */
     }
     const ua = m[8] ?? '';

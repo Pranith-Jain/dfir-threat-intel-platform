@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { errMessage } from '../lib/log';
 
 type FeedbackRating = 'useful' | 'not_useful' | 'actioned' | 'accurate' | 'inaccurate' | 'no_value';
 type FeedbackTarget = 'copilot' | 'briefing' | 'pir' | 'finding' | 'ioc' | 'assessment';
@@ -77,7 +78,7 @@ export function FeedbackWidget({ targetType, targetId, sector, compact, onFeedba
       setSelectedRating(rating);
       onFeedback?.(rating);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       clearTimeout(timer);
       if (inflightRef.current === ctrl) inflightRef.current = null;

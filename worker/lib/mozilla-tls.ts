@@ -1,3 +1,4 @@
+import { errMessage } from './err';
 export interface MozillaTlsResult {
   scanId?: number;
   url?: string;
@@ -34,8 +35,8 @@ export async function mozillaTlsScan(
     result.data = (await res.json()) as MozillaTlsResult;
     result.success = true;
   } catch (e) {
-    console.error('mozillaTlsScan failed:', e instanceof Error ? e.message : String(e));
-    result.error = e instanceof Error ? e.message : String(e);
+    console.error('mozillaTlsScan failed:', errMessage(e));
+    result.error = errMessage(e);
   }
   return result;
 }

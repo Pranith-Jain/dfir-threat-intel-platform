@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { DataPageLayout } from '../../components/DataPageLayout';
@@ -175,7 +175,7 @@ export default function CveLookup(): JSX.Element {
       setResult((await r.json()) as CveLookupResult);
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : 'lookup failed');
+      setError(errMessage(err, 'lookup failed'));
     } finally {
       setLoading(false);
     }

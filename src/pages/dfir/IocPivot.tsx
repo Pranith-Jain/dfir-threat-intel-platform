@@ -4,6 +4,7 @@ import { Search, Loader2, FileSearch, FileDown, AlertCircle } from 'lucide-react
 import { streamIoc } from '../../lib/dfir/api';
 import { detectType } from '../../lib/dfir/indicator-client';
 import type { ProviderResultWire, DoneEvent } from '../../lib/dfir/types';
+import { errMessage } from '../../lib/log';
 
 /**
  * IOC Pivot Graph - enrich one indicator across the 60+ source checker
@@ -183,8 +184,8 @@ export default function IocPivot(): JSX.Element {
       if (!id) throw new Error('build response missing bundle.id');
       setStixBundleId(id);
     } catch (err) {
-      console.error('buildPivotStix failed:', err instanceof Error ? err.message : String(err));
-      setStixError(err instanceof Error ? err.message : String(err));
+      console.error('buildPivotStix failed:', errMessage(err));
+      setStixError(errMessage(err));
     } finally {
       setStixBuilding(false);
     }

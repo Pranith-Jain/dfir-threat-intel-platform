@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, Flag, Search, Users } from 'lucide-react';
 import { DataPageLayout, useInsideDataPageLayout } from '../../components/DataPageLayout';
+import { errMessage } from '../../lib/log';
 
 interface GalaxyActor {
   value: string;
@@ -32,7 +33,7 @@ function safeHref(url: string): string | null {
     const u = new URL(url);
     return u.protocol === 'http:' || u.protocol === 'https:' ? u.toString() : null;
   } catch (_catchErr) {
-    console.error('safeHref failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('safeHref failed:', errMessage(_catchErr));
     return null;
   }
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { Copy, Check, ExternalLink, AlertTriangle, Shield, Search, Download, Bug } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 /**
  * SSVC-V decision, computed server-side from KEV / EPSS / CVSS / exploit
@@ -98,7 +99,7 @@ export default function CveDetail(): JSX.Element {
         setData(mapped);
       } catch (e) {
         if (cancelled) return;
-        setError(e instanceof Error ? e.message : 'Failed to load CVE');
+        setError(errMessage(e, 'Failed to load CVE'));
       } finally {
         if (!cancelled) setLoading(false);
       }

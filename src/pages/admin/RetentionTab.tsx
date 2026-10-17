@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useCallback, useState } from 'react';
 import { postJsonWithBody } from './adminApi';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
@@ -61,8 +61,8 @@ export default function RetentionTab() {
         const r = await postJsonWithBody<RetentionResult>('/retention/run', { days, dry_run: dryRun });
         setResult(r);
       } catch (e) {
-        console.error('RetentionTab failed:', e instanceof Error ? e.message : String(e));
-        setError(e instanceof Error ? e.message : String(e));
+        console.error('RetentionTab failed:', errMessage(e));
+        setError(errMessage(e));
       } finally {
         setBusy(null);
       }
@@ -79,7 +79,7 @@ export default function RetentionTab() {
       setTgResult(r);
     } catch (e) {
       logCatch(e);
-      setTgError(e instanceof Error ? e.message : String(e));
+      setTgError(errMessage(e));
     } finally {
       setBusy(null);
     }

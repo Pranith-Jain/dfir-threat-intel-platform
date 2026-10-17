@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useCallback, useState } from 'react';
 import { FileText, Search, Download, Copy, Check, AlertTriangle } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
@@ -95,8 +95,8 @@ export default function StixIpExport() {
       );
       setResult(r);
     } catch (e) {
-      console.error('StixIpExport failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'Enrichment failed.');
+      console.error('StixIpExport failed:', errMessage(e));
+      setError(errMessage(e, 'Enrichment failed.'));
     } finally {
       setLoading(false);
     }
@@ -121,7 +121,7 @@ export default function StixIpExport() {
       setBatchResult(r);
     } catch (e) {
       logCatch(e);
-      setError(e instanceof Error ? e.message : 'Batch enrichment failed.');
+      setError(errMessage(e, 'Batch enrichment failed.'));
     } finally {
       setLoading(false);
     }

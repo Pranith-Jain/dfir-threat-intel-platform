@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
 import { MaturityPanel } from '../../components/threatintel/MaturityPanel';
+import { errMessage } from '../../lib/log';
 // recharts (~540KB) lives behind the `cves` tab only — a static import here
 // would make every IntelDashboard visit parse it even on `tab==='overview'`.
 const CveLandscapePanel = lazy(() => import('./ThreatIntelDashboard').then((m) => ({ default: m.CveLandscapePanel })));
@@ -213,7 +214,7 @@ export default function IntelDashboard(): JSX.Element {
       .catch((e) => {
         if (e instanceof DOMException && e.name === 'AbortError') return;
         if (cancelled) return;
-        setError(e instanceof Error ? e.message : 'Failed to load the dashboard');
+        setError(errMessage(e, 'Failed to load the dashboard'));
         setLoading(false);
       });
 

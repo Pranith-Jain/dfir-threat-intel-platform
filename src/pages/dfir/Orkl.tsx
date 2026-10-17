@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useCallback, useRef } from 'react';
 import { BookOpen, Calendar, FileText, Globe, Loader2, Search, User, Hash } from 'lucide-react';
 import { BackLink } from '../../components/BackLink';
@@ -59,7 +59,7 @@ function formatDate(iso: string): string {
   try {
     return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   } catch (_catchErr) {
-    console.error('formatDate failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('formatDate failed:', errMessage(_catchErr));
     return iso.slice(0, 10);
   }
 }
@@ -107,7 +107,7 @@ export default function Orkl(): JSX.Element {
     } catch (e) {
       logCatch(e);
       if (ctrl.signal.aborted) return;
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       if (!ctrl.signal.aborted) setLoading(false);
     }

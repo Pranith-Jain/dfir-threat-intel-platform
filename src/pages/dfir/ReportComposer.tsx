@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { BackLink } from '../../components/BackLink';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
+import { errMessage } from '../../lib/log';
 import {
   emptyReport,
   TLP_OPTIONS,
@@ -46,7 +47,7 @@ function loadDraft(): ReportDoc | null {
     if (!raw) return null;
     return JSON.parse(raw) as ReportDoc;
   } catch (_catchErr) {
-    console.error('loadDraft failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('loadDraft failed:', errMessage(_catchErr));
     return null;
   }
 }
@@ -55,7 +56,7 @@ function saveDraft(doc: ReportDoc): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(doc));
   } catch (_catchErr) {
-    console.error('saveDraft failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('saveDraft failed:', errMessage(_catchErr));
     /* quota */
   }
 }
@@ -207,7 +208,7 @@ export default function ReportComposer(): JSX.Element {
         downloadBlob(blob, docxFilename(doc));
       }
     } catch (e) {
-      console.error('handleExport failed:', e instanceof Error ? e.message : String(e));
+      console.error('handleExport failed:', errMessage(e));
       setExportError((e as Error).message);
     } finally {
       setExporting(null);

@@ -5,6 +5,7 @@ import { useDataFetch } from '../../hooks/useDataFetch';
 import { api } from '../../lib/api-client';
 import { renderMarkdown } from '../../components/dfir/report-view-helpers';
 import { BrainCircuit, ExternalLink, Loader2, ScanSearch, Search } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 /**
  * CAIRN — Cisco-Talos Cognitive Artifact Intelligence Research Network (MIT).
@@ -188,7 +189,7 @@ export default function Cairn(): JSX.Element {
     try {
       setScanResult(await api.post<ScanResult>('/api/v1/cairn/scan', { text: scanText, tier: scanTier || undefined }));
     } catch (e) {
-      setScanError(e instanceof Error ? e.message : 'Scan failed');
+      setScanError(errMessage(e, 'Scan failed'));
     } finally {
       setScanning(false);
     }

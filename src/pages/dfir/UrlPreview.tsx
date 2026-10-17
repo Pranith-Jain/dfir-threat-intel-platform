@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { sanitizeUrl } from '../../lib/sanitize-url';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -96,7 +96,7 @@ export default function UrlPreview(): JSX.Element {
       const p = new URL(input.trim());
       return p.protocol === 'http:' || p.protocol === 'https:';
     } catch (_catchErr) {
-      console.error('UrlPreview failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('UrlPreview failed:', errMessage(_catchErr));
       return false;
     }
   })();
@@ -109,7 +109,7 @@ export default function UrlPreview(): JSX.Element {
       const p = new URL(target);
       if (p.protocol !== 'http:' && p.protocol !== 'https:') return;
     } catch (_catchErr) {
-      console.error('UrlPreview failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('UrlPreview failed:', errMessage(_catchErr));
       return;
     }
     setLoading(true);
@@ -123,7 +123,7 @@ export default function UrlPreview(): JSX.Element {
       setResult(body);
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : 'preview failed');
+      setError(errMessage(err, 'preview failed'));
     } finally {
       setLoading(false);
     }

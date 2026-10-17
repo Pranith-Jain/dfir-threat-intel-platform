@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AlertTriangle, Network } from 'lucide-react';
@@ -62,7 +62,7 @@ export default function AsnLookup(): JSX.Element {
     } catch (err) {
       logCatch(err);
       if (ctrl.signal.aborted) return;
-      setError(err instanceof Error ? err.message : 'lookup failed');
+      setError(errMessage(err, 'lookup failed'));
     } finally {
       if (!ctrl.signal.aborted) setLoading(false);
     }
@@ -94,7 +94,9 @@ export default function AsnLookup(): JSX.Element {
     <div className="max-w-6xl">
       <div className="animate-fade-in-up">
         <h1 className="text-3xl sm:text-4xl font-display font-semibold mb-2">ASN Lookup</h1>
-        <p className="text-muted mb-8 max-w-2xl">Autonomous system ownership, announced prefixes, and abuse contacts for any ASN, IP, or CIDR.</p>
+        <p className="text-muted mb-8 max-w-2xl">
+          Autonomous system ownership, announced prefixes, and abuse contacts for any ASN, IP, or CIDR.
+        </p>
       </div>
 
       {/* Was DataPageLayout's `error` prop before this page became a hub
@@ -251,6 +253,6 @@ export default function AsnLookup(): JSX.Element {
           </section>
         </div>
       )}
-  </div>
+    </div>
   );
 }

@@ -13,6 +13,7 @@ interface FeedSnapshot {
 // A literal here silently drifts again on the next route-side bump; the import
 // cannot.
 import { LIVE_IOCS_CACHE_KEY } from '../../api/src/routes/live-iocs';
+import { errMessage } from '../lib/err';
 
 const CACHE_KEYS = [
   { key: 'https://ransomware-recent-cache.internal/v8-af-source', label: 'ransomware' },
@@ -156,7 +157,7 @@ export class LiveFeedDO extends DurableObject<Env> {
 
           this.lastSnapshots.set(label, { type: label, total, generated_at });
         } catch (_catchErr) {
-          console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('handler failed:', errMessage(_catchErr));
           /* cache miss */
         }
       })
@@ -169,7 +170,7 @@ export class LiveFeedDO extends DurableObject<Env> {
       try {
         ws.send(payload);
       } catch (_catchErr) {
-        console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('handler failed:', errMessage(_catchErr));
         this.sessions.delete(id);
       }
     }

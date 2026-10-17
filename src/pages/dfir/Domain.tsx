@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useEffect, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, ExternalLink, Globe, ChevronDown, ChevronRight, Fingerprint, Shield, Link2 } from 'lucide-react';
@@ -58,7 +58,7 @@ export default function Domain(): JSX.Element {
           const parsed = JSON.parse(body) as { error?: string };
           msg = parsed.error ?? msg;
         } catch (_catchErr) {
-          console.error('Domain failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('Domain failed:', errMessage(_catchErr));
           /* use default */
         }
         throw new Error(msg);
@@ -70,7 +70,7 @@ export default function Domain(): JSX.Element {
       recordHistory({ tool: 'domain', indicator: r2.domain, verdict: r2.verdict, score: r2.score });
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : 'lookup failed');
+      setError(errMessage(err, 'lookup failed'));
     } finally {
       setLoading(false);
     }
@@ -81,8 +81,10 @@ export default function Domain(): JSX.Element {
     const domain = result.domain;
     const ac = new AbortController();
     setWebamonLoading(true);
-    fetch(`/api/v1/webamon/search?search=${encodeURIComponent(`domain.name:${domain}`)}&size=1`, {
-      signal: AbortSignal.any([ac.signal, AbortSignal.timeout(15_000)]),
+    // `domain_name` is Webamon's exact-match keyword field; `domain.name` is
+    // analyzed text and matches loose substrings, not the domain itself.
+    fetch(`/api/v1/webamon/search?search=${encodeURIComponent(`domain_name:"${domain}"`)}&size=5`, {
+      signal: AbortSignal.any([ac.signal, AbortSignal.timeout(30_000)]),
     })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => setWebamon(d as WebamonData | null))
@@ -301,7 +303,7 @@ export default function Domain(): JSX.Element {
                             return (
                               <a
                                 key={key}
-                                href={`/threatintel/webamon?q=${encodeURIComponent(`fingerprint.${key}:${val}`)}`}
+                                href={`/threatintel/infra/webamon?q=${encodeURIComponent(`fingerprint.${key}:"${val}"`)}`}
                                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-mini font-mono bg-surface-300 text-muted hover:bg-brand-100 dark:hover:bg-brand-900/30 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
                                 title={`Search by ${key} fingerprint`}
                               >
@@ -317,7 +319,7 @@ export default function Domain(): JSX.Element {
                 ))}
               <div className="mt-3 pt-3 border-t border-line-1">
                 <a
-                  href={`/threatintel/webamon?q=${encodeURIComponent(`domain.name:${result.domain}`)}`}
+                  href={`/threatintel/infra/webamon?q=${encodeURIComponent(`domain_name:"${result.domain}"`)}`}
                   className="text-meta text-brand-600 dark:text-brand-400 hover:underline font-mono inline-flex items-center gap-1 transition-colors"
                 >
                   <Search size={11} /> Full Webamon search <ExternalLink size={10} />

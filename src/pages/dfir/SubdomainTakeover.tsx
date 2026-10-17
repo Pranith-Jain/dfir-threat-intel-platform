@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState } from 'react';
 import { Search, AlertTriangle, CheckCircle, ExternalLink, Loader2, Link2 } from 'lucide-react';
 import { BackLink } from '../../components/BackLink';
@@ -93,7 +93,7 @@ export default function SubdomainTakeover() {
         subdomains = ct.subdomains ?? [];
         setCtSubdomains(subdomains);
       } catch (_catchErr) {
-        console.error('SubdomainTakeover failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('SubdomainTakeover failed:', errMessage(_catchErr));
         // crt.sh may be slow/down - continue with just the base domain
       }
 
@@ -164,7 +164,7 @@ export default function SubdomainTakeover() {
       setResults(newResults);
     } catch (e) {
       logCatch(e);
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

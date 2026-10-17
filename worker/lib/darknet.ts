@@ -14,6 +14,8 @@
  *   - ChainAbuse     — BTC abuse reports (https://api.chainabuse.com)
  */
 
+import { errMessage } from './err';
+
 // ─── Constants ────────────────────────────────────────────────────────────
 
 const TOR2WEB_GATEWAYS = ['tor2web.io', 'onion.ws', 'onion.sh', 'tor2web.org'] as const;
@@ -652,7 +654,7 @@ export async function btcAbuseCheck(address: string, apiKey?: string): Promise<C
       count: 0,
       verdict: 'unknown',
       unavailable: true,
-      note: `BTC abuse lookup unavailable: ${err instanceof Error ? err.message : 'upstream error'}.`,
+      note: `BTC abuse lookup unavailable: ${errMessage(err, 'upstream error')}.`,
     };
   }
 }

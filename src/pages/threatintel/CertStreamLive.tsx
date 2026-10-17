@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DataPageLayout } from '../../components/DataPageLayout';
@@ -75,7 +75,7 @@ export default function CertStreamLive(): JSX.Element {
     try {
       return localStorage.getItem(STORAGE_KEY) ?? '';
     } catch (_catchErr) {
-      console.error('CertStreamLive failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('CertStreamLive failed:', errMessage(_catchErr));
       return '';
     }
   });

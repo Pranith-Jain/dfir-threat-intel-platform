@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getJson, postJson, postJsonWithBody } from './adminApi';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
 import { SearchFilter } from './SearchFilter';
+import { errMessage } from '../../lib/log';
 
 /**
  * Drafts queue - populated by the publisher when BLOG_APPROVAL_REQUIRED
@@ -69,8 +70,8 @@ export default function DraftsTab() {
       setDrafts(d.drafts);
       setApprovalRequired(d.approvalRequired);
     } catch (e) {
-      console.error('DraftsTab failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : String(e));
+      console.error('DraftsTab failed:', errMessage(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }
@@ -89,9 +90,9 @@ export default function DraftsTab() {
       if (latestPreviewReq.current !== slug) return; // superseded by a newer click
       setPreview(p);
     } catch (e) {
-      console.error('loadPreview failed:', e instanceof Error ? e.message : String(e));
+      console.error('loadPreview failed:', errMessage(e));
       if (latestPreviewReq.current !== slug) return;
-      setActionMsg(`preview failed: ${e instanceof Error ? e.message : String(e)}`);
+      setActionMsg(`preview failed: ${errMessage(e)}`);
     } finally {
       if (latestPreviewReq.current === slug) setPreviewLoading(null);
     }
@@ -110,8 +111,8 @@ export default function DraftsTab() {
       if (preview?.post.slug === slug) setPreview(null);
       await load();
     } catch (e) {
-      console.error('approve failed:', e instanceof Error ? e.message : String(e));
-      setActionMsg(`approve failed: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('approve failed:', errMessage(e));
+      setActionMsg(`approve failed: ${errMessage(e)}`);
     } finally {
       setActionBusy(null);
     }
@@ -127,8 +128,8 @@ export default function DraftsTab() {
       if (preview?.post.slug === slug) setPreview(null);
       await load();
     } catch (e) {
-      console.error('reject failed:', e instanceof Error ? e.message : String(e));
-      setActionMsg(`reject failed: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('reject failed:', errMessage(e));
+      setActionMsg(`reject failed: ${errMessage(e)}`);
     } finally {
       setActionBusy(null);
     }
@@ -201,8 +202,8 @@ export default function DraftsTab() {
       }
       await load();
     } catch (e) {
-      console.error('handler failed:', e instanceof Error ? e.message : String(e));
-      setActionMsg(`${verb} failed: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('handler failed:', errMessage(e));
+      setActionMsg(`${verb} failed: ${errMessage(e)}`);
     } finally {
       setActionBusy(null);
     }
@@ -413,7 +414,7 @@ function DraftPreviewPanel({
         }
       }
     } catch (e) {
-      console.error('saveEdit failed:', e instanceof Error ? e.message : String(e));
+      console.error('saveEdit failed:', errMessage(e));
     } finally {
       setSaving(false);
     }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { isAbortError } from '../lib/abort-error';
+import { errMessage } from '../lib/log';
 
 /**
  * useIntelBundle - fetch (or compute-on-miss) a STIX 2.1 intel bundle for a
@@ -167,7 +168,7 @@ export function useIntelBundle(options: UseIntelBundleOptions): UseIntelBundleRe
         setStatus('ready');
       } catch (err) {
         if (isAbortError(err)) return;
-        setError(err instanceof Error ? err.message : String(err));
+        setError(errMessage(err));
         setStatus('error');
       }
     })();

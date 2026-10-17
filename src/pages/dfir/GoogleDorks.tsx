@@ -3,6 +3,7 @@ import { sanitizeUrl } from '../../lib/sanitize-url';
 import { useSearchParams } from 'react-router-dom';
 import { Search, ExternalLink, Loader2, Copy } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { errMessage } from '../../lib/log';
 
 /**
  * /dfir/google-dorks - SerpAPI-backed Google search with dork-operator hints.
@@ -136,8 +137,8 @@ export default function GoogleDorks(): JSX.Element {
       setData(json);
       setStatus('ready');
     } catch (e) {
-      console.error('runSearch failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : String(e));
+      console.error('runSearch failed:', errMessage(e));
+      setError(errMessage(e));
       setStatus('error');
       setData(null);
     }
@@ -153,7 +154,7 @@ export default function GoogleDorks(): JSX.Element {
       await navigator.clipboard.writeText(link);
       setCopied(link);
     } catch (_catchErr) {
-      console.error('copyLink failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('copyLink failed:', errMessage(_catchErr));
       /* clipboard blocked; skip */
     }
   }

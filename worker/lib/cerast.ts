@@ -9,6 +9,8 @@
  * Response: { results: CerastResult[], count: number, limited: boolean }
  */
 
+import { errMessage } from './err';
+
 export interface CerastResult {
   domain: string;
   path: string;
@@ -110,12 +112,12 @@ export async function cerastSearch(query: string): Promise<CerastSearchResult> {
     result.limited = data.limited ?? false;
     result.diagnostics.push({ provider: 'cerast', status: 'ok', ms: Date.now() - t0 });
   } catch (e) {
-    console.error('handler failed:', e instanceof Error ? e.message : String(e));
+    console.error('handler failed:', errMessage(e));
     result.diagnostics.push({
       provider: 'cerast',
       status: 'failed',
       ms: Date.now() - t0,
-      error: e instanceof Error ? e.message : String(e),
+      error: errMessage(e),
     });
   }
 

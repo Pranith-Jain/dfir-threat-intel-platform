@@ -3,6 +3,7 @@ import type { Severity as Sev } from '../../components/severity';
 import { BackLink } from '../../components/BackLink';
 import { AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, Info } from 'lucide-react';
 import { Textarea } from '../../components/ui/Input';
+import { errMessage } from '../../lib/log';
 
 /**
  * Kubernetes RBAC Analyzer - 100% client-side.
@@ -255,7 +256,7 @@ function analyze(text: string): Analysis | null {
   try {
     doc = JSON.parse(trimmed);
   } catch (e) {
-    console.error('analyze failed:', e instanceof Error ? e.message : String(e));
+    console.error('analyze failed:', errMessage(e));
     return {
       error: `${(e as Error).message}. Tip: paste \`kubectl get … -o json\` (JSON, not YAML).`,
       objects: 0,

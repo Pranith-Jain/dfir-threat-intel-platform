@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useState, useCallback } from 'react';
 import { DataState } from '../../components/DataState';
 import { DataPageLayout } from '../../components/DataPageLayout';
@@ -44,8 +44,8 @@ export default function TelegramDiscoveredChannels(): JSX.Element {
       const d = (await res.json()) as { channels: DiscoveredChannel[] };
       setChannels(d.channels ?? []);
     } catch (e) {
-      console.error('TelegramDiscoveredChannels failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : String(e));
+      console.error('TelegramDiscoveredChannels failed:', errMessage(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }
@@ -87,7 +87,7 @@ export default function TelegramDiscoveredChannels(): JSX.Element {
       setChannels((prev) => prev.filter((ch) => ch.handle !== handle));
     } catch (e) {
       logCatch(e);
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setBusy(null);
     }

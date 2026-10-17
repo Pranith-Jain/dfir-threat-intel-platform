@@ -6,16 +6,26 @@
  * phishing / malware-delivery campaigns, their 24h domain deltas, infrastructure
  * rotation, takedowns, and emerging fingerprint clusters.
  *
- * Auth: `x-api-key` header (the `WEBAMON_API_KEY` secret). The console session
- * (Bearer idToken) uses a `/v2` prefix; the API-key mode used here hits the
- * bare paths directly — confirmed against the upstream route table.
+ * Auth: `x-api-key` header (the `WEBAMON_API_KEY` secret).
+ *
+ * Routes (2026-10): the campaign/changes/clusters endpoints moved under
+ * `/v2` — `/v2/campaigns`, `/v2/campaigns/{id}`, `/v2/campaigns/{id}/domains`,
+ * `/v2/campaigns/{id}/changes`, `/v2/campaigns/tags`, `/v2/changes`,
+ * `/v2/clusters`. The bare paths still exist in the route table but now
+ * reject API keys with `403 Forbidden` (they are Cognito-only), which made
+ * every campaign call fail. The bare base is kept as a fallback so a key
+ * that still maps to the legacy table keeps working.
  *
  * Modelled on the traceix/whoxy live-fetch modules (pure fetchers, no manifest):
  * every function returns `null` on a missing key or upstream failure so callers
  * degrade gracefully rather than throwing.
  */
 
+import { errMessage } from './err';
+
 const WEBAMON_PRO = 'https://pro.webamon.com';
+/** v2 first — see the route note in the module header. */
+const WEBAMON_PRO_BASES = [`${WEBAMON_PRO}/v2`, WEBAMON_PRO];
 const TIMEOUT_MS = 20_000;
 const UA = 'pranithjain-dfir/1.0';
 
@@ -143,26 +153,31 @@ async function webamonProFetch<T>(auth: WebamonAuth, path: string, params?: Quer
   const key = auth?.WEBAMON_API_KEY;
   if (!key) return null;
 
-  const url = new URL(`${WEBAMON_PRO}${path}`);
-  if (params) {
-    for (const [k, v] of Object.entries(params)) {
-      if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v));
+  for (const base of WEBAMON_PRO_BASES) {
+    const url = new URL(`${base}${path}`);
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v));
+      }
     }
-  }
 
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    try {
-      const res = await fetch(url.toString(), {
-        signal: AbortSignal.timeout(TIMEOUT_MS),
-        headers: { accept: 'application/json', 'user-agent': UA, 'x-api-key': key },
-      });
-      if (res.ok) return (await res.json()) as T;
-      // 4xx (other than 429) is a client/auth error — retrying won't help.
-      if (res.status !== 429 && res.status >= 400 && res.status < 500) return null;
-    } catch (err) {
-      console.error('webamonProFetch failed:', err instanceof Error ? err.message : String(err));
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const res = await fetch(url.toString(), {
+          signal: AbortSignal.timeout(TIMEOUT_MS),
+          headers: { accept: 'application/json', 'user-agent': UA, 'x-api-key': key },
+        });
+        if (res.ok) return (await res.json()) as T;
+        // Auth rejection on this base — the other base may still be mapped
+        // for this key, so move on instead of giving up.
+        if (res.status === 401 || res.status === 403) break;
+        // 4xx (other than 429) is a client/auth error — retrying won't help.
+        if (res.status !== 429 && res.status >= 400 && res.status < 500) return null;
+      } catch (err) {
+        console.error('webamonProFetch failed:', errMessage(err));
+      }
+      if (attempt < 2) await new Promise((r) => setTimeout(r, 800 * attempt));
     }
-    if (attempt < 2) await new Promise((r) => setTimeout(r, 800 * attempt));
   }
   return null;
 }
@@ -176,10 +191,11 @@ export function listCampaigns(
   return webamonProFetch<WebamonListResponse<WebamonCampaignCard>>(auth, '/campaigns', {
     tag: opts.tag,
     search: opts.search,
-    size: opts.size ?? 50,
+    size: Math.min(opts.size ?? 25, 100),
     from: opts.from && opts.from > 0 ? opts.from : undefined,
+    // `sort_order`, not `order` — matches what the upstream console sends.
     sort_by: opts.sortBy ?? 'delta_24h',
-    order: opts.order ?? 'desc',
+    sort_order: opts.order ?? 'desc',
   });
 }
 
@@ -198,7 +214,7 @@ export function listCampaignDomains(
   opts: { size?: number; from?: number } = {}
 ): Promise<WebamonDomainsResponse | null> {
   return webamonProFetch<WebamonDomainsResponse>(auth, `/campaigns/${encodeURIComponent(campaignId)}/domains`, {
-    size: opts.size ?? 100,
+    size: opts.size ?? 500,
     from: opts.from && opts.from > 0 ? opts.from : undefined,
   });
 }

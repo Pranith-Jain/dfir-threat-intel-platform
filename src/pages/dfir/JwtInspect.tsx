@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { BackLink } from '../../components/BackLink';
 import { Textarea } from '../../components/ui/Input';
 import { AlertTriangle, ShieldCheck, Info } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 interface DecodedJwt {
   raw: string;
   header: Record<string, unknown>;
@@ -27,7 +28,7 @@ function b64urlDecode(s: string): string {
         .join('')
     );
   } catch (_catchErr) {
-    console.error('b64urlDecode failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('b64urlDecode failed:', errMessage(_catchErr));
     return atob(padded);
   }
 }
@@ -43,14 +44,14 @@ function decode(token: string): DecodedJwt {
   try {
     result.header = JSON.parse(b64urlDecode(h!));
   } catch (e) {
-    console.error('decode failed:', e instanceof Error ? e.message : String(e));
+    console.error('decode failed:', errMessage(e));
     result.error = `Header is not valid JSON (${(e as Error).message})`;
     return result;
   }
   try {
     result.payload = JSON.parse(b64urlDecode(p!));
   } catch (e) {
-    console.error('decode failed:', e instanceof Error ? e.message : String(e));
+    console.error('decode failed:', errMessage(e));
     result.error = `Payload is not valid JSON (${(e as Error).message})`;
     return result;
   }

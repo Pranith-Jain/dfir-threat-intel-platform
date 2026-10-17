@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useCallback, useEffect, useRef, type FormEvent } from 'react';
 import { BackLink } from '../../components/BackLink';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
@@ -52,12 +52,16 @@ interface Meta {
 }
 
 interface WebamonResult {
-  _index: string;
+  _index?: string;
   'domain.name'?: string;
+  domain_name?: string;
+  date?: string;
   page_title?: string;
   resolved_url?: string;
   sub_domain?: string;
   tag?: string;
+  report_id?: string;
+  scan_status?: string;
   meta?: Meta;
   fingerprint?: Fingerprint;
   matched_fields?: string[];
@@ -236,7 +240,8 @@ function ResultRow({ result }: { result: WebamonResult }) {
             </div>
           </div>
           <div className="mt-3 pt-3 border-t border-line-1 flex items-center gap-3 text-mini text-muted font-mono">
-            <span>Index: {result._index}</span>
+            {result._index && <span>Index: {result._index}</span>}
+            {result.date && <span>Scanned: {result.date}</span>}
             {result.sub_domain && <span>Subdomain: {result.sub_domain}</span>}
             {result.matched_fields && result.matched_fields.length > 0 && (
               <span>Matched: {result.matched_fields.join(', ')}</span>
@@ -249,11 +254,11 @@ function ResultRow({ result }: { result: WebamonResult }) {
 }
 
 const SEARCH_EXAMPLES = [
-  'risk_score:>5',
-  'fingerprint.tech:*',
+  'meta.risk_score:>5',
+  'domain_name:example.com',
   'tag:nrd_202606*',
-  'domain.name:example.com',
   'page_title:login',
+  'fingerprint.tech:*',
 ];
 
 /* ─── Sandbox tab types ──────────────────────────────────────────────── */
@@ -323,6 +328,18 @@ interface DomEntry {
   html?: string;
 }
 
+/**
+ * The upstream stores the raw page HTML in `dom` (older reports carried a
+ * `{ title, description, keywords }` object). Only render the section when
+ * there is actually something structured to show.
+ */
+function domMeta(dom: unknown): DomEntry | null {
+  if (!dom || typeof dom !== 'object') return null;
+  const d = dom as DomEntry;
+  if (!d.title && !d.description && !d.keywords) return null;
+  return d;
+}
+
 interface FingerprintData {
   tech?: string;
   scan_fingerprint?: string;
@@ -365,7 +382,7 @@ interface ReportResult {
   page_scripts?: string[];
   fingerprint?: FingerprintData;
   monitor?: MonitorEntry[];
-  dom?: DomEntry;
+  dom?: DomEntry | string;
   scan_status?: string;
   scan_time?: string;
   submission_url?: string;
@@ -467,30 +484,45 @@ function SearchTab() {
     setError(null);
     if (from === 0) setData(null);
     try {
+      // Field projections are chosen server-side now (the upstream rejected
+      // the old client-supplied `results` list), so only the query travels.
       const params = new URLSearchParams({
         search: trimmed,
         size: String(PAGE_SIZE),
         from: String(from),
-        results: 'domain.name,page_title,meta.risk_score,fingerprint.tech,fingerprint.asn,resolved_url,tag,sub_domain',
       });
       const res = await fetch(`/api/v1/webamon/search?${params}`, {
-        signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15_000)]),
+        signal: AbortSignal.any([controller.signal, AbortSignal.timeout(30_000)]),
       });
       if (!res.ok) {
         const errBody = await res.json().catch(() => null);
-        throw new Error(errBody?.error ?? `HTTP ${res.status}`);
+        throw new Error(errBody?.message ?? errBody?.error ?? `HTTP ${res.status}`);
       }
       const json = (await res.json()) as WebamonSearchResponse;
       if (myId !== reqIdRef.current) return;
       setData(json);
     } catch (e: unknown) {
-      if (e instanceof DOMException && e.name === 'AbortError') return;
+      if (e instanceof DOMException && (e.name === 'AbortError' || e.name === 'TimeoutError')) return;
       if (myId !== reqIdRef.current) return;
-      setError(e instanceof Error ? e.message : 'Search failed');
+      setError(errMessage(e, 'Search failed'));
     } finally {
       if (myId === reqIdRef.current) setLoading(false);
     }
   }, []);
+
+  // Deep link: /threatintel/infra/webamon?q=<lucene> — run the query once on
+  // mount so the Domain / Full Spectrum cross-links land on live results
+  // instead of an empty tab.
+  const bootedRef = useRef(false);
+  useEffect(() => {
+    if (bootedRef.current) return;
+    bootedRef.current = true;
+    const initial = new URLSearchParams(window.location.search).get('q')?.trim();
+    if (initial) {
+      setQuery(initial);
+      void doSearch(initial, 0);
+    }
+  }, [doSearch]);
 
   const pagination = data?.pagination;
 
@@ -509,7 +541,7 @@ function SearchTab() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Lucene query - e.g. domain.name:example.com, risk_score:>5, tag:nrd_202606*"
+            placeholder="Lucene query - e.g. domain_name:example.com, meta.risk_score:>5, page_title:login — or plain text"
             aria-label="Webamon search query"
             className="w-full pl-11 pr-4 py-3 bg-surface-100 border border-line-1 rounded-xl text-sm text-heading placeholder:text-muted focus:outline-none focus:border-rose-500 dark:focus:border-rose-400 font-mono"
           />
@@ -662,7 +694,7 @@ function SandboxTab() {
       }
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : 'Request failed');
+      setError(errMessage(err, 'Request failed'));
     } finally {
       setSubmitting(false);
     }
@@ -684,6 +716,10 @@ function SandboxTab() {
     }
   };
 
+  // A fresh scan is not in the index the moment /scan returns its report_id —
+  // without this the tab just stays blank after "Scan Submitted".
+  const reportPending = !!reportId && !loadingReport && !!reportData && (reportData.results?.length ?? 0) === 0;
+
   const loadScreenshot = async (rid: string) => {
     setScreenshotLoading(true);
     try {
@@ -699,6 +735,18 @@ function SandboxTab() {
       setScreenshotLoading(false);
     }
   };
+
+  // Deep link: ?rid=<report_id> opens an existing scan report (and, once the
+  // sandbox has produced the data, its screenshot) without a resubmit.
+  const ridBooted = useRef(false);
+  useEffect(() => {
+    if (ridBooted.current) return;
+    ridBooted.current = true;
+    const rid = new URLSearchParams(window.location.search).get('rid')?.trim();
+    if (!rid) return;
+    setReportId(rid);
+    void fetchReport(rid);
+  }, []);
 
   return (
     <div>
@@ -1027,25 +1075,25 @@ function SandboxTab() {
                     )}
 
                     {/* DOM */}
-                    {r.dom && (
+                    {domMeta(r.dom) && (
                       <section className="lg:col-span-2">
                         <h3 className="font-display font-semibold text-sm mb-2 flex items-center gap-1.5 text-body">
                           <Eye size={14} /> DOM
                         </h3>
                         <div className="rounded-xl border border-line-1 overflow-hidden">
-                          {r.dom.title && (
+                          {domMeta(r.dom)?.title && (
                             <div className="px-3 py-2 text-xs font-semibold text-body border-b border-line-1">
-                              Title: {r.dom.title}
+                              Title: {domMeta(r.dom)?.title}
                             </div>
                           )}
-                          {r.dom.description && (
+                          {domMeta(r.dom)?.description && (
                             <div className="px-3 py-2 text-mini text-muted border-b border-line-1">
-                              Description: {r.dom.description}
+                              Description: {domMeta(r.dom)?.description}
                             </div>
                           )}
-                          {r.dom.keywords && (
+                          {domMeta(r.dom)?.keywords && (
                             <div className="px-3 py-2 text-mini text-muted border-b border-line-1">
-                              Keywords: {r.dom.keywords}
+                              Keywords: {domMeta(r.dom)?.keywords}
                             </div>
                           )}
                         </div>
@@ -1085,6 +1133,19 @@ function SandboxTab() {
                 </section>
               );
             })()}
+
+          {reportPending && (
+            <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm text-amber-700 dark:text-amber-400 font-mono flex items-center justify-between gap-3">
+              <span>Report {reportId} is queued — Webamon indexes a scan a moment after it is accepted.</span>
+              <button
+                type="button"
+                onClick={() => reportId && fetchReport(reportId)}
+                className="px-3 py-1.5 rounded-lg border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors shrink-0"
+              >
+                Reload report
+              </button>
+            </div>
+          )}
 
           {reportId && !screenshotUrl && !screenshotLoading && (
             <button
@@ -1160,14 +1221,14 @@ function InfraTab() {
       try {
         json = JSON.parse(body);
       } catch (_catchErr) {
-        console.error('InfraTab failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('InfraTab failed:', errMessage(_catchErr));
         throw new Error(body.substring(0, 200) || `HTTP ${res.status}`);
       }
       if (!res.ok) throw new Error((json as { error?: string })?.error ?? `HTTP ${res.status}`);
       setData({ [mode]: json });
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : 'Lookup failed');
+      setError(errMessage(err, 'Lookup failed'));
     } finally {
       setLoading(false);
     }

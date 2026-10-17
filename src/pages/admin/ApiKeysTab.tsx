@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { getJson, postJsonWithBody } from './adminApi';
 import { adminAuthHeaders } from '../../lib/admin-token';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
+import { errMessage } from '../../lib/log';
 
 interface ApiKey {
   id: string;
@@ -42,8 +43,8 @@ export default function ApiKeysTab() {
       setKeys(data.keys);
       setError(null);
     } catch (e) {
-      console.error('loadKeys failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'failed to load keys');
+      console.error('loadKeys failed:', errMessage(e));
+      setError(errMessage(e, 'failed to load keys'));
     } finally {
       setLoading(false);
     }
@@ -66,8 +67,8 @@ export default function ApiKeysTab() {
       setRole('readonly');
       void loadKeys();
     } catch (e) {
-      console.error('handleCreate failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'failed to create key');
+      console.error('handleCreate failed:', errMessage(e));
+      setError(errMessage(e, 'failed to create key'));
     } finally {
       setCreating(false);
     }
@@ -84,8 +85,8 @@ export default function ApiKeysTab() {
       if (!r.ok) throw new Error(`${r.status}`);
       void loadKeys();
     } catch (e) {
-      console.error('handleRevoke failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'failed to revoke');
+      console.error('handleRevoke failed:', errMessage(e));
+      setError(errMessage(e, 'failed to revoke'));
     } finally {
       setRevoking(null);
     }

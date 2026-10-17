@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
+import { errMessage } from '../../lib/log';
 import {
   AlertTriangle,
   ChevronDown,
@@ -339,7 +340,7 @@ export default function LivingThreat(): JSX.Element {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setData((await res.json()) as LtIndex);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

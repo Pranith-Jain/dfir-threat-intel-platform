@@ -3,6 +3,7 @@ import { BackLink } from '../../components/BackLink';
 import { Plug, AlertTriangle, CheckCircle2, ExternalLink, Terminal } from 'lucide-react';
 import { auditConfig, summarise, type Finding, type Severity } from '../../lib/dfir/mcp-audit';
 import { SEVERITY_TONE as SEV_STYLES } from '../../components/severity';
+import { errMessage } from '../../lib/log';
 
 const SAMPLE_CLEAN = `{
   "mcpServers": {
@@ -92,8 +93,8 @@ export default function McpAudit(): JSX.Element {
       const result = auditConfig(parsed);
       return { findings: result.findings, parseError: null, mode: result.mode };
     } catch (e) {
-      console.error('McpAudit failed:', e instanceof Error ? e.message : String(e));
-      return { findings: [], parseError: e instanceof Error ? e.message : 'Invalid JSON', mode: null };
+      console.error('McpAudit failed:', errMessage(e));
+      return { findings: [], parseError: errMessage(e, 'Invalid JSON'), mode: null };
     }
   }, [input]);
 

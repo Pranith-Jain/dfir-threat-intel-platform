@@ -45,6 +45,7 @@ import { DetectionGenerate } from '../../components/threatintel/DetectionGenerat
 import { BulkIocInput } from '../../components/threatintel/BulkIocInput';
 import { useToast } from '../../components/ui/Toast';
 import { downloadBlob } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 
 interface Source {
   name: string;
@@ -282,7 +283,7 @@ export default function Copilot(): JSX.Element {
         setReport(r);
         setProgress(null);
       } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
+        setError(errMessage(e));
         setProgress(null);
       }
     },
@@ -536,7 +537,7 @@ export default function Copilot(): JSX.Element {
           }
         }
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
+        const msg = errMessage(e);
         setError(msg);
         setChatMessages((prev) => {
           const next = [...prev];
@@ -592,7 +593,7 @@ export default function Copilot(): JSX.Element {
         }
         setResult(await res.json());
       } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
+        setError(errMessage(e));
       } finally {
         setLoading(false);
       }
@@ -694,7 +695,7 @@ export default function Copilot(): JSX.Element {
           }
         }
       } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
+        setError(errMessage(e));
       } finally {
         setStreaming(false);
         setAgentSteps([]);
@@ -1334,7 +1335,7 @@ export default function Copilot(): JSX.Element {
                             if (!res.ok) throw new Error('Failed to save');
                             setSaved(true);
                           } catch (e) {
-                            setError(e instanceof Error ? e.message : 'Failed to save assessment');
+                            setError(errMessage(e, 'Failed to save assessment'));
                           } finally {
                             setSaving(false);
                           }

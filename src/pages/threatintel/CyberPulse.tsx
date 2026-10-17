@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { DataPageLayout } from '../../components/DataPageLayout';
@@ -24,6 +24,8 @@ import {
   X,
 } from 'lucide-react';
 import { useDebounce } from '../../hooks/useDebounce';
+import { turnstileHeaders } from '../../lib/turnstile';
+import { relativeAgo } from '../../lib/relativeTime';
 
 /**
  * CyberPulse - comprehensive breach/leak/intel incident tracker.
@@ -136,17 +138,6 @@ interface Trending {
   trending_victims: Array<{ name: string; this_week: number; last_week: number; delta: number }>;
 }
 
-function relativeTime(dateStr: string): string {
-  const diff = Date.now() - Date.parse(dateStr);
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
-}
-
 function formatNumber(n: number | null): string {
   if (n === null) return '-';
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -225,7 +216,7 @@ export default function CyberPulse(): JSX.Element {
     } catch (e) {
       logCatch(e);
       if (ctrl.signal.aborted) return;
-      setError(e instanceof Error ? e.message : 'Failed to load');
+      setError(errMessage(e, 'Failed to load'));
     } finally {
       if (!ctrl.signal.aborted) setLoading(false);
     }
@@ -329,7 +320,7 @@ export default function CyberPulse(): JSX.Element {
             <span
               className={`text-xs ${Date.now() - Date.parse(stats.last_scan) > 2 * 3600_000 ? 'text-amber-600 dark:text-amber-400' : 'text-muted'}`}
             >
-              Last scan: {relativeTime(stats.last_scan)}
+              Last scan: {relativeAgo(stats.last_scan)}
             </span>
           )}
           <span className="text-xs text-muted">{total.toLocaleString()} incidents</span>
@@ -340,7 +331,10 @@ export default function CyberPulse(): JSX.Element {
               setScanning(true);
               setScanResult(null);
               try {
-                const res = await fetch('/api/v1/cyberpulse/scan', { method: 'POST' });
+                const res = await fetch('/api/v1/cyberpulse/scan', {
+                  method: 'POST',
+                  headers: await turnstileHeaders('cyberpulse-scan'),
+                });
                 const data = await res.json();
                 if (data.ok) {
                   setScanResult(
@@ -351,7 +345,7 @@ export default function CyberPulse(): JSX.Element {
                   setScanResult(data.error || 'Scan failed');
                 }
               } catch (e) {
-                setScanResult(e instanceof Error ? e.message : 'Scan failed');
+                setScanResult(errMessage(e, 'Scan failed'));
               } finally {
                 setScanning(false);
               }
@@ -617,7 +611,7 @@ function IncidentCard({ incident: inc, postSummary }: { incident: Incident; post
     try {
       return JSON.parse(inc.tags);
     } catch (_catchErr) {
-      console.error('IncidentCard failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('IncidentCard failed:', errMessage(_catchErr));
       return [];
     }
   })();
@@ -676,7 +670,7 @@ function IncidentCard({ incident: inc, postSummary }: { incident: Incident; post
                 {tag}
               </span>
             ))}
-            <span className="text-micro text-muted ml-auto">{relativeTime(inc.discovered_at)}</span>
+            <span className="text-micro text-muted ml-auto">{relativeAgo(inc.discovered_at)}</span>
             {inc.source_url && (
               <a
                 href={inc.source_url}

@@ -13,6 +13,7 @@
  * The goal is "show what a rule would highlight" for teaching and triage,
  * not to be a drop-in replacement for the real engines.
  */
+import { errMessage } from '../log';
 
 export type RuleKind = 'yara' | 'sigma' | 'unknown';
 
@@ -175,7 +176,7 @@ export function parseYaraRule(rule: string): ParsedRule {
           }
         }
       } catch (e) {
-        warnings.push(`String ${id}: ${e instanceof Error ? e.message : 'invalid'}`);
+        warnings.push(`String ${id}: ${errMessage(e, 'invalid')}`);
       }
     }
   } else {
@@ -336,7 +337,7 @@ export function parseSigmaRule(rule: string): ParsedRule {
         }
         needles.push({ name: tagName, pattern, kind: 'sigma_keyword' });
       } catch (e) {
-        warnings.push(`Sigma value ${tagName}: ${e instanceof Error ? e.message : 'invalid'}`);
+        warnings.push(`Sigma value ${tagName}: ${errMessage(e, 'invalid')}`);
       }
     }
   }

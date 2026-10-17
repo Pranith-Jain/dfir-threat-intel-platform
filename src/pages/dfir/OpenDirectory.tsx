@@ -3,6 +3,7 @@ import { Search, FolderOpen, File, AlertTriangle, Shield, Clock, Server, HardDri
 import { BackLink } from '../../components/BackLink';
 import { SEVERITY_TONE, SEVERITY_BAR, type Severity } from '../../components/severity';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
+import { errMessage } from '../../lib/log';
 
 const API = '/api/v1';
 
@@ -63,8 +64,8 @@ export default function OpenDirectory(): JSX.Element {
       }
       setResult(data);
     } catch (e) {
-      console.error('OpenDirectory failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'Scan failed');
+      console.error('OpenDirectory failed:', errMessage(e));
+      setError(errMessage(e, 'Scan failed'));
     } finally {
       setLoading(false);
     }

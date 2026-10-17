@@ -4,6 +4,7 @@ import { Activity, GitBranch, Loader2, Network, RefreshCw, Search } from 'lucide
 
 // ── Lazy-load the heavy ReactFlow canvas ────────────────────────────────
 import { lazy, Suspense } from 'react';
+import { errMessage } from '../../lib/log';
 const EntityCanvas = lazy(() => import('./EntityGraphCanvas'));
 
 // ── Types ───────────────────────────────────────────────────────────────
@@ -67,7 +68,7 @@ export default function EntityGraphPage(): JSX.Element {
       if (!res.ok) throw new Error(`Graph unavailable (${res.status})`);
       setGraph(await res.json());
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

@@ -24,6 +24,7 @@ import { PageMeta } from '../components/PageMeta';
 import { DataPageLayout } from '../components/DataPageLayout';
 import { useDataFetch } from '../hooks/useDataFetch';
 import { ToolJsonLd } from '../components/seo/ToolJsonLd';
+import { errMessage } from '../lib/log';
 
 interface McpTool {
   name: string;
@@ -112,7 +113,7 @@ function CopyableJson({ value, label }: { value: string; label: string }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch (_catchErr) {
-      console.error('CopyableJson failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('CopyableJson failed:', errMessage(_catchErr));
       // ignore
     }
   };

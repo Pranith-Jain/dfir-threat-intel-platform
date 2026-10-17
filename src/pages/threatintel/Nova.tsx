@@ -4,6 +4,7 @@ import { Modal } from '../../components/ui/Modal';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { api } from '../../lib/api-client';
 import { Loader2, ScanSearch, Search, MessageSquareWarning } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 /**
  * NOVA — prompt pattern matching (Nova-Hunting, MIT).
@@ -133,7 +134,7 @@ export default function Nova(): JSX.Element {
     try {
       setScanResult(await api.post<ScanResult>('/api/v1/nova/scan', { prompt }));
     } catch (e) {
-      setScanError(e instanceof Error ? e.message : 'Scan failed');
+      setScanError(errMessage(e, 'Scan failed'));
     } finally {
       setScanning(false);
     }

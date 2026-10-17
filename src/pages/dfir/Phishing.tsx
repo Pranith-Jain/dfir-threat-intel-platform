@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useRef, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { BackLink } from '../../components/BackLink';
@@ -98,7 +98,7 @@ export default function Phishing(): JSX.Element {
     } catch (e) {
       logCatch(e);
       if (ctrl.signal.aborted) return;
-      setAaError(e instanceof Error ? e.message : 'analysis failed');
+      setAaError(errMessage(e, 'analysis failed'));
     }
     if (!ctrl.signal.aborted) setAaLoading(false);
   };
@@ -133,7 +133,7 @@ export default function Phishing(): JSX.Element {
     } catch (err) {
       logCatch(err);
       if (ctrl.signal.aborted) return;
-      setFpError(err instanceof Error ? err.message : 'fingerprint failed');
+      setFpError(errMessage(err, 'fingerprint failed'));
     } finally {
       if (!ctrl.signal.aborted) setFpLoading(false);
     }
@@ -179,7 +179,7 @@ export default function Phishing(): JSX.Element {
     } catch (err) {
       logCatch(err);
       if (ctrl.signal.aborted) return;
-      setError(err instanceof Error ? err.message : 'analysis failed');
+      setError(errMessage(err, 'analysis failed'));
     } finally {
       if (!ctrl.signal.aborted) setLoading(false);
     }

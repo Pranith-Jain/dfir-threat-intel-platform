@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { errMessage } from '../../lib/log';
 import {
   Search,
   Loader2,
@@ -104,8 +105,8 @@ export default function InfraSearch(): JSX.Element {
       }
       setResult(await r.json());
     } catch (err) {
-      console.error('InfraSearch failed:', err instanceof Error ? err.message : String(err));
-      setError(err instanceof Error ? err.message : 'search failed');
+      console.error('InfraSearch failed:', errMessage(err));
+      setError(errMessage(err, 'search failed'));
     } finally {
       setLoading(false);
     }

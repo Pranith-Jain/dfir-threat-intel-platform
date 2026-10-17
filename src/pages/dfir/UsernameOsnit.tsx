@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, Users, ExternalLink, CheckCircle2, Loader2 } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 const USERNAME_RE = /^[A-Za-z0-9._-]{2,64}$/;
 
@@ -54,8 +55,8 @@ export default function UsernameOsnit(): JSX.Element {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       setResult(await r.json());
     } catch (err) {
-      console.error('UsernameOsnit failed:', err instanceof Error ? err.message : String(err));
-      setError(err instanceof Error ? err.message : 'search failed');
+      console.error('UsernameOsnit failed:', errMessage(err));
+      setError(errMessage(err, 'search failed'));
     } finally {
       setLoading(false);
     }

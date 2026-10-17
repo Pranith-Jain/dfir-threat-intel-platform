@@ -90,8 +90,8 @@ async function timed<T>(label: string, fn: () => Promise<T>): Promise<{ value?: 
     const v = await fn();
     return { value: v, ms: Date.now() - t0 };
   } catch (e) {
-    console.error('timed failed:', e instanceof Error ? e.message : String(e));
-    return { ms: Date.now() - t0, error: e instanceof Error ? e.message : String(e) };
+    console.error('timed failed:', errMessage(e));
+    return { ms: Date.now() - t0, error: errMessage(e) };
   }
 }
 
@@ -105,6 +105,7 @@ const IPV4 = /^(\d{1,3}\.){3}\d{1,3}$/;
 const IPV6 = /^[0-9a-fA-F:]+$/;
 
 import { createSiRateLimiter, type RateLimitedProvider } from './si-rate-limit';
+import { errMessage } from './err';
 
 interface PhcResponse {
   code: number;
@@ -134,8 +135,14 @@ interface PhcResponse {
 async function phantomcandleFetch(
   env: EnvWithSelf,
   ip: string,
-  limiter: ReturnType<typeof createSiRateLimiter>,
-): Promise<{ value?: Record<string, unknown>; ms: number; error?: string; _rateLimited?: boolean; decision?: { retryAfterSeconds: number; limit: number } }> {
+  limiter: ReturnType<typeof createSiRateLimiter>
+): Promise<{
+  value?: Record<string, unknown>;
+  ms: number;
+  error?: string;
+  _rateLimited?: boolean;
+  decision?: { retryAfterSeconds: number; limit: number };
+}> {
   const label = 'phantomcandle';
   const decision = await limiter.consume('phantomcandle');
   if (!decision.allowed) {
@@ -201,8 +208,14 @@ interface IPQSResponse {
 async function ipqsFetch(
   env: EnvWithSelf,
   ip: string,
-  limiter: ReturnType<typeof createSiRateLimiter>,
-): Promise<{ value?: Record<string, unknown>; ms: number; error?: string; _rateLimited?: boolean; decision?: { retryAfterSeconds: number; limit: number } }> {
+  limiter: ReturnType<typeof createSiRateLimiter>
+): Promise<{
+  value?: Record<string, unknown>;
+  ms: number;
+  error?: string;
+  _rateLimited?: boolean;
+  decision?: { retryAfterSeconds: number; limit: number };
+}> {
   const label = 'ipqs';
   const decision = await limiter.consume('ipqs');
   if (!decision.allowed) {
@@ -423,7 +436,10 @@ export async function enrichIp(env: EnvWithSelf, ip: string): Promise<EnrichResu
       ms: (phantomcandle as { ms: number }).ms,
       error: `phantomcandle quota exhausted (limit ${d.limit}/window); retry in ${d.retryAfterSeconds}s`,
     });
-  } else if ((phantomcandle as { value?: unknown }).value && Object.keys((phantomcandle as { value: Record<string, unknown> }).value).length > 0) {
+  } else if (
+    (phantomcandle as { value?: unknown }).value &&
+    Object.keys((phantomcandle as { value: Record<string, unknown> }).value).length > 0
+  ) {
     const v = (phantomcandle as { value: Record<string, unknown> }).value;
     result.phantomcandle_category = v.category as number | undefined;
     result.phantomcandle_risk_level = v.risk_level as number | undefined;
@@ -447,7 +463,10 @@ export async function enrichIp(env: EnvWithSelf, ip: string): Promise<EnrichResu
       ms: (ipqs as { ms: number }).ms,
       error: `ipqs quota exhausted (limit ${d.limit}/window); retry in ${d.retryAfterSeconds}s`,
     });
-  } else if ((ipqs as { value?: unknown }).value && Object.keys((ipqs as { value: Record<string, unknown> }).value).length > 0) {
+  } else if (
+    (ipqs as { value?: unknown }).value &&
+    Object.keys((ipqs as { value: Record<string, unknown> }).value).length > 0
+  ) {
     const v = (ipqs as { value: Record<string, unknown> }).value;
     result.ipqs_fraud_score = v.fraud_score as number | undefined;
     result.ipqs_proxy = v.proxy as boolean | undefined;

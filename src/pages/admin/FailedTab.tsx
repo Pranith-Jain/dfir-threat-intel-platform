@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getJson, postJson } from './adminApi';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
 import { SearchFilter } from './SearchFilter';
+import { errMessage } from '../../lib/log';
 
 interface FailureRecord {
   slotId: string;
@@ -26,8 +27,8 @@ export default function FailedTab() {
       const d = await getJson<{ failures: FailureRecord[] }>('/failures');
       setFailures(d.failures);
     } catch (e) {
-      console.error('FailedTab failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'failed to load');
+      console.error('FailedTab failed:', errMessage(e));
+      setError(errMessage(e, 'failed to load'));
     } finally {
       setLoading(false);
     }
@@ -45,8 +46,8 @@ export default function FailedTab() {
       setActionMsg(`Cleared ${slotId}`);
       await load();
     } catch (e) {
-      console.error('clearOne failed:', e instanceof Error ? e.message : String(e));
-      setActionMsg(`clear failed: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('clearOne failed:', errMessage(e));
+      setActionMsg(`clear failed: ${errMessage(e)}`);
     } finally {
       setBusy(null);
     }
@@ -61,8 +62,8 @@ export default function FailedTab() {
       setActionMsg(`Cleared ${r.cleared} record(s)`);
       await load();
     } catch (e) {
-      console.error('clearAll failed:', e instanceof Error ? e.message : String(e));
-      setActionMsg(`clear-all failed: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('clearAll failed:', errMessage(e));
+      setActionMsg(`clear-all failed: ${errMessage(e)}`);
     } finally {
       setBusy(null);
     }

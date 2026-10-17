@@ -3,6 +3,7 @@ import { DataPageLayout } from '../../components/DataPageLayout';
 import { CopyButton } from '../../components/ui/CopyButton';
 
 import { Search, Loader2, ExternalLink, ChevronDown, ChevronRight } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 /** Format an arbitrary enrichment value for readable key/value display. */
 function formatEnrichValue(value: unknown): string {
@@ -143,7 +144,7 @@ export default function IocEnrichment(): JSX.Element {
     } catch (e: unknown) {
       if (e instanceof DOMException && e.name === 'AbortError') return;
       if (myId !== reqIdRef.current) return;
-      setError(e instanceof Error ? e.message : 'Request failed');
+      setError(errMessage(e, 'Request failed'));
     } finally {
       if (myId === reqIdRef.current) setLoading(false);
     }

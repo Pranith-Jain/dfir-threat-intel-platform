@@ -17,6 +17,7 @@ import type { Node, Edge } from '@xyflow/react';
 import { GitBranch, Loader2, Download, Save, FolderOpen, Trash2, X, AlertTriangle } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { downloadUrl } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 import {
   exportFlowvizStix,
   exportFlowvizAfb,
@@ -93,7 +94,7 @@ function FlowVizInner(): JSX.Element {
       setModelUsed(d.modelUsed ?? null);
       setStage('');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'analysis failed');
+      setError(errMessage(e, 'analysis failed'));
       setStage('');
     } finally {
       setBusy(false);
@@ -108,7 +109,7 @@ function FlowVizInner(): JSX.Element {
       const url = await toPng(el, { pixelRatio: 2, backgroundColor: '#0f172a' });
       downloadUrl(url, 'flowviz.png');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'png export failed');
+      setError(errMessage(e, 'png export failed'));
     }
   }, []);
 

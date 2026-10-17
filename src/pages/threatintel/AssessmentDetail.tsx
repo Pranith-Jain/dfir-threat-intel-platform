@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Edit3, CheckCircle2, Archive, FileText } from 'lucide-react';
 import { adminAuthHeaders } from '../../lib/admin-token';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { errMessage } from '../../lib/log';
 
 interface Assessment {
   id: string;
@@ -66,8 +67,8 @@ export default function AssessmentDetail(): JSX.Element {
       const data = (await res.json()) as { assessment: Assessment };
       setAssessment(data.assessment);
     } catch (e) {
-      console.error('transitionStatus failed:', e instanceof Error ? e.message : String(e));
-      setTransitionError(e instanceof Error ? e.message : 'Failed to update status');
+      console.error('transitionStatus failed:', errMessage(e));
+      setTransitionError(errMessage(e, 'Failed to update status'));
     } finally {
       setTransitioning(false);
     }

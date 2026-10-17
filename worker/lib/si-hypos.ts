@@ -28,6 +28,7 @@
  */
 
 import { loadSiIndex, getSiSkill, type SiSkillIndexEntry } from './si-manifest';
+import { errMessage } from './err';
 
 export interface HypoObservation {
   /** Free-text description of the anomaly: alert name, observed behaviour, etc. */
@@ -795,7 +796,7 @@ export async function siHyposGenerate(obs: HypoObservation, env: { ASSETS?: Fetc
         .slice(0, 5);
       skills = ranked.map((r) => r.skill);
     } catch (_catchErr) {
-      console.error('siHyposGenerate failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('siHyposGenerate failed:', errMessage(_catchErr));
       skills = [];
     }
   }

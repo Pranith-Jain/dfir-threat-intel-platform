@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { adminAuthHeaders } from '../../lib/admin-token';
+import { errMessage } from '../../lib/log';
 
 export interface PivotSuggestion {
   label: string;
@@ -96,7 +97,7 @@ export function PivotSuggestions({
       const data = (await res.json()) as { suggestions: PivotSuggestion[] };
       setSuggestions(data.suggestions ?? []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load pivots');
+      setError(errMessage(e, 'Failed to load pivots'));
     } finally {
       setLoading(false);
     }

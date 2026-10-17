@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getJson } from './adminApi';
+import { errMessage } from '../../lib/log';
 
 interface Health {
   pendingCount: number;
@@ -40,8 +41,8 @@ export default function HealthTab() {
       setHealth(d);
       setFetchedAt(new Date());
     } catch (e) {
-      console.error('HealthTab failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'failed to load');
+      console.error('HealthTab failed:', errMessage(e));
+      setError(errMessage(e, 'failed to load'));
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
@@ -732,7 +732,7 @@ export default function ScanResults() {
       if (crawlGenRef.current !== gen) return;
       pollCrawl(crawlId, gen);
     } catch (_catchErr) {
-      console.error('ScanResults failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('ScanResults failed:', errMessage(_catchErr));
       /* crawl start failed, non-critical */
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

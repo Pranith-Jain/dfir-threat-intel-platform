@@ -1,4 +1,5 @@
 import type { AggregatedFeedItem } from '../../services/rssService';
+import { errMessage } from '../../lib/log';
 export type FeedItem = AggregatedFeedItem & { source: string; pubDate: string };
 
 /**
@@ -42,7 +43,7 @@ export function loadJson<T>(key: string, fallback: T): T {
     if (!raw) return fallback;
     return JSON.parse(raw) as T;
   } catch (_catchErr) {
-    console.error('loadJson failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('loadJson failed:', errMessage(_catchErr));
     return fallback;
   }
 }
@@ -52,7 +53,7 @@ export function saveJson<T>(key: string, value: T): void {
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
   } catch (_catchErr) {
-    console.error('saveJson failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('saveJson failed:', errMessage(_catchErr));
     /* localStorage may be disabled in private mode */
   }
 }
@@ -84,7 +85,7 @@ export function compileSearch(query: string): ((item: FeedItem) => boolean) | nu
       const re = new RegExp(pattern, flags);
       return (item) => re.test(`${item.title ?? ''} ${item.description ?? ''}`);
     } catch (_catchErr) {
-      console.error('compileSearch failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('compileSearch failed:', errMessage(_catchErr));
       return null; // bad regex
     }
   }

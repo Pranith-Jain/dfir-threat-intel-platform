@@ -4,6 +4,7 @@ import { AlertOctagon, ExternalLink, ShieldAlert } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
+import { errMessage } from '../../lib/log';
 
 interface AffectedEntity {
   name: string;
@@ -57,7 +58,7 @@ function safeHref(url: string): string | null {
     const u = new URL(url);
     return u.protocol === 'http:' || u.protocol === 'https:' ? u.toString() : null;
   } catch (_catchErr) {
-    console.error('safeHref failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('safeHref failed:', errMessage(_catchErr));
     return null;
   }
 }

@@ -6,6 +6,7 @@ import { DataPageLayout } from '../../components/DataPageLayout';
 import { relativeAgo } from '../../lib/relativeTime';
 import { sanitizeUrl } from '../../lib/sanitize-url';
 import { downloadBlob } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 
 interface PhishingUrl {
   url: string;
@@ -26,7 +27,7 @@ function extractDomain(url: string): string {
   try {
     return new URL(url).hostname;
   } catch (_catchErr) {
-    console.error('extractDomain failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('extractDomain failed:', errMessage(_catchErr));
     return url.slice(0, 40);
   }
 }

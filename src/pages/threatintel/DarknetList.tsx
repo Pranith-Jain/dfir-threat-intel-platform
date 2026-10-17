@@ -4,6 +4,7 @@ import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
 import { sanitizeUrl } from '../../lib/sanitize-url';
 import { Activity, ExternalLink, Fingerprint, Globe, RefreshCw, Search, ShieldOff, Star, Zap } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 interface DarknetSite {
   slug: string;
@@ -232,7 +233,7 @@ export default function DarknetList(): JSX.Element {
       }
       setData(json);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

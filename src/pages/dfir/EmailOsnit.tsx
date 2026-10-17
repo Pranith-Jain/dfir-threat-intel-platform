@@ -7,6 +7,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { errMessage } from '../../lib/log';
 import {
   Loader2,
   Shield,
@@ -79,7 +80,7 @@ export default function EmailOsnit() {
       if (!res.ok) throw new Error('Lookup failed');
       setProfile(await res.json());
     } catch (_catchErr) {
-      console.error('EmailOsnit failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('EmailOsnit failed:', errMessage(_catchErr));
       setError('Email lookup failed');
     }
     setLoading(false);

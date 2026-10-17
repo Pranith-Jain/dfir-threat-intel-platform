@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { DataPageLayout } from '../../components/DataPageLayout';
@@ -186,7 +186,7 @@ export default function EmailReputation(): JSX.Element {
             emailRepResult = {
               email: emailAddress,
               ok: false,
-              error: e instanceof Error ? e.message : String(e),
+              error: errMessage(e),
             };
           }
         }
@@ -225,7 +225,7 @@ export default function EmailReputation(): JSX.Element {
       } catch (e) {
         logCatch(e);
         if ((e as { name?: string }).name !== 'AbortError') {
-          heatwaveResult = { domain: clean, ok: false, error: e instanceof Error ? e.message : String(e) };
+          heatwaveResult = { domain: clean, ok: false, error: errMessage(e) };
         }
       }
       if (signal.aborted) return;
@@ -252,7 +252,7 @@ export default function EmailReputation(): JSX.Element {
       });
     } catch (e) {
       logCatch(e);
-      if (!signal.aborted) setError(e instanceof Error ? e.message : 'lookup failed');
+      if (!signal.aborted) setError(errMessage(e, 'lookup failed'));
     } finally {
       if (!signal.aborted) setLoading(false);
       setProgress('');

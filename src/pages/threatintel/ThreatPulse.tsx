@@ -6,6 +6,7 @@ import { DataPageLayout } from '../../components/DataPageLayout';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
 import { sanitizeUrl } from '../../lib/sanitize-url';
+import { errMessage } from '../../lib/log';
 
 /** Build a deep link for an entity label so the analyst can pivot
  *  straight into the platform / MITRE rather than re-typing the ID. */
@@ -118,7 +119,7 @@ export default function ThreatPulse(): JSX.Element {
         const j = (await r.json()) as PulseResponse;
         if (!cancelled) setData(j);
       } catch (e) {
-        console.error('ThreatPulse failed:', e instanceof Error ? e.message : String(e));
+        console.error('ThreatPulse failed:', errMessage(e));
         if (!cancelled && (e as { name?: string }).name !== 'AbortError') setError((e as Error).message);
       } finally {
         if (!cancelled) setLoading(false);
@@ -448,7 +449,7 @@ function CopyEntityButton({ entity }: { entity: PulseEntity }): JSX.Element {
       setDone(true);
       setTimeout(() => setDone(false), 1200);
     } catch (_catchErr) {
-      console.error('CopyEntityButton failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('CopyEntityButton failed:', errMessage(_catchErr));
       /* clipboard blocked - silent */
     }
   };

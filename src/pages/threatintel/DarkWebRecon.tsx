@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState } from 'react';
 import { Globe, Search, Scan, Bitcoin, Network, ExternalLink, Loader2 } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
@@ -118,7 +118,7 @@ export default function DarkWebRecon(): JSX.Element {
       }
     } catch (e) {
       logCatch(e);
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

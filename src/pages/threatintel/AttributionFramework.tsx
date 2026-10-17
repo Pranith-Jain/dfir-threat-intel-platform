@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { api } from '../../lib/api-client';
 import { Scale, Loader2, AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 interface AttributionAssessment {
   actor: string;
@@ -44,8 +45,8 @@ export default function AttributionFramework(): JSX.Element {
       });
       setAssessment(data);
     } catch (err) {
-      console.error('AttributionFramework failed:', err instanceof Error ? err.message : String(err));
-      setError(err instanceof Error ? err.message : String(err));
+      console.error('AttributionFramework failed:', errMessage(err));
+      setError(errMessage(err));
     } finally {
       setLoading(false);
     }

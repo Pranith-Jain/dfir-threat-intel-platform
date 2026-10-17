@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useCallback } from 'react';
 import { BackLink } from '../../components/BackLink';
 import { ShareBar } from '../../components/intel/ShareBar';
@@ -155,7 +155,7 @@ export default function ChronoAi(): JSX.Element {
       setResult(parsed ?? { timeline: [], summary: raw });
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : String(err));
+      setError(errMessage(err));
     } finally {
       setLoading(false);
     }

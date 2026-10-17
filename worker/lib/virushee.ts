@@ -1,3 +1,4 @@
+import { errMessage } from './err';
 export interface VirusheeResult {
   found?: boolean;
   hash?: string;
@@ -30,8 +31,8 @@ export async function virusheeCheck(
     result.data = (await res.json()) as VirusheeResult;
     result.success = true;
   } catch (e) {
-    console.error('virusheeCheck failed:', e instanceof Error ? e.message : String(e));
-    result.error = e instanceof Error ? e.message : String(e);
+    console.error('virusheeCheck failed:', errMessage(e));
+    result.error = errMessage(e);
   }
   return result;
 }

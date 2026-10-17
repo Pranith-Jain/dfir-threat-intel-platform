@@ -72,6 +72,8 @@ import type {
 import { buildShareMarkdown, renderMarkdown } from './report-view-helpers';
 import { SEVERITY_COLORS } from './report-view-types';
 import { downloadBlob } from '../../lib/download';
+import { sanitizeUrl } from '../../lib/sanitize-url';
+import { errMessage } from '../../lib/log';
 export type {
   Severity,
   Stakeholder,
@@ -336,7 +338,7 @@ function CveMetaCard({ card }: { card: ReportActionCard }): JSX.Element | null {
         )}
         {card.patch_url && (
           <a
-            href={card.patch_url}
+            href={sanitizeUrl(card.patch_url) || undefined}
             target="_blank"
             rel="noreferrer"
             className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded text-micro font-mono text-brand-600 dark:text-brand-400 hover:underline transition-colors"
@@ -774,7 +776,7 @@ function NextActionsBar({
       const r = await fn();
       setResult(r);
     } catch (e) {
-      setResult({ tool: name, data: { error: e instanceof Error ? e.message : String(e) } });
+      setResult({ tool: name, data: { error: errMessage(e) } });
     } finally {
       setLoading(null);
     }

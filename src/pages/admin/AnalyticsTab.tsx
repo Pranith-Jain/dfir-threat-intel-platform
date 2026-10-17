@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getSocialAnalytics, saveSocialMetrics } from './adminApi';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
+import { errMessage } from '../../lib/log';
 import type {
   SocialAnalyticsPost,
   SocialAnalyticsByType,
@@ -85,8 +86,8 @@ function MetricsForm({ onSaved }: { onSaved: () => void }) {
       setForm(BLANK_FORM);
       onSaved();
     } catch (err) {
-      console.error('handleSubmit failed:', err instanceof Error ? err.message : String(err));
-      setMsg(`Save failed: ${err instanceof Error ? err.message : String(err)}`);
+      console.error('handleSubmit failed:', errMessage(err));
+      setMsg(`Save failed: ${errMessage(err)}`);
     } finally {
       setBusy(false);
     }
@@ -384,8 +385,8 @@ export default function AnalyticsTab() {
       const d = await getSocialAnalytics();
       setData(d);
     } catch (e) {
-      console.error('AnalyticsTab failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'failed to load');
+      console.error('AnalyticsTab failed:', errMessage(e));
+      setError(errMessage(e, 'failed to load'));
     } finally {
       setLoading(false);
     }

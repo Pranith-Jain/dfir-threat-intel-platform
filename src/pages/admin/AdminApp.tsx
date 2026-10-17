@@ -18,6 +18,7 @@ import BriefingsTab from './BriefingsTab';
 import AnalyticsTab from './AnalyticsTab';
 import CalendarTab from './CalendarTab';
 import LinkAuditTab from './LinkAuditTab';
+import { errMessage } from '../../lib/log';
 
 type TabKey =
   | 'pending'
@@ -92,8 +93,8 @@ function PipelineBar() {
       const r = await postJson<{ ok?: boolean; stage?: string; result?: unknown; error?: string }>(`/run/${stage}`);
       setMsg(r.error ? `${stage}: ${r.error}` : summariseRunResult(stage, r.result));
     } catch (e) {
-      console.error('run failed:', e instanceof Error ? e.message : String(e));
-      setMsg(`${stage}: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('run failed:', errMessage(e));
+      setMsg(`${stage}: ${errMessage(e)}`);
     } finally {
       setBusy(null);
     }
@@ -112,8 +113,8 @@ function PipelineBar() {
       parts.push(summariseRunResult('publisher', u.result));
       setMsg(parts.join(' · '));
     } catch (e) {
-      console.error('runAll failed:', e instanceof Error ? e.message : String(e));
-      setMsg(`${parts.join(' · ')}${parts.length ? ' · ' : ''}${e instanceof Error ? e.message : String(e)}`);
+      console.error('runAll failed:', errMessage(e));
+      setMsg(`${parts.join(' · ')}${parts.length ? ' · ' : ''}${errMessage(e)}`);
     } finally {
       setBusy(null);
     }

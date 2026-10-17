@@ -15,6 +15,7 @@
  * CVE intelligence (5), STIX bundles (3), statistics & submissions (2),
  * knowledge graph (6). We wrap the ones the AI Report page needs.
  */
+import { errMessage } from './log';
 
 const MCP_URL = 'https://mcp.ti-mindmap-hub.com/mcp';
 /**
@@ -216,7 +217,7 @@ async function callRaw<T>(
     res = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body), signal: ctl.signal });
   } catch (e) {
     clearTimeout(timer);
-    const msg = e instanceof Error ? e.message : String(e);
+    const msg = errMessage(e);
     // Distinguish a CORS preflight failure (Safari/Chrome report
     // these as "NetworkError when attempting to fetch resource") from
     // a real network error. We can't tell with 100% certainty from
@@ -856,6 +857,6 @@ export async function probeConnection(
     if (id) saveSession(id);
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    return { ok: false, error: errMessage(e) };
   }
 }

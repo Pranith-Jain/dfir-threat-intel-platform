@@ -12,6 +12,7 @@ import {
   type RiskPath,
 } from '../../lib/dfir/agent-graph';
 import { SEVERITY_TONE } from '../../components/severity';
+import { errMessage } from '../../lib/log';
 
 // SVG <line> stroke needs a CSS colour value (not a Tailwind class), so it can't
 // reuse SEVERITY_BAR's `bg-*` classes. These hexes are byte-aligned with the
@@ -126,8 +127,8 @@ export default function AgentMap(): JSX.Element {
       const parsed = JSON.parse(input);
       return { graph: buildGraph(parsed), parseError: null };
     } catch (e) {
-      console.error('AgentMap failed:', e instanceof Error ? e.message : String(e));
-      return { graph: null, parseError: e instanceof Error ? e.message : 'Invalid JSON' };
+      console.error('AgentMap failed:', errMessage(e));
+      return { graph: null, parseError: errMessage(e, 'Invalid JSON') };
     }
   }, [input]);
 

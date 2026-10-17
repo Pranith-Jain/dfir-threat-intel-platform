@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useCallback, useRef, useEffect, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -146,7 +146,7 @@ export default function WhoisHistory(): JSX.Element {
       logCatch(e);
       if (e instanceof DOMException && e.name === 'AbortError') return;
       if (!mountedRef.current) return;
-      setError(e instanceof Error ? e.message : 'lookup failed');
+      setError(errMessage(e, 'lookup failed'));
     } finally {
       if (mountedRef.current) setLoading(false);
     }
@@ -166,7 +166,7 @@ export default function WhoisHistory(): JSX.Element {
       logCatch(e);
       if (e instanceof DOMException && e.name === 'AbortError') return;
       if (!mountedRef.current) return;
-      setError(e instanceof Error ? e.message : 'pivot failed');
+      setError(errMessage(e, 'pivot failed'));
     } finally {
       if (mountedRef.current) setPivotLoading(false);
     }
@@ -205,7 +205,6 @@ export default function WhoisHistory(): JSX.Element {
 
   return (
     <div className="max-w-6xl">
-
       <h1 className="text-3xl sm:text-4xl font-display font-semibold mb-2">WHOIS History Explorer</h1>
       <p className="text-muted mb-8">
         Track domain registration changes over time and discover related domains by shared registrant fingerprints.

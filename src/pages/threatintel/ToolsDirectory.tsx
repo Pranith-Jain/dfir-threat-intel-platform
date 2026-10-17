@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search, Wrench, ExternalLink, Github, Tag, RefreshCw } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { errMessage } from '../../lib/log';
 
 interface ToolEntry {
   slug: string;
@@ -55,9 +56,9 @@ export default function ToolsDirectory(): JSX.Element {
         else setError(`/tools returned HTTP ${resp.status}`);
         if (statsResp.ok) setStats(await statsResp.json());
       } catch (e) {
-        console.error('ToolsDirectory failed:', e instanceof Error ? e.message : String(e));
+        console.error('ToolsDirectory failed:', errMessage(e));
         if (cancelled || (e instanceof DOMException && e.name === 'AbortError')) return;
-        setError(e instanceof Error ? e.message : 'fetch failed');
+        setError(errMessage(e, 'fetch failed'));
       } finally {
         if (!cancelled) setLoading(false);
       }

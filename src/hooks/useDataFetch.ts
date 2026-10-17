@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../lib/api-client';
 import { memoryCache } from '../infrastructure/cache/memory-cache';
 import { isAbortError } from '../lib/abort-error';
+import { errMessage } from '../lib/log';
 
 export interface UseDataFetchOptions<T> {
   url: string | null;
@@ -52,7 +53,7 @@ export function useDataFetch<T = unknown>({
     } catch (err) {
       if (!mountedRef.current || signal.aborted) return;
       if (isAbortError(err)) return;
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = errMessage(err);
       setError(msg);
       setLoading(false);
       setStale(false);

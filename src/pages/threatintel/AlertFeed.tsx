@@ -4,6 +4,8 @@ import { fetchJsonCached } from '../../lib/api-client';
 import { Bell, BellOff, RefreshCw, CheckCircle, XCircle, AlertTriangle, Shield, Info, Skull } from 'lucide-react';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
+import { turnstileHeaders } from '../../lib/turnstile';
+import { errMessage } from '../../lib/log';
 
 interface Alert {
   id: string;
@@ -69,8 +71,8 @@ export default function AlertFeed() {
       setAlerts(alertData.alerts ?? []);
       setStats(statsData);
     } catch (e) {
-      console.error('AlertFeed failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'Failed to load alerts');
+      console.error('AlertFeed failed:', errMessage(e));
+      setError(errMessage(e, 'Failed to load alerts'));
     } finally {
       setLoading(false);
     }
@@ -84,13 +86,19 @@ export default function AlertFeed() {
   }, [filter]);
 
   const markRead = async (id: string) => {
-    await fetch(`/api/v1/estate/alerts/${id}/read`, { method: 'POST' });
+    await fetch(`/api/v1/estate/alerts/${id}/read`, {
+      method: 'POST',
+      headers: await turnstileHeaders('estate-alert-read'),
+    });
     setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, read: 1 } : a)));
     setStats((prev) => ({ ...prev, unread: Math.max(0, prev.unread - 1) }));
   };
 
   const dismiss = async (id: string) => {
-    await fetch(`/api/v1/estate/alerts/${id}/dismiss`, { method: 'POST' });
+    await fetch(`/api/v1/estate/alerts/${id}/dismiss`, {
+      method: 'POST',
+      headers: await turnstileHeaders('estate-alert-dismiss'),
+    });
     setAlerts((prev) => prev.filter((a) => a.id !== id));
   };
 

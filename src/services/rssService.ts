@@ -1,5 +1,6 @@
 import { rssFeeds, type RSSFeed } from '../data/rssFeeds';
 import { memoryCache } from '../infrastructure/cache/memory-cache';
+import { errMessage } from '../lib/log';
 
 export interface FeedItem {
   title: string;
@@ -101,10 +102,35 @@ function sanitizeText(text: string): string {
     .substring(0, 500);
 }
 
-// Validate and sanitize URL
-function sanitizeUrl(url: string): string {
+// Bing News search RSS wraps every item link in a click redirector —
+// `http://www.bing.com/news/apiclick.aspx?...&url=<encoded target>`. Every
+// view that renders a feed item should link straight to the publisher instead
+// of routing readers through Bing's tracker. Exported because surfaces that
+// parse feed XML themselves (e.g. /argus Feed view) can't reuse sanitizeUrl.
+export function unwrapBingNewsLink(link: string): string {
+  if (!link) return link;
   try {
-    const parsed = new URL(url);
+    const u = new URL(link);
+    if (!/(^|\.)bing\.com$/i.test(u.hostname)) return link;
+    if (!u.pathname.endsWith('/apiclick.aspx')) return link;
+    const target = u.searchParams.get('url');
+    if (!target) return link;
+    const decoded = new URL(target);
+    return decoded.protocol === 'http:' || decoded.protocol === 'https:' ? decoded.toString() : link;
+  } catch {
+    return link;
+  }
+}
+
+// Validate and sanitize URL. Also unwraps Bing News' click redirector
+// (`http://www.bing.com/news/apiclick.aspx?...&url=<encoded target>`) so feed
+// cards link straight to the publisher instead of routing readers through
+// Bing's tracker. The server-side aggregator unwraps too; this covers
+// single-feed proxy responses, which arrive as raw XML parsed here.
+function sanitizeUrl(url: string): string {
+  const unwrapped = unwrapBingNewsLink(url);
+  try {
+    const parsed = new URL(unwrapped);
     return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : '';
   } catch {
     return '';
@@ -139,7 +165,7 @@ async function fetchFeedWithProxy(feed: RSSFeed): Promise<FeedResult> {
     feedCache.set(feed.id, { data: result, timestamp: Date.now() });
     return result;
   } catch (err) {
-    result.error = err instanceof Error ? err.message : 'feed unavailable';
+    result.error = errMessage(err, 'feed unavailable');
     return result;
   }
 }
@@ -246,7 +272,7 @@ async function fetchOneBatch(urls: string[], limit: number, perSource: number): 
   try {
     res = await fetch(url, { signal: AbortSignal.timeout(25000) });
   } catch (err) {
-    const reason = err instanceof Error ? err.message : 'network error';
+    const reason = errMessage(err, 'network error');
     if (reason.toLowerCase().includes('timed out') || reason.toLowerCase().includes('abort')) {
       throw new Error('feed aggregator timed out (25s) - upstream RSS sources are slow right now');
     }

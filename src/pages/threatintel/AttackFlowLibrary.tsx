@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { GitBranch, ExternalLink, Loader2, X } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { StixObjectTable, StixRelationshipGraph, type StixBundle } from '../../components/StixBundleViewer';
+import { errMessage } from '../../lib/log';
 
 interface FlowEntry {
   name: string;
@@ -46,7 +47,7 @@ function safeHref(url: string): string | null {
     const u = new URL(url);
     return u.protocol === 'http:' || u.protocol === 'https:' ? u.toString() : null;
   } catch (_catchErr) {
-    console.error('safeHref failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('safeHref failed:', errMessage(_catchErr));
     return null;
   }
 }

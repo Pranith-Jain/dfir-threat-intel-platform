@@ -1,3 +1,4 @@
+import { errMessage } from './err';
 export interface OpencveCve {
   cve_id: string;
   summary: string;
@@ -109,8 +110,8 @@ export async function opencveGetCve(
     result.data = normalizeOpencveCve((await res.json()) as Record<string, unknown>);
     result.success = true;
   } catch (e) {
-    console.error('opencveGetCve failed:', e instanceof Error ? e.message : String(e));
-    result.error = e instanceof Error ? e.message : String(e);
+    console.error('opencveGetCve failed:', errMessage(e));
+    result.error = errMessage(e);
   }
 
   return result;

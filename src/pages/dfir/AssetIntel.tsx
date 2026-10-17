@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useEffect, useCallback, type FormEvent } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import {
@@ -126,7 +126,7 @@ function formatDate(d?: string) {
   try {
     return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   } catch (_catchErr) {
-    console.error('formatDate failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('formatDate failed:', errMessage(_catchErr));
     return d;
   }
 }
@@ -142,7 +142,7 @@ function formatDateTime(d?: string) {
       minute: '2-digit',
     });
   } catch (_catchErr) {
-    console.error('formatDateTime failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('formatDateTime failed:', errMessage(_catchErr));
     return d;
   }
 }
@@ -259,7 +259,7 @@ function WhoisPanel({ data }: { data: HistoryResult }) {
       const result = (await res.json()) as PivotResult;
       setPivots(result);
     } catch (_catchErr) {
-      console.error('WhoisPanel failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('WhoisPanel failed:', errMessage(_catchErr));
       /* swallow */
     } finally {
       setPivotLoading(false);
@@ -516,7 +516,7 @@ export default function AssetIntel(): JSX.Element {
       }
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : 'lookup failed');
+      setError(errMessage(err, 'lookup failed'));
     } finally {
       setLoading(false);
     }

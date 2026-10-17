@@ -5,6 +5,7 @@ import { BackLink } from '../../components/BackLink';
 import { ShieldCheck, ExternalLink, RotateCcw, Download } from 'lucide-react';
 import { OWASP_LISTS, OWASP_ITEMS, type OwaspList, type OwaspItem } from '../../data/owasp';
 import { downloadBlob } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 
 const STORAGE_KEY = 'dfir.owasp.checks';
 
@@ -44,7 +45,7 @@ function loadChecks(): Record<string, Check> {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     return raw ? (JSON.parse(raw) as Record<string, Check>) : {};
   } catch (_catchErr) {
-    console.error('loadChecks failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('loadChecks failed:', errMessage(_catchErr));
     return {};
   }
 }
@@ -54,7 +55,7 @@ function saveChecks(checks: Record<string, Check>): void {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(checks));
   } catch (_catchErr) {
-    console.error('saveChecks failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('saveChecks failed:', errMessage(_catchErr));
     /* private mode */
   }
 }

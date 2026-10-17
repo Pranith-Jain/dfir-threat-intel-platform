@@ -16,6 +16,7 @@
 import { useEffect, useState } from 'react';
 import { FlaskConical, Loader2, AlertTriangle, X, Download } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { errMessage } from '../../lib/log';
 
 interface JobRow {
   id: string;
@@ -71,7 +72,7 @@ export default function ProcedureExtract(): JSX.Element {
       const d = (await r.json()) as { job: JobDetail };
       setActive(d.job);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'load failed');
+      setError(errMessage(e, 'load failed'));
     }
   };
 
@@ -96,7 +97,7 @@ export default function ProcedureExtract(): JSX.Element {
       setNote('Extracted — work gate 0 (entities) first.');
       void refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'submit failed');
+      setError(errMessage(e, 'submit failed'));
     } finally {
       setBusy(false);
     }
@@ -119,7 +120,7 @@ export default function ProcedureExtract(): JSX.Element {
       setActive(d.job);
       void refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'review failed');
+      setError(errMessage(e, 'review failed'));
     } finally {
       setBusy(false);
     }

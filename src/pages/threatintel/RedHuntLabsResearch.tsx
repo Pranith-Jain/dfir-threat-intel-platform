@@ -16,6 +16,7 @@ import {
   Mail,
 } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { errMessage } from '../../lib/log';
 import {
   SECTIONS,
   TOOLS,
@@ -68,7 +69,7 @@ function hostnameOf(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, '');
   } catch (_catchErr) {
-    console.error('hostnameOf failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('hostnameOf failed:', errMessage(_catchErr));
     return url;
   }
 }
@@ -260,7 +261,7 @@ export default function RedHuntLabsResearch(): JSX.Element {
         setTab(stored as TabId);
       }
     } catch (_catchErr) {
-      console.error('RedHuntLabsResearch failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('RedHuntLabsResearch failed:', errMessage(_catchErr));
       /* localStorage may be disabled (private mode, sandbox) - fall back to default. */
     }
   }, []);
@@ -268,7 +269,7 @@ export default function RedHuntLabsResearch(): JSX.Element {
     try {
       localStorage.setItem('redhunt.tab.v1', tab);
     } catch (_catchErr) {
-      console.error('RedHuntLabsResearch failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('RedHuntLabsResearch failed:', errMessage(_catchErr));
       /* no-op */
     }
   }, [tab]);

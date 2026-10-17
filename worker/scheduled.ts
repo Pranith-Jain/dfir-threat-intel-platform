@@ -77,6 +77,7 @@ import { getThreatDb } from '../api/src/lib/do-database';
 const CRON_LEASE_TTL_MS = 15 * 60_000;
 import type { Env as ApiEnv } from '../api/src/env';
 import type { Env } from './env';
+import { errMessage } from './lib/err';
 
 /**
  * Cron-triggered work. The cron stub dispatches to the CronJobDO; the heavy
@@ -178,7 +179,7 @@ export async function executeCronJob(
   const csCron = cron;
 
   const logCronFail = (job: string) => (e: unknown) =>
-    console.error(JSON.stringify({ cron: csCron, job, error: e instanceof Error ? e.message : String(e) }));
+    console.error(JSON.stringify({ cron: csCron, job, error: errMessage(e) }));
 
   const logCronDone = (extra: Record<string, unknown> = {}) => {
     console.log(JSON.stringify({ job: 'cron-done', cron, duration_ms: Date.now() - startMs, ...extra }));
@@ -429,7 +430,7 @@ export async function executeCronJob(
                     JSON.stringify({
                       job: 'telegram-direct-fetch',
                       status: 'failed',
-                      error: e instanceof Error ? e.message : String(e),
+                      error: errMessage(e),
                     })
                   );
                 }
@@ -463,7 +464,7 @@ export async function executeCronJob(
               JSON.stringify({
                 job: 'telegram-leak-scanner',
                 status: 'failed',
-                error: e instanceof Error ? e.message : String(e),
+                error: errMessage(e),
               })
             );
           }
@@ -494,7 +495,7 @@ export async function executeCronJob(
               JSON.stringify({
                 job: 'telegram-watched-scrape',
                 status: 'failed',
-                error: e instanceof Error ? e.message : String(e),
+                error: errMessage(e),
               })
             );
           }
@@ -514,7 +515,7 @@ export async function executeCronJob(
               JSON.stringify({
                 job: 'x-health-diagnostic',
                 status: 'error',
-                reason: e instanceof Error ? e.message : String(e),
+                reason: errMessage(e),
               })
             );
           }
@@ -633,7 +634,7 @@ export async function executeCronJob(
               JSON.stringify({
                 job: 'cyberpulse-ingest',
                 status: 'failed',
-                error: e instanceof Error ? e.message : String(e),
+                error: errMessage(e),
               })
             );
           }
@@ -744,7 +745,7 @@ export async function executeCronJob(
                       type: 'daily',
                       slug: yesterdaySlug,
                       status: 'build-failed',
-                      error: e instanceof Error ? e.message : String(e),
+                      error: errMessage(e),
                     })
                   );
                   throw e;
@@ -797,7 +798,7 @@ export async function executeCronJob(
                 JSON.stringify({
                   job: 'briefing-heal',
                   status: 'failed',
-                  error: e instanceof Error ? e.message : String(e),
+                  error: errMessage(e),
                 })
               );
             }
@@ -1055,7 +1056,7 @@ export async function executeCronJob(
               JSON.stringify({
                 job: 'cti-collector',
                 status: 'failed',
-                error: e instanceof Error ? e.message : String(e),
+                error: errMessage(e),
               })
             );
           }
@@ -1077,7 +1078,7 @@ export async function executeCronJob(
                 );
               }
             } catch (e) {
-              console.error(JSON.stringify({ job: 'watch-engine', error: e instanceof Error ? e.message : String(e) }));
+              console.error(JSON.stringify({ job: 'watch-engine', error: errMessage(e) }));
             }
           }
 
@@ -1194,7 +1195,7 @@ export async function executeCronJob(
                 }
               }
             } catch (e) {
-              console.error(JSON.stringify({ job: 'leak-cleanup', error: e instanceof Error ? e.message : String(e) }));
+              console.error(JSON.stringify({ job: 'leak-cleanup', error: errMessage(e) }));
             }
           }
 
@@ -1217,7 +1218,7 @@ export async function executeCronJob(
                 JSON.stringify({
                   job: 'blocklist-build',
                   status: 'failed',
-                  error: e instanceof Error ? e.message : String(e),
+                  error: errMessage(e),
                 })
               );
             }
@@ -1237,9 +1238,7 @@ export async function executeCronJob(
               );
             }
           } catch (e) {
-            console.error(
-              JSON.stringify({ job: 'pir-alert-check', error: e instanceof Error ? e.message : String(e) })
-            );
+            console.error(JSON.stringify({ job: 'pir-alert-check', error: errMessage(e) }));
           }
 
           // === Graph ingestion (daily at 2am UTC) ===
@@ -1523,7 +1522,7 @@ export async function executeCronJob(
               JSON.stringify({
                 job: 'cp-30-enqueue',
                 status: 'failed',
-                error: e instanceof Error ? e.message : String(e),
+                error: errMessage(e),
               })
             );
           }
@@ -1543,7 +1542,7 @@ export async function executeCronJob(
               JSON.stringify({
                 job: 'tg-bot-poll',
                 status: 'failed',
-                error: e instanceof Error ? e.message : String(e),
+                error: errMessage(e),
               })
             );
           }
@@ -1650,7 +1649,7 @@ export async function executeCronJob(
             JSON.stringify({
               job: 'cp-30-ingest',
               status: 'failed',
-              error: e instanceof Error ? e.message : String(e),
+              error: errMessage(e),
             })
           );
         }
@@ -1701,7 +1700,7 @@ export async function executeCronJob(
             JSON.stringify({
               job: 'gp-30-rebuild',
               status: 'failed',
-              error: e instanceof Error ? e.message : String(e),
+              error: errMessage(e),
               reason: 'in-process apiApp.fetch',
             })
           );
@@ -1736,7 +1735,7 @@ export async function executeCronJob(
           job: 'briefing-build',
           status: 'skipped',
           reason: 'no briefing store bound',
-          error: e instanceof Error ? e.message : String(e),
+          error: errMessage(e),
         })
       );
       return null;
@@ -1818,7 +1817,7 @@ export async function executeCronJob(
               job: 'briefing-build',
               type,
               status: 'failed',
-              error: err instanceof Error ? err.message : String(err),
+              error: errMessage(err),
               stack: err instanceof Error ? err.stack?.split('\n').slice(0, 5).join(' | ') : undefined,
             })
           );
@@ -1840,7 +1839,7 @@ export async function executeCronJob(
             JSON.stringify({
               job: 'briefing-sweep',
               status: 'failed',
-              error: err instanceof Error ? err.message : String(err),
+              error: errMessage(err),
             })
           );
         }
@@ -1863,7 +1862,7 @@ export async function executeCronJob(
               JSON.stringify({
                 job: 'ti-dashboard-build',
                 status: 'failed',
-                error: err instanceof Error ? err.message : String(err),
+                error: errMessage(err),
               })
             );
           }
@@ -1883,7 +1882,7 @@ export async function executeCronJob(
               JSON.stringify({
                 job: 'telegram-cleanup',
                 status: 'failed',
-                error: err instanceof Error ? err.message : String(err),
+                error: errMessage(err),
               })
             );
           }
@@ -1897,7 +1896,7 @@ export async function executeCronJob(
                 JSON.stringify({
                   job: 'watchlist-digest',
                   status: 'failed',
-                  error: err instanceof Error ? err.message : String(err),
+                  error: errMessage(err),
                 })
               );
             }

@@ -1,6 +1,7 @@
 import { useReducer, useState, useRef, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { SEVERITY_BAR, normalizeSeverity } from '../../components/severity';
+import { errMessage } from '../../lib/log';
 import {
   Search,
   Shield,
@@ -93,7 +94,7 @@ function fetchTool(url: string, signal?: AbortSignal): Promise<unknown> {
         const parsed = JSON.parse(body) as { error?: string };
         msg = parsed.error ?? msg;
       } catch (_catchErr) {
-        console.error('fetchTool failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('fetchTool failed:', errMessage(_catchErr));
         /* use default msg */
       }
       throw new Error(msg);
@@ -152,7 +153,7 @@ const TOOL_CONFIG: Array<{ key: ToolKey; label: string; icon: typeof Shield; bui
     key: 'webamon',
     label: 'Webamon Intel',
     icon: Monitor,
-    buildUrl: (d) => `/api/v1/webamon/search?search=${encodeURIComponent(`domain.name:${d}`)}&size=3`,
+    buildUrl: (d) => `/api/v1/webamon/search?search=${encodeURIComponent(`domain_name:"${d}"`)}&size=5`,
   },
   {
     key: 'cert_transparency',
@@ -433,7 +434,7 @@ function ResultCard({
         {state.loading && <Loader2 size={12} className="animate-spin text-muted shrink-0" />}
         {!state.loading && !!state.data && !state.error && (
           <Link
-            to={`/${tool.key === 'domain_lookup' ? 'dfir/domain' : tool.key === 'web_scan' ? 'dfir/web-scan' : tool.key === 'cert_search' ? 'dfir/cert-search' : tool.key === 'breach' ? 'dfir/breach' : tool.key === 'webamon' ? 'threatintel/webamon' : tool.key === 'cert_transparency' ? 'dfir/domain' : tool.key === 'cidr_lookup' ? 'dfir/ip-geo' : 'dfir/' + tool.key}?${tool.key === 'webamon' ? 'q' : 'domain'}=${encodeURIComponent(domain)}`}
+            to={`/${tool.key === 'domain_lookup' ? 'dfir/domain' : tool.key === 'web_scan' ? 'dfir/web-scan' : tool.key === 'cert_search' ? 'dfir/cert-search' : tool.key === 'breach' ? 'dfir/breach' : tool.key === 'webamon' ? 'threatintel/infra/webamon' : tool.key === 'cert_transparency' ? 'dfir/domain' : tool.key === 'cidr_lookup' ? 'dfir/ip-geo' : 'dfir/' + tool.key}?${tool.key === 'webamon' ? `q=${encodeURIComponent(`domain_name:"${domain}"`)}` : `domain=${encodeURIComponent(domain)}`}`}
             className="text-micro text-brand-600 dark:text-brand-400 hover:underline shrink-0 inline-flex items-center gap-0.5"
           >
             full <ExternalLink size={9} />

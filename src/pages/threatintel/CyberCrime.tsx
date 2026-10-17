@@ -7,6 +7,7 @@ import { DataPageLayout } from '../../components/DataPageLayout';
 import { DataState } from '../../components/DataState';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
+import { errMessage } from '../../lib/log';
 
 /**
  * /threatintel/cyber-crime - live aggregation of cyber fraud + cyber crime
@@ -80,7 +81,7 @@ function loadDisabledSources(): Set<string> {
     const raw = localStorage.getItem(SOURCES_STORAGE_KEY);
     return new Set(raw ? (JSON.parse(raw) as string[]) : []);
   } catch (_catchErr) {
-    console.error('loadDisabledSources failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('loadDisabledSources failed:', errMessage(_catchErr));
     return new Set();
   }
 }
@@ -103,7 +104,7 @@ export default function CyberCrime(): JSX.Element {
     try {
       localStorage.setItem(SOURCES_STORAGE_KEY, JSON.stringify([...disabledSources]));
     } catch (_catchErr) {
-      console.error('CyberCrime failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('CyberCrime failed:', errMessage(_catchErr));
       /* localStorage unavailable */
     }
   }, [disabledSources]);
@@ -147,7 +148,7 @@ export default function CyberCrime(): JSX.Element {
       })
       .catch((e) => {
         if (cancelled || (e instanceof Error && e.name === 'AbortError')) return;
-        setError(e instanceof Error ? e.message : String(e));
+        setError(errMessage(e));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

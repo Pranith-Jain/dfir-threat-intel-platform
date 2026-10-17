@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { DataPageLayout } from '../../components/DataPageLayout';
@@ -149,7 +149,7 @@ async function enrichIp(ip: string, signal: AbortSignal): Promise<IpEnrichment |
       isp: data.geo?.isp,
     };
   } catch (_catchErr) {
-    console.error('enrichIp failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('enrichIp failed:', errMessage(_catchErr));
     return null;
   }
 }
@@ -242,7 +242,7 @@ export default function DmarcAnalyzer(): JSX.Element {
         enrichAll(parsed.records);
       } catch (e) {
         logCatch(e);
-        setError(e instanceof Error ? e.message : 'Failed to parse DMARC report');
+        setError(errMessage(e, 'Failed to parse DMARC report'));
       } finally {
         setLoading(false);
       }

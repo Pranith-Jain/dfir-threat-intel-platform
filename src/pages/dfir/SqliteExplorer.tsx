@@ -4,6 +4,7 @@ import { Database, Upload } from 'lucide-react';
 import { BackLink } from '../../components/BackLink';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
 import { loadSql } from '../../lib/loadSql';
+import { errMessage } from '../../lib/log';
 
 interface DB {
   tables: { name: string; sql: string; count: number }[];
@@ -39,7 +40,7 @@ export default function SqliteExplorer(): JSX.Element {
         try {
           count = Number(d.exec(`SELECT COUNT(*) FROM "${name}"`)[0]!.values[0]![0]);
         } catch (_catchErr) {
-          console.error('open failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('open failed:', errMessage(_catchErr));
           /* view / virtual */
         }
         return { name, sql: String(r[1] ?? ''), count };
@@ -48,8 +49,8 @@ export default function SqliteExplorer(): JSX.Element {
       setActive('');
       setResult(null);
     } catch (e) {
-      console.error('open failed:', e instanceof Error ? e.message : String(e));
-      setErr(e instanceof Error ? e.message : String(e));
+      console.error('open failed:', errMessage(e));
+      setErr(errMessage(e));
       setDb(null);
     } finally {
       setBusy(false);
@@ -62,8 +63,8 @@ export default function SqliteExplorer(): JSX.Element {
     try {
       setResult(db.query(`SELECT * FROM "${name}" LIMIT 300`));
     } catch (e) {
-      console.error('showTable failed:', e instanceof Error ? e.message : String(e));
-      setErr(e instanceof Error ? e.message : String(e));
+      console.error('showTable failed:', errMessage(e));
+      setErr(errMessage(e));
     }
   }
 
@@ -73,8 +74,8 @@ export default function SqliteExplorer(): JSX.Element {
       setErr('');
       setResult(db.query(sqlText));
     } catch (e) {
-      console.error('runSql failed:', e instanceof Error ? e.message : String(e));
-      setErr(e instanceof Error ? e.message : String(e));
+      console.error('runSql failed:', errMessage(e));
+      setErr(errMessage(e));
     }
   }
 

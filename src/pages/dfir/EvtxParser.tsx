@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ScrollText, Upload, Loader2 } from 'lucide-react';
@@ -135,7 +135,7 @@ export default function EvtxParser(): JSX.Element {
           } catch (ex) {
             logCatch(ex);
             setData(null);
-            setErr(ex instanceof Error ? ex.message : String(ex));
+            setErr(errMessage(ex));
           } finally {
             setBusy(false);
           }

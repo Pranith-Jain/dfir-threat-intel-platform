@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BackLink } from '../../components/BackLink';
@@ -252,7 +252,7 @@ export default function PcapTriage(): JSX.Element {
           } catch (ex) {
             logCatch(ex);
             setS(null);
-            setErr(ex instanceof Error ? ex.message : String(ex));
+            setErr(errMessage(ex));
           }
         }}
       />

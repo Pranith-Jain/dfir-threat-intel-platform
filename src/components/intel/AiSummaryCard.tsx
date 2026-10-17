@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Sparkles, RefreshCw, Loader2 } from 'lucide-react';
 import { adminAuthHeaders, readAdminToken } from '../../lib/admin-token';
 import { ShareBar } from './ShareBar';
+import { errMessage } from '../../lib/log';
 
 /**
  * <AiSummaryCard> - AI-generated operational summary for a feed surface.
@@ -135,7 +136,7 @@ export function AiSummaryCard({
     } catch (err) {
       if (ctrl.signal.aborted) return;
       if (err instanceof DOMException && err.name === 'AbortError') return;
-      setError(err instanceof Error ? err.message : 'Failed to load summary.');
+      setError(errMessage(err, 'Failed to load summary.'));
     } finally {
       clearTimeout(timer);
       if (inflightRef.current === ctrl) inflightRef.current = null;

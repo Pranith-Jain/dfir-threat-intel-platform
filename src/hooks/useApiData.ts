@@ -22,6 +22,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { api, ApiError } from '../lib/api-client';
 import { memoryCache } from '../infrastructure/cache/memory-cache';
 import { isAbortError } from '../lib/abort-error';
+import { errMessage } from '../lib/log';
 
 export interface UseApiDataOptions<T> {
   /** Initial data while loading. */
@@ -71,7 +72,7 @@ export function useApiData<T = unknown>(url: string | null, options: UseApiDataO
       } catch (err) {
         if (!mountedRef.current || signal.aborted) return;
         if (isAbortError(err)) return;
-        const msg = err instanceof ApiError ? err.message : err instanceof Error ? err.message : String(err);
+        const msg = err instanceof ApiError ? err.message : errMessage(err);
         setError(msg);
         setLoading(false);
         onErrorRef.current?.(err instanceof Error ? err : new Error(msg));
@@ -165,7 +166,7 @@ export function useApiMutation<TInput, TOutput = void>(url: string) {
         setData(result);
         return result;
       } catch (err) {
-        const msg = err instanceof ApiError ? err.message : err instanceof Error ? err.message : String(err);
+        const msg = err instanceof ApiError ? err.message : errMessage(err);
         setError(msg);
         return null;
       } finally {

@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useRef, useEffect } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { Textarea } from '../../components/ui/Input';
@@ -139,7 +139,7 @@ export default function EntityResolution(): JSX.Element {
         setRelevantPirs(data.results);
       }
     } catch (_catchErr) {
-      console.error('fetchRelevantPirs failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('fetchRelevantPirs failed:', errMessage(_catchErr));
       /* non-fatal */
     }
   }
@@ -194,7 +194,7 @@ export default function EntityResolution(): JSX.Element {
     } catch (e) {
       logCatch(e);
       if ((e as Error).name === 'AbortError') return;
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       if (!ctrl.signal.aborted) setLoading(false);
     }
@@ -225,7 +225,7 @@ export default function EntityResolution(): JSX.Element {
     } catch (e) {
       logCatch(e);
       if ((e as Error).name === 'AbortError') return;
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       if (!ctrl.signal.aborted) setLoading(false);
     }

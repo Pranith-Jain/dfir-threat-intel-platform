@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import {
@@ -118,7 +118,7 @@ function fmtDate(s: string): string {
   try {
     return new Date(s).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   } catch (_catchErr) {
-    console.error('fmtDate failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('fmtDate failed:', errMessage(_catchErr));
     return s;
   }
 }
@@ -134,7 +134,7 @@ function fmtDateTime(s: string): string {
       minute: '2-digit',
     });
   } catch (_catchErr) {
-    console.error('fmtDateTime failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('fmtDateTime failed:', errMessage(_catchErr));
     return s;
   }
 }

@@ -1,3 +1,4 @@
+import { errMessage } from './err';
 export interface WhoxyDomainResult {
   domain_name: string;
   registrant_name?: string;
@@ -148,7 +149,7 @@ export async function whoxyReverseWhois(
       provider: 'whoxy',
       status: 'failed',
       ms: Date.now() - t0,
-      error: e instanceof Error ? e.message : String(e),
+      error: errMessage(e),
     });
   }
 

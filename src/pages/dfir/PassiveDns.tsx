@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
 import { Search, Globe, Server, Clock, AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 interface PassiveDnsRecord {
   query: string;
@@ -56,8 +57,8 @@ export default function PassiveDns(): JSX.Element {
       const data = await res.json();
       setResult(data);
     } catch (err) {
-      console.error('PassiveDns failed:', err instanceof Error ? err.message : String(err));
-      setError(err instanceof Error ? err.message : 'Failed to query passive DNS');
+      console.error('PassiveDns failed:', errMessage(err));
+      setError(errMessage(err, 'Failed to query passive DNS'));
     } finally {
       setLoading(false);
     }
@@ -65,7 +66,6 @@ export default function PassiveDns(): JSX.Element {
 
   return (
     <div className="max-w-6xl">
-
       <h1 className="font-display font-bold text-3xl mb-2">Passive DNS Lookup</h1>
       <p className="text-sm font-mono text-muted mb-6 max-w-2xl">
         Query historical DNS resolution data from multiple sources. Track infrastructure migrations, detect fast-flux,

@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { ReportView, type ReportActionCard } from '../../components/dfir/ReportView';
@@ -158,7 +158,7 @@ export default function TieEnrich() {
       } catch (err) {
         logCatch(err);
         if (ctrl.signal.aborted) return;
-        setError(err instanceof Error ? err.message : String(err));
+        setError(errMessage(err));
       } finally {
         if (!ctrl.signal.aborted) setLoading(false);
       }

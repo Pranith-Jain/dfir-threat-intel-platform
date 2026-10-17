@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
+import { errMessage } from '../../lib/log';
 import {
   Activity,
   AlertTriangle,
@@ -138,7 +139,7 @@ export default function ThreatClusterEntities() {
       const j = await r.json();
       setIdx(j);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

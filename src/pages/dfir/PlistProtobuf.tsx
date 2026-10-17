@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BackLink } from '../../components/BackLink';
@@ -155,7 +155,7 @@ function bytesFrom(s: string): Uint8Array | null {
   try {
     return new Uint8Array([...atob(t.replace(/\s/g, ''))].map((c) => c.charCodeAt(0)));
   } catch (_catchErr) {
-    console.error('bytesFrom failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('bytesFrom failed:', errMessage(_catchErr));
     return null;
   }
 }
@@ -194,9 +194,9 @@ export default function PlistProtobuf(): JSX.Element {
         setOut(JSON.stringify(parseProtobuf(bytes), null, 2));
       }
     } catch (e) {
-      console.error('decode failed:', e instanceof Error ? e.message : String(e));
+      console.error('decode failed:', errMessage(e));
       setKind('error');
-      setOut(e instanceof Error ? e.message : String(e));
+      setOut(errMessage(e));
     }
   }
 

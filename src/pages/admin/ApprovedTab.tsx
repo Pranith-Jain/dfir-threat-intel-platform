@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getJson, postJson, postJsonWithBody } from './adminApi';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
+import { errMessage } from '../../lib/log';
 
 interface Candidate {
   key: string;
@@ -23,8 +24,8 @@ export default function ApprovedTab() {
       const d = await getJson<{ approved: Candidate[] }>('/approved');
       setApproved(d.approved);
     } catch (e) {
-      console.error('ApprovedTab failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'failed to load');
+      console.error('ApprovedTab failed:', errMessage(e));
+      setError(errMessage(e, 'failed to load'));
     } finally {
       setLoading(false);
     }
@@ -41,8 +42,8 @@ export default function ApprovedTab() {
       setPublishMsg(`Unapproved ${id}`);
       await load();
     } catch (e) {
-      console.error('unapprove failed:', e instanceof Error ? e.message : String(e));
-      setPublishMsg(`unapprove failed: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('unapprove failed:', errMessage(e));
+      setPublishMsg(`unapprove failed: ${errMessage(e)}`);
     }
   }
 
@@ -57,8 +58,8 @@ export default function ApprovedTab() {
       setPublishMsg(r.ok ? `Published! /blog/${r.slug}` : `Error: ${r.error}`);
       await load();
     } catch (e) {
-      console.error('publishNow failed:', e instanceof Error ? e.message : String(e));
-      setPublishMsg(`Error: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('publishNow failed:', errMessage(e));
+      setPublishMsg(`Error: ${errMessage(e)}`);
     } finally {
       setPublishing(null);
     }
@@ -76,8 +77,8 @@ export default function ApprovedTab() {
       setPublishMsg(r.ok ? 'Queued for the next hourly publish (≤1h)' : `Error: ${r.error}`);
       await load();
     } catch (e) {
-      console.error('publishSoon failed:', e instanceof Error ? e.message : String(e));
-      setPublishMsg(`Error: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('publishSoon failed:', errMessage(e));
+      setPublishMsg(`Error: ${errMessage(e)}`);
     } finally {
       setPublishing(null);
     }

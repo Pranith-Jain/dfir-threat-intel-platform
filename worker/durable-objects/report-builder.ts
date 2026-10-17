@@ -2,6 +2,7 @@ import { DurableObject } from 'cloudflare:workers';
 import type { Env } from '../env';
 import { advance, initState, type ReportState } from '../../api/src/lib/report/pipeline';
 import type { TemplateId, Tlp } from '../../api/src/lib/report/types';
+import { errMessage } from '../lib/err';
 
 const MAX_REPORT_WS_CONNECTIONS = 5;
 
@@ -77,7 +78,7 @@ export class ReportBuilderDO extends DurableObject<Env> {
           this.sessionReportIds.set(sessionId, msg.reportId);
         }
       } catch (_catchErr) {
-        console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('handler failed:', errMessage(_catchErr));
         // Ignore malformed messages
       }
     });
@@ -120,7 +121,7 @@ export class ReportBuilderDO extends DurableObject<Env> {
       try {
         ws.send(payload);
       } catch (_catchErr) {
-        console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('handler failed:', errMessage(_catchErr));
         this.sessions.delete(id);
         this.sessionReportIds.delete(id);
       }
@@ -164,13 +165,13 @@ export class ReportBuilderDO extends DurableObject<Env> {
           JSON.stringify({
             job: 'report-builder-alarm',
             reportId: state.id,
-            error: err instanceof Error ? err.message : String(err),
+            error: errMessage(err),
           })
         );
         const errored: ReportState = {
           ...state,
           phase: 'error',
-          error: err instanceof Error ? err.message : 'alarm failed',
+          error: errMessage(err, 'alarm failed'),
         };
         await this.ctx.storage.put(key, errored);
         await this.persist(errored);

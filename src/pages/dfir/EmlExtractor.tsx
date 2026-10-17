@@ -5,6 +5,7 @@ import { Paperclip, Loader2, AlertTriangle, FileText, ShieldAlert, ScanText, Fil
 import { parseEml, type ParsedEml, type EmlAttachment } from '../../lib/dfir/eml-parser';
 import { CopyChip } from '../../components/dfir/CopyButton';
 import { RelatedWikiArticles } from '../../components/dfir/RelatedWikiArticles';
+import { errMessage } from '../../lib/log';
 
 const SAMPLE_EML = `MIME-Version: 1.0
 From: "Test Sender" <sender@example.com>
@@ -75,7 +76,7 @@ export default function EmlExtractor(): JSX.Element {
       const r = await parseEml(eml);
       setParsed(r);
     } catch (e) {
-      console.error('pipeToExtractor failed:', e instanceof Error ? e.message : String(e));
+      console.error('pipeToExtractor failed:', errMessage(e));
       setError((e as Error).message);
     } finally {
       setLoading(false);

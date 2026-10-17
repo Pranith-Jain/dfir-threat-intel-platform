@@ -1,6 +1,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import type { Env } from '../env';
 import { pinnedFetchFollow } from '../../api/src/lib/ssrf-guard';
+import { errMessage } from '../lib/err';
 
 const MAX_CRAWL_PAGES = 100;
 const MAX_JS_ANALYSIS = 50;
@@ -246,7 +247,7 @@ export class RadarCrawlerDO extends DurableObject<Env> {
       try {
         ws.send(data);
       } catch (_catchErr) {
-        console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('handler failed:', errMessage(_catchErr));
         this.sessions.delete(ws);
       }
     }
@@ -263,9 +264,9 @@ export class RadarCrawlerDO extends DurableObject<Env> {
         await this.analyzeJsStep(state);
       }
     } catch (err) {
-      console.error('handler failed:', err instanceof Error ? err.message : String(err));
+      console.error('handler failed:', errMessage(err));
       state.status = 'error';
-      state.error = err instanceof Error ? err.message : String(err);
+      state.error = errMessage(err);
       await this.ctx.storage.put('state', state);
       this.broadcast({ type: 'error', error: state.error });
       return;
@@ -351,7 +352,7 @@ export class RadarCrawlerDO extends DurableObject<Env> {
               state.jsFileUrls.push(jsUrl);
             }
           } catch (_catchErr) {
-            console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+            console.error('handler failed:', errMessage(_catchErr));
             /* skip */
           }
         }
@@ -361,8 +362,8 @@ export class RadarCrawlerDO extends DurableObject<Env> {
       this.extractReconData(html, url, state);
       this.extractAttackSurface(html, url, respHeaders, state);
     } catch (err) {
-      console.error('handler failed:', err instanceof Error ? err.message : String(err));
-      state.error = `crawl fetch failed: ${err instanceof Error ? err.message : String(err)}`;
+      console.error('handler failed:', errMessage(err));
+      state.error = `crawl fetch failed: ${errMessage(err)}`;
     }
 
     // Polite delay between requests
@@ -392,7 +393,7 @@ export class RadarCrawlerDO extends DurableObject<Env> {
               state.queue.push(fullUrl);
             }
           } catch (_catchErr) {
-            console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+            console.error('handler failed:', errMessage(_catchErr));
             /* skip */
           }
         }
@@ -408,7 +409,7 @@ export class RadarCrawlerDO extends DurableObject<Env> {
         }
       }
     } catch (_catchErr) {
-      console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('handler failed:', errMessage(_catchErr));
       /* robots.txt fetch failed, skip */
     }
   }
@@ -418,7 +419,7 @@ export class RadarCrawlerDO extends DurableObject<Env> {
       const sitemapUrl = new URL('/sitemap.xml', state.target).href;
       await this.fetchSitemapContent(sitemapUrl, state);
     } catch (_catchErr) {
-      console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('handler failed:', errMessage(_catchErr));
       /* skip */
     }
   }
@@ -446,13 +447,13 @@ export class RadarCrawlerDO extends DurableObject<Env> {
             queued++;
           }
         } catch (_catchErr) {
-          console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('handler failed:', errMessage(_catchErr));
           /* skip invalid URLs */
         }
         if (queued >= 200) break;
       }
     } catch (_catchErr) {
-      console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('handler failed:', errMessage(_catchErr));
       /* skip */
     }
   }
@@ -471,7 +472,7 @@ export class RadarCrawlerDO extends DurableObject<Env> {
           state.queue.push(u.href);
         }
       } catch (_catchErr) {
-        console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('handler failed:', errMessage(_catchErr));
         /* skip invalid URLs */
       }
     }
@@ -536,7 +537,7 @@ export class RadarCrawlerDO extends DurableObject<Env> {
         const u = new URL(raw);
         u.searchParams.forEach((_v, k) => state.queryParameters.push(k));
       } catch (_catchErr) {
-        console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('handler failed:', errMessage(_catchErr));
         /* skip */
       }
     }
@@ -550,7 +551,7 @@ export class RadarCrawlerDO extends DurableObject<Env> {
           state.domains.push(host);
         }
       } catch (_catchErr) {
-        console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('handler failed:', errMessage(_catchErr));
         /* skip */
       }
     }
@@ -745,7 +746,7 @@ export class RadarCrawlerDO extends DurableObject<Env> {
         try {
           state.sourceMaps.push(mapUrl.startsWith('http') ? mapUrl : new URL(mapUrl, url).href);
         } catch (_catchErr) {
-          console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('handler failed:', errMessage(_catchErr));
           /* skip */
         }
       }
@@ -756,7 +757,7 @@ export class RadarCrawlerDO extends DurableObject<Env> {
         try {
           state.sourceMaps.push(m[1].startsWith('http') ? m[1] : new URL(m[1], url).href);
         } catch (_catchErr) {
-          console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('handler failed:', errMessage(_catchErr));
           /* skip */
         }
       }
@@ -835,7 +836,7 @@ export class RadarCrawlerDO extends DurableObject<Env> {
             });
           }
         } catch (_catchErr) {
-          console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('handler failed:', errMessage(_catchErr));
           /* skip */
         }
       }
@@ -921,7 +922,7 @@ export class RadarCrawlerDO extends DurableObject<Env> {
           if (!state.domains.includes(host)) state.domains.push(host);
         }
       } catch (_catchErr) {
-        console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('handler failed:', errMessage(_catchErr));
         /* skip */
       }
     }
@@ -976,7 +977,7 @@ export class RadarCrawlerDO extends DurableObject<Env> {
         const js = await fetchTextBounded(res);
         this.analyzeJsContent(js, jsUrl, state);
       } catch (_catchErr) {
-        console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('handler failed:', errMessage(_catchErr));
         /* skip failed JS */
       }
     }
@@ -1176,7 +1177,7 @@ export class RadarCrawlerDO extends DurableObject<Env> {
           state.domains.push(host);
         }
       } catch (_catchErr) {
-        console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('handler failed:', errMessage(_catchErr));
         /* skip */
       }
     }

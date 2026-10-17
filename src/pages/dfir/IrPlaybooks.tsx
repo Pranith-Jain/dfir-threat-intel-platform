@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BackLink } from '../../components/BackLink';
@@ -112,7 +112,7 @@ export default function IrPlaybooks(): JSX.Element {
       setResult(await res.json());
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : String(err));
+      setError(errMessage(err));
     } finally {
       setLoading(false);
     }

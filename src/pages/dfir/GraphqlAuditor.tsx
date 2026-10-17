@@ -3,6 +3,7 @@ import type { Severity as Sev } from '../../components/severity';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, Info } from 'lucide-react';
 import { Textarea } from '../../components/ui/Input';
+import { errMessage } from '../../lib/log';
 
 /**
  * GraphQL Security Analyzer - 100% client-side.
@@ -173,7 +174,7 @@ function analyze(text: string): Analysis | null {
     try {
       doc = JSON.parse(trimmed) as Record<string, unknown>;
     } catch (e) {
-      console.error('analyze failed:', e instanceof Error ? e.message : String(e));
+      console.error('analyze failed:', errMessage(e));
       return { error: `JSON parse error: ${(e as Error).message}`, mode: '', types: 0, findings: [] };
     }
     const schema = ((doc.data as Record<string, unknown>)?.__schema ??

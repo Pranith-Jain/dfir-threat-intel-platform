@@ -4,6 +4,7 @@ import type { Severity as Sev } from '../../components/severity';
 import { BackLink } from '../../components/BackLink';
 import { AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, Info } from 'lucide-react';
 import { Textarea } from '../../components/ui/Input';
+import { errMessage } from '../../lib/log';
 
 /**
  * Terraform / IaC Plan Scanner - 100% client-side.
@@ -147,7 +148,7 @@ function policyIssues(policy: unknown): string[] {
   try {
     doc = typeof policy === 'string' ? JSON.parse(policy) : (policy as Record<string, unknown>);
   } catch (_catchErr) {
-    console.error('policyIssues failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('policyIssues failed:', errMessage(_catchErr));
     return [];
   }
   if (!doc || typeof doc !== 'object') return [];
@@ -400,7 +401,7 @@ function analyze(text: string): Analysis | null {
   try {
     doc = JSON.parse(trimmed) as Record<string, unknown>;
   } catch (e) {
-    console.error('analyze failed:', e instanceof Error ? e.message : String(e));
+    console.error('analyze failed:', errMessage(e));
     return {
       error: `${(e as Error).message}. Tip: this expects JSON - run \`terraform show -json <planfile>\` (not the human-readable plan).`,
       resources: 0,
@@ -420,7 +421,7 @@ function analyze(text: string): Analysis | null {
     try {
       analyzeRes(r, findings);
     } catch (_catchErr) {
-      console.error('analyze failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('analyze failed:', errMessage(_catchErr));
       /* never let one odd resource break the scan */
     }
   }

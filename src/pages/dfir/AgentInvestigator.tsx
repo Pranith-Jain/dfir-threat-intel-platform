@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useDictation } from '../../hooks/useDictation';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -272,7 +272,7 @@ export default function AgentInvestigator(): JSX.Element {
         setError('Agent requires an admin session. Set your admin token in Settings.');
       }
     } catch (_catchErr) {
-      console.error('AgentInvestigator failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('AgentInvestigator failed:', errMessage(_catchErr));
       /* non-fatal */
     }
   }, []);
@@ -377,7 +377,7 @@ export default function AgentInvestigator(): JSX.Element {
       });
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : String(err));
+      setError(errMessage(err));
     } finally {
       setIsStarting(false);
     }
@@ -730,7 +730,7 @@ export default function AgentInvestigator(): JSX.Element {
                 return { tool: 'hunting_queries', data: await res.json() };
               } catch (e) {
                 logCatch(e);
-                return { tool: 'hunting_queries', data: { error: e instanceof Error ? e.message : String(e) } };
+                return { tool: 'hunting_queries', data: { error: errMessage(e) } };
               }
             }}
             onGenerateYaraRule={async () => {
@@ -763,7 +763,7 @@ export default function AgentInvestigator(): JSX.Element {
                 return { tool: 'yara_rule', data: await res.json() };
               } catch (e) {
                 logCatch(e);
-                return { tool: 'yara_rule', data: { error: e instanceof Error ? e.message : String(e) } };
+                return { tool: 'yara_rule', data: { error: errMessage(e) } };
               }
             }}
             onDrillDeeper={(question: string) => {

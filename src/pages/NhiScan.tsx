@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { api, ApiError } from '../lib/api-client';
+import { api } from '../lib/api-client';
 import { DataPageLayout } from '../components/DataPageLayout';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
 import { Bot, Search, AlertTriangle, Download, ChevronDown, ChevronRight } from 'lucide-react';
 import { downloadBlob } from '../lib/download';
+import { errMessage } from '../lib/log';
 
 interface TierReason {
   rule: string;
@@ -201,7 +202,7 @@ export default function NhiScan() {
     try {
       parsed = JSON.parse(inventoryText);
     } catch (e) {
-      setError(`Inventory is not valid JSON: ${e instanceof Error ? e.message : String(e)}`);
+      setError(`Inventory is not valid JSON: ${errMessage(e)}`);
       return null;
     }
     setLoading(true);
@@ -219,7 +220,7 @@ export default function NhiScan() {
       }
       return res;
     } catch (err) {
-      const msg = err instanceof ApiError || err instanceof Error ? err.message : String(err);
+      const msg = errMessage(err);
       setError(msg);
       return null;
     } finally {

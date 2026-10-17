@@ -41,6 +41,7 @@ import { DetectionGenerate } from '../../components/threatintel/DetectionGenerat
 import { BulkIocInput } from '../../components/threatintel/BulkIocInput';
 import { useToast } from '../../components/ui/Toast';
 import { downloadBlob } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -334,7 +335,7 @@ export default function VeraChat(): JSX.Element {
         setReport(r);
         setProgress(null);
       } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
+        setError(errMessage(e));
         setProgress(null);
       }
     },
@@ -591,7 +592,7 @@ export default function VeraChat(): JSX.Element {
           }
         }
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
+        const msg = errMessage(e);
         setError(msg);
         setChatMessages((prev) => {
           const next = [...prev];

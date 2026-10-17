@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Shield, Loader2, Check, Copy, AlertTriangle, ChevronDown, ChevronUp, Save } from 'lucide-react';
 import { adminAuthHeaders } from '../../lib/admin-token';
+import { errMessage } from '../../lib/log';
 
 type RuleType = 'yara' | 'sigma' | 'kql' | 'splunk';
 const RULE_TYPES: { id: RuleType; label: string; color: string }[] = [
@@ -44,7 +45,7 @@ export function DetectionGenerate({ context }: DetectionGenerateProps) {
       const data = (await res.json()) as { rule_content?: string; rule_name?: string };
       setResult(data.rule_content ?? 'No content generated');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Generation failed');
+      setError(errMessage(e, 'Generation failed'));
     } finally {
       setLoading(false);
     }
@@ -77,7 +78,7 @@ export function DetectionGenerate({ context }: DetectionGenerateProps) {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to save');
+      setError(errMessage(e, 'Failed to save'));
     } finally {
       setSaving(false);
     }

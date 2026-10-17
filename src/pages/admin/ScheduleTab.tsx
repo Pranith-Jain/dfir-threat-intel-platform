@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getJson, postJson, postJsonWithBody } from './adminApi';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
 import { Modal } from '../../components/ui/Modal';
+import { errMessage } from '../../lib/log';
 
 interface Slot {
   slotAt: string;
@@ -75,8 +76,8 @@ export default function ScheduleTab() {
       const d = await getJson<{ schedule: Slot[] }>('/schedule');
       setSchedule(d.schedule);
     } catch (e) {
-      console.error('ScheduleTab failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'failed to load');
+      console.error('ScheduleTab failed:', errMessage(e));
+      setError(errMessage(e, 'failed to load'));
     } finally {
       setLoading(false);
     }
@@ -97,8 +98,8 @@ export default function ScheduleTab() {
       setMsg(r.ok ? `Published! /blog/${r.slug}` : `Error: ${r.error}`);
       await load();
     } catch (e) {
-      console.error('publishNow failed:', e instanceof Error ? e.message : String(e));
-      setMsg(`Error: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('publishNow failed:', errMessage(e));
+      setMsg(`Error: ${errMessage(e)}`);
     } finally {
       setPublishing(null);
     }
@@ -112,8 +113,8 @@ export default function ScheduleTab() {
       setMsg('Removed');
       await load();
     } catch (e) {
-      console.error('removeSlot failed:', e instanceof Error ? e.message : String(e));
-      setMsg(`Error: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('removeSlot failed:', errMessage(e));
+      setMsg(`Error: ${errMessage(e)}`);
     } finally {
       setPublishing(null);
     }
@@ -143,8 +144,8 @@ export default function ScheduleTab() {
       setMsg(r.ok && r.slotAt ? `Rescheduled to ${new Date(r.slotAt).toLocaleString()}` : `Error: ${r.error}`);
       await load();
     } catch (e) {
-      console.error('confirmReschedule failed:', e instanceof Error ? e.message : String(e));
-      setMsg(`Error: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('confirmReschedule failed:', errMessage(e));
+      setMsg(`Error: ${errMessage(e)}`);
     } finally {
       setPublishing(null);
     }

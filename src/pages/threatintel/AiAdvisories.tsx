@@ -3,6 +3,7 @@ import { Rss, Search, ExternalLink } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { sanitizeUrl } from '../../lib/sanitize-url';
+import { errMessage } from '../../lib/log';
 
 interface Advisory {
   id: string;
@@ -65,7 +66,7 @@ export default function AiAdvisories(): JSX.Element {
       setResearch(r.items ?? []);
       setResSources(r.bySource ?? {});
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

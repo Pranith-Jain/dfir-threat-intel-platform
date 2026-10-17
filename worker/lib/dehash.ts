@@ -1,3 +1,4 @@
+import { errMessage } from './err';
 type HashAlgorithm = 'md5' | 'sha1' | 'sha256' | 'sha384' | 'sha512';
 
 function detectHashType(hash: string): HashAlgorithm | null {
@@ -51,7 +52,7 @@ export async function dehashLookup(hash: string): Promise<DehashResult> {
 
     return { found: true, hash, hash_type: hashType, decrypted: data.decrypted };
   } catch (e) {
-    console.error('handler failed:', e instanceof Error ? e.message : String(e));
-    return { found: false, hash, hash_type: hashType, error: e instanceof Error ? e.message : String(e) };
+    console.error('handler failed:', errMessage(e));
+    return { found: false, hash, hash_type: hashType, error: errMessage(e) };
   }
 }

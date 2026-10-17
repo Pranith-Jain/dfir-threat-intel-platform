@@ -4,6 +4,7 @@ import { fetchJsonCached } from '../../lib/api-client';
 import { sanitizeUrl } from '../../lib/sanitize-url';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
+import { errMessage } from '../../lib/log';
 import {
   Activity,
   AlertTriangle,
@@ -302,7 +303,7 @@ export default function ThreatCluster(): JSX.Element {
     try {
       setIdx(await fetchJsonCached<TcIndex>('/api/v1/threat-intel/threatcluster', 60_000));
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

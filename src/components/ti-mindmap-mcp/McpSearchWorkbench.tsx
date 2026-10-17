@@ -31,6 +31,7 @@ import {
   type ReportDetailsResult,
 } from '../../lib/ti-mindmap-mcp';
 import { useMcp, McpError } from './McpContext';
+import { errMessage } from '../../lib/log';
 
 type Mode = 'ioc' | 'cve' | 'report' | 'briefing';
 type Severity = 'critical' | 'high' | 'medium' | 'low';
@@ -142,7 +143,7 @@ export function McpSearchWorkbench(props: {
       }
       setHit(searchHit);
     } catch (e) {
-      setErr(e instanceof McpError ? e.message : e instanceof Error ? e.message : String(e));
+      setErr(e instanceof McpError ? e.message : errMessage(e));
     } finally {
       setBusy(false);
     }
@@ -184,7 +185,7 @@ export function McpSearchWorkbench(props: {
         }
         pushHistory(`${mode}:${query}`);
       } catch (e) {
-        setErr(e instanceof McpError ? e.message : e instanceof Error ? e.message : String(e));
+        setErr(e instanceof McpError ? e.message : errMessage(e));
       } finally {
         setBusy(false);
       }

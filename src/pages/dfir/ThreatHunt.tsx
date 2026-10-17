@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, AlertTriangle, Shield, Globe, FileText, Activity, ExternalLink, Loader2 } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 interface ProviderHit {
   source: string;
@@ -77,8 +78,8 @@ export default function ThreatHunt(): JSX.Element {
       }
       setResult((await r.json()) as HuntV2Result);
     } catch (e) {
-      console.error('ThreatHunt failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'Hunt failed');
+      console.error('ThreatHunt failed:', errMessage(e));
+      setError(errMessage(e, 'Hunt failed'));
     }
     setHunting(false);
   };

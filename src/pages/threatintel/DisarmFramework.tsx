@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ExternalLink, Megaphone, Target } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { StixObjectTable, type StixBundle } from '../../components/StixBundleViewer';
+import { errMessage } from '../../lib/log';
 
 interface ExternalRef {
   source_name: string;
@@ -45,7 +46,7 @@ function safeHref(url: string): string | null {
     const u = new URL(url);
     return u.protocol === 'http:' || u.protocol === 'https:' ? u.toString() : null;
   } catch (_catchErr) {
-    console.error('safeHref failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('safeHref failed:', errMessage(_catchErr));
     return null;
   }
 }

@@ -1,3 +1,4 @@
+import { errMessage } from './err';
 export type DbBriefType = 'cyber' | 'deepfake' | 'disaster' | 'maritime';
 
 interface DbIndexEntry {
@@ -1197,7 +1198,7 @@ export async function syncDailyBriefs(env: SyncEnv): Promise<{ types: string[]; 
       mergedBriefs.set(`${type}:${date}`, { type: type as DbBriefType, date, sizeBytes });
       types.push(type);
     } catch (err) {
-      errors.push(`${type}: ${err instanceof Error ? err.message : String(err)}`);
+      errors.push(`${type}: ${errMessage(err)}`);
     }
   }
 

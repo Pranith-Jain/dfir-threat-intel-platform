@@ -17,6 +17,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { downloadBlob } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 
 type StepId = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
@@ -159,7 +160,7 @@ function loadState(): InvestigationState | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw) as InvestigationState;
   } catch (_catchErr) {
-    console.error('loadState failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('loadState failed:', errMessage(_catchErr));
     /* ignore */
   }
   return null;

@@ -4,6 +4,7 @@ import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
 import { sanitizeUrl } from '../../lib/sanitize-url';
 import { Activity, ChevronDown, ChevronUp, ExternalLink, Globe, RefreshCw, Search, ShieldAlert } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 interface GroupRow {
   slug: string;
@@ -198,7 +199,7 @@ export default function RansomwareGroups(): JSX.Element {
       setIdx((await iRes.json()) as GroupsIndex);
       setRows(((await gRes.json()) as { groups: GroupRow[] }).groups ?? []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

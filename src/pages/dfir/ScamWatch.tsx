@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { sanitizeUrl } from '../../lib/sanitize-url';
 import { Link } from 'react-router-dom';
@@ -77,7 +77,7 @@ function loadDisabled(): Set<string> {
     const raw = localStorage.getItem(DISABLED_STORAGE_KEY);
     return new Set(raw ? (JSON.parse(raw) as string[]) : []);
   } catch (_catchErr) {
-    console.error('loadDisabled failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('loadDisabled failed:', errMessage(_catchErr));
     return new Set();
   }
 }
@@ -97,7 +97,7 @@ export default function ScamWatch(): JSX.Element {
     try {
       localStorage.setItem(DISABLED_STORAGE_KEY, JSON.stringify([...disabled]));
     } catch (_catchErr) {
-      console.error('ScamWatch failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('ScamWatch failed:', errMessage(_catchErr));
       /* localStorage unavailable */
     }
   }, [disabled]);

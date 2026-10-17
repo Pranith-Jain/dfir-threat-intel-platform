@@ -6,6 +6,7 @@ import { detectEncoding, decodeBase64, decodeUrl, decodeChain, type DecodeStep }
 import { hasIocCandidates } from '../../lib/dfir/ioc-detect';
 import { CopyButton } from '../../components/dfir/CopyButton';
 import { Textarea } from '../../components/ui/Input';
+import { errMessage } from '../../lib/log';
 
 const FORMAT_BADGE: Record<string, string> = {
   base64: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
@@ -31,7 +32,7 @@ export default function Decode(): JSX.Element {
     try {
       sessionStorage.setItem('ioc-extractor-pipe', output);
     } catch (_catchErr) {
-      console.error('Decode failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('Decode failed:', errMessage(_catchErr));
       /* sessionStorage unavailable - silent */
     }
     navigate('/dfir/extract?from=decoder');

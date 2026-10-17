@@ -26,6 +26,7 @@ import {
   type MaturityLevel,
 } from '../../data/grc';
 import { downloadBlob } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 
 const STATUS_STYLES: Record<CoverageStatus, { label: string; cls: string }> = {
   unset: { label: '- unset', cls: 'border-slate-300 dark:border-line-1 text-slate-500' },
@@ -58,7 +59,7 @@ export default function Grc(): JSX.Element {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(a));
     } catch (_catchErr) {
-      console.error('Grc failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('Grc failed:', errMessage(_catchErr));
       /* quota */
     }
   }, [a]);

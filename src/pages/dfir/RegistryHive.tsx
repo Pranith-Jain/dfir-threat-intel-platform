@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FolderTree, Upload, Loader2 } from 'lucide-react';
@@ -73,7 +73,7 @@ function parseHive(buf: ArrayBuffer): RKey {
           [...u8.subarray(dpos, dpos + Math.min(dataSize, 64))].map((b) => b.toString(16).padStart(2, '0')).join(' ') +
           (dataSize > 64 ? ' …' : '');
     } catch (_catchErr) {
-      console.error('readVal failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('readVal failed:', errMessage(_catchErr));
       value = '<unreadable>';
     }
     return { name, type: TYPES[type] ?? `0x${type.toString(16)}`, value };
@@ -109,7 +109,7 @@ function parseHive(buf: ArrayBuffer): RKey {
         try {
           key.values.push(readVal(d.getUint32(vl + i * 4, true)));
         } catch (_catchErr) {
-          console.error('readKey failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('readKey failed:', errMessage(_catchErr));
           /* skip */
         }
       }
@@ -121,7 +121,7 @@ function parseHive(buf: ArrayBuffer): RKey {
           key.subkeys.push(readKey(so, depth + 1));
         }
       } catch (_catchErr) {
-        console.error('readKey failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('readKey failed:', errMessage(_catchErr));
         /* skip */
       }
     }
@@ -219,7 +219,7 @@ export default function RegistryHive(): JSX.Element {
           } catch (ex) {
             logCatch(ex);
             setRoot(null);
-            setErr(ex instanceof Error ? ex.message : String(ex));
+            setErr(errMessage(ex));
           } finally {
             setBusy(false);
           }

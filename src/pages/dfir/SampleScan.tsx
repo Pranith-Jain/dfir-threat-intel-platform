@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useNoindex } from '../../lib/use-noindex';
@@ -162,7 +162,7 @@ function streamSampleScan(
       }
     })
     .catch((e) => {
-      if ((e as { name?: string }).name !== 'AbortError') onError(e instanceof Error ? e.message : String(e));
+      if ((e as { name?: string }).name !== 'AbortError') onError(errMessage(e));
     });
   return { close: () => controller.abort() };
 }
@@ -292,7 +292,7 @@ export default function SampleScan(): JSX.Element {
         startScan(a.sha256);
       } catch (e) {
         logCatch(e);
-        setError(e instanceof Error ? e.message : 'analysis failed');
+        setError(errMessage(e, 'analysis failed'));
         setPhase('error');
       }
     },

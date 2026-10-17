@@ -19,6 +19,7 @@ import {
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { DataState } from '../../components/DataState';
 import { sanitizeUrl } from '../../lib/sanitize-url';
+import { errMessage } from '../../lib/log';
 
 const TelegramFirehose = lazy(() => import('./TelegramFirehose'));
 const TelegramLeaks = lazy(() => import('./TelegramLeaks'));
@@ -219,8 +220,8 @@ export default function TelegramHub(): JSX.Element {
         const data = (await res.json()) as StatsResponse;
         if (!cancel) setStats(data);
       } catch (e) {
-        console.error('run failed:', e instanceof Error ? e.message : String(e));
-        if (!cancel) setStatsError(e instanceof Error ? e.message : 'failed to load stats');
+        console.error('run failed:', errMessage(e));
+        if (!cancel) setStatsError(errMessage(e, 'failed to load stats'));
       } finally {
         if (!cancel) setStatsLoading(false);
       }
@@ -271,8 +272,8 @@ export default function TelegramHub(): JSX.Element {
       setChannels(ch.results ?? []);
       setLeaks(lk.entries ?? []);
     } catch (e) {
-      console.error('runSearch failed:', e instanceof Error ? e.message : String(e));
-      setSearchError(e instanceof Error ? e.message : 'search failed');
+      console.error('runSearch failed:', errMessage(e));
+      setSearchError(errMessage(e, 'search failed'));
     } finally {
       setSearchLoading(false);
     }

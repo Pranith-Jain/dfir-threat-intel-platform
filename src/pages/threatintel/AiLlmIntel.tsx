@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { ExternalLink, RefreshCw, Bot, Shield, BrainCircuit, FileText, Activity, AlertTriangle } from 'lucide-react';
+import { relativeAgo } from '../../lib/relativeTime';
+import { errMessage } from '../../lib/log';
 
 /**
  * AI / LLM Threat Intelligence.
@@ -87,18 +89,13 @@ const TREND_DIMENSIONS: Array<{ id: string; label: string }> = [
   { id: 'actor_type', label: 'Campaign types' },
 ];
 
-function relativeTime(dateStr?: string): string {
+// Past ~30 days "Nd ago" stops carrying information, so this page shows the
+// date itself. The formatter itself is shared (lib/relativeTime).
+function ageOrDate(dateStr?: string): string {
   if (!dateStr) return '';
-  const parsed = Date.parse(dateStr);
-  if (!Number.isFinite(parsed)) return '';
-  const mins = Math.floor((Date.now() - parsed) / 60_000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  if (days < 30) return `${days}d ago`;
-  return dateStr.slice(0, 10);
+  const age = relativeAgo(dateStr);
+  const days = Number.parseInt(age, 10);
+  return Number.isFinite(days) && days >= 30 ? dateStr.slice(0, 10) : age;
 }
 
 /** Technique ids matching credential/execution impact — the ones that matter. */
@@ -127,7 +124,7 @@ export default function AiLlmIntel() {
       setData(payload);
     } catch (e) {
       if (ctrl.signal.aborted) return;
-      setError(e instanceof Error ? e.message : 'Failed to load AI/LLM intelligence');
+      setError(errMessage(e, 'Failed to load AI/LLM intelligence'));
     } finally {
       if (!ctrl.signal.aborted) setLoading(false);
     }
@@ -190,7 +187,7 @@ export default function AiLlmIntel() {
           >
             llm-threatintel.com
           </a>
-          {data?.last_updated && <span className="ml-2">Updated {relativeTime(data.last_updated)}</span>}
+          {data?.last_updated && <span className="ml-2">Updated {ageOrDate(data.last_updated)}</span>}
         </span>
         <div className="ml-auto flex items-center gap-2">
           <a

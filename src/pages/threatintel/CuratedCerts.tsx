@@ -1,7 +1,8 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useMemo, useState } from 'react';
 import { Search, RefreshCw, ExternalLink, Layers, Info, ChevronRight } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { relativeAgoSeeded } from '../../lib/relativeTime';
 
 interface CuratedTool {
   section: string;
@@ -31,25 +32,11 @@ interface Meta {
   error?: string;
 }
 
-function relativeTime(iso: string | undefined): string {
-  if (!iso || iso.startsWith('1970')) return 'seed';
-  const t = Date.parse(iso);
-  if (Number.isNaN(t)) return 'unknown';
-  const diff = Date.now() - t;
-  const m = Math.floor(diff / 60_000);
-  if (m < 1) return 'just now';
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  const d = Math.floor(h / 24);
-  return `${d}d ago`;
-}
-
 function hostnameOf(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, '');
   } catch (_catchErr) {
-    console.error('hostnameOf failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('hostnameOf failed:', errMessage(_catchErr));
     return url;
   }
 }
@@ -221,7 +208,7 @@ export default function CuratedCerts(): JSX.Element {
             <RefreshCw className="h-3.5 w-3.5" /> refresh
           </button>
           <span className="rounded border border-line-2 px-2 py-1 text-muted font-mono">
-            synced <span className="text-body">{relativeTime(meta?.fetchedAt ?? data?.fetchedAt)}</span>
+            synced <span className="text-body">{relativeAgoSeeded(meta?.fetchedAt ?? data?.fetchedAt)}</span>
           </span>
           {meta?.ok === false && (
             <span

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { errMessage } from '../../lib/log';
 import {
   Brain,
   ChevronDown,
@@ -86,8 +87,8 @@ export default function ACH(): JSX.Element {
       }
       setResult((await res.json()) as AchResponse);
     } catch (e) {
-      console.error('analyze failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : String(e));
+      console.error('analyze failed:', errMessage(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

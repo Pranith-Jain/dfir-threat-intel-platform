@@ -14,6 +14,7 @@ import { loadOgData } from './og-data';
 import { matchOgImagePath, matchOgPagePath, type OgImageType } from './og-path';
 import { svgToPng } from './og-raster';
 import { workerRateLimit, rateLimitResponse, callerIp } from './lib/worker-rate-limit';
+import { errMessage } from './lib/err';
 
 const OG_LIMIT = 60;
 
@@ -143,7 +144,7 @@ export async function handleOgImage(request: Request, env: Env, url: URL, ctx: E
     );
     return res;
   } catch (err) {
-    console.error('og-image render failed:', err instanceof Error ? err.message : String(err));
+    console.error('og-image render failed:', errMessage(err));
     return staticFallback(env, type);
   }
 }

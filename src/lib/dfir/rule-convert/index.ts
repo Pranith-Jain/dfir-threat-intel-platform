@@ -15,6 +15,7 @@
  */
 
 import { FORMAT_LABELS, uniq, type ConvertResult, type RuleFormat, type RuleIR } from './types';
+import { errMessage } from '../../log';
 import {
   parseDlp,
   parseEql,
@@ -178,7 +179,7 @@ export function convertRule(
     }
     return { ok: true, output, warnings: uniq(warnings) };
   } catch (e) {
-    return { ok: false, error: `conversion failed: ${e instanceof Error ? e.message : String(e)}` };
+    return { ok: false, error: `conversion failed: ${errMessage(e)}` };
   }
 }
 

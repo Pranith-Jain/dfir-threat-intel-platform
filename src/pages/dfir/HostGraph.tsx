@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Search, Network, Building2, Globe, Mail, Database, AlertTriangle, Clock, ExternalLink } from 'lucide-react';
@@ -132,7 +132,7 @@ export default function HostGraphView(): JSX.Element {
         logCatch(e);
         if (e instanceof DOMException && e.name === 'AbortError') return;
         if (!mountedRef.current) return;
-        setError(e instanceof Error ? e.message : 'Lookup failed');
+        setError(errMessage(e, 'Lookup failed'));
       }
     },
     [setParams]
@@ -153,7 +153,6 @@ export default function HostGraphView(): JSX.Element {
 
   return (
     <div className="max-w-6xl">
-
       <h1 className="text-3xl font-display font-semibold mb-2">Host Graph Pivot</h1>
       <p className="text-muted mb-6">
         Network-intel pivot: paste an IP, ASN, or CIDR and get the announcing prefix, holder, registry, and abuse

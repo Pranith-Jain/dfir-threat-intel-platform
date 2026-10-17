@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { DataPageLayout } from '../../components/DataPageLayout';
@@ -60,7 +60,7 @@ export default function EmailDefense(): JSX.Element {
       setData(json);
     } catch (e) {
       logCatch(e);
-      setError(e instanceof Error ? e.message : 'Lookup failed');
+      setError(errMessage(e, 'Lookup failed'));
     } finally {
       setLoading(false);
     }

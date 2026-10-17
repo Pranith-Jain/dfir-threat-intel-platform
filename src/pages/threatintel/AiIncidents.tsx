@@ -3,6 +3,7 @@ import { Newspaper, Search, ExternalLink } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { sanitizeUrl } from '../../lib/sanitize-url';
+import { errMessage } from '../../lib/log';
 
 interface Report {
   id: string;
@@ -42,7 +43,7 @@ export default function AiIncidents(): JSX.Element {
       const h = await (await fetch('/api/v1/ai-security/')).json().catch(() => null);
       setUpdatedAt((h as { latestIncidentAt?: string } | null)?.latestIncidentAt ?? null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

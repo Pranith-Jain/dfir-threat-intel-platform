@@ -28,6 +28,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { downloadBlob } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 
 interface CveEntry {
   cveId: string;
@@ -503,7 +504,7 @@ export function CveLandscapePanel(): JSX.Element {
         }
         if (!cancelled) setCves(allCves);
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'fetch failed');
+        if (!cancelled) setError(errMessage(e, 'fetch failed'));
       } finally {
         if (!cancelled) setLoading(false);
       }

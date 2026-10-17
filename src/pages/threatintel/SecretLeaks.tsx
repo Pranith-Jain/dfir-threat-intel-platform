@@ -4,6 +4,7 @@ import { DataState } from '../../components/DataState';
 import { SEVERITY_TONE, SEVERITY_BAR } from '../../components/severity';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
+import { errMessage } from '../../lib/log';
 import {
   Activity,
   AlertTriangle,
@@ -115,7 +116,7 @@ export default function SecretLeaks(): JSX.Element {
       })
       .catch((e) => {
         if (alive && (e as { name?: string }).name !== 'AbortError') {
-          setError(e instanceof Error ? e.message : String(e));
+          setError(errMessage(e));
         }
       })
       .finally(() => {

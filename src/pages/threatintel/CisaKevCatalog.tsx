@@ -8,6 +8,7 @@ import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisBut
 import { SeverityBadge } from '../../components/SeverityBadge';
 import { normalizeSeverity } from '../../components/severity';
 import { downloadBlob } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 
 interface KevEntry {
   cve_id: string;
@@ -123,9 +124,9 @@ export default function CisaKevCatalog({ bare = false }: { bare?: boolean } = {}
       const r = await fetchJson<KevResponse>('/api/v1/cisa-kev', { signal });
       setData(r);
     } catch (e) {
-      console.error('CisaKevCatalog failed:', e instanceof Error ? e.message : String(e));
+      console.error('CisaKevCatalog failed:', errMessage(e));
       if ((e as { name?: string }).name !== 'AbortError') {
-        setError(e instanceof Error ? e.message : 'Failed to load KEV catalog.');
+        setError(errMessage(e, 'Failed to load KEV catalog.'));
       }
     } finally {
       setLoading(false);

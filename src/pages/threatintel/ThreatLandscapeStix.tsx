@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useEffect, useCallback } from 'react';
 import { Search, Filter, Download, Database, ChevronDown, ChevronUp } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
@@ -84,7 +84,7 @@ export default function ThreatLandscapeStix(): JSX.Element {
       setData(json);
     } catch (e) {
       logCatch(e);
-      setError(e instanceof Error ? e.message : 'Unknown error');
+      setError(errMessage(e, 'Unknown error'));
     } finally {
       setLoading(false);
     }

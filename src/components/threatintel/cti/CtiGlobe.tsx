@@ -14,6 +14,7 @@ import Globe, { type GlobeInstance } from 'globe.gl';
 import type { CtiArc, CtiPoint } from './geo';
 import { severityColor, kindColor } from './geo';
 import { useReduceMotion } from '../../../hooks/useMediaQuery';
+import { errMessage } from '../../../lib/log';
 
 function escHtml(s: string): string {
   return s
@@ -295,7 +296,7 @@ export default function CtiGlobe({
         globeRef.current = null;
       };
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to initialize globe');
+      setError(errMessage(err, 'Failed to initialize globe'));
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

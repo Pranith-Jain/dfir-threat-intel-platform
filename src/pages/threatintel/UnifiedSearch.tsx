@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { sanitizeUrl } from '../../lib/sanitize-url';
@@ -165,7 +165,7 @@ export default function UnifiedSearch(): JSX.Element {
       logCatch(e);
       if ((e as Error).name === 'AbortError') return; // superseded / unmounted - swallow
       lastSearchedRef.current = '';
-      setError(e instanceof Error ? e.message : 'search failed');
+      setError(errMessage(e, 'search failed'));
     } finally {
       if (!ac.signal.aborted) setLoading(false);
     }

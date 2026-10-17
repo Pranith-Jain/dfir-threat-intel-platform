@@ -5,6 +5,7 @@ import { BackLink } from '../../components/BackLink';
 import { Scale, ExternalLink, Download, RotateCcw } from 'lucide-react';
 import { REGIMES, type Article, type RegimeId } from '../../data/privacy-hub';
 import { downloadBlob } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 
 const STORAGE_KEY = 'dfir.privacy-hub.checks.v1';
 
@@ -48,7 +49,7 @@ function loadState(): State {
     const parsed = JSON.parse(raw) as State;
     return { checks: parsed.checks ?? {} };
   } catch (_catchErr) {
-    console.error('loadState failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('loadState failed:', errMessage(_catchErr));
     return { checks: {} };
   }
 }
@@ -105,7 +106,7 @@ export default function PrivacyHub(): JSX.Element {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (_catchErr) {
-      console.error('PrivacyHub failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('PrivacyHub failed:', errMessage(_catchErr));
       /* quota */
     }
   }, [state]);

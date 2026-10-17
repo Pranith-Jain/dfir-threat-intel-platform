@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import {
   ReactFlow,
@@ -47,6 +47,7 @@ import type {
   AnalyzerOutput,
 } from './report-analyzer-types';
 import { downloadCsv, exportIocsCsv, exportDetectionCsv } from './report-analyzer-csv';
+import { turnstileHeaders } from '../../lib/turnstile';
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -257,7 +258,7 @@ export default function ReportAnalyzer(): JSX.Element {
       // A superseded run (re-click while in-flight) or unmount aborts this
       // controller — expected control flow, never surface it as an error.
       if (ac.signal.aborted) return;
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       if (!ac.signal.aborted) setLoading(false);
     }
@@ -271,7 +272,7 @@ export default function ReportAnalyzer(): JSX.Element {
       downloadBlob(blob, pdfFilename(data));
     } catch (e) {
       logCatch(e);
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setPdfExporting(false);
     }
@@ -292,7 +293,7 @@ export default function ReportAnalyzer(): JSX.Element {
       downloadBlob(new Blob([json.markdown], { type: 'text/markdown' }), `${slug(data.title)}.md`);
     } catch (e) {
       logCatch(e);
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     }
   };
 
@@ -303,7 +304,7 @@ export default function ReportAnalyzer(): JSX.Element {
     try {
       const res = await fetch('/api/v1/saved-reports', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...(await turnstileHeaders('save-report')) },
         body: JSON.stringify({
           title: data.title,
           sourceUrl: inputUrl || undefined,
@@ -317,7 +318,7 @@ export default function ReportAnalyzer(): JSX.Element {
       setSavedMsg(`Saved as ${j.id.slice(0, 8)}…`);
     } catch (e) {
       logCatch(e);
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setSaving(false);
     }
@@ -330,7 +331,7 @@ export default function ReportAnalyzer(): JSX.Element {
       const iocValues = data.iocs.map((i) => i.value).slice(0, 20);
       const res = await fetch('/api/v1/saved-reports/correlate', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...(await turnstileHeaders('correlate-report')) },
         body: JSON.stringify({ iocs: iocValues }),
         signal: AbortSignal.timeout(60_000),
       });
@@ -1548,8 +1549,8 @@ function TimelineTab() {
         setTimeline(d.timeline);
         setSharedIocs(d.sharedIocs);
       } catch (e) {
-        console.error('TimelineTab failed:', e instanceof Error ? e.message : String(e));
-        setError(e instanceof Error ? e.message : String(e));
+        console.error('TimelineTab failed:', errMessage(e));
+        setError(errMessage(e));
       } finally {
         setLoading(false);
       }

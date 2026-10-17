@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Upload, X, Loader2, AlertTriangle, Check } from 'lucide-react';
 import { Textarea } from '../ui/Input';
 import { adminAuthHeaders } from '../../lib/admin-token';
+import { errMessage } from '../../lib/log';
 
 interface ParsedIoc {
   value: string;
@@ -122,7 +123,7 @@ export function BulkIocInput({ onSubmit }: BulkIocInputProps) {
           score: 0,
           tags: [],
           source: '',
-          error: e instanceof Error ? e.message : 'Enrichment failed',
+          error: errMessage(e, 'Enrichment failed'),
         },
       ]);
     } finally {

@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useRef, useState, useCallback, FormEvent } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { Search, Loader2, Users, BarChart3, ExternalLink, Shield, AlertTriangle, Lock } from 'lucide-react';
@@ -84,9 +84,9 @@ export default function TelegramChannelSearch(): JSX.Element {
       const j = (await res.json()) as SearchResponse;
       if (!ctrl.signal.aborted) setData(j);
     } catch (e) {
-      console.error('TelegramChannelSearch failed:', e instanceof Error ? e.message : String(e));
+      console.error('TelegramChannelSearch failed:', errMessage(e));
       if ((e as Error).name === 'AbortError') return;
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       if (!ctrl.signal.aborted) setLoading(false);
     }
@@ -122,7 +122,7 @@ export default function TelegramChannelSearch(): JSX.Element {
     } catch (e) {
       logCatch(e);
       if ((e as Error).name === 'AbortError') return;
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setBusy(null);
     }

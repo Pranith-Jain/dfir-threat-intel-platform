@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { Copy, Download, FileCode, FileText, Link as LinkIcon, Loader2, Upload } from 'lucide-react';
@@ -104,7 +104,7 @@ export default function StixBuilder(): JSX.Element {
       } catch (err) {
         logCatch(err);
         if (!cancelled) {
-          setBuild({ status: 'error', error: err instanceof Error ? err.message : String(err) });
+          setBuild({ status: 'error', error: errMessage(err) });
         }
       }
     })();
@@ -158,10 +158,10 @@ export default function StixBuilder(): JSX.Element {
       const result = (await res.json()) as IntelBundleResponse;
       if (buildCtrlRef.current === ctrl) setBuild({ status: 'ready', result });
     } catch (err) {
-      console.error('runBuild failed:', err instanceof Error ? err.message : String(err));
+      console.error('runBuild failed:', errMessage(err));
       if ((err as { name?: string }).name === 'AbortError') return;
       if (buildCtrlRef.current === ctrl) {
-        setBuild({ status: 'error', error: err instanceof Error ? err.message : String(err) });
+        setBuild({ status: 'error', error: errMessage(err) });
       }
     }
   }
@@ -206,7 +206,7 @@ export default function StixBuilder(): JSX.Element {
       logCatch(err);
       if ((err as { name?: string }).name === 'AbortError') return;
       if (buildCtrlRef.current === ctrl) {
-        setBuild({ status: 'error', error: err instanceof Error ? err.message : String(err) });
+        setBuild({ status: 'error', error: errMessage(err) });
       }
     }
   }
@@ -220,7 +220,7 @@ export default function StixBuilder(): JSX.Element {
         () => setCopyStatus('failed')
       );
     } catch (_catchErr) {
-      console.error('copyBundle failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('copyBundle failed:', errMessage(_catchErr));
       setCopyStatus('failed');
     }
   }

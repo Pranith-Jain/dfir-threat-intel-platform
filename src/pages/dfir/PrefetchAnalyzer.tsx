@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Activity, Upload, Loader2 } from 'lucide-react';
@@ -109,7 +109,7 @@ function filetime(d: DataView, o: number): string {
     const ms = (hi * 2 ** 32 + lo) / 1e4 - 11644473600000;
     return Number.isFinite(ms) && ms > 0 ? new Date(ms).toISOString() : '';
   } catch (_catchErr) {
-    console.error('filetime failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('filetime failed:', errMessage(_catchErr));
     return '';
   }
 }
@@ -261,7 +261,7 @@ export default function PrefetchAnalyzer(): JSX.Element {
           } catch (ex) {
             logCatch(ex);
             setPf(null);
-            setErr(ex instanceof Error ? ex.message : String(ex));
+            setErr(errMessage(ex));
           } finally {
             setBusy(false);
           }

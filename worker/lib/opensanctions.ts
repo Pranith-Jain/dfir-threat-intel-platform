@@ -1,3 +1,4 @@
+import { errMessage } from './err';
 export interface OpensanctionsMatch {
   schema?: string;
   id?: string;
@@ -46,8 +47,8 @@ export async function opensanctionsSearch(q: string, limit = 20, env?: { OPENSAN
     result.data = (await res.json()) as OpensanctionsSearchResponse;
     result.success = true;
   } catch (e) {
-    console.error('opensanctionsSearch failed:', e instanceof Error ? e.message : String(e));
-    result.error = e instanceof Error ? e.message : String(e);
+    console.error('opensanctionsSearch failed:', errMessage(e));
+    result.error = errMessage(e);
   }
 
   return result;
@@ -84,8 +85,8 @@ export async function opensanctionsEntity(id: string, env?: { OPENSANCTIONS_API_
     result.data = await res.json();
     result.success = true;
   } catch (e) {
-    console.error('opensanctionsEntity failed:', e instanceof Error ? e.message : String(e));
-    result.error = e instanceof Error ? e.message : String(e);
+    console.error('opensanctionsEntity failed:', errMessage(e));
+    result.error = errMessage(e);
   }
 
   return result;
@@ -118,8 +119,8 @@ export async function opensanctionsStats(env?: { OPENSANCTIONS_API_KEY?: string 
     result.data = await res.json();
     result.success = true;
   } catch (e) {
-    console.error('opensanctionsStats failed:', e instanceof Error ? e.message : String(e));
-    result.error = e instanceof Error ? e.message : String(e);
+    console.error('opensanctionsStats failed:', errMessage(e));
+    result.error = errMessage(e);
   }
 
   return result;

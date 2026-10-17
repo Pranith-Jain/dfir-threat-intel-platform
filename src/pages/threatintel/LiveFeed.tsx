@@ -24,6 +24,7 @@ import {
   Radio,
 } from 'lucide-react';
 import { defang, refang } from '../../lib/dfir/indicator-client';
+import { errMessage } from '../../lib/log';
 
 type TimeRange = '24h' | '7d' | '30d' | 'all';
 type SeverityFilter = 'all' | 'critical' | 'high' | 'medium' | 'low';
@@ -184,7 +185,7 @@ export default function LiveFeed(): JSX.Element {
         setCveCount(Array.isArray(arr) ? arr.length : 0);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load feed');
+      setError(errMessage(e, 'Failed to load feed'));
     } finally {
       setLoading(false);
     }

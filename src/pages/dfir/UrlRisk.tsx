@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { api, ApiError } from '../../lib/api-client';
+import { api } from '../../lib/api-client';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
 import { Link2, Search, AlertTriangle } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 interface StaticAnalysis {
   hostname: string;
@@ -105,7 +106,7 @@ export default function UrlRisk() {
       const res = await api.post<UrlRiskResponse>('/api/v1/url-risk/analyze', { url: trimmed });
       setResult(res);
     } catch (err) {
-      const msg = err instanceof ApiError || err instanceof Error ? err.message : String(err);
+      const msg = errMessage(err);
       setError(msg);
     } finally {
       setLoading(false);

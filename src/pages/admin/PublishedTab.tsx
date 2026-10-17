@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -118,7 +118,7 @@ export default function PublishedTab() {
         idx = (await getJson<{ index: Record<string, { twitter: boolean; linkedin: boolean }> }>('/social-index'))
           .index;
       } catch (_catchErr) {
-        console.error('PublishedTab failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('PublishedTab failed:', errMessage(_catchErr));
         /* index is optional */
       }
       const initial: SocialState = {};
@@ -135,7 +135,7 @@ export default function PublishedTab() {
       setSocial(initial);
     } catch (e) {
       logCatch(e);
-      setError(e instanceof Error ? e.message : 'failed to load');
+      setError(errMessage(e, 'failed to load'));
     } finally {
       setLoading(false);
     }
@@ -154,8 +154,8 @@ export default function PublishedTab() {
       setActionMsg(`Unpublished /blog/${slug}`);
       await load();
     } catch (e) {
-      console.error('unpublish failed:', e instanceof Error ? e.message : String(e));
-      setActionMsg(`unpublish failed: ${e instanceof Error ? e.message : String(e)}`);
+      console.error('unpublish failed:', errMessage(e));
+      setActionMsg(`unpublish failed: ${errMessage(e)}`);
     }
   }
 
@@ -179,7 +179,7 @@ export default function PublishedTab() {
         const r = await getJson<{ ok: boolean; social: SocialContent }>(`/social/${encodeURIComponent(slug)}`);
         if (r.ok) setSocial((prev) => ({ ...prev, [slug]: { ...prev[slug], data: r.social } as SocialEntry }));
       } catch (_catchErr) {
-        console.error('viewSocial failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('viewSocial failed:', errMessage(_catchErr));
         /* social content is optional */
       }
     }
@@ -219,7 +219,7 @@ export default function PublishedTab() {
       }
     } catch (e) {
       logCatch(e);
-      setSocialAndExpand(slug, { loadingTwitter: false, error: e instanceof Error ? e.message : String(e) });
+      setSocialAndExpand(slug, { loadingTwitter: false, error: errMessage(e) });
     }
   }
 
@@ -256,7 +256,7 @@ export default function PublishedTab() {
       }
     } catch (e) {
       logCatch(e);
-      setSocialAndExpand(slug, { loadingLinkedin: false, error: e instanceof Error ? e.message : String(e) });
+      setSocialAndExpand(slug, { loadingLinkedin: false, error: errMessage(e) });
     }
   }
 
@@ -415,7 +415,7 @@ function SocialQueueAgenda() {
   useEffect(() => {
     getSocialQueue()
       .then(setData)
-      .catch((e: unknown) => setErr(e instanceof Error ? e.message : String(e)));
+      .catch((e: unknown) => setErr(errMessage(e)));
   }, []);
 
   if (err)
@@ -609,7 +609,7 @@ function SocialContentPanel({
       const d = await getJson<{ ok: boolean; social: SocialContent }>(`/social/${encodeURIComponent(slug)}`);
       if (d.social) setRefreshed(d.social);
     } catch (e) {
-      console.error('refreshSocial failed:', e instanceof Error ? e.message : String(e));
+      console.error('refreshSocial failed:', errMessage(e));
     } finally {
       setRefreshBusy(false);
     }
@@ -630,10 +630,10 @@ function SocialContentPanel({
       }));
       setSchedRefresh((n) => n + 1);
     } catch (e) {
-      console.error('postToPlatform failed:', e instanceof Error ? e.message : String(e));
+      console.error('postToPlatform failed:', errMessage(e));
       setPostState((prev) => ({
         ...prev,
-        [platform]: { posting: false, result: { ok: false, error: e instanceof Error ? e.message : String(e) } },
+        [platform]: { posting: false, result: { ok: false, error: errMessage(e) } },
       }));
     }
   }
@@ -759,13 +759,13 @@ function InstagramSection({
           results[i] = url;
           setObjectUrls([...results]);
         } catch (e) {
-          console.error('fetchAll failed:', e instanceof Error ? e.message : String(e));
+          console.error('fetchAll failed:', errMessage(e));
           if (!cancelled) {
             // Fix 4: mark only the failing slide as 'error' so the UI can
             // distinguish a load failure from an in-progress load.
             results[i] = 'error';
             setObjectUrls([...results]);
-            setFetchErr(e instanceof Error ? e.message : String(e));
+            setFetchErr(errMessage(e));
           }
         }
       }
@@ -1047,7 +1047,7 @@ function HookSelector({
         setResult('Failed to apply hook');
       }
     } catch (e) {
-      setResult(`Error: ${e instanceof Error ? e.message : String(e)}`);
+      setResult(`Error: ${errMessage(e)}`);
     } finally {
       setRegenerating(null);
     }
@@ -1139,7 +1139,7 @@ function SchedulePanel({ slug, refreshTrigger = 0 }: { slug: string; refreshTrig
         setLocalTimes(times);
       }
     } catch (_catchErr) {
-      console.error('SchedulePanel failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('SchedulePanel failed:', errMessage(_catchErr));
       /* schedule is optional */
     }
   }, [slug]);
@@ -1160,8 +1160,8 @@ function SchedulePanel({ slug, refreshTrigger = 0 }: { slug: string; refreshTrig
       setSched(r.schedule);
       setMsg(localValue ? `${platform} time saved` : `${platform} time cleared`);
     } catch (e) {
-      console.error('saveTime failed:', e instanceof Error ? e.message : String(e));
-      setMsg(e instanceof Error ? e.message : String(e));
+      console.error('saveTime failed:', errMessage(e));
+      setMsg(errMessage(e));
     } finally {
       setBusy(null);
     }
@@ -1182,8 +1182,8 @@ function SchedulePanel({ slug, refreshTrigger = 0 }: { slug: string; refreshTrig
             );
       setSched(r.schedule);
     } catch (e) {
-      console.error('togglePosted failed:', e instanceof Error ? e.message : String(e));
-      setMsg(e instanceof Error ? e.message : String(e));
+      console.error('togglePosted failed:', errMessage(e));
+      setMsg(errMessage(e));
     } finally {
       setBusy(null);
     }
@@ -1200,8 +1200,8 @@ function SchedulePanel({ slug, refreshTrigger = 0 }: { slug: string; refreshTrig
       setSched(r.schedule as SocialScheduleData);
       setMsg(`${platform} approved`);
     } catch (e) {
-      console.error('handleApprove failed:', e instanceof Error ? e.message : String(e));
-      setMsg(e instanceof Error ? e.message : String(e));
+      console.error('handleApprove failed:', errMessage(e));
+      setMsg(errMessage(e));
     } finally {
       setBusy(null);
     }
@@ -1215,8 +1215,8 @@ function SchedulePanel({ slug, refreshTrigger = 0 }: { slug: string; refreshTrig
       setSched(r.schedule as SocialScheduleData);
       setMsg(`${platform} unapproved`);
     } catch (e) {
-      console.error('handleUnapprove failed:', e instanceof Error ? e.message : String(e));
-      setMsg(e instanceof Error ? e.message : String(e));
+      console.error('handleUnapprove failed:', errMessage(e));
+      setMsg(errMessage(e));
     } finally {
       setBusy(null);
     }

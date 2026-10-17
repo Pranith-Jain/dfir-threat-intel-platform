@@ -1,3 +1,4 @@
+import { errMessage } from './err';
 export interface TraceixAvResult {
   engine: string;
   engine_type: string;
@@ -28,10 +29,7 @@ function isValidSha256(s: string): boolean {
   return /^[0-9a-f]{64}$/i.test(s);
 }
 
-export async function traceixLookup(
-  env: EnvWithTraceix,
-  hash: string
-): Promise<TraceixLookupResult> {
+export async function traceixLookup(env: EnvWithTraceix, hash: string): Promise<TraceixLookupResult> {
   const result: TraceixLookupResult = {
     hash,
     avResults: [],
@@ -107,12 +105,12 @@ export async function traceixLookup(
       ms: Date.now() - t0,
     });
   } catch (e) {
-    console.error('handler failed:', e instanceof Error ? e.message : String(e));
+    console.error('handler failed:', errMessage(e));
     result.diagnostics.push({
       provider: 'traceix',
       status: 'failed',
       ms: Date.now() - t0,
-      error: e instanceof Error ? e.message : String(e),
+      error: errMessage(e),
     });
   }
 

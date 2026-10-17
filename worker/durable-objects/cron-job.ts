@@ -2,6 +2,7 @@ import { DurableObject } from 'cloudflare:workers';
 import type { Env } from '../env';
 import { executeCronJob } from '../scheduled';
 import type { ExecutionContext } from '@cloudflare/workers-types';
+import { errMessage } from '../lib/err';
 
 /**
  * Cron execution Durable Object.
@@ -83,7 +84,7 @@ export class CronJobDO extends DurableObject<Env> {
           job: 'cron-job',
           cron: job.cron,
           status: 'failed',
-          error: e instanceof Error ? e.message : String(e),
+          error: errMessage(e),
         })
       );
       throw e;

@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useCallback, useEffect, useState } from 'react';
 import { briefingsGet, briefingsPost } from './adminApi';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
@@ -124,7 +124,7 @@ export default function BriefingsTab() {
       setItems(r.items ?? []);
     } catch (e) {
       logCatch(e);
-      setListError(e instanceof Error ? e.message : String(e));
+      setListError(errMessage(e));
     } finally {
       setListLoading(false);
     }
@@ -145,7 +145,7 @@ export default function BriefingsTab() {
         void loadList();
       } catch (e) {
         logCatch(e);
-        setBuildError(e instanceof Error ? e.message : String(e));
+        setBuildError(errMessage(e));
       } finally {
         setBuilding(null);
       }
@@ -164,7 +164,7 @@ export default function BriefingsTab() {
       void loadList();
     } catch (e) {
       logCatch(e);
-      setBackfillError(e instanceof Error ? e.message : String(e));
+      setBackfillError(errMessage(e));
     } finally {
       setBackfilling(false);
     }
@@ -180,7 +180,7 @@ export default function BriefingsTab() {
       void loadList();
     } catch (e) {
       logCatch(e);
-      setSweepError(e instanceof Error ? e.message : String(e));
+      setSweepError(errMessage(e));
     } finally {
       setSweeping(false);
     }
@@ -197,7 +197,7 @@ export default function BriefingsTab() {
         void loadList();
       } catch (e) {
         logCatch(e);
-        setDeleteMsg(`Delete failed: ${e instanceof Error ? e.message : String(e)}`);
+        setDeleteMsg(`Delete failed: ${errMessage(e)}`);
       } finally {
         setDeletingSlug(null);
       }
@@ -215,7 +215,7 @@ export default function BriefingsTab() {
       void loadList();
     } catch (e) {
       logCatch(e);
-      setDeleteMsg(`Prune failed: ${e instanceof Error ? e.message : String(e)}`);
+      setDeleteMsg(`Prune failed: ${errMessage(e)}`);
     } finally {
       setPruning(false);
     }

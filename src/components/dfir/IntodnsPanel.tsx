@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { preloadRoute } from '../../lib/route-preloaders';
+import { errMessage } from '../../lib/log';
 import {
   ExternalLink,
   ShieldCheck,
@@ -178,7 +179,7 @@ export function IntodnsPanel({ domain, title = 'IntoDNS.ai grade' }: IntodnsPane
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : String(err));
+        setError(errMessage(err));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);

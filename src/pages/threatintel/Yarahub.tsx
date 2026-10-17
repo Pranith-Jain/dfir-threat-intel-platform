@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useEffect, useCallback, useRef, type FormEvent } from 'react';
 import { Input } from '../../components/ui/Input';
 import { DataPageLayout } from '../../components/DataPageLayout';
@@ -55,7 +55,7 @@ export default function Yarahub(): JSX.Element {
     } catch (e) {
       logCatch(e);
       if ((e as Error).name === 'AbortError') return;
-      setError(e instanceof Error ? e.message : 'Failed to fetch YARA rules');
+      setError(errMessage(e, 'Failed to fetch YARA rules'));
       if (!ctrl.signal.aborted) setRules([]);
     } finally {
       if (!ctrl.signal.aborted) setLoading(false);
@@ -125,7 +125,7 @@ export default function Yarahub(): JSX.Element {
     } catch (e) {
       logCatch(e);
       if (latestRuleReq.current !== reqId) return;
-      setContentError(e instanceof Error ? e.message : 'Unknown error');
+      setContentError(errMessage(e, 'Unknown error'));
       setRuleContent(null);
     } finally {
       if (latestRuleReq.current === reqId) setContentLoading(false);

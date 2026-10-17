@@ -12,6 +12,8 @@
  * to poll for results. This module wraps both steps into a single call.
  */
 
+import { errMessage } from './err';
+
 const INTELX_BASE = 'https://2.intelx.io';
 const TIMEOUT_MS = 15_000;
 
@@ -185,7 +187,7 @@ export async function intelxSearch(
       provider: 'intelx',
       status: 'failed',
       ms: Date.now() - t0,
-      error: e instanceof Error ? e.message : String(e),
+      error: errMessage(e),
     });
   }
 
@@ -239,7 +241,7 @@ export async function intelxPhonebook(
       provider: 'intelx-phonebook',
       status: 'failed',
       ms: Date.now() - t0,
-      error: e instanceof Error ? e.message : String(e),
+      error: errMessage(e),
     });
   }
 

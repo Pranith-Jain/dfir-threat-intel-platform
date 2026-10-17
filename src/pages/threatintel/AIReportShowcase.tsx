@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -390,8 +390,8 @@ function IocsTab(props: { iocs: ExtractedIoc[]; apiKey: string; mcpStatus: McpSt
           const r = await searchIoc(apiKey, i.value);
           setEnrichments((prev) => ({ ...prev, [i.value]: { ioc: i, hit: r, loading: false } }));
         } catch (e) {
-          console.error('runEnrichment failed:', e instanceof Error ? e.message : String(e));
-          const msg = e instanceof McpError ? e.message : e instanceof Error ? e.message : String(e);
+          console.error('runEnrichment failed:', errMessage(e));
+          const msg = e instanceof McpError ? e.message : errMessage(e);
           setEnrichments((prev) => ({ ...prev, [i.value]: { ioc: i, hit: null, loading: false, error: msg } }));
         }
       })
@@ -666,8 +666,8 @@ function McpSearchPanel(props: { apiKey: string; status: McpStatus }): JSX.Eleme
         setHit({ reports: r });
       }
     } catch (e) {
-      console.error('run failed:', e instanceof Error ? e.message : String(e));
-      const msg = e instanceof McpError ? e.message : e instanceof Error ? e.message : String(e);
+      console.error('run failed:', errMessage(e));
+      const msg = e instanceof McpError ? e.message : errMessage(e);
       setErr(msg);
     } finally {
       setBusy(false);
@@ -895,7 +895,7 @@ export default function AIReportShowcase(): JSX.Element {
         setData(d);
       } catch (e) {
         logCatch(e);
-        const message = e instanceof Error ? e.message : String(e);
+        const message = errMessage(e);
         setError(message || 'analysis failed');
       } finally {
         setLoading(false);

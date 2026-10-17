@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useCallback, useRef } from 'react';
 import { BackLink } from '../../components/BackLink';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
@@ -86,7 +86,7 @@ export default function StealerParser(): JSX.Element {
           const p = JSON.parse(errBody) as { error?: string };
           msg = p.error ?? msg;
         } catch (_catchErr) {
-          console.error('StealerParser failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('StealerParser failed:', errMessage(_catchErr));
           /* ok */
         }
         throw new Error(msg);
@@ -97,7 +97,7 @@ export default function StealerParser(): JSX.Element {
     } catch (err) {
       logCatch(err);
       if (ctrl.signal.aborted) return;
-      setError(err instanceof Error ? err.message : String(err));
+      setError(errMessage(err));
     } finally {
       if (!ctrl.signal.aborted) setLoading(false);
     }

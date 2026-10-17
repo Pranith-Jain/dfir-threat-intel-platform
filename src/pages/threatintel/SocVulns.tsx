@@ -9,6 +9,7 @@ import { SocShell, SocKpi, SocSection, SocPanel, type SocStatus } from '../../co
 import { SocBar, SocDonut, type BarItem, type DonutSlice } from '../../components/threatintel/soc/SocCharts';
 import { downloadCsv, dayKey, formatNumber } from '../../components/threatintel/soc/utils';
 import { CHART_RANK, CHART_SEV, SEVERITY_PILL, type SocSeverity } from '../../components/threatintel/soc/tone';
+import { errMessage } from '../../lib/log';
 
 /* ─── Data shape (matches /api/v1/cve-recent) ──────────────────────── */
 
@@ -134,9 +135,9 @@ export default function SocVulns(): JSX.Element {
       const r = (await fetchJson('/api/v1/cve-recent', { signal, cache: 'no-store' })) as CveRecentResponse;
       setData(r);
     } catch (e) {
-      console.error('SocVulns failed:', e instanceof Error ? e.message : String(e));
+      console.error('SocVulns failed:', errMessage(e));
       if ((e as { name?: string }).name !== 'AbortError') {
-        setError(e instanceof Error ? e.message : 'Failed to load.');
+        setError(errMessage(e, 'Failed to load.'));
       }
     } finally {
       setLoading(false);

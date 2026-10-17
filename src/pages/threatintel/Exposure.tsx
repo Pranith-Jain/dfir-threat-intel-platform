@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Loader2, ShieldAlert, ExternalLink } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 
 type Verdict = 'critical' | 'high' | 'medium' | 'low' | 'unknown';
 
@@ -69,7 +69,7 @@ export default function ExposureCheck(): JSX.Element {
       setResult((await r.json()) as ExposureResponse);
     } catch (e) {
       logCatch(e);
-      if (!ctrl.signal.aborted) setError(e instanceof Error ? e.message : 'check failed');
+      if (!ctrl.signal.aborted) setError(errMessage(e, 'check failed'));
     } finally {
       if (!ctrl.signal.aborted) setLoading(false);
     }

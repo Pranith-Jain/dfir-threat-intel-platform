@@ -15,6 +15,8 @@
  * We consume the SSE stream and return the aggregated results.
  */
 
+import { errMessage } from './err';
+
 export interface InfostealerRecord {
   id: number;
   domain: string;
@@ -44,7 +46,7 @@ const THREATMON_BASE = 'https://intelhub.threatmon.io';
 
 export async function threatmonInfostealerSearch(
   domain: string,
-  scope: InfostealerScope = 'company',
+  scope: InfostealerScope = 'company'
 ): Promise<ThreatMonSearchResult> {
   const result: ThreatMonSearchResult = {
     query: domain,
@@ -68,17 +70,18 @@ export async function threatmonInfostealerSearch(
 
   const headers: Record<string, string> = {
     'content-type': 'application/json',
-    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-    'accept': 'application/json, text/event-stream',
-    'origin': 'https://intelhub.threatmon.io',
-    'referer': 'https://intelhub.threatmon.io/infostealer-investigation',
+    'user-agent':
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    accept: 'application/json, text/event-stream',
+    origin: 'https://intelhub.threatmon.io',
+    referer: 'https://intelhub.threatmon.io/infostealer-investigation',
   };
 
   try {
     // Step 1: POST to initiate search
     const postRes = await fetch(
       `${THREATMON_BASE}/api/infostealer-search?domain=${encodeURIComponent(domain)}&scope=${scope}`,
-      { method: 'POST', cache: 'no-store', headers, signal: AbortSignal.timeout(10000) },
+      { method: 'POST', cache: 'no-store', headers, signal: AbortSignal.timeout(10000) }
     );
 
     if (!postRes.ok) {
@@ -109,7 +112,10 @@ export async function threatmonInfostealerSearch(
     // Step 2: Consume SSE stream
     const streamRes = await fetch(
       `${THREATMON_BASE}/api/infostealer-stream?requestId=${encodeURIComponent(postData.requestId)}`,
-      { headers: { 'accept': 'text/event-stream', 'user-agent': headers['user-agent'] ?? 'Mozilla/5.0' }, signal: AbortSignal.timeout(30000) },
+      {
+        headers: { accept: 'text/event-stream', 'user-agent': headers['user-agent'] ?? 'Mozilla/5.0' },
+        signal: AbortSignal.timeout(30000),
+      }
     );
 
     if (!streamRes.ok) {
@@ -160,7 +166,7 @@ export async function threatmonInfostealerSearch(
           }));
           result.records.push(...recs);
         } catch (_catchErr) {
-          console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('handler failed:', errMessage(_catchErr));
           /* non-JSON event data */
         }
       } else if (event === 'count') {
@@ -170,7 +176,7 @@ export async function threatmonInfostealerSearch(
             result.totalCount = parsed.count;
           }
         } catch (_catchErr) {
-          console.error('handler failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('handler failed:', errMessage(_catchErr));
           /* ignore */
         }
       } else if (event === 'failed') {
@@ -186,12 +192,12 @@ export async function threatmonInfostealerSearch(
 
     result.diagnostics.push({ provider: 'threatmon', status: 'ok', ms: Date.now() - t0 });
   } catch (e) {
-    console.error('handler failed:', e instanceof Error ? e.message : String(e));
+    console.error('handler failed:', errMessage(e));
     result.diagnostics.push({
       provider: 'threatmon',
       status: 'failed',
       ms: Date.now() - t0,
-      error: e instanceof Error ? e.message : String(e),
+      error: errMessage(e),
     });
   }
 

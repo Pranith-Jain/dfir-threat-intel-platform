@@ -8,6 +8,8 @@
  * Auth: Bearer token in Authorization header.
  */
 
+import { errMessage } from './err';
+
 const TRUECALLER_BASE = 'https://api.truecaller.com';
 const TIMEOUT_MS = 10_000;
 
@@ -160,7 +162,7 @@ export async function truecallerLookup(env: TruecallerEnv, phone: string): Promi
       provider: 'truecaller',
       status: 'failed',
       ms: Date.now() - t0,
-      error: e instanceof Error ? e.message : String(e),
+      error: errMessage(e),
     });
   }
 

@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { Virtuoso } from 'react-virtuoso';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { sanitizeUrl } from '../../lib/sanitize-url';
@@ -526,7 +526,7 @@ export function BreachDisclosuresPanel(): JSX.Element {
         const json = (await res.json()) as BreachDisclosuresResponse;
         setData(json);
       } catch (e) {
-        console.error('BreachDisclosuresPanel failed:', e instanceof Error ? e.message : String(e));
+        console.error('BreachDisclosuresPanel failed:', errMessage(e));
         if ((e as Error).name !== 'AbortError') setError((e as Error).message);
       } finally {
         setLoading(false);
@@ -1181,7 +1181,7 @@ export function TelegramFeedPanel(): JSX.Element {
         } catch (e) {
           lastErr = e;
           if (ac.signal.aborted) return;
-          const msg = e instanceof Error ? e.message : String(e);
+          const msg = errMessage(e);
           const retryable =
             (e as Error).name === 'TimeoutError' || /timed out|timeout|network|fetch failed|load failed/i.test(msg);
           if (attempt < ATTEMPTS - 1 && retryable) continue;

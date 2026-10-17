@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { getJson, postJsonWithBody } from './adminApi';
 import { adminAuthHeaders } from '../../lib/admin-token';
+import { errMessage } from '../../lib/log';
 
 interface CookieStatus {
   source: 'kv' | 'env' | 'none';
@@ -79,8 +80,8 @@ export default function XCookiesTab() {
       setStatus(data);
       setError(null);
     } catch (e) {
-      console.error('load x-cookies failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'failed to load status');
+      console.error('load x-cookies failed:', errMessage(e));
+      setError(errMessage(e, 'failed to load status'));
     } finally {
       setLoading(false);
     }
@@ -95,8 +96,8 @@ export default function XCookiesTab() {
       const data = (await r.json()) as HealthResult;
       setHealth(data);
     } catch (e) {
-      console.error('test x connection failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'test failed');
+      console.error('test x connection failed:', errMessage(e));
+      setError(errMessage(e, 'test failed'));
     } finally {
       setTesting(false);
     }
@@ -124,8 +125,8 @@ export default function XCookiesTab() {
       setSaved('Cookies saved - the X integration now uses the admin override.');
       void load();
     } catch (err) {
-      console.error('save x-cookies failed:', err instanceof Error ? err.message : String(err));
-      setError(err instanceof Error ? err.message : 'failed to save');
+      console.error('save x-cookies failed:', errMessage(err));
+      setError(errMessage(err, 'failed to save'));
     } finally {
       setSaving(false);
     }
@@ -151,8 +152,8 @@ export default function XCookiesTab() {
       setSaved('Admin override cleared.');
       void load();
     } catch (err) {
-      console.error('clear x-cookies failed:', err instanceof Error ? err.message : String(err));
-      setError(err instanceof Error ? err.message : 'failed to clear');
+      console.error('clear x-cookies failed:', errMessage(err));
+      setError(errMessage(err, 'failed to clear'));
     } finally {
       setClearing(false);
     }
@@ -164,7 +165,7 @@ export default function XCookiesTab() {
       setQidsStatus(data);
       setQids(data.qids);
     } catch (e) {
-      console.error('load x-qids failed:', e instanceof Error ? e.message : String(e));
+      console.error('load x-qids failed:', errMessage(e));
     }
   }
 
@@ -178,8 +179,8 @@ export default function XCookiesTab() {
       setQidsMsg('Query IDs saved - takes effect within ~60s.');
       void loadQids();
     } catch (err) {
-      console.error('save x-qids failed:', err instanceof Error ? err.message : String(err));
-      setError(err instanceof Error ? err.message : 'failed to save query IDs');
+      console.error('save x-qids failed:', errMessage(err));
+      setError(errMessage(err, 'failed to save query IDs'));
     } finally {
       setQidsSaving(false);
     }
@@ -200,8 +201,8 @@ export default function XCookiesTab() {
       setQidsMsg('Query-ID override cleared - using defaults.');
       void loadQids();
     } catch (err) {
-      console.error('clear x-qids failed:', err instanceof Error ? err.message : String(err));
-      setError(err instanceof Error ? err.message : 'failed to clear query IDs');
+      console.error('clear x-qids failed:', errMessage(err));
+      setError(errMessage(err, 'failed to clear query IDs'));
     } finally {
       setQidsClearing(false);
     }

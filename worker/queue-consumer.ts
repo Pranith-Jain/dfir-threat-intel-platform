@@ -24,6 +24,7 @@ import { warmRansomwareRecentCache } from '../api/src/routes/ransomware-recent';
 import { concurrentMap } from '../api/src/lib/concurrent-map';
 import { signInternalToken } from '../api/src/lib/internal-token';
 import { fetchXAccountPosts, X_ACCOUNTS } from '../api/src/routes/cyberpulse-ingest';
+import { errMessage } from './lib/err';
 
 // `gp:warm:<key>` slice TTL — 180 min. Covers the 60m enqueue gate + one
 // missed hourly cycle + queue drain; worst-case slice age ~2h, still within
@@ -173,9 +174,7 @@ export async function handleQueue(
               return;
             }
           } catch (e) {
-            console.error(
-              JSON.stringify({ job: 'cve-digest-warm', error: e instanceof Error ? e.message : String(e) })
-            );
+            console.error(JSON.stringify({ job: 'cve-digest-warm', error: errMessage(e) }));
             msg.retry({ delaySeconds: 300 });
             return;
           }
@@ -208,7 +207,7 @@ export async function handleQueue(
               return;
             }
           } catch (e) {
-            console.error(JSON.stringify({ job, error: e instanceof Error ? e.message : String(e) }));
+            console.error(JSON.stringify({ job, error: errMessage(e) }));
             msg.retry({ delaySeconds: 300 });
             return;
           }
@@ -248,7 +247,7 @@ export async function handleQueue(
             msg.ack();
             return;
           } catch (e) {
-            console.error(JSON.stringify({ job: 'ai-llm-warm', error: e instanceof Error ? e.message : String(e) }));
+            console.error(JSON.stringify({ job: 'ai-llm-warm', error: errMessage(e) }));
             msg.retry({ delaySeconds: 300 });
             return;
           }
@@ -283,7 +282,7 @@ export async function handleQueue(
                 job: 'cp-warm-slice',
                 type: cp.type,
                 status: 'failed',
-                error: e instanceof Error ? e.message : String(e),
+                error: errMessage(e),
               })
             );
             // Transient fetcher failure → retry (see gp-warm rationale).
@@ -341,7 +340,7 @@ export async function handleQueue(
             job: 'live-iocs-slice',
             sourceId: sourceId || null,
             status: 'failed',
-            error: e instanceof Error ? e.message : String(e),
+            error: errMessage(e),
           })
         );
         msg.retry();

@@ -3,6 +3,7 @@ import type { Severity as Sev } from '../../components/severity';
 import { BackLink } from '../../components/BackLink';
 import { AlertTriangle, ShieldAlert, ShieldX, ShieldCheck, Info } from 'lucide-react';
 import { Textarea } from '../../components/ui/Input';
+import { errMessage } from '../../lib/log';
 
 /**
  * CloudTrail Triage - 100% client-side.
@@ -142,7 +143,7 @@ function flatten(doc: unknown): CTEvent[] {
         try {
           out.push(JSON.parse(cte) as CTEvent);
         } catch (_catchErr) {
-          console.error('flatten failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('flatten failed:', errMessage(_catchErr));
           /* skip unparseable embedded event */
         }
       } else pushMaybe(ev);
@@ -160,7 +161,7 @@ function analyze(text: string): Analysis | null {
   try {
     doc = JSON.parse(trimmed);
   } catch (e) {
-    console.error('analyze failed:', e instanceof Error ? e.message : String(e));
+    console.error('analyze failed:', errMessage(e));
     return { error: (e as Error).message, events: 0, principals: 0, findings: [] };
   }
 

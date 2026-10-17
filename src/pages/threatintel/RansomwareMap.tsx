@@ -4,6 +4,7 @@ import { DataPageLayout } from '../../components/DataPageLayout';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { ClusterTabs, RANSOMWARE_TABS } from '../../components/threatintel/ClusterTabs';
 import { Globe, Loader2, Pause, Play, RefreshCw, X, Skull } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 const ThreatMapChart = lazy(() => import('../dfir/ThreatMapChart'));
 
@@ -241,7 +242,7 @@ export default function RansomwareMap({ embedded = false }: { embedded?: boolean
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       setData((await r.json()) as RansomwareMapResponse);
     } catch (e) {
-      console.error('RansomwareMap failed:', e instanceof Error ? e.message : String(e));
+      console.error('RansomwareMap failed:', errMessage(e));
       if ((e as Error).name === 'AbortError') return;
       setError((e as Error).message);
     } finally {

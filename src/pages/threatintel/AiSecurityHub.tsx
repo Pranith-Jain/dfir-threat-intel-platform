@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, Bot, Newspaper, Wrench, ScanLine, Bug, AlertTriangle, Rss } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { errMessage } from '../../lib/log';
 
 interface HubIndex {
   hub: string;
@@ -108,7 +109,7 @@ export default function AiSecurityHub(): JSX.Element {
       setHub((await hRes.json()) as HubIndex);
       if (pRes.ok) setParity((await pRes.json()) as Parity);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

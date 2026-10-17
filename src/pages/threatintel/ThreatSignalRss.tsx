@@ -25,6 +25,7 @@ import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisBut
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { usePostSummaries } from '../../components/intel/usePostSummaries';
 import { PostSummary } from '../../components/intel/PostSummary';
+import { errMessage } from '../../lib/log';
 
 const AGGREGATE_URL = '/api/v1/rss/aggregate';
 
@@ -152,7 +153,7 @@ export default function ThreatSignalRss(): JSX.Element {
       }
       setAgg((await res.json()) as RssAggregate);
     } catch (e) {
-      console.error('ThreatSignalRss failed:', e instanceof Error ? e.message : String(e));
+      console.error('ThreatSignalRss failed:', errMessage(e));
       setError((e as Error).message || 'failed to fetch feed');
     } finally {
       setLoading(false);

@@ -5,6 +5,7 @@ import { DataState } from '../../components/DataState';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { ExternalLink, Search, X, Shield } from 'lucide-react';
 import { threatActors } from '../../data/dfir/threat-actors';
+import { errMessage } from '../../lib/log';
 
 type MatrixSource = 'attack' | 'a3m' | 'd3fend';
 
@@ -180,7 +181,7 @@ export default function AttackNavigator(): JSX.Element {
       })
       .catch((e) => {
         if (!cancelled && (e as { name?: string }).name !== 'AbortError') {
-          setError(e instanceof Error ? e.message : String(e));
+          setError(errMessage(e));
         }
       })
       .finally(() => {

@@ -3,6 +3,7 @@ import { Wrench, Search, ExternalLink, Star, Archive } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { sanitizeUrl } from '../../lib/sanitize-url';
+import { errMessage } from '../../lib/log';
 
 interface Tool {
   slug: string;
@@ -48,7 +49,7 @@ export default function AiSecurityMatrix(): JSX.Element {
       setByCategory(j.byCategory ?? {});
       setTotal(j.total ?? 0);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

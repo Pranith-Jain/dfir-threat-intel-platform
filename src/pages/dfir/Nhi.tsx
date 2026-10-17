@@ -14,6 +14,7 @@ import {
 } from '../../data/nhi';
 import { SEVERITY_TONE, SEVERITY_BAR } from '../../components/severity';
 import { downloadBlob } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 
 /** Risk grade from entryRisk(). `safe` keeps its own all-clear green; the
  *  four risk tiers map onto the canonical severity ramp. */
@@ -63,7 +64,7 @@ function loadInventory(): NhiEntry[] {
     if (!raw) return [];
     return JSON.parse(raw) as NhiEntry[];
   } catch (_catchErr) {
-    console.error('loadInventory failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('loadInventory failed:', errMessage(_catchErr));
     return [];
   }
 }
@@ -112,7 +113,7 @@ export default function Nhi(): JSX.Element {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch (_catchErr) {
-      console.error('Nhi failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('Nhi failed:', errMessage(_catchErr));
       /* quota - non-fatal */
     }
   }, [items]);

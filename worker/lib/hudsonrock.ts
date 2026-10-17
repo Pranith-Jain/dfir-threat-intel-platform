@@ -12,6 +12,8 @@
  * throttling; callers should cache aggressively (1 h TTL recommended).
  */
 
+import { errMessage } from './err';
+
 const HR_BASE = 'https://api.hudsonrock.com/json/v3';
 const TIMEOUT_MS = 15_000;
 
@@ -312,10 +314,7 @@ export async function domainOverview(
     last_employee_compromised?: string;
     last_user_compromised?: string;
     sort_by?:
-      | 'last_employee_compromised'
-      | 'last_user_compromised'
-      | 'compromised_employees'
-      | 'last_employee_uploaded';
+      'last_employee_compromised' | 'last_user_compromised' | 'compromised_employees' | 'last_employee_uploaded';
     sort_direction?: 'asc' | 'desc';
     cursor?: string;
   } = {}
@@ -462,7 +461,7 @@ export async function validateKey(env: HREnv): Promise<boolean> {
     await getAccount(env);
     return true;
   } catch (_catchErr) {
-    console.error('validateKey failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('validateKey failed:', errMessage(_catchErr));
     return false;
   }
 }

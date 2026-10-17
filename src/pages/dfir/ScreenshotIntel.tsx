@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BackLink } from '../../components/BackLink';
@@ -53,7 +53,7 @@ export default function ScreenshotIntel(): JSX.Element {
         const m = await exifr.parse(file, { gps: true });
         if (m) setMeta(m as Record<string, unknown>);
       } catch (_catchErr) {
-        console.error('analyze failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('analyze failed:', errMessage(_catchErr));
         /* no exif */
       }
       // QR decode (jsQR - lazy chunk, tiny pure-JS, no wasm)
@@ -96,7 +96,7 @@ export default function ScreenshotIntel(): JSX.Element {
         setOcr(ocrText);
       } catch (oe) {
         logCatch(oe);
-        setNote(`OCR unavailable: ${oe instanceof Error ? oe.message : String(oe)}`);
+        setNote(`OCR unavailable: ${errMessage(oe)}`);
       } finally {
         setStage('');
       }
@@ -104,7 +104,7 @@ export default function ScreenshotIntel(): JSX.Element {
       setEnts(entities(`${qrText} ${ocrText} ${file.name}`));
     } catch (e) {
       logCatch(e);
-      setNote(e instanceof Error ? e.message : String(e));
+      setNote(errMessage(e));
     } finally {
       setBusy(false);
     }

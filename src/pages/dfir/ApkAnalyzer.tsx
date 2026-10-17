@@ -19,6 +19,7 @@ import { DataPageLayout } from '../../components/DataPageLayout';
 import { CopyChip } from '../../components/dfir/CopyButton';
 import { analyzeApk, type ApkAnalysis } from '../../lib/dfir/apk-analysis';
 import { SEVERITY_TONE } from '../../components/severity';
+import { errMessage } from '../../lib/log';
 
 function fmtBytes(n: number): string {
   if (n < 1024) return `${n} B`;
@@ -56,8 +57,8 @@ export default function ApkAnalyzer(): JSX.Element {
       const r = await analyzeApk(file);
       setResult(r);
     } catch (e) {
-      console.error('ApkAnalyzer failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : 'analysis failed');
+      console.error('ApkAnalyzer failed:', errMessage(e));
+      setError(errMessage(e, 'analysis failed'));
     } finally {
       setLoading(false);
     }

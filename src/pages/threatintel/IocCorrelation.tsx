@@ -8,6 +8,7 @@ import { useLastVisit, isNewSince } from '../../hooks';
 import { DataState } from '../../components/DataState';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { downloadBlob } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 
 type IocKind = 'ip' | 'url' | 'domain' | 'hash';
 
@@ -541,7 +542,7 @@ async function buildStixBundle(
     const data = (await r.json()) as { bundle: { id: string } };
     setId(data.bundle.id);
   } catch (e) {
-    console.error('buildStixBundle failed:', e instanceof Error ? e.message : String(e));
+    console.error('buildStixBundle failed:', errMessage(e));
     setError(`STIX build failed: ${(e as Error).message}`);
   } finally {
     setLoading(false);

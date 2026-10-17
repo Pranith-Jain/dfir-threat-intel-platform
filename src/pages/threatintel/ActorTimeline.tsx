@@ -6,6 +6,7 @@ import { DataPageLayout } from '../../components/DataPageLayout';
 import { ExternalLink, RefreshCw, Skull } from 'lucide-react';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { ActorTtpsPanel } from '../../components/threatintel/ActorTtpsPanel';
+import { errMessage } from '../../lib/log';
 
 interface MitreGroupRef {
   id: string;
@@ -266,10 +267,7 @@ export default function ActorTimeline(): JSX.Element {
                           try {
                             host = new URL(ref).hostname.replace(/^www\./, '');
                           } catch (_catchErr) {
-                            console.error(
-                              'handler failed:',
-                              _catchErr instanceof Error ? _catchErr.message : String(_catchErr)
-                            );
+                            console.error('handler failed:', errMessage(_catchErr));
                             /* ignore */
                           }
                           return (

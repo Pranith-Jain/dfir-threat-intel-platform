@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { BackLink } from '../../components/BackLink';
 import { Image as ImageIcon, Search, ExternalLink, Star, AlertTriangle, Clipboard, Check } from 'lucide-react';
 import { ENGINES } from '../../data/dfir/reverse-image-engines';
+import { errMessage } from '../../lib/log';
 
 const SAMPLES: { label: string; url: string }[] = [
   {
@@ -20,7 +21,7 @@ function isValidImageUrl(s: string): boolean {
     const u = new URL(s);
     return u.protocol === 'http:' || u.protocol === 'https:';
   } catch (_catchErr) {
-    console.error('isValidImageUrl failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('isValidImageUrl failed:', errMessage(_catchErr));
     return false;
   }
 }

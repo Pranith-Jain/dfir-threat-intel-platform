@@ -5,6 +5,7 @@ import { Copy, ExternalLink, Globe, Search } from 'lucide-react';
 import { FeedAggregateCard } from '../../components/intel/FeedAggregateCard';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
+import { errMessage } from '../../lib/log';
 
 interface DDCEntry {
   name: string;
@@ -58,7 +59,7 @@ export default function DeepDarkCTI(): JSX.Element {
       })
       .catch((e) => {
         if (alive && (e as { name?: string }).name !== 'AbortError') {
-          setError(e instanceof Error ? e.message : String(e));
+          setError(errMessage(e));
         }
       });
     return () => {

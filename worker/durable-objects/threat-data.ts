@@ -1,5 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import type { Env } from '../env';
+import { errMessage } from '../lib/err';
 
 /**
  * ThreatDataDO — Durable Object SQLite replacement for the D1 tables that
@@ -317,7 +318,7 @@ export class ThreatDataDO extends DurableObject<Env> {
         JSON.stringify({
           job: 'threat-data-do',
           status: 'briefings-import-failed',
-          error: e instanceof Error ? e.message : String(e),
+          error: errMessage(e),
         })
       );
     }

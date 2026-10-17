@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
+import { errMessage } from '../../lib/log';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -279,7 +280,7 @@ export default function Dphish(): JSX.Element {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setData((await res.json()) as DphishIndex);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

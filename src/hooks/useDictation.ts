@@ -7,6 +7,7 @@
  * on end-of-utterance.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { errMessage } from '../lib/log';
 
 interface SpeechRecognitionLike {
   continuous: boolean;
@@ -112,7 +113,7 @@ export function useDictation(onFinal: (text: string) => void) {
       wantsRef.current = true;
       setListening(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     }
   }, []);
 

@@ -22,6 +22,7 @@ import {
 } from '../../lib/dfir/osint/osint-mutations';
 import { reverseGeocode } from '../../lib/dfir/osint/geocode';
 import { downloadBlob } from '../../lib/download';
+import { errMessage } from '../../lib/log';
 
 const ICONS_KEY = 'dfir-osint-icons:v1';
 
@@ -29,7 +30,7 @@ function loadIcons(): Record<string, string> {
   try {
     return JSON.parse(localStorage.getItem(ICONS_KEY) ?? '{}') as Record<string, string>;
   } catch (_catchErr) {
-    console.error('loadIcons failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('loadIcons failed:', errMessage(_catchErr));
     return {};
   }
 }
@@ -75,7 +76,7 @@ export default function OsintMapper(): JSX.Element {
       try {
         localStorage.setItem(ICONS_KEY, JSON.stringify(nextIcons));
       } catch (_catchErr) {
-        console.error('submitIdentifier failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+        console.error('submitIdentifier failed:', errMessage(_catchErr));
         // quota / private-mode: keep icon in memory only
       }
       withIcon = { ...id, customIconId: iconId };
@@ -144,7 +145,7 @@ export default function OsintMapper(): JSX.Element {
           try {
             localStorage.setItem(ICONS_KEY, JSON.stringify(nextIcons));
           } catch (_catchErr) {
-            console.error('doImport failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+            console.error('doImport failed:', errMessage(_catchErr));
             // quota / private-mode: keep icons in memory only
           }
         }

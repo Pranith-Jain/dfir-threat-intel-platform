@@ -31,6 +31,7 @@ import {
 } from '../lib/anarchy-library';
 import { recommendCourses, similarCourses } from '../lib/anarchy-recommend';
 import { downloadBlob } from '../lib/download';
+import { errMessage } from '../lib/log';
 
 interface AnarchyProvider {
   name: string;
@@ -219,7 +220,7 @@ export default function Anarchy() {
         }
       } catch (e) {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : String(e));
+          setError(errMessage(e));
           setLoading(false);
         }
       }
@@ -480,9 +481,7 @@ export default function Anarchy() {
       setBookmarks(b);
       setProgress(p);
     } catch (e) {
-      setImportError(
-        e instanceof Error ? e.message : 'Could not read that file — expected an anarchy-library.json export.'
-      );
+      setImportError(errMessage(e, 'Could not read that file — expected an anarchy-library.json export.'));
     }
   }, []);
 

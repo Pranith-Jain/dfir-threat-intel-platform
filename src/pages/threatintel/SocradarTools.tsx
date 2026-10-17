@@ -6,6 +6,7 @@
 
 import { useEffect, useState, useCallback, type FormEvent } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { errMessage } from '../../lib/log';
 import {
   Search,
   Loader2,
@@ -168,7 +169,7 @@ function DDoSPanel() {
       if (!res.ok) throw new Error('Failed');
       setData(await res.json());
     } catch (_catchErr) {
-      console.error('DDoSPanel failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('DDoSPanel failed:', errMessage(_catchErr));
       setError('Failed to load DDoS intelligence');
     }
     setLoading(false);
@@ -340,7 +341,7 @@ function FortiBleedPanel() {
       if (!res.ok) throw new Error('Check failed');
       setResult(await res.json());
     } catch (_catchErr) {
-      console.error('FortiBleedPanel failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('FortiBleedPanel failed:', errMessage(_catchErr));
       setError('Check failed');
     }
     setLoading(false);
@@ -486,7 +487,7 @@ function HealthcarePanel() {
       if (!res.ok) throw new Error('Failed');
       setData(await res.json());
     } catch (_catchErr) {
-      console.error('HealthcarePanel failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('HealthcarePanel failed:', errMessage(_catchErr));
       setError('Failed to load healthcare breach data');
     }
     setLoading(false);
@@ -656,7 +657,7 @@ function ThreatReportsPanel() {
       if (!res.ok) throw new Error('Failed');
       setData(await res.json());
     } catch (_catchErr) {
-      console.error('ThreatReportsPanel failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('ThreatReportsPanel failed:', errMessage(_catchErr));
       setError('Failed to generate report');
     }
     setLoading(false);

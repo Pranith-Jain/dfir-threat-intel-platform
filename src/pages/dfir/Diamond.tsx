@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BackLink } from '../../components/BackLink';
@@ -37,7 +37,7 @@ function loadEvent(): EventForm {
     const parsed = JSON.parse(raw);
     return { ...EMPTY_EVENT, ...parsed };
   } catch (_catchErr) {
-    console.error('loadEvent failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('loadEvent failed:', errMessage(_catchErr));
     return EMPTY_EVENT;
   }
 }
@@ -163,7 +163,7 @@ function Diamond(): JSX.Element {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(event));
     } catch (_catchErr) {
-      console.error('Diamond failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('Diamond failed:', errMessage(_catchErr));
       /* quota / private mode - non-fatal */
     }
   }, [event]);

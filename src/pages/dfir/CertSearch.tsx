@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { sanitizeUrl } from '../../lib/sanitize-url';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -59,7 +59,7 @@ export default function CertSearch(): JSX.Element {
           const parsed = JSON.parse(body) as { error?: string };
           msg = parsed.error ?? msg;
         } catch (_catchErr) {
-          console.error('CertSearch failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+          console.error('CertSearch failed:', errMessage(_catchErr));
           /* use default */
         }
         throw new Error(msg);
@@ -95,7 +95,6 @@ export default function CertSearch(): JSX.Element {
 
   return (
     <div className="max-w-6xl">
-
       <div className="animate-fade-in-up">
         <h1 className="text-3xl sm:text-4xl font-display font-semibold mb-2 flex items-center gap-3">
           <ShieldAlert size={28} className="text-brand-600 dark:text-brand-400" /> Certificate Search

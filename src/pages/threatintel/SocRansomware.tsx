@@ -9,6 +9,7 @@ import { SocShell, SocKpi, SocSection, SocPanel, type SocStatus } from '../../co
 import { SocBar, SocDonut, type BarItem, type DonutSlice } from '../../components/threatintel/soc/SocCharts';
 import { downloadCsv, dayKey, formatNumber } from '../../components/threatintel/soc/utils';
 import { CHART_RANK, CHART_DAILY, CHART_SECTOR } from '../../components/threatintel/soc/tone';
+import { errMessage } from '../../lib/log';
 
 /* ─── Data shape (matches /api/v1/ransomware-recent) ────────────────── */
 
@@ -67,9 +68,9 @@ export default function SocRansomware(): JSX.Element {
         })) as RansomwareResponse;
         setData(r);
       } catch (e) {
-        console.error('SocRansomware failed:', e instanceof Error ? e.message : String(e));
+        console.error('SocRansomware failed:', errMessage(e));
         if ((e as { name?: string }).name !== 'AbortError') {
-          setError(e instanceof Error ? e.message : 'Failed to load.');
+          setError(errMessage(e, 'Failed to load.'));
         }
       } finally {
         setLoading(false);

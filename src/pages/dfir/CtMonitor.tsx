@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useEffect, useCallback } from 'react';
 import { BackLink } from '../../components/BackLink';
 import { api } from '../../lib/api-client';
@@ -53,8 +53,8 @@ export default function CtMonitor(): JSX.Element {
       });
       setWatched(data.watched ?? []);
     } catch (err) {
-      console.error('CtMonitor failed:', err instanceof Error ? err.message : String(err));
-      setError(err instanceof Error ? err.message : String(err));
+      console.error('CtMonitor failed:', errMessage(err));
+      setError(errMessage(err));
     } finally {
       setLoading(false);
     }
@@ -70,7 +70,7 @@ export default function CtMonitor(): JSX.Element {
       setCerts(data.certs ?? []);
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : String(err));
+      setError(errMessage(err));
     } finally {
       setCertsLoading(false);
     }
@@ -93,7 +93,7 @@ export default function CtMonitor(): JSX.Element {
       await fetchWatched();
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : String(err));
+      setError(errMessage(err));
     } finally {
       setLoading(false);
     }
@@ -112,7 +112,7 @@ export default function CtMonitor(): JSX.Element {
         }
       } catch (err) {
         logCatch(err);
-        setError(err instanceof Error ? err.message : String(err));
+        setError(errMessage(err));
       }
     },
     [selectedDomain, fetchWatched]

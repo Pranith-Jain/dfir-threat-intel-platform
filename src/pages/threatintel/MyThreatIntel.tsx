@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useEffect, useMemo, useState } from 'react';
 import { CopyButton } from '../../components/ui/CopyButton';
 import { relativeAgo as shortRel } from '../../lib/relativeTime';
@@ -253,7 +253,7 @@ function DnsScanPanel(): JSX.Element {
       setData((await r.json()) as DnsResponse);
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : String(err));
+      setError(errMessage(err));
     } finally {
       setLoading(false);
     }

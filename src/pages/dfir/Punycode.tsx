@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { BackLink } from '../../components/BackLink';
 import { AlertTriangle, ShieldCheck } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 // Common Unicode characters used in homograph attacks → ASCII fold.
 const CONFUSABLES: Record<string, string> = {
   // Cyrillic
@@ -116,7 +117,7 @@ function asciiForm(domain: string): { ascii: string; ok: boolean } {
     const u = new URL(`http://${domain.toLowerCase()}`);
     return { ascii: u.hostname, ok: true };
   } catch (_catchErr) {
-    console.error('asciiForm failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('asciiForm failed:', errMessage(_catchErr));
     return { ascii: domain, ok: false };
   }
 }

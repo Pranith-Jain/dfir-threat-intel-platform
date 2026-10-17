@@ -4,6 +4,7 @@ import { sanitizeUrl } from '../../lib/sanitize-url';
 import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
 import { Bug, Check, Copy, Crosshair, ExternalLink, Globe, Map as MapIcon, Search, Skull, Target } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 /* ------------------------------------------------------------------ */
 /*  Types (mirror the API JSON)                                        */
@@ -567,7 +568,7 @@ export default function ThreaticonFeeds() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setIdx((await res.json()) as TiIndex);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }

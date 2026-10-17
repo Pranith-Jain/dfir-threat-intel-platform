@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { BackLink } from '../../components/BackLink';
@@ -75,7 +75,7 @@ function loadCoverage(): Record<string, Coverage> {
     const parsed = JSON.parse(raw) as Record<string, Coverage>;
     return parsed && typeof parsed === 'object' ? parsed : {};
   } catch (_catchErr) {
-    console.error('loadCoverage failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('loadCoverage failed:', errMessage(_catchErr));
     return {};
   }
 }

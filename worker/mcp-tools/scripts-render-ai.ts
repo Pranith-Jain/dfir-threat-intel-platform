@@ -43,6 +43,7 @@ import {
   getRansomwareGroup,
   loadRansomwareGroupsIndex,
 } from '../lib/ransomware-groups-manifest';
+import { errMessage } from '../lib/err';
 export function registerScriptsRenderAiTools(h: McpToolHost): void {
   // Was: `if (h.env.ASSETS) { const ASSETS = h.env.ASSETS; ... }`
   const ASSETS = h.env.ASSETS;
@@ -120,10 +121,10 @@ export function registerScriptsRenderAiTools(h: McpToolHost): void {
       try {
         manifest = JSON.parse(manifest_yaml);
       } catch (e) {
-        console.error('handler failed:', e instanceof Error ? e.message : String(e));
+        console.error('handler failed:', errMessage(e));
         return untrustedToolResult({
           error: 'parse_failed',
-          message: e instanceof Error ? e.message : String(e),
+          message: errMessage(e),
           hint: 'manifest_yaml must be a JSON-encoded RenderManifest object.',
         });
       }
@@ -132,10 +133,10 @@ export function registerScriptsRenderAiTools(h: McpToolHost): void {
         try {
           data = JSON.parse(data_json);
         } catch (e) {
-          console.error('handler failed:', e instanceof Error ? e.message : String(e));
+          console.error('handler failed:', errMessage(e));
           return untrustedToolResult({
             error: 'data_parse_failed',
-            message: e instanceof Error ? e.message : String(e),
+            message: errMessage(e),
           });
         }
       }
@@ -143,8 +144,8 @@ export function registerScriptsRenderAiTools(h: McpToolHost): void {
         const svg = renderDashboard(manifest, data);
         return untrustedToolResult({ svg, bytes: svg.length, widgetCount: (manifest.widgets ?? []).length });
       } catch (e) {
-        console.error('handler failed:', e instanceof Error ? e.message : String(e));
-        return untrustedToolResult({ error: 'render_failed', message: e instanceof Error ? e.message : String(e) });
+        console.error('handler failed:', errMessage(e));
+        return untrustedToolResult({ error: 'render_failed', message: errMessage(e) });
       }
     }
   );
@@ -180,17 +181,17 @@ export function registerScriptsRenderAiTools(h: McpToolHost): void {
       try {
         manifest = JSON.parse(manifest_json);
       } catch (e) {
-        console.error('handler failed:', e instanceof Error ? e.message : String(e));
-        return untrustedToolResult({ error: 'parse_failed', message: e instanceof Error ? e.message : String(e) });
+        console.error('handler failed:', errMessage(e));
+        return untrustedToolResult({ error: 'parse_failed', message: errMessage(e) });
       }
       if (data_json) {
         try {
           data = JSON.parse(data_json);
         } catch (e) {
-          console.error('handler failed:', e instanceof Error ? e.message : String(e));
+          console.error('handler failed:', errMessage(e));
           return untrustedToolResult({
             error: 'data_parse_failed',
-            message: e instanceof Error ? e.message : String(e),
+            message: errMessage(e),
           });
         }
       }
@@ -218,10 +219,10 @@ export function registerScriptsRenderAiTools(h: McpToolHost): void {
           hint: 'Decode png_base64 (standard base64) and write to a .png file. The bytes are a valid PNG (IHDR / IDAT / IEND chunks).',
         });
       } catch (e) {
-        console.error('arguments failed:', e instanceof Error ? e.message : String(e));
+        console.error('arguments failed:', errMessage(e));
         return untrustedToolResult({
           error: 'png_render_failed',
-          message: e instanceof Error ? e.message : String(e),
+          message: errMessage(e),
         });
       }
     }

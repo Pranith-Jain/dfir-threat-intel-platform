@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { postJsonWithBody } from './adminApi';
+import { errMessage } from '../../lib/log';
 
 /**
  * Content types offered for manual generation.
@@ -99,8 +100,8 @@ export default function GenerateTab() {
       });
       setGenResult(r);
     } catch (e) {
-      console.error('handleGenerate failed:', e instanceof Error ? e.message : String(e));
-      setGenError(e instanceof Error ? e.message : String(e));
+      console.error('handleGenerate failed:', errMessage(e));
+      setGenError(errMessage(e));
     } finally {
       setGenerating(false);
     }
@@ -123,8 +124,8 @@ export default function GenerateTab() {
       });
       setResult(r);
     } catch (e) {
-      console.error('handlePublish failed:', e instanceof Error ? e.message : String(e));
-      setResult({ ok: false, error: e instanceof Error ? e.message : String(e) });
+      console.error('handlePublish failed:', errMessage(e));
+      setResult({ ok: false, error: errMessage(e) });
     } finally {
       setSending(false);
     }

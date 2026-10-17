@@ -1,6 +1,7 @@
 import { useState, useCallback, type ReactNode } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { Radar, Phone, Trash2, Scan, Loader2, ExternalLink, Shield } from 'lucide-react';
+import { errMessage } from '../../lib/log';
 
 interface StealerEntry {
   stealer_family?: string;
@@ -111,7 +112,7 @@ export default function PhoneOsintNew() {
         ...prev,
       ]);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Scan failed');
+      setError(errMessage(e, 'Scan failed'));
     } finally {
       setScanning(false);
     }
@@ -127,7 +128,7 @@ export default function PhoneOsintNew() {
       const data = (await res.json()) as MalwareScanResult;
       setMalwareResult(data);
     } catch (e: unknown) {
-      setMalwareResult({ error: e instanceof Error ? e.message : 'Scan failed' });
+      setMalwareResult({ error: errMessage(e, 'Scan failed') });
     } finally {
       setMalwareScanning(false);
     }

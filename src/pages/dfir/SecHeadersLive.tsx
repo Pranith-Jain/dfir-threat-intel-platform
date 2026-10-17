@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useEffect, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { BackLink } from '../../components/BackLink';
@@ -105,7 +105,7 @@ export default function SecHeadersLive(): JSX.Element {
       setData(json);
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : 'scan failed');
+      setError(errMessage(err, 'scan failed'));
     } finally {
       setLoading(false);
     }

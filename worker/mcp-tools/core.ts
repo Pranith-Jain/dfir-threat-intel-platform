@@ -7,8 +7,44 @@
  */
 
 import type { EnrichResult } from '../lib/si-enrich';
+import { signInternalToken } from '../../api/src/lib/internal-token';
+import { errMessage } from '../lib/err';
 
 export const API_BASE_DEFAULT = 'https://pranithjain.qzz.io';
+
+/**
+ * Minimal host shape `adminApiFetch` needs. `McpToolHost` satisfies it
+ * structurally, so registrars pass `h` straight through.
+ */
+export interface AdminFetchHost {
+  env: { SELF?: Fetcher; INTERNAL_TOKEN_SECRET?: string };
+  apiKey?: string;
+}
+
+/**
+ * Fetch a route that sits behind the admin gate (`requireAdminMiddleware`).
+ *
+ * The gate admits an `x-internal-token` or ADMIN_TOKEN — it does NOT accept an
+ * API-key role — so a registrar calling e.g. `/api/v1/rules/validate`,
+ * `/api/v1/ct-monitor/watch`, `/api/v1/notebooks`, `/api/v1/report/parse` or
+ * `/api/v1/velociraptor/*` with only `h.apiKey` received a 401 on every call.
+ * These tools are an operator surface (the MCP client had to authenticate to
+ * reach them at all), so sign an internal token and attach it, the same way the
+ * tie-enrich SELF call and the investigator DO do.
+ *
+ * If `INTERNAL_TOKEN_SECRET` is unset the header is simply omitted, so the call
+ * degrades to the previous apiKey behaviour rather than throwing — the tools
+ * keep their existing error shape.
+ */
+export async function adminApiFetch<T>(h: AdminFetchHost, path: string, init?: RequestInit): Promise<T> {
+  const secret = h.env.INTERNAL_TOKEN_SECRET;
+  const internalToken = secret ? await signInternalToken('mcp-server', secret) : undefined;
+  const headers: Record<string, string> = {
+    ...((init?.headers as Record<string, string>) ?? {}),
+    ...(internalToken ? { 'x-internal-token': internalToken } : {}),
+  };
+  return apiFetch<T>(h.env.SELF, path, h.apiKey, { ...init, headers });
+}
 
 export async function apiFetch<T>(
   self: Fetcher | undefined,
@@ -70,7 +106,7 @@ export async function apiFetchSse(
     try {
       data = JSON.parse(raw);
     } catch (_catchErr) {
-      console.error('apiFetchSse failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+      console.error('apiFetchSse failed:', errMessage(_catchErr));
       /* non-JSON data — keep the raw string */
     }
     events.push({ event, data });

@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useCallback } from 'react';
 import { BackLink } from '../../components/BackLink';
 import { Crosshair, Loader2, AlertTriangle, Shield, Terminal, Search, Clock, Trash2 } from 'lucide-react';
@@ -50,7 +50,7 @@ function loadHistory(): HistoryEntry[] {
     const raw = localStorage.getItem(HISTORY_KEY);
     return raw ? (JSON.parse(raw) as HistoryEntry[]) : [];
   } catch (_catchErr) {
-    console.error('loadHistory failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('loadHistory failed:', errMessage(_catchErr));
     return [];
   }
 }
@@ -59,7 +59,7 @@ function saveHistory(entries: HistoryEntry[]) {
   try {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(entries.slice(0, 20)));
   } catch (_catchErr) {
-    console.error('saveHistory failed:', _catchErr instanceof Error ? _catchErr.message : String(_catchErr));
+    console.error('saveHistory failed:', errMessage(_catchErr));
     /* */
   }
 }
@@ -135,7 +135,7 @@ export default function QuerycraftAi(): JSX.Element {
       saveHistory(updated);
     } catch (err) {
       logCatch(err);
-      setError(err instanceof Error ? err.message : String(err));
+      setError(errMessage(err));
     } finally {
       setLoading(false);
     }

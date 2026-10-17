@@ -1,4 +1,4 @@
-import { logCatch } from '../../lib/log';
+import { errMessage, logCatch } from '../../lib/log';
 import { useState, useCallback, useEffect } from 'react';
 import { BackLink } from '../../components/BackLink';
 import { api } from '../../lib/api-client';
@@ -72,8 +72,8 @@ export default function ThreatGraph(): JSX.Element {
     try {
       setStats(await api.get<GraphStats>('/api/v1/graph/stats'));
     } catch (e) {
-      console.error('ThreatGraph failed:', e instanceof Error ? e.message : String(e));
-      setError(e instanceof Error ? e.message : String(e));
+      console.error('ThreatGraph failed:', errMessage(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }
@@ -86,7 +86,7 @@ export default function ThreatGraph(): JSX.Element {
       setCommunities(d.communities ?? []);
     } catch (e) {
       logCatch(e);
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }
@@ -104,7 +104,7 @@ export default function ThreatGraph(): JSX.Element {
       setSearchResult(await api.get(`/api/v1/graph/node/${type}/${encodeURIComponent(query)}?depth=2`));
     } catch (e) {
       logCatch(e);
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errMessage(e));
     } finally {
       setLoading(false);
     }
@@ -156,7 +156,7 @@ export default function ThreatGraph(): JSX.Element {
                 fetchStats();
               } catch (e) {
                 logCatch(e);
-                setIngestResult(`Error: ${e instanceof Error ? e.message : String(e)}`);
+                setIngestResult(`Error: ${errMessage(e)}`);
               } finally {
                 setIngesting(false);
               }
