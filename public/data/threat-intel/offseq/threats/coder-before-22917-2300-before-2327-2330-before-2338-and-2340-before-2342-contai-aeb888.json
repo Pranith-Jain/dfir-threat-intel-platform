@@ -1,0 +1,34 @@
+{
+  "slug": "coder-before-22917-2300-before-2327-2330-before-2338-and-2340-before-2342-contai-aeb888",
+  "externalId": "gcve-osv-ghsa-wwfw-5crg-94f6",
+  "source": "GCVE Database",
+  "type": "vulnerability",
+  "title": "Coder before 2.29.17, 2.30.0 before 2.32.7, 2.33.0 before 2.33.8, and 2.34.0 before 2.34.2 contains a user enumeration vulnerability because… (CVE-2026-111933)",
+  "description": "Coder versions before 2.29.17, 2.30.0 before 2.32.7, 2.33.0 before 2.33.8, and 2.34.0 before 2.34.2 have a user enumeration vulnerability. This occurs because the function userpassword.Compare() uses a placeholder hash derived from the string \"hunter2\" when a stored password hash is empty. Attackers can exploit this by submitting logins with the password \"hunter2\" and observing different HTTP response codes (403 vs 401) to identify valid user accounts and reveal the authentication provider for SSO-only users. The vulnerability has a CVSS score of 3.7, indicating medium severity.",
+  "severity": "medium",
+  "cvssScore": 3.7,
+  "cvssVector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N",
+  "publishedDate": "2026-10-17T21:31:20.000Z",
+  "cveId": "CVE-2026-111933",
+  "cveIds": ["CVE-2026-111933"],
+  "tags": ["gcve", "osv", "ghsa-wwfw-5crg-94f6", "cve-2026-111933", "ghsa"],
+  "knownExploitsInWild": false,
+  "exploited": false,
+  "mirageCountries": [],
+  "patchAvailable": false,
+  "knownThreatActors": [],
+  "affectedCountries": [],
+  "references": [
+    { "title": "", "url": "https://github.com/coder/coder/security/advisories/GHSA-8fxq-53rx-ph5f", "type": "other" },
+    { "title": "", "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-111933", "type": "advisory" },
+    {
+      "title": "",
+      "url": "https://www.vulncheck.com/advisories/coder-before-2.34.2-user-enumeration-via-login-placeholder-hash",
+      "type": "other"
+    }
+  ],
+  "url": "https://radar.offseq.com/threats/coder-before-22917-2300-before-2327-2330-before-2338-and-2340-before-2342-contai-aeb888",
+  "aiSummary": "The vulnerability in Coder affects multiple version ranges prior to 2.29.17, 2.32.7, 2.33.8, and 2.34.2 respectively. It arises from the userpassword.Compare() function substituting a fixed placeholder hash based on the string \"hunter2\" when no stored password hash exists. This behavior allows unauthenticated attackers to submit login attempts with the password \"hunter2\" and differentiate HTTP 403 Forbidden responses from HTTP 401 Unauthorized responses. This difference enables attackers to enumerate valid user accounts and identify the authentication provider used by SSO-only users. The issue is classified under CWE-203 (Information Exposure Through Discrepancy).",
+  "aiImpact": "The vulnerability allows unauthenticated attackers to enumerate valid user accounts by distinguishing HTTP response codes during login attempts. This information disclosure can aid attackers in further targeted attacks or reconnaissance. The authentication provider of SSO-only users can also be revealed. The CVSS score of 3.7 reflects a low to medium impact primarily related to information disclosure without direct compromise of confidentiality, integrity, or availability.",
+  "sizeBytes": 3025
+}
