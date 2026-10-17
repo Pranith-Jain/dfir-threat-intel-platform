@@ -1,6 +1,7 @@
 import type { Candidate, DedupRecord } from '../types';
 import { topicKey } from '../stable-keys';
 import { recencyScore, severityScore, noveltyScore, finalScore } from '../scoring';
+import { unwrapBingNewsLink } from '../../lib/rss-parser';
 
 /* ── RSS/Atom parser ────────────────────────────────────────────── */
 
@@ -44,7 +45,10 @@ export function parseRssItems(xml: string, now: Date): RssItem[] {
   for (const block of xml.match(ITEM_RE) ?? []) {
     const title = (block.match(TITLE_RE)?.[1] ?? '').replace(/<!\[CDATA\[|\]\]>/g, '').trim();
     const lm = block.match(LINK_RE);
-    const link = (lm?.[1] || lm?.[2] || '').trim();
+    // Several discovery feeds are Bing News mirrors (the origin 403s datacenter
+    // egress), so links arrive click-wrapped; evidence URLs must be the real
+    // publisher, not a bing.com redirector.
+    const link = unwrapBingNewsLink((lm?.[1] || lm?.[2] || '').trim());
     const ds = block.match(DATE_RE)?.[1];
     const d = ds ? new Date(ds.trim()) : now;
     if (!title) continue;
@@ -118,8 +122,7 @@ export function createRssRunner(config: RssRunnerConfig) {
             status: 'pending',
           });
         }
-      } catch {
-      }
+      } catch {}
     }
     return out;
   };

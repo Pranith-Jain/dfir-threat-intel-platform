@@ -439,6 +439,7 @@ import {
   alertLogHandler,
 } from './routes/watches';
 import { rateLimit } from './lib/ratelimit';
+import { TURNSTILE_PREFIXES, turnstileGuard } from './lib/turnstile';
 import { burstLimitActorProfile } from './lib/actor-profile-burst';
 import { apiKeyRateLimit } from './lib/api-key-ratelimit';
 import { loadAttackIdIndex } from './lib/attack-id-lazy';
@@ -921,6 +922,31 @@ app.use('/api/v1/cti/predictions', requireAdminMiddleware);
 app.use('/api/v1/cti/mutate', requireAdminMiddleware);
 app.use('/api/v1/cti/decay', requireAdminMiddleware);
 app.use('/api/v1/cti/sweep', requireAdminMiddleware);
+// Velociraptor: live IR backend proxy (client inventory, artifact collection,
+// hunt creation) on the operator's VELO_API_TOKEN/credentials. Every caller is
+// an internal SELF fetch carrying x-internal-token (agent tools + MCP bridge),
+// which the internal-token branch above admits; the SPA never calls these
+// paths. Reachable keyless via forgeable same-origin headers before this gate.
+app.use('/api/v1/velociraptor', requireAdminMiddleware);
+app.use('/api/v1/velociraptor/*', requireAdminMiddleware);
+// LLM provider debug: pings every configured provider with operator keys,
+// echoes raw upstream bodies, and discloses which secrets are configured.
+// Diagnostic-only — no SPA/script/test consumes it.
+app.use('/api/v1/debug/llm', requireAdminMiddleware);
+// Telegram bot status: leaks the operator's private monitored-channel map
+// (tg:bot-channel-map). The settings tab that reads it is operator-only and
+// already carries the admin session cookie for every other call it makes.
+app.use('/api/v1/telegram-bot/status', requireAdminMiddleware);
+
+// ── Bot gate on shared-state writes ─────────────────────────────────────────
+// The same-origin grant the auth chain relies on is forgeable by any non-browser
+// client, so keyless mutations on these prefixes (shared-state writes + costly
+// fan-outs) need a real proof-of-human. No-op until TURNSTILE_SECRET is set —
+// see lib/turnstile.ts for the full reasoning and the fail-closed rules.
+for (const base of TURNSTILE_PREFIXES) {
+  app.use(base, turnstileGuard());
+  app.use(`${base}/*`, turnstileGuard());
+}
 
 import {
   iocCheckSchema,

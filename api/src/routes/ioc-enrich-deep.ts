@@ -177,12 +177,16 @@ export async function iocEnrichDeepHandler(c: Context<{ Bindings: Env }>): Promi
       );
       // Default: cheap read-only search of Webamon's public index. Still
       // surfaces historical scans, fingerprint, risk_score, ASN, tech, and
-      // resolved domains — everything the deep-enrich view needs.
+      // resolved domains — everything the deep-enrich view needs. Uses the
+      // exact-match `domain_name` keyword field so free-text HTML matching
+      // can't pull in unrelated scans.
       hits.push(
         timeIt('webamon-search', () =>
-          selfFetch(self, `/api/v1/webamon/search?search=${encodeURIComponent(dom)}&size=20`, token).then((r) =>
-            r ? r.json() : { error: 'no-response' }
-          )
+          selfFetch(
+            self,
+            `/api/v1/webamon/search?search=${encodeURIComponent(`domain_name:"${dom}"`)}&size=20`,
+            token
+          ).then((r) => (r ? r.json() : { error: 'no-response' }))
         )
       );
       // Opt-in: only trigger a *new* webamon scan if the caller passes ?trigger=scan.

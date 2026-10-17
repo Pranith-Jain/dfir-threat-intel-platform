@@ -18,7 +18,7 @@ import type { Indicator } from '../providers/types';
 import { routeCacheGet, routeCachePut } from '../lib/route-cache';
 import { isCircuitOpen, recordProviderFailure, recordProviderSuccess } from '../lib/circuit-breaker';
 import type { ProviderResult, ProviderId } from '../providers/types';
-import { ADAPTERS, buildProviderEnv, PROVIDER_SUPPORT, PROVIDER_TIMEOUT_MS } from '../providers';
+import { ADAPTERS, buildProviderEnv, PROVIDER_SUPPORT, providerTimeoutMs } from '../providers';
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -215,7 +215,7 @@ async function runProviders(indicator: Indicator, env: Env): Promise<ProviderRes
         });
         return;
       }
-      const signal = AbortSignal.timeout(PROVIDER_TIMEOUT_MS);
+      const signal = AbortSignal.timeout(providerTimeoutMs(p));
       try {
         const r = await ADAPTERS[p](indicator, providerEnv, signal);
         collected.push(r);

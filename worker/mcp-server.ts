@@ -20,7 +20,19 @@ import { registerDnSourcesTools } from './mcp-tools/dn-sources';
 import { registerSampleVelociraptorTools } from './mcp-tools/sample-velociraptor';
 import { registerNetworkFrameworksTools } from './mcp-tools/network-frameworks';
 
-export class DfirMcpServer extends McpAgent<Env, Record<string, never>, Record<string, never>> {
+/**
+ * The MCP framework constrains its Env generic to the generated
+ * `Cloudflare.Env`, which the SDK tightened in 1.32. That generated interface
+ * differs per project (the Worker build and the `api/` build bind different
+ * things), while `McpToolHost` keeps the deliberately looser registrar-facing
+ * `Env` where every binding is optional so tools degrade to a setup hint instead
+ * of a type error. The intersection satisfies the constraint without forcing
+ * either side to match the other, and the host is handed over through an
+ * existing cast.
+ */
+type McpAgentEnv = Cloudflare.Env & Env;
+
+export class DfirMcpServer extends McpAgent<McpAgentEnv, Record<string, never>, Record<string, never>> {
   server = new McpServer({
     name: 'DFIR-ThreatIntel-MCP',
     version: '1.0.0',

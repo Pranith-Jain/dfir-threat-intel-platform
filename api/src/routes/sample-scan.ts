@@ -39,7 +39,7 @@ import { ProviderCache } from '../lib/cache';
 import { isCircuitOpen, recordProviderFailure, recordProviderSuccess } from '../lib/circuit-breaker';
 import { publicSandboxesFor } from '../lib/sample-scan';
 import type { ProviderResult, ProviderId, ProviderEnv, ProviderAdapter, Indicator, Verdict } from '../providers/types';
-import { PROVIDER_SUPPORT, PROVIDER_TIMEOUT_MS } from '../providers/types';
+import { PROVIDER_SUPPORT, providerTimeoutMs } from '../providers/types';
 import { virustotal } from '../providers/virustotal';
 import { hybridanalysis } from '../providers/hybridanalysis';
 import { otx } from '../providers/otx';
@@ -249,7 +249,7 @@ async function runHashFanOut(
         await recordProviderSuccess(p);
         return;
       }
-      const signal = AbortSignal.timeout(PROVIDER_TIMEOUT_MS);
+      const signal = AbortSignal.timeout(providerTimeoutMs(p));
       try {
         const r = await ADAPTERS[p](indicator, env, signal);
         collected.push(r);

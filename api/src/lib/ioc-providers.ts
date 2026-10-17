@@ -12,7 +12,7 @@ import { ProviderCache } from './cache';
 import { isCircuitOpen, recordProviderFailure, recordProviderSuccess } from './circuit-breaker';
 import { admiraltyGrade } from './admiralty';
 import type { ProviderResult, ProviderId } from '../providers/types';
-import { ADAPTERS, buildProviderEnv, PROVIDER_SUPPORT, PROVIDER_TIMEOUT_MS } from '../providers';
+import { ADAPTERS, buildProviderEnv, PROVIDER_SUPPORT, providerTimeoutMs } from '../providers';
 
 const PROVIDER_CHUNK_SIZE = 10;
 
@@ -215,7 +215,7 @@ export async function runIocProviders(
         await recordProviderSuccess(p);
         return;
       }
-      const signal = AbortSignal.timeout(PROVIDER_TIMEOUT_MS);
+      const signal = AbortSignal.timeout(providerTimeoutMs(p));
       try {
         const r = await ADAPTERS[p](indicator, providerEnv, signal);
         collected.push(r);
@@ -260,7 +260,7 @@ export async function runIocProviders(
           await recordProviderSuccess(p);
           return;
         }
-        const signal = AbortSignal.timeout(PROVIDER_TIMEOUT_MS);
+        const signal = AbortSignal.timeout(providerTimeoutMs(p));
         try {
           const r = await ADAPTERS[p](indicator, providerEnv, signal);
           collected.push(r);

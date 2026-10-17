@@ -3,6 +3,8 @@ import type { Env } from '../env';
 import { logError } from '../lib/logger';
 import { badRequest } from '../lib/api-error';
 import { fetchResilient } from '../lib/fetch-resilient';
+import { FEED_ALLOWED_HOSTS as ALLOWED_HOSTS } from '../lib/feed-hosts';
+import { unwrapBingNewsLink } from '../lib/rss-parser';
 import { safeIso } from '../lib/safe-date';
 import { buildMtiRansomwareRss, MTI_RANSOMWARE_FEED_PATH } from './mti-ransomware-rss';
 import { safeNull } from '../lib/safe-catch';
@@ -67,286 +69,21 @@ const CACHE_TTL_SECONDS = 300; // 5 minutes — matches per-feed proxy cache
 /**
  * BleepingComputer's Cloudflare bot-challenge returns 403 to datacenter
  * egress (any Cloudflare Worker — documented in writeup-sources.ts, verified
- * live 2026-08-09). Its content is mirrored by Google News RSS
- * (news.google.com, already allowlisted below), which is served to any
- * client. Fetch the mirror but keep the ORIGINAL URL as the canonical host
- * so cache keys and per-feed status/section grouping stay stable.
+ * live 2026-08-09). Its content is mirrored by Bing News RSS
+ * (www.bing.com, allowlisted), which is served to any client. Was a Google
+ * News mirror until news.google.com started 503ing Worker egress IPs
+ * (rate limited, 2026-10). Fetch the mirror but keep the ORIGINAL URL as the
+ * canonical host so cache keys and per-feed status/section grouping stay stable.
  */
-const BLEEPING_COMPUTER_MIRROR =
-  'https://news.google.com/rss/search?q=site:bleepingcomputer.com&hl=en-US&gl=US&ceid=US:en';
+const BLEEPING_COMPUTER_MIRROR = 'https://www.bing.com/news/search?q=site%3Ableepingcomputer.com&format=RSS&mkt=en-US';
 const BLEEPING_COMPUTER_HOST_RE = /^(?:www\.)?bleepingcomputer\.com$/i;
 
-const ALLOWED_HOSTS = new Set([
-  // Same allow-list as feeds.ts. Could be DRYed but inlining keeps this route
-  // self-contained and avoids a circular dep.
-  'www.cisa.gov',
-  'cisa.gov',
-  'nvd.nist.gov',
-  'us-cert.cisa.gov',
-  'isc.sans.edu',
-  'cert.europa.eu',
-  'ccb.belgium.be',
-  'feeds.feedburner.com',
-  'thehackernews.com',
-  'krebsonsecurity.com',
-  'www.bleepingcomputer.com',
-  'bleepingcomputer.com',
-  'www.securityweek.com',
-  'securityweek.com',
-  'www.darkreading.com',
-  'darkreading.com',
-  'www.zdnet.com',
-  'www.vice.com',
-  'www.theregister.com',
-  'www.schneier.com',
-  'www.wired.com',
-  'threatfox.abuse.ch',
-  'urlhaus.abuse.ch',
-  'bazaar.abuse.ch',
-  'mb-api.abuse.ch',
-  'sslbl.abuse.ch',
-  'openphish.com',
-  'www.openphish.com',
-  'dfir-lab.ch',
-  'www.dfir-lab.ch',
-  'falhumaid.github.io',
-  'blog.talosintelligence.com',
-  'talosintelligence.com',
-  'unit42.paloaltonetworks.com',
-  'www.welivesecurity.com',
-  'welivesecurity.com',
-  'securelist.com',
-  'www.securelist.com',
-  'www.crowdstrike.com',
-  'crowdstrike.com',
-  'www.sentinelone.com',
-  'sentinelone.com',
-  'flashpoint.io',
-  'www.flashpoint.io',
-  'feeds.fireeye.com',
-  'www.microsoft.com',
-  'msrc-blog.microsoft.com',
-  'googleprojectzero.blogspot.com',
-  'cloud.google.com',
-  'research.checkpoint.com',
-  'www.trendmicro.com',
-  'news.sophos.com',
-  'blog.malwarebytes.com',
-  'www.volexity.com',
-  'www.huntress.com',
-  'redcanary.com',
-  'www.malware-traffic-analysis.net',
-  'www.hackmageddon.com',
-  'www.infostealers.com',
-  'medium.com',
-  'darkwebinformer.com',
-  'ransomware.live',
-  'www.databreaches.net',
-  'thedfirreport.com',
-  'therecord.media',
-  'www.curatedintel.org',
-  'www.cyfirma.com',
-  'www.reddit.com',
-  'reddit.com',
-  'old.reddit.com',
-  'hnrss.org',
-  'news.ycombinator.com',
-  'www.ycombinator.com',
-  'ycombinator.com',
-  'rss.packetstormsecurity.com',
-  'otx.alienvault.com',
-  'www.helpnetsecurity.com',
-  'www.csoonline.com',
-  'www.cvedetails.com',
-  'www.exploit-db.com',
-  'raw.githubusercontent.com',
-  // Scam Watch sources
-  'consumer.ftc.gov',
-  'www.ic3.gov',
-  'ic3.gov',
-  'www.snopes.com',
-  'snopes.com',
-  'news.google.com',
-  'rekt.news',
-  'www.web3isgoinggreat.com',
-  'web3isgoinggreat.com',
-  // Industry / fundraising / Tech & AI
-  'techcrunch.com',
-  'www.techcrunch.com',
-  'venturebeat.com',
-  'www.venturebeat.com',
-  'www.theverge.com',
-  'theverge.com',
-  'feeds.arstechnica.com',
-  'arstechnica.com',
-  'www.technologyreview.com',
-  'technologyreview.com',
-  'openai.com',
-  'www.openai.com',
-  'blog.google',
-  // Breach-focused feeds (added 2026-05-11)
-  'www.vpnmentor.com',
-  'vpnmentor.com',
-  'grcsolutions.io',
-  'www.grcsolutions.io',
-  'www.comparitech.com',
-  'comparitech.com',
-  'www.troyhunt.com',
-  'troyhunt.com',
-  'www.idtheftcenter.org',
-  'idtheftcenter.org',
-  // Feed expansion 2026-05-18 (kept in sync with feeds.ts)
-  'cyble.com',
-  'www.cyble.com',
-  'socradar.io',
-  'www.socradar.io',
-  'blog.bushidotoken.net',
-  'www.rapid7.com',
-  'rapid7.com',
-  'blogs.jpcert.or.jp',
-  'www.ncsc.gov.uk',
-  'asec.ahnlab.com',
-  'huggingface.co',
-  'the-decoder.com',
-  'importai.substack.com',
-  'blog.fox-it.com',
-  // AI lab blogs (2026-06)
-  'www.anthropic.com',
-  'anthropic.com',
-  'deepmind.google',
-  // Finance & banking (2026-06)
-  'www.finextra.com',
-  'finextra.com',
-  'www.paymentsdive.com',
-  'paymentsdive.com',
-  'www.bankingdive.com',
-  'bankingdive.com',
-  // Allowlist gap fix (2026-05-24): both feeds were silently dropped by
-  // the host check, surfacing as "16 of 54 missing" on /threatintel/threat-feeds.
-  'www.akamai.com',
-  'akamai.com',
-  'threatpost.com',
-  'www.threatpost.com',
-  // npm / package-ecosystem advisory feeds (2026-05-24)
-  'github.com',
-  'osv.dev',
-  'www.osv.dev',
-  // Same-origin synthesised feeds (merged ransomware, MTI ransomware)
-  'pranithjain.qzz.io',
-  // Dead-feed fixes 2026-06: feeds moved hosts / dropped www. Allow the new
-  // final hosts so the host check doesn't silently drop them (sync w/ feeds.ts).
-  'projectzero.google', // was googleprojectzero.blogspot.com (302 → new host)
-  'www.malwarebytes.com', // was blog.malwarebytes.com (301)
-  'malwarebytes.com',
-  'api.theregister.com', // theregister atom moved to the api host
-  'theregister.com',
-  'databreaches.net', // 301 www → apex
-  'hackread.com', // 301 www → apex
-  'redhuntlabs.com', // research.redhuntlabs.com/feed.xml → 404; blog feed on apex
-  'www.redhuntlabs.com',
-  'www.recordedfuture.com', // /rss.xml → 404; /feed works
-  'recordedfuture.com',
-  // Allow-list gaps surfaced by the host-vs-feeds cross-check (2026-06):
-  // both return valid XML but were silently dropped.
-  'cyberscoop.com',
-  'www.cyberscoop.com',
-  'grahamcluley.com',
-  'www.grahamcluley.com',
-  // Lyrie Research — autonomous CTI platform with JSON Feed v1.1
-  'lyrie.ai',
-  // supplychainattack.org — supply-chain incident catalog RSS (change-detection)
-  'supplychainattack.org',
-  // Wiz Research cloud-threat-landscape RSS (cloud/SaaS/identity incidents)
-  'www.wiz.io',
-  'wiz.io',
-  // Feedspot high-quality feeds 2026-06 — curated from rss.feedspot.com/hacker_rss_feeds/
-  'tisiphone.net',
-  'thehackerblog.com',
-  'blog.detectify.com',
-  'hackerone.com',
-  'www.hackerone.com',
-  'bugcrowd.com',
-  'www.bugcrowd.com',
-  'yeswehack.com',
-  'www.yeswehack.com',
-  'synack.com',
-  'www.synack.com',
-  'hackthebox.com',
-  'www.hackthebox.com',
-  'pentestlab.blog',
-  'hackers-arise.com',
-  'www.hackers-arise.com',
-  'embracethered.com',
-  'blog.knowbe4.com',
-  'darknet.org.uk',
-  'cqureacademy.com',
-  'hackingarticles.in',
-  'www.hackingarticles.in',
-  'www.darknet.org.uk',
-  // 2026-06: direct-fetch host for The Hacker News (was FeedBurner)
-  'thehackernews.com',
-  'www.thehackernews.com',
-  // Dead-feed redirect fixes 2026-06-23: feeds that moved hosts — add
-  // the redirect targets so the per-hop host check doesn't reject them.
-  'www.withsecure.com',
-  'withsecure.com',
-  'www.sophos.com',
-  'sophos.com',
-  'security.googleblog.com', // chronicle.security → google → googleonline security blog (feedburner)
-  // 2026-06-23: threat-intel allowlist gaps — 16 feeds were silently dropped
-  'aws.amazon.com',
-  'chronicle.security',
-  'countercept.com',
-  'feeds.trendmicro.com',
-  'intel471.com',
-  'labs.withsecure.com',
-  'objective-see.org',
-  'securitylabs.datadoghq.com',
-  'the-hunters-ledger.com',
-  'vxdb.sh',
-  'www.elastic.co',
-  'www.hexacorn.com',
-  'www.malwaretech.com',
-  'www.netskope.com',
-  'www.wordfence.com',
-  // Redirect-target variants for the above (www ↔ apex)
-  'elastic.co',
-  'hexacorn.com',
-  'malwaretech.com',
-  'netskope.com',
-  'wordfence.com',
-  'www.chronicle.security',
-  'www.countercept.com',
-  'www.intel471.com',
-  'www.objective-see.org',
-  'www.the-hunters-ledger.com',
-  'www.vxdb.sh',
-  // Additional common www ↔ apex redirect targets across the full set
-  'csoonline.com',
-  'curatedintel.org',
-  'cyfirma.com',
-  'exploit-db.com',
-  'helpnetsecurity.com',
-  'huntress.com',
-  'infostealers.com',
-  'malware-traffic-analysis.net',
-  'microsoft.com',
-  'ncsc.gov.uk',
-  'schneier.com',
-  'trendmicro.com',
-  'volexity.com',
-  'wired.com',
-  'zdnet.com',
-  'www.arstechnica.com',
-  'www.krebsonsecurity.com',
-  'www.socradar.io',
-  'www.the-decoder.com',
-  'www.thedfirreport.com',
-  'www.therecord.media',
-  'www.tisiphone.net',
-  'www.venturebeat.com',
-]);
-
+/**
+ * Bing News wraps every item link in an apiclick.aspx redirect with the real
+ * target in `?url=`. `unwrapBingNewsLink` (lib/rss-parser.ts) resolves it so
+ * merged items link straight to the publisher instead of routing readers
+ * through Bing's click tracker.
+ */
 interface AggregatedItem {
   source: string; // hostname of the feed URL
   source_url: string; // original feed URL
@@ -428,6 +165,7 @@ function parseFeedBody(body: string, sourceUrl: string, host: string, perSource:
     let link = pickTag(inner, 'link');
     if (!link) link = pickAttr(inner, 'link', 'href');
     if (!link) link = pickTag(inner, 'guid');
+    link = unwrapBingNewsLink(link);
     const description = pickTag(inner, 'description') || pickTag(inner, 'summary') || pickTag(inner, 'content');
     const pubRaw = pickTag(inner, 'pubDate') || pickTag(inner, 'updated') || pickTag(inner, 'published') || '';
     const pubDate = safeIso(pubRaw) ?? '';

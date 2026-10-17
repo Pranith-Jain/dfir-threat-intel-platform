@@ -1,5 +1,6 @@
 import type { D1Database } from '@cloudflare/workers-types';
 import { NEWS_FEEDS, SUPPLY_CHAIN_FEED, type Article, type RawSupplyChainIncident } from './types';
+import { unwrapBingNewsLink } from '../rss-parser';
 
 const UA = 'Mozilla/5.0 (compatible; pranithjain-dfir/1.0; +https://pranithjain.qzz.io)';
 
@@ -31,7 +32,8 @@ function parseRssItems(xml: string): ParsedRssItem[] {
     const summaryRaw =
       extractTag(body, 'description') || extractTag(body, 'summary') || extractTag(body, 'content\\:encoded') || '';
     const summary = summaryRaw.replace(/<[^>]*>/g, '').slice(0, 500);
-    items.push({ title, url: url.replace(/^https?:\/\//, 'https://'), published_date, summary });
+    // Unwrap first (the Bing redirect hides the real scheme), then normalize.
+    items.push({ title, url: unwrapBingNewsLink(url).replace(/^http:\/\//, 'https://'), published_date, summary });
   }
   return items;
 }

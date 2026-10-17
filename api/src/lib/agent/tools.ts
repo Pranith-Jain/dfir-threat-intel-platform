@@ -1129,18 +1129,14 @@ export function buildToolRegistry(
     {
       name: 'webamon_search',
       description:
-        'Search Webamon domain index — Lucene queries across 750M+ scanned domains. Use for domain risk assessment, infrastructure discovery, geo netblock lookups, or finding related malicious infrastructure. Supports queries like risk_score:>5, domain.name:example.com, fingerprint.tech:*wordpress, tag:nrd_*',
+        "Search Webamon's domain index — 750M+ scanned domains. Accepts Lucene field queries or plain text. Useful queries: domain_name:example.com (exact domain), meta.risk_score:>5 (risky), page_title:login, tag:nrd_*, fingerprint.tech:*wordpress. Use for domain risk assessment, infrastructure discovery, or finding related malicious infrastructure.",
       params: [
-        { name: 'query', type: 'string', description: 'Lucene search query', required: true },
+        { name: 'query', type: 'string', description: 'Lucene field query or free-text term', required: true },
         { name: 'size', type: 'number', description: 'Results per page (max 100)', required: false },
       ],
       execute: (args) => {
         const p = new URLSearchParams({ search: String(args.query) });
         if (args.size) p.set('size', String(args.size));
-        p.set(
-          'results',
-          'domain.name,page_title,meta.risk_score,fingerprint.tech,fingerprint.asn,resolved_url,tag,sub_domain'
-        );
         return apiFetch(self, `/api/v1/webamon/search?${p}`, apiKey, undefined, ih);
       },
     },

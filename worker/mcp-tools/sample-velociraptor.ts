@@ -7,7 +7,7 @@
  * against that host at call time.
  */
 
-import { apiFetch, untrustedToolResult } from './core';
+import { adminApiFetch, apiFetch, untrustedToolResult } from './core';
 import { z } from 'zod';
 
 import type { McpToolHost } from './host';
@@ -85,7 +85,7 @@ export function registerSampleVelociraptorTools(h: McpToolHost): void {
       if (search) p.set('search', search);
       if (limit) p.set('limit', String(limit));
       const qs = p.toString() ? `?${p}` : '';
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, `/api/v1/velociraptor/clients${qs}`, h.apiKey);
+      const data = await adminApiFetch<Record<string, unknown>>(h, `/api/v1/velociraptor/clients${qs}`);
       return untrustedToolResult(data);
     }
   );
@@ -94,7 +94,7 @@ export function registerSampleVelociraptorTools(h: McpToolHost): void {
     'Get one Velociraptor-managed endpoint by client id (C.xxxx) — OS build, labels, last check-in.',
     { client_id: z.string().describe("Client id ('C.1234')") },
     async ({ client_id }) => {
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/velociraptor/client', h.apiKey, {
+      const data = await adminApiFetch<Record<string, unknown>>(h, '/api/v1/velociraptor/client', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ client_id }),
@@ -110,7 +110,7 @@ export function registerSampleVelociraptorTools(h: McpToolHost): void {
       limit: z.number().int().min(1).max(200).optional().describe('Max flows (default 20)'),
     },
     async ({ client_id, limit }) => {
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/velociraptor/flows', h.apiKey, {
+      const data = await adminApiFetch<Record<string, unknown>>(h, '/api/v1/velociraptor/flows', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ client_id, ...(limit ? { limit } : {}) }),
@@ -138,7 +138,7 @@ export function registerSampleVelociraptorTools(h: McpToolHost): void {
           };
         }
       }
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/velociraptor/collect', h.apiKey, {
+      const data = await adminApiFetch<Record<string, unknown>>(h, '/api/v1/velociraptor/collect', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -159,7 +159,7 @@ export function registerSampleVelociraptorTools(h: McpToolHost): void {
       flow_id: z.string().describe("Flow id from velo_collect_artifact ('F.xxxx')"),
     },
     async ({ client_id, flow_id }) => {
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/velociraptor/flow', h.apiKey, {
+      const data = await adminApiFetch<Record<string, unknown>>(h, '/api/v1/velociraptor/flow', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ client_id, flow_id }),
@@ -178,7 +178,7 @@ export function registerSampleVelociraptorTools(h: McpToolHost): void {
       rows: z.number().int().min(1).max(1000).optional().describe('Max rows (default 100)'),
     },
     async ({ client_id, flow_id, artifact, offset, rows }) => {
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/velociraptor/results', h.apiKey, {
+      const data = await adminApiFetch<Record<string, unknown>>(h, '/api/v1/velociraptor/results', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -214,7 +214,7 @@ export function registerSampleVelociraptorTools(h: McpToolHost): void {
           };
         }
       }
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/velociraptor/hunts/create', h.apiKey, {
+      const data = await adminApiFetch<Record<string, unknown>>(h, '/api/v1/velociraptor/hunts/create', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -232,7 +232,7 @@ export function registerSampleVelociraptorTools(h: McpToolHost): void {
     'Poll a Velociraptor hunt — state, scheduled/completed/erroring client counts.',
     { hunt_id: z.string().describe("Hunt id ('H.xxxx')") },
     async ({ hunt_id }) => {
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/velociraptor/hunt', h.apiKey, {
+      const data = await adminApiFetch<Record<string, unknown>>(h, '/api/v1/velociraptor/hunt', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ hunt_id }),
@@ -245,7 +245,7 @@ export function registerSampleVelociraptorTools(h: McpToolHost): void {
     'List recent Velociraptor hunts across the fleet — descriptions, states, completion counts.',
     { limit: z.number().int().min(1).max(200).optional().describe('Max hunts') },
     async ({ limit }) => {
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/velociraptor/hunts', h.apiKey, {
+      const data = await adminApiFetch<Record<string, unknown>>(h, '/api/v1/velociraptor/hunts', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ ...(limit ? { limit } : {}) }),
@@ -278,7 +278,7 @@ export function registerSampleVelociraptorTools(h: McpToolHost): void {
       source: z.string().describe('Full rule text to validate'),
     },
     async ({ kind, source }) => {
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/rules/validate', h.apiKey, {
+      const data = await adminApiFetch<Record<string, unknown>>(h, '/api/v1/rules/validate', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ kind, source }),

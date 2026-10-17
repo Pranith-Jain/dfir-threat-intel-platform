@@ -9,6 +9,7 @@
  */
 
 import type { D1Database } from '@cloudflare/workers-types';
+import { unwrapBingNewsLink } from './rss-parser';
 
 const FETCH_TIMEOUT_MS = 15_000;
 const HEADERS = { 'User-Agent': 'PranithJain-CTI/1.0' };
@@ -246,8 +247,8 @@ async function fetchCisaKev(): Promise<CollectedIoc[]> {
 // ── News RSS feeds ─────────────────────────────────────────────────────
 
 const RSS_FEEDS: Record<string, string> = {
-  // bleepingcomputer.com 403s datacenter egress — Google News mirror instead.
-  bleepingcomputer: 'https://news.google.com/rss/search?q=site:bleepingcomputer.com&hl=en-US&gl=US&ceid=US:en',
+  // bleepingcomputer.com 403s datacenter egress — Bing News mirror instead (news.google.com 503s Worker egress).
+  bleepingcomputer: 'https://www.bing.com/news/search?q=site%3Ableepingcomputer.com&format=RSS&mkt=en-US',
   hackernews: 'https://feeds.feedburner.com/TheHackersNews',
   darkreading: 'https://www.darkreading.com/rss.xml',
   therecord: 'https://therecord.media/feed',
@@ -276,7 +277,7 @@ function parseRssItems(xml: string, source: string): CollectedNews[] {
     if (title) {
       items.push({
         title: title.replace(/<[^>]+>/g, '').slice(0, 300),
-        url: link,
+        url: unwrapBingNewsLink(link),
         summary: desc.replace(/<[^>]+>/g, '').slice(0, 500),
         source,
         published: pubDate,

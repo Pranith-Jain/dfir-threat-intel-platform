@@ -65,6 +65,7 @@ function renderCveBlock(c: CveFacts): string {
       `- CVSS ${c.cvss.version}: ${c.cvss.base_score} ${c.cvss.severity}${c.cvss.vector ? ` (${c.cvss.vector})` : ''}`
     );
   if (c.cwe.length) lines.push(`- Weakness: ${c.cwe.join(', ')}`);
+  if (c.affectedVersions?.length) lines.push(`- Affected versions (exact, from NVD): ${c.affectedVersions.join('; ')}`);
   if (c.products.length) lines.push(`- Affected products (from NVD CPE data): ${c.products.join('; ')}`);
   if (c.published) lines.push(`- Published: ${c.published.slice(0, 10)}`);
   if (c.kev?.in_kev) {

@@ -7,7 +7,7 @@
  * against that host at call time.
  */
 
-import { apiFetch, untrustedToolResult } from './core';
+import { adminApiFetch, apiFetch, untrustedToolResult } from './core';
 import { z } from 'zod';
 
 import type { McpToolHost } from './host';
@@ -375,7 +375,7 @@ export function registerIdentityOsintTools(h: McpToolHost): void {
       const params = new URLSearchParams();
       if (status) params.set('status', status);
       if (limit) params.set('limit', String(limit));
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, `/api/v1/notebooks?${params}`, h.apiKey);
+      const data = await adminApiFetch<Record<string, unknown>>(h, `/api/v1/notebooks?${params}`);
       return untrustedToolResult(data);
     }
   );
@@ -388,7 +388,7 @@ export function registerIdentityOsintTools(h: McpToolHost): void {
       severity: z.enum(['info', 'low', 'medium', 'high', 'critical']).optional().describe('Severity (default: info)'),
     },
     async ({ title, description, severity }) => {
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/notebooks', h.apiKey, {
+      const data = await adminApiFetch<Record<string, unknown>>(h, '/api/v1/notebooks', {
         method: 'POST',
         body: JSON.stringify({ title, description, severity }),
       });

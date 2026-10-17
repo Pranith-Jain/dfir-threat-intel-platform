@@ -220,10 +220,6 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
         fetch: globalThis.fetch,
         now,
         getDedup: memGet,
-        fetchExploitDb: async (limit) => {
-          const data = await selfFetchJson<Record<string, unknown>>(env.SELF, `/api/v1/exploit-db?limit=${limit}`, env);
-          return asRows(data?.items).length ? asRows(data?.items) : asRows(data?.exploits);
-        },
         fetchRecent: async (limit) => {
           const data = await selfFetchJson<Record<string, unknown>>(env.SELF, `/api/v1/cve-recent?limit=${limit}`, env);
           return asRows(data?.cves);
@@ -330,7 +326,7 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
   ]);
   // 6 rotation groups: with ~10 optional runners, each runs once every 6 days
   // This ensures variety while keeping daily subrequest count manageable
-  const active = new Set(activeRunnerNames(Object.keys(allRunners), ALWAYS_ON, now, 6));
+  const active = new Set(activeRunnerNames(Object.keys(allRunners), ALWAYS_ON, now, 4));
   const runners = Object.fromEntries(Object.entries(allRunners).filter(([name]) => active.has(name)));
 
   return runDiscovery({
@@ -348,8 +344,8 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
     //     trending context items.
     //   - trends=3: fewer LLM candidates; quality enforced via dedup-
     //     avoidance, category rotation, and real trending data injection.
-    perTopic: 2,
-    limit: 24,
+    perTopic: 3,
+    limit: 36,
     perTopicOverride: { trends: 3 },
   });
 }

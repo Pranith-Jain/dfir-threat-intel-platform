@@ -11,9 +11,9 @@ import { parseRssItems } from './rss-util';
 const FEEDS = [
   'https://krebsonsecurity.com/feed/',
   'https://www.ic3.gov/PSA/RSS',
-  'https://www.hackread.com/category/security/data-breach/feed/',
-  // BleepingComputer 403s datacenter egress — Google News mirror instead.
-  'https://news.google.com/rss/search?q=site:bleepingcomputer.com&hl=en-US&gl=US&ceid=US:en',
+  'https://hackread.com/feed/',
+  // BleepingComputer 403s datacenter egress — Bing News mirror instead (news.google.com 503s Worker egress).
+  'https://www.bing.com/news/search?q=site%3Ableepingcomputer.com&format=RSS&mkt=en-US',
   'https://feeds.feedburner.com/TheHackersNews',
 ];
 const WINDOW_MS = 7 * 24 * 3600 * 1000;

@@ -167,7 +167,13 @@ export async function mcpProxyHandler(c: Context<{ Bindings: Env }>): Promise<Re
   if (newSid) outHeaders.set('mcp-session-id', newSid);
   const ct = upstream.headers.get('content-type') ?? 'application/json';
   outHeaders.set('content-type', ct);
-  if (body.trace) outHeaders.set('x-mcp-trace', body.trace);
+  if (body.trace)
+    outHeaders.set(
+      'x-mcp-trace',
+      String(body.trace)
+        .replace(/[^\t\x20-\x7e]/g, '')
+        .slice(0, 256)
+    );
 
   // Cap response size to keep us under the Workers subrequest limit
   // and prevent a runaway upstream from blowing our memory budget.

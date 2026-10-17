@@ -109,8 +109,8 @@ export const NEWS_FEEDS = [
   {
     id: 'bleepingcomputer',
     name: 'BleepingComputer',
-    // bleepingcomputer.com 403s datacenter egress — Google News mirror instead.
-    url: 'https://news.google.com/rss/search?q=site:bleepingcomputer.com&hl=en-US&gl=US&ceid=US:en',
+    // bleepingcomputer.com 403s datacenter egress — Bing News mirror instead (news.google.com 503s Worker egress).
+    url: 'https://www.bing.com/news/search?q=site%3Ableepingcomputer.com&format=RSS&mkt=en-US',
     type: 'news',
   },
   { id: 'darkreading', name: 'Dark Reading', url: 'https://www.darkreading.com/rss.xml', type: 'news' },

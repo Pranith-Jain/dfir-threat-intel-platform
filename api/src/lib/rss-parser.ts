@@ -91,6 +91,45 @@ export function rfc822ToIso(s: string): string | undefined {
 }
 
 /**
+ * Bing News search RSS wraps every item link in a click redirector —
+ * `http://www.bing.com/news/apiclick.aspx?ref=FexRss&…&url=<encoded target>`.
+ * Every surface that renders a feed item should link straight to the publisher,
+ * not through Bing's tracker, so the unwrap lives here with the parsers rather
+ * than being copy-pasted per call site.
+ *
+ * Two details that are easy to get wrong and fail *silently* (the item still
+ * renders, just linking through Bing):
+ *
+ *  1. `&amp;` — the redirect URL arrives XML-escaped in most feeds, so the query
+ *     looks like `…&amp;tid=abc&amp;url=…`. `URL` does not treat `&amp;` as a
+ *     separator, so `searchParams.get('url')` is null and nothing gets unwrapped.
+ *     Decode before parsing rather than requiring every caller to decode first.
+ *  2. `apiclick.aspx` lives under /news/, not the search path — a plain
+ *     `www.bing.com` check would also mangle the search-feed's own `<link>`.
+ *
+ * Non-Bing links pass through untouched; a missing, malformed or non-http(s)
+ * `url` param falls back to the original link.
+ */
+export function unwrapBingNewsLink(link: string): string {
+  if (!link) return link;
+  try {
+    // Only the redirector path is touched; the entity decode below is a no-op
+    // for every other URL.
+    const candidate = link.replace(/&amp;/gi, '&').trim();
+    const u = new URL(candidate);
+    if (!/(^|\.)bing\.com$/i.test(u.hostname)) return link;
+    if (!u.pathname.endsWith('/apiclick.aspx')) return link;
+    const target = u.searchParams.get('url');
+    if (!target) return link;
+    const decoded = new URL(target);
+    if (decoded.protocol !== 'http:' && decoded.protocol !== 'https:') return link;
+    return decoded.toString();
+  } catch {
+    return link;
+  }
+}
+
+/**
  * Parse an RSS 2.0 document. Returns one RssItem per <item>; malformed
  * items are dropped (the route reports the count). The channel-level
  * <title>/<link>/<description> are not surfaced — we only need items.
@@ -115,7 +154,7 @@ export function parseRss(xml: string): RssItem[] {
     const category = extractTag(block, 'category');
     items.push({
       title: stripHtml(title, 200),
-      link,
+      link: unwrapBingNewsLink(link),
       pubDate,
       snippet,
       source,

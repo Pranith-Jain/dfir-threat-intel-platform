@@ -14,8 +14,8 @@ import { parseRssItems } from './rss-util';
 // aggregator (src/data/rssFeeds.ts), so they're known to resolve + parse.
 const FEEDS = [
   'https://thedfirreport.com/feed/',
-  // BleepingComputer 403s datacenter egress — Google News mirror instead.
-  'https://news.google.com/rss/search?q=site:bleepingcomputer.com&hl=en-US&gl=US&ceid=US:en',
+  // BleepingComputer 403s datacenter egress — Bing News mirror instead (news.google.com 503s Worker egress).
+  'https://www.bing.com/news/search?q=site%3Ableepingcomputer.com&format=RSS&mkt=en-US',
   'https://krebsonsecurity.com/feed/',
   'https://www.sentinelone.com/labs/feed/',
   'https://blog.talosintelligence.com/rss/',

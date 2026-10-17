@@ -4,7 +4,7 @@ import { logError } from '../lib/logger';
 import { badRequest, internalError } from '../lib/api-error';
 import { detectType } from '../lib/indicator';
 import type { Indicator, ProviderResult, ProviderId } from '../providers/types';
-import { ADAPTERS, buildProviderEnv, PROVIDER_LABELS, PROVIDER_SUPPORT, PROVIDER_TIMEOUT_MS } from '../providers';
+import { ADAPTERS, buildProviderEnv, PROVIDER_LABELS, PROVIDER_SUPPORT, providerTimeoutMs } from '../providers';
 import { ProviderCache } from '../lib/cache';
 import { isCircuitOpen, recordProviderFailure, recordProviderSuccess } from '../lib/circuit-breaker';
 import { compositeScore } from '../lib/scoring';
@@ -92,7 +92,7 @@ async function runProviders(
         await recordProviderSuccess(p);
         return;
       }
-      const signal = AbortSignal.timeout(PROVIDER_TIMEOUT_MS);
+      const signal = AbortSignal.timeout(providerTimeoutMs(p));
       try {
         const r = await ADAPTERS[p](indicator, providerEnv, signal);
         collected.push(r);

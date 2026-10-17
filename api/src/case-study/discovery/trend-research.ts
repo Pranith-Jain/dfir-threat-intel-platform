@@ -108,7 +108,6 @@ function cveHeadline(cveId: string, detail: string): string {
 }
 
 interface CorpusFetch {
-  trending: unknown;
   kev: unknown;
   recent: unknown;
   writeups: unknown;
@@ -116,51 +115,21 @@ interface CorpusFetch {
 }
 
 async function fetchCorpus(self: Fetcher, env: { INTERNAL_TOKEN_SECRET?: string }): Promise<CorpusFetch> {
-  const empty: CorpusFetch = { trending: null, kev: null, recent: null, writeups: null, darkweb: null };
+  const empty: CorpusFetch = { kev: null, recent: null, writeups: null, darkweb: null };
   if (!self || !env.INTERNAL_TOKEN_SECRET) return empty;
   const f: SelfFetcher = self;
   const paths = {
-    trending: '/api/v1/cve-trends?limit=20',
     kev: '/api/v1/cisa-kev?days=2&limit=40',
     recent: '/api/v1/cve-recent?limit=120',
     writeups: '/api/v1/writeups?limit=15&since=24h',
     darkweb: '/api/v1/darkweb-monitor?limit=15&since=24h',
   };
   const settled = await Promise.all(Object.values(paths).map((p) => selfFetchJson<unknown>(f, p, env)));
-  const [trending, kev, recent, writeups, darkweb] = settled;
-  return { trending, kev, recent, writeups, darkweb };
+  const [kev, recent, writeups, darkweb] = settled;
+  return { kev, recent, writeups, darkweb };
 }
 
 // ── Signal extraction ────────────────────────────────────────────────────
-
-/** CVEs the platform's own feeds are reporting on right now, with scores. */
-function signalsFromTrending(data: unknown): TrendSignal[] {
-  const out: TrendSignal[] = [];
-  for (const c of asArray(data)) {
-    {
-      const id = (str(c.id) || str(c.cve_id)).toUpperCase();
-      if (!CVE_ID_RE.test(id)) continue;
-      const hype = num(c.hype_score) ?? num(c.hypeScore) ?? 0;
-      const rank = num(c.rank) ?? 99;
-      const description = str(c.description).slice(0, 300);
-      out.push({
-        kind: 'trending-cve',
-        key: `trending-${id}`,
-        title: cveHeadline(id, description),
-        rationale: `Rank ${rank} on the social trending feed with a hype score of ${hype}${
-          description ? `: ${description.slice(0, 120)}` : ''
-        }`,
-        url: `https://nvd.nist.gov/vuln/detail/${id}`,
-        facts: { cveId: id, hypeScore: hype, rank, description },
-        // A hype score of 8+ means it is genuinely being discussed. Rank 1-3
-        // is meaningful even at a lower score.
-        weight: Math.min(1, hype / 15 + (rank <= 3 ? 0.25 : 0)),
-        type: 'vulnfaq',
-      });
-    }
-  }
-  return out;
-}
 
 /**
  * KEV entries added in the window.
@@ -345,12 +314,11 @@ export async function discoverTrendResearch(deps: TrendResearchDeps): Promise<Ca
   if (!self || !deps.internalTokenSecret) return [];
 
   const corpus = await fetchCorpus(self, { INTERNAL_TOKEN_SECRET: deps.internalTokenSecret }).catch(
-    (): CorpusFetch => ({ trending: null, kev: null, recent: null, writeups: null, darkweb: null })
+    (): CorpusFetch => ({ kev: null, recent: null, writeups: null, darkweb: null })
   );
 
   const signals: TrendSignal[] = [
     ...signalsFromKev(corpus.kev, now),
-    ...signalsFromTrending(corpus.trending),
     ...signalsFromEpss(corpus.recent),
     ...signalsFromWriteups(corpus.writeups, now),
     ...signalsFromDarkweb(corpus.darkweb, now),

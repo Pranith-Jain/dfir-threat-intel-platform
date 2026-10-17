@@ -2,21 +2,25 @@ import type { ProviderAdapter, ProviderResult } from './types';
 import { classifyThrownError, toProviderError } from '../lib/provider-errors';
 
 const WEBAMON_SEARCH = 'https://search.webamon.com/search';
-const TIMEOUT_MS = 8000;
+// Webamon's index answers in 10–15s on cold queries; the 8s provider
+// default aborted every call before results arrived. Keep in step with
+// PROVIDER_TIMEOUT_OVERRIDES.webamon in ./types.ts.
+const TIMEOUT_MS = 20_000;
 
 interface WebamonResult {
   'domain.name'?: string;
+  domain_name?: string;
   meta?: { risk_score?: number; script_count?: number; report_id?: string; submission_url?: string };
   page_title?: string;
   resolved_url?: string;
   tag?: string;
-  fingerprint?: Record<string, string>;
   date?: string;
 }
 
 interface WebamonResponse {
   total_hits: number;
-  results: WebamonResult[];
+  results?: WebamonResult[];
+  error?: string;
 }
 
 export const webamon: ProviderAdapter = async (indicator, _env, signal) => {
@@ -39,7 +43,14 @@ export const webamon: ProviderAdapter = async (indicator, _env, signal) => {
     const timeoutSignal = AbortSignal.timeout(TIMEOUT_MS);
     const combined = AbortSignal.any ? AbortSignal.any([signal, timeoutSignal]) : signal;
 
-    const url = `${WEBAMON_SEARCH}?search=${encodeURIComponent(indicator.value)}&results=domain.name,page_title,meta.risk_score,resolved_url,tag&size=1`;
+    // Field query, not free text: `domain_name` is the exact-match keyword
+    // field (ordered latest scan first), while the old `search=` +
+    // `results=…,meta.risk_score` shape now fails upstream with
+    // `query_shard_exception`. `fields` is the return projection.
+    const query = `domain_name:"${indicator.value.replace(/"/g, '')}"`;
+    const fields = 'domain_name,domain.name,page_title,meta,resolved_url,tag,date';
+    const url = `${WEBAMON_SEARCH}?lucene_query=${encodeURIComponent(query)}&index=scans&fields=${encodeURIComponent(fields)}&size=5`;
+
     const res = await fetch(url, {
       signal: combined,
       headers: { accept: 'application/json', 'user-agent': 'pranithjain-dfir/1.0' },
@@ -52,6 +63,8 @@ export const webamon: ProviderAdapter = async (indicator, _env, signal) => {
     }
 
     const data = (await res.json()) as WebamonResponse;
+    // Upstream answers 200 with an `error` string on query build failures.
+    if (data.error) return base('error', { error: data.error });
     if (!data.total_hits || !data.results?.length) {
       return base('ok', { score: 0, verdict: 'clean', tags: [], raw_summary: {} });
     }
@@ -79,7 +92,7 @@ export const webamon: ProviderAdapter = async (indicator, _env, signal) => {
       verdict,
       tags,
       raw_summary: {
-        domain: hit['domain.name'] ?? '',
+        domain: hit.domain_name ?? hit['domain.name'] ?? '',
         page_title: hit.page_title ?? '',
         risk_score: riskScore,
         resolved_url: hit.resolved_url ?? '',

@@ -153,4 +153,10 @@ export const ALLOWED_INTERNAL_CALLERS = new Set([
   'api-enrich-deep',
   'tie-enrich',
   'queue-consumer',
+  // The worker's MCP server self-fetches its own /api/v1 routes through the
+  // SELF binding. Its normal path carries the caller's API key, but the
+  // operator-only routers (e.g. /api/v1/velociraptor/*) require the admin
+  // gate, which does not accept API-key roles. The MCP server is an operator
+  // surface, so those tools sign an internal token instead.
+  'mcp-server',
 ]);

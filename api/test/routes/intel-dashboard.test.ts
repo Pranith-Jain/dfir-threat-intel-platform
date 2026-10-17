@@ -66,6 +66,21 @@ async function addLeak(severity: string, discoveredAt: string): Promise<void> {
     .run();
 }
 
+/**
+ * An ISO-8601 timestamp `daysAgo` days before now, in the format the handler
+ * compares against (`datetime('now', '-7 days')`, i.e. UTC to the second).
+ *
+ * The window assertions used to use hard-coded calendar dates ("inside 7d" was
+ * literally 2026-10-05/07). That silently expired: the handler compares against
+ * the *current* SQLite clock, so once 2026-10-07 fell outside the 7-day window
+ * the suite started failing with `expected 0 to be 2` and would keep failing
+ * forever — a time bomb that looked like a handler regression. Relative
+ * fixtures keep "inside the window" true whenever the suite runs.
+ */
+function daysAgo(days: number): string {
+  return new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 19).replace('T', ' ');
+}
+
 describe('intelDashboardHandler', () => {
   it('returns zeroed counters on an empty schema', async () => {
     const body = await callDashboard();
@@ -97,9 +112,9 @@ describe('intelDashboardHandler', () => {
    * this suite measures the cache behaviour without depending on the bug.
    */
   it('counts total and the 7-day window', async () => {
-    await addLeak('high', '2026-10-05T00:00:00Z'); // within 7d
-    await addLeak('low', '2026-10-07T00:00:00Z'); // within 7d
-    await addLeak('low', '2000-01-01T00:00:00Z'); // neither window
+    await addLeak('high', daysAgo(2)); // within 7d
+    await addLeak('low', daysAgo(4)); // within 7d
+    await addLeak('low', daysAgo(30)); // outside both windows
 
     const body = await callDashboard();
     const m = body.telegram_monitor as Record<string, number>;
@@ -120,7 +135,7 @@ describe('intelDashboardHandler', () => {
 
   // The core saving: the second request must be served without touching D1.
   it('serves a repeat request from cache without re-querying D1', async () => {
-    await addLeak('high', '2026-10-07T00:00:00Z');
+    await addLeak('high', daysAgo(1));
     await callDashboard();
 
     expect((await db.prepare(`SELECT COUNT(*) as n FROM telegram_leak_entries`).first<{ n: number }>())!.n).toBe(1);
@@ -133,11 +148,11 @@ describe('intelDashboardHandler', () => {
   });
 
   it('reflects new rows after the cache is invalidated', async () => {
-    await addLeak('high', '2026-10-07T00:00:00Z');
+    await addLeak('high', daysAgo(1));
     expect(((await callDashboard()).telegram_monitor as Record<string, number>).total_leaks).toBe(1);
 
     await invalidateD1Cache(env, KEY);
-    await addLeak('low', '2026-10-06T00:00:00Z');
+    await addLeak('low', daysAgo(2));
     expect(((await callDashboard()).telegram_monitor as Record<string, number>).total_leaks).toBe(2);
   });
 });

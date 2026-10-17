@@ -279,15 +279,24 @@ export function findUnknownParams(
  * `X-Unknown-Params` carries the comma-separated names. `X-Filter-Catalog`
  * points at the endpoint that documents what this route accepts, so a caller
  * who ignored the first header has somewhere to go from the second.
+ *
+ * Query-param names are attacker-controlled. `new URL()` percent-decodes
+ * them, so a key like `x%0D%0AInjected` arrives containing CR/LF and
+ * `Headers.set` throws on the illegal value — turning a harmless typo into
+ * a 500. Drop anything that is not a plausible parameter token.
  */
 export function unknownParamHeaders(unknown: string[], path: string): Record<string, string> {
-  if (unknown.length === 0) return {};
+  const safe = unknown.filter((name) => SAFE_PARAM_NAME_RE.test(name));
+  if (safe.length === 0) return {};
   return {
-    'X-Unknown-Params': unknown.join(','),
+    'X-Unknown-Params': safe.join(','),
     'X-Filter-Catalog': '/api/v1/filters',
-    'X-Note': `${unknown.join(', ')} ignored. See /api/v1/filters for accepted parameters on ${path}.`,
+    'X-Note': `${safe.join(', ')} ignored. See /api/v1/filters for accepted parameters on ${path}.`,
   };
 }
+
+/** Conservative param-name shape: letters, digits, `_`, `-`, `[`, `]`, `.`. */
+const SAFE_PARAM_NAME_RE = /^[A-Za-z0-9_.\-[\]]{1,128}$/;
 
 /** The `/api/v1/filters` payload. */
 export function buildFilterCatalogResponse(): Record<string, unknown> {

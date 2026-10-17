@@ -2295,7 +2295,6 @@ describe('OffSeq (loadOffseqIndex)', () => {
   });
 
   it('throws when the manifest is missing', async () => {
-    const { assets } = makeAssetsFixture();
     const empty = { fetch: vi.fn(async () => new Response('', { status: 404 })) } as unknown as Fetcher;
     await expect(loadOffseqIndex(empty)).rejects.toThrow(/sync-offseq\.mjs/);
   });
@@ -2370,7 +2369,6 @@ describe('CTIWatch (loadCtiwatchIndex)', () => {
   });
 
   it('throws when the manifest is missing', async () => {
-    const { assets } = makeAssetsFixture();
     const empty = { fetch: vi.fn(async () => new Response('', { status: 404 })) } as unknown as Fetcher;
     await expect(loadCtiwatchIndex(empty)).rejects.toThrow(/sync-ctiwatch\.mjs/);
   });

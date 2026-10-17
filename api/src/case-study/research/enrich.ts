@@ -144,6 +144,7 @@ export interface CveFacts {
   cvss?: { version: string; base_score: number; severity: string; vector: string };
   cwe: string[];
   products: string[];
+  affectedVersions?: string[];
   kev?: {
     in_kev: boolean;
     date_added?: string;
@@ -176,6 +177,7 @@ function toCveFacts(id: string, r: CveLookupResult): CveFacts {
       : undefined,
     cwe: r.cwe ?? [],
     products: productLabels(r.affected_products ?? r.products ?? []),
+    affectedVersions: r.affected_versions ?? [],
     kev: r.kev,
     epss: r.epss ? { score: r.epss.score, percentile: r.epss.percentile } : undefined,
     pocCount: r.poc?.count,

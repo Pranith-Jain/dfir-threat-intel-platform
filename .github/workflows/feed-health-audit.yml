@@ -20,7 +20,7 @@ on:
   schedule:
     # Monthly, off-peak. Feed rot is not minute-scale; the runtime already
     # surfaces a dead source via ?debug=1 and the degraded banner between runs.
-    - cron: "17 4 1 * *"
+    - cron: '17 4 1 * *'
   workflow_dispatch: {}
 
 concurrency:
@@ -43,7 +43,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
 
       # The audit script is dependency-free by design (no npm ci needed) —
       # it is run on a schedule by machines that have not installed anything.
@@ -73,4 +73,42 @@ jobs:
         if: steps.audit.outputs.exit != '0'
         run: |
           echo "::error::One or more registered IOC feeds are dead, stubbed, or returning HTML. See the run summary, then either re-point the URL, adopt a replacement, or add a RETIRED_FEEDS entry in api/src/lib/feed-curation.ts. Re-audit with: npm run audit:feeds"
+          exit 1
+
+  # The RSS catalog (src/data/rssFeeds.ts) is a separate registry from the IOC
+  # feeds above and had no automated check, which is how three distinct
+  # failures shipped at once: a host missing from the aggregator's copy of the
+  # fetch allowlist (blog.trailofbits.com → host_not_in_allowlist), feeds whose
+  # upstream returns a valid but EMPTY channel, and origins that refuse
+  # datacenter egress (403/429). Same exit-code contract as the IOC audit.
+  rss-catalog:
+    name: RSS catalog audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Dependency-free script, same contract as the IOC audit above: it exits
+      # non-zero so the run fails visibly, and always prints a report.
+      - name: Audit RSS catalog
+        id: audit
+        run: |
+          set +e
+          npm run --silent audit:feeds:rss | tee /tmp/rss-catalog.txt
+          echo "exit=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+          set -e
+
+      - name: Publish summary
+        if: always()
+        run: cat /tmp/rss-catalog.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail on broken catalog entry
+        if: steps.audit.outputs.exit != '0'
+        run: |
+          echo "::error::RSS catalog problem(s) — see the run summary. Fix the URL, allowlist the host in api/src/lib/feed-hosts.ts, or retire the feed (RETIRED_FEEDS in src/data/rssFeeds.ts). Re-run with: npm run audit:feeds:rss"
           exit 1

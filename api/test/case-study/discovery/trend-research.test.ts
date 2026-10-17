@@ -142,36 +142,6 @@ describe('discoverTrendResearch — KEV additions are the top signal', () => {
   });
 });
 
-describe('discoverTrendResearch — trending CVEs', () => {
-  it('emits a candidate for a high-hype trending CVE', async () => {
-    const self = selfStub({
-      '/api/v1/cve-trends': {
-        cves: [
-          {
-            id: 'CVE-2099-0200',
-            rank: 1,
-            hype_score: 13,
-            description: 'Synthetic remote code execution in a widely deployed appliance.',
-          },
-        ],
-      },
-    });
-    const out = await discoverTrendResearch({ now: NOW, getDedup: noDedup, self, internalTokenSecret: 'secret' });
-    expect(out).toHaveLength(1);
-    expect(out[0]?.type).toBe('vulnfaq');
-    expect(out[0]?.evidence.hypeScore).toBe(13);
-    expect(out[0]?.title).toContain('CVE-2099-0200');
-  });
-
-  it('ignores a trending row with no CVE id', async () => {
-    const self = selfStub({
-      '/api/v1/cve-trends': { cves: [{ id: 'not-a-cve', rank: 1, hype_score: 9 }] },
-    });
-    const out = await discoverTrendResearch({ now: NOW, getDedup: noDedup, self, internalTokenSecret: 'secret' });
-    expect(out).toEqual([]);
-  });
-});
-
 describe('discoverTrendResearch — grounding gate', () => {
   it('drops a candidate whose source URL does not verify', async () => {
     // A writeup URL that the link checker cannot confirm is exactly where a

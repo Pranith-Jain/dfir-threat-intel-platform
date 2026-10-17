@@ -20,7 +20,7 @@ import type { Context } from 'hono';
 import type { Env } from '../env';
 import { badRequest, internalError } from '../lib/api-error';
 import { analyzeUrlSignals, calculateUrlRisk, type UrlRiskInput } from '../lib/url-risk';
-import { ADAPTERS, buildProviderEnv, PROVIDER_TIMEOUT_MS } from '../providers';
+import { ADAPTERS, buildProviderEnv, PROVIDER_TIMEOUT_MS, providerTimeoutMs } from '../providers';
 import type { Indicator, ProviderId, ProviderResult } from '../providers/types';
 import { ProviderCache } from '../lib/cache';
 import { isCircuitOpen, recordProviderFailure, recordProviderSuccess } from '../lib/circuit-breaker';
@@ -110,6 +110,8 @@ export async function urlRiskAnalyzeHandler(c: Context<{ Bindings: Env }>): Prom
     }
 
     const hostname = parsed.hostname.toLowerCase();
+    // Route-level budget for the local RDAP/DNS work below; each provider
+    // gets its own budget inside runAdapter (see providerTimeoutMs).
     const signal = AbortSignal.timeout(PROVIDER_TIMEOUT_MS);
     const providerEnv = buildProviderEnv(c.env);
     const cache = new ProviderCache(c.env.KV_CACHE as KVNamespace | undefined);
@@ -127,7 +129,7 @@ export async function urlRiskAnalyzeHandler(c: Context<{ Bindings: Env }>): Prom
         return cached;
       }
       try {
-        const r = await ADAPTERS[p](ind, providerEnv, signal);
+        const r = await ADAPTERS[p](ind, providerEnv, AbortSignal.timeout(providerTimeoutMs(p)));
         if (r.status === 'ok') {
           cache.stageBatched(p, ind, r);
           await recordProviderSuccess(p);

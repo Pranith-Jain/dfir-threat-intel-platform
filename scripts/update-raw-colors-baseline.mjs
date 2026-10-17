@@ -48,7 +48,18 @@ try {
     // `--rule` re-enables the one rule on top of the flat config, where it is
     // currently registered as 'off'. No `--no-eslintrc`: this project uses flat
     // config, where that flag does not exist.
-    ['eslint', 'src', '--format', 'json', '--rule', '{"no-raw-colors/no-raw-colors":"warn"}'],
+    // `--concurrency=auto` splits the scan across worker threads. This one scan
+    // dominates the unit-test suite's wall time (~137s single-threaded); the
+    // JSON output shape is identical.
+    [
+      'eslint',
+      'src',
+      '--format',
+      'json',
+      '--concurrency=auto',
+      '--rule',
+      '{"no-raw-colors/no-raw-colors":"warn"}',
+    ],
     { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] },
   );
 } catch (err) {

@@ -2,6 +2,7 @@ import type { Context } from 'hono';
 import { getSiteUrl } from '../lib/site-config';
 
 import { logError } from '../lib/logger';
+import { unwrapBingNewsLink } from '../lib/rss-parser';
 
 function corsHeaders(c: Context): Record<string, string> {
   return {
@@ -20,6 +21,27 @@ async function fetchWithTimeout(url: string, timeoutMs = 10000, init?: RequestIn
     clearTimeout(id);
   }
 }
+
+/**
+ * Bing News search RSS for `query` (already space/`+`-encoded by callers).
+ * Was news.google.com/rss/search, which 503s Cloudflare Worker egress IPs
+ * (rate limited) — both handlers below returned zero items in production.
+ *
+ * `qft=interval="7"` is measured, not guessed (2026-10-16): for these
+ * multi-term conflict queries Bing returns **0 items** with a 1-day window and
+ * relevance-ranked 4-month-old articles with 30 days. 7 days is the only window
+ * that both filters and fills. If these cards ever go quiet, re-probe the
+ * window before assuming the queries are too narrow.
+ */
+function bingNewsRssUrl(query: string): string {
+  return `https://www.bing.com/news/search?q=${query}&format=RSS&mkt=en-US&qft=interval%3d%227%22`;
+}
+
+/**
+ * Bing wraps every item link in an apiclick.aspx redirect with the real
+ * target in `?url=`; `unwrapBingNewsLink` (lib/rss-parser.ts) resolves it so
+ * alert rows link straight to the publisher.
+ */
 
 function j(v: unknown): Record<string, unknown> {
   return v && typeof v === 'object' ? (v as Record<string, unknown>) : {};
@@ -176,7 +198,7 @@ export async function ironsightFlightsHandler(c: Context) {
   }
 }
 
-/** Proxy: Google News RSS for strikes */
+/** Proxy: Bing News RSS for strikes */
 export async function ironsightStrikesHandler(c: Context) {
   try {
     const queries = ['Iran+Israel+missile+strike+intercept', 'Iran+Israel+drone+attack+rocket'];
@@ -184,13 +206,15 @@ export async function ironsightStrikesHandler(c: Context) {
     const all: Array<Record<string, unknown>> = [];
     for (const q of queries) {
       try {
-        const res = await fetchWithTimeout(`https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`, 8000);
+        const res = await fetchWithTimeout(bingNewsRssUrl(q), 8000);
         if (!res.ok) continue;
         const text = await res.text();
         const items = text.match(/<item>([\s\S]*?)<\/item>/g) || [];
         for (const item of items.slice(0, 12)) {
           const title = (item.match(/<title>([\s\S]*?)<\/title>/)?.[1] || '').replace(/<!\[CDATA\[|\]\]>/g, '');
-          const link = (item.match(/<link>([\s\S]*?)<\/link>/)?.[1] || '').replace(/<!\[CDATA\[|\]\]>/g, '');
+          const link = unwrapBingNewsLink(
+            (item.match(/<link>([\s\S]*?)<\/link>/)?.[1] || '').replace(/<!\[CDATA\[|\]\]>/g, '')
+          );
           const pubDate = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1] || '';
           const t = title.toLowerCase();
           let category = 'REPORT';
@@ -222,7 +246,7 @@ export async function ironsightStrikesHandler(c: Context) {
             category,
             severity,
             title: title.substring(0, 120),
-            source: 'Google News',
+            source: 'Bing News',
             url: link,
             country,
           });
@@ -249,7 +273,7 @@ export async function ironsightStrikesHandler(c: Context) {
   }
 }
 
-/** Proxy: Regional threat monitor (Google News RSS per country) */
+/** Proxy: Regional threat monitor (Bing News RSS per country) */
 export async function ironsightRegionalHandler(c: Context) {
   try {
     const queries = [
@@ -279,7 +303,7 @@ export async function ironsightRegionalHandler(c: Context) {
     const alerts: RegionalAlert[] = [];
     for (const { country, q, flag, color } of queries) {
       try {
-        const res = await fetchWithTimeout(`https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`, 6000);
+        const res = await fetchWithTimeout(bingNewsRssUrl(q), 6000);
         if (!res.ok) {
           alerts.push({ name: country, flag, color, events: [], level: 'CLEAR' });
           continue;
@@ -291,14 +315,16 @@ export async function ironsightRegionalHandler(c: Context) {
           const title = (item.match(/<title>([\s\S]*?)<\/title>/)?.[1] || '')
             .replace(/<!\[CDATA\[|\]\]>/g, '')
             .substring(0, 120);
-          const link = (item.match(/<link>([\s\S]*?)<\/link>/)?.[1] || '').replace(/<!\[CDATA\[|\]\]>/g, '');
+          const link = unwrapBingNewsLink(
+            (item.match(/<link>([\s\S]*?)<\/link>/)?.[1] || '').replace(/<!\[CDATA\[|\]\]>/g, '')
+          );
           const pubDate = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1] || '';
           const t = title.toLowerCase();
           let severity: 'critical' | 'high' | 'medium' | 'low' = 'low';
           if (t.match(/missile|ballistic|nuclear/)) severity = 'critical';
           else if (t.match(/strike|attack|bombing|rocket/)) severity = 'high';
           else if (t.match(/tension|warning|alert/)) severity = 'medium';
-          return { title, source: 'Google News', time: pubDate || new Date().toISOString(), url: link, severity };
+          return { title, source: 'Bing News', time: pubDate || new Date().toISOString(), url: link, severity };
         });
         const level = events.some((e) => e.severity === 'critical')
           ? 'CRITICAL'

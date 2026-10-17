@@ -7,22 +7,67 @@ const OUT_FILE = 'reddit-feed.json';
 
 // Keep in sync with api/src/routes/reddit-feed.ts
 const SUBS = [
-  { name: 'netsec', label: 'r/netsec', blurb: 'Practical netsec — research, advisories, deep-dives', topic: 'research' },
+  {
+    name: 'netsec',
+    label: 'r/netsec',
+    blurb: 'Practical netsec — research, advisories, deep-dives',
+    topic: 'research',
+  },
   { name: 'cybersecurity', label: 'r/cybersecurity', blurb: 'General cybersec news + career', topic: 'news' },
   { name: 'blueteamsec', label: 'r/blueteamsec', blurb: 'Defensive security — DFIR, hunting, IR', topic: 'blue-team' },
   { name: 'redteamsec', label: 'r/redteamsec', blurb: 'Red team tradecraft + offensive research', topic: 'red-team' },
   { name: 'AskNetsec', label: 'r/AskNetsec', blurb: 'Q&A — practical netsec problems', topic: 'help' },
   { name: 'Malware', label: 'r/Malware', blurb: 'Malware analysis + reverse engineering', topic: 'malware' },
-  { name: 'ReverseEngineering', label: 'r/ReverseEngineering', blurb: 'RE — IDA, Ghidra, binary internals, CTFs', topic: 'malware' },
-  { name: 'computerforensics', label: 'r/computerforensics', blurb: 'Digital forensics — disk, memory, mobile, cloud', topic: 'blue-team' },
+  {
+    name: 'ReverseEngineering',
+    label: 'r/ReverseEngineering',
+    blurb: 'RE — IDA, Ghidra, binary internals, CTFs',
+    topic: 'malware',
+  },
+  {
+    name: 'computerforensics',
+    label: 'r/computerforensics',
+    blurb: 'Digital forensics — disk, memory, mobile, cloud',
+    topic: 'blue-team',
+  },
   { name: 'OSINT', label: 'r/OSINT', blurb: 'Open-source intelligence tradecraft', topic: 'osint' },
   { name: 'threatintel', label: 'r/threatintel', blurb: 'CTI — actors, campaigns, IOCs', topic: 'research' },
-  { name: 'crowdstrike', label: 'r/crowdstrike', blurb: 'CrowdStrike Falcon user community, detections', topic: 'blue-team' },
-  { name: 'AzureSentinel', label: 'r/AzureSentinel', blurb: 'Microsoft Sentinel — KQL hunts, content packs', topic: 'blue-team' },
-  { name: 'Scams', label: 'r/Scams', blurb: 'Largest scam-victim community — fresh-scam reporting + advice', topic: 'scams' },
-  { name: 'IdentityTheft', label: 'r/IdentityTheft', blurb: 'ID theft + credit-card-fraud victim reports, recovery tradecraft', topic: 'scams' },
-  { name: 'phishing', label: 'r/phishing', blurb: 'Phishing-campaign samples + analysis · educator-friendly', topic: 'scams' },
-  { name: 'scambait', label: 'r/scambait', blurb: 'Scam-baiting community — surfaces fresh fraud playbooks + tactics in real-time', topic: 'scams' },
+  {
+    name: 'crowdstrike',
+    label: 'r/crowdstrike',
+    blurb: 'CrowdStrike Falcon user community, detections',
+    topic: 'blue-team',
+  },
+  {
+    name: 'AzureSentinel',
+    label: 'r/AzureSentinel',
+    blurb: 'Microsoft Sentinel — KQL hunts, content packs',
+    topic: 'blue-team',
+  },
+  {
+    name: 'Scams',
+    label: 'r/Scams',
+    blurb: 'Largest scam-victim community — fresh-scam reporting + advice',
+    topic: 'scams',
+  },
+  {
+    name: 'IdentityTheft',
+    label: 'r/IdentityTheft',
+    blurb: 'ID theft + credit-card-fraud victim reports, recovery tradecraft',
+    topic: 'scams',
+  },
+  {
+    name: 'phishing',
+    label: 'r/phishing',
+    blurb: 'Phishing-campaign samples + analysis · educator-friendly',
+    topic: 'scams',
+  },
+  {
+    name: 'scambait',
+    label: 'r/scambait',
+    blurb: 'Scam-baiting community — surfaces fresh fraud playbooks + tactics in real-time',
+    topic: 'scams',
+  },
 ];
 
 const CONCURRENCY = 1;
@@ -67,6 +112,25 @@ const MASS_THROTTLE_ABORT_AFTER = 3;
 const MAX_RUN_MS = 20 * 60_000;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Time-slot rotation of the fetch order.
+ *
+ * When Reddit throttles the runner the run hits MAX_RUN_MS and publishes a
+ * partial feed — but with a FIXED order that partial feed is always the same
+ * prefix, so the tail subs (r/threatintel, r/Scams, r/phishing, r/scambait and
+ * the forensics set) were never fetched at all: every published feed listed
+ * exactly the same first 8-9 subs. Rotating the start offset per 30-minute
+ * slot (the workflow's cron interval) means consecutive runs truncate at a
+ * different point, so within a couple of runs every sub gets fetched early
+ * enough for its posts to reach the branch.
+ */
+const SLOT_MS = 30 * 60_000;
+
+function rotatedSubs(now = Date.now()) {
+  const offset = Math.floor(now / SLOT_MS) % SUBS.length;
+  return [...SUBS.slice(offset), ...SUBS.slice(0, offset)];
+}
 
 function normalizeTopic(t) {
   if (!['news', 'research', 'red-team', 'blue-team', 'osint', 'malware', 'help', 'scams'].includes(t)) {
@@ -206,7 +270,7 @@ async function buildFeed() {
   const subStatus = [];
   const allItems = [];
 
-  const queue = [...SUBS];
+  const queue = rotatedSubs();
   let consecutiveFails = 0;
   const startedAt = Date.now();
   async function worker() {
@@ -224,7 +288,13 @@ async function buildFeed() {
       } else {
         consecutiveFails = 0;
       }
-      subStatus.push({ name: spec.name, label: spec.label, topic: normalizeTopic(spec.topic), ok: r.ok, count: r.items.length });
+      subStatus.push({
+        name: spec.name,
+        label: spec.label,
+        topic: normalizeTopic(spec.topic),
+        ok: r.ok,
+        count: r.items.length,
+      });
       allItems.push(...r.items);
       if (queue.length > 0) {
         if (Date.now() - startedAt >= MAX_RUN_MS && allItems.length > 0) {

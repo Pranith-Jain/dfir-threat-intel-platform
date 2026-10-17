@@ -95,9 +95,9 @@ const THREAT_INTEL_FEED_URLS = [
  */
 const TECH_AI_FEED_URLS = [
   'https://techcrunch.com/category/artificial-intelligence/feed/',
-  'https://venturebeat.com/category/ai/feed/',
+  'https://www.bing.com/news/search?q=site%3Aventurebeat.com+AI&format=RSS&mkt=en-US',
   'https://techcrunch.com/category/security/feed/',
-  'https://news.google.com/rss/search?q=cybersecurity+funding&hl=en-US&gl=US&ceid=US:en',
+  'https://www.bing.com/news/search?q=cybersecurity+funding&format=RSS&mkt=en-US&qft=interval%3d%2230%22',
   'https://hnrss.org/newest?q=AI',
   'https://www.ycombinator.com/blog/rss',
 ];

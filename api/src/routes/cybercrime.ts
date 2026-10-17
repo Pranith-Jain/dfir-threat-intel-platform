@@ -4,6 +4,7 @@ import { logError } from '../lib/logger';
 import { fetchResilient } from '../lib/fetch-resilient';
 import { safeIso } from '../lib/safe-date';
 import { CYBERCRIME_SOURCES, type CybercrimeSource } from '../lib/cybercrime-sources';
+import { unwrapBingNewsLink } from '../lib/rss-parser';
 import { readLastGood, writeLastGood } from '../lib/lastgood';
 import { fetchAFDatamarkets } from '../lib/andreafortuna-feeds';
 
@@ -131,7 +132,9 @@ function parseRss(body: string, src: CybercrimeSource): CybercrimeItem[] {
     const block = m[1];
     if (!block) continue;
     const title = unwrap(/<title>([\s\S]*?)<\/title>/i.exec(block)?.[1]);
-    const link = unwrap(/<link>([\s\S]*?)<\/link>/i.exec(block)?.[1]);
+    // Entity-decode first (Bing click URLs carry `&amp;`), then resolve the
+    // redirector — several sources are Bing News mirrors.
+    const link = unwrapBingNewsLink(unwrap(/<link>([\s\S]*?)<\/link>/i.exec(block)?.[1]));
     const pubDate = unwrap(/<pubDate>([\s\S]*?)<\/pubDate>/i.exec(block)?.[1]);
     const description = unwrap(/<description>([\s\S]*?)<\/description>/i.exec(block)?.[1]);
     const tags = Array.from(block.matchAll(/<category[^>]*>([\s\S]*?)<\/category>/gi))

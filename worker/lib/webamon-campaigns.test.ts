@@ -21,7 +21,7 @@ describe('listCampaigns', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
-  it('builds the pro.webamon.com request with x-api-key + sort params', async () => {
+  it('builds the pro.webamon.com/v2 request with x-api-key + sort params', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
       json({ total_hits: 1, results: [{ campaign_id: 'c1', name: 'Kit A', unique_domains_total: 10 }] })
     );
@@ -30,18 +30,30 @@ describe('listCampaigns', () => {
     expect(r?.results[0]!.campaign_id).toBe('c1');
     const [url, init] = vi.mocked(globalThis.fetch).mock.calls[0]!;
     const u = String(url);
-    expect(u).toContain('https://pro.webamon.com/campaigns?');
+    expect(u).toContain('https://pro.webamon.com/v2/campaigns?');
     expect(u).toContain('size=25');
     expect(u).toContain('sort_by=delta_24h');
-    expect(u).toContain('order=desc');
+    expect(u).toContain('sort_order=desc');
     expect((init as RequestInit).headers).toMatchObject({ 'x-api-key': 'fake-key' });
   });
 
-  it('returns null on a 4xx auth error without retrying', async () => {
+  it('falls back to the legacy bare path when /v2 rejects the key', async () => {
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(json({ message: 'Unauthorized' }, 401))
+      .mockResolvedValueOnce(json({ total_hits: 1, results: [{ campaign_id: 'c9' }] }));
+    const r = await listCampaigns(env);
+    expect(r?.results[0]!.campaign_id).toBe('c9');
+    const urls = vi.mocked(globalThis.fetch).mock.calls.map((c) => String(c[0]));
+    expect(urls[0]).toContain('https://pro.webamon.com/v2/campaigns');
+    expect(urls[1]).toBe('https://pro.webamon.com/campaigns?size=25&sort_by=delta_24h&sort_order=desc');
+  });
+
+  it('returns null when every base rejects the key', async () => {
     const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(json({ message: 'Forbidden' }, 403));
     const r = await listCampaigns(env);
     expect(r).toBeNull();
-    expect(spy).toHaveBeenCalledTimes(1);
+    // One attempt per base — no retry loop on an auth rejection.
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 });
 

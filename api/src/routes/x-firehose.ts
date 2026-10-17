@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';
+import { requireAdmin } from '../lib/admin-auth';
 import { badRequest, badGateway, tooManyRequests } from '../lib/api-error';
 import {
   fetchAuthedTimeline,
@@ -43,7 +44,12 @@ export async function xFirehoseHandler(c: Context<{ Bindings: Env }>): Promise<R
     // Deep probe: live canary fetch that classifies auth + query-ID health.
     // Opt-in (?status=deep) so the cheap config-only probe stays the default
     // for the XWatch mount check and adds no upstream rate-limit pressure.
+    // It spends the operator's X credentials on a canary fetch (and its result
+    // discloses credential health), so it is admin-only — the only consumer is
+    // the admin XCookiesTab, which carries the admin session cookie.
     if (c.req.query('status') === 'deep') {
+      const gate = requireAdmin(c);
+      if ('error' in gate) return gate.error;
       const health = await checkXHealth(c.env);
       const ok = health.auth === 'ok' && health.qids !== 'stale';
       return c.json({ ok, configured: health.auth !== 'missing', ...health }, 200, { 'cache-control': 'no-store' });

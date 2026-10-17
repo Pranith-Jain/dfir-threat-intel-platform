@@ -22,8 +22,8 @@ const ALLOWED_RSS = new Set([
   'https://www.microsoft.com/en-us/security/blog/feed/',
   'https://securelist.com/feed/',
   // BleepingComputer 403s datacenter egress (Cloudflare bot challenge) —
-  // serve its Google News mirror instead.
-  'https://news.google.com/rss/search?q=site:bleepingcomputer.com&hl=en-US&gl=US&ceid=US:en',
+  // serve its Bing News mirror instead (news.google.com 503s Worker egress).
+  'https://www.bing.com/news/search?q=site%3Ableepingcomputer.com&format=RSS&mkt=en-US',
   'https://www.darkreading.com/feeds/rss.xml',
   'https://krebsonsecurity.com/feed/',
   'https://feeds.feedburner.com/TheHackersNews',

@@ -26,6 +26,13 @@ import { REDDIT_FEED_CACHE_KEY } from './reddit-feed';
 
 export const STEALER_FORUM_INTEL_CACHE_KEY = 'https://stealer-forum-intel-cache.internal/v13-no-debug';
 const CACHE_TTL_SECONDS = 30 * 60;
+/**
+ * TTL for a build whose chatter sources were missing from this colo's cache.
+ * Short enough that the counters self-heal on the next request instead of
+ * showing a hard 0 for half an hour. Same idea as DEGRADED_TTL_SECONDS in
+ * deepdarkcti.
+ */
+const DEGRADED_TTL_SECONDS = 5 * 60;
 
 /** deepdarkCTI category labels that map to combo/stealer/forum tradecraft. */
 const FORUM_CATEGORIES = new Set(['Criminal Forums', 'Dark Markets', 'Infostealer Telegram', 'Threat-Actor Telegram']);
@@ -61,6 +68,14 @@ export interface StealerForumIntelResponse {
   forums: ForumGroup[];
   chatter: { telegram: ChatterBlock; reddit: ChatterBlock };
   totals: { tracked_sources: number; categories: number };
+  /**
+   * Build health. A `chatter-source-missing:<platform>` entry means that
+   * platform's feed wasn't in this colo's Cache API when the payload was
+   * built, so its `matches` count is 0-because-unavailable, not
+   * 0-because-nothing-matched. Consumers should surface it instead of
+   * rendering a bare zero.
+   */
+  warnings: string[];
 }
 
 async function _readCachedJson<T>(cacheKey: string): Promise<T | null> {
@@ -178,6 +193,10 @@ export async function buildStealerForumIntel(env: Env, ctx: ExecutionContext): P
   }
 
   const trackedSources = forums.reduce((s, g) => s + g.count, 0);
+  const warnings: string[] = [];
+  if (!tg) warnings.push('chatter-source-missing:telegram (feed not in this colo cache)');
+  if (!rd) warnings.push('chatter-source-missing:reddit (feed not in this colo cache)');
+
   return {
     generated_at: new Date().toISOString(),
     forums,
@@ -186,6 +205,7 @@ export async function buildStealerForumIntel(env: Env, ctx: ExecutionContext): P
       reddit: { matches: rdMatches, samples: rdSamples },
     },
     totals: { tracked_sources: trackedSources, categories: forums.length },
+    warnings,
   };
 }
 
@@ -200,11 +220,28 @@ export async function stealerForumIntelHandler(c: Context<{ Bindings: Env }>): P
     c.executionCtx as unknown as Parameters<typeof buildStealerForumIntel>[1]
   );
   const cacheable = body.forums.length > 0 || body.chatter.telegram.matches > 0 || body.chatter.reddit.matches > 0;
+
+  // Degraded build → short TTL, so a missing chatter source self-heals on the
+  // next request instead of pinning zeros for the full window.
+  //
+  // The chatter counts are read from the per-colo Cache-API entries that the
+  // telegram-feed and reddit-feed producers write. On a colo where neither has
+  // been requested yet both reads miss, `matches` stays 0, and — because the
+  // deepdarkCTI forum rows are non-empty — that zero-chatter payload was still
+  // cacheable for the full CACHE_TTL_SECONDS. Readers then saw "0 matches",
+  // which reads as "no stealer chatter exists" rather than "this colo's cache
+  // was cold when it was built". Measured 2026-10-16: the live endpoint
+  // reported 0/0 while the underlying feeds held 2 telegram and 4 reddit
+  // matching items. Same approach as `ttlFor()` in deepdarkcti.
+  const chatterMissing = body.warnings.some((w) => w.startsWith('chatter-source-missing'));
+  const maxAge = chatterMissing ? DEGRADED_TTL_SECONDS : CACHE_TTL_SECONDS;
+
   const response = new Response(JSON.stringify(body), {
     status: 200,
     headers: {
       'content-type': 'application/json',
-      'cache-control': cacheable ? `public, max-age=${CACHE_TTL_SECONDS}` : 'no-store',
+      'cache-control': cacheable ? `public, max-age=${maxAge}` : 'no-store',
+      ...(chatterMissing ? { 'x-si-stale': 'chatter-source-missing' } : {}),
     },
   });
   if (cacheable) c.executionCtx.waitUntil(cache.put(cacheReq, response.clone()));
