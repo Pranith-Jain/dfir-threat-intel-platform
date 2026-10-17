@@ -210,6 +210,15 @@ jobs:
 
           # ── F. typecheck gate (the three tsc projects) ────────────────
           npm ci --no-fund --silent || npm install --no-fund --silent
+          # api/tsconfig.json declares `types: ['@cloudflare/vitest-pool-workers']`
+          # and api/tsconfig.worker.json adds `node`; both resolve out of
+          # api/node_modules. There are no npm workspaces, so the root install
+          # above does NOT create that directory and the api + worker projects
+          # fail with TS2688 "Cannot find type definition file" — a false
+          # regression that fired #338 the first time root lost its own copy of
+          # the type package. ci.yml's TypeScript job installs api deps for the
+          # same reason; mirror it here so F measures real type errors.
+          (cd api && npm ci --no-fund --silent --legacy-peer-deps || npm install --no-fund --silent --legacy-peer-deps)
           # One entry per project, tab-separated: <label>\t<project-path|NONE>.
           # A plain `for proj in ... -p api/x.json` word-splits on spaces, so the
           # loop body received a bare `-p` and tsc failed with
