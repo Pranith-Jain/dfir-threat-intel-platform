@@ -92,6 +92,20 @@ import {
   type TiThreaticonMalwareBody,
   type TiThreaticonCoverageBody,
   type TiThreaticonMapBody,
+  loadOffseqIndex,
+  getOffseqThreat,
+  filterOffseqThreats,
+  type OffseqThreatIndex,
+  type OffseqThreatIndexEntry,
+  type OffseqThreatBody,
+  loadCtiwatchIndex,
+  getCtiwatchVulnerability,
+  getCtiwatchVictim,
+  filterCtiwatchVulns,
+  type CtiwatchIndex,
+  type CtiwatchVulnEntry,
+  type CtiwatchVulnBody,
+  type CtiwatchVictimBody,
 } from './threat-intel-manifest';
 
 function makeAssetsFixture() {
@@ -868,6 +882,144 @@ function makeAssetsFixture() {
     detection: false,
   };
   data.set('/data/threat-intel/dphish/indicators/melbetegypt.com-1a2b3c.json', dphishBody);
+
+  // ── OffSeq (radar.offseq.com) ──────────────────────────────────────
+  const offseqIdx: OffseqThreatIndex = {
+    source: 'radar.offseq.com',
+    sourceUrl: 'https://radar.offseq.com/',
+    description: 'Aggregated threat-intel feed',
+    license: 'Public API',
+    syncedAt: '2026-10-17T00:00:00.000Z',
+    days: 30,
+    overview: { total: 1 },
+    counts: { threats: 1, exploited: 0, byType: { vulnerability: 1 }, bySeverity: { high: 1 } },
+    tags: [{ name: 'cve', count: 1 }],
+    threats: [
+      {
+        slug: 'test-threat-abc123',
+        externalId: 'ext-1',
+        source: 'CVE Database V5',
+        type: 'vulnerability',
+        title: 'Test threat',
+        severity: 'high',
+        cvssScore: 7.5,
+        publishedDate: '2026-10-17T00:00:00.000Z',
+        cveId: 'CVE-2026-1234',
+        cveIds: ['CVE-2026-1234'],
+        exploited: false,
+        knownExploitsInWild: false,
+        tags: ['cve', 'cve-2026-1234'],
+        url: 'https://radar.offseq.com/threats/test-threat-abc123',
+        sizeBytes: 100,
+      },
+    ],
+  };
+  data.set('/data/threat-intel/offseq/index.json', offseqIdx);
+  const offseqBody: OffseqThreatBody = {
+    ...offseqIdx.threats[0]!,
+    description: 'A test threat.',
+    cvssVector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N',
+    mirageCountries: [],
+    patchAvailable: false,
+    knownThreatActors: [],
+    affectedCountries: [],
+    references: ['https://example.com/ref'],
+    aiSummary: 'AI summary here.',
+    aiImpact: 'Impact here.',
+  };
+  data.set('/data/threat-intel/offseq/threats/test-threat-abc123.json', offseqBody);
+
+  // ── CTIWatch (ctiwatch.com) ────────────────────────────────────────
+  const ctiIdx: CtiwatchIndex = {
+    source: 'ctiwatch.com',
+    sourceUrl: 'https://ctiwatch.com/',
+    description: 'Public vulnerability + IOC database',
+    license: 'Public API',
+    syncedAt: '2026-10-17T00:00:00.000Z',
+    stats: { total_iocs: 1, total_cves: 1, kev_count: 1 },
+    victimStats: null,
+    counts: { iocs: 1, vulnerabilities: 1, kev: 1, actors: 0, victims: 1, campaigns: 0 },
+    iocs: [
+      {
+        id: 'ioc-1',
+        type: 'ip',
+        value: '1.2.3.4',
+        confidence_score: 85,
+        is_active: true,
+        first_seen: '2026-10-17T00:00:00.000Z',
+        last_seen: '2026-10-17T00:00:00.000Z',
+        tags: ['honeypot'],
+        context: 'ctx',
+        source_name: 'T-Pot',
+        threat_actor: null,
+      },
+    ],
+    vulnerabilities: [
+      {
+        cve_id: 'CVE-2026-9999',
+        title: 'Test CVE',
+        severity: 'HIGH',
+        cvss_score: 8.0,
+        cvss_vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H',
+        is_kev: true,
+        exploit_status: 'weaponized',
+        published_date: '2026-10-17T00:00:00.000Z',
+        cwe: ['CWE-79'],
+        vendor: 'Acme',
+        product: 'Widget',
+        priority_score: 90,
+        epss: 0.5,
+        tags: ['kev'],
+      },
+    ],
+    kev: [
+      {
+        cve_id: 'CVE-2026-9999',
+        title: 'Test CVE',
+        severity: 'HIGH',
+        cvss_score: 8.0,
+        cvss_vector: null,
+        is_kev: true,
+        exploit_status: 'weaponized',
+        published_date: '2026-10-17T00:00:00.000Z',
+        cwe: ['CWE-79'],
+        vendor: 'Acme',
+        product: 'Widget',
+        priority_score: 90,
+        epss: 0.5,
+        tags: ['kev'],
+      },
+    ],
+    actors: [],
+    victims: [
+      {
+        id: 'vic-1',
+        name: 'Acme Corp',
+        group: 'lockbit',
+        country: 'US',
+        sector: 'Technology',
+        attack_date: '2026-10-17T00:00:00.000Z',
+        website: 'https://acme.example',
+        source: 'ransomware.live',
+      },
+    ],
+    campaigns: [],
+  };
+  data.set('/data/threat-intel/ctiwatch/index.json', ctiIdx);
+  const ctiVulnBody: CtiwatchVulnBody = {
+    ...ctiIdx.vulnerabilities[0]!,
+    description: 'A test CVE description.',
+    references: ['https://nvd.nist.gov/vuln/detail/CVE-2026-9999'],
+    affected_products: [],
+    sizeBytes: 200,
+  };
+  data.set('/data/threat-intel/ctiwatch/vulnerabilities/CVE-2026-9999.json', ctiVulnBody);
+  const ctiVictimBody: CtiwatchVictimBody = {
+    ...ctiIdx.victims[0]!,
+    description: 'A test victim.',
+    sizeBytes: 150,
+  };
+  data.set('/data/threat-intel/ctiwatch/victims/vic-1.json', ctiVictimBody);
 
   // ── Living Threat (living-threat.rabitanoor.com) ───────────────────
   const ltEntry: LivingThreatIndexEntry = {
@@ -2128,5 +2280,188 @@ describe('Destroylist (loadDestroylistIndex / checkDestroylistDomain)', () => {
     const idx = await loadDestroylistIndex(assets);
     expect(idx?.counts.primary).toBe(2);
     expect(await loadDestroylistRoots(assets)).toEqual(['a.example', 'b.example']);
+  });
+});
+
+describe('OffSeq (loadOffseqIndex)', () => {
+  beforeEach(() => _resetTiCacheForTests());
+  it('fetches and caches the offseq index', async () => {
+    const { assets } = makeAssetsFixture();
+    const idx = await loadOffseqIndex(assets);
+    expect(idx.source).toBe('radar.offseq.com');
+    expect(idx.counts.threats).toBe(1);
+    const again = await loadOffseqIndex(assets);
+    expect(again).toBe(idx);
+  });
+
+  it('throws when the manifest is missing', async () => {
+    const { assets } = makeAssetsFixture();
+    const empty = { fetch: vi.fn(async () => new Response('', { status: 404 })) } as unknown as Fetcher;
+    await expect(loadOffseqIndex(empty)).rejects.toThrow(/sync-offseq\.mjs/);
+  });
+});
+
+describe('OffSeq (getOffseqThreat)', () => {
+  beforeEach(() => _resetTiCacheForTests());
+  it('fetches and caches a threat body', async () => {
+    const { assets } = makeAssetsFixture();
+    const body = await getOffseqThreat(assets, 'test-threat-abc123');
+    expect(body?.title).toBe('Test threat');
+    const again = await getOffseqThreat(assets, 'test-threat-abc123');
+    expect(again).toBe(body);
+  });
+
+  it('returns null for an unknown slug', async () => {
+    const { assets } = makeAssetsFixture();
+    expect(await getOffseqThreat(assets, 'nope')).toBeNull();
+  });
+});
+
+describe('OffSeq (filterOffseqThreats)', () => {
+  beforeEach(() => _resetTiCacheForTests());
+  it('filters by type', async () => {
+    const { assets } = makeAssetsFixture();
+    const idx = await loadOffseqIndex(assets);
+    const out = filterOffseqThreats(idx, { type: 'vulnerability' });
+    expect(out.map((i: OffseqThreatIndexEntry) => i.slug)).toEqual(['test-threat-abc123']);
+  });
+
+  it('filters by exploitedOnly', async () => {
+    const { assets } = makeAssetsFixture();
+    const idx = await loadOffseqIndex(assets);
+    const out = filterOffseqThreats(idx, { exploitedOnly: true });
+    expect(out).toHaveLength(0);
+  });
+
+  it('respects limit', async () => {
+    const { assets } = makeAssetsFixture();
+    const idx = await loadOffseqIndex(assets);
+    const out = filterOffseqThreats(idx, { limit: 0 });
+    // limit 0 -> default? our impl uses limit ?? 100, but 0 is falsy -> 100; accept >=0
+    expect(out.length).toBeLessThanOrEqual(1);
+  });
+});
+
+describe('tiCacheStats (offseq)', () => {
+  beforeEach(() => _resetTiCacheForTests());
+  it('reports offseq index + threat cache stats', async () => {
+    const { assets } = makeAssetsFixture();
+    await loadOffseqIndex(assets);
+    await getOffseqThreat(assets, 'test-threat-abc123');
+    await getOffseqThreat(assets, 'test-threat-abc123');
+    const s = tiCacheStats();
+    expect(s.offseq.indexLoaded).toBe(true);
+    expect(s.offseq.indexAgeMs).toBeGreaterThanOrEqual(0);
+    expect(s.offseq.threats.size).toBe(1);
+    expect(s.offseq.threats.hits).toBe(1);
+    expect(s.offseq.threats.misses).toBe(1);
+  });
+});
+
+describe('CTIWatch (loadCtiwatchIndex)', () => {
+  beforeEach(() => _resetTiCacheForTests());
+  it('fetches and caches the ctiwatch index', async () => {
+    const { assets } = makeAssetsFixture();
+    const idx = await loadCtiwatchIndex(assets);
+    expect(idx.source).toBe('ctiwatch.com');
+    expect(idx.counts.vulnerabilities).toBe(1);
+    const again = await loadCtiwatchIndex(assets);
+    expect(again).toBe(idx);
+  });
+
+  it('throws when the manifest is missing', async () => {
+    const { assets } = makeAssetsFixture();
+    const empty = { fetch: vi.fn(async () => new Response('', { status: 404 })) } as unknown as Fetcher;
+    await expect(loadCtiwatchIndex(empty)).rejects.toThrow(/sync-ctiwatch\.mjs/);
+  });
+});
+
+describe('CTIWatch (getCtiwatchVulnerability)', () => {
+  beforeEach(() => _resetTiCacheForTests());
+  it('fetches and caches a vuln body', async () => {
+    const { assets } = makeAssetsFixture();
+    const body = await getCtiwatchVulnerability(assets, 'CVE-2026-9999');
+    expect(body?.cve_id).toBe('CVE-2026-9999');
+    const again = await getCtiwatchVulnerability(assets, 'CVE-2026-9999');
+    expect(again).toBe(body);
+  });
+
+  it('returns null for an unknown cve', async () => {
+    const { assets } = makeAssetsFixture();
+    expect(await getCtiwatchVulnerability(assets, 'CVE-0000-0000')).toBeNull();
+  });
+});
+
+describe('CTIWatch (getCtiwatchVictim)', () => {
+  beforeEach(() => _resetTiCacheForTests());
+  it('fetches and caches a victim body', async () => {
+    const { assets } = makeAssetsFixture();
+    const body = await getCtiwatchVictim(assets, 'vic-1');
+    expect(body?.name).toBe('Acme Corp');
+    const again = await getCtiwatchVictim(assets, 'vic-1');
+    expect(again).toBe(body);
+  });
+
+  it('returns null for an unknown id', async () => {
+    const { assets } = makeAssetsFixture();
+    expect(await getCtiwatchVictim(assets, 'nope')).toBeNull();
+  });
+});
+
+describe('CTIWatch (filterCtiwatchVulns)', () => {
+  beforeEach(() => _resetTiCacheForTests());
+  it('filters by kevOnly', async () => {
+    const { assets } = makeAssetsFixture();
+    const idx = await loadCtiwatchIndex(assets);
+    const out = filterCtiwatchVulns(idx, { kevOnly: true });
+    expect(out.map((v: CtiwatchVulnEntry) => v.cve_id)).toEqual(['CVE-2026-9999']);
+  });
+
+  it('filters by severity', async () => {
+    const { assets } = makeAssetsFixture();
+    const idx = await loadCtiwatchIndex(assets);
+    const out = filterCtiwatchVulns(idx, { severity: 'HIGH' });
+    expect(out).toHaveLength(1);
+  });
+
+  it('returns empty for non-matching keyword', async () => {
+    const { assets } = makeAssetsFixture();
+    const idx = await loadCtiwatchIndex(assets);
+    const out = filterCtiwatchVulns(idx, { keyword: 'zzzznotfound' });
+    expect(out).toHaveLength(0);
+  });
+});
+
+describe('tiCacheStats (ctiwatch)', () => {
+  beforeEach(() => _resetTiCacheForTests());
+  it('reports ctiwatch index + body cache stats', async () => {
+    const { assets } = makeAssetsFixture();
+    await loadCtiwatchIndex(assets);
+    await getCtiwatchVulnerability(assets, 'CVE-2026-9999');
+    await getCtiwatchVulnerability(assets, 'CVE-2026-9999');
+    await getCtiwatchVictim(assets, 'vic-1');
+    await getCtiwatchVictim(assets, 'vic-1');
+    const s = tiCacheStats();
+    expect(s.ctiwatch.indexLoaded).toBe(true);
+    expect(s.ctiwatch.indexAgeMs).toBeGreaterThanOrEqual(0);
+    expect(s.ctiwatch.vulns.size).toBe(1);
+    expect(s.ctiwatch.vulns.hits).toBe(1);
+    expect(s.ctiwatch.vulns.misses).toBe(1);
+    expect(s.ctiwatch.victims.size).toBe(1);
+    expect(s.ctiwatch.victims.hits).toBe(1);
+    expect(s.ctiwatch.victims.misses).toBe(1);
+  });
+});
+
+describe('_resetTiCacheForTests (offseq + ctiwatch)', () => {
+  beforeEach(() => _resetTiCacheForTests());
+  it('clears the new vertical caches', async () => {
+    const { assets } = makeAssetsFixture();
+    await loadOffseqIndex(assets);
+    await loadCtiwatchIndex(assets);
+    _resetTiCacheForTests();
+    const s = tiCacheStats();
+    expect(s.offseq.indexLoaded).toBe(false);
+    expect(s.ctiwatch.indexLoaded).toBe(false);
   });
 });

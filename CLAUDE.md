@@ -455,6 +455,56 @@ script), provider `api/src/providers/destroylist.ts`, routes in
 `api/src/routes/threat-intel-edge-tools.ts`, SPA `src/pages/threatintel/
 Destroylist.tsx`. Daily sync rides `.github/workflows/threat-intel-sync.yml`.
 
+## OffSeq Threat Radar + CTIWatch — Aggregated Threat-Intel Feeds
+
+Two replicated verticals added 2026-10-17, plus live integrations:
+
+- **OffSeq Threat Radar** (`radar.offseq.com`): aggregated feed (~40 upstream
+  sources: NCSC UK, JVN, AWS, GCP, CERT/CC, Talos, Unit 42, OTX, ThreatFox MISP,
+  Reddit subs, CVEs, …) with AI-enriched summaries, KEV correlation and Mirage
+  honeypot exploitation telemetry. Public anonymous API (`/api/threats`,
+  `/tags`, `/stats/overview`, `/countries/map`) + `/rss.xml` + live socket;
+  documented commercial tier at `/api/v1` with `X-API-Key`. Anonymous tier
+  advertises ~100 req/window.
+  - Sync: `scripts/sync-offseq.mjs` (8 pages × 25 = 200 recent threats + tags +
+    overview) → `threat-intel-staging/offseq/offseq.json`
+  - Build: `scripts/build-offseq.mjs` → `public/data/threat-intel/offseq/`
+    (`index.json` + `threats/<slug>.json`)
+  - 2 MCP tools: `ti_list_offseq_threats`, `ti_get_offseq_threat`
+  - 3 REST routes: `/threat-intel/offseq`, `/threat-intel/offseq/threats`,
+    `/threat-intel/offseq/threats/:slug`
+  - SPA: `/threatintel/feeds/offseq`
+  - Live: feeds the 24h CVE digest (in-the-wild exploitation flags + AI
+    summaries keyed by CVE id; `offseq_count` + `offseq-radar` source row).
+
+- **CTIWatch** (`ctiwatch.com`): public vulnerability + IOC database (2M+ IOCs,
+  400k+ CVEs, 4k+ KEV, 10k+ threat actors, 35k+ victims). Public REST API at
+  `/api/v1`; anonymous session cookie minted by loading any HTML page (Max-Age
+  86400; client refreshes at 12h); free `X-Api-Key: ctw_…` lifts quotas. Docs:
+  `github.com/ctiwatch/docs` (`docs/en/api.md`).
+  - Sync: `scripts/sync-ctiwatch.mjs` (session bootstrap + stats, 300 IOCs,
+    200 recent CVEs + 100 KEV, 200 actors, 200 victims, 50 campaigns, victim
+    stats) → `threat-intel-staging/ctiwatch/ctiwatch.json`
+  - Build: `scripts/build-ctiwatch.mjs` → `public/data/threat-intel/ctiwatch/`
+    (`index.json` + `vulnerabilities/<CVE>.json` + `victims/<id>.json`; IOCs,
+    actors, campaigns served from index)
+  - 3 MCP tools: `ti_list_ctiwatch_vulns`, `ti_get_ctiwatch_vuln`,
+    `ti_get_ctiwatch_victim`
+  - 4 REST routes: `/threat-intel/ctiwatch`,
+    `/threat-intel/ctiwatch/vulnerabilities` (+ `?kev`, `?severity`, `?q`),
+    `/threat-intel/ctiwatch/vulnerabilities/:cveId`,
+    `/threat-intel/ctiwatch/victims/:id`
+  - SPA: `/threatintel/feeds/ctiwatch`
+  - Live: `api/src/providers/ctiwatch.ts` — tier-1 IOC provider in the fan-out
+    (uses the working `/iocs/lookup?value=` endpoint; the documented
+    `/check/{value}` route is broken for anonymous callers). 10 unit tests.
+
+**Live integration also**: `api/src/lib/ctiwatch.ts` (pre-existing CVE client
+for the digest) reused; `offseq-radar` RSS entry already in `src/data/rssFeeds.ts`.
+
+**Both verticals ride** `.github/workflows/threat-intel-sync.yml` (sync + build
+steps added) and regenerate `public/mcp-manifest.json` (now 423 tools).
+
 ## Content-generation system (/admin)
 
 The pipeline is **RESEARCH → WRITE → NORMALISE**. The research stage
