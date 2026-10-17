@@ -125,6 +125,25 @@ const ORIGIN_PILL: Record<RecentCve['origin'], { label: string; cls: string; too
   },
 };
 
+/**
+ * Lookup with a fallback, NOT a bare index.
+ *
+ * The payload is cron-warmed into KV with up to a 24h TTL, so a client can be
+ * served rows written by an older build — including an `origin` this build no
+ * longer knows (the cvemon tier was removed on 2026-10-17). Indexing the map
+ * directly threw on `undefined.cls` and blanked the whole page for the hour
+ * between deploy and the next warm.
+ */
+function originPill(origin: RecentCve['origin']): { label: string; cls: string; tooltip: string } {
+  return (
+    ORIGIN_PILL[origin] ?? {
+      label: String(origin),
+      cls: 'border-slate-300 dark:border-line-1 text-muted',
+      tooltip: 'Source not in this build — served from a cached payload',
+    }
+  );
+}
+
 interface CveListProps {
   bare?: boolean;
 }
@@ -453,14 +472,14 @@ export default function CveList({ bare }: CveListProps): JSX.Element {
                     </span>
                   )}
                   <span
-                    className={`uppercase tracking-wider px-1.5 py-0.5 rounded border ${ORIGIN_PILL[c.origin].cls}`}
+                    className={`uppercase tracking-wider px-1.5 py-0.5 rounded border ${originPill(c.origin).cls}`}
                     title={
                       c.origin === 'tg' && c.tg_channel
                         ? `Gap-filled from @${c.tg_channel} Telegram channel - not yet in NVD`
-                        : ORIGIN_PILL[c.origin].tooltip
+                        : originPill(c.origin).tooltip
                     }
                   >
-                    {ORIGIN_PILL[c.origin].label}
+                    {originPill(c.origin).label}
                   </span>
                   <span
                     className="text-muted"
@@ -481,7 +500,7 @@ export default function CveList({ bare }: CveListProps): JSX.Element {
                 >
                   listed by {c.listed_by_count ?? 1}
                 </span>
-                {(c.listed_by ?? [ORIGIN_PILL[c.origin].label]).map((src) => (
+                {(c.listed_by ?? [originPill(c.origin).label]).map((src) => (
                   <span
                     key={src}
                     className="text-micro font-mono uppercase tracking-wide px-1.5 py-0.5 rounded border border-line-2 bg-surface-100 text-muted"
