@@ -480,7 +480,11 @@ async function fetchHandle(spec: HandleSpec): Promise<{ ok: boolean; items: XFee
         accept: 'application/rss+xml, application/atom+xml, application/xml;q=0.9, */*;q=0.5',
       },
       redirect: 'follow',
-      cf: { cacheTtl: 1800, cacheEverything: true },
+      // NOTE: previously `cf: { cacheTtl: 1800, cacheEverything: true }`.
+      // cacheEverything pinned stale/empty responses at the edge (several
+      // handles reported `ok:false` with 0 items for hours even though their
+      // feeds had content), so it's dropped — the manual edge cache in the
+      // handler is sufficient.
     });
     clearTimeout(timer);
     if (r.ok) {
