@@ -412,7 +412,7 @@ export async function agentDebugLlmHandler(c: Context<{ Bindings: Env }>): Promi
         method: 'POST',
         headers: { Authorization: `Bearer ${env.GROQ_API_KEY}`, 'content-type': 'application/json' },
         body: JSON.stringify({
-          model: 'llama-3.1-8b-instant',
+          model: 'openai/gpt-oss-20b',
           messages: [
             { role: 'system', content: testInput.system },
             { role: 'user', content: testInput.user },

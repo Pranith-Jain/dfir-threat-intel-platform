@@ -170,7 +170,7 @@ health.get('/api/v1/debug/llm', async (c) => {
         model: 'z-ai/glm-5.2',
       }),
       groq: await testEndpoint('https://api.groq.com/openai/v1/chat/completions', env.GROQ_API_KEY, {
-        model: 'llama-3.1-8b-instant',
+        model: 'openai/gpt-oss-20b',
         messages: [{ role: 'user', content: 'ping' }],
         max_completion_tokens: 5,
       }),

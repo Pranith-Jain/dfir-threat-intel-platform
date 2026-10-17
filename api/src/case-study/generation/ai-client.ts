@@ -175,6 +175,9 @@ const WORKERS_AI_MODELS = [
   '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
   '@cf/qwen/qwen3-30b-a3b-fp8',
   '@cf/openai/gpt-oss-120b',
+  // Faster/cheaper Workers AI text model — good middle fallback before the
+  // 8B. Live in the 2026-10 catalog.
+  '@cf/openai/gpt-oss-20b',
   // `llama-3.1-8b-instruct` (unquantized) was deprecated 2026-05-30 and now
   // hard-fails with `5028: ... was deprecated ...` — the fp8 build is the
   // current catalog entry for the same 8B family.

@@ -1050,10 +1050,10 @@ export async function callWorkersAi(env: Env, system: string, user: string): Pro
 export async function callGroq(env: Env, system: string, user: string): Promise<string> {
   const key = env.GROQ_API_KEY;
   if (!key) throw new Error('GROQ_API_KEY not set');
-  const models = ['openai/gpt-oss-120b', 'llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+  const models = ['openai/gpt-oss-120b', 'qwen/qwen3-32b', 'openai/gpt-oss-20b'];
   for (const model of models) {
     try {
-      const isReasoning = model === 'openai/gpt-oss-120b';
+      const isReasoning = model.startsWith('openai/gpt-oss') || model.startsWith('qwen/qwen3');
       const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {

@@ -31,8 +31,8 @@ export interface InvestigationCost {
 const COST_PER_1K: Record<string, number> = {
   'groq:openai/gpt-oss-120b': 0.0006,
   'groq:openai/gpt-oss-20b': 0.0003,
-  'groq:llama-3.3-70b-versatile': 0.00059,
-  'groq:llama-3.1-8b-instant': 0.00005,
+  'groq:qwen/qwen3-32b': 0.00029,
+  'groq:meta-llama/llama-4-scout-17b-16e-instruct': 0.00015,
   'gemini:gemini-3.8-flash': 0.0001,
   'gemini:gemini-3.7-flash': 0.0001,
   'gemini:gemini-3.6-flash': 0.0001,
@@ -47,7 +47,7 @@ const COST_PER_1K: Record<string, number> = {
   'workers-ai:llama-3.1-8b-instruct-fp8': 0.00002,
   'workers-ai:qwen3-30b-a3b-fp8': 0.00005,
   'workers-ai:gpt-oss-120b': 0.00015,
-  'workers-ai:llama-3.1-8b-instant': 0.00005,
+  'workers-ai:gpt-oss-20b': 0.00005,
 };
 
 /** Max budget per investigation (USD). Hard limit to prevent runaway costs. */

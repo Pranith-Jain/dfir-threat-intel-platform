@@ -115,7 +115,7 @@ Rate this report on the 5 axes. Respond as JSON.`;
       name: 'groq',
       build: () => ({
         provider: 'groq',
-        model: 'llama-3.3-70b-versatile',
+        model: 'openai/gpt-oss-120b',
         system: SELF_EVAL_SYSTEM_PROMPT,
         user: userPrompt,
         temperature: 0.3,
