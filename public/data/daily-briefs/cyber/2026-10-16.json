@@ -1,0 +1,102 @@
+{
+  "type": "cyber",
+  "date": "2026-10-16",
+  "threatLevel": "",
+  "executiveSummary": "The OT/ICS risk posture is elevated to CRITICAL due to concurrent, actively exploited edge-device vulnerabilities, high-severity OT protocol/library issues, and a confirmed attack causing operators in France to rapidly remove internet-exposed industrial controllers from service. Active, government-noted targeting of Siemens S7 PLCs using AI-assisted scripts over S7comm (TCP/102) significantly raises the likelihood of process disruption across Water, Energy, and Critical Manufacturing. Immediate segmentation, blocking of TCP/102 at perimeters, and PLC hardening are advised. Security Advisory Advantech EKI-1242 industrial gateways suffer unauthenticated RCE and critical-function bypasses; compromise enables OT network reconfiguration and loss of control. Isolate gateways, block TCP 5058, and apply vendor fixes as released. CISA Bulletin F5 BIG-IP APM (OAuth AS) heap overflow (CVE-2026-94127) is under active exploitation, enabling RCE on perimeter access platforms. Patch/hotfix or apply iRule mitigations, and audit for signs of compromise. Security Advisory Ivanti Connect Secure zero-day (CVE-2026-104935) is being exploited for unauthenticated RCE and credential theft. Vendors and CISA recommend rebuild/factory reset plus patching, and full credential/certificate rotation. Security Advisory Eclipse Milo (Java OPC UA) vulnerabilities affect widely deployed OT stacks, enabling unauthorized actions and service disruption. Upgrade to 1.1.5 and tighten OPC UA security policies immediately. ICS Advisory French operators rapidly removed thousands of Danfoss StoreView refrigeration controllers from the internet following an attack; prior RCE chains could disable cooling and falsify telemetry, risking cold-chain integrity. View Article Metabase pre-auth SQL injection is under active exploitation. If BI systems touch operational data, patch urgently, restrict public exposure, and review for admin compromise and data exfiltration. Security Advisory",
+  "keyFindings": [
+    {
+      "title": "OT protocol/library exposure",
+      "summary": "Eclipse Milo OPC UA flaws permit unauthorized method execution and memory/resource exhaustion; patch to 1.1.5 and enforce strong policies. ICS Advisory"
+    },
+    {
+      "title": "Perimeter device exploitation surge",
+      "summary": "Ivanti Connect Secure, F5 BIG-IP APM, Citrix NetScaler, and SonicWall SMA show active exploitation, creating high-probability ingress to enterprise and OT networks. Security Advisory Security Advisory"
+    },
+    {
+      "title": "Industrial gateways at risk",
+      "summary": "Advantech EKI-1242 RCE and critical-function bypasses can enable loss of view/control and reconfiguration in OT networks. CISA Bulletin"
+    },
+    {
+      "title": "Cold chain targeted",
+      "summary": "Internet-exposed Danfoss StoreView controllers were attacked; operators removed exposure at scale to mitigate service impact. View Article"
+    },
+    {
+      "title": "Ransomware and identity pivot risk",
+      "summary": "Gunra ransomware actively weaponizes Fortinet VPN paths and cloud exfil; AD/GPO misuse observed causing rapid enterprise disruption. #StopRansomware View Article"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "CRITICAL",
+        "label": "Overall OT Threat Level"
+      },
+      {
+        "value": "Edge/VPN, OPC UA, PLCs",
+        "label": "Actively Exploited Focus"
+      },
+      {
+        "value": "Water, Energy, Healthcare, Food Retail",
+        "label": "Sectors With Elevated Risk"
+      },
+      {
+        "value": "Next 72 Hours",
+        "label": "Priority Window"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "OT/ICS: Siemens S7-200/300/400/1200/1500 PLCs; Eclipse Milo (OPC UA); Advantech EKI-1242; Danfoss StoreView/AK-SM800A; Danfoss iC7 VFDs Perimeter/Edge: Ivanti Connect Secure; F5 BIG-IP APM; Citrix NetScaler ADC/Gateway; SonicWall SMA Healthcare/Med: Thermo Fisher Torrent Suite; J4Care dcm4chee-arc-light Enterprise/BI/ERP: Metabase; Oracle PeopleSoft (CVE-2026-35273 exploitation reporting) View Article"
+    ],
+    "sectors": [
+      "Water and Wastewater; Energy; Critical Manufacturing; Food Retail/Cold Chain Healthcare and Public Health (PACS, lab analysis) Government and Transportation (identity/ERP/BI exposures)"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "Gunra ransomware (Conti-derived) actively exploits Fortinet VPNs, conducts double extortion, and targets cloud data (OneDrive/SharePoint). Harden VPNs and ensure offline/immutable backups. #StopRansomware",
+        "Silent Lynx (Kazakhstan nexus) leverages WinRAR CVE-2025-8088 and GitHub-hosted PowerShell loaders; prior focus included water-resource infrastructure in Central Asia. View Article",
+        "NightEagle (APT-Q-95) compromises Exchange via GhostContainer and abuses AD (DCSync, Kerberos) with RDP tunneling-TTKs prevalent in enterprises that support OT operations. View Article",
+        "MovieReaper torrent-borne loaders and Toy Ghouls' MQTT/Matrix-controlled backdoors expand enterprise footholds that could pivot toward OT if segmentation is weak. View Article View Article"
+      ]
+    }
+  ],
+  "relevance": "Multiple items directly affect OT technologies (PLCs, OPC UA stacks, industrial gateways) and the perimeter devices that commonly bridge IT and OT zones. Active exploitation at the edge increases the probability of credential theft and lateral movement into control environments. Immediate mitigations focus on edge hardening, strict segmentation, PLC-specific protections, and rapid patching of OT middleware and protocol libraries.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Eclipse Milo (OPC UA, Java): upgrade to 1.1.5; disable weak policies; restrict diagnostics. ICS Advisory",
+        "Advantech EKI-1242 OT gateways: unauth RCEs and control-plane bypasses; isolate and patch. CISA Bulletin",
+        "Danfoss iC7 VFD families: improper access control on debug/update paths; restrict interfaces and apply vendor mitigations. CISA Bulletin",
+        "Thermo Fisher Torrent Suite (≤5.18): authenticated path traversal; upgrade to 5.22 and isolate lab networks. ICS Medical Advisory",
+        "J4Care dcm4chee-arc-light 5.35.1: authn/z gaps and parsing issues; upgrade to 5.35.2. ICS Medical Advisory",
+        "Citrix NetScaler ADC/Gateway: actively exploited RCEs; patch to fixed builds and assess for compromise. Security Alert",
+        "Metabase SQLi: active exploitation; patch and restrict exposure. Security Alert"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Initial Access: Exploit Public-Facing Application (T1190) on VPN/ADC/WAF; Phishing-as-a-Service targeting identities",
+      "Persistence/Lateral: Valid Accounts (T1078); RDP/SMB; AD CS template abuse; DCSync; SCCM pivot",
+      "Command & Control: MQTT/Matrix brokers; Discord C2; blockchain-resolved C2 (Solana)",
+      "Impact: Service Stop/DoS on OT middleware; configuration tampering (gateways/PLCs); ransomware encryption and GPO misuse"
+    ],
+    "mitreIds": [
+      "T1190",
+      "T1078"
+    ]
+  },
+  "outlook72h": "Containment window for edge devices: complete rebuild/patch cycles for Ivanti/F5/NetScaler/SonicWall; rotate secrets; enforce MFA and IP allowlists. OPC UA and PLC hardening: upgrade Eclipse Milo dependencies; enforce secure policies; verify no internet exposure of TCP/102; review PLC access levels. Gateways and cold-chain: isolate Advantech and Danfoss management interfaces behind OT firewalls/VPN; validate firmware integrity and configs. Threat hunting: focus on VPN exploits, OAuth anomalies, OPC UA protocol irregularities, and AD/GPO tampering in line with observed TTPs.",
+  "relatedCves": [
+    "CVE-2026-94127",
+    "CVE-2026-104935",
+    "CVE-2025-8088",
+    "CVE-2026-35273"
+  ]
+}
