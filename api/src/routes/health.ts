@@ -112,11 +112,11 @@ health.get('/api/v1/health/ai', async (c) => {
   if (!ai) return c.json({ status: 'unavailable', binding: 'AI' }, 503);
   try {
     const start = Date.now();
-    await ai.run('@cf/meta/llama-3.1-8b-instruct', {
+    await ai.run('@cf/meta/llama-3.1-8b-instruct-fp8', {
       messages: [{ role: 'user', content: 'ping' }],
       max_tokens: 5,
     });
-    return c.json({ status: 'ok', latency_ms: Date.now() - start, model: 'llama-3.1-8b' }, 200, {
+    return c.json({ status: 'ok', latency_ms: Date.now() - start, model: 'llama-3.1-8b-instruct-fp8' }, 200, {
       'Cache-Control': 'no-store',
     });
   } catch (e) {

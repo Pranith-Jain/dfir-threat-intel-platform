@@ -5,10 +5,11 @@
  * Pipeline:
  *   1. Caller fetches an image (URL or POSTed body) and passes a
  *      Uint8Array of image bytes.
- *   2. We hand the bytes to Workers AI's @cf/unum/uform-gen2-qwen-500m
- *      captioning model (cheap, ~250M params, fast on CPU). The model
- *      returns any visible text it can read — the classic "I see a
- *      phishing email header with these IPs in the From: line" output.
+ *   2. We hand the bytes to Workers AI's @cf/meta/llama-3.2-11b-vision-instruct
+ *      (the first-party vision model — the previous captioner,
+ *      @cf/unum/uform-gen2-qwen-500m, was retired and 404s in the model
+ *      catalog). The model returns any visible text it can read — the classic
+ *      "I see a phishing email header with these IPs in the From: line" output.
  *   3. We re-run the IOC normalizer on the extracted text to find
  *      IOCs, score them, and apply the allowlist.
  *
@@ -34,15 +35,19 @@ interface AIBindings {
   run: (model: string, inputs: unknown) => Promise<unknown>;
 }
 
-const VISION_MODEL = '@cf/unum/uform-gen2-qwen-500m';
+const VISION_MODEL = '@cf/meta/llama-3.2-11b-vision-instruct';
+const VISION_PROMPT = 'Transcribe all text visible in this image verbatim. Output only the transcribed text.';
 const VISION_TIMEOUT_MS = 20_000;
 
-interface VisionResponse {
-  description?: string;
-}
-
-function isVisionResponse(v: unknown): v is VisionResponse {
-  return !!v && typeof v === 'object' && 'description' in (v as Record<string, unknown>);
+/** Both generations of vision model have shipped here: uform answered with
+ *  `description`, llama-3.2-vision answers with `response`. Accept either so a
+ *  future swap doesn't silently zero the caption again. */
+function visionText(v: unknown): string | null {
+  if (!v || typeof v !== 'object') return null;
+  const r = v as Record<string, unknown>;
+  if (typeof r.description === 'string' && r.description) return r.description;
+  if (typeof r.response === 'string' && r.response) return r.response;
+  return null;
 }
 
 function detectKind(s: string): ImageIocHit['kind'] {
@@ -83,11 +88,9 @@ export async function extractIocsFromImageBytes(
     const timeout = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error('vision timeout')), VISION_TIMEOUT_MS)
     );
-    const callPromise = env.AI.run(VISION_MODEL, { image: Array.from(bytes) });
+    const callPromise = env.AI.run(VISION_MODEL, { image: Array.from(bytes), prompt: VISION_PROMPT });
     const res = await Promise.race([callPromise, timeout]);
-    if (isVisionResponse(res) && typeof res.description === 'string') {
-      caption = res.description;
-    }
+    caption = visionText(res) ?? '';
   } catch (e) {
     return { text: '', hits: [], error: e instanceof Error ? e.message : String(e) };
   }

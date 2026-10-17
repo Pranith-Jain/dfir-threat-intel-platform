@@ -44,7 +44,7 @@ const COST_PER_1K: Record<string, number> = {
   'nvidia:minimaxai/minimax-m2.7': 0.00045,
   'nvidia:z-ai/glm-5.2': 0.0004,
   'workers-ai:llama-3.3-70b-instruct-fp8-fast': 0.0001,
-  'workers-ai:llama-3.1-8b-instruct': 0.00002,
+  'workers-ai:llama-3.1-8b-instruct-fp8': 0.00002,
   'workers-ai:qwen3-30b-a3b-fp8': 0.00005,
   'workers-ai:gpt-oss-120b': 0.00015,
   'workers-ai:llama-3.1-8b-instant': 0.00005,

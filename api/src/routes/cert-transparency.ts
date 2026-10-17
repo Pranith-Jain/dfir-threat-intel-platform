@@ -2,6 +2,7 @@ import type { Context } from 'hono';
 import type { Env } from '../env';
 import { badRequest } from '../lib/api-error';
 import { cachedJson } from '../lib/route-cache';
+import { fetchResilient } from '../lib/fetch-resilient';
 
 interface CertEntry {
   name_value: string;
@@ -37,10 +38,11 @@ export async function certTransparencyHandler(c: Context<{ Bindings: Env }>): Pr
 
   return cachedJson(c, `cert-transparency:${clean}`, 3600, async () => {
     const url = `https://crt.sh/?q=${encodeURIComponent(clean)}&output=json`;
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; DFIR-Portfolio/1.0)' },
-      signal: AbortSignal.timeout(12000),
-    });
+    const res = await fetchResilient(
+      url,
+      { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; DFIR-Portfolio/1.0)' } },
+      { attempts: 3, timeoutMs: 15000 }
+    );
     if (!res.ok) throw new Error(`crt.sh returned ${res.status}`);
 
     const data = (await res.json()) as CertEntry[];

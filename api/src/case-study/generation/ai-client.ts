@@ -175,7 +175,10 @@ const WORKERS_AI_MODELS = [
   '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
   '@cf/qwen/qwen3-30b-a3b-fp8',
   '@cf/openai/gpt-oss-120b',
-  '@cf/meta/llama-3.1-8b-instruct',
+  // `llama-3.1-8b-instruct` (unquantized) was deprecated 2026-05-30 and now
+  // hard-fails with `5028: ... was deprecated ...` — the fp8 build is the
+  // current catalog entry for the same 8B family.
+  '@cf/meta/llama-3.1-8b-instruct-fp8',
 ];
 
 interface WorkersAiBinding {

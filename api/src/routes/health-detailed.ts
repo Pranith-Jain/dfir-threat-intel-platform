@@ -66,7 +66,10 @@ export async function healthDetailedHandler(c: Context<{ Bindings: Env }>): Prom
     probe(async () => {
       const a = env.AI as { run: (m: string, p: unknown) => Promise<unknown> } | undefined;
       if (!a) throw new Error('binding missing');
-      await a.run('@cf/meta/llama-3.1-8b-instruct', { messages: [{ role: 'user', content: 'ping' }], max_tokens: 5 });
+      await a.run('@cf/meta/llama-3.1-8b-instruct-fp8', {
+        messages: [{ role: 'user', content: 'ping' }],
+        max_tokens: 5,
+      });
     }),
     probe(async () => {
       const v = env.VECTORIZE as { query: (v: number[], o: unknown) => Promise<unknown> } | undefined;

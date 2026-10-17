@@ -267,6 +267,8 @@ async function extractWithAI(
   sectors: string[];
   products: Array<{ vendor?: string; product: string }>;
   summary: string;
+  /** Provider-qualified model that actually produced the extraction. */
+  model: string;
 } | null> {
   try {
     const prompt = `Analyze this threat intelligence report and extract structured data. Return ONLY valid JSON.
@@ -330,6 +332,7 @@ Rules:
       sectors: (parsed.sectors ?? []).filter(Boolean).slice(0, 10),
       products: (parsed.products ?? []).filter((p) => p.product).slice(0, 20),
       summary: parsed.summary ?? '',
+      model: result.modelUsed,
     };
   } catch (err) {
     logError('AI extraction failed:', err);
@@ -514,7 +517,7 @@ export async function reportParserHandler(c: Context<{ Bindings: Env }>): Promis
       meta: {
         extracted_at: new Date().toISOString(),
         method,
-        ai_model: aiResults ? '@cf/meta/llama-3.1-8b-instruct' : undefined,
+        ai_model: aiResults ? aiResults.model : undefined,
         confidence: aiResults ? 'high' : 'medium',
       },
     };

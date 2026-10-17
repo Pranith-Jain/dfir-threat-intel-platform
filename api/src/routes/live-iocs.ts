@@ -31,7 +31,7 @@ import {
   parsePlainDomainList,
   parseSslblJa3,
 } from '../lib/ioc-feed-parsers';
-import { CURATED_FEEDS, type CuratedFeed } from '../lib/feed-curation';
+import { CURATED_FEEDS, curatedFeed, type CuratedFeed } from '../lib/feed-curation';
 import { fetchMalwareSamplesCached } from './malware-samples';
 import { fetchPhishingUrlsCached } from './phishing-urls';
 import { fetchCryptoScamCached } from './crypto-scam-feed';
@@ -141,6 +141,13 @@ export interface LiveSource {
   newest_observation?: string;
   /** True when the current data comes from the KV last-good fallback. */
   stale?: boolean;
+  /**
+   * Why an `ok:false` row has no data. `'budget_exhausted'` means OUR OWN
+   * subrequest ceiling skipped the source on this snapshot — the source was
+   * never attempted here and the queue path (fresh budget per batch) will
+   * fill it. Distinct from a real upstream failure, which has no label.
+   */
+  error?: string;
 }
 
 export interface LiveIocsResponse {
@@ -1196,6 +1203,31 @@ const FEED_SOURCES: FeedSource[] = [
 export const FEED_SOURCE_IDS: readonly string[] = FEED_SOURCES.map((s) => s.id);
 
 /**
+ * Execution order for the synchronous cold-start fan-out ONLY.
+ *
+ * Tier-1 curated feeds (`priority: 1` in feed-curation.ts — "must survive the
+ * synchronous cold-start fan-out's subrequest budget") run first; tier-2 and
+ * uncurated feeds are best-effort there because the queue path (one message
+ * per batch, a fresh 50-subrequest budget per invocation) is their primary
+ * refresh model and has no per-source ceiling.
+ *
+ * Without this, the fan-out ran in raw registry order, which happened to put
+ * the curated feeds first purely as a file-layout accident. As the roster
+ * grew past the shared budget, the tail — blocklist.de, CINS, ThreatView,
+ * viriback, cert.pl, bitwire, phishunt, swiftioc — was deterministically
+ * starved on every cold build and the zeros were cached as if the upstreams
+ * were down (2026-10 audit: 14 of 45 sources zeroed on the live snapshot).
+ *
+ * Array#sort is stable, so same-priority sources keep registry order and the
+ * reorder is deterministic. Output order is restored to registry order after
+ * the fan-out — see fetchLiveIocs — so finalize's stable sort is unaffected.
+ */
+export function syncFanoutOrder(): FeedSource[] {
+  const priorityOf = (id: string): number => curatedFeed(id)?.priority ?? 2;
+  return [...FEED_SOURCES].sort((a, b) => priorityOf(a.id) - priorityOf(b.id));
+}
+
+/**
  * Sources per queue message.
  *
  * Sized so one consumer invocation stays well inside the free-plan 50-subrequest
@@ -1439,52 +1471,48 @@ export async function fetchLiveIocs(
   kv?: KVNamespace,
   env?: Env
 ): Promise<LiveIocsResponse> {
-  // Fan out across every registered feed source with a bounded concurrency.
-  // Replaces the three sequential fetch batches (P7: a slow feed in batch 1
-  // delayed the start of batch 3). concurrentMap preserves input order, so the
-  // flattened sources/items keep FEED_SOURCES order — which the freshness sort
-  // and the per-source recount in finalizeLiveIocs rely on being stable.
+  // Fan out across every registered feed source with a bounded concurrency
+  // (replaces the original three sequential fetch batches — a slow feed in
+  // batch 1 delayed the start of batch 3). Sources EXECUTE in curator-priority
+  // order (tier-1 first — see syncFanoutOrder) so the shared subrequest budget
+  // below cuts the best-effort tail instead of the evidence-bearing feeds; the
+  // flattened output is then restored to FEED_SOURCES order, because the
+  // freshness sort and per-source recount in finalizeLiveIocs rely on that
+  // being stable.
   //
-  // Subrequest-budget guard (2026-06 audit): the synchronous fan-out is the
-  // FALLBACK for cold-colo / missing-slice, and the cache-warm cron runs it
-  // ~22x per cron tick. Each feed `run()` does >= 1 subrequest (most do 1-3
-  // + KV reads), so a 35-source fan-out can hit the 50-subrequest cap.
-  // We install a shared budget and short-circuit a source to `ok:false`
-  // (with `error: 'budget_exhausted'`) when the cap is reached, so we
-  // degrade gracefully instead of throwing and dropping ALL sources on the
-  // floor (the previous behavior under subrequest exhaustion). The budget
-  // must cover every registered source — previously hardcoded to 30, which
-  // silently cut the last 5 sources after more feeds were added. It's now
-  // derived from FEED_SOURCES.length so it stays correct as feeds change.
-  // The cap leaves headroom for the analytics + KV/queue reads that follow
-  // the fan-out in composeOrFallback. Each source's run() does exactly 1
-  // fetch subrequest (+ optional KV reads for cached helpers like
-  // malwarebazaar/phishing). With 30 sources the total stays well under the
-  // 50-subrequest free-plan cap. Capped at 45 for safety margin.
-  // Hard cap on the fan-out's REAL subrequests (each source consumes 1-3 via
-  // fetchText + cached-helper KV reads). Leaves headroom under the free-plan
-  // 50-subrequest invocation cap for the cache/KV/analytics reads the handler
-  // does after the fan-out (cache.match, trackEvent, cache.put). Previously
-  // this reserved 1 slot per source up-front while sources spent 1-3 each, so
-  // a full fan-out silently overshot the cap and got killed mid-build
-  // ("Too many subrequests") — surfacing as HTTP 503 + empty layers on
-  // global-pulse. Sources now consume their actual usage (consumeBudget) and
-  // degrade to ok:false when the cap is hit.
+  // Subrequest-budget guard: the synchronous fan-out is the FALLBACK for
+  // cold-colo / missing-slice. Each feed run() spends 1-3 real subrequests
+  // (fetchText + cached-helper KV reads). A budget-free fan-out overruns the
+  // free-plan 50-subrequest cap and is killed mid-build ("Too many
+  // subrequests" → HTTP 503 + empty layers, the 2026-06 incident), so sources
+  // consume a shared budget and degrade to a LABELED `budget_exhausted` stub
+  // once it is spent. The label matters: before the 2026-10 audit the stub was
+  // an unlabeled `ok:false`, so the starved tail read as "14 upstream feeds
+  // down" (see syncFanoutOrder). 42 leaves headroom under the cap for the
+  // cache/KV/analytics reads the handler does after the fan-out
+  // (cache.match, trackEvent, cache.put).
   const SUBREQUEST_BUDGET = 42;
   const budget = { used: 0, max: SUBREQUEST_BUDGET };
   const deps: FeedDeps = { executionCtx, kv, env, budget };
-  const feedResults = await concurrentMap(
-    FEED_SOURCES,
+  // Execute tier-1 curated sources first (see syncFanoutOrder) so a budget
+  // cut lands on the best-effort tier-2 tail, then restore registry order for
+  // the flattened output — finalize's stable sort + per-source recount rely
+  // on contributions arriving in FEED_SOURCES order.
+  const orderedSources = syncFanoutOrder();
+  const orderedResults = await concurrentMap(
+    orderedSources,
     async (s) => {
       // Only launch a source when the shared budget still has room; otherwise
       // return a stub so concurrentMap still produces a result for this index.
       // (concurrentMap preserves order; finalize needs every slot to have a
       // matching source row.) Actual consumption happens inside each source's
       // run() via consumeBudget — this check is just the cheap launch gate.
+      // The stub is LABELED so a starved snapshot is distinguishable from an
+      // upstream outage (the 2026-10 audit read these zeros as "14 feeds down").
       if (budget.used >= budget.max) {
         return {
           items: [] as LiveIoc[],
-          sources: [{ id: s.id, ok: false, count: 0 }] as LiveSource[],
+          sources: [{ id: s.id, ok: false, count: 0, error: 'budget_exhausted' }] as LiveSource[],
         };
       }
       return s.run(deps);
@@ -1492,11 +1520,16 @@ export async function fetchLiveIocs(
     FEED_FANOUT_CONCURRENCY
   );
 
+  const resultsById = new Map<string, (typeof orderedResults)[number]>();
+  orderedSources.forEach((s, i) => resultsById.set(s.id, orderedResults[i]!));
+
   const items: LiveIoc[] = [];
   const sources: LiveSource[] = [];
-  for (const r of feedResults) {
+  for (const s of FEED_SOURCES) {
+    const r = resultsById.get(s.id);
+    if (!r) continue;
     for (const it of r.items) items.push(it);
-    for (const s of r.sources) sources.push(s);
+    for (const src of r.sources) sources.push(src);
   }
 
   return finalizeLiveIocs(items, sources, env);

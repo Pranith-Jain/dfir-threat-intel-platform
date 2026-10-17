@@ -27,15 +27,37 @@ import { readLastGood, writeLastGood } from '../lib/lastgood';
  * The driver list is the most-recently-active groups from the
  * /api/recent feed — we already proxy that. To keep the request
  * bounded, we cap to the top N groups and fan out per-group fetches
- * with concurrency 4.
+ * with concurrency 5.
  */
 
 const FETCH_TIMEOUT_MS = 12_000;
 const CACHE_TTL = 6 * 3600; // 6h — Ransomlook scrapes hourly
-// Per-group profile responses can be 1-5 MB each (they include base64
-// screenshot bytes). Top-15 keeps the worker subrequest bandwidth
-// bounded while covering the most-active groups.
-const TOP_N_GROUPS = 15;
+/**
+ * Per-group profile read budget.
+ *
+ * Ransomlook inlines scraped screenshots into every location as base64
+ * (`screen` / `source` fields). Measured 2026-10-17: a single top-group
+ * profile reaches 78 MB (lockbit5; ~0.7–7 MB for most) and streams at
+ * ~25 KB/s, so the old "fetch the JSON, parse it whole" path buffered tens
+ * of MB and blew the Worker's CPU/memory ceiling — readers got a bare
+ * Cloudflare `error code: 1102` on cold builds even after the 2026-10-16
+ * mitigation cut TOP_N to 10.
+ *
+ * We now read a bounded prefix and salvage only the complete location
+ * objects that arrive inside it (`salvageLocationObjects`): memory stays at
+ * ~1 MB/group and CPU goes to small per-object parses instead of one
+ * multi-MB parse. Locations beyond the prefix are dropped — Ransomlook
+ * orders each group's canonical mirror first, and the KV last-good cache
+ * keeps the previous snapshot's fuller list.
+ */
+const GROUP_READ_MAX_BYTES = 1_000_000;
+const GROUP_READ_MAX_OBJECTS = 12;
+const GROUP_READ_TIMEOUT_MS = 10_000;
+// Top-10 groups × ≤10 s per read, 5 at a time → worst-case cold build ~20 s
+// wall, with ~1 fetch per group plus /api/recent. Was 15, which sat ON the
+// subrequest ceiling rather than under it; the per-group read is now bounded
+// so the count, not the payload, is what matters.
+const TOP_N_GROUPS = 10;
 const CONCURRENCY = 5;
 
 /** Exported so /api/v1/feed-status can read the same cached payload directly. */
@@ -51,18 +73,6 @@ interface RansomlookLocation {
   chat?: boolean;
   fs?: boolean;
   private?: boolean;
-}
-
-/**
- * The Ransomlook per-group API returns `[{captcha, meta, locations: [...]}]`
- * — an array with a single profile entry that nests the location list.
- * Older docs occasionally describe it as a flat array, hence the
- * defensive parsing below.
- */
-interface RansomlookGroupProfile {
-  captcha?: boolean;
-  meta?: string;
-  locations?: RansomlookLocation[];
 }
 
 interface RecentEntry {
@@ -121,26 +131,131 @@ async function fetchJson<T>(url: string): Promise<T | null> {
   }
 }
 
-async function fetchGroupMirrors(group: string): Promise<RansomlookLocation[]> {
-  const data = await fetchJson<RansomlookGroupProfile[] | RansomlookLocation[]>(
-    `https://www.ransomlook.io/api/group/${encodeURIComponent(group)}`
-  );
-  if (!Array.isArray(data) || data.length === 0) return [];
-  // Two upstream shapes observed:
-  //   [{captcha, meta, locations: [...]}]   ← current
-  //   [<location>, <location>, ...]         ← older / fallback
-  // Detect by checking whether the first element has a `locations` array.
-  const first = data[0] as RansomlookGroupProfile & RansomlookLocation;
-  if (Array.isArray(first?.locations)) {
-    // Profile shape — flatten locations across all profile entries.
-    const out: RansomlookLocation[] = [];
-    for (const profile of data as RansomlookGroupProfile[]) {
-      if (Array.isArray(profile.locations)) out.push(...profile.locations);
+/**
+ * Read a response body as text, bounded by `maxBytes` and by `isEnough`.
+ * Returns whatever was read when either bound trips — a deadline abort or a
+ * mid-stream error yields the partial text (the salvage walker ignores the
+ * truncated tail). Always cancels the reader so the upstream connection
+ * stops streaming a payload we no longer need.
+ */
+async function readBoundedText(res: Response, maxBytes: number, isEnough: (text: string) => boolean): Promise<string> {
+  if (!res.body) return '';
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let text = '';
+  let consumed = 0;
+  try {
+    while (consumed < maxBytes) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      consumed += value.byteLength;
+      text += decoder.decode(value, { stream: true });
+      if (isEnough(text)) break;
     }
-    return out;
+  } catch {
+    // Deadline abort / stream error — fall through with the partial text.
+  } finally {
+    reader.cancel().catch(() => {});
   }
-  // Flat shape.
-  return data as RansomlookLocation[];
+  return text;
+}
+
+/**
+ * Blank the two multi-KB base64 fields (`screen`, `source`) inside one
+ * location object so `JSON.parse` never touches screenshot bytes. Both are
+ * plain JSON strings with no nested structures; base64 contains no quotes or
+ * backslashes, so the negated-class scan is linear.
+ */
+function stripProfileHeavyFields(obj: string): string {
+  return obj
+    .replace(/"screen"\s*:\s*"(?:[^"\\]|\\.)*"/g, '"screen":""')
+    .replace(/"source"\s*:\s*"(?:[^"\\]|\\.)*"/g, '"source":""');
+}
+
+/**
+ * Extract complete location objects from a (possibly truncated) Ransomlook
+ * group payload.
+ *
+ * The payload is `[{captcha, meta, locations:[{…}, {…}]}]` and each location
+ * object is FLAT (no nested objects) with the scalar mirror fields first.
+ * We walk `{…}` objects that arrived whole, blank the heavy fields, and parse
+ * each object individually — never the payload as a whole. A trailing object
+ * cut off by the read bound is ignored. Older Ransomlook deployments returned
+ * a flat `[{…}]` array; that shape is handled too.
+ */
+export function salvageLocationObjects(text: string): RansomlookLocation[] {
+  let i: number;
+  const anchor = text.indexOf('"locations"');
+  if (anchor >= 0) {
+    const arr = text.indexOf('[', anchor);
+    if (arr < 0) return [];
+    i = arr + 1;
+  } else {
+    const trimmed = text.trimStart();
+    if (!trimmed.startsWith('[')) return [];
+    i = text.length - trimmed.length + 1;
+  }
+  const out: RansomlookLocation[] = [];
+  while (i < text.length) {
+    // Skip whitespace and array separators between objects.
+    while (i < text.length) {
+      const c = text[i];
+      if (c === ' ' || c === '\n' || c === '\r' || c === '\t' || c === ',') i++;
+      else break;
+    }
+    if (i >= text.length || text[i] !== '{') break;
+    const objStart = i;
+    let depth = 0;
+    let inStr = false;
+    let esc = false;
+    let objEnd = -1;
+    for (; i < text.length; i++) {
+      const ch = text[i];
+      if (inStr) {
+        if (esc) esc = false;
+        else if (ch === '\\') esc = true;
+        else if (ch === '"') inStr = false;
+        continue;
+      }
+      if (ch === '"') inStr = true;
+      else if (ch === '{') depth++;
+      else if (ch === '}' && --depth <= 0) {
+        objEnd = i;
+        i++;
+        break;
+      }
+    }
+    if (objEnd < 0) break; // truncated trailing object — stop
+    try {
+      out.push(JSON.parse(stripProfileHeavyFields(text.slice(objStart, objEnd + 1))) as RansomlookLocation);
+    } catch {
+      // Malformed object (shouldn't happen for whole objects) — skip it.
+    }
+  }
+  return out;
+}
+
+async function fetchGroupMirrors(group: string): Promise<RansomlookLocation[]> {
+  const url = `https://www.ransomlook.io/api/group/${encodeURIComponent(group)}`;
+  try {
+    // Deliberately a plain fetch with NO retries: a group that is slow or
+    // failing costs one bounded read, not three. (Retry amplification is what
+    // pushed the old fan-out into the subrequest ceiling.)
+    const res = await fetch(url, {
+      headers: { accept: 'application/json', 'user-agent': 'pranithjain-dfir/1.0' },
+      signal: AbortSignal.timeout(GROUP_READ_TIMEOUT_MS),
+    });
+    if (!res.ok) return [];
+    const text = await readBoundedText(
+      res,
+      GROUP_READ_MAX_BYTES,
+      (t) => salvageLocationObjects(t).length >= GROUP_READ_MAX_OBJECTS
+    );
+    return salvageLocationObjects(text);
+  } catch (e) {
+    logError(`onion-watch group fetch failed: ${group}`, e);
+    return [];
+  }
 }
 
 /**
@@ -225,13 +340,44 @@ export async function fetchOnionWatch(): Promise<OnionWatchResponse | null> {
 const ONION_WATCH_LASTGOOD_KV_KEY = 'onion-watch:lastgood:v1';
 const LASTGOOD_TTL = 172_800; // 48h — covers long upstream outages
 
+/**
+ * In-isolate single-flight for the cold-cache build. Same pattern and
+ * rationale as `liveIocsHandler` (see the DOS-1 note in live-iocs.ts): this
+ * route fans out to Ransomlook once per group (TOP_N_GROUPS × per-group
+ * requests) plus /api/recent, against a hard 50-subrequest ceiling per
+ * invocation. On a cache miss every concurrent request used to run its own
+ * fan-out, so the ones that lost the race exceeded the ceiling and the reader
+ * got Cloudflare's bare `error code: 1102` instead of data — reproduced on
+ * ~1 in 3 requests to /api/v1/onion-watch (measured 2026-10-16). The payload
+ * is request-agnostic global data, so sharing one build per isolate is correct.
+ *
+ * The `.catch` also closes the other 1102 path: an exception escaping
+ * `fetchOnionWatch` (as opposed to it returning null on an upstream failure)
+ * propagated out of the handler and produced the same opaque edge error
+ * instead of falling through to the KV last-good path below.
+ */
+let inflightOnionWatchBuild: Promise<OnionWatchResponse | null> | null = null;
+
+function buildOnionWatchSingleFlight(): Promise<OnionWatchResponse | null> {
+  if (inflightOnionWatchBuild) return inflightOnionWatchBuild;
+  inflightOnionWatchBuild = fetchOnionWatch()
+    .catch((e: unknown) => {
+      logError('onion-watch build failed', e);
+      return null;
+    })
+    .finally(() => {
+      inflightOnionWatchBuild = null;
+    });
+  return inflightOnionWatchBuild;
+}
+
 export async function onionWatchHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const cache = (caches as unknown as { default: Cache }).default;
   const cacheKey = new Request(ONION_WATCH_CACHE_KEY);
   const cached = await cache.match(cacheKey);
   if (cached) return new Response(cached.body, cached);
 
-  const body = await fetchOnionWatch();
+  const body = await buildOnionWatchSingleFlight();
   if (body) {
     // Persist last-good payload to KV so stale data is served during
     // upstream outages. Non-blocking — the response goes out immediately.

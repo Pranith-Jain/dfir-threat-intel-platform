@@ -1,10 +1,16 @@
 /**
- * Typed gateway for the official MyThreatIntel REST API
- * (https://mythreatintel.com/api/).
+ * Typed gateway for the official MyThreatIntel REST API.
+ *
+ * MIGRATION (2026-10): the product moved off mythreatintel.com — that domain
+ * now serves an unrelated app and its old `/api/` prefix 404s (every source
+ * answered `{"detail":"Not Found"}`). The maker's site 301s to
+ * `mythreatintel.secureit.es`, so the API base moved with it. (The new origin
+ * was itself down — Cloudflare 522 — at migration time; callers already
+ * degrade to last-good/KV while it recovers.)
  *
  * One upstream endpoint, multiplexed by `?source=`:
  *
- *   GET https://mythreatintel.com/api/?source=<src>&q=<text>&limit=<n>
+ *   GET https://mythreatintel.secureit.es/api/?source=<src>&q=<text>&limit=<n>
  *   Authorization: Bearer <MYTHREATINTEL_API_TOKEN>
  *
  * Envelope (all sources):
@@ -26,7 +32,7 @@
 
 import type { Env } from '../env';
 
-const API_BASE = 'https://mythreatintel.com/api/';
+const API_BASE = 'https://mythreatintel.secureit.es/api/';
 const FETCH_TIMEOUT_MS = 12_000;
 /**
  * The `source=dns` scan is an active, real-time dnstwist run (40 threads) the
@@ -179,15 +185,7 @@ export interface MtiEvent {
 
 /** Discriminated by call site — consumers cast `items` to the right shape. */
 export type MtiRecord =
-  | MtiIoc
-  | MtiMalware
-  | MtiCveRecord
-  | MtiLeak
-  | MtiGroup
-  | MtiRansomwareClaim
-  | MtiMarket
-  | MtiOnion
-  | MtiEvent;
+  MtiIoc | MtiMalware | MtiCveRecord | MtiLeak | MtiGroup | MtiRansomwareClaim | MtiMarket | MtiOnion | MtiEvent;
 
 export interface MtiResult {
   /** False on missing token / upstream failure — callers then fall back. */

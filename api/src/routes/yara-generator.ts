@@ -71,7 +71,7 @@ interface GeneratedRule {
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'openai/gpt-oss-120b';
 const CF_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast' as const;
-const CF_MODEL_FALLBACK = '@cf/meta/llama-3.1-8b-instruct' as const;
+const CF_MODEL_FALLBACK = '@cf/meta/llama-3.1-8b-instruct-fp8' as const;
 
 interface LlmInput {
   system: string;

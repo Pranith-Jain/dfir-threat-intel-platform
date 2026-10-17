@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';
+import { fetchResilient } from '../lib/fetch-resilient';
 import { badRequest, badGateway, serviceUnavailable } from '../lib/api-error';
 import {
   searchByEmails,
@@ -101,10 +102,11 @@ export async function hudsonRockSearchHandler(c: Context<{ Bindings: Env }>): Pr
     }
 
     // Fallback to v2 free endpoint
-    const res = await fetch(`${V2_BASE}/search-by-email?email=${encodeURIComponent(email)}`, {
-      headers: { accept: 'application/json', 'user-agent': 'pranithjain.qzz.io DFIR toolkit' },
-      signal: AbortSignal.timeout(10000),
-    });
+    const res = await fetchResilient(
+      `${V2_BASE}/search-by-email?email=${encodeURIComponent(email)}`,
+      { headers: { accept: 'application/json', 'user-agent': 'pranithjain.qzz.io DFIR toolkit' } },
+      { attempts: 2, timeoutMs: 25000 }
+    );
     if (!res.ok) return badGateway(c, `Hudson Rock upstream ${res.status}`);
 
     const data = (await res.json()) as { data: HRStealerEntry[] };
@@ -163,10 +165,11 @@ export async function hudsonRockDomainHandler(c: Context<{ Bindings: Env }>): Pr
       );
     }
 
-    const res = await fetch(`${V2_BASE}/search-by-domain?domain=${encodeURIComponent(domain)}`, {
-      headers: { accept: 'application/json', 'user-agent': 'pranithjain.qzz.io DFIR toolkit' },
-      signal: AbortSignal.timeout(10000),
-    });
+    const res = await fetchResilient(
+      `${V2_BASE}/search-by-domain?domain=${encodeURIComponent(domain)}`,
+      { headers: { accept: 'application/json', 'user-agent': 'pranithjain.qzz.io DFIR toolkit' } },
+      { attempts: 2, timeoutMs: 25000 }
+    );
     if (!res.ok) return badGateway(c, `Hudson Rock upstream ${res.status}`);
     const data = await res.json();
     return successResponse(
