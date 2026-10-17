@@ -84,11 +84,8 @@ export const CYBERCRIME_SOURCES: CybercrimeSource[] = [
     label: 'Chainalysis',
     category: 'crypto-crime',
   },
-  {
-    url: 'https://www.elliptic.co/blog/rss.xml',
-    label: 'Elliptic',
-    category: 'crypto-crime',
-  },
+  // Elliptic dropped its RSS feed (site reorganised to /insights/, no feed
+  // link exposed) — removed 2026-10-17. Re-add if/when they publish a feed.
   // Krebs on Security — fraud investigations, BEC, identity theft. ~100%
   // cyber-relevant so we skip filtering.
   {
@@ -105,9 +102,9 @@ export const CYBERCRIME_SOURCES: CybercrimeSource[] = [
     filterKeywords: CYBER_KEYWORDS,
   },
   // BleepingComputer — high-volume breaking news. Filter to crime/fraud only.
-  // URL is the Google News mirror: bleepingcomputer.com 403s datacenter egress.
+  // URL is the Bing News mirror: bleepingcomputer.com 403s datacenter egress and news.google.com rate-limits Worker egress.
   {
-    url: 'https://news.google.com/rss/search?q=site:bleepingcomputer.com&hl=en-US&gl=US&ceid=US:en',
+    url: 'https://www.bing.com/news/search?q=site%3Ableepingcomputer.com&format=RSS&mkt=en-US',
     label: 'BleepingComputer',
     category: 'news',
     filterKeywords: CYBER_KEYWORDS,

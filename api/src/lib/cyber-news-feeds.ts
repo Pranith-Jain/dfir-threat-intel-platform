@@ -1,5 +1,6 @@
 import { fetchResilient } from './fetch-resilient';
 import { extractCveIds } from './cve-id';
+import { unwrapBingNewsLink } from './rss-parser';
 
 export interface CyberNewsItem {
   title: string;
@@ -82,9 +83,9 @@ const FEEDS: Record<string, FeedSource> = {
 
   /* Tier 3 — secondary news, industry & community */
   'The Hacker News': { url: 'https://feeds.feedburner.com/TheHackersNews', tier: 3 },
-  // BleepingComputer 403s datacenter egress — Google News mirror instead.
+  // BleepingComputer 403s datacenter egress — Bing News mirror instead (news.google.com 503s Worker egress).
   BleepingComputer: {
-    url: 'https://news.google.com/rss/search?q=site:bleepingcomputer.com&hl=en-US&gl=US&ceid=US:en',
+    url: 'https://www.bing.com/news/search?q=site%3Ableepingcomputer.com&format=RSS&mkt=en-US',
     tier: 3,
   },
   CyberSecurityNews: { url: 'https://cybersecuritynews.com/feed/', tier: 3 },
@@ -158,7 +159,9 @@ function parseRssXml(xml: string): RssItem[] {
     };
     items.push({
       title: tag('title'),
-      link: tag('link'),
+      // The BleepingComputer entry is a Bing News mirror (the origin 403s
+      // datacenter egress), so every item link arrives click-wrapped.
+      link: unwrapBingNewsLink(tag('link') ?? ''),
       description: tag('description'),
       pubDate: tag('pubDate'),
       enclosure: block.includes('<enclosure')
@@ -174,7 +177,14 @@ async function fetchFeed(name: string, source: FeedSource, signal?: AbortSignal)
   const res = await fetchResilient(
     source.url,
     {
-      headers: { 'User-Agent': 'DFIR-NewsAggregator/1.0' },
+      headers: {
+        // Browser-like UA: several origins (Help Net Security, cvefeed.io,
+        // …) block generic bot UAs with 403/404 while serving the same feed
+        // to browsers. Mirrors the UA used by the feeds/proxy route.
+        'User-Agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) pranithjain-rss/1.0 Safari/537.36',
+        accept: 'application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.9, */*;q=0.5',
+      },
       signal,
     },
     { attempts: 2, timeoutMs: 10000 }
@@ -256,9 +266,7 @@ export async function fetchCyberNews(opts?: {
  * Items with no extractable CVE are returned under a single `unattributed`
  * bucket rather than dropped, so the totals still reconcile.
  */
-export function clusterNewsByCve(
-  articles: CyberNewsItem[]
-): Array<{
+export function clusterNewsByCve(articles: CyberNewsItem[]): Array<{
   cveId: string | null;
   count: number;
   sources: number;

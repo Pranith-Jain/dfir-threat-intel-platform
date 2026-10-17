@@ -89,7 +89,8 @@ export const WRITEUP_SOURCES: WriteupSourceSpec[] = [
     label: 'Datadog Security Labs',
     tier: 'signal',
   },
-  { kind: 'rss', url: 'https://intezer.com/feed/', label: 'Intezer' },
+  // Intezer killed its RSS feed (site is now Webflow, /feed/ 404s) — removed
+  // 2026-10-17. Re-add if/when they publish a new feed URL.
   { kind: 'rss', url: 'https://blog.aquasec.com/rss.xml', label: 'Aqua Security (cloud)' },
   { kind: 'rss', url: 'https://www.varonis.com/blog/rss.xml', label: 'Varonis (data security)' },
 
@@ -194,8 +195,8 @@ export const WRITEUP_SOURCES: WriteupSourceSpec[] = [
   //   sister company-blog feed www.aikido.dev/blog/rss.xml above instead,
   //   which surfaces the same supply-chain research as articles.
   // bleepingcomputer.com/feed/tag/ransomware/: returns 403 to server-side
-  //   fetchers (bot detection). The main /feed/ is served via the Google News
-  //   mirror in feeds-aggregate.ts fetchOne (news.google.com allowlisted),
+  //   fetchers (bot detection). The main /feed/ is served via the Bing News
+  //   mirror in feeds-aggregate.ts fetchOne (www.bing.com allowlisted),
   //   which surfaces the same BleepingComputer stories to any client.
   // therecord.media/feed: 5 items only and content overlaps with Recorded
   //   Future feed already in the vendor section.
