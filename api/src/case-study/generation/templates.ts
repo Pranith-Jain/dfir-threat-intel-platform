@@ -92,11 +92,21 @@ const FAQ_VULN_GUIDANCE =
   `affected, how do I fix it, and has anyone been hit. Answer all four, ` +
   `early, in plain sight.\n\n` +
   `A strong piece of this kind:\n` +
-  `- Opens with the verdict. What the vulnerability is, what it scores, ` +
-  `  whether it is being exploited, whether a patch exists.\n` +
-  `- Carries the specifics early: the affected product and version range, ` +
-  `  the fixed build, the CVE ids, the bulletin id. Practitioners scan for ` +
-  `  version strings; make them findable.\n` +
+  `- Opens with the verdict AND the identifiers, inside the first two ` +
+  `  paragraphs: the affected product, the exact version range, the fixed ` +
+  `  version or build, the CVE id with its CVSS score, whether it is being ` +
+  `  exploited, and whether a patch exists. The strongest pieces in this genre read ` +
+  `  like "the flaw, tracked as CVE-XXXX-NNNN (CVSS score 9.8), affects ` +
+  `  Product 4.2 through 4.6; a fix ships in 4.6.1." A reader who stops ` +
+  `  after that screen already knows whether they care.\n` +
+  `- Quotes the exact affected versions from the dossier's "Affected ` +
+  `  versions" field verbatim: the full range, not a paraphrase and not a ` +
+  `  rounded major version. If the dossier says the versions are not ` +
+  `  established, say the advisory does not list them; never guess a range.\n` +
+  `- Says which configurations or deployments are actually exposed, when ` +
+  `  preconditions exist (a feature enabled, a non-default setting, a ` +
+  `  specific exposure). That is what separates a working explainer from a ` +
+  `  severity recital.\n` +
   `- Uses real tables where the content is genuinely tabular: a set of ` +
   `  affected products with their fixed versions, a set of CVEs sharing a ` +
   `  bulletin, a set of previously-exploited CVEs in the same product. ` +
@@ -110,8 +120,9 @@ const FAQ_VULN_GUIDANCE =
   `  saying so protects readers who would otherwise treat a clean scan as ` +
   `  clearance.\n` +
   `- Places a dated update list when the dossier has a timeline, newest ` +
-  `  first. Disclosure-to-exploitation timelines are the most useful thing ` +
-  `  an explainer can carry, and most explainers omit them.\n` +
+  `  first: disclosure, patch, first exploitation, KEV deadline. ` +
+  `  Disclosure-to-exploitation timelines are the most useful thing an ` +
+  `  explainer can carry, and most explainers omit them.\n` +
   `- Ends with where to get more detail: the vendor bulletin, the NVD ` +
   `  record, the KEV entry, the PoC references. Link each by name.\n\n` +
   `Prefer section headings shaped as the questions a reader would type: ` +
@@ -125,11 +136,13 @@ const EXPLOIT_GUIDANCE =
   `The reader here is tracking whether a vulnerability has become a usable ` +
   `attack tool, and wants to know how fast.\n\n` +
   `A strong piece of this kind:\n` +
-  `- Leads with where exploitation actually stands: a public PoC exists or ` +
-  `  it does not, an exploit is in a public repo or it is not, the code is ` +
-  `  weaponised or it is a scanner check. Distinguish "scanner detects it" ` +
-  `  from "code can exploit it". Conflating them is the most common error ` +
-  `  in this genre, and readers get burned by it.\n` +
+  `- Leads, inside the first screen, with where exploitation actually ` +
+  `  stands: the CVE id with its CVSS score, the exact affected versions ` +
+  `  from the dossier, whether a public PoC exists, whether the code is ` +
+  `  weaponised or is a scanner check, and whether it is in CISA KEV. ` +
+  `  Distinguish "scanner detects it" from "code can exploit it". ` +
+  `  Conflating them is the most common error in this genre, and readers ` +
+  `  get burned by it.\n` +
   `- Gives the timeline from disclosure to first working PoC to observed ` +
   `  exploitation, with dates. That interval is the headline number.\n` +
   `- Describes the attack surface honestly: what precondition the attacker ` +

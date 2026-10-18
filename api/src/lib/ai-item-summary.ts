@@ -18,6 +18,7 @@
 import type { Env } from '../env';
 import { runCompletion } from '../case-study/generation/ai-client';
 import { fenceUntrusted, neutralizeUntrusted, UNTRUSTED_DATA_SYSTEM_NOTE } from './prompt-fence';
+import { NO_EM_DASH_RULE, stripConnectorEmDashes } from './prose-style';
 import { routeCacheGet, routeCachePut } from './route-cache';
 
 export interface ItemInput {
@@ -32,11 +33,12 @@ const SYSTEM_PROMPT = `You are a senior cyber-threat-intelligence analyst. Summa
 
 Rules:
 - One sentence. No preamble ("This article…"), no markdown, no bullet points.
-- Be specific: keep concrete names — threat actors, malware families, CVE IDs, vendors, packages.
+- Be specific: keep concrete names: threat actors, malware families, CVE IDs, vendors, packages.
 - State the key fact or "so what", not a restatement of the title.
 - If the item is too thin to summarise, return the single most important fact from it.
 - Output plain text only.
 
+${NO_EM_DASH_RULE}
 ${UNTRUSTED_DATA_SYSTEM_NOTE}`;
 
 const CACHE_PREFIX = 'ais:item:v1:';
@@ -120,6 +122,7 @@ export async function generateItemSummary(
     let text = typeof result.text === 'string' ? result.text.trim() : '';
     // Collapse to one line and bound length defensively.
     text = text.replace(/\s+/g, ' ').trim();
+    text = stripConnectorEmDashes(text).trim();
     if (text.length > MAX_SUMMARY_CHARS) text = text.slice(0, MAX_SUMMARY_CHARS).replace(/\s+\S*$/, '') + '…';
     if (text.length < 10) return null;
 
