@@ -174,20 +174,29 @@ describe('GET /api/v1/onion-watch (cold cache)', () => {
     });
 
     const p1 = SELF.fetch('https://x/api/v1/onion-watch');
-    const p2 = SELF.fetch('https://x/api/v1/onion-watch');
 
-    // Both requests are now past `cache.match` and blocked inside the first
-    // build. If single-flight regressed, each would have started its own
-    // fan-out and recentCalls would already be 2.
-    await new Promise((r) => setTimeout(r, 50));
+    // Wait (bounded) until request 1 is inside the fan-out, blocked on `gate`.
+    // A fixed 50ms sleep flaked in CI: on a cold runner neither request had
+    // reached the mock yet, so the counter was still 0 when asserted.
+    const deadline = Date.now() + 5_000;
+    while (recentCalls === 0 && Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 10));
+    }
     expect(recentCalls).toBe(1);
+
+    // Second request arrives while the first build is still in flight. If
+    // single-flight regressed, it starts its own fan-out immediately.
+    const p2 = SELF.fetch('https://x/api/v1/onion-watch');
 
     releaseRecent();
     const [r1, r2] = await Promise.all([p1, p2]);
     expect(r1.status).toBe(200);
     expect(r2.status).toBe(200);
 
-    // The shared build's payload reaches both readers intact.
+    // The shared build's payload reaches both readers intact, and no second
+    // fan-out ever ran. Deterministic: a broken single-flight would make p2
+    // call the mock before it can resolve, so the count would be 2 here —
+    // no timing window required.
     const b1 = (await r1.json()) as { groups: Array<{ group: string }>; reachable_count: number };
     const b2 = (await r2.json()) as { groups: Array<{ group: string }> };
     expect(b1.groups.map((g) => g.group)).toEqual(['acme']);

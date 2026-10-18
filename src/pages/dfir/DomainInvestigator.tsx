@@ -41,13 +41,25 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
   { id: 'full', label: 'Full Scan', desc: 'Orchestrator: runs all checks in parallel with composite scoring' },
 
   // ── Infrastructure mapping ─────────────────────────────────────
-  { id: 'infrastructure', label: 'Infrastructure', desc: 'Live multi-source domain scan - DNS, RDAP, CT, email auth, TI' },
-  { id: 'host-graph', label: 'Host Graph', desc: 'IP/ASN/CIDR pivot to announcing prefix, holder, registry, abuse contact' },
+  {
+    id: 'infrastructure',
+    label: 'Infrastructure',
+    desc: 'Live multi-source domain scan - DNS, RDAP, CT, email auth, TI',
+  },
+  {
+    id: 'host-graph',
+    label: 'Host Graph',
+    desc: 'IP/ASN/CIDR pivot to announcing prefix, holder, registry, abuse contact',
+  },
   { id: 'passive-dns', label: 'Passive DNS', desc: 'Historical DNS resolutions and infrastructure relationships' },
   { id: 'asn', label: 'ASN', desc: 'Autonomous system ownership, announced prefixes, abuse contacts' },
 
   // ── History & certificates ─────────────────────────────────────
-  { id: 'whois-history', label: 'WHOIS History', desc: 'Historic WHOIS records - registrant, nameserver, and ownership changes' },
+  {
+    id: 'whois-history',
+    label: 'WHOIS History',
+    desc: 'Historic WHOIS records - registrant, nameserver, and ownership changes',
+  },
   { id: 'certs', label: 'Certificates', desc: 'Search issued certificates by domain, org, or serial' },
   { id: 'wayback', label: 'Wayback', desc: 'Historic snapshots of the site and its URLs' },
 ];

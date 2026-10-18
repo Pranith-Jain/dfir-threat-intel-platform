@@ -174,7 +174,7 @@ export const FILTER_CATALOGUE: FilterEndpoint[] = [
         name: 'origin',
         type: 'enum',
         description: 'Source feed that first surfaced the CVE.',
-        values: ['nvd', 'kev', 'mti', 'cvefeed', 'tg', 'dbugs', 'exploitgrid'],
+        values: ['nvd', 'kev', 'mti', 'cvefeed', 'cvenotify', 'tg', 'dbugs', 'exploitgrid', 'threatwire'],
       },
       { name: 'kev', type: 'boolean', description: 'Only CISA Known Exploited Vulnerabilities.' },
       { name: 'days', type: 'number', description: 'Only CVEs published in the last N days.' },

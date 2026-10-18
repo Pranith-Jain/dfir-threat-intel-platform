@@ -28,15 +28,18 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Export briefings from D1
+        id: export
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
             echo "::warning::CLOUDFLARE_API_TOKEN secret is not set — skipping briefings export (set it in repo Settings > Secrets to enable)."
             exit 0
           fi
           if [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
             echo "::warning::CLOUDFLARE_ACCOUNT_ID secret is not set — skipping briefings export."
             exit 0
           fi
@@ -49,8 +52,13 @@ jobs:
             echo "::error::exporter produced 0 briefing files — aborting (not committing a deletion)."
             exit 1
           fi
+          echo "skipped=false" >> "$GITHUB_OUTPUT"
 
       - name: Commit and push briefings to main
+        # Gate on the export step: when it skips (no token / no account id),
+        # `briefings/` was never created and `git add briefings/` would fail
+        # the whole run with "pathspec did not match any files".
+        if: steps.export.outputs.skipped != 'true'
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"

@@ -24,6 +24,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { format, resolveConfig } from 'prettier';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SOURCE = resolve(__dirname, '..', 'src/data/dfir/wiki-articles.ts');
@@ -98,7 +99,12 @@ async function main() {
   }
   lines.push('];', '');
 
-  await writeFile(OUTPUT, lines.join('\n'), 'utf8');
+  // Emit prettier-formatted output (config-driven) so `npm run format:check`
+  // and lint-staged don't fight this generated file after every prebuild.
+  const options = (await resolveConfig(OUTPUT)) ?? {};
+  const formatted = await format(lines.join('\n'), { ...options, parser: 'typescript' });
+
+  await writeFile(OUTPUT, formatted, 'utf8');
   console.log(`extract-wiki-meta: wrote ${entries.length} articles to ${OUTPUT}`);
 }
 

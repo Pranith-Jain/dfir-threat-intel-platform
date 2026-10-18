@@ -18,74 +18,494 @@ export interface WikiArticleMeta {
 }
 
 export const wikiMeta: WikiArticleMeta[] = [
-  { slug: "spf", title: "SPF (Sender Policy Framework)", category: "Email Security", description: "A DNS-based email authentication protocol that specifies which mail servers are authorized to send email on behalf of a domain." },
-  { slug: "dkim", title: "DKIM (DomainKeys Identified Mail)", category: "Email Security", description: "An email authentication standard that uses public-key cryptography to verify that a message was sent and authorized by the owner of a domain." },
-  { slug: "dmarc", title: "DMARC (Domain-based Message Authentication, Reporting and Conformance)", category: "Email Security", description: "An email authentication protocol that builds on SPF and DKIM to give domain owners control over how unauthenticated messages are handled and to enable abuse reporting." },
-  { slug: "arc-authentication", title: "ARC Authentication", category: "Email Security", description: "Authenticated Received Chain preserves email authentication results across forwarding hops so receiving servers can evaluate the original authentication state." },
-  { slug: "email-header-analysis", title: "Email Header Analysis", category: "Email Security", description: "The process of examining RFC 5322 email headers to trace a message's delivery path, verify authentication results, and identify anomalies." },
-  { slug: "homoglyph-domains", title: "Homoglyph Domains", category: "Email Security", description: "Domains that substitute visually identical or near-identical Unicode characters to impersonate legitimate domains." },
-  { slug: "email-spoofing", title: "Email Spoofing", category: "Email Security", description: "The forgery of email header fields to make a message appear to originate from a sender other than its true source." },
-  { slug: "link-display-mismatch", title: "Link-Display Mismatch", category: "Email Security", description: "A phishing technique where the visible anchor text shows a different URL than the actual href destination." },
-  { slug: "threat-led-defence", title: "Threat Led Defence (BS5055)", category: "Threat Intelligence", description: "The UK NCSC's cyber resilience standard. Three principles (understand the threats, design the controls, validate the controls) over a five-pillar defence model. Distinct from the other frameworks here because it is certifiable: an assessor asks for evidence, not documentation." },
-  { slug: "f3ead", title: "F3EAD (Find, Fix, Finish, Exploit, Analyze, Disseminate)", category: "Threat Intelligence", description: "A six-phase targeting cycle adapted from US Special Operations Forces doctrine to Cyber Threat Intelligence. Closes the ops-intel gap by fusing Find-Fix-Finish with the intelligence cycle, and explicitly feeds Disseminate back into the next cycle's Find." },
-  { slug: "f2t2ea", title: "F2T2EA (Find, Fix, Track, Target, Engage, Assess)", category: "Threat Intelligence", description: "The US joint targeting cycle (JP 3-60) from which F3EAD descends: locate the adversary, pin it down, keep eyes on it, decide what to do, execute, and measure the effect. Ops-pure -- Assess carries the learning back into the next cycle's Find." },
-  { slug: "ooda", title: "OODA Loop (Observe, Orient, Decide, Act)", category: "Threat Intelligence", description: "John Boyd's decision cycle from fighter combat: observe the environment, orient it with context and prior knowledge, decide a response, act -- then loop. The tempo-setting cycle underneath targeting frameworks like F2T2EA and F3EAD." },
-  { slug: "kill-chain-v2", title: "Cyber Kill Chain v2 (Lateral Movement + Campaign Overlay)", category: "Threat Intelligence", description: "Lockheed Martin's 2015 extension of the 2011 Cyber Kill Chain: adds an explicit Lateral Movement phase -- post-exploitation is where modern intrusions live -- and a Campaign overlay, because one actor runs multiple intrusions in parallel." },
-  { slug: "unified-kill-chain", title: "Unified Kill Chain (UKC) - In, Through, Out (18 phases)", category: "Threat Intelligence", description: "Paul Pols' 2017 meta-framework synthesizing the Lockheed Cyber Kill Chain and MITRE ATT&CK into 18 phases across three strategic cycles -- In (foothold), Through (propagation), Out (objectives). Non-linear: attacks are campaigns, not chains." },
-  { slug: "indicators-of-compromise", title: "Indicators of Compromise (IOCs)", category: "Threat Intelligence", description: "Observable artifacts - IPs, domains, file hashes, URLs - that indicate a system or network may have been breached or targeted." },
-  { slug: "ioc-enrichment", title: "IOC Enrichment", category: "Threat Intelligence", description: "The process of augmenting raw indicators of compromise with contextual threat intelligence to improve triage speed and accuracy." },
-  { slug: "threat-intelligence", title: "Threat Intelligence", category: "Threat Intelligence", description: "Evidence-based knowledge about existing or emerging cyber threats, including context, mechanisms, and indicators." },
-  { slug: "passive-dns", title: "Passive DNS", category: "Threat Intelligence", description: "A historical record of DNS resolution data - domain-to-IP mappings observed over time - used for infrastructure pivoting and threat actor tracking." },
-  { slug: "certificate-transparency", title: "Certificate Transparency", category: "Threat Intelligence", description: "A public logging framework that records all SSL/TLS certificates issued by certificate authorities, enabling monitoring for fraudulent or unexpected certificates." },
-  { slug: "whois-lookup", title: "WHOIS / RDAP Lookup", category: "Threat Intelligence", description: "A protocol for querying domain registration information - registrant, registrar, dates - used to attribute infrastructure and detect suspicious registrations." },
-  { slug: "domain-reputation", title: "Domain Reputation", category: "Threat Intelligence", description: "A score or classification assigned to a domain based on historical behaviour, association with malicious activity, and infrastructure signals." },
-  { slug: "ip-reputation", title: "IP Reputation", category: "Threat Intelligence", description: "A score or classification assigned to an IP address based on observed malicious activity, geolocation, hosting provider, and threat actor association." },
-  { slug: "threat-actor-profiling", title: "Threat Actor Profiling", category: "Threat Intelligence", description: "The process of identifying and documenting threat group tactics, infrastructure patterns, and objectives to enable attribution and predictive defence." },
-  { slug: "dns-security", title: "DNS Security", category: "Threat Intelligence", description: "Practices and technologies for protecting DNS infrastructure against manipulation, exfiltration, and abuse as a covert channel." },
-  { slug: "ssl-tls-certificates", title: "SSL/TLS Certificates", category: "Threat Intelligence", description: "Digital certificates that authenticate server identity and enable encrypted communications - a key infrastructure signal in threat intelligence." },
-  { slug: "attack-surface-management", title: "Attack Surface Management", category: "Threat Intelligence", description: "The continuous process of discovering, inventorying, classifying, and reducing an organisation's externally exposed digital assets." },
-  { slug: "open-ports", title: "Open Ports", category: "Threat Intelligence", description: "Network ports on a host that are accepting connections - a key signal for understanding an asset's exposure and potential attack vectors." },
-  { slug: "vulnerability-scanning", title: "Vulnerability Scanning", category: "Threat Intelligence", description: "The automated process of identifying security weaknesses in systems, services, and configurations before attackers can exploit them." },
-  { slug: "digital-forensics", title: "Digital Forensics", category: "Forensics", description: "The scientific discipline of identifying, preserving, analysing, and presenting digital evidence in a forensically sound manner." },
-  { slug: "incident-response", title: "Incident Response", category: "Forensics", description: "The organised approach to detecting, containing, eradicating, and recovering from cybersecurity incidents while minimising damage." },
-  { slug: "phishing-analysis", title: "Phishing Email Analysis", category: "Forensics", description: "The forensic examination of suspected phishing emails - parsing headers, verifying authentication, and extracting malicious indicators." },
-  { slug: "timeline-analysis", title: "Timeline Analysis", category: "Forensics", description: "The process of reconstructing a chronological sequence of events across multiple evidence sources to understand attacker actions." },
-  { slug: "log-analysis", title: "Log Analysis", category: "Forensics", description: "The examination of system, application, and network logs to reconstruct events, detect anomalies, and gather evidence during an investigation." },
-  { slug: "malware-analysis", title: "Malware Analysis", category: "Forensics", description: "The process of examining malicious software to understand its behaviour, capabilities, persistence mechanisms, and command-and-control infrastructure." },
-  { slug: "mitre-attack", title: "MITRE ATT&CK Framework", category: "Detection Engineering", description: "A knowledge base of adversary tactics and techniques based on real-world observations, used to understand, detect, and defend against attacks." },
-  { slug: "sigma-rules", title: "Sigma Rules", category: "Detection Engineering", description: "A vendor-agnostic open standard for writing generic detection rules that can be converted to SIEM queries for any platform." },
-  { slug: "yara-rules", title: "YARA Rules", category: "Detection Engineering", description: "A pattern-matching tool for identifying and classifying malware samples based on binary strings, hex patterns, and regular expressions." },
-  { slug: "threat-hunting", title: "Threat Hunting", category: "Detection Engineering", description: "The proactive, hypothesis-driven search for adversary activity that has evaded existing automated security controls." },
-  { slug: "alert-triage", title: "Alert Triage", category: "Detection Engineering", description: "The process of evaluating, prioritising, and deciding the appropriate response to security alerts generated by detection systems." },
-  { slug: "siem", title: "SIEM", category: "Detection Engineering", description: "Security Information and Event Management - a platform that aggregates, correlates, and alerts on log data from across an organisation's infrastructure." },
-  { slug: "soar", title: "SOAR", category: "Detection Engineering", description: "Security Orchestration, Automation, and Response - platforms that automate repetitive SOC tasks and orchestrate responses across security tools." },
-  { slug: "detection-as-code", title: "Detection-as-Code", category: "Detection Engineering", description: "The practice of managing detection logic as version-controlled, tested, and deployed code - applying software engineering principles to security detection." },
-  { slug: "api-security", title: "API Security", category: "Detection Engineering", description: "Practices and controls for protecting APIs from abuse, unauthorised access, and data exposure - increasingly critical as APIs become the primary integration layer." },
-  { slug: "bec", title: "Business Email Compromise (BEC)", category: "Attack Types", description: "A social engineering attack where adversaries hijack or spoof corporate email accounts to initiate fraudulent wire transfers or data theft." },
-  { slug: "spear-phishing", title: "Spear Phishing", category: "Attack Types", description: "A targeted phishing attack directed at specific individuals or organisations, leveraging personalised context to increase credibility." },
-  { slug: "qr-phishing", title: "QR Phishing (Quishing)", category: "Attack Types", description: "A phishing technique that embeds malicious URLs inside QR codes to bypass URL-scanning email security controls." },
-  { slug: "thread-hijacking", title: "Thread Hijacking", category: "Attack Types", description: "An attack where an adversary compromises a mailbox and injects malicious replies into existing legitimate email threads to gain trust." },
-  { slug: "credential-harvesting", title: "Credential Harvesting", category: "Attack Types", description: "The theft of usernames and passwords through fake login pages, malicious forms, or credential-stealer malware." },
-  { slug: "typosquatting", title: "Typosquatting", category: "Attack Types", description: "Registering domain names that are deliberate misspellings or character transpositions of legitimate domains to capture misdirected traffic." },
-  { slug: "oauth-phishing", title: "OAuth Phishing", category: "Attack Types", description: "An attack that tricks users into granting OAuth consent to a malicious application, giving it persistent access to their account without capturing a password." },
-  { slug: "social-engineering", title: "Social Engineering", category: "Attack Types", description: "Psychological manipulation techniques that exploit human trust, urgency, and authority to deceive individuals into taking harmful actions." },
-  { slug: "ransomware", title: "Ransomware", category: "Attack Types", description: "Malware that encrypts victim files and demands payment - typically cryptocurrency - for the decryption key." },
-  { slug: "supply-chain-attack", title: "Supply Chain Attack", category: "Attack Types", description: "An attack that compromises a trusted third-party vendor or software dependency to gain access to its downstream customers." },
-  { slug: "watering-hole-attack", title: "Watering Hole Attack", category: "Attack Types", description: "An attack that compromises a website frequently visited by a target group, serving malware to visitors from the targeted organisation." },
-  { slug: "brute-force-attack", title: "Brute Force Attack", category: "Attack Types", description: "A method that systematically tries all possible password combinations or a large password list to gain unauthorised access." },
-  { slug: "insider-threat", title: "Insider Threat", category: "Attack Types", description: "A security risk originating from within the organisation - employees, contractors, or partners who misuse legitimate access." },
-  { slug: "prompt-injection", title: "Prompt Injection", category: "AI Security", description: "An attack where adversary-controlled text changes an LLM's behaviour, either via direct user input or indirectly through retrieved / ingested content." },
-  { slug: "mcp-server-security", title: "MCP Server Security", category: "AI Security", description: "Security considerations for the Model Context Protocol - tool descriptions, transports, secrets, and the tool-poisoning attack class." },
-  { slug: "excessive-agency", title: "Excessive Agency", category: "AI Security", description: "OWASP LLM06 - when an AI agent has more functionality, permissions, or autonomy than its task requires, allowing prompt-injection to escalate to real-world impact." },
-  { slug: "service-accounts", title: "Service Accounts", category: "Identity & NHI", description: "Non-human identities used by software to authenticate to other systems - and the operational hazards that come with them." },
-  { slug: "oauth-tokens", title: "OAuth Tokens & Risks", category: "Identity & NHI", description: "Access tokens, refresh tokens, and OAuth scopes - the everyday glue of SaaS, and the everyday vector for stealthy mailbox takeover." },
-  { slug: "secret-rotation", title: "Secret Rotation", category: "Identity & NHI", description: "Why rotation matters, what good cadence looks like per credential class, and how to make it routine instead of an incident." },
-  { slug: "nist-csf-2", title: "NIST CSF 2.0", category: "Compliance & Frameworks", description: "NIST Cybersecurity Framework 2.0 (2024) - the de-facto control taxonomy for US-aligned security programs, structured around six functions." },
-  { slug: "kill-chain-vs-diamond", title: "Kill Chain vs Diamond Model", category: "Compliance & Frameworks", description: "Two complementary intrusion-analysis models - when to reach for the linear timeline, when to reach for the relationship view." },
-  { slug: "soc2-overview", title: "SOC 2 - Type 1 vs Type 2", category: "Compliance & Frameworks", description: "The AICPA Trust Services Criteria, the difference between a point-in-time and a sustained attestation, and what auditors actually look for." },
-  { slug: "data-classification", title: "Data Classification", category: "Data Security & Privacy", description: "Standardised labelling of data by sensitivity to drive proportionate handling - encryption, access, retention, disclosure." },
-  { slug: "pii-handling", title: "PII / PHI / PCI Handling", category: "Data Security & Privacy", description: "What counts as personally identifiable information, what changes for healthcare and payment data, and the controls that follow." },
-  { slug: "dlp-architectures", title: "DLP Architectures", category: "Data Security & Privacy", description: "Where Data Loss Prevention runs - endpoint, network, cloud, email - and the trade-offs of each placement." },
-  { slug: "dark-web-monitoring", title: "Dark-web monitoring tradecraft", category: "Threat Intelligence", description: "Practical guide to monitoring ransomware leak sites and other .onion services from clearnet, without standing up Tor infrastructure." },
-  { slug: "telegram-osint", title: "Telegram OSINT for analysts", category: "Threat Intelligence", description: "How to discover, monitor, and pull threat-relevant content from public Telegram channels without compromising your opsec." },
+  {
+    slug: 'spf',
+    title: 'SPF (Sender Policy Framework)',
+    category: 'Email Security',
+    description:
+      'A DNS-based email authentication protocol that specifies which mail servers are authorized to send email on behalf of a domain.',
+  },
+  {
+    slug: 'dkim',
+    title: 'DKIM (DomainKeys Identified Mail)',
+    category: 'Email Security',
+    description:
+      'An email authentication standard that uses public-key cryptography to verify that a message was sent and authorized by the owner of a domain.',
+  },
+  {
+    slug: 'dmarc',
+    title: 'DMARC (Domain-based Message Authentication, Reporting and Conformance)',
+    category: 'Email Security',
+    description:
+      'An email authentication protocol that builds on SPF and DKIM to give domain owners control over how unauthenticated messages are handled and to enable abuse reporting.',
+  },
+  {
+    slug: 'arc-authentication',
+    title: 'ARC Authentication',
+    category: 'Email Security',
+    description:
+      'Authenticated Received Chain preserves email authentication results across forwarding hops so receiving servers can evaluate the original authentication state.',
+  },
+  {
+    slug: 'email-header-analysis',
+    title: 'Email Header Analysis',
+    category: 'Email Security',
+    description:
+      "The process of examining RFC 5322 email headers to trace a message's delivery path, verify authentication results, and identify anomalies.",
+  },
+  {
+    slug: 'homoglyph-domains',
+    title: 'Homoglyph Domains',
+    category: 'Email Security',
+    description:
+      'Domains that substitute visually identical or near-identical Unicode characters to impersonate legitimate domains.',
+  },
+  {
+    slug: 'email-spoofing',
+    title: 'Email Spoofing',
+    category: 'Email Security',
+    description:
+      'The forgery of email header fields to make a message appear to originate from a sender other than its true source.',
+  },
+  {
+    slug: 'link-display-mismatch',
+    title: 'Link-Display Mismatch',
+    category: 'Email Security',
+    description:
+      'A phishing technique where the visible anchor text shows a different URL than the actual href destination.',
+  },
+  {
+    slug: 'threat-led-defence',
+    title: 'Threat Led Defence (BS5055)',
+    category: 'Threat Intelligence',
+    description:
+      "The UK NCSC's cyber resilience standard. Three principles (understand the threats, design the controls, validate the controls) over a five-pillar defence model. Distinct from the other frameworks here because it is certifiable: an assessor asks for evidence, not documentation.",
+  },
+  {
+    slug: 'f3ead',
+    title: 'F3EAD (Find, Fix, Finish, Exploit, Analyze, Disseminate)',
+    category: 'Threat Intelligence',
+    description:
+      "A six-phase targeting cycle adapted from US Special Operations Forces doctrine to Cyber Threat Intelligence. Closes the ops-intel gap by fusing Find-Fix-Finish with the intelligence cycle, and explicitly feeds Disseminate back into the next cycle's Find.",
+  },
+  {
+    slug: 'f2t2ea',
+    title: 'F2T2EA (Find, Fix, Track, Target, Engage, Assess)',
+    category: 'Threat Intelligence',
+    description:
+      "The US joint targeting cycle (JP 3-60) from which F3EAD descends: locate the adversary, pin it down, keep eyes on it, decide what to do, execute, and measure the effect. Ops-pure -- Assess carries the learning back into the next cycle's Find.",
+  },
+  {
+    slug: 'ooda',
+    title: 'OODA Loop (Observe, Orient, Decide, Act)',
+    category: 'Threat Intelligence',
+    description:
+      "John Boyd's decision cycle from fighter combat: observe the environment, orient it with context and prior knowledge, decide a response, act -- then loop. The tempo-setting cycle underneath targeting frameworks like F2T2EA and F3EAD.",
+  },
+  {
+    slug: 'kill-chain-v2',
+    title: 'Cyber Kill Chain v2 (Lateral Movement + Campaign Overlay)',
+    category: 'Threat Intelligence',
+    description:
+      "Lockheed Martin's 2015 extension of the 2011 Cyber Kill Chain: adds an explicit Lateral Movement phase -- post-exploitation is where modern intrusions live -- and a Campaign overlay, because one actor runs multiple intrusions in parallel.",
+  },
+  {
+    slug: 'unified-kill-chain',
+    title: 'Unified Kill Chain (UKC) - In, Through, Out (18 phases)',
+    category: 'Threat Intelligence',
+    description:
+      "Paul Pols' 2017 meta-framework synthesizing the Lockheed Cyber Kill Chain and MITRE ATT&CK into 18 phases across three strategic cycles -- In (foothold), Through (propagation), Out (objectives). Non-linear: attacks are campaigns, not chains.",
+  },
+  {
+    slug: 'indicators-of-compromise',
+    title: 'Indicators of Compromise (IOCs)',
+    category: 'Threat Intelligence',
+    description:
+      'Observable artifacts - IPs, domains, file hashes, URLs - that indicate a system or network may have been breached or targeted.',
+  },
+  {
+    slug: 'ioc-enrichment',
+    title: 'IOC Enrichment',
+    category: 'Threat Intelligence',
+    description:
+      'The process of augmenting raw indicators of compromise with contextual threat intelligence to improve triage speed and accuracy.',
+  },
+  {
+    slug: 'threat-intelligence',
+    title: 'Threat Intelligence',
+    category: 'Threat Intelligence',
+    description:
+      'Evidence-based knowledge about existing or emerging cyber threats, including context, mechanisms, and indicators.',
+  },
+  {
+    slug: 'passive-dns',
+    title: 'Passive DNS',
+    category: 'Threat Intelligence',
+    description:
+      'A historical record of DNS resolution data - domain-to-IP mappings observed over time - used for infrastructure pivoting and threat actor tracking.',
+  },
+  {
+    slug: 'certificate-transparency',
+    title: 'Certificate Transparency',
+    category: 'Threat Intelligence',
+    description:
+      'A public logging framework that records all SSL/TLS certificates issued by certificate authorities, enabling monitoring for fraudulent or unexpected certificates.',
+  },
+  {
+    slug: 'whois-lookup',
+    title: 'WHOIS / RDAP Lookup',
+    category: 'Threat Intelligence',
+    description:
+      'A protocol for querying domain registration information - registrant, registrar, dates - used to attribute infrastructure and detect suspicious registrations.',
+  },
+  {
+    slug: 'domain-reputation',
+    title: 'Domain Reputation',
+    category: 'Threat Intelligence',
+    description:
+      'A score or classification assigned to a domain based on historical behaviour, association with malicious activity, and infrastructure signals.',
+  },
+  {
+    slug: 'ip-reputation',
+    title: 'IP Reputation',
+    category: 'Threat Intelligence',
+    description:
+      'A score or classification assigned to an IP address based on observed malicious activity, geolocation, hosting provider, and threat actor association.',
+  },
+  {
+    slug: 'threat-actor-profiling',
+    title: 'Threat Actor Profiling',
+    category: 'Threat Intelligence',
+    description:
+      'The process of identifying and documenting threat group tactics, infrastructure patterns, and objectives to enable attribution and predictive defence.',
+  },
+  {
+    slug: 'dns-security',
+    title: 'DNS Security',
+    category: 'Threat Intelligence',
+    description:
+      'Practices and technologies for protecting DNS infrastructure against manipulation, exfiltration, and abuse as a covert channel.',
+  },
+  {
+    slug: 'ssl-tls-certificates',
+    title: 'SSL/TLS Certificates',
+    category: 'Threat Intelligence',
+    description:
+      'Digital certificates that authenticate server identity and enable encrypted communications - a key infrastructure signal in threat intelligence.',
+  },
+  {
+    slug: 'attack-surface-management',
+    title: 'Attack Surface Management',
+    category: 'Threat Intelligence',
+    description:
+      "The continuous process of discovering, inventorying, classifying, and reducing an organisation's externally exposed digital assets.",
+  },
+  {
+    slug: 'open-ports',
+    title: 'Open Ports',
+    category: 'Threat Intelligence',
+    description:
+      "Network ports on a host that are accepting connections - a key signal for understanding an asset's exposure and potential attack vectors.",
+  },
+  {
+    slug: 'vulnerability-scanning',
+    title: 'Vulnerability Scanning',
+    category: 'Threat Intelligence',
+    description:
+      'The automated process of identifying security weaknesses in systems, services, and configurations before attackers can exploit them.',
+  },
+  {
+    slug: 'digital-forensics',
+    title: 'Digital Forensics',
+    category: 'Forensics',
+    description:
+      'The scientific discipline of identifying, preserving, analysing, and presenting digital evidence in a forensically sound manner.',
+  },
+  {
+    slug: 'incident-response',
+    title: 'Incident Response',
+    category: 'Forensics',
+    description:
+      'The organised approach to detecting, containing, eradicating, and recovering from cybersecurity incidents while minimising damage.',
+  },
+  {
+    slug: 'phishing-analysis',
+    title: 'Phishing Email Analysis',
+    category: 'Forensics',
+    description:
+      'The forensic examination of suspected phishing emails - parsing headers, verifying authentication, and extracting malicious indicators.',
+  },
+  {
+    slug: 'timeline-analysis',
+    title: 'Timeline Analysis',
+    category: 'Forensics',
+    description:
+      'The process of reconstructing a chronological sequence of events across multiple evidence sources to understand attacker actions.',
+  },
+  {
+    slug: 'log-analysis',
+    title: 'Log Analysis',
+    category: 'Forensics',
+    description:
+      'The examination of system, application, and network logs to reconstruct events, detect anomalies, and gather evidence during an investigation.',
+  },
+  {
+    slug: 'malware-analysis',
+    title: 'Malware Analysis',
+    category: 'Forensics',
+    description:
+      'The process of examining malicious software to understand its behaviour, capabilities, persistence mechanisms, and command-and-control infrastructure.',
+  },
+  {
+    slug: 'mitre-attack',
+    title: 'MITRE ATT&CK Framework',
+    category: 'Detection Engineering',
+    description:
+      'A knowledge base of adversary tactics and techniques based on real-world observations, used to understand, detect, and defend against attacks.',
+  },
+  {
+    slug: 'sigma-rules',
+    title: 'Sigma Rules',
+    category: 'Detection Engineering',
+    description:
+      'A vendor-agnostic open standard for writing generic detection rules that can be converted to SIEM queries for any platform.',
+  },
+  {
+    slug: 'yara-rules',
+    title: 'YARA Rules',
+    category: 'Detection Engineering',
+    description:
+      'A pattern-matching tool for identifying and classifying malware samples based on binary strings, hex patterns, and regular expressions.',
+  },
+  {
+    slug: 'threat-hunting',
+    title: 'Threat Hunting',
+    category: 'Detection Engineering',
+    description:
+      'The proactive, hypothesis-driven search for adversary activity that has evaded existing automated security controls.',
+  },
+  {
+    slug: 'alert-triage',
+    title: 'Alert Triage',
+    category: 'Detection Engineering',
+    description:
+      'The process of evaluating, prioritising, and deciding the appropriate response to security alerts generated by detection systems.',
+  },
+  {
+    slug: 'siem',
+    title: 'SIEM',
+    category: 'Detection Engineering',
+    description:
+      "Security Information and Event Management - a platform that aggregates, correlates, and alerts on log data from across an organisation's infrastructure.",
+  },
+  {
+    slug: 'soar',
+    title: 'SOAR',
+    category: 'Detection Engineering',
+    description:
+      'Security Orchestration, Automation, and Response - platforms that automate repetitive SOC tasks and orchestrate responses across security tools.',
+  },
+  {
+    slug: 'detection-as-code',
+    title: 'Detection-as-Code',
+    category: 'Detection Engineering',
+    description:
+      'The practice of managing detection logic as version-controlled, tested, and deployed code - applying software engineering principles to security detection.',
+  },
+  {
+    slug: 'api-security',
+    title: 'API Security',
+    category: 'Detection Engineering',
+    description:
+      'Practices and controls for protecting APIs from abuse, unauthorised access, and data exposure - increasingly critical as APIs become the primary integration layer.',
+  },
+  {
+    slug: 'bec',
+    title: 'Business Email Compromise (BEC)',
+    category: 'Attack Types',
+    description:
+      'A social engineering attack where adversaries hijack or spoof corporate email accounts to initiate fraudulent wire transfers or data theft.',
+  },
+  {
+    slug: 'spear-phishing',
+    title: 'Spear Phishing',
+    category: 'Attack Types',
+    description:
+      'A targeted phishing attack directed at specific individuals or organisations, leveraging personalised context to increase credibility.',
+  },
+  {
+    slug: 'qr-phishing',
+    title: 'QR Phishing (Quishing)',
+    category: 'Attack Types',
+    description:
+      'A phishing technique that embeds malicious URLs inside QR codes to bypass URL-scanning email security controls.',
+  },
+  {
+    slug: 'thread-hijacking',
+    title: 'Thread Hijacking',
+    category: 'Attack Types',
+    description:
+      'An attack where an adversary compromises a mailbox and injects malicious replies into existing legitimate email threads to gain trust.',
+  },
+  {
+    slug: 'credential-harvesting',
+    title: 'Credential Harvesting',
+    category: 'Attack Types',
+    description:
+      'The theft of usernames and passwords through fake login pages, malicious forms, or credential-stealer malware.',
+  },
+  {
+    slug: 'typosquatting',
+    title: 'Typosquatting',
+    category: 'Attack Types',
+    description:
+      'Registering domain names that are deliberate misspellings or character transpositions of legitimate domains to capture misdirected traffic.',
+  },
+  {
+    slug: 'oauth-phishing',
+    title: 'OAuth Phishing',
+    category: 'Attack Types',
+    description:
+      'An attack that tricks users into granting OAuth consent to a malicious application, giving it persistent access to their account without capturing a password.',
+  },
+  {
+    slug: 'social-engineering',
+    title: 'Social Engineering',
+    category: 'Attack Types',
+    description:
+      'Psychological manipulation techniques that exploit human trust, urgency, and authority to deceive individuals into taking harmful actions.',
+  },
+  {
+    slug: 'ransomware',
+    title: 'Ransomware',
+    category: 'Attack Types',
+    description:
+      'Malware that encrypts victim files and demands payment - typically cryptocurrency - for the decryption key.',
+  },
+  {
+    slug: 'supply-chain-attack',
+    title: 'Supply Chain Attack',
+    category: 'Attack Types',
+    description:
+      'An attack that compromises a trusted third-party vendor or software dependency to gain access to its downstream customers.',
+  },
+  {
+    slug: 'watering-hole-attack',
+    title: 'Watering Hole Attack',
+    category: 'Attack Types',
+    description:
+      'An attack that compromises a website frequently visited by a target group, serving malware to visitors from the targeted organisation.',
+  },
+  {
+    slug: 'brute-force-attack',
+    title: 'Brute Force Attack',
+    category: 'Attack Types',
+    description:
+      'A method that systematically tries all possible password combinations or a large password list to gain unauthorised access.',
+  },
+  {
+    slug: 'insider-threat',
+    title: 'Insider Threat',
+    category: 'Attack Types',
+    description:
+      'A security risk originating from within the organisation - employees, contractors, or partners who misuse legitimate access.',
+  },
+  {
+    slug: 'prompt-injection',
+    title: 'Prompt Injection',
+    category: 'AI Security',
+    description:
+      "An attack where adversary-controlled text changes an LLM's behaviour, either via direct user input or indirectly through retrieved / ingested content.",
+  },
+  {
+    slug: 'mcp-server-security',
+    title: 'MCP Server Security',
+    category: 'AI Security',
+    description:
+      'Security considerations for the Model Context Protocol - tool descriptions, transports, secrets, and the tool-poisoning attack class.',
+  },
+  {
+    slug: 'excessive-agency',
+    title: 'Excessive Agency',
+    category: 'AI Security',
+    description:
+      'OWASP LLM06 - when an AI agent has more functionality, permissions, or autonomy than its task requires, allowing prompt-injection to escalate to real-world impact.',
+  },
+  {
+    slug: 'service-accounts',
+    title: 'Service Accounts',
+    category: 'Identity & NHI',
+    description:
+      'Non-human identities used by software to authenticate to other systems - and the operational hazards that come with them.',
+  },
+  {
+    slug: 'oauth-tokens',
+    title: 'OAuth Tokens & Risks',
+    category: 'Identity & NHI',
+    description:
+      'Access tokens, refresh tokens, and OAuth scopes - the everyday glue of SaaS, and the everyday vector for stealthy mailbox takeover.',
+  },
+  {
+    slug: 'secret-rotation',
+    title: 'Secret Rotation',
+    category: 'Identity & NHI',
+    description:
+      'Why rotation matters, what good cadence looks like per credential class, and how to make it routine instead of an incident.',
+  },
+  {
+    slug: 'nist-csf-2',
+    title: 'NIST CSF 2.0',
+    category: 'Compliance & Frameworks',
+    description:
+      'NIST Cybersecurity Framework 2.0 (2024) - the de-facto control taxonomy for US-aligned security programs, structured around six functions.',
+  },
+  {
+    slug: 'kill-chain-vs-diamond',
+    title: 'Kill Chain vs Diamond Model',
+    category: 'Compliance & Frameworks',
+    description:
+      'Two complementary intrusion-analysis models - when to reach for the linear timeline, when to reach for the relationship view.',
+  },
+  {
+    slug: 'soc2-overview',
+    title: 'SOC 2 - Type 1 vs Type 2',
+    category: 'Compliance & Frameworks',
+    description:
+      'The AICPA Trust Services Criteria, the difference between a point-in-time and a sustained attestation, and what auditors actually look for.',
+  },
+  {
+    slug: 'data-classification',
+    title: 'Data Classification',
+    category: 'Data Security & Privacy',
+    description:
+      'Standardised labelling of data by sensitivity to drive proportionate handling - encryption, access, retention, disclosure.',
+  },
+  {
+    slug: 'pii-handling',
+    title: 'PII / PHI / PCI Handling',
+    category: 'Data Security & Privacy',
+    description:
+      'What counts as personally identifiable information, what changes for healthcare and payment data, and the controls that follow.',
+  },
+  {
+    slug: 'dlp-architectures',
+    title: 'DLP Architectures',
+    category: 'Data Security & Privacy',
+    description:
+      'Where Data Loss Prevention runs - endpoint, network, cloud, email - and the trade-offs of each placement.',
+  },
+  {
+    slug: 'dark-web-monitoring',
+    title: 'Dark-web monitoring tradecraft',
+    category: 'Threat Intelligence',
+    description:
+      'Practical guide to monitoring ransomware leak sites and other .onion services from clearnet, without standing up Tor infrastructure.',
+  },
+  {
+    slug: 'telegram-osint',
+    title: 'Telegram OSINT for analysts',
+    category: 'Threat Intelligence',
+    description:
+      'How to discover, monitor, and pull threat-relevant content from public Telegram channels without compromising your opsec.',
+  },
 ];

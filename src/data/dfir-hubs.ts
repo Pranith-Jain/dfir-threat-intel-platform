@@ -383,7 +383,6 @@ export const HUB_META: readonly HubMeta[] = [
         desc: 'Cross-source domain investigation hub - 6 aliases route here (domain-rep, webcheck, etc.).',
         compVar: 'DomainInvestigator',
       },
-
     ],
   },
   {

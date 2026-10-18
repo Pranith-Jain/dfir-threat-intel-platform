@@ -37,20 +37,36 @@ jobs:
           node-version: "22"
           cache: npm
 
+      - name: Sync Anarchy catalog
+        id: sync
+        # Upstream (kazamadono.github.io) was retired upstream: the GitHub user
+        # was deleted and every URL on the host 404s. Treat an unreachable
+        # upstream as "nothing to commit — keep serving the committed catalog"
+        # instead of failing the whole daily run; the moment the portal comes
+        # back the regular sync/build/commit/deploy path runs again unchanged.
+        run: |
+          if ! node scripts/sync-anarchy.mjs; then
+            echo "::warning::Anarchy upstream (kazamadono.github.io) unreachable — keeping the committed catalog; skipping build/commit/deploy."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install
+        if: steps.sync.outputs.skip != 'true'
         run: npm ci --no-fund || npm install --no-fund
 
       - name: Install api deps
+        if: steps.sync.outputs.skip != 'true'
         working-directory: api
         run: npm ci --legacy-peer-deps
 
-      - name: Sync Anarchy catalog
-        run: node scripts/sync-anarchy.mjs
-
       - name: Build Anarchy manifest
+        if: steps.sync.outputs.skip != 'true'
         run: node scripts/build-anarchy.mjs
 
       - name: Show diff stat
+        if: steps.sync.outputs.skip != 'true'
         run: |
           echo "=== public/data/anarchy/ ==="
           ls -lh public/data/anarchy/ || true
@@ -62,6 +78,7 @@ jobs:
 
       - name: Check for changes
         id: changes
+        if: steps.sync.outputs.skip != 'true'
         run: |
           git add public/data/anarchy/ threat-intel-staging/anarchy.json
           if git diff --cached --quiet; then
