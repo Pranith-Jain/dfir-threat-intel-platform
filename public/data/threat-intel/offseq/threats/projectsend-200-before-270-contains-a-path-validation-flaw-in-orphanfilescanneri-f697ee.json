@@ -1,0 +1,49 @@
+{
+  "slug": "projectsend-200-before-270-contains-a-path-validation-flaw-in-orphanfilescanneri-f697ee",
+  "externalId": "gcve-osv-ghsa-f5fh-phpc-hrv4",
+  "source": "GCVE Database",
+  "type": "vulnerability",
+  "title": "ProjectSend 2.0.0 before 2.7.0 contains a path validation flaw in OrphanFileScanner::isOrphan() that allows staff with import_orphans permission to… (CVE-2026-112003)",
+  "description": "ProjectSend versions 2.0.0 up to but not including 2.7.0 contain a path validation vulnerability in the OrphanFileScanner::isOrphan() function. This flaw allows staff members with the import_orphans permission to manipulate file paths using ./ aliases to treat tracked files as orphans. Exploiting this, an attacker can delete or adopt files owned by other users, bypassing the intended delete_others_files permission check.",
+  "severity": "medium",
+  "cvssScore": 5.9,
+  "cvssVector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:H/A:L",
+  "publishedDate": "2026-10-18T12:30:26.000Z",
+  "cveId": "CVE-2026-112003",
+  "cveIds": ["CVE-2026-112003"],
+  "tags": ["gcve", "osv", "ghsa-f5fh-phpc-hrv4", "cve-2026-112003", "ghsa"],
+  "knownExploitsInWild": false,
+  "exploited": false,
+  "mirageCountries": [],
+  "patchAvailable": false,
+  "knownThreatActors": [],
+  "affectedCountries": [],
+  "references": [
+    {
+      "title": "",
+      "url": "https://github.com/projectsend/projectsend/security/advisories/GHSA-pv88-7863-5hwq",
+      "type": "other"
+    },
+    { "title": "", "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-112003", "type": "advisory" },
+    {
+      "title": "",
+      "url": "https://github.com/projectsend/projectsend/commit/1e34773ad39c256f1320f4d2b47b93a5805f07c6",
+      "type": "other"
+    },
+    {
+      "title": "",
+      "url": "https://github.com/projectsend/projectsend/blob/v2.6.0/app/Modules/Files/OrphanFileScanner.php#L109-L120",
+      "type": "other"
+    },
+    { "title": "", "url": "https://github.com/projectsend/projectsend/releases/tag/v2.7.0", "type": "other" },
+    {
+      "title": "",
+      "url": "https://www.vulncheck.com/advisories/projectsend-2.0.0-before-2.7.0-path-validation-bypass-via-orphan-file-import-delete",
+      "type": "other"
+    }
+  ],
+  "url": "https://radar.offseq.com/threats/projectsend-200-before-270-contains-a-path-validation-flaw-in-orphanfilescanneri-f697ee",
+  "aiSummary": "The vulnerability in ProjectSend affects versions from 2.0.0 before 2.7.0 and involves improper path validation in the OrphanFileScanner::isOrphan() method. Staff users with the import_orphans permission can submit path aliases such as ./ to the orphans import or delete endpoints. This manipulation enables them to bypass the delete_others_files permission and either delete or adopt files belonging to other users. The issue is classified under CWE-180 (Improper Handling of File Pathnames).",
+  "aiImpact": "An attacker with limited staff permissions (import_orphans) can escalate their ability to delete or take ownership of files they should not control. This leads to unauthorized file deletion or adoption, impacting data integrity and availability. The CVSS score of 5.9 (medium severity) reflects the moderate complexity of the attack and the requirement for some privileges.",
+  "sizeBytes": 2979
+}
