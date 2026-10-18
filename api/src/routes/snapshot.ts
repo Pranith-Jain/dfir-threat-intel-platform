@@ -309,7 +309,9 @@ export async function snapshotHandler(c: Context<{ Bindings: Env }>): Promise<Re
               tech_ai: techAi,
               briefings,
             };
-            const fresh = c.json(body, 200, { 'Cache-Control': `public, max-age=60, s-maxage=${CACHE_TTL}` });
+            const fresh = c.json(body, 200, {
+              'Cache-Control': `public, max-age=60, s-maxage=${CACHE_TTL}, stale-while-revalidate=${CACHE_TTL * 4}`,
+            });
             await cache.put(cacheKey, fresh);
           } catch (_catchErr) {
             logError('handler failed', _catchErr);
@@ -438,7 +440,7 @@ export async function snapshotHandler(c: Context<{ Bindings: Env }>): Promise<Re
   const browserTtl = 60;
   const edgeTtl = criticalOk ? CACHE_TTL : 300;
   const response = c.json(body, 200, {
-    'Cache-Control': `public, max-age=${browserTtl}, s-maxage=${edgeTtl}`,
+    'Cache-Control': `public, max-age=${browserTtl}, s-maxage=${edgeTtl}, stale-while-revalidate=${edgeTtl * 4}`,
   });
   c.executionCtx.waitUntil(cache.put(cacheKey, response.clone()));
   return response;

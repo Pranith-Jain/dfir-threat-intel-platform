@@ -424,7 +424,7 @@ export async function c2TrackerHandler(c: Context<{ Bindings: Env }>): Promise<R
   const response = new Response(body, {
     headers: {
       'content-type': 'application/json',
-      'cache-control': `public, max-age=${CACHE_TTL}`,
+      'cache-control': `public, max-age=${CACHE_TTL}, stale-while-revalidate=${CACHE_TTL * 4}`,
       'access-control-allow-origin': '*',
     },
   });

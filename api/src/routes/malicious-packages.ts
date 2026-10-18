@@ -147,14 +147,12 @@ export async function maliciousPackagesHandler(c: Context<{ Bindings: Env }>): P
   };
 
   const response = c.json(body, 200, {
-    'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}`,
+    'Cache-Control': `public, max-age=${CACHE_TTL_SECONDS}, stale-while-revalidate=${CACHE_TTL_SECONDS * 4}`,
   });
   c.executionCtx.waitUntil(cache.put(cacheKey, response.clone()));
   // Refresh the KV last-good so future 403s can serve stale instead of
   // erroring. Debounced via caches.default so we don't write on every
   // cache-miss-success — once every few hours per ecosystem is plenty.
-  c.executionCtx.waitUntil(
-    writeLastGood(c.env, kvKey, body, { ttlSeconds: KV_LAST_GOOD_TTL_SECONDS, keyPrefix: '' })
-  );
+  c.executionCtx.waitUntil(writeLastGood(c.env, kvKey, body, { ttlSeconds: KV_LAST_GOOD_TTL_SECONDS, keyPrefix: '' }));
   return response;
 }

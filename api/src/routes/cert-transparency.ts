@@ -1,5 +1,6 @@
 import type { Context } from 'hono';
 import type { Env } from '../env';
+import { logError } from '../lib/logger';
 import { badRequest } from '../lib/api-error';
 import { cachedJson } from '../lib/route-cache';
 import { fetchResilient } from '../lib/fetch-resilient';
@@ -23,8 +24,9 @@ interface CertTransparencyResult {
 }
 
 /**
- * Cert Transparency lookup via crt.sh — free, no API key.
- * Equivalent to metabigor's `cert` command.
+ * Cert Transparency lookup. Primary: crt.sh (free, comprehensive). Fallback:
+ * CertSpotter (free tier, lower coverage) when crt.sh is down or rate-limited
+ * — which is chronic, hence the fallback added 2026-10.
  */
 export async function certTransparencyHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const domain = c.req.query('domain');
@@ -37,32 +39,58 @@ export async function certTransparencyHandler(c: Context<{ Bindings: Env }>): Pr
   if (!clean || clean.includes(' ')) return badRequest(c, 'invalid domain');
 
   return cachedJson(c, `cert-transparency:${clean}`, 3600, async () => {
-    const url = `https://crt.sh/?q=${encodeURIComponent(clean)}&output=json`;
-    const res = await fetchResilient(
-      url,
-      { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; DFIR-Portfolio/1.0)' } },
-      { attempts: 3, timeoutMs: 15000 }
-    );
-    if (!res.ok) throw new Error(`crt.sh returned ${res.status}`);
-
-    const data = (await res.json()) as CertEntry[];
-    const subdomains = new Set<string>();
-    for (const entry of data) {
-      const names = entry.name_value.split('\n').map((n) => n.trim().toLowerCase());
-      for (const n of names) {
-        if (n === clean || n === `*.${clean}`) continue;
-        if (n.endsWith(`.${clean}`) || n === clean) {
-          subdomains.add(n.replace(/^\*\./, ''));
-        }
-      }
+    // Primary: crt.sh
+    let data: CertEntry[] | null = null;
+    try {
+      const res = await fetchResilient(
+        `https://crt.sh/?q=${encodeURIComponent(clean)}&output=json`,
+        { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; DFIR-Portfolio/1.0)' } },
+        { attempts: 3, timeoutMs: 15000 }
+      );
+      if (res.ok) data = (await res.json()) as CertEntry[];
+    } catch (e) {
+      logError('cert-transparency crt.sh failed', e);
     }
 
+    if (data) {
+      const subdomains = new Set<string>();
+      for (const entry of data) {
+        const names = entry.name_value.split('\n').map((n) => n.trim().toLowerCase());
+        for (const n of names) {
+          if (n === clean || n === `*.${clean}`) continue;
+          if (n.endsWith(`.${clean}`) || n === clean) {
+            subdomains.add(n.replace(/^\*\./, ''));
+          }
+        }
+      }
+      return {
+        domain: clean,
+        subdomains: [...subdomains].sort(),
+        total_certs: data.length,
+        entries: data.slice(0, 50),
+        source: 'crt.sh',
+        fetched_at: new Date().toISOString(),
+      } as CertTransparencyResult;
+    }
+
+    // Fallback: CertSpotter (free tier).
+    const csRes = await fetchResilient(
+      `https://api.certspotter.com/v1/issuances?domain=${encodeURIComponent(clean)}&include_subdomains=true&expand=dns_names`,
+      { headers: { accept: 'application/json' } },
+      { attempts: 2, timeoutMs: 10000 }
+    );
+    if (!csRes.ok) throw new Error(`certspotter returned ${csRes.status}`);
+    const csData = (await csRes.json()) as Array<{ dns_names?: string[] }>;
+    const subdomains = new Set<string>();
+    for (const cert of csData.slice(0, 50)) {
+      for (const n of cert?.dns_names ?? []) subdomains.add(n.toLowerCase().replace(/^\*\./, ''));
+    }
     return {
       domain: clean,
       subdomains: [...subdomains].sort(),
-      total_certs: data.length,
-      entries: data.slice(0, 50),
-      source: 'crt.sh',
+      total_certs: csData.length,
+      entries: [],
+      source: 'certspotter',
       fetched_at: new Date().toISOString(),
     } as CertTransparencyResult;
   });

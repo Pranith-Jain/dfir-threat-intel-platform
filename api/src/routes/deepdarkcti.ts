@@ -156,7 +156,7 @@ export async function deepDarkCtiHandler(c: Context<{ Bindings: Env }>): Promise
     status: 200,
     headers: {
       'content-type': 'application/json',
-      'cache-control': `public, max-age=${ttlFor(body)}`,
+      'cache-control': `public, max-age=${ttlFor(body)}, stale-while-revalidate=${ttlFor(body) * 4}`,
     },
   });
   c.executionCtx.waitUntil(cache.put(cacheReq, response.clone()));
