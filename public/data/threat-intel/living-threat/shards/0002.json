@@ -1,6 +1,515 @@
 [
   {
     "Adversary": {
+      "Aliases": ["JackSkid"],
+      "Associated_Groups": [],
+      "Description": "Dysphoria botnet operators leveraging blockchain-based infrastructure for resilience.",
+      "Known_Campaigns": ["Dysphoria IoT botnet operations"],
+      "Motivation": "Financial gain through DDoS-for-hire services.",
+      "Sophistication": "High, due to use of blockchain-based C2 and relay mesh.",
+      "Strategic_Objectives": "Maintain botnet resilience and evade law enforcement.",
+      "TTPs_Employed": ["Use of blockchain for C2", "Relay mesh architecture"]
+    },
+    "Analyses": [
+      {
+        "Description": "Weak-password guessing on Telnet and SSH.",
+        "Detection": "Monitor for unusual Telnet and SSH login attempts.",
+        "Remediation": "Implement strong password policies.",
+        "Stage": "Reconnaissance",
+        "Tactics": [
+          {
+            "tactic_description": "Gathering information to identify targets.",
+            "tactic_id": "TA0043",
+            "tactic_name": "Reconnaissance"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Identify vulnerable IoT devices.",
+            "technique_id": "T1590",
+            "technique_name": "Gather Victim Network Information"
+          }
+        ],
+        "Techniques": ["T1590"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Exploitation of known IoT vulnerabilities.",
+        "Detection": "Monitor for exploitation attempts on known vulnerabilities.",
+        "Remediation": "Patch vulnerable devices and update firmware.",
+        "Stage": "Delivery",
+        "Tactics": [
+          {
+            "tactic_description": "Gain access to victim devices.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exploit known vulnerabilities like CVE-2025-9528.",
+            "technique_id": "T1190",
+            "technique_name": "Exploit Public-Facing Application"
+          }
+        ],
+        "Techniques": ["T1190"]
+      },
+      {
+        "Description": "Exploitation of IoT devices using weak credentials and known vulnerabilities.",
+        "Detection": "Monitor for unauthorized access attempts.",
+        "Remediation": "Disable default credentials and enforce strong passwords.",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "Gain access to victim devices.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Use of weak Telnet and SSH credentials.",
+            "technique_id": "T1078",
+            "technique_name": "Valid Accounts"
+          }
+        ],
+        "Techniques": ["T1078"]
+      },
+      {
+        "Description": "Installation of botnet malware on compromised devices.",
+        "Detection": "Monitor for changes in device startup configurations.",
+        "Remediation": "Regularly audit device configurations.",
+        "Stage": "Installation",
+        "Tactics": [
+          {
+            "tactic_description": "Maintain access to compromised devices.",
+            "tactic_id": "TA0003",
+            "tactic_name": "Persistence"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Ensure malware persistence on IoT devices.",
+            "technique_id": "T1547",
+            "technique_name": "Boot or Logon Autostart Execution"
+          }
+        ],
+        "Techniques": ["T1547"]
+      },
+      {
+        "Description": "Use of blockchain-based name services for resilient C2.",
+        "Detection": "Monitor for unusual DNS queries to ENS and SNS domains.",
+        "Remediation": "Block known malicious domains and IPs.",
+        "Stage": "Command and Control",
+        "Tactics": [
+          {
+            "tactic_description": "Establish communication with compromised devices.",
+            "tactic_id": "TA0011",
+            "tactic_name": "Command and Control"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Use of ENS and SNS for C2 communication.",
+            "technique_id": "T1102",
+            "technique_name": "Web Service"
+          }
+        ],
+        "Techniques": ["T1102"]
+      },
+      {
+        "Description": "Conduct DDoS attacks using compromised devices.",
+        "Detection": "Monitor for high-volume traffic patterns indicative of DDoS.",
+        "Remediation": "Implement DDoS protection measures.",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          { "tactic_description": "Disrupt availability of services.", "tactic_id": "TA0040", "tactic_name": "Impact" }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Use of botnet for DDoS attacks.",
+            "technique_id": "T1499",
+            "technique_name": "Endpoint Denial of Service"
+          }
+        ],
+        "Techniques": ["T1499"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": ["Use of blockchain-based C2", "Relay mesh architecture"],
+    "CVEs": ["CVE-2025-9528"],
+    "Capability": {
+      "Defensive_Evasion_Tactics": ["Blockchain-based C2", "Relay mesh to obscure real controllers"],
+      "Description": "Dysphoria botnet capable of large-scale DDoS attacks and resilient C2 infrastructure.",
+      "Exploits": ["CVE-2025-9528"],
+      "Lateral_Movement_Tools": ["Telnet", "SSH"],
+      "Malware": ["Dysphoria"],
+      "Persistence_Mechanisms": ["Relay mesh"],
+      "Tools": ["Ethereum Name Service", "Solana Name Service"],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [
+      "Monitor for DNS queries to ENS and SNS domains",
+      "Detect unusual Telnet and SSH login attempts"
+    ],
+    "Extracted_Entities": {
+      "Assets": ["Routers", "Gateways", "Cameras"],
+      "Breach_Types": [],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["CNCERT", "XLab", "Qi'anxin", "Nokia", "Comcast"],
+      "Countries": ["China", "United States", "Germany", "Canada", "Japan"],
+      "Domains": ["m3rnbvs5d.eth", "burrberry.eth", "24carnforth2merseyside.sol"],
+      "Email_Addresses": [],
+      "Encryption_Tools": ["RC4"],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["IoT", "botnet", "blockchain", "DDoS", "Telnet", "SSH"],
+      "Malware_Families": ["Dysphoria", "JackSkid"],
+      "Malware_Filenames": [],
+      "Patches": [],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Internet-Service", "Gaming"],
+      "Software": ["Ethereum Name Service", "Solana Name Service"],
+      "Technologies": ["UPnP", "NAT"],
+      "Threat_Infrastructure": ["Relay mesh"],
+      "Vulnerabilities": ["CVE-2025-9528"]
+    },
+    "Infrastructure": {
+      "Botnets": ["Dysphoria"],
+      "C2_Servers": ["m3rnbvs5d.eth"],
+      "Communication_Protocols": ["HTTP", "UPnP"],
+      "Description": "Botnet infrastructure using blockchain-based name services and infected-device relays.",
+      "Domains": ["burrberry.eth", "24carnforth2merseyside.sol"],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [
+      "Patch IoT devices",
+      "Implement strong password policies",
+      "Disable UPnP where not needed"
+    ],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": ["m3rnbvs5d.eth", "burrberry.eth", "24carnforth2merseyside.sol"],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Weak-password guessing", "Exploitation of known vulnerabilities"],
+      "Tools": ["Ethereum Name Service", "Solana Name Service"]
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": ["Network traffic analysis tools", "DNS monitoring tools"],
+    "Severity": "High",
+    "Threat_Actors": ["Dysphoria", "JackSkid"],
+    "Timestamp": "2026-07-26T18:30:00Z",
+    "Title": "Dysphoria IoT Botnet Adopts Blockchain-Based Infrastructure",
+    "Tools": ["Ethereum Name Service", "Solana Name Service"],
+    "Victim": {
+      "Access_Vectors": ["Telnet", "SSH", "Known vulnerabilities"],
+      "Data_Types_At_Risk": ["Network traffic"],
+      "Description": "Targets include internet-service and gaming sectors.",
+      "Geography": "Global, with significant activity in China",
+      "Impact_Severity": "High",
+      "Industry": "Internet-Service, Gaming",
+      "Security_Posture": "Vulnerable due to weak credentials and unpatched devices",
+      "Targeted_Assets": ["IoT devices", "Routers", "Gateways", "Cameras"]
+    },
+    "diamond_model_summary": "The Dysphoria botnet represents a sophisticated adversary leveraging blockchain-based infrastructure for command and control. The botnet's capability includes large-scale DDoS attacks, facilitated by a relay mesh architecture that obscures real controllers. The infrastructure relies on Ethereum and Solana Name Services, complicating conventional server seizure. Victims are primarily in the internet-service and gaming sectors, with a significant presence in China. The botnet exploits weak Telnet and SSH credentials and known IoT vulnerabilities, such as CVE-2025-9528, to propagate.",
+    "doc_summary": "Dysphoria, an IoT botnet tracked by CNCERT and XLab, has adopted blockchain-based name services and infected-device relays following a law enforcement operation against JackSkid infrastructure. The botnet's population is estimated above 200,000 bots, with telemetry logging 4,401 active devices in China and a peak of 239,000 bots abroad. The botnet uses Ethereum Name Service (ENS) and Solana Name Service (SNS) for command-and-control, complicating server seizure. Dysphoria spreads through Telnet and SSH weak-password guessing and exploits known IoT vulnerabilities, including CVE-2025-9528. The botnet targets internet-service and gaming sectors, advertising DDoS attacks up to 4 Tbps. No independent source has confirmed the reported scale or attack peaks.",
+    "enrichment": null,
+    "id": "a5319572253987401b7c279e8ab06ba0e5a6f5839b82974f7a853a42c7347db7",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The Dysphoria botnet's kill chain begins with reconnaissance through weak-password guessing on Telnet and SSH. Initial access is gained by exploiting known IoT vulnerabilities, including CVE-2025-9528. Installation involves deploying botnet malware on compromised devices, ensuring persistence through a relay mesh. Command and control are maintained via blockchain-based name services, complicating server seizure. The botnet's primary objective is to conduct DDoS attacks, targeting internet-service and gaming sectors. Detection involves monitoring for unusual DNS queries and login attempts, while remediation focuses on patching vulnerabilities and enforcing strong password policies.",
+    "operational_tags": ["High Priority", "CVE-linked"],
+    "priority_score": 100,
+    "pyramid_of_pain_summary": "The Dysphoria botnet's pyramid of pain includes domain names like m3rnbvs5d.eth and burrberry.eth, which are critical for its command and control infrastructure. The use of blockchain-based name services and a relay mesh architecture presents significant challenges for defenders. Tools such as Ethereum and Solana Name Services are employed for resilient C2 communication. The botnet's tactics, techniques, and procedures (TTPs) include exploiting weak Telnet and SSH credentials and known IoT vulnerabilities. Detection and remediation efforts must focus on monitoring DNS queries and securing IoT devices.",
+    "relevance_score": 71,
+    "sequence": 21392,
+    "source": "https://thehackernews.com/2026/07/dysphoria-iot-botnet-adds-blockchain-c2.html",
+    "slug": "Dysphoria_IoT_Botnet_Adopts_Blockchain-Based_Infrastructure-021392",
+    "shard": 2
+  },
+  {
+    "Adversary": {
+      "Aliases": ["TA4922", "Silver Fox"],
+      "Associated_Groups": ["Silver Fox"],
+      "Description": "China-linked cybercrime group using Cruciferra crypter in phishing campaigns.",
+      "Known_Campaigns": ["Operation DragonReturn"],
+      "Motivation": "Financial gain through phishing and malware distribution.",
+      "Sophistication": "High, due to advanced evasion techniques and custom encryption.",
+      "Strategic_Objectives": "Targeting financial sectors and tax-related entities.",
+      "TTPs_Employed": ["Phishing", "BYOVD", "Process Ghosting"]
+    },
+    "Analyses": [
+      {
+        "Description": "Use of tax-themed lures to identify potential victims.",
+        "Detection": "Monitor for unusual email activity related to tax themes.",
+        "Remediation": "Educate users on recognizing phishing emails.",
+        "Stage": "Reconnaissance",
+        "Tactics": [
+          {
+            "tactic_description": "Gathering information to identify potential targets.",
+            "tactic_id": "TA0043",
+            "tactic_name": "Reconnaissance"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Using phishing emails to gather information about targets.",
+            "technique_id": "T1598",
+            "technique_name": "Phishing for Information"
+          }
+        ],
+        "Techniques": ["T1598"]
+      },
+      {
+        "Description": "Creation of phishing emails with malicious attachments or links.",
+        "Detection": "Analyze email attachments and links for malicious content.",
+        "Remediation": "Implement email filtering solutions.",
+        "Stage": "Weaponization",
+        "Tactics": [
+          {
+            "tactic_description": "Developing resources to support operations.",
+            "tactic_id": "TA0042",
+            "tactic_name": "Resource Development"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Developing or acquiring malware for use in operations.",
+            "technique_id": "T1588.002",
+            "technique_name": "Malware"
+          }
+        ],
+        "Techniques": ["T1588.002"]
+      },
+      {
+        "Description": "Phishing emails sent to targets with links to malicious landing pages.",
+        "Detection": "Monitor email traffic for phishing attempts.",
+        "Remediation": "Deploy anti-phishing technologies.",
+        "Stage": "Delivery",
+        "Tactics": [
+          {
+            "tactic_description": "Gaining access to a network or system.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Sending emails with malicious attachments.",
+            "technique_id": "T1566.001",
+            "technique_name": "Spearphishing Attachment"
+          }
+        ],
+        "Techniques": ["T1566.001"]
+      },
+      {
+        "Description": "Exploitation of vulnerabilities in email clients or browsers.",
+        "Detection": "Monitor for exploitation attempts in email clients.",
+        "Remediation": "Apply security patches to email clients and browsers.",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "Gaining access to a network or system.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exploiting vulnerabilities in client applications.",
+            "technique_id": "T1203",
+            "technique_name": "Exploitation for Client Execution"
+          }
+        ],
+        "Techniques": ["T1203"]
+      },
+      {
+        "Description": "Installation of malware via Cruciferra crypter.",
+        "Detection": "Monitor registry changes for unauthorized entries.",
+        "Remediation": "Restrict permissions to modify registry keys.",
+        "Stage": "Installation",
+        "Tactics": [
+          {
+            "tactic_description": "Maintaining access to a system.",
+            "tactic_id": "TA0003",
+            "tactic_name": "Persistence"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adding programs to startup folders or registry run keys.",
+            "technique_id": "T1547.001",
+            "technique_name": "Registry Run Keys / Startup Folder"
+          }
+        ],
+        "Techniques": ["T1547.001"]
+      },
+      {
+        "Description": "Establishing communication with C2 servers.",
+        "Detection": "Monitor network traffic for unusual outbound connections.",
+        "Remediation": "Block known malicious IP addresses and domains.",
+        "Stage": "Command and Control",
+        "Tactics": [
+          {
+            "tactic_description": "Establishing communication channels to control compromised systems.",
+            "tactic_id": "TA0011",
+            "tactic_name": "Command and Control"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Using web protocols for command and control.",
+            "technique_id": "T1071.001",
+            "technique_name": "Web Protocols"
+          }
+        ],
+        "Techniques": ["T1071.001"]
+      },
+      {
+        "Description": "Exfiltration of sensitive data from compromised systems.",
+        "Detection": "Monitor for large data transfers to external servers.",
+        "Remediation": "Implement data loss prevention solutions.",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "Stealing data from a network.",
+            "tactic_id": "TA0010",
+            "tactic_name": "Exfiltration"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exfiltrating data over an existing command and control channel.",
+            "technique_id": "T1041",
+            "technique_name": "Exfiltration Over C2 Channel"
+          }
+        ],
+        "Techniques": ["T1041"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": ["Indirect system calls", "API unhooking", "BYOVD", "Process Ghosting"],
+      "Description": "Use of Cruciferra crypter to evade detection and deliver malware.",
+      "Exploits": [],
+      "Lateral_Movement_Tools": [],
+      "Malware": [
+        "Agent Tesla",
+        "AsyncRAT",
+        "DarkCloud Stealer",
+        "Formbook",
+        "Phantom Stealer",
+        "Remcos RAT",
+        "Snake Keylogger",
+        "ValleyRAT",
+        "XLoader",
+        "XWorm",
+        "zgRAT"
+      ],
+      "Persistence_Mechanisms": ["Registry modification"],
+      "Tools": ["Cruciferra"],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [],
+    "Extracted_Entities": {
+      "Assets": ["Financial data", "Tax information"],
+      "Breach_Types": [],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Proofpoint", "Seqrite Labs", "Cyderes Howler Cell"],
+      "Countries": ["India", "China"],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["Cruciferra", "phishing", "crypter", "BYOVD", "Process Ghosting"],
+      "Malware_Families": [
+        "Agent Tesla",
+        "AsyncRAT",
+        "DarkCloud Stealer",
+        "Formbook",
+        "Phantom Stealer",
+        "Remcos RAT",
+        "Snake Keylogger",
+        "ValleyRAT",
+        "XLoader",
+        "XWorm",
+        "zgRAT"
+      ],
+      "Malware_Filenames": [],
+      "Patches": [],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Financial Services", "Healthcare", "Government", "Education", "Manufacturing"],
+      "Software": ["Mono"],
+      "Technologies": [],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": []
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "Phishing infrastructure using attacker-controlled landing pages and staging servers.",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Phishing", "BYOVD", "Process Ghosting"],
+      "Tools": ["Cruciferra"]
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "High",
+    "Threat_Actors": ["TA4922", "Silver Fox"],
+    "Timestamp": "2026-07-26T18:30:00Z",
+    "Title": "Cruciferra Crypter Used in Phishing Campaigns Targeting Indian Taxpayers",
+    "Tools": ["Cruciferra", "Mono"],
+    "Victim": {
+      "Access_Vectors": ["Phishing emails"],
+      "Data_Types_At_Risk": ["Personal data", "Financial data"],
+      "Description": "Targets include Indian taxpayers, tax professionals, and corporate finance teams.",
+      "Geography": "India",
+      "Impact_Severity": "High",
+      "Industry": "Financial Services",
+      "Security_Posture": "Vulnerable to phishing attacks",
+      "Targeted_Assets": ["Financial data", "Tax information"]
+    },
+    "diamond_model_summary": "The incident involves a China-linked cybercrime group using the Cruciferra crypter in phishing campaigns targeting Indian taxpayers. The adversary employs advanced evasion techniques, including BYOVD and Process Ghosting, to deliver malware like Agent Tesla and Remcos RAT. The infrastructure includes phishing emails and attacker-controlled landing pages. Victims are primarily in the financial sector in India, with high exposure potential due to the widespread nature of the campaigns.",
+    "doc_summary": "The China-linked cybercrime group has been using the Cruciferra crypter in phishing campaigns targeting Indian taxpayers, tax professionals, and corporate finance teams. Cruciferra, written in Mono, employs techniques like indirect system calls, API unhooking, and BYOVD-based EDR tampering to evade detection. It supports custom encryption routines, complicating static analysis. The crypter is advertised as the 'most lethal' for $450 to $2,000 a month. Campaigns have been attributed to TA4922, overlapping with Silver Fox, using tax-themed lures. Seqrite Labs tracks this as Operation DragonReturn. Cruciferra is executed via DLL side-loading, using evasion techniques like Process Ghosting. It checks for Administrator privileges and establishes persistence by writing to the registry. The final payload is loaded into memory using a variant of Process Ghosting.",
+    "enrichment": null,
+    "id": "7c7cdda876d9d9477d44c6233981d844490682693de9edcc2f0e8dd71fbd260c",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The kill chain begins with reconnaissance using tax-themed lures to identify targets. Weaponization involves creating phishing emails with malicious attachments or links. Delivery is achieved through phishing emails sent to targets. Exploitation occurs via vulnerabilities in email clients or browsers. Installation involves the use of the Cruciferra crypter to install malware. Command and control are established through communication with C2 servers. Actions on objectives include exfiltration of sensitive data.",
+    "operational_tags": ["High Priority", "C2"],
+    "priority_score": 100,
+    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes various indicators. Hash values of malware samples are used for detection. IP addresses and domain names associated with C2 servers are critical for blocking malicious traffic. Network host artifacts, such as registry modifications, are used for persistence. Tools like Cruciferra crypter are employed for evasion. TTPs include phishing, BYOVD, and Process Ghosting, making detection challenging.",
+    "relevance_score": 73,
+    "sequence": 21391,
+    "source": "https://thehackernews.com/2026/07/cruciferra-crypter-uses-byovd-and.html",
+    "slug": "Cruciferra_Crypter_Used_in_Phishing_Campaigns_Targeting_Indian_Taxpayers-021391",
+    "shard": 2
+  },
+  {
+    "Adversary": {
       "Aliases": [],
       "Associated_Groups": [],
       "Description": "A threat actor with ties to East Asia targeting Middle Eastern government entities.",
@@ -105178,431 +105687,6 @@
     "sequence": 20893,
     "source": "https://thehackernews.com/2026/06/the-onboarding-password-mistake-that.html",
     "slug": "Cyber_Av3ngers_Exploit_Default_Credentials_in_Aliquippa_Water_Authority_-020893",
-    "shard": 2
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "The adversary operates a network of malicious Chrome extensions for adware distribution and traffic fraud.",
-      "Known_Campaigns": [],
-      "Motivation": "Financial",
-      "Sophistication": "Moderate",
-      "Strategic_Objectives": "Generate revenue through adware and fraudulent traffic attribution.",
-      "TTPs_Employed": []
-    },
-    "Analyses": [
-      {
-        "Description": "The adversary likely researched Chrome Web Store policies and user behavior.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [
-          {
-            "tactic_description": "Gathering information to plan future operations.",
-            "tactic_id": "TA0043",
-            "tactic_name": "Reconnaissance"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Collecting information about victim systems.",
-            "technique_id": "T1592",
-            "technique_name": "Gather Victim Host Information"
-          }
-        ],
-        "Techniques": ["T1592"]
-      },
-      {
-        "Description": "Development of Chrome extensions with malicious capabilities.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [
-          {
-            "tactic_description": "Developing resources to support operations.",
-            "tactic_id": "TA0042",
-            "tactic_name": "Resource Development"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Creating tools or malware for operations.",
-            "technique_id": "T1587.001",
-            "technique_name": "Develop Capabilities"
-          }
-        ],
-        "Techniques": ["T1587.001"]
-      },
-      {
-        "Description": "Distribution of malicious extensions via the Chrome Web Store.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [
-          {
-            "tactic_description": "Running malicious code on victim systems.",
-            "tactic_id": "TA0007",
-            "tactic_name": "Execution"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exploiting vulnerabilities to execute code.",
-            "technique_id": "T1203",
-            "technique_name": "Exploitation for Client Execution"
-          }
-        ],
-        "Techniques": ["T1203"]
-      },
-      {
-        "Description": "Extensions exploit user trust to collect data and manipulate traffic.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "Stealing credentials to access systems.",
-            "tactic_id": "TA0006",
-            "tactic_name": "Credential Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Accessing stored credentials.",
-            "technique_id": "T1555",
-            "technique_name": "Credentials from Password Stores"
-          }
-        ],
-        "Techniques": ["T1555"]
-      },
-      {
-        "Description": "Installation of extensions on user browsers.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [
-          {
-            "tactic_description": "Maintaining access to systems.",
-            "tactic_id": "TA0003",
-            "tactic_name": "Persistence"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Using web shells for persistence.",
-            "technique_id": "T1547.014",
-            "technique_name": "Web Shell"
-          }
-        ],
-        "Techniques": ["T1547.014"]
-      },
-      {
-        "Description": "Extensions communicate with backend servers for data exfiltration.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [
-          {
-            "tactic_description": "Communicating with compromised systems.",
-            "tactic_id": "TA0011",
-            "tactic_name": "Command and Control"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Using web protocols for C2 communication.",
-            "technique_id": "T1071.001",
-            "technique_name": "Web Protocols"
-          }
-        ],
-        "Techniques": ["T1071.001"]
-      },
-      {
-        "Description": "Extensions perform adware distribution and traffic fraud.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "Manipulating, interrupting, or destroying systems.",
-            "tactic_id": "TA0040",
-            "tactic_name": "Impact"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Destroying data to impact operations.",
-            "technique_id": "T1485",
-            "technique_name": "Data Destruction"
-          }
-        ],
-        "Techniques": ["T1485"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "The extensions log user data and manipulate traffic signals to appear as organic search results.",
-      "Exploits": [],
-      "Lateral_Movement_Tools": [],
-      "Malware": ["Potentially Unwanted Program (PUP)"],
-      "Persistence_Mechanisms": [],
-      "Tools": ["Chrome Extensions"],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": ["Browser Data"],
-      "Breach_Types": [],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["Google", "Socket"],
-      "Countries": ["Turkey"],
-      "Domains": ["tabplugins.com", "yowgames.com", "chromewallpaper.com"],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["adware", "traffic fraud", "Chrome extensions"],
-      "Malware_Families": ["Potentially Unwanted Program (PUP)"],
-      "Malware_Filenames": [],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Technology"],
-      "Software": ["Google Chrome"],
-      "Technologies": ["JavaScript", "IndexedDB"],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": []
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "The infrastructure includes multiple Chrome Web Store accounts and backend domains.",
-      "Domains": ["tabplugins.com", "yowgames.com", "chromewallpaper.com"],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": ["tabplugins.com", "yowgames.com", "chromewallpaper.com"],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": [],
-      "Tools": ["Chrome Extensions"]
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "Moderate",
-    "Threat_Actors": [],
-    "Timestamp": "2026-06-14T18:30:00Z",
-    "Title": "Malicious Chrome Extensions Distributing Adware and Traffic Fraud",
-    "Tools": ["Chrome Extensions", "Google Chrome"],
-    "Victim": {
-      "Access_Vectors": ["Chrome Web Store"],
-      "Data_Types_At_Risk": ["IP Addresses", "ISP Information", "Click Counts", "Referrers"],
-      "Description": "Users of Google Chrome who installed the malicious extensions.",
-      "Geography": "Global",
-      "Impact_Severity": "Medium",
-      "Industry": "General Public",
-      "Security_Posture": "Low",
-      "Targeted_Assets": ["Browser Data"]
-    },
-    "diamond_model_summary": "The incident involves a network of malicious Chrome extensions used for adware distribution and traffic fraud. The adversary is financially motivated, potentially originating from Turkey, and employs Chrome extensions to manipulate traffic signals and collect user data. The infrastructure includes multiple Chrome Web Store accounts and backend domains. Victims are global users of Google Chrome who installed these extensions.",
-    "doc_summary": "Cybersecurity researchers have identified a network of 152 Google Chrome extensions acting as new tab live wallpaper add-ons to distribute a potentially unwanted program (PUP) family. These extensions span 38 separate Chrome Web Store publisher accounts and three brand backends: tabplugins.com, yowgames.com, and chromewallpaper.com, collectively installed 105,000 times. Despite claims of not collecting user data, the extensions log IP addresses, ISP, click counts, and referrers, sharing data with Google AdSense, DoubleClick, and third-party ad partners. A sub-cluster of extensions defines two hard-coded URLs in a JavaScript file activated during install and uninstall operations, fabricating traffic origin signals. The campaign is assessed as a financially motivated commercial adware and traffic-attribution-fraud affiliate operation, potentially originating from Turkey.",
-    "enrichment": null,
-    "id": "df7edbb447af4df081e8b0268ee2f17e0ba98343f22726bf1001152f4a439a19",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The attack begins with reconnaissance of Chrome Web Store policies, followed by weaponization through the development of malicious extensions. Delivery occurs via the Chrome Web Store, exploiting user trust to install the extensions. Once installed, the extensions collect data and manipulate traffic signals, communicating with backend servers for data exfiltration. The final objective is adware distribution and traffic fraud.",
-    "operational_tags": ["C2"],
-    "priority_score": 69,
-    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes domain names such as tabplugins.com, yowgames.com, and chromewallpaper.com, which are critical for the operation of the malicious extensions. The extensions themselves act as tools for adware distribution and traffic fraud. No specific IP addresses or file hashes were identified, limiting the ability to disrupt the adversary's operations.",
-    "relevance_score": 57,
-    "sequence": 20892,
-    "source": "https://thehackernews.com/2026/06/152-chrome-wallpaper-extensions-with.html",
-    "slug": "Malicious_Chrome_Extensions_Distributing_Adware_and_Traffic_Fraud-020892",
-    "shard": 2
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "Unknown threat actor exploiting PAN-OS vulnerability",
-      "Known_Campaigns": [],
-      "Motivation": "",
-      "Sophistication": "",
-      "Strategic_Objectives": "",
-      "TTPs_Employed": []
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Exploitation of CVE-2026-0257 to bypass authentication",
-        "Detection": "Monitor GlobalProtect logs for unusual VPN connection attempts.",
-        "Remediation": "Apply patches to mitigate CVE-2026-0257. • Review and update access controls for GlobalProtect portals.",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary is trying to steal account names and passwords.",
-            "tactic_id": "TA0006",
-            "tactic_name": "Credential Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Adversaries may use valid accounts to maintain access to victim systems.",
-            "technique_id": "T1078",
-            "technique_name": "Valid Accounts"
-          }
-        ],
-        "Techniques": ["T1078"]
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Actions on Objectives",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": ["CVE-2026-0257"],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "Exploitation of authentication bypass vulnerability in PAN-OS",
-      "Exploits": ["CVE-2026-0257"],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": [],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": ["Monitor GlobalProtect logs for specific client configuration values."],
-    "Extracted_Entities": {
-      "Assets": ["GlobalProtect portals", "GlobalProtect gateways"],
-      "Breach_Types": [],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["Palo Alto Networks"],
-      "Countries": ["United States"],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["CVE-2026-0257", "GlobalProtect", "authentication bypass", "vulnerability", "exploitation"],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": [],
-      "Software": ["PAN-OS"],
-      "Technologies": [],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": ["CVE-2026-0257"]
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "GlobalProtect portals and gateways targeted",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [
-      "Ensure all systems are patched against CVE-2026-0257.",
-      "Conduct a thorough review of VPN access logs."
-    ],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["Exploitation of CVE-2026-0257"],
-      "Tools": []
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "High",
-    "Threat_Actors": [],
-    "Timestamp": "2026-06-14T18:30:00Z",
-    "Title": "Active Exploitation of PAN-OS CVE-2026-0257 Vulnerability",
-    "Tools": ["PAN-OS"],
-    "Victim": {
-      "Access_Vectors": ["VPN connections"],
-      "Data_Types_At_Risk": [],
-      "Description": "Organizations using PAN-OS GlobalProtect portals and gateways",
-      "Geography": "",
-      "Impact_Severity": "",
-      "Industry": "",
-      "Security_Posture": "",
-      "Targeted_Assets": ["GlobalProtect portals", "GlobalProtect gateways"]
-    },
-    "diamond_model_summary": "The incident involves an unknown threat actor exploiting a vulnerability in PAN-OS, specifically CVE-2026-0257, to gain unauthorized access to GlobalProtect portals and gateways. The adversary's capability includes exploiting an authentication bypass flaw, while the infrastructure targeted involves GlobalProtect portals and gateways. Victims are organizations using these systems, with the potential for unauthorized VPN connections.",
-    "doc_summary": "Palo Alto Networks has identified active exploitation of a PAN-OS vulnerability, CVE-2026-0257, by an unknown threat actor. This authentication bypass flaw affects GlobalProtect portals and gateways, allowing unauthorized VPN connections. Initial exploitation was observed on May 17, 2026. The U.S. Cybersecurity and Infrastructure Security Agency has added this vulnerability to its Known Exploited Vulnerabilities catalog, urging mitigation by June 1, 2026. No post-access behavior or lateral movement has been detected. Palo Alto Networks has released indicators of compromise and recommends searching GlobalProtect logs for specific client configuration values.",
-    "enrichment": null,
-    "id": "1eee075318539b051f9eaf9e8a39b30dda93b8a9e23e84692262a9a80e53b92b",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The kill chain for this incident primarily involves the exploitation stage, where the adversary leverages CVE-2026-0257 to bypass authentication controls on GlobalProtect portals and gateways. No significant activity was detected in other stages such as reconnaissance, weaponization, delivery, installation, command and control, or actions on objectives. The exploitation allows unauthorized VPN connections, posing a high risk to affected organizations.",
-    "operational_tags": ["High Priority", "CVE-linked"],
-    "priority_score": 73,
-    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident is limited due to the lack of specific indicators such as hashes, IP addresses, or domain names. The primary focus is on the TTPs, specifically the exploitation of CVE-2026-0257, which is a significant pain point for defenders. The absence of detailed indicators makes it challenging to apply traditional detection and response measures, emphasizing the need for patching and access control reviews.",
-    "relevance_score": 41,
-    "sequence": 20891,
-    "source": "https://thehackernews.com/2026/06/palo-alto-warns-of-active-exploitation.html",
-    "slug": "Active_Exploitation_of_PAN-OS_CVE-2026-0257_Vulnerability-020891",
     "shard": 2
   }
 ]
