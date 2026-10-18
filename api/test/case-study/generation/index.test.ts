@@ -46,7 +46,7 @@ vi.mock('../../../src/case-study/research', async () => {
             text: 'The vendor shipped a fix.',
           },
         ],
-        platform: { writeups: [], relatedCves: [], trendingCves: [], actors: [], darkweb: [] },
+        platform: { writeups: [], relatedCves: [], trendingCves: [], actors: [] },
         unread: [],
         now: new Date(),
       });

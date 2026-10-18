@@ -42,7 +42,6 @@ const EMPTY_PLATFORM: PlatformFacts = {
   relatedCves: [],
   trendingCves: [],
   actors: [],
-  darkweb: [],
 };
 
 /** Collect every candidate source URL, preserving order and dropping dupes. */

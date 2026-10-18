@@ -20,11 +20,9 @@ import { verifyUrls, type LinkStatus } from '../../lib/verify-url';
  * material that already exists, never to supply the material.
  *
  * The corpus it reads:
- *   - cvemon trending CVEs (social hype + rank)
- *   - newly-added CISA KEV entries in the last 48h
+ *   - newly-added CISA KEV entries in the last 26h
  *   - CVEs whose EPSS spiked relative to the platform's own recent baseline
- *   - writeups and disclosures in the last 24h
- *   - darkweb monitor hits in the last 24h
+ *   - writeups and disclosures in the last 48h
  *
  * Every candidate that survives carries at least one real, verified URL. If
  * the corpus is quiet, the runner returns nothing rather than filling the
@@ -34,7 +32,7 @@ import { verifyUrls, type LinkStatus } from '../../lib/verify-url';
 // ── Corpus signals ───────────────────────────────────────────────────────
 
 export interface TrendSignal {
-  kind: 'trending-cve' | 'new-kev' | 'epss-spike' | 'writeup' | 'disclosure' | 'darkweb';
+  kind: 'new-kev' | 'epss-spike' | 'writeup';
   /** Short machine label for the stable key. */
   key: string;
   title: string;
@@ -111,22 +109,20 @@ interface CorpusFetch {
   kev: unknown;
   recent: unknown;
   writeups: unknown;
-  darkweb: unknown;
 }
 
 async function fetchCorpus(self: Fetcher, env: { INTERNAL_TOKEN_SECRET?: string }): Promise<CorpusFetch> {
-  const empty: CorpusFetch = { kev: null, recent: null, writeups: null, darkweb: null };
+  const empty: CorpusFetch = { kev: null, recent: null, writeups: null };
   if (!self || !env.INTERNAL_TOKEN_SECRET) return empty;
   const f: SelfFetcher = self;
   const paths = {
     kev: '/api/v1/cisa-kev?days=2&limit=40',
     recent: '/api/v1/cve-recent?limit=120',
     writeups: '/api/v1/writeups?limit=15&since=24h',
-    darkweb: '/api/v1/darkweb-monitor?limit=15&since=24h',
   };
   const settled = await Promise.all(Object.values(paths).map((p) => selfFetchJson<unknown>(f, p, env)));
-  const [kev, recent, writeups, darkweb] = settled;
-  return { kev, recent, writeups, darkweb };
+  const [kev, recent, writeups] = settled;
+  return { kev, recent, writeups };
 }
 
 // ── Signal extraction ────────────────────────────────────────────────────
@@ -262,34 +258,6 @@ function signalsFromWriteups(data: unknown, now: Date): TrendSignal[] {
   return out;
 }
 
-/** Darkweb monitor hits. */
-function signalsFromDarkweb(data: unknown, now: Date): TrendSignal[] {
-  const windowMs = 48 * 60 * 60 * 1000;
-  const out: TrendSignal[] = [];
-  for (const d of asArray(data)) {
-    const title = str(d.title) || str(d.name);
-    const source = str(d.source) || str(d.source_name) || 'darkweb monitor';
-    if (!title) continue;
-    const detected = str(d.detected_at) || str(d.date) || str(d.first_seen);
-    const ts = Date.parse(detected);
-    if (detected && !Number.isNaN(ts) && now.getTime() - ts > windowMs) continue;
-
-    const url = str(d.url);
-    const cve = (title.match(CVE_ID_RE) ?? [])[0]?.toUpperCase();
-    out.push({
-      kind: 'darkweb',
-      key: `darkweb-${str(d.id) || title.slice(0, 40)}`,
-      title: title.slice(0, 160),
-      rationale: `Observed on ${source}${detected ? ` on ${detected.slice(0, 10)}` : ''}. Underground telemetry on this topic.`,
-      url: url.startsWith('http') ? url : 'https://pranithjain.qzz.io/threatintel/darknet-intel',
-      facts: { title, source, detectedAt: detected, cveId: cve, url },
-      weight: 0.55,
-      type: 'darkweb',
-    });
-  }
-  return out;
-}
-
 // ── Runner ───────────────────────────────────────────────────────────────
 
 export interface TrendResearchDeps {
@@ -314,14 +282,13 @@ export async function discoverTrendResearch(deps: TrendResearchDeps): Promise<Ca
   if (!self || !deps.internalTokenSecret) return [];
 
   const corpus = await fetchCorpus(self, { INTERNAL_TOKEN_SECRET: deps.internalTokenSecret }).catch(
-    (): CorpusFetch => ({ kev: null, recent: null, writeups: null, darkweb: null })
+    (): CorpusFetch => ({ kev: null, recent: null, writeups: null })
   );
 
   const signals: TrendSignal[] = [
     ...signalsFromKev(corpus.kev, now),
     ...signalsFromEpss(corpus.recent),
     ...signalsFromWriteups(corpus.writeups, now),
-    ...signalsFromDarkweb(corpus.darkweb, now),
   ];
 
   if (signals.length === 0) return [];

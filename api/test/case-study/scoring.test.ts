@@ -45,6 +45,19 @@ describe('severityScore', () => {
   it('returns 0.3 default for no signals', () => {
     expect(severityScore({})).toBe(0.3);
   });
+
+  it('treats NaN and non-finite inputs as no signal instead of propagating NaN', () => {
+    // A field-shape drift upstream (reading `ioc.count` when the API returns
+    // `observation_count`) used to produce a NaN severity that silently
+    // corrupted the whole candidate score.
+    expect(severityScore({ cvss: Number.NaN })).toBe(0.3);
+    expect(severityScore({ victims: Number.NaN })).toBe(0.3);
+    expect(severityScore({ cvss: Number.POSITIVE_INFINITY })).toBe(0.3);
+  });
+
+  it('clamps negative victim counts to zero', () => {
+    expect(severityScore({ victims: -5 })).toBe(0);
+  });
 });
 
 describe('noveltyScore', () => {
@@ -80,6 +93,17 @@ describe('finalScore', () => {
     const hi = finalScore({ recency: 1, severity: 1, novelty: 1, sourceWeight: 1 });
     const lo = finalScore({ recency: 1, severity: 1, novelty: 0, sourceWeight: 1 });
     expect(lo).toBeLessThan(hi);
+  });
+
+  it('treats non-finite components as zero rather than producing NaN', () => {
+    const s = finalScore({
+      recency: Number.NaN,
+      severity: 1,
+      novelty: Number.NaN,
+      sourceWeight: 1,
+    });
+    expect(Number.isFinite(s)).toBe(true);
+    expect(s).toBeCloseTo(0.4, 2); // 0.3*1 + 0.1*1
   });
 });
 

@@ -60,7 +60,6 @@ function makeDossier(overrides: Partial<ResearchDossier> = {}): ResearchDossier 
       relatedCves: [],
       trendingCves: [],
       actors: [],
-      darkweb: [],
     },
     timeline: [{ date: '2026-08-05', event: 'Added to CISA KEV' }],
     indicators: [{ type: 'ipv4', values: [SYNTHETIC_IP], total: 1 }],
@@ -230,5 +229,26 @@ describe('buildPrompt — per-type guidance', () => {
     const { user, system } = buildPrompt({ type: 'vulnfaq', title: 'Synthetic', dossier: makeDossier() });
     expect(user).not.toMatch(/MUST include these ## section headings/);
     expect(system).not.toMatch(/required_outline/);
+  });
+
+  it('vulnfaq and cve carry the exact-affected-versions first-screen contract', () => {
+    // The complaint this pins: published posts omitted the exact affected
+    // version ranges even when the dossier had them, so readers could not
+    // tell whether they were exposed without leaving the page.
+    for (const type of ['vulnfaq', 'cve'] as CaseStudyType[]) {
+      const { system } = buildPrompt({ type, title: 'Synthetic', dossier: makeDossier() });
+      expect(system).toMatch(/Affected\s+versions/i);
+      expect(system).toMatch(/verbatim/i);
+      expect(system).toMatch(/never guess a range/i);
+      expect(system).toMatch(/first two\s+paragraphs/i);
+      expect(system).toMatch(/CVSS score/i);
+    }
+  });
+
+  it('exploit guidance puts the exploitation status and versions on the first screen', () => {
+    const { system } = buildPrompt({ type: 'exploit', title: 'Synthetic', dossier: makeDossier() });
+    expect(system).toMatch(/first screen/i);
+    expect(system).toMatch(/exact affected versions/i);
+    expect(system).toMatch(/CISA KEV/);
   });
 });

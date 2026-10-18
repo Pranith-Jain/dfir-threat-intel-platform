@@ -2,6 +2,7 @@ import type { Candidate, DedupRecord } from '../types';
 import { cveKey } from '../stable-keys';
 import { recencyScore, severityScore, noveltyScore, finalScore } from '../scoring';
 import { verifyUrl, type LinkStatus } from '../../lib/verify-url';
+import { formatAffectedVersions } from '../../lib/cve-versions';
 
 const KEV_URL = 'https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json';
 const NVD_API = 'https://services.nvd.nist.gov/rest/json/cves/2.0';
@@ -28,6 +29,10 @@ interface NvdCveItem {
       cpeMatch: Array<{
         criteria: string;
         vulnerable: boolean;
+        versionStartIncluding?: string;
+        versionStartExcluding?: string;
+        versionEndIncluding?: string;
+        versionEndExcluding?: string;
       }>;
     }>;
   }>;
@@ -68,21 +73,13 @@ async function enrichFromNvd(
         }
       : undefined;
 
-    // Extract affected CPE versions
-    const affectedVersions: string[] = [];
-    for (const config of cve.configurations ?? []) {
-      for (const node of config.nodes ?? []) {
-        for (const match of node.cpeMatch ?? []) {
-          if (match.vulnerable) {
-            const parts = match.criteria.split(':');
-            // CPE format: cpe:2.3:a:vendor:product:version:...
-            if (parts.length >= 5 && parts[4] && parts[4] !== '*' && parts[4] !== '-') {
-              affectedVersions.push(parts[4].replace(/_/g, ' ').replace(/-/g, ' '));
-            }
-          }
-        }
-      }
-    }
+    // Exact affected versions from NVD CPE match bounds. The earlier version
+    // of this block read `parts[4]` — the CPE PRODUCT field — and shipped
+    // product names as "affected versions". The shared helper reads the
+    // bounds (`versionStart*/versionEnd*`), which is where "from X up to but
+    // not including Y" actually lives, and produces the same labels as the
+    // research dossier.
+    const affectedVersions = formatAffectedVersions(cve.configurations);
 
     // Extract CWE
     const cwe = cve.weaknesses
@@ -92,7 +89,7 @@ async function enrichFromNvd(
 
     return {
       cvss,
-      affectedVersions: [...new Set(affectedVersions)].sort(),
+      affectedVersions,
       cwe: cwe ?? '',
     } as Record<string, unknown>;
   } catch {
@@ -186,8 +183,7 @@ export async function discoverCves(deps: DiscoverDeps): Promise<Candidate[]> {
         status: 'pending',
       });
     }
-  } catch {
-  }
+  } catch {}
 
   return candidates;
 }

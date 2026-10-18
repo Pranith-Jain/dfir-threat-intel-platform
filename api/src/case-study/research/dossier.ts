@@ -131,11 +131,6 @@ function renderPlatform(platform: PlatformFacts): string {
       `Tracked actors on this topic: ${platform.actors.map((a) => `${a.name}${a.mitre ? ` (${a.mitre})` : ''}`).join('; ')}`
     );
   }
-  if (platform.darkweb.length) {
-    lines.push(
-      `Darkweb monitor hits: ${platform.darkweb.map((d) => `[${d.source ?? 'unknown'}] ${d.title ?? ''}`.trim()).join(' | ')}`
-    );
-  }
   return lines.length ? lines.join('\n') : '(nothing on this topic in the platform corpus)';
 }
 
@@ -166,6 +161,70 @@ function renderEntities(entities: ResearchDossier['entities']): string {
 export interface RenderDossierOptions {
   /** Extra cap on the rendered length. Keeps the prompt inside the window. */
   budget?: number;
+}
+
+/**
+ * Compact slice of a dossier that can be persisted on the published Post.
+ *
+ * Social copy generation runs after publish, when the Post is all that is
+ * loaded — without this snapshot the LinkedIn/X prompts see only the article
+ * body and cannot cite the exact affected versions, CVSS numbers or the
+ * disclosure timeline the article was written from. Everything here is
+ * structured data (no page excerpts), so it stays small in KV.
+ */
+export interface DossierFactsSnapshot {
+  subject: string;
+  cves: CveFacts[];
+  platform: PlatformFacts;
+  timeline: ResearchDossier['timeline'];
+  indicators: ResearchDossier['indicators'];
+  entities: ResearchDossier['entities'];
+  gaps: string[];
+}
+
+/** Reduce a full dossier to the persistable snapshot. */
+export function snapshotDossier(d: ResearchDossier): DossierFactsSnapshot {
+  return {
+    subject: d.subject,
+    cves: d.cves,
+    platform: d.platform,
+    timeline: d.timeline,
+    indicators: d.indicators,
+    entities: d.entities,
+    gaps: d.gaps,
+  };
+}
+
+/**
+ * Render the snapshot with the same section shape as the article dossier,
+ * minus the source excerpts. Used when social copy is generated from a
+ * stored Post rather than a live dossier.
+ */
+export function renderFactsSnapshot(s: DossierFactsSnapshot, opts: RenderDossierOptions = {}): string {
+  const budget = opts.budget ?? 6_000;
+  const body = [
+    `SUBJECT: ${scrubString(s.subject)}`,
+    '',
+    '=== VERIFIED FACTS (authoritative: NVD, CISA KEV, FIRST EPSS, CISA ADP) ===',
+    s.cves.length ? s.cves.map(renderCveBlock).join('\n\n') : '(no CVE could be resolved for this topic)',
+    '',
+    '=== PLATFORM SIGNAL (what our own corpus already knows) ===',
+    renderPlatform(s.platform),
+    '',
+    '=== DATED EVENTS ===',
+    renderTimeline(s.timeline),
+    '',
+    '=== INDICATORS (real values, never a count on its own) ===',
+    renderIndicators(s.indicators),
+    '',
+    '=== ENTITIES ===',
+    renderEntities(s.entities),
+    '',
+    '=== NOT ESTABLISHED BY THIS RESEARCH (say so plainly; never fill these in) ===',
+    s.gaps.length ? s.gaps.map((g) => `- ${g}`).join('\n') : '(none)',
+  ].join('\n');
+
+  return body.length <= budget ? body : `${body.slice(0, budget)}\n[research snapshot truncated]`;
 }
 
 /**

@@ -212,12 +212,10 @@ export interface PlatformFacts {
   writeups: Array<{ title: string; url?: string; summary?: string }>;
   /** Related CVEs the platform already tracks, with a score. */
   relatedCves: Array<{ id: string; score?: number | null; severity?: string }>;
-  /** CVEs currently trending on social (cvemon / intruder.io). */
+  /** CVEs currently trending (the platform's trending tier). */
   trendingCves: Array<{ id: string; rank: number; hypeScore: number }>;
-  /** Tracked actors or campaigns matching the topic. */
+  /** Tracked actors or campaigns matching the topic (MISP Galaxy index). */
   actors: Array<{ name: string; slug?: string; mitre?: string | null }>;
-  /** Darkweb monitor hits mentioning the topic. */
-  darkweb: Array<{ source?: string; title?: string; url?: string; date?: string }>;
 }
 
 /** Minimal shape of the SELF service binding — matches `self-fetch.ts`. */
@@ -231,7 +229,7 @@ function asArray(v: unknown): Array<Record<string, unknown>> {
   if (Array.isArray(v)) return v.filter((x): x is Record<string, unknown> => !!x && typeof x === 'object');
   if (v && typeof v === 'object') {
     const o = v as Record<string, unknown>;
-    for (const k of ['items', 'results', 'data', 'posts', 'cves', 'writeups', 'hits', 'claims']) {
+    for (const k of ['items', 'results', 'data', 'posts', 'cves', 'writeups', 'hits', 'claims', 'actors']) {
       if (Array.isArray(o[k])) return asArray(o[k]);
     }
   }
@@ -251,7 +249,7 @@ export async function enrichFromPlatform(
   env: { INTERNAL_TOKEN_SECRET?: string },
   keyword: string
 ): Promise<PlatformFacts> {
-  const empty: PlatformFacts = { writeups: [], relatedCves: [], trendingCves: [], actors: [], darkweb: [] };
+  const empty: PlatformFacts = { writeups: [], relatedCves: [], trendingCves: [], actors: [] };
   if (!self || !env.INTERNAL_TOKEN_SECRET || !keyword) return empty;
   const fetcher: SelfFetcher = self;
 
@@ -260,8 +258,7 @@ export async function enrichFromPlatform(
     `/api/v1/writeups?limit=5&q=${q}`,
     `/api/v1/cve-recent?limit=60`,
     `/api/v1/cve-trends?limit=10`,
-    `/api/v1/actors?limit=5&q=${q}`,
-    `/api/v1/darkweb-monitor?limit=5&q=${q}`,
+    `/api/v1/misp-galaxy-actors?limit=5&q=${q}`,
   ];
 
   const settled = await Promise.all(paths.map((p) => selfFetchJson<unknown>(fetcher, p, env)));
@@ -304,26 +301,13 @@ export async function enrichFromPlatform(
   empty.actors = asArray(byPath.get(paths[3] ?? ''))
     .slice(0, 5)
     .map((a) => ({
-      name: String(a.name ?? a.actor ?? ''),
+      // MISP Galaxy names the canonical value field `value`; keep the old
+      // aliases so the mapper survives either shape.
+      name: String(a.value ?? a.name ?? a.actor ?? ''),
       slug: typeof a.slug === 'string' ? a.slug : undefined,
       mitre: typeof a.mitre_id === 'string' ? a.mitre_id : null,
     }))
     .filter((a) => a.name);
-
-  empty.darkweb = asArray(byPath.get(paths[4] ?? ''))
-    .slice(0, 5)
-    .map((d) => ({
-      source: typeof d.source === 'string' ? d.source : typeof d.source_name === 'string' ? d.source_name : undefined,
-      title:
-        typeof d.title === 'string'
-          ? d.title.slice(0, 200)
-          : typeof d.name === 'string'
-            ? d.name.slice(0, 200)
-            : undefined,
-      url: typeof d.url === 'string' ? d.url : undefined,
-      date: typeof d.date === 'string' ? d.date : typeof d.detected_at === 'string' ? d.detected_at : undefined,
-    }))
-    .filter((d) => d.title || d.source);
 
   return empty;
 }

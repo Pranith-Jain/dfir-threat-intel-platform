@@ -17,10 +17,18 @@ export interface SeverityInput {
   victims?: number;
 }
 
+/** A numeric input that is actually usable. `undefined` and `NaN` both mean
+ *  "no signal" — reading a field name the upstream API does not return
+ *  produces NaN, and a NaN severity used to propagate through finalScore
+ *  into the candidate queue where it broke score ordering silently. */
+function finiteNumber(n: unknown): n is number {
+  return typeof n === 'number' && Number.isFinite(n);
+}
+
 export function severityScore(input: SeverityInput): number {
   if (input.kev) return 1.0;
-  if (typeof input.cvss === 'number') return Math.min(1, Math.max(0, input.cvss / 10));
-  if (typeof input.victims === 'number') return Math.min(1, input.victims / 5);
+  if (finiteNumber(input.cvss)) return Math.min(1, Math.max(0, input.cvss / 10));
+  if (finiteNumber(input.victims)) return Math.min(1, Math.max(0, input.victims / 5));
   return 0.3;
 }
 
@@ -43,9 +51,16 @@ export interface FinalScoreInput {
 }
 
 export function finalScore({ recency, severity, novelty, sourceWeight }: FinalScoreInput): number {
+  // Non-finite components (a NaN from a drifted field mapping, an undefined
+  // recency) count as zero rather than poisoning the whole weighted sum: a
+  // NaN score is unorderable and silently corrupts queue selection.
+  const r = Number.isFinite(recency) ? recency : 0;
+  const s = Number.isFinite(severity) ? severity : 0;
+  const n = Number.isFinite(novelty) ? novelty : 0;
+  const w = Number.isFinite(sourceWeight) ? sourceWeight : 0;
   // Novelty weight increased from 0.25 to 0.35 to strongly penalize
   // recently seen items and prevent repetition in discovery.
-  const weighted = 0.25 * recency + 0.3 * severity + 0.35 * novelty + 0.1 * sourceWeight;
+  const weighted = 0.25 * r + 0.3 * s + 0.35 * n + 0.1 * w;
   return Number(weighted.toFixed(4));
 }
 
@@ -60,8 +75,14 @@ export function finalScoreWithTrending({
   sourceWeight,
   trending,
 }: TrendingAwareScoreInput): number {
-  if (typeof trending !== 'number') return finalScore({ recency, severity, novelty, sourceWeight });
+  if (typeof trending !== 'number' || !Number.isFinite(trending)) {
+    return finalScore({ recency, severity, novelty, sourceWeight });
+  }
+  const r = Number.isFinite(recency) ? recency : 0;
+  const s = Number.isFinite(severity) ? severity : 0;
+  const n = Number.isFinite(novelty) ? novelty : 0;
+  const w = Number.isFinite(sourceWeight) ? sourceWeight : 0;
   // Novelty weight increased to strongly penalize recently seen items
-  const weighted = 0.2 * recency + 0.2 * severity + 0.3 * novelty + 0.1 * sourceWeight + 0.2 * trending;
+  const weighted = 0.2 * r + 0.2 * s + 0.3 * n + 0.1 * w + 0.2 * trending;
   return Number(weighted.toFixed(4));
 }

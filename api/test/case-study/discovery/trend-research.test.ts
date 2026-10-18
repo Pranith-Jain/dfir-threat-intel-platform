@@ -82,11 +82,9 @@ describe('discoverTrendResearch — produces nothing when the corpus is silent',
       now: NOW,
       getDedup: noDedup,
       self: selfStub({
-        '/api/v1/cve-trends': { cves: [] },
         '/api/v1/cisa-kev': { vulnerabilities: [] },
         '/api/v1/cve-recent': { cves: [] },
         '/api/v1/writeups': { items: [] },
-        '/api/v1/darkweb-monitor': { items: [] },
       }),
       internalTokenSecret: 'secret',
     });

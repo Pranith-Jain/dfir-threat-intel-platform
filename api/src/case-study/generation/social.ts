@@ -14,7 +14,7 @@ import type { ContentSlide } from '../social/slide-spec';
 import { buildCarouselSlides } from '../social/carousel-build';
 import { buildHashtags } from './hashtags';
 import type { ResearchDossier } from '../research';
-import { renderDossier } from '../research/dossier';
+import { renderDossier, renderFactsSnapshot, type DossierFactsSnapshot } from '../research/dossier';
 
 // Re-export the canonical types so existing imports keep working.
 export type { SocialContent, SocialCheck };
@@ -71,9 +71,13 @@ export interface SocialSource {
   body: string;
   hashtags?: string[];
   performanceNote?: string;
-  /** Research dossier, when the post went through the research stage. A
-   *  published post has one; a candidate preview falls back to `body`. */
+  /** Live research dossier, when one is in hand (candidate preview paths). */
   dossier?: ResearchDossier;
+  /** Persisted research facts from the published Post — the normal path,
+   *  since social copy is generated after publish when only the Post is
+   *  loaded. Carries the exact affected versions, CVSS numbers and the
+   *  disclosure timeline the article was written from. */
+  research?: DossierFactsSnapshot;
 }
 
 const BODY_CAP = 6000;
@@ -190,10 +194,18 @@ function cleanSocial(text: string, sourceBody: string): string {
 /**
  * Shared dossier block. Social copy is derived from the same research as the
  * article, which is what lets a thread make a claim the article can back.
+ *
+ * Renders the live dossier when the caller has one; otherwise the persisted
+ * snapshot from the Post. Without either, the block is omitted and the prompt
+ * falls back to the article body alone.
  */
 function dossierBlock(src: SocialSource): string {
-  if (!src.dossier) return '';
-  const rendered = renderDossier(src.dossier, { budget: 6000 });
+  const rendered = src.dossier
+    ? renderDossier(src.dossier, { budget: 6000 })
+    : src.research
+      ? renderFactsSnapshot(src.research, { budget: 6000 })
+      : '';
+  if (!rendered) return '';
   return (
     `\n<research_dossier>\nThe same research the article was written from. ` +
     `Every CVE, version, number and date you cite must come from here. ` +
@@ -213,8 +225,9 @@ function buildTwitterPrompt(src: SocialSource, includeLink = true): string {
     `  from this specific case. No "1/" prefix on the first post.\n` +
     `- One idea per post after that. If a post carries two ideas it carries ` +
     `  neither.\n` +
-    `- Include the reusable data: affected versions, the CVE list, the ` +
-    `  indicator sample. That is what people bookmark.\n` +
+    `- Include the reusable data: exact affected version ranges, the CVE ` +
+    `  list with CVSS scores, the indicator sample — values copied verbatim ` +
+    `  from the dossier. That is what people bookmark.\n` +
     `- Second to last post is the read: the implication, the thing that ` +
     `  changes how you think about this class of problem. Not a summary.\n` +
     `- Last post is a question a practitioner would actually answer.\n` +
@@ -241,16 +254,26 @@ function buildLinkedinPrompt(src: SocialSource, includeLink = true): string {
     `<format name="LinkedIn post">\n\n` +
     `One reader, on a phone, deciding whether to stop scrolling. They will ` +
     `see roughly the first two lines before "see more". Those lines have to ` +
-    `deliver a complete point on their own, not a promise that the point is ` +
+    `deliver a complete, standalone point: the named entity, what happened, ` +
+    `and the one number that makes it real. When the story has a CVE id, a ` +
+    `CVSS score, an affected version, a KEV flag or a patch deadline, at ` +
+    `least one of them goes in those two lines — that is the line a ` +
+    `practitioner forwards to their team. Not a promise that the point is ` +
     `below.\n\n` +
     `Shape:\n` +
-    `- Open on the finding. Named entity, real number, or a contrast the ` +
-    `  reader has not drawn. Not a framing sentence about the industry.\n` +
+    `- Open on the finding, as above. Not a framing sentence about the ` +
+    `  industry.\n` +
     `- Then the analysis. What the data actually shows, what surprised you, ` +
     `  what a defender should conclude. Short paragraphs, generous space — ` +
     `  nothing over three lines.\n` +
-    `- A scannable list of specifics, when there are any: one fact per line, ` +
-    `  real values, no filler bullets. Drop the list rather than pad it.\n` +
+    `- A scannable block of specifics when the dossier carries them: the ` +
+    `  exact affected version range, the fixed build, the CVE id with its ` +
+    `  CVSS score, KEV status and due date, the indicator sample. One fact ` +
+    `  per line, values copied verbatim from the dossier — this block is ` +
+    `  what people save and act on. Drop it rather than pad it, and never ` +
+    `  round, soften or invent a version, build number or score.\n` +
+    `- A dated turn when the material has one: disclosed, patched, ` +
+    `  exploited, deadline. Dates make the account verifiable.\n` +
     `- Close with the takeaway and one question a SOC lead or IR consultant ` +
     `  would genuinely answer. Not "thoughts?" and not "what do you think?".\n` +
     `- 0 to 3 hashtags, on the final line, specific to this case. Never a ` +
@@ -263,7 +286,8 @@ function buildLinkedinPrompt(src: SocialSource, includeLink = true): string {
     `  from the material; do not pad to a target and do not cut a point to ` +
     `  hit one.\n` +
     `- Every CVE, number, version and named organisation comes from the ` +
-    `  dossier.\n` +
+    `  dossier. If the dossier does not establish an exact version, say ` +
+    `  what is known rather than estimating one.\n` +
     `</format>\n\n` +
     dossierBlock(src) +
     `\n<article>\nTitle: ${src.title}\n\n${gist(src.body)}\n</article>\n` +
@@ -343,6 +367,9 @@ function postToSource(post: Post): SocialSource {
     title: post.title,
     body: post.body,
     hashtags: buildHashtags({ type: post.type, title: post.title, evidence: post.evidence ?? {} }),
+    // Persisted at generation time — carries the exact affected versions,
+    // CVE facts and timeline into the social prompts.
+    research: post.research,
   };
 }
 

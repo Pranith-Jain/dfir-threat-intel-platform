@@ -196,7 +196,6 @@ function buildGaps(
     );
   if (platform.actors.length === 0)
     gaps.push('No tracked actor is associated with this topic. Leave attribution open rather than guessing a group.');
-  if (platform.darkweb.length === 0) gaps.push('Nothing in the darkweb monitor references this topic.');
   if (type === 'vulnfaq' || type === 'cve' || type === 'exploit') {
     gaps.push(
       'Exploit mechanics, root cause, and the vulnerable code path are not established. Describe them only as far as the sources support, and say plainly where a source is general.'

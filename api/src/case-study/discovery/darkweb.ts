@@ -13,10 +13,12 @@ import { dayOfYear } from './rotation';
  * defender does: what access is being offered, at what price, for which
  * targets, and what the infostealer logs show.
  *
- * Sources are the platform's own monitored surfaces. Leak-site and broker
- * content is not published by RSS, and we do not want to link to a live
- * criminal marketplace in a published post anyway — the reader gets the
- * finding and the defensive read, not a shopping link.
+ * Sources are reporting desks and vendor labs that cover the underground
+ * (Krebs, BleepingComputer, The Record, Dark Reading, Securelist,
+ * SentinelOne Labs). Leak-site and broker content is not published by RSS,
+ * and we do not want to link to a live criminal marketplace in a published
+ * post anyway — the reader gets the finding and the defensive read, not a
+ * shopping link.
  */
 
 const TYPE_MAP: Array<[RegExp, CaseStudyType]> = [
@@ -36,10 +38,9 @@ function classify(title: string, body: string): CaseStudyType {
   return 'darkweb';
 }
 
-export interface DarkwebDeps extends RssRunnerDeps {
-  /** Query the platform's own darkweb monitor. Falls back to RSS-only. */
-  fetchHits?: (limit: number) => Promise<Array<Record<string, unknown>>>;
-}
+// Dependencies are plain RSS-runner deps — the platform darkweb-monitor
+// injection was removed along with its dead endpoint callers.
+export type DarkwebDeps = RssRunnerDeps;
 
 /** Sources that report ON the underground rather than hosting it. */
 const FEEDS = [
@@ -56,53 +57,11 @@ export const discoverDarkweb = async (deps: DarkwebDeps): Promise<Candidate[]> =
   const out: Candidate[] = [];
   const cutoff = deps.now.getTime() - 7 * 24 * 3600 * 1000;
 
-  // ── Platform's own monitored surfaces ────────────────────────────
-  if (deps.fetchHits) {
-    try {
-      const hits = await deps.fetchHits(25);
-      for (const hit of hits) {
-        const title = String(hit.title ?? hit.name ?? '').trim();
-        if (!title) continue;
-        const detected = String(hit.detected_at ?? hit.date ?? hit.first_seen ?? '');
-        const ts = Date.parse(detected);
-        if (detected && !Number.isNaN(ts) && ts < cutoff) continue;
-
-        const source = String(hit.source ?? hit.source_name ?? 'darkweb monitor');
-        const key = topicKey('darkweb', String(hit.id ?? title).slice(0, 50));
-        const dedup = await deps.getDedup(key);
-
-        out.push({
-          key,
-          type: classify(title, JSON.stringify(hit).slice(0, 600)),
-          title: title.slice(0, 200),
-          rationale: `Observed on ${source}${detected ? ` on ${detected.slice(0, 10)}` : ''}. ${
-            hit.summary ? String(hit.summary).slice(0, 200) : 'Underground telemetry on this topic.'
-          }`,
-          score: Number(
-            finalScore({
-              recency: 1,
-              severity: severityScore({}),
-              novelty: noveltyScore(dedup, deps.now),
-              sourceWeight: 0.7,
-            }).toFixed(4)
-          ),
-          evidence: {
-            title,
-            source,
-            detectedAt: detected,
-            summary: String(hit.summary ?? '').slice(0, 800),
-            url: typeof hit.url === 'string' && hit.url.startsWith('http') ? hit.url : undefined,
-            sources: typeof hit.url === 'string' && hit.url.startsWith('http') ? [hit.url] : [],
-            provenance: `platform darkweb monitor · ${source}`,
-          },
-          discoveredAt: deps.now.toISOString(),
-          status: 'pending',
-        });
-      }
-    } catch {
-      // Monitor unavailable — RSS path below still produces candidates.
-    }
-  }
+  // NOTE: this runner used to take a `fetchHits` injection for the platform's
+  // darkweb-monitor endpoint. That route never existed in the API, so the
+  // injection could only ever contribute an empty catch; it was removed along
+  // with the callers. Discovery here is RSS-only by design — we report ON the
+  // underground rather than surfacing marketplace rows.
 
   // ── Reporting on the underground ─────────────────────────────────
   const RELEVANT =

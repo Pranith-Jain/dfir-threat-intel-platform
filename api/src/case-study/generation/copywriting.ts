@@ -73,6 +73,11 @@ export const ANSWER_FIRST =
   `Answer the reader's actual question in the first two sentences. Whatever ` +
   `they came for, they get it immediately, and the rest of the piece is ` +
   `support, context, and consequence.\n\n` +
+  `When the piece is about a specific vulnerability, exploit or incident, the ` +
+  `first screen carries its identifiers: the product, the exact affected ` +
+  `versions from the dossier, the CVE id with its CVSS score, and whether it ` +
+  `is being exploited. Identifiers are what make the rest of the piece ` +
+  `scannable and verifiable.\n\n` +
   `Then each section earns its place by adding something the previous one ` +
   `did not. If a section restates an earlier section in different words, cut ` +
   `it.\n\n` +
@@ -133,6 +138,8 @@ export const FORMAT_CONTRACT =
   `#CHECK BEFORE YOU RETURN\n\n` +
   `- Does the first sentence contain the specific fact, not a framing device?\n` +
   `- Is every CVE, version, number and date traceable to the dossier?\n` +
+  `- Are version strings and scores copied verbatim from the dossier, not ` +
+  `  rounded or paraphrased?\n` +
   `- Where the dossier said something is not established, does the piece say ` +
   `  so rather than filling the gap?\n` +
   `- Does each section add something the last one did not?\n` +

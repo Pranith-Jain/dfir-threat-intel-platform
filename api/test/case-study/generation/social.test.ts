@@ -39,6 +39,41 @@ const mockPost: Post = {
   sources: [{ url: `https://nvd.nist.gov/vuln/detail/${SYNTHETIC_CVE}`, title: 'NVD' }],
 };
 
+/**
+ * The same post with the persisted research snapshot the generator now
+ * attaches at publish time. Social copy is built from a stored Post, so this
+ * snapshot is the only way the LinkedIn/X prompts can see the exact affected
+ * versions and timeline facts.
+ */
+const mockPostWithFacts: Post = {
+  ...mockPost,
+  research: {
+    subject: `${SYNTHETIC_CVE} synthetic vendor auth bypass`,
+    cves: [
+      {
+        id: SYNTHETIC_CVE,
+        description: 'A synthetic fixture vulnerability used by tests.',
+        cvss: {
+          version: '3.1',
+          base_score: 9.8,
+          severity: 'CRITICAL',
+          vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H',
+        },
+        cwe: ['CWE-287'],
+        products: ['examplecorp edge gateway'],
+        affectedVersions: ['examplecorp edge gateway: >= 4.2 and < 4.6'],
+        kev: { in_kev: true, date_added: '2026-08-05', due_date: '2026-08-26' },
+        references: [`https://nvd.nist.gov/vuln/detail/${SYNTHETIC_CVE}`],
+      },
+    ],
+    platform: { writeups: [], relatedCves: [], trendingCves: [], actors: [] },
+    timeline: [{ date: '2026-08-05', event: 'Added to CISA KEV' }],
+    indicators: [],
+    entities: { vendors: ['examplecorp'], products: ['edge gateway'], actors: [], techniques: ['T1190'] },
+    gaps: [],
+  },
+};
+
 const lastUserPrompt = async (): Promise<string> => {
   const { runCompletion } = await import('../../../src/case-study/generation/ai-client');
   const calls = (runCompletion as any).mock.calls;
@@ -92,6 +127,38 @@ describe('LinkedIn prompt', () => {
     await generateLinkedinContent(mockPost, {} as never, new Date());
     const user = await lastUserPrompt();
     expect(user).toMatch(/comes from the\s*\n?\s*dossier|from the dossier/i);
+  });
+});
+
+describe('research snapshot wiring', () => {
+  it('carries the persisted research facts into the LinkedIn prompt', async () => {
+    // Social copy is generated from the stored Post, so without the snapshot
+    // the exact affected versions never reach the prompt.
+    const { generateLinkedinContent } = await import('../../../src/case-study/generation/social');
+    await generateLinkedinContent(mockPostWithFacts, {} as never, new Date());
+    const user = await lastUserPrompt();
+    expect(user).toContain('<research_dossier>');
+    expect(user).toContain('- Affected versions (exact, from NVD): examplecorp edge gateway: >= 4.2 and < 4.6');
+    expect(user).toContain('Added to CISA KEV');
+  });
+
+  it('omits the dossier block for a legacy post with no persisted research', async () => {
+    const { generateLinkedinContent } = await import('../../../src/case-study/generation/social');
+    await generateLinkedinContent(mockPost, {} as never, new Date());
+    const user = await lastUserPrompt();
+    expect(user).not.toContain('<research_dossier>');
+  });
+
+  it('instructs verbatim version quoting and the first-screen identifiers contract', async () => {
+    const { generateLinkedinContent } = await import('../../../src/case-study/generation/social');
+    await generateLinkedinContent(mockPostWithFacts, {} as never, new Date());
+    const user = await lastUserPrompt();
+    expect(user).toMatch(/verbatim/i);
+    expect(user).toMatch(/never\s+round, soften or invent/i);
+    // The fold contract: CVE/version/CVSS material belongs in the first two
+    // lines the reader sees before "see more".
+    expect(user).toMatch(/first two lines/i);
+    expect(user).toMatch(/CVE id|CVSS score/);
   });
 });
 

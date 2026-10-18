@@ -137,6 +137,39 @@ export async function listAllCandidates(ns: KVNamespace): Promise<Candidate[]> {
   return perType.flat();
 }
 
+/**
+ * Order candidates so the first screen shows the day's mix rather than a
+ * wall of whichever topic scores highest — in practice, KEV CVEs carry a
+ * severity of 1.0 and used to fill every visible row of the admin queue.
+ *
+ * Types are ranked by their best candidate, items within a type stay
+ * score-ordered, and the output takes one item from each type per round.
+ * The round-robin preserves relative quality (the global top item is still
+ * first) while guaranteeing every represented topic appears before any
+ * topic repeats.
+ */
+export function interleaveByType(cands: Candidate[]): Candidate[] {
+  const byType = new Map<CaseStudyType, Candidate[]>();
+  for (const c of cands) {
+    const list = byType.get(c.type);
+    if (list) list.push(c);
+    else byType.set(c.type, [c]);
+  }
+  const groups = [...byType.values()];
+  for (const g of groups) g.sort((a, b) => b.score - a.score);
+  groups.sort((a, b) => (b[0]?.score ?? 0) - (a[0]?.score ?? 0));
+
+  const out: Candidate[] = [];
+  const max = groups.reduce((m, g) => Math.max(m, g.length), 0);
+  for (let i = 0; i < max; i++) {
+    for (const g of groups) {
+      const item = g[i];
+      if (item) out.push(item);
+    }
+  }
+  return out;
+}
+
 export async function deleteCandidate(ns: KVNamespace, type: CaseStudyType, stableKey: string): Promise<void> {
   const list = await readTypeBlob(ns, type);
   await writeTypeBlob(

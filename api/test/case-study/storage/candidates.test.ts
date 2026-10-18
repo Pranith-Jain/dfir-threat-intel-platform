@@ -6,6 +6,7 @@ import {
   listAllCandidates,
   deleteCandidate,
   countAllCandidates,
+  interleaveByType,
 } from '../../../src/case-study/storage/candidates';
 import type { Candidate } from '../../../src/case-study/types';
 
@@ -104,5 +105,46 @@ describe('candidates storage', () => {
     await putCandidate(kv, sampleCandidate);
     await deleteCandidate(kv, 'cve', 'cve-2026-1234');
     expect(await getCandidate(kv, 'cve', 'cve-2026-1234')).toBeNull();
+  });
+});
+
+describe('interleaveByType', () => {
+  function cand(key: string, type: Candidate['type'], score: number): Candidate {
+    return { ...sampleCandidate, key, type, score };
+  }
+
+  it('shows every topic before any topic repeats', () => {
+    // The exact shape that made the admin queue look CVE-only: five KEV CVEs
+    // at 1.0 against one candidate per other topic.
+    const queue = [
+      cand('cve-1', 'cve', 1.0),
+      cand('cve-2', 'cve', 1.0),
+      cand('cve-3', 'cve', 1.0),
+      cand('cve-4', 'cve', 1.0),
+      cand('cve-5', 'cve', 1.0),
+      cand('actor-1', 'actor', 0.9),
+      cand('breach-1', 'breach', 0.85),
+      cand('darkweb-1', 'darkweb', 0.8),
+    ];
+    const out = interleaveByType(queue);
+    expect(out.map((c) => c.type).slice(0, 4)).toEqual(['cve', 'actor', 'breach', 'darkweb']);
+    // The second CVE can only appear after every other topic had its turn.
+    expect(out[4]?.type).toBe('cve');
+    expect(out).toHaveLength(queue.length);
+  });
+
+  it('keeps score order within a type and ranks types by their best candidate', () => {
+    const queue = [
+      cand('actor-hi', 'actor', 0.95),
+      cand('actor-lo', 'actor', 0.4),
+      cand('cve-hi', 'cve', 0.9),
+      cand('cve-lo', 'cve', 0.3),
+    ];
+    const out = interleaveByType(queue);
+    expect(out.map((c) => c.key)).toEqual(['actor-hi', 'cve-hi', 'actor-lo', 'cve-lo']);
+  });
+
+  it('returns an empty array for an empty queue', () => {
+    expect(interleaveByType([])).toEqual([]);
   });
 });

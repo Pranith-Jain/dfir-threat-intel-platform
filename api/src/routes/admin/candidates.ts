@@ -5,7 +5,13 @@ import { logError } from '../../lib/logger';
 import { notFound } from '../../lib/api-error';
 import { safeJsonBody } from '../../lib/safe-body';
 import { getAi } from '../../lib/ai-binding';
-import { listAllCandidates, listCandidates, getCandidate, deleteCandidate } from '../../case-study/storage/candidates';
+import {
+  listAllCandidates,
+  listCandidates,
+  getCandidate,
+  deleteCandidate,
+  interleaveByType,
+} from '../../case-study/storage/candidates';
 import { approve } from '../../case-study/storage/approved';
 import { suppressDedupMany } from '../../case-study/storage/dedup';
 import { putDraft } from '../../case-study/storage/drafts';
@@ -39,8 +45,9 @@ async function deleteCandidatesByType(ns: KVNamespace, filterType: CaseStudyType
 
 candidatesRouter.get('/candidates', async (c) => {
   const all = await listAllCandidates(c.env.CASE_STUDIES);
-  all.sort((a, b) => b.score - a.score);
-  return c.json({ pending: all });
+  // Score order alone put KEV CVEs (severity 1.0) at the top of every screen.
+  // Round-robin by type so the operator sees the day's actual mix first.
+  return c.json({ pending: interleaveByType(all) });
 });
 
 candidatesRouter.post('/candidates/:id/approve', async (c) => {

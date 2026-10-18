@@ -1,5 +1,6 @@
 // api/src/case-study/types.ts
 import type { CarouselSpec } from './social/slide-spec';
+import type { DossierFactsSnapshot } from './research/dossier';
 
 /**
  * Content-engine topic types. Every type maps 1:1 to a discovery runner and
@@ -160,6 +161,14 @@ export interface Post {
    * candidate blob on success). Unset for legacy posts.
    */
   evidence?: Record<string, unknown>;
+  /**
+   * Compact research facts persisted at generation time. Social copy is
+   * generated from the stored Post (publish time, drafts, manual reposts),
+   * so without this the LinkedIn/X prompts could not cite the exact
+   * affected versions or CVSS numbers the article was written from.
+   * Unset for legacy posts; social generation falls back to the body.
+   */
+  research?: DossierFactsSnapshot;
   /**
    * Optional approval gate metadata. Absent for legacy auto-published
    * posts (treated as `published`). New posts go through `draft` first
