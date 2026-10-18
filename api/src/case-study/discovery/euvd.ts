@@ -12,6 +12,38 @@ interface EuvdEntry {
   baseScore?: number;
 }
 
+/** Parse EUVD's `datePublished` ("Oct 13, 2026, 8:38:59 AM") as UTC.
+ *  The bare `new Date(...)` parses date+time strings in the host's local
+ *  zone, which would shift the recency window (and the cutoff) by the
+ *  runtime offset — correct only by accident in UTC workers, wrong in any
+ *  TZ. Falls back to native parsing for anything that doesn't match the shape.
+ */
+function parseEuvdDate(s: string): number {
+  const m = s.match(/^([A-Z][a-z]{2})\s+(\d{1,2}),\s+(\d{4}),\s+(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)$/i);
+  if (!m) return Date.parse(s);
+  const months: Record<string, number> = {
+    jan: 0,
+    feb: 1,
+    mar: 2,
+    apr: 3,
+    may: 4,
+    jun: 5,
+    jul: 6,
+    aug: 7,
+    sep: 8,
+    oct: 9,
+    nov: 10,
+    dec: 11,
+  };
+  const mi = months[m[1]!.toLowerCase().slice(0, 3)];
+  if (mi === undefined) return Number.NaN;
+  let h = Number(m[4]);
+  const ap = m[7]!.toUpperCase();
+  if (ap === 'PM' && h !== 12) h += 12;
+  if (ap === 'AM' && h === 12) h = 0;
+  return Date.UTC(Number(m[3]), mi, Number(m[2]), h, Number(m[5]), Number(m[6]));
+}
+
 export interface DiscoverEuvdDeps {
   fetch: typeof globalThis.fetch;
   now: Date;
@@ -30,14 +62,14 @@ export async function discoverEuvd(deps: DiscoverEuvdDeps): Promise<Candidate[]>
     const cutoff = deps.now.getTime() - WINDOW_MS;
     for (const v of Array.isArray(all) ? all : []) {
       if (!v.id || !v.datePublished) continue;
-      const pub = new Date(v.datePublished).getTime();
+      const pub = parseEuvdDate(v.datePublished);
       if (!Number.isFinite(pub) || pub < cutoff) continue;
       // v.id already starts with "EUVD-"; strip it so topicKey's own "euvd-"
       // prefix isn't doubled (e.g. "euvd-euvd-2026-1001").
       const key = topicKey('euvd', v.id.toLowerCase().replace(/^euvd-/, ''));
       const dedup = await deps.getDedup(key);
       const score = finalScore({
-        recency: recencyScore(v.datePublished, deps.now),
+        recency: recencyScore(new Date(pub).toISOString(), deps.now),
         severity: severityScore({ cvss: v.baseScore }),
         novelty: noveltyScore(dedup, deps.now),
         sourceWeight: 0.75,
@@ -59,7 +91,6 @@ export async function discoverEuvd(deps: DiscoverEuvdDeps): Promise<Candidate[]>
         status: 'pending',
       });
     }
-  } catch {
-  }
+  } catch {}
   return out;
 }

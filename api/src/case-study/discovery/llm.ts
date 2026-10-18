@@ -18,15 +18,16 @@ import { dayOfYear } from './rotation';
  * a CVE record.
  */
 
+// Re-verified 2026-10-18: owasp.org has no site-wide feed (404) and
+// horizon3.ai 403s datacenter egress — both removed. arXiv feeds build
+// weekday-only; an empty weekend channel is expected, not dead.
 const FEEDS = [
   'https://genai.owasp.org/feed/',
-  'https://owasp.org/feed/',
   'https://arxiv.org/rss/cs.CR',
   'https://arxiv.org/rss/cs.AI',
   'https://unit42.paloaltonetworks.com/feed/',
   'https://www.wiz.io/blog/rss.xml',
   'https://blog.talosintelligence.com/rss/',
-  'https://www.horizon3.ai/feed/',
 ];
 
 /** Terms that indicate genuinely model-level security content. */

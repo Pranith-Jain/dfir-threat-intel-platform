@@ -1,7 +1,12 @@
 // Vendor threat-intel RSS feeds scanned for actor mentions.
 // These are public feeds — no auth required.
+// Feed health re-verified 2026-10-18 against server-side egress. Dead URLs
+// (404, redirect-to-HTML, or long-frozen feeds) are removed rather than left
+// in: each one costs a subrequest per run and silently contributes nothing.
 export const ACTOR_RSS_FEEDS: string[] = [
-  'https://www.mandiant.com/resources/blog/rss.xml',
+  // Mandiant's blog now publishes on Google Cloud's threat-intelligence feed
+  // (the old mandiant.com/resources feed redirects to an HTML page).
+  'https://cloudblog.withgoogle.com/topics/threat-intelligence/rss/',
   'https://www.crowdstrike.com/blog/feed/',
   'https://www.microsoft.com/en-us/security/blog/feed/',
   'https://blog.talosintelligence.com/feed/',
@@ -23,7 +28,9 @@ export const ACTOR_RSS_FEEDS: string[] = [
 // 403s default bot UAs). Providers silently rot; confirm against live output.
 export const ADVISORY_RSS_FEEDS: string[] = [
   'https://www.cisa.gov/cybersecurity-advisories/ics-advisories.xml',
-  'https://blog.google/threat-analysis-group/rss/',
+  // Google TAG publishes through Cloudblog's threat-intelligence feed; the
+  // old blog.google/threat-analysis-group/rss/ path is 404.
+  'https://cloudblog.withgoogle.com/topics/threat-intelligence/rss/',
   'https://www.ncsc.gov.uk/api/1/services/v1/all-rss-feed.xml',
   'https://asec.ahnlab.com/en/feed/',
   'https://blogs.jpcert.or.jp/en/atom.xml',

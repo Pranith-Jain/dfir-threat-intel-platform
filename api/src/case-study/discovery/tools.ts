@@ -5,18 +5,19 @@ export type DiscoverDeps = RssRunnerDeps;
 /** Cybersecurity tool releases, pentest utilities, and practical
  *  offensive-security walkthroughs. Excludes deep-dive threat research
  *  blogs (Rapid7, SpecterOps, WatchTowr) — those belong in methodology. */
+// Cybersec tool feeds. Re-verified 2026-10-18: gbhackers 403s datacenter
+// egress, holdmybeersecurity's domain is gone; OffSec and SecureIdeas moved
+// their feed paths and were updated.
 const FEEDS = [
   'https://www.kitploit.com/feeds/posts/default',
   'https://kalilinuxtutorials.com/feed/',
   'https://www.darknet.org.uk/feed/',
   'https://www.hackingarticles.in/feed/',
   'https://pentesttools.net/feed/',
-  'https://gbhackers.com/feed/',
   'https://blog.detectify.com/feed/',
   'https://www.blackhillsinfosec.com/feed/',
-  'https://blog.holdmybeersecurity.com/feed/',
-  'https://www.offsec.com/feed.xml',
-  'https://blog.secureideas.com/feed/',
+  'https://www.offsec.com/rss.xml',
+  'https://www.secureideas.com/blog/rss.xml',
 ];
 
 export const discoverTools = createRssRunner({

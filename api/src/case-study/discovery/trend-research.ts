@@ -116,9 +116,13 @@ async function fetchCorpus(self: Fetcher, env: { INTERNAL_TOKEN_SECRET?: string 
   if (!self || !env.INTERNAL_TOKEN_SECRET) return empty;
   const f: SelfFetcher = self;
   const paths = {
-    kev: '/api/v1/cisa-kev?days=2&limit=40',
+    // `days` is the only param cisa-kev reads; the payload is already a
+    // two-day window, no cap needed.
+    kev: '/api/v1/cisa-kev?days=2',
     recent: '/api/v1/cve-recent?limit=120',
-    writeups: '/api/v1/writeups?limit=15&since=24h',
+    // `/api/v1/writeups` takes no `limit`/`since` params (only `tier`) — the
+    // 48h window is applied client-side in signalsFromWriteups.
+    writeups: '/api/v1/writeups',
   };
   const settled = await Promise.all(Object.values(paths).map((p) => selfFetchJson<unknown>(f, p, env)));
   const [kev, recent, writeups] = settled;
@@ -234,14 +238,16 @@ function signalsFromWriteups(data: unknown, now: Date): TrendSignal[] {
     const title = str(w.title).trim();
     const url = str(w.url) || (str(w.slug) ? `https://pranithjain.qzz.io/threatintel/writeups/${str(w.slug)}` : '');
     if (!title || !url.startsWith('http')) continue;
-    const published = Date.parse(str(w.published_at) || str(w.publishedAt) || str(w.date));
+    // The route's Writeup type carries the ISO date in `published`; the
+    // snake/camel variants are kept as fallbacks. Reading only the variants
+    // (as this did originally) dropped every production item as undated.
+    const published = Date.parse(str(w.published) || str(w.published_at) || str(w.publishedAt) || str(w.date));
     if (Number.isNaN(published) || now.getTime() - published > windowMs) continue;
 
-    const summary = str(w.summary).slice(0, 300);
+    const summary = (str(w.description) || str(w.summary)).slice(0, 300);
     const cve = (title.match(CVE_ID_RE) ?? [])[0]?.toUpperCase();
-    const entities = asArray(w.entities)
-      .map((e) => str(e))
-      .filter(Boolean);
+    // The route carries per-post feed categories in `tags`.
+    const entities = Array.isArray(w.tags) ? w.tags.filter((t): t is string => typeof t === 'string') : [];
     out.push({
       kind: 'writeup',
       key: `writeup-${str(w.slug) || title.slice(0, 40)}`,

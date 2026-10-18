@@ -10,9 +10,8 @@ export function dayOfYear(now: Date): number {
  * cover all optional runners exactly once → variety + bounded subrequests.
  * Optional runners are taken in their order in `all` for a stable partition.
  *
- * With 6 groups and ~12 optional runners, each optional runner runs once
- * every 6 days. This ensures variety while keeping daily subrequest count
- * manageable.
+ * The call site passes `groups=4`: with ~16 optional runners, each optional
+ * runner surfaces once every 4 days while the always-on core stays daily.
  */
 export function activeRunnerNames(all: string[], alwaysOn: Set<string>, now: Date, groups: number): string[] {
   const optional = all.filter((n) => !alwaysOn.has(n));

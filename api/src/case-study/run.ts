@@ -20,6 +20,7 @@ import { discoverDarkweb } from './discovery/darkweb';
 import { discoverSupplyChain } from './discovery/supplychain';
 import { discoverExploits } from './discovery/exploits';
 import { discoverInfostealers } from './discovery/infostealers';
+import { discoverReleaks, type ReleakRow } from './discovery/releak';
 import { discoverIntel } from './discovery/intel';
 import { discoverOsint } from './discovery/osint';
 import { discoverMethodology } from './discovery/methodology';
@@ -218,6 +219,18 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
       }),
     supplychain: () => discoverSupplyChain({ fetch: globalThis.fetch, now, getDedup: memGet }),
     infostealers: () => discoverInfostealers({ fetch: globalThis.fetch, now, getDedup: memGet }),
+    // Re-leaks: a victim claimed by ≥2 ransomware groups — a high-signal
+    // story (failed double-extortion / affiliate movement). Reads the
+    // platform's own /api/v1/victim-releaks surface via the SELF binding.
+    releak: () =>
+      discoverReleaks({
+        now,
+        getDedup: memGet,
+        fetchReleaks: async () => {
+          const data = (await apiFetch('/api/v1/victim-releaks')) as { releaks?: ReleakRow[] } | null;
+          return data?.releaks ?? [];
+        },
+      }),
     breach: () => discoverBreaches({ fetch: globalThis.fetch, now, getDedup: memGet }),
     scam: () => discoverScams({ fetch: globalThis.fetch, now, getDedup: memGet }),
     aisec: () => discoverAiSec({ fetch: globalThis.fetch, now, getDedup: memGet }),
@@ -275,10 +288,11 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
       }),
     // Trend research (replaces the LLM-invented `trends` runner). Reads the
     // platform's OWN corpus for what actually moved — fresh KEV additions,
-    // social-hype CVEs, EPSS outliers, fresh writeups, darkweb hits — and
-    // only publishes candidates whose source URL verifiably resolves. When
-    // the corpus is quiet it returns nothing, which is the correct outcome;
-    // the old runner guaranteed three stories a day by inventing them.
+    // EPSS outliers against the platform's recent baseline, fresh writeups —
+    // and only publishes candidates whose source URL verifiably resolves.
+    // When the corpus is quiet it returns nothing, which is the correct
+    // outcome; the old runner guaranteed three stories a day by inventing
+    // them.
     trends: () =>
       discoverTrendResearch({
         now,

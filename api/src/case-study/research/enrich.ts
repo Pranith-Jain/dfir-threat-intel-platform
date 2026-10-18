@@ -236,6 +236,19 @@ function asArray(v: unknown): Array<Record<string, unknown>> {
   return [];
 }
 
+/** True when every distinctive keyword token appears in the text. The
+ *  keyword is already reduced to a short noun phrase by `topicKeyword`, so
+ *  an all-tokens substring match is strict enough to keep only on-topic
+ *  hits without a search index. */
+function matchesTopic(text: string, keyword: string): boolean {
+  const hay = text.toLowerCase();
+  const tokens = keyword
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((t) => t.length >= 3);
+  return tokens.length > 0 && tokens.every((t) => hay.includes(t));
+}
+
 /**
  * Ask the platform's own API surfaces for material on this topic.
  *
@@ -255,7 +268,9 @@ export async function enrichFromPlatform(
 
   const q = encodeURIComponent(keyword);
   const paths = [
-    `/api/v1/writeups?limit=5&q=${q}`,
+    // `/api/v1/writeups` has no keyword parameter — it returns the newest
+    // pieces across all covered sources. Filter client-side below.
+    '/api/v1/writeups',
     `/api/v1/cve-recent?limit=60`,
     `/api/v1/cve-trends?limit=10`,
     `/api/v1/misp-galaxy-actors?limit=5&q=${q}`,
@@ -264,16 +279,21 @@ export async function enrichFromPlatform(
   const settled = await Promise.all(paths.map((p) => selfFetchJson<unknown>(fetcher, p, env)));
   const byPath = new Map(paths.map((p, i) => [p, settled[i]]));
 
-  // Writeups: already keyword-filtered upstream.
+  // Writeups: match the topic keyword client-side. Presenting an off-topic
+  // piece to the writer as "about this topic" is exactly the kind of wrong
+  // grounding that leaks into published copy. Route items carry the summary
+  // in `description` and keywords in `tags`.
   empty.writeups = asArray(byPath.get(paths[0] ?? ''))
-    .slice(0, 5)
     .map((w) => ({
       title: String(w.title ?? '').slice(0, 200),
-      url:
-        typeof w.url === 'string' ? w.url : typeof w.slug === 'string' ? `/threatintel/writeups/${w.slug}` : undefined,
-      summary: typeof w.summary === 'string' ? w.summary.slice(0, 300) : undefined,
+      url: typeof w.url === 'string' ? w.url : undefined,
+      summary: typeof w.description === 'string' ? w.description.slice(0, 300) : undefined,
+      tags: Array.isArray(w.tags) ? w.tags.filter((t): t is string => typeof t === 'string').join(' ') : '',
     }))
-    .filter((w) => w.title);
+    .filter((w) => w.title)
+    .filter((w) => matchesTopic(`${w.title} ${w.summary ?? ''} ${w.tags}`, keyword))
+    .map((w) => ({ title: w.title, url: w.url, summary: w.summary }))
+    .slice(0, 5);
 
   // Trending CVEs: the freshest hype signal available, used as a "this is
   // what people are actually reading about" cross-check.
@@ -287,7 +307,7 @@ export async function enrichFromPlatform(
     .filter((c) => /^CVE-\d{4}-\d{4,7}$/.test(c.id))
     .sort((a, b) => b.hypeScore - a.hypeScore);
 
-  // cve-recent is a full recent dump — take the highest-severity slice as
+  // cve-recent is a full recent dump — sort by CVSS and take the top slice as
   // "what else is live right now", which gives the writer a sense of scale.
   empty.relatedCves = asArray(byPath.get(paths[1] ?? ''))
     .map((c) => ({
@@ -296,6 +316,7 @@ export async function enrichFromPlatform(
       severity: typeof c.severity === 'string' ? c.severity : undefined,
     }))
     .filter((c) => /^CVE-\d{4}-\d{4,7}$/.test(c.id))
+    .sort((a, b) => (b.score ?? -1) - (a.score ?? -1))
     .slice(0, 8);
 
   empty.actors = asArray(byPath.get(paths[3] ?? ''))

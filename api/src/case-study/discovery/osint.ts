@@ -2,21 +2,20 @@ import { createRssRunner, type RssRunnerDeps } from './rss-util';
 
 export type DiscoverDeps = RssRunnerDeps;
 
+// OSINT tradecraft feeds. Re-verified 2026-10-18: the OSINT Curious project
+// ended (feed 404), the Medium @osint-blog custom feed 404s, sector035,
+// osint.team and osintbureau are unreachable/have no feed — all removed.
+// Three URLs moved and were updated in place.
 const FEEDS = [
   'https://www.bellingcat.com/feed/',
   'https://osintteam.blog/feed',
   'https://nixintel.info/feed/',
   'https://hatless1der.com/feed/',
-  'https://osintcurio.us/feed/',
-  'https://inteltechniques.com/blog/feed/',
-  'https://medium.com/feed/@osint-blog',
-  'https://sector035.nl/feed/',
+  'https://inteltechniques.com/blog/rss.xml',
   'https://www.secjuice.com/feed/',
-  'https://blog.haschek.at/feed/',
+  'https://blog.haschek.at/rss.xml',
   'https://www.alec.fyi/feed/',
-  'https://blacklanternsecurity.com/feed/',
-  'https://osint.team/feed/',
-  'https://osintbureau.com/feed/',
+  'https://blog.blacklanternsecurity.com/feed/',
   'https://webbreacher.com/feed/',
 ];
 

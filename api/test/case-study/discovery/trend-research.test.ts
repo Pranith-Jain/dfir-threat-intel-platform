@@ -152,7 +152,7 @@ describe('discoverTrendResearch — grounding gate', () => {
             title: 'Synthetic analysis',
             url: 'https://nowhere.example.org/post',
             slug: 'synthetic-analysis',
-            published_at: '2026-10-07T08:00:00Z',
+            published: '2026-10-07T08:00:00Z',
           },
         ],
       },
@@ -177,7 +177,7 @@ describe('discoverTrendResearch — grounding gate', () => {
             title: 'Synthetic analysis',
             url: 'https://waf.example.org/post',
             slug: 'synthetic-analysis',
-            published_at: '2026-10-07T08:00:00Z',
+            published: '2026-10-07T08:00:00Z',
           },
         ],
       },
@@ -202,7 +202,8 @@ describe('discoverTrendResearch — grounding gate', () => {
             title: 'Synthetic analysis',
             url: 'https://blog.example.com/post',
             slug: 'synthetic-analysis',
-            published_at: '2026-10-07T08:00:00Z',
+            published: '2026-10-07T08:00:00Z',
+            description: 'How the synthetic examplecorp flaw was chained end to end.',
           },
         ],
       },
@@ -217,6 +218,9 @@ describe('discoverTrendResearch — grounding gate', () => {
     const out = await discoverTrendResearch({ now: NOW, getDedup: noDedup, self, internalTokenSecret: 'secret' });
     expect(out).toHaveLength(1);
     expect(out[0]?.title).toBe('Synthetic analysis');
+    // The route's item summary lives in `description` — it must reach the
+    // candidate rationale, not silently fall back to the boilerplate line.
+    expect(out[0]?.rationale).toContain('chained end to end');
     spy.mockRestore();
   });
 

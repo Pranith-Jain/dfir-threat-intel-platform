@@ -34,11 +34,13 @@ import { dayOfYear } from './rotation';
  * `news`, and a weekly telemetry report is a `trend` or `briefing`.
  */
 
+// Re-verified 2026-10-18: Proofpoint's threat-insight path has no feed and
+// Splunk's security blog feed is 404 — both removed. Check Point Research
+// added (live, stealer/malware research not covered by another runner).
 const FEEDS = [
   'https://www.infostealers.com/feed/',
-  'https://www.proofpoint.com/us/blog/threat-insight/feed',
   'https://www.malwarebytes.com/blog/feed/',
-  'https://www.splunk.com/en_us/blog/security/index.xml',
+  'https://research.checkpoint.com/feed/',
 ];
 
 /** ClickFix and its named variants. */
