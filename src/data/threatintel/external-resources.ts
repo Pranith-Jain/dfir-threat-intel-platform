@@ -29,7 +29,12 @@ export type ResourceTag =
   | 'telegram'
   | 'anonymity'
   | 'offensive'
-  | 'evasion';
+  | 'evasion'
+  | 'cve'
+  | 'kev'
+  | 'ioc'
+  | 'threat-actors'
+  | 'ai-enriched';
 
 export interface ExternalResource {
   id: string;
@@ -93,6 +98,11 @@ export const TAG_LABELS: Record<ResourceTag, string> = {
   anonymity: 'Anonymity',
   offensive: 'Offensive',
   evasion: 'Evasion',
+  cve: 'CVE',
+  kev: 'KEV',
+  ioc: 'IOC',
+  'threat-actors': 'Threat Actors',
+  'ai-enriched': 'AI-Enriched',
 };
 
 export const TAG_PILL: Record<ResourceTag, string> = {
@@ -111,6 +121,11 @@ export const TAG_PILL: Record<ResourceTag, string> = {
   anonymity: 'border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300',
   offensive: 'border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-300',
   evasion: 'border-purple-500/40 bg-purple-500/10 text-purple-700 dark:text-purple-300',
+  cve: 'border-blue-500/40 bg-blue-500/10 text-blue-700 dark:text-blue-300',
+  kev: 'border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-300',
+  ioc: 'border-cyan-500/40 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300',
+  'threat-actors': 'border-violet-500/40 bg-violet-500/10 text-violet-700 dark:text-violet-300',
+  'ai-enriched': 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
 };
 
 export const RESOURCES: ExternalResource[] = [
