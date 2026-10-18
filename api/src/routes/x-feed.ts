@@ -306,28 +306,12 @@ const HANDLES: HandleSpec[] = [
     blurb: 'Malware analyst — commodity loaders, botnets',
     topic: 'malware',
   },
-  {
-    platform: 'mastodon',
-    handle: 'gayint',
-    name: 'GAYINT',
-    blurb: 'Threat-intel tooling and technique write-ups',
-    topic: 'research',
-  },
-  {
-    platform: 'mastodon',
-    handle: 'DailyCyberSecurity',
-    name: 'Daily CyberSecurity',
-    blurb: 'Aggregated daily cyber headlines',
-    topic: 'news',
-  },
-  {
-    platform: 'mastodon',
-    handle: 'David_Hollingworth',
-    instance: 'mastodon.social',
-    name: 'David Hollingworth',
-    blurb: 'Security commentary + advisory coverage',
-    topic: 'news',
-  },
+  // Removed 2026-10-18: these three handles consistently returned 0 items
+  // from the Worker's egress even though their RSS feeds are valid from a
+  // normal client (infosec.exchange / mastodon.social block or rate-limit
+  // the Workers egress IP for these accounts). Re-add if the upstream
+  // behaviour changes.
+  //   gayint, DailyCyberSecurity (infosec.exchange), David_Hollingworth (mastodon.social)
 ];
 
 export interface XFeedItem {
@@ -557,7 +541,7 @@ export async function fetchXFeed(): Promise<XFeedResponse> {
   };
 }
 
-export const X_FEED_CACHE_KEY = 'https://x-feed-cache.internal/v8-25pc';
+export const X_FEED_CACHE_KEY = 'https://x-feed-cache.internal/v9-25pc';
 
 export async function xFeedHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const cache = (caches as unknown as { default: Cache }).default;
