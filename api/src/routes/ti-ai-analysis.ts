@@ -71,13 +71,7 @@ const ai = new Hono<{ Bindings: AiEnv }>();
 
 async function runAiPrompt(
   prompt: string,
-  env: {
-    GROQ_API_KEY?: string;
-    GOOGLE_AI_STUDIO_API_KEY?: string;
-    NVIDIA_API_KEY?: string;
-    OPENROUTER_API_KEY?: string;
-    CEREBRAS_API_KEY?: string;
-  }
+  env: { GROQ_API_KEY?: string; GOOGLE_AI_STUDIO_API_KEY?: string; NVIDIA_API_KEY?: string }
 ): Promise<string> {
   try {
     const result = await runCompletion(
@@ -90,8 +84,6 @@ async function runAiPrompt(
       {
         nvidiaKey: env.NVIDIA_API_KEY,
         groqKey: env.GROQ_API_KEY,
-        openrouterKey: env.OPENROUTER_API_KEY,
-        cerebrasKey: env.CEREBRAS_API_KEY,
         googleKey: env.GOOGLE_AI_STUDIO_API_KEY,
       }
     );

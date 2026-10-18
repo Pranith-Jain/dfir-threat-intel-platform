@@ -86,8 +86,6 @@ export interface CaseStudyEnv {
   GROQ_API_KEY?: string;
   GOOGLE_AI_STUDIO_API_KEY?: string;
   NVIDIA_API_KEY?: string;
-  OPENROUTER_API_KEY?: string;
-  CEREBRAS_API_KEY?: string;
   INFRON_API_KEY?: string;
   /** Free VulnCheck Community token. Absent = VulnCheck KEV runner is a no-op. */
   VULNCHECK_API_TOKEN?: string;
@@ -414,8 +412,6 @@ export async function runPublisherNow(env: CaseStudyEnv, now: Date) {
         ai: getAi(env),
         now: n,
         groqKey: env.GROQ_API_KEY,
-        openrouterKey: env.OPENROUTER_API_KEY,
-        cerebrasKey: env.CEREBRAS_API_KEY,
         googleKey: env.GOOGLE_AI_STUDIO_API_KEY,
         infronKey: env.INFRON_API_KEY,
         validationEnv,

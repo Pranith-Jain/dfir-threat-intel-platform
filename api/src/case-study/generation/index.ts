@@ -138,10 +138,6 @@ export interface GeneratePostDeps {
   googleKey?: string;
   /** NVIDIA key for the NVIDIA fallback. */
   nvidiaKey?: string;
-  /** OpenRouter free-tier key. */
-  openrouterKey?: string;
-  /** Cerebras free-tier key. */
-  cerebrasKey?: string;
   infronKey?: string;
   /** Threat-intel provider keys for cross-checking extracted IOCs. When
    *  unset, the indicator list is passed through uncrossed. */

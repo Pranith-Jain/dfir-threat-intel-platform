@@ -404,8 +404,6 @@ Constraints: be specific (use group/sector/country names from above), be concise
         {
           googleKey: env.GOOGLE_AI_STUDIO_API_KEY,
           groqKey: env.GROQ_API_KEY,
-          openrouterKey: env.OPENROUTER_API_KEY,
-          cerebrasKey: env.CEREBRAS_API_KEY,
           quality: true,
         }
       ),
