@@ -124,7 +124,7 @@ export const WRITEUP_SOURCES: WriteupSourceSpec[] = [
   // ones that returned 403/0-items under server-side fetch are documented
   // in the "skipped" block below.
   { kind: 'rss', url: 'https://socprime.com/feed/', label: 'SOC Prime' },
-  { kind: 'rss', url: 'https://thehackernews.com/feeds/posts/default', label: 'The Hacker News' },
+  // The Hacker News: feed 302s to feedburner; worker egress is blocked (consistently fails in prod). Removed 2026-10-18.
   { kind: 'rss', url: 'https://www.helpnetsecurity.com/feed/', label: 'Help Net Security' },
   { kind: 'rss', url: 'https://hackread.com/feed/', label: 'HackRead' },
   { kind: 'rss', url: 'https://www.databreaches.net/feed/', label: 'DataBreaches.net' },
@@ -159,7 +159,7 @@ export const WRITEUP_SOURCES: WriteupSourceSpec[] = [
   // /vuln/latest/, /epss/exploit-prediction-scoring-system/. These return
   // HTML 200 but no inline data island; the RSS feeds expose the same
   // underlying content in machine-readable form.
-  { kind: 'rss', url: 'https://cvefeed.io/rssfeed/newsroom.xml', label: 'cvefeed.io Newsroom' },
+  // cvefeed.io: worker egress blocked (consistently fails in prod despite 200 from normal clients). Removed 2026-10-18.
 
   // ─── JSON Feed sources (JSON Feed v1.1 format) ──────────────────────
   // Lyrie Research — autonomous CTI platform publishing CVE deep-dives,
