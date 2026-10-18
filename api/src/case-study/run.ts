@@ -86,6 +86,7 @@ export interface CaseStudyEnv {
   GROQ_API_KEY?: string;
   GOOGLE_AI_STUDIO_API_KEY?: string;
   NVIDIA_API_KEY?: string;
+  SAMBANOVA_API_KEY?: string;
   INFRON_API_KEY?: string;
   /** Free VulnCheck Community token. Absent = VulnCheck KEV runner is a no-op. */
   VULNCHECK_API_TOKEN?: string;
@@ -201,20 +202,10 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
     // The ransomware-victim runner is gone (see types.ts). `darkweb` covers
     // the same underground ground with far more signal per post: what access
     // is being offered, to whom, and at what price.
-    darkweb: () =>
-      discoverDarkweb({
-        fetch: globalThis.fetch,
-        now,
-        getDedup: memGet,
-        fetchHits: async (limit) => {
-          const data = await selfFetchJson<Record<string, unknown>>(
-            env.SELF,
-            `/api/v1/darkweb-monitor?limit=${limit}`,
-            env
-          );
-          return asRows(data?.items).length ? asRows(data?.items) : asRows(data?.hits);
-        },
-      }),
+    // Note: the platform darkweb-monitor SELF endpoint was removed from the
+    // API (the run never had a handler), so this runner is RSS-only —
+    // reporting ON the underground rather than leaking-marketplace rows.
+    darkweb: () => discoverDarkweb({ fetch: globalThis.fetch, now, getDedup: memGet }),
     exploit: () =>
       discoverExploits({
         fetch: globalThis.fetch,
@@ -305,11 +296,12 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
   //     `darkweb`, `infostealers`, `phish`, `trends`, and 3 platform
   //     sub-runners (telegram, iocs, pulse). Platform split gives each
   //     source its own perTopic budget.
-  //   - The remaining optional topics partition into 6 day-buckets
-  //     (rotation.ts), so each day surfaces a few of them.
-  //   - Total per day: 9 always + ~3 rotating.
-  //   - perTopic=2: each topic contributes up to 2 candidates, ensuring
-  //     at least 10 different categories per run.
+  //   - The remaining optional topics partition into 4 day-buckets
+  //     (rotation.ts), so each optional runner surfaces once every four
+  //     days.
+  //   - Total per day: 10 always-on + ~4 rotating.
+  //   - perTopic=3: each topic contributes up to 3 candidates, so a quiet
+  //     CVE day cannot crowd the other topics out of the queue.
   //   - trends=3: fewer LLM candidates, higher quality bar enforced by
   //     dedup-avoidance list fed into the prompt.
   const ALWAYS_ON = new Set([
@@ -324,8 +316,9 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
     'phish',
     'trends',
   ]);
-  // 6 rotation groups: with ~10 optional runners, each runs once every 6 days
-  // This ensures variety while keeping daily subrequest count manageable
+  // 4 rotation groups: with ~16 optional runners, each runs once every 4 days,
+  // so the daily mix always carries non-CVE topics alongside the always-on
+  // core. Fewer groups than before = more variety per day, still bounded.
   const active = new Set(activeRunnerNames(Object.keys(allRunners), ALWAYS_ON, now, 4));
   const runners = Object.fromEntries(Object.entries(allRunners).filter(([name]) => active.has(name)));
 
@@ -336,14 +329,14 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
     putCandidate: (c) => putCandidate(env.CASE_STUDIES, c),
     commitDedup: (keys, n) => touchDedupMany(env.CASE_STUDIES, keys, n),
     now,
-    // Diversity controls (2026-06-11):
-    //   - perTopic=2: each topic contributes up to 2. With 10 topics running
-    //     per day (8 always-on + ~2 rotating), this ensures at least 10
-    //     different categories surface in every discovery run.
-    //   - limit=24: comfortable for ~10 active topics × 2, with headroom for
-    //     trending context items.
-    //   - trends=3: fewer LLM candidates; quality enforced via dedup-
-    //     avoidance, category rotation, and real trending data injection.
+    // Diversity controls:
+    //   - perTopic=3: each topic contributes up to 3. With ~14 topics running
+    //     per day (10 always-on + ~4 rotating), this keeps every category
+    //     represented without letting one topic flood the queue.
+    //   - limit=36: comfortable for ~14 active topics × 3, with headroom for
+    //     context items.
+    //   - trends=3: matches the perTopic default; kept explicit so the
+    //     override is visible if either value is ever tuned.
     perTopic: 3,
     limit: 36,
     perTopicOverride: { trends: 3 },
@@ -412,6 +405,7 @@ export async function runPublisherNow(env: CaseStudyEnv, now: Date) {
         ai: getAi(env),
         now: n,
         groqKey: env.GROQ_API_KEY,
+        sambanovaKey: env.SAMBANOVA_API_KEY,
         googleKey: env.GOOGLE_AI_STUDIO_API_KEY,
         infronKey: env.INFRON_API_KEY,
         validationEnv,

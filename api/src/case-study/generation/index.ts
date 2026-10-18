@@ -8,6 +8,7 @@ import { generateAiImage, buildHeroImagePrompt, buildBodyImagePrompt, injectBody
 import { validateIocsLive, type IocValidationEnv } from './ioc-live-validation';
 import { verifyAndPruneReferences } from './verify-references';
 import { researchCandidate } from '../research';
+import { snapshotDossier } from '../research/dossier';
 import type { LinkStatus } from '../../lib/verify-url';
 
 /**
@@ -138,6 +139,7 @@ export interface GeneratePostDeps {
   googleKey?: string;
   /** NVIDIA key for the NVIDIA fallback. */
   nvidiaKey?: string;
+  sambanovaKey?: string;
   infronKey?: string;
   /** Threat-intel provider keys for cross-checking extracted IOCs. When
    *  unset, the indicator list is passed through uncrossed. */
@@ -281,5 +283,8 @@ export async function generatePost(deps: GeneratePostDeps): Promise<Post> {
           }
         : undefined,
     evidence: candidate.evidence,
+    // Compact research facts so social copy (generated later, from the stored
+    // Post) can cite exact affected versions, CVSS numbers and dates.
+    research: snapshotDossier(dossier),
   };
 }

@@ -125,6 +125,10 @@ export interface Env {
    *  Free tier: gemini-3.6-flash (1,500 req/day), gemini-2.5-flash fallback. When
    *  set, Gemini is tried first before Groq/Workers AI. */
   GOOGLE_AI_STUDIO_API_KEY?: string;
+  /** SambaNova free-tier API key (set via `wrangler secret put SAMBANOVA_API_KEY`).
+   *  Free tier: ~10 RPM / 1K RPD. OpenAI-compatible endpoint with strong
+   *  free models (MiniMax-M3 1M ctx, DeepSeek-V3.2, Llama 3.3 70B, gpt-oss-120b). */
+  SAMBANOVA_API_KEY?: string;
   /** Groq free-tier API key (set via `wrangler secret put GROQ_API_KEY`).
    *  Free tier: gpt-oss-120b (1,000 req/day). Used as the primary LLM for
    *  feed summaries (preferGroq) and fallback for analyst paths. */

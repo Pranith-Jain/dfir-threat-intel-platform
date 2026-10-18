@@ -85,18 +85,19 @@ export interface CompletionOpts {
   infronKey?: string;
   groqKey?: string;
   nvidiaKey?: string;
+  sambanovaKey?: string;
   googleKey?: string;
   quality?: boolean;
   role?: string;
   preferGroq?: boolean;
   /** Skip directly to a specific provider (e.g. 'gemini' for large-context QA). */
-  preferProvider?: 'groq' | 'gemini' | 'nvidia';
+  preferProvider?: 'groq' | 'gemini' | 'nvidia' | 'sambanova';
   /** With preferProvider: use ONLY that provider, no fall-through. Used by the
    *  ensemble QA so each parallel call makes exactly one provider fetch instead
    *  of walking the whole chain (keeps subrequests bounded on the free plan). */
   exclusiveProvider?: boolean;
   /** Skip this provider entirely (e.g. QA must not grade the model that generated the report). */
-  excludeProvider?: 'groq' | 'gemini' | 'nvidia';
+  excludeProvider?: 'groq' | 'gemini' | 'nvidia' | 'sambanova';
   /** Invoked on success with the model + prompt/response text for cost tracking. */
   recordUsage?: (model: string, inputText: string, outputText: string, role: string) => void;
 }
@@ -280,6 +281,50 @@ async function runGroq(key: string, input: CompletionInput, model?: string): Pro
   return text;
 }
 
+// ── SambaNova (free tier: ~10 RPM / 1K RPD; fast, OpenAI-compatible) ──────
+const SAMBANOVA_URL = 'https://api.sambanova.ai/v1/chat/completions';
+const SAMBANOVA_MODELS = ['MiniMax-M3', 'DeepSeek-V3.2', 'Meta-Llama-3.3-70B-Instruct', 'gpt-oss-120b'];
+const SAMBANOVA_TIMEOUT_MS = 20_000;
+
+async function runSambaNova(key: string, input: CompletionInput, model?: string): Promise<string> {
+  const m = model ?? SAMBANOVA_MODELS[0]!;
+  let res: Response;
+  try {
+    res = await fetch(SAMBANOVA_URL, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: m,
+        messages: [
+          { role: 'system', content: input.system },
+          { role: 'user', content: input.user },
+        ],
+        max_tokens: input.maxTokens ?? 4000,
+        temperature: input.temperature ?? 0.5,
+      }),
+      signal: AbortSignal.timeout(SAMBANOVA_TIMEOUT_MS),
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logError('runSambaNova request failed', new Error(msg));
+    throw new Error(`sambanova request failed: ${msg}`);
+  }
+  if (res.status === 429) {
+    logError('runSambaNova rate limited', new Error('429'));
+    throw new RateLimitError('sambanova rate limited (429)');
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    const msg = `sambanova HTTP ${res.status}${body ? `: ${body.slice(0, 200)}` : ''}`;
+    logError('runSambaNova failed', new Error(msg));
+    throw new Error(msg);
+  }
+  const j = (await res.json()) as { choices?: Array<{ message?: { content?: string | null } }> };
+  const text = j?.choices?.[0]?.message?.content?.trim() || '';
+  if (!text) throw new Error('sambanova empty response');
+  return text;
+}
+
 async function runGemini(key: string, input: CompletionInput): Promise<{ text: string; model: string }> {
   let lastError: Error | null = null;
   for (const model of GEMINI_MODELS) {
@@ -355,6 +400,7 @@ export async function runCompletion(
 ): Promise<CompletionOutput> {
   const errors: string[] = [];
   const groqKey = opts.groqKey;
+  const sambanovaKey = opts.sambanovaKey;
   const health = await getProviderHealth();
   const inputText = `${input.system}\n${input.user}`;
   const usageRole = opts.role ?? 'completion';
@@ -364,14 +410,14 @@ export async function runCompletion(
   // last (first-party, no external quota).
   // `preferGroq` keeps the synthesizer + feed summaries on Groq for streaming
   // output; the case-study generator is the only main-streaming caller.
-  const fallbackOrder = ['gemini', 'groq', 'nvidia'] as const;
+  const fallbackOrder = ['gemini', 'groq', 'sambanova', 'nvidia'] as const;
   const providers: Array<(typeof fallbackOrder)[number]> = opts.preferProvider
     ? opts.exclusiveProvider
       ? [opts.preferProvider]
       : [opts.preferProvider, ...fallbackOrder.filter((p) => p !== opts.preferProvider)]
     : opts.preferGroq
-      ? ['groq', 'gemini', 'nvidia']
-      : ['gemini', 'groq', 'nvidia'];
+      ? ['groq', 'gemini', 'sambanova', 'nvidia']
+      : ['gemini', 'groq', 'sambanova', 'nvidia'];
 
   // Judge-independence guard: never let QA grade the model that generated the
   // report being verified. excludeProvider drops that provider from the chain
@@ -446,6 +492,28 @@ export async function runCompletion(
         if (isSubrequestExhausted(err)) throw err;
         if (health) await health.recordFailure('nvidia', isRateLimited(err));
       }
+    } else if (provider === 'sambanova' && sambanovaKey) {
+      let sambaSucceeded = false;
+      let sambaAnyNonRateLimit = false;
+      for (const model of SAMBANOVA_MODELS) {
+        const startMs = Date.now();
+        try {
+          const text = await runSambaNova(sambanovaKey, input, model);
+          sambaSucceeded = true;
+          if (health) await health.recordSuccess('sambanova', Date.now() - startMs);
+          opts.recordUsage?.(`sambanova:${model}`, inputText, text, usageRole);
+          return { text, modelUsed: `sambanova:${model}` };
+        } catch (err) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          logError('runCompletion sambanova failed', new Error(`${model}: ${errMsg.slice(0, 200)}`));
+          errors.push(`sambanova:${model}: ${errMsg.slice(0, 80)}`);
+          if (isSubrequestExhausted(err)) throw err;
+          if (isRequestTooLarge(err)) break;
+          if (isAuthError(err)) break;
+          if (!isRateLimited(err)) sambaAnyNonRateLimit = true;
+        }
+      }
+      if (!sambaSucceeded && health) await health.recordFailure('sambanova', !sambaAnyNonRateLimit);
     }
   }
 

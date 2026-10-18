@@ -27,6 +27,7 @@ interface AiEnv {
   GROQ_API_KEY?: string;
   GOOGLE_AI_STUDIO_API_KEY?: string;
   NVIDIA_API_KEY?: string;
+  SAMBANOVA_API_KEY?: string;
 }
 
 interface ThreatContext {
@@ -71,7 +72,7 @@ const ai = new Hono<{ Bindings: AiEnv }>();
 
 async function runAiPrompt(
   prompt: string,
-  env: { GROQ_API_KEY?: string; GOOGLE_AI_STUDIO_API_KEY?: string; NVIDIA_API_KEY?: string }
+  env: { GROQ_API_KEY?: string; GOOGLE_AI_STUDIO_API_KEY?: string; NVIDIA_API_KEY?: string; SAMBANOVA_API_KEY?: string }
 ): Promise<string> {
   try {
     const result = await runCompletion(
@@ -84,6 +85,7 @@ async function runAiPrompt(
       {
         nvidiaKey: env.NVIDIA_API_KEY,
         groqKey: env.GROQ_API_KEY,
+        sambanovaKey: env.SAMBANOVA_API_KEY,
         googleKey: env.GOOGLE_AI_STUDIO_API_KEY,
       }
     );
