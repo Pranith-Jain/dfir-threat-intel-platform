@@ -86,17 +86,19 @@ export interface CompletionOpts {
   groqKey?: string;
   nvidiaKey?: string;
   googleKey?: string;
+  openrouterKey?: string;
+  cerebrasKey?: string;
   quality?: boolean;
   role?: string;
   preferGroq?: boolean;
   /** Skip directly to a specific provider (e.g. 'gemini' for large-context QA). */
-  preferProvider?: 'groq' | 'gemini' | 'nvidia';
+  preferProvider?: 'groq' | 'gemini' | 'nvidia' | 'openrouter' | 'cerebras';
   /** With preferProvider: use ONLY that provider, no fall-through. Used by the
    *  ensemble QA so each parallel call makes exactly one provider fetch instead
    *  of walking the whole chain (keeps subrequests bounded on the free plan). */
   exclusiveProvider?: boolean;
   /** Skip this provider entirely (e.g. QA must not grade the model that generated the report). */
-  excludeProvider?: 'groq' | 'gemini' | 'nvidia';
+  excludeProvider?: 'groq' | 'gemini' | 'nvidia' | 'openrouter' | 'cerebras';
   /** Invoked on success with the model + prompt/response text for cost tracking. */
   recordUsage?: (model: string, inputText: string, outputText: string, role: string) => void;
 }
@@ -280,6 +282,105 @@ async function runGroq(key: string, input: CompletionInput, model?: string): Pro
   return text;
 }
 
+// ── OpenRouter (free tier: 20 req/min, 200/day; many :free models) ─────────
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const OPENROUTER_MODELS = [
+  'meta-llama/llama-3.3-70b-instruct:free',
+  'google/gemini-2.0-flash-exp:free',
+  'deepseek/deepseek-r1:free',
+  'qwen/qwen3-235b-a22b:free',
+];
+const OPENROUTER_TIMEOUT_MS = 20_000;
+
+async function runOpenRouter(key: string, input: CompletionInput, model?: string): Promise<string> {
+  const m = model ?? OPENROUTER_MODELS[0]!;
+  let res: Response;
+  try {
+    res = await fetch(OPENROUTER_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'content-type': 'application/json',
+        // OpenRouter recommends these for ranking/attribution; harmless otherwise.
+        'HTTP-Referer': 'https://pranithjain.qzz.io',
+        'X-Title': 'pranithjain DFIR portfolio',
+      },
+      body: JSON.stringify({
+        model: m,
+        messages: [
+          { role: 'system', content: input.system },
+          { role: 'user', content: input.user },
+        ],
+        max_tokens: input.maxTokens ?? 4000,
+        temperature: input.temperature ?? 0.5,
+      }),
+      signal: AbortSignal.timeout(OPENROUTER_TIMEOUT_MS),
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logError('runOpenRouter request failed', new Error(msg));
+    throw new Error(`openrouter request failed: ${msg}`);
+  }
+  if (res.status === 429) {
+    logError('runOpenRouter rate limited', new Error('429'));
+    throw new RateLimitError('openrouter rate limited (429)');
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    const msg = `openrouter HTTP ${res.status}${body ? `: ${body.slice(0, 200)}` : ''}`;
+    logError('runOpenRouter failed', new Error(msg));
+    throw new Error(msg);
+  }
+  const j = (await res.json()) as { choices?: Array<{ message?: { content?: string | null } }> };
+  const text = j?.choices?.[0]?.message?.content?.trim() || '';
+  if (!text) throw new Error('openrouter empty response');
+  return text;
+}
+
+// ── Cerebras (free tier: 1M tokens/day, 30 req/min; very fast inference) ──
+const CEREBRAS_URL = 'https://api.cerebras.ai/v1/chat/completions';
+const CEREBRAS_MODELS = ['llama-3.3-70b', 'llama-4-scout-17b-16e-instruct', 'qwen-3-32b', 'gpt-oss-120b'];
+const CEREBRAS_TIMEOUT_MS = 20_000;
+
+async function runCerebras(key: string, input: CompletionInput, model?: string): Promise<string> {
+  const m = model ?? CEREBRAS_MODELS[0]!;
+  let res: Response;
+  try {
+    res = await fetch(CEREBRAS_URL, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: m,
+        messages: [
+          { role: 'system', content: input.system },
+          { role: 'user', content: input.user },
+        ],
+        max_tokens: input.maxTokens ?? 4000,
+        temperature: input.temperature ?? 0.5,
+      }),
+      signal: AbortSignal.timeout(CEREBRAS_TIMEOUT_MS),
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    logError('runCerebras request failed', new Error(msg));
+    throw new Error(`cerebras request failed: ${msg}`);
+  }
+  if (res.status === 429) {
+    logError('runCerebras rate limited', new Error('429'));
+    throw new RateLimitError('cerebras rate limited (429)');
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    const msg = `cerebras HTTP ${res.status}${body ? `: ${body.slice(0, 200)}` : ''}`;
+    logError('runCerebras failed', new Error(msg));
+    throw new Error(msg);
+  }
+  const j = (await res.json()) as { choices?: Array<{ message?: { content?: string | null } }> };
+  const text = j?.choices?.[0]?.message?.content?.trim() || '';
+  if (!text) throw new Error('cerebras empty response');
+  return text;
+}
+
 async function runGemini(key: string, input: CompletionInput): Promise<{ text: string; model: string }> {
   let lastError: Error | null = null;
   for (const model of GEMINI_MODELS) {
@@ -364,14 +465,14 @@ export async function runCompletion(
   // last (first-party, no external quota).
   // `preferGroq` keeps the synthesizer + feed summaries on Groq for streaming
   // output; the case-study generator is the only main-streaming caller.
-  const fallbackOrder = ['gemini', 'groq', 'nvidia'] as const;
+  const fallbackOrder = ['gemini', 'groq', 'cerebras', 'openrouter', 'nvidia'] as const;
   const providers: Array<(typeof fallbackOrder)[number]> = opts.preferProvider
     ? opts.exclusiveProvider
       ? [opts.preferProvider]
       : [opts.preferProvider, ...fallbackOrder.filter((p) => p !== opts.preferProvider)]
     : opts.preferGroq
-      ? ['groq', 'gemini', 'nvidia']
-      : ['gemini', 'groq', 'nvidia'];
+      ? ['groq', 'gemini', 'cerebras', 'openrouter', 'nvidia']
+      : ['gemini', 'groq', 'cerebras', 'openrouter', 'nvidia'];
 
   // Judge-independence guard: never let QA grade the model that generated the
   // report being verified. excludeProvider drops that provider from the chain
@@ -446,6 +547,50 @@ export async function runCompletion(
         if (isSubrequestExhausted(err)) throw err;
         if (health) await health.recordFailure('nvidia', isRateLimited(err));
       }
+    } else if (provider === 'cerebras' && opts.cerebrasKey) {
+      let cerebrasSucceeded = false;
+      let cerebrasAnyNonRateLimit = false;
+      for (const model of CEREBRAS_MODELS) {
+        const startMs = Date.now();
+        try {
+          const text = await runCerebras(opts.cerebrasKey, input, model);
+          cerebrasSucceeded = true;
+          if (health) await health.recordSuccess('cerebras', Date.now() - startMs);
+          opts.recordUsage?.(`cerebras:${model}`, inputText, text, usageRole);
+          return { text, modelUsed: `cerebras:${model}` };
+        } catch (err) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          logError('runCompletion cerebras failed', new Error(`${model}: ${errMsg.slice(0, 200)}`));
+          errors.push(`cerebras:${model}: ${errMsg.slice(0, 80)}`);
+          if (isSubrequestExhausted(err)) throw err;
+          if (isRequestTooLarge(err)) break;
+          if (isAuthError(err)) break;
+          if (!isRateLimited(err)) cerebrasAnyNonRateLimit = true;
+        }
+      }
+      if (!cerebrasSucceeded && health) await health.recordFailure('cerebras', !cerebrasAnyNonRateLimit);
+    } else if (provider === 'openrouter' && opts.openrouterKey) {
+      let orSucceeded = false;
+      let orAnyNonRateLimit = false;
+      for (const model of OPENROUTER_MODELS) {
+        const startMs = Date.now();
+        try {
+          const text = await runOpenRouter(opts.openrouterKey, input, model);
+          orSucceeded = true;
+          if (health) await health.recordSuccess('openrouter', Date.now() - startMs);
+          opts.recordUsage?.(`openrouter:${model}`, inputText, text, usageRole);
+          return { text, modelUsed: `openrouter:${model}` };
+        } catch (err) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          logError('runCompletion openrouter failed', new Error(`${model}: ${errMsg.slice(0, 200)}`));
+          errors.push(`openrouter:${model}: ${errMsg.slice(0, 80)}`);
+          if (isSubrequestExhausted(err)) throw err;
+          if (isRequestTooLarge(err)) break;
+          if (isAuthError(err)) break;
+          if (!isRateLimited(err)) orAnyNonRateLimit = true;
+        }
+      }
+      if (!orSucceeded && health) await health.recordFailure('openrouter', !orAnyNonRateLimit);
     }
   }
 

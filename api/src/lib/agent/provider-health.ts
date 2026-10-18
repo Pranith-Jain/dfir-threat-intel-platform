@@ -15,7 +15,7 @@
  * cost entirely while preserving cross-request circuit-breaking.
  */
 
-export type Provider = 'groq' | 'gemini' | 'nvidia';
+export type Provider = 'groq' | 'gemini' | 'nvidia' | 'openrouter' | 'cerebras';
 
 interface ProviderHealth {
   /** Timestamp of last rate-limit error (ms since epoch). 0 = not rate-limited. */
@@ -118,7 +118,7 @@ export async function recordFailure(provider: Provider, isRateLimit: boolean): P
  * Get health summary for all providers (for observability).
  */
 export async function getProviderHealthSummary(): Promise<Record<Provider, ProviderHealth & { healthy: boolean }>> {
-  const providers: Provider[] = ['groq', 'gemini', 'nvidia'];
+  const providers: Provider[] = ['groq', 'gemini', 'nvidia', 'openrouter', 'cerebras'];
   const summary = {} as Record<Provider, ProviderHealth & { healthy: boolean }>;
   for (const p of providers) {
     const health = getHealth(p);

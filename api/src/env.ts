@@ -129,6 +129,15 @@ export interface Env {
    *  Free tier: gpt-oss-120b (1,000 req/day). Used as the primary LLM for
    *  feed summaries (preferGroq) and fallback for analyst paths. */
   GROQ_API_KEY?: string;
+  /** OpenRouter API key (set via `wrangler secret put OPENROUTER_API_KEY`).
+   *  Free tier: 20 req/min, 200/day with a free account — unlocks ~20 free
+   *  models (Llama 3.3 70B, DeepSeek R1, Qwen 3 235B, Gemini 2.0 Flash, …)
+   *  through a single OpenAI-compatible endpoint. */
+  OPENROUTER_API_KEY?: string;
+  /** Cerebras free-tier API key (set via `wrangler secret put CEREBRAS_API_KEY`).
+   *  Free tier: 1M tokens/day, 30 req/min — extremely fast inference (2000+
+   *  tok/s) on Llama 3.3 70B / Llama 4 Scout / Qwen 3 32B / gpt-oss-120b. */
+  CEREBRAS_API_KEY?: string;
   /**
    * @deprecated Infron (llm.onerouter.pro) was removed from the LLM provider
    * chain (2026-09). Kept so the `wrangler secret` doesn't break the type;
