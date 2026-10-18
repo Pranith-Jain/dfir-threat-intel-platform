@@ -110,6 +110,7 @@ export const FEED_ALLOWED_HOSTS = new Set<string>([
   'www.helpnetsecurity.com',
   'www.csoonline.com',
   'www.cvedetails.com',
+  'cvefeed.io',
   'www.exploit-db.com',
   'raw.githubusercontent.com',
   // Scam Watch sources
