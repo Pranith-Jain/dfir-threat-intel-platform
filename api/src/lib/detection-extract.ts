@@ -10,6 +10,7 @@
 import type { Env } from '../env';
 import { runCompletion } from '../case-study/generation/ai-client';
 import { extractJson } from './llm-json';
+import { fenceUntrusted, UNTRUSTED_DATA_SYSTEM_NOTE } from './prompt-fence';
 
 export interface DetectionRule {
   title: string;
@@ -83,9 +84,13 @@ Rules:
 - Every SIEM rule needs a concrete log source in the description (e.g. Sysmon Event ID 1, Zeek conn.log, M365 audit) and a query in Sigma or KQL dialect — mark which in the platform field. No generic "monitor for suspicious activity" rules.
 - CLI commands must be copy-paste runnable with the correct platform tag (windows/linux/macos/network/cloud).
 - Limitations must name what the detection CANNOT see (blind spots), not restate the rules.
-Output JSON only. No prose, no markdown fences.`;
+Output JSON only. No prose, no markdown fences.
 
-const RETRY_SYSTEM = `Return a JSON object with keys: siemRules (array of objects with title/description/severity), monitoringGuidance (array of objects with category/items), cliCommands (array of objects with purpose/command), detectionLimitations (array of strings).`;
+${UNTRUSTED_DATA_SYSTEM_NOTE}`;
+
+const RETRY_SYSTEM = `Return a JSON object with keys: siemRules (array of objects with title/description/severity), monitoringGuidance (array of objects with category/items), cliCommands (array of objects with purpose/command), detectionLimitations (array of strings).
+
+${UNTRUSTED_DATA_SYSTEM_NOTE}`;
 
 const TIMEOUT_MS = 25_000;
 const MAX_INPUT_CHARS = 6000;
@@ -118,7 +123,7 @@ async function tryExtract(system: string, input: string, env: Env): Promise<Dete
         env.AI,
         {
           system,
-          user: `Extract detection opportunities from this threat report.\n\nReport text:\n${input}`,
+          user: `Extract detection opportunities from this threat report.\n\n${fenceUntrusted(input, 'REPORT')}`,
           maxTokens: 3000,
           temperature: 0.3,
         },
