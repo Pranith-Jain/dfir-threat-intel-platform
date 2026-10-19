@@ -893,6 +893,9 @@ const REDIRECTS: ReadonlyArray<{ path: string; to: string; preserveQuery?: boole
   // path so it can be shared/bookmarked directly. `preserveQuery` is NOT set:
   // the tab is the content, not a filter on the list view.
   { path: '/threatintel/cves/digest', to: '/threatintel/cves/cves?tab=digest' },
+  // Same deal for the ExploitGrid tab — its own shareable path, no query
+  // preservation (the tab is the content, not a filter on the list view).
+  { path: '/threatintel/cves/exploits', to: '/threatintel/cves/cves?tab=exploits' },
   // ── Canonical 2-segment hub paths → real page (defensive - direct
   //    `to`/`href` from a component should use the real path; this
   //    redirect exists so external links, bookmarks, and copy-paste

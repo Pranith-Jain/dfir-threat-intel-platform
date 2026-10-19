@@ -31,6 +31,10 @@ describe('aggregateReliability', () => {
     expect(aggregateReliability(PROBE_SOURCES['cve-recent'])).toBe('A');
   });
 
+  it('matches the cve-exploits probe mapping (ExploitGrid → C)', () => {
+    expect(aggregateReliability(PROBE_SOURCES['cve-exploits'])).toBe('C');
+  });
+
   it('matches the live-iocs probe mapping (abuse.ch × 3 → A)', () => {
     expect(aggregateReliability(PROBE_SOURCES['live-iocs'])).toBe('A');
   });
