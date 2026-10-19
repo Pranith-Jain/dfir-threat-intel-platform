@@ -99,9 +99,10 @@ import { errMessage } from './lib/err';
  * - "5 0 * * *"  → daily case-study discovery + planner (chained; one
  *                  lease, planner runs after discovery finishes so it
  *                  sees the just-updated candidate queue)
- * - "15 * * * *" → hourly CISA-KEV watch: a CVE added to KEV is generated and
- *                  published immediately (own cron so it has its own
- *                  subrequest budget)
+ *                  The hourly tick ALSO runs the CISA-KEV auto-publish watch
+ *                  (a CVE added to KEV is generated + published immediately).
+ *                  It rides this cron rather than its own because the account
+ *                  is on the free plan's 5-cron limit — see wrangler.jsonc.
  * - "30 0 * * *" → daily briefing for the prior calendar day
  * - "45 0 * * 1" → weekly briefing for the prior ISO week (Mon → Sun)
  * - "0 * * * *"  → warm /api/v1/snapshot + /api/v1/ioc-snapshot once
@@ -232,38 +233,6 @@ export async function executeCronJob(
         logCronDone({ path: 'discovery+planner' });
       })()
         .catch(logCronFail('discovery+planner'))
-        .finally(releaseLease)
-    );
-    return;
-  }
-
-  // KEV auto-publish — own cron so it gets its own 50-subrequest budget and
-  // never competes with the hourly pipeline for one. A CVE landing in CISA KEV
-  // is published straight away (see runKevAutopublishNow); off-the-hour so it
-  // doesn't share a burst window with the `0 * * * *` fan-out.
-  if (cron === '15 * * * *') {
-    ctx.waitUntil(
-      (async () => {
-        try {
-          const r = await runKevAutopublishNow(env as unknown as CaseStudyEnv, csNow);
-          if (r.published > 0 || r.failures.length > 0) {
-            console.log(
-              JSON.stringify({
-                job: 'kev-autopublish',
-                seen: r.seen,
-                eligible: r.eligible,
-                published: r.published,
-                slugs: r.slugs,
-                failures: r.failures.length > 0 ? r.failures : undefined,
-              })
-            );
-          }
-        } catch (e) {
-          logCronFail('kev-autopublish')(e);
-        }
-        logCronDone({ path: 'kev-autopublish' });
-      })()
-        .catch(logCronFail('kev-autopublish'))
         .finally(releaseLease)
     );
     return;
@@ -980,6 +949,33 @@ export async function executeCronJob(
           // enqueueGpFeeds moved to the TOP of this hourly handler — it must land
           // before the pipeline exhausts the subrequest cap (see above).
           fireAndForget.push(runPublisherNow(env as unknown as CaseStudyEnv, csNow).catch(logCronFail('publisher')));
+          // CISA-KEV auto-publish: a CVE added to KEV gets a post, published
+          // immediately (no candidate queue, no approval gate, no slot).
+          //
+          // Why it rides the hourly cron: the free plan caps the ACCOUNT at 5
+          // cron triggers and this account is already at 5, so a dedicated
+          // `15 * * * *` schedule is not deployable (error 10072). Cost is
+          // bounded and mostly zero — one KEV feed read on a tick with nothing
+          // new, and at most KEV_AUTOPUBLISH_MAX_PER_TICK (2) generations when
+          // a CVE actually landed in the catalogue.
+          fireAndForget.push(
+            runKevAutopublishNow(env as unknown as CaseStudyEnv, csNow)
+              .then((r) => {
+                if (r.published > 0 || r.failures.length > 0) {
+                  console.log(
+                    JSON.stringify({
+                      job: 'kev-autopublish',
+                      seen: r.seen,
+                      eligible: r.eligible,
+                      published: r.published,
+                      slugs: r.slugs,
+                      failures: r.failures.length > 0 ? r.failures : undefined,
+                    })
+                  );
+                }
+              })
+              .catch(logCronFail('kev-autopublish'))
+          );
           // Drip auto-post tick: releases approved + due X/LinkedIn posts at the
           // configured rate. No-op unless SOCIAL_AUTOPOST_ENABLED === 'true'.
           fireAndForget.push(

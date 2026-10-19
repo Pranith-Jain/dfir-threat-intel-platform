@@ -108,7 +108,10 @@
     ],
   },
   "triggers": {
-    "crons": ["0 * * * *", "5 0 * * *", "30 0 * * *", "45 0 * * 1", "*/30 * * * *", "15 * * * *"],
+    // 5 is the Workers FREE plan hard limit per account — adding a 6th cron
+    // fails the deploy with error 10072 ("partially updated" triggers, code
+    // deployed, schedule not). New recurring work goes IN an existing tick.
+    "crons": ["0 * * * *", "5 0 * * *", "30 0 * * *", "45 0 * * 1", "*/30 * * * *"],
   },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["LiveFeedDO"] },

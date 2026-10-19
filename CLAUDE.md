@@ -27,6 +27,14 @@ repo's footguns so you don't rediscover them.
 - **D1 binding is `BRIEFINGS_DB`** (database `pranithjain-briefings`), not `DB`.
   Migrations are immutable; add new ones via `/create-migration`; `--remote` is
   destructive.
+- **Free plan caps CRON TRIGGERS at 5 per account — and this account is at 5.**
+  Adding a 6th to `wrangler.jsonc` deploys the code but fails the schedule update
+  with `10072`:
+  "Successful trigger changes were not rolled back" / "This account has reached the
+  Workers Free limit of 5 cron triggers" — the script deploys, the schedule does not.
+  New recurring work must ride an existing tick (`0 * * * *` hourly,
+  `5 0 * * *` discovery+planner, `30 0 * * *` daily briefing, `45 0 * * 1`
+  weekly, `*/30 * * * *` feed/social drip).
 - **Free-plan limits.** 50 subrequests per invocation (KV + Cache-API both count); the
   IOC fan-out must use one batched `primeBatch` + one `flushBatch`. Briefing self-heal
   runs its own `20 * * * *` cron, one build per invocation.
@@ -576,7 +584,8 @@ otherwise keep showing). It matches URL fields only — a legit article that mer
 _mentions_ the host must not be dropped.
 
 **KEV auto-publish** (`api/src/case-study/kev-autopublish.ts` +
-`runKevAutopublishNow`, cron `15 * * * *`): a CVE added to CISA KEV is generated
+`runKevAutopublishNow`, rides the `0 * * * *` hourly cron — see the cron-limit
+footgun below): a CVE added to CISA KEV is generated
 and **published immediately** — no candidate queue, no approval gate, no slot.
 Every other topic is a suggestion; a KEV addition is a confirmed exploitation
 event with a date. Rules that must not be weakened: `dateAdded` is date-only so
@@ -587,9 +596,7 @@ keeps a 30-entry batch from firing 30 generations at once, a key with a
 suppresses the key for 24h (one attempt/day, not 24). Social copy _is_ generated
 but is enqueued for the drip only when `SOCIAL_AUTOPOST_ENABLED === 'true'` —
 that master switch is the operator's gate and stays theirs
-(see `docs/loops/social-crosspost.md`). The cron is listed in `wrangler.jsonc`;
-a new cron string needs no dispatch registration beyond that (one DO instance
-per cron string).
+(see `docs/loops/social-crosspost.md`).
 
 **Generation cost dropped by two LLM calls**: the pre-generation
 "fact extraction" pass (deterministic extraction is now code) and the
