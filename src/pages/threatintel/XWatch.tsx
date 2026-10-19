@@ -207,7 +207,11 @@ function formatTimeAgo(iso: string | number): string {
 function compactNumber(n?: number): string {
   if (!n || n < 1) return '';
   if (n < 1000) return String(n);
-  if (n < 1_000_000) return `${(n / 1000).toFixed(n < 10_000 ? 1 : 0)}k`;
+  if (n < 1_000_000) {
+    const v = n / 1000;
+    if (v >= 999.5) return `${(n / 1_000_000).toFixed(1)}M`;
+    return `${v.toFixed(n < 10_000 ? 1 : 0)}k`;
+  }
   return `${(n / 1_000_000).toFixed(1)}M`;
 }
 

@@ -63,6 +63,10 @@ export function withSecurityHeaders(response: Response, nonce?: string, origin?:
     h.set('x-content-type-options', 'nosniff');
     h.set('referrer-policy', 'strict-origin-when-cross-origin');
     h.set('strict-transport-security', 'max-age=63072000; includeSubDomains; preload');
+    // Images must not carry framing/CSP headers — see comment above.
+    h.delete('x-frame-options');
+    h.delete('content-security-policy');
+    h.delete('cross-origin-opener-policy');
     h.delete('server');
     const status = response.status;
     const bodyless = status === 101 || status === 204 || status === 205 || status === 304;

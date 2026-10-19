@@ -1393,7 +1393,12 @@ async function finalizeLiveIocs(
         for (const row of feedIocs.results) {
           const kind =
             row.type === 'ip' ? ('ip' as const) : row.type === 'hash' ? ('hash' as const) : (row.type as IocKind);
-          const props = JSON.parse(row.properties || '{}') as Record<string, unknown>;
+          let props: Record<string, unknown> = {};
+          try {
+            props = JSON.parse(row.properties || '{}') as Record<string, unknown>;
+          } catch {
+            /* keep empty */
+          }
           const feedName = (props.feed as string) ?? '';
           freshItems.push({
             value: row.value,

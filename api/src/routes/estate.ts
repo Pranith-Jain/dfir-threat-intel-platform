@@ -84,7 +84,12 @@ export const estateRoutes = app
   .get('/config', async (c) => {
     const db = c.env.BRIEFINGS_DB;
     if (!db) return serviceUnavailable(c, 'DB unavailable');
-    const row = await db.prepare('SELECT id, sector, sub_sector, region, tech_stack, priorities, data_types, created_at, updated_at FROM estate_config WHERE id = ?').bind('default').first();
+    const row = await db
+      .prepare(
+        'SELECT id, sector, sub_sector, region, tech_stack, priorities, data_types, created_at, updated_at FROM estate_config WHERE id = ?'
+      )
+      .bind('default')
+      .first();
     if (!row) {
       return c.json({
         sector: '',
@@ -99,9 +104,27 @@ export const estateRoutes = app
       sector: row.sector,
       sub_sector: row.sub_sector,
       region: row.region,
-      tech_stack: JSON.parse(row.tech_stack as string),
-      priorities: JSON.parse(row.priorities as string),
-      data_types: JSON.parse(row.data_types as string),
+      tech_stack: (() => {
+        try {
+          return JSON.parse(row.tech_stack as string);
+        } catch {
+          return [];
+        }
+      })(),
+      priorities: (() => {
+        try {
+          return JSON.parse(row.priorities as string);
+        } catch {
+          return [];
+        }
+      })(),
+      data_types: (() => {
+        try {
+          return JSON.parse(row.data_types as string);
+        } catch {
+          return [];
+        }
+      })(),
     });
   })
   .put('/config', async (c) => {
@@ -142,8 +165,17 @@ export const estateRoutes = app
     if (!db) return serviceUnavailable(c, 'DB unavailable');
     const type = c.req.query('type');
     const rows = type
-      ? await db.prepare('SELECT id, asset_type, value, label, tags, criticality, metadata, created_at, updated_at FROM estate_assets WHERE asset_type = ? ORDER BY created_at DESC').bind(type).all()
-      : await db.prepare('SELECT id, asset_type, value, label, tags, criticality, metadata, created_at, updated_at FROM estate_assets ORDER BY created_at DESC').all();
+      ? await db
+          .prepare(
+            'SELECT id, asset_type, value, label, tags, criticality, metadata, created_at, updated_at FROM estate_assets WHERE asset_type = ? ORDER BY created_at DESC'
+          )
+          .bind(type)
+          .all()
+      : await db
+          .prepare(
+            'SELECT id, asset_type, value, label, tags, criticality, metadata, created_at, updated_at FROM estate_assets ORDER BY created_at DESC'
+          )
+          .all();
     const assets = (rows.results ?? []).map((r) => {
       const row = r as unknown as EstateAssetRow;
       return {

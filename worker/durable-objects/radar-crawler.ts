@@ -105,7 +105,6 @@ interface CrawlState {
 }
 
 export class RadarCrawlerDO extends DurableObject<Env> {
-  private sessions = new Set<WebSocket>();
   private ipConnections = new Map<string, number>();
 
   override async fetch(request: Request): Promise<Response> {
@@ -219,7 +218,7 @@ export class RadarCrawlerDO extends DurableObject<Env> {
   }
 
   private handleWebSocketUpgrade(request: Request): Response {
-    if (this.sessions.size >= MAX_WS_CONNECTIONS) {
+    if (this.ctx.getWebSockets().length >= MAX_WS_CONNECTIONS) {
       return new Response('Too many connections', { status: 429 });
     }
     const clientIp = request.headers.get('cf-connecting-ip') ?? 'unknown';
@@ -230,25 +229,31 @@ export class RadarCrawlerDO extends DurableObject<Env> {
     const pair = new WebSocketPair();
     const [client, server] = [pair[0], pair[1]];
     this.ctx.acceptWebSocket(server);
-    this.sessions.add(server);
+    server.serializeAttachment({ ip: clientIp });
     this.ipConnections.set(clientIp, ipCount + 1);
-    server.addEventListener('close', () => {
-      this.sessions.delete(server);
-      const remaining = this.ipConnections.get(clientIp) ?? 1;
-      if (remaining <= 1) this.ipConnections.delete(clientIp);
-      else this.ipConnections.set(clientIp, remaining - 1);
-    });
     return new Response(null, { status: 101, webSocket: client });
+  }
+
+  override webSocketClose(ws: WebSocket): void {
+    const att = (ws.deserializeAttachment() as { ip?: string } | null) ?? null;
+    if (att?.ip) {
+      const remaining = this.ipConnections.get(att.ip) ?? 1;
+      if (remaining <= 1) this.ipConnections.delete(att.ip);
+      else this.ipConnections.set(att.ip, remaining - 1);
+    }
+  }
+
+  override webSocketError(ws: WebSocket): void {
+    this.webSocketClose(ws);
   }
 
   private broadcast(msg: Record<string, unknown>) {
     const data = JSON.stringify(msg);
-    for (const ws of this.sessions) {
+    for (const ws of this.ctx.getWebSockets()) {
       try {
         ws.send(data);
       } catch (_catchErr) {
         console.error('handler failed:', errMessage(_catchErr));
-        this.sessions.delete(ws);
       }
     }
   }

@@ -79,7 +79,7 @@ export class LiveFeedDO extends DurableObject<Env> {
       if (this.sessions.size === 0) {
         this.lastSnapshots.clear();
         this.ipConnections.clear();
-        this.ctx.storage?.deleteAlarm().catch(() => {});
+        this.ctx.storage.deleteAlarm().catch(() => {});
       }
     };
     server.addEventListener('close', cleanup);

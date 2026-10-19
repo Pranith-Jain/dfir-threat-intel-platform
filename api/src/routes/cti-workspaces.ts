@@ -113,8 +113,20 @@ function rowToWs(row: Record<string, unknown>) {
     status: row.status,
     exposureScore: row.exposure_score,
     exposureLabel: row.exposure_label,
-    tags: JSON.parse((row.tags as string) || '[]'),
-    metadata: JSON.parse((row.metadata as string) || '{}'),
+    tags: (() => {
+      try {
+        return JSON.parse((row.tags as string) || '[]');
+      } catch {
+        return [];
+      }
+    })(),
+    metadata: (() => {
+      try {
+        return JSON.parse((row.metadata as string) || '{}');
+      } catch {
+        return {};
+      }
+    })(),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

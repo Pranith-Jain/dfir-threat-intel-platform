@@ -3,6 +3,7 @@ import type { Env } from '../env';
 import { advance, initState, type ReportState } from '../../api/src/lib/report/pipeline';
 import type { TemplateId, Tlp } from '../../api/src/lib/report/types';
 import { errMessage } from '../lib/err';
+import { getThreatDb } from '../../api/src/lib/do-database';
 
 const MAX_REPORT_WS_CONNECTIONS = 5;
 
@@ -182,8 +183,12 @@ export class ReportBuilderDO extends DurableObject<Env> {
   }
 
   private async persist(state: ReportState): Promise<void> {
-    const db = this.env.BRIEFINGS_DB;
-    if (!db) return;
+    let db: D1Database;
+    try {
+      db = getThreatDb(this.env as { THREAT_DATA_DO?: DurableObjectNamespace; BRIEFINGS_DB?: D1Database });
+    } catch {
+      return;
+    }
     const status = state.phase === 'done' ? 'done' : state.phase === 'error' ? 'error' : 'building';
     const json = state.phase === 'done' && state.report ? JSON.stringify(state.report) : null;
     await db

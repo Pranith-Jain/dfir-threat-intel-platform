@@ -500,6 +500,7 @@ export default function Copilot(): JSX.Element {
           const lines = buffer.split('\n');
           buffer = lines.pop() ?? '';
 
+          let streamError: string | null = null;
           for (const line of lines) {
             if (!line.startsWith('data: ')) continue;
             try {
@@ -529,12 +530,13 @@ export default function Copilot(): JSX.Element {
                 setStreamingContent('');
               }
               if (data.type === 'error') {
-                throw new Error(data.error ?? 'Investigation failed');
+                streamError = data.error ?? 'Investigation failed';
               }
             } catch {
               /* skip malformed */
             }
           }
+          if (streamError) throw new Error(streamError);
         }
       } catch (e) {
         const msg = errMessage(e);

@@ -14,6 +14,17 @@ const MCP_LIMIT_IP = 120;
 export async function handleMcp(request: Request, env: Env, ctx: ExecutionContext, url: URL): Promise<Response | null> {
   if (!url.pathname.startsWith('/api/mcp')) return null;
 
+  if (!env.DFIR_MCP) {
+    return withSecurityHeaders(
+      new Response(JSON.stringify({ error: 'mcp server not configured' }), {
+        status: 503,
+        headers: { 'content-type': 'application/json' },
+      }),
+      undefined,
+      url.origin
+    );
+  }
+
   if (request.method !== 'OPTIONS') {
     const authz = request.headers.get('authorization') ?? '';
     const rawKey = /^Bearer\s+(\S+)/i.exec(authz)?.[1] ?? request.headers.get('x-api-key') ?? '';

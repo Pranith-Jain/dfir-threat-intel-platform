@@ -82,10 +82,8 @@ export function FeedbackWidget({ targetType, targetId, sector, compact, onFeedba
     } finally {
       clearTimeout(timer);
       if (inflightRef.current === ctrl) inflightRef.current = null;
-      if (!ctrl.signal.aborted) {
-        setSaving(false);
-        savingRef.current = false;
-      }
+      setSaving(false);
+      savingRef.current = false;
     }
   }
 

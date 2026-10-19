@@ -77,8 +77,11 @@ export class CronLockDO extends DurableObject<Env> {
       const cur = await this.ctx.storage.get<Lease>(key);
       // Token-matched so a stale fire can never release a live lease.
       // Constant-time: the token is a bearer capability (see `heartbeat`).
-      if (cur && token !== undefined && safeEqual(cur.token, token)) await this.ctx.storage.delete(key);
-      return Response.json({ ok: true });
+      if (cur && token !== undefined && safeEqual(cur.token, token)) {
+        await this.ctx.storage.delete(key);
+        return Response.json({ ok: true });
+      }
+      return Response.json({ ok: false });
     }
 
     if (op === 'incr') {

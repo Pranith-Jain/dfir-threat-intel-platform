@@ -847,7 +847,8 @@ threatIntelRouter.get('/threat-intel/offseq/threats', async (c) => {
     const severity = c.req.query('severity') || undefined;
     const exploitedOnly = c.req.query('exploited') === 'true' || c.req.query('exploited') === '1';
     const keyword = c.req.query('q') || c.req.query('keyword') || undefined;
-    const limit = Math.min(200, Math.max(1, Number(c.req.query('limit') ?? 50)));
+    const limitRaw = Number(c.req.query('limit') ?? 50);
+    const limit = Math.min(200, Math.max(1, Number.isFinite(limitRaw) ? limitRaw : 50));
     const out = mod.filterOffseqThreats(idx, { type, severity, exploitedOnly, keyword, limit });
     return c.json({ count: out.length, threats: out });
   } catch (e) {

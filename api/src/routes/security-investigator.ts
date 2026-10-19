@@ -572,8 +572,17 @@ export async function siRenderHandler(c: Context<{ Bindings: Env }>) {
       const parsed = JSON.parse(decodeURIComponent(dataQuery));
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
         // Reject prototype-pollution payloads
-        const keys = Object.keys(parsed);
-        if (keys.some((k) => k === '__proto__' || k === 'constructor' || k === 'prototype')) {
+        const hasDangerousKey = (obj: unknown, seen = new Set<unknown>()): boolean => {
+          if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return false;
+          if (seen.has(obj)) return false;
+          seen.add(obj);
+          for (const k of Object.keys(obj as Record<string, unknown>)) {
+            if (k === '__proto__' || k === 'constructor' || k === 'prototype') return true;
+            if (hasDangerousKey((obj as Record<string, unknown>)[k], seen)) return true;
+          }
+          return false;
+        };
+        if (hasDangerousKey(parsed)) {
           return badRequest(c, 'invalid_data');
         }
         data = parsed as Record<string, unknown>;

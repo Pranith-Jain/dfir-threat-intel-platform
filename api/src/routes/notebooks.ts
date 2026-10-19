@@ -58,7 +58,13 @@ function rowToNotebook(row: Record<string, unknown>): Notebook {
     title: row.title as string,
     description: (row.description as string) ?? '',
     status: (row.status as Notebook['status']) ?? 'open',
-    tags: JSON.parse((row.tags as string) ?? '[]') as string[],
+    tags: (() => {
+      try {
+        return JSON.parse((row.tags as string) ?? '[]');
+      } catch {
+        return [];
+      }
+    })() as string[],
     severity: (row.severity as Notebook['severity']) ?? 'info',
     created_at: row.created_at as string,
     updated_at: row.updated_at as string,
@@ -71,7 +77,13 @@ function rowToEntry(row: Record<string, unknown>): NotebookEntry {
     notebook_id: row.notebook_id as string,
     entry_type: (row.entry_type as NotebookEntry['entry_type']) ?? 'note',
     content: row.content as string,
-    metadata: JSON.parse((row.metadata as string) ?? '{}') as Record<string, unknown>,
+    metadata: (() => {
+      try {
+        return JSON.parse((row.metadata as string) ?? '{}');
+      } catch {
+        return {};
+      }
+    })() as Record<string, unknown>,
     pinned: Boolean(row.pinned),
     created_at: row.created_at as string,
     updated_at: row.updated_at as string,
@@ -89,8 +101,10 @@ export async function listNotebooksHandler(c: Context<{ Bindings: Env }>): Promi
   await ensureNotebookTables(db);
 
   const status = c.req.query('status');
-  const limit = Math.min(Number(c.req.query('limit') ?? '50'), 200);
-  const offset = Number(c.req.query('offset') ?? '0');
+  const limitRaw = Number(c.req.query('limit') ?? '50');
+  const limit = Math.min(Number.isFinite(limitRaw) ? limitRaw : 50, 200);
+  const offsetRaw = Number(c.req.query('offset') ?? '0');
+  const offset = Number.isFinite(offsetRaw) ? Math.max(0, offsetRaw) : 0;
 
   let query =
     'SELECT id, title, description, status, tags, severity, created_at, updated_at FROM investigation_notebooks';

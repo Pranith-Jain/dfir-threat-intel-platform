@@ -738,7 +738,8 @@ darknetIntelRouter.get('/darknet-intel/abusech/threatfox-search', async (c) => {
 darknetIntelRouter.get('/darknet-intel/abusech/threatfox-tag', async (c) => {
   const tag = c.req.query('tag');
   if (!tag) return badRequest(c, 'tag parameter required (e.g. Cobalt Strike, Emotet)');
-  const limit = Math.min(parseInt(c.req.query('limit') ?? '50', 10), 500);
+  const limitRaw = parseInt(c.req.query('limit') ?? '50', 10);
+  const limit = Math.min(Number.isFinite(limitRaw) ? limitRaw : 50, 500);
   try {
     const res = await fetch('https://threatfox-api.abuse.ch/api/v1/', {
       method: 'POST',
@@ -848,7 +849,8 @@ darknetIntelRouter.get('/darknet-intel/abusech/bazaar-recent', async (c) => {
 darknetIntelRouter.get('/darknet-intel/abusech/bazaar-tag', async (c) => {
   const tag = c.req.query('tag');
   if (!tag) return badRequest(c, 'tag parameter required');
-  const limit = Math.min(parseInt(c.req.query('limit') ?? '50', 10), 1000);
+  const limitRaw = parseInt(c.req.query('limit') ?? '50', 10);
+  const limit = Math.min(Number.isFinite(limitRaw) ? limitRaw : 50, 1000);
   try {
     const res = await fetch('https://mb-api.abuse.ch/api/v1/', {
       method: 'POST',

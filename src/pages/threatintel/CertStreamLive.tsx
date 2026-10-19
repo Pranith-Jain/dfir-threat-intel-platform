@@ -147,6 +147,19 @@ export default function CertStreamLive(): JSX.Element {
     };
   }, [streaming, keyword, poll]);
 
+  // Reset buffered certs + watermark when the keyword changes mid-stream, so
+  // the new keyword's results aren't mixed with (or skipped behind) the old.
+  const prevKeywordRef = useRef(keyword);
+  useEffect(() => {
+    if (prevKeywordRef.current === keyword) return;
+    prevKeywordRef.current = keyword;
+    if (streaming) {
+      setItems([]);
+      watermarkRef.current = 0;
+      setHighWater(0);
+    }
+  }, [keyword, streaming]);
+
   const start = () => {
     if (!keyword.trim()) return;
     try {

@@ -49,10 +49,10 @@ export type OgImageType = 'briefing' | 'blog' | 'page' | 'report';
 
 /** Parse `/api/v1/og-image/:type/:slug.png` into its parts, or null if the
  *  path is not a valid entity-card OG-image request. */
-export function matchOgImagePath(pathname: string): { type: 'briefing' | 'blog'; slug: string } | null {
+export function matchOgImagePath(pathname: string): { type: 'briefing' | 'blog' | 'report'; slug: string } | null {
   const m = OG_ROUTE_RE.exec(pathname);
   if (!m) return null;
-  return { type: m[1]!.toLowerCase() as 'briefing' | 'blog', slug: m[2]! };
+  return { type: m[1]!.toLowerCase() as 'briefing' | 'blog' | 'report', slug: m[2]! };
 }
 
 /** Parse the generic page-card endpoint. Returns the decoded route path the

@@ -49,7 +49,9 @@ async function verifyPassword(password: string, stored: string): Promise<boolean
   const expectedHash = parts[4];
   if (!iterStr || !saltHex || !expectedHash) return false;
   const iterations = parseInt(iterStr, 10);
-  const salt = Uint8Array.from(saltHex.match(/.{2}/g)!.map((h) => parseInt(h, 16)));
+  const saltMatches = saltHex.match(/.{2}/g);
+  if (!saltMatches || saltHex.length % 2 !== 0) return false;
+  const salt = Uint8Array.from(saltMatches.map((h) => parseInt(h, 16)));
   const encoder = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), { name: 'PBKDF2' }, false, [
     'deriveBits',

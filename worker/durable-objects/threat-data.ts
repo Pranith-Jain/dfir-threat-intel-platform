@@ -349,11 +349,11 @@ export class ThreatDataDO extends DurableObject<Env> {
       // an unhandled rejection that the caller cannot reliably contain, so it
       // surfaces as an uncaught error regardless of any `.catch()` on the
       // client. Every `SELECT ... LIMIT 1` against an empty table would trip it.
-      try {
-        return cursor.one() as Record<string, unknown> | null;
-      } catch {
-        return null;
-      }
+      // cursor.one() throws when the result set has != 1 row. D1's .first()
+      // returns the first row (or null when empty), so use toArray() and take
+      // the first element instead.
+      const rows = cursor.toArray() as Record<string, unknown>[];
+      return rows.length > 0 ? rows[0]! : null;
     }
 
     // meta mirrors D1's D1Result.meta: `rows_read` / `rows_written`, NOT

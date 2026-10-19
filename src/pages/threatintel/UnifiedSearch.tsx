@@ -188,6 +188,15 @@ export default function UnifiedSearch(): JSX.Element {
     );
   }, [query, params, setParams]);
 
+  // Sync query state when the URL param changes externally (e.g. ⌘K launcher
+  // navigates to ?q=…, or browser back/forward). Without this, the in-memory
+  // `query` (seeded only on mount) wins and the URL sync effect reverts the
+  // param back to the stale value.
+  useEffect(() => {
+    const q = params.get('q') ?? '';
+    setQuery((prev) => (prev === q ? prev : q));
+  }, [params]);
+
   // Debounced live search as the user types (also covers the initial ?q= load).
   // Depends on `query` only (runSearch is stable), so URL syncs never re-fire it.
   useEffect(() => {

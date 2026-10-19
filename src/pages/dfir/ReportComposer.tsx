@@ -193,19 +193,26 @@ export default function ReportComposer(): JSX.Element {
   async function handleExport(kind: 'pdf' | 'docx'): Promise<void> {
     setExporting(kind);
     setExportError(null);
+    // Renumber source refs sequentially so exports never carry stale/duplicate
+    // citation numbers after a source was removed (stored `ref` is otherwise
+    // frozen at insertion time).
+    const normalizedDoc = {
+      ...doc,
+      sources: doc.sources.map((s, i) => ({ ...s, ref: i + 1 })),
+    };
     try {
       if (kind === 'pdf') {
         const { exportReportPdf, pdfFilename, downloadBlob } =
           await import('../../lib/dfir/report-composer/export-pdf');
-        const blob = await exportReportPdf(doc);
-        downloadBlob(blob, pdfFilename(doc));
+        const blob = await exportReportPdf(normalizedDoc);
+        downloadBlob(blob, pdfFilename(normalizedDoc));
       } else {
         const [{ exportReportDocx, docxFilename }, { downloadBlob }] = await Promise.all([
           import('../../lib/dfir/report-composer/export-docx'),
           import('../../lib/dfir/report-composer/export-pdf'),
         ]);
-        const blob = await exportReportDocx(doc);
-        downloadBlob(blob, docxFilename(doc));
+        const blob = await exportReportDocx(normalizedDoc);
+        downloadBlob(blob, docxFilename(normalizedDoc));
       }
     } catch (e) {
       console.error('handleExport failed:', errMessage(e));

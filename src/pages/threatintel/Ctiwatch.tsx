@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { errMessage } from '../../lib/log';
 import { AlertTriangle, Loader2, RefreshCw, Search, Shield } from 'lucide-react';
@@ -140,30 +140,39 @@ export default function Ctiwatch(): JSX.Element {
     load();
   }, []);
 
+  const detailSeqRef = useRef(0);
   const loadVuln = async (cveId: string | null) => {
     if (!cveId) return;
+    const seq = ++detailSeqRef.current;
     setDetailLoading(true);
     setSelectedVictim(null);
     try {
       const res = await fetch(`/api/v1/threat-intel/ctiwatch/vulnerabilities/${encodeURIComponent(cveId)}`);
-      if (res.ok) setSelectedVuln((await res.json()) as CtiVulnBody);
+      if (!res.ok) return;
+      const body = (await res.json()) as CtiVulnBody;
+      if (seq !== detailSeqRef.current) return;
+      setSelectedVuln(body);
     } catch {
       /* */
     } finally {
-      setDetailLoading(false);
+      if (seq === detailSeqRef.current) setDetailLoading(false);
     }
   };
   const loadVictim = async (id: string | null) => {
     if (!id) return;
+    const seq = ++detailSeqRef.current;
     setDetailLoading(true);
     setSelectedVuln(null);
     try {
       const res = await fetch(`/api/v1/threat-intel/ctiwatch/victims/${encodeURIComponent(id)}`);
-      if (res.ok) setSelectedVictim((await res.json()) as CtiVictimBody);
+      if (!res.ok) return;
+      const body = (await res.json()) as CtiVictimBody;
+      if (seq !== detailSeqRef.current) return;
+      setSelectedVictim(body);
     } catch {
       /* */
     } finally {
-      setDetailLoading(false);
+      if (seq === detailSeqRef.current) setDetailLoading(false);
     }
   };
 

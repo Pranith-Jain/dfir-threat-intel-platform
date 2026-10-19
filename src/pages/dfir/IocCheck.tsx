@@ -382,23 +382,25 @@ export default function IocCheck(): JSX.Element {
     }
   };
 
-  const runCheck = () => {
-    if (!canSubmit) return;
+  const runCheck = (override?: string) => {
+    const value = (override ?? input).trim();
+    if (!value || detectType(value) === 'unknown' || streaming) return;
     streamCleanupRef.current?.();
     setStreaming(true);
+    setInput(value);
     setResults([]);
     setSummary(null);
     setError(null);
     setEligible([]);
 
-    const cleanup = streamIoc(input.trim(), {
+    const cleanup = streamIoc(value, {
       onMeta: (m) => setEligible(m.providers),
       onResult: (r) => setResults((prev) => [...prev, r]),
       onDone: (s) => {
         setSummary(s);
         setStreaming(false);
         streamCleanupRef.current = null;
-        recordHistory({ tool: 'ioc', indicator: input.trim(), verdict: s.verdict, score: s.score });
+        recordHistory({ tool: 'ioc', indicator: value, verdict: s.verdict, score: s.score });
         setTimeout(() => summaryRef.current?.focus(), 0);
       },
       onError: (e) => {
@@ -420,13 +422,13 @@ export default function IocCheck(): JSX.Element {
   // off the check, not just pre-fill the input. The pivot links from the
   // IOC Extractor and other tools rely on this. Single-shot via a ref
   // guard so subsequent state changes don't retrigger.
-  const autoRanRef = useRef(false);
+  const lastRunRef = useRef<string>('');
   useEffect(() => {
-    if (autoRanRef.current) return;
-    if (initialInput && detectType(initialInput) !== 'unknown' && !streaming) {
-      autoRanRef.current = true;
-      runCheck();
-    }
+    if (!initialInput) return;
+    if (lastRunRef.current === initialInput) return;
+    if (detectType(initialInput) === 'unknown') return;
+    lastRunRef.current = initialInput;
+    runCheck(initialInput);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialInput]);
 
@@ -941,7 +943,7 @@ export default function IocCheck(): JSX.Element {
           </div>
           <button
             type="button"
-            onClick={runCheck}
+            onClick={() => runCheck()}
             className="shrink-0 text-xs font-mono px-3 py-1.5 rounded border border-rose-400/60 text-rose-700 dark:text-rose-300 hover:bg-rose-500/10 transition-colors"
           >
             retry

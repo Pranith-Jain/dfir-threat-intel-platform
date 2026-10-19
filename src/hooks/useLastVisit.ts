@@ -59,5 +59,8 @@ export function useLastVisit(pageKey: string): LastVisit {
  */
 export function isNewSince(iso: string | undefined, previous: string | null): boolean {
   if (!previous || !iso) return false;
-  return iso > previous;
+  const t = Date.parse(iso);
+  const p = Date.parse(previous);
+  if (Number.isNaN(t) || Number.isNaN(p)) return iso > previous;
+  return t > p;
 }

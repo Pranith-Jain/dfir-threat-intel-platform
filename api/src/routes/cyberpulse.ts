@@ -379,7 +379,8 @@ export async function cyberpulseScanLogHandler(c: Context<{ Bindings: Env }>): P
     env as { THREAT_DATA_DO?: DurableObjectNamespace; BRIEFINGS_DB?: import('@cloudflare/workers-types').D1Database }
   );
 
-  const limit = Math.min(100, Math.max(1, Number(new URL(c.req.url).searchParams.get('limit') ?? '20')));
+  const limitRaw = Number(new URL(c.req.url).searchParams.get('limit') ?? '20');
+  const limit = Math.min(100, Math.max(1, Number.isFinite(limitRaw) ? limitRaw : 20));
 
   const { results } = await db
     .prepare(
