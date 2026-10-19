@@ -196,8 +196,8 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
   /**
    * Is this candidate owned by the KEV auto-publish job?
    *
-   * A fresh CISA-KEV addition is published by the `15 * * * *` cron
-   * (`runKevAutopublishNow`) within the hour. Offering it as a queue candidate
+   * A fresh CISA-KEV addition is published by `runKevAutopublishNow` on the
+   * hourly tick, within the hour. Offering it as a queue candidate
    * at the same time risks two posts about one CVE — the auto-published one and
    * a later human-approved one with a different slug — which is exactly the
    * duplicate the republish block exists to prevent.
