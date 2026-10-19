@@ -3,13 +3,13 @@
   "repo": "h5i-dev/h5i",
   "category": "agent",
   "scope": ["webapp", "api", "recon"],
-  "stars": 785,
-  "description": "Build, hack, and verify web apps. Find vulnerabilities through red-teaming. Formally verify properties of Rust codes in Lean 4.",
+  "stars": 788,
+  "description": "Unified Rust framework for building, verifying, and testing web apps. Kernel-based architecture for Lean 4 verification and GPU acceleration. Built-in red-teaming tools for automated vulnerability detection.",
   "homepage": "https://h5i.dev",
   "added": "2026-09-23",
-  "checkedAt": "2026-10-18T03:20:45Z",
-  "pushedAt": "2026-10-17",
-  "daysIdle": 1,
+  "checkedAt": "2026-10-19T03:20:12Z",
+  "pushedAt": "2026-10-19",
+  "daysIdle": 0,
   "archived": false,
   "license": "Apache-2.0",
   "upstream": {
@@ -18,36 +18,35 @@
       "description": "Gives an agent a browser that controls its own network traffic, so the model can capture, edit, replay and compare the requests a web app sends without a proxy in between. Each session runs under a network policy and records every fetch it allowed or refused."
     },
     "derived": {
-      "checked_at": "2026-10-18T03:20:45Z",
+      "checked_at": "2026-10-19T03:20:12Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-10-17",
-        "days_since_push": 1,
-        "total_commits": 728,
-        "last100_span_days": 40,
+        "pushed_at": "2026-10-19",
+        "days_since_push": 0,
+        "total_commits": 736,
+        "last100_span_days": 39,
         "last100_authors": 1,
-        "last_commit_sha": "0d52512",
-        "last_commit_message": "App gpu (#730)\n\n* Introduce executor contract with compatible HTTP engine parameter\n\n* Preserve the two-argument HTTP constructor\n\n* Preserve PostgreSQL constructor type inference\n\n* Add PostgreSQL write-through RAM executor and Conduit measurements\n\n* Record CUDA compiler feasibility probes and failures\n\n* Document executor validation and benchmark configuration\n\n* Maintain warm tenant snapshots from committed PostgreSQL writes\n\n* Replace the Conduit fixture with calculator executor tests and measurements\n\n* Add proved parallel decision toys and CUDA slice lowering reproductions\n\n* Record final executor and parallel kernel verification results\n\n* Add Rust-CUDA backend with shared decision batching and GPU measurements\n\n* Check push batch layout against schema rows and record backend validation\n\n* Record complete verification of the Rust-CUDA backend\n\n* Port bounded linkding search to resident Rust-CUDA batches\n\n* Bound resident output allocation and document linkding trust limits\n\n* Record full verification of the linkding GPU prototype\n\n* gpu: keep h5i-app-gpu generic; move the real linkding benchmark out\n\nThe GPU crate is the framework's CUDA launch shell and a toy decision example,\nnot an application. Remove the real linkding predicate, its host packing and\nindependent oracle, the linkding device kernel, the resident-linkding launch\nmethods and measurement, and the linkding measurement artifacts and doc\nsections. Expose the NVVM module and stream so a downstream benchmark can launch\nits own kernels. The real linkding GPU benchmark now lives in h5i-app-bench\n(performance/linkding/rust-h5i-gpu) and imports this crate.\n\n* docs/app: drop raw experiment dumps, keep the prose and numbers\n\nThe GPU/executor docs linked to raw build logs, failure traces, differential\noutput, CSVs and gate logs under docs/app/gpu and docs/app/measurements. Those\nare experiment artifacts, not documentation. Remove them and the links; the\nmeasured numbers and conclusions stay inline in GPU.md, MEMORY.md and\nEXECUTOR-VALIDATION.md, which the reproduce scripts can regenerate.\n\n* app-mem: decouple reads from the write commit; tidy the executor contract\n\nThe warm-snapshot executor held the per-tenant lock across the PostgreSQL\ncommit, serializing writes and blocking that tenant's reads for the whole\nround-trip. Redesign it: a write holds no lock across its commit, so reads\nproceed concurrently against the current snapshot; the cache is refreshed only\nafter the commit (the stale snapshot is dropped so the next read reloads the\ncommitted state). A drop guard poisons the tenant on a cancelled or failed\ncommit so reads fall back to PostgreSQL, which stays correct under an unknown\noutcome.\n\nAlso factor the executor's nested result into an `Executed<K, E>` alias and the\nreply-store key/value into named types, and move the PG engine's `Executor`\nimpl ahead of the test module, so `clippy -D warnings` passes.\n\n* gpu: give the SoA layout a single source of truth\n\nThe row/rule/term widths (512, 64, 128, 16, 8) and the row cap were written as\nbare literals across the host arenas, the CPU oracle, the differential fixtures\nand the device kernels. Define them once in layout.rs and share that file with\nthe device crate via #[path], so host packing and device indexing cannot drift,\nand replace every literal (test boundaries included) with the named constant.\n\n* app-mem: keep the warm snapshot warm across a write, without blocking reads\n\nThe earlier decoupling dropped the warm snapshot on every commit and let the\nnext read reload it, which doubled PostgreSQL snapshot loads (a load per write\nplus a reload per following read) and failed the warm-cache test. Restore the\nin-place apply of the committed write set, but run it after the commit under a\nbrief snapshot lock rather than holding a lock across the commit: a per-tenant\nwrite gate (which reads never take) serializes a tenant's writes so their write\nsets apply in commit order, while reads stay unblocked during the commit. A\nreplay drops the snapshot so it cannot apply twice; the cancellation drop guard\nstill poisons the tenant, and a later commit does not revive a poisoned cache.",
-        "last_commit_at": "2026-10-17",
+        "last_commit_sha": "0835e6a",
+        "last_commit_message": "Improve doc update (#740)\n\n* Reframe landing page around build verify and red-team workflow\n\n* update\n\n* update\n\n* update pitch deck\n\n* update pitch deck slide 4\n\n* docs: record new pitch page fingerprint in PAGE_HISTORY",
+        "last_commit_at": "2026-10-19",
         "releases": 41,
         "latest_release_at": "2026-10-08",
-        "days_since_release": 10,
-        "days_idle": 1,
+        "days_since_release": 11,
+        "days_idle": 0,
         "relocated": false
       },
       "identity": {
         "canonical_repo": "h5i-dev/h5i",
-        "stars": 785,
+        "stars": 788,
         "forks": 75,
         "created_at": "2026-03-11",
         "is_fork": false,
         "contributors": 22,
         "top_contributor_share": 0.94,
         "homepage": "https://h5i.dev",
-        "description": "Build, hack, and verify web apps. Find vulnerabilities through red-teaming. Formally verify properties of Rust codes in Lean 4.",
+        "description": "Unified Rust framework for building, verifying, and testing web apps. Kernel-based architecture for Lean 4 verification and GPU acceleration. Built-in red-teaming tools for automated vulnerability detection.",
         "topics": [
-          "agentic-ai",
           "agentic-workflow",
           "ai-hacking",
           "ai-safety",
@@ -58,6 +57,7 @@
           "ctf",
           "ethical-hacking",
           "formal-verification",
+          "gpu-acceleration",
           "hacking",
           "lean4",
           "offensive-security",
@@ -69,9 +69,9 @@
           "web-security"
         ]
       },
-      "licence": { "file": "Apache-2.0", "api_spdx": "Apache-2.0", "readme_claim": "Apache-2.0", "conflict": null },
+      "licence": { "file": "Apache-2.0", "api_spdx": "Apache-2.0", "readme_claim": null, "conflict": null },
       "shape": {
-        "loc": 218173,
+        "loc": 218488,
         "code_files": 336,
         "files": 756,
         "has_ci": true,
@@ -88,7 +88,7 @@
       "substrate": { "bundled": [], "manifests": [] },
       "rebadge": [],
       "risk": { "licence": false, "install": true, "phones_home": false, "opaque": false, "host_access": false },
-      "risk_where": { "install": "README.md:45" }
+      "risk_where": { "install": "README.md:41" }
     }
   }
 }
