@@ -557,13 +557,47 @@ outcome.
 family). `infostealers` is always-on: ClickFix needs no CVE, so CVE feeds
 never mention it.
 
+**Daily discovery floor.** The standing requirement is 5-8 fresh candidates a
+day, so `runDiscoveryNow` asks `runDiscovery` for `minKept: 6`. The queue used
+to come back with 2-3 because the 14d anti-repetition gate (see `isKeySuppressed`)
+suppressed nearly everything the runners returned; `SURFACED_BLOCK_MS` is now 5d
+and, when the strict pass still lands under the floor, `runDiscovery` refills
+from the pool the runners **already fetched** (no extra subrequests) under the
+caller's `admitSuppressed` policy: admin skips always win and an already-published
+key is **never** re-offered, only items last surfaced >2d ago. `perTopic` 3→5,
+`limit` 36→60. The cron logs `kept/total/suppressed/blocked/filled` — if `filled`
+is high every day, the runners (not the gate) are the next thing to fix.
+
+**Barred sources.** `api/src/case-study/source-blocklist.ts` bars ExploitGrid from
+**every** discovery/queue surface. Enforcement is two-sided on purpose: discovery
+drops such candidates on the way in, and the admin pending list filters them on
+the way out (candidates live in KV for 30 days, so pre-change entries would
+otherwise keep showing). It matches URL fields only — a legit article that merely
+_mentions_ the host must not be dropped.
+
+**KEV auto-publish** (`api/src/case-study/kev-autopublish.ts` +
+`runKevAutopublishNow`, cron `15 * * * *`): a CVE added to CISA KEV is generated
+and **published immediately** — no candidate queue, no approval gate, no slot.
+Every other topic is a suggestion; a KEV addition is a confirmed exploitation
+event with a date. Rules that must not be weakened: `dateAdded` is date-only so
+the window is **48h** (anything narrower silently drops yesterday's additions —
+pinned by a test), the per-tick cap (`KEV_AUTOPUBLISH_MAX_PER_TICK`, default 2)
+keeps a 30-entry batch from firing 30 generations at once, a key with a
+`publishedSlug` inside 30d is never re-published, and a generation failure
+suppresses the key for 24h (one attempt/day, not 24). Social copy _is_ generated
+but is enqueued for the drip only when `SOCIAL_AUTOPOST_ENABLED === 'true'` —
+that master switch is the operator's gate and stays theirs
+(see `docs/loops/social-crosspost.md`). The cron is listed in `wrangler.jsonc`;
+a new cron string needs no dispatch registration beyond that (one DO instance
+per cron string).
+
 **Generation cost dropped by two LLM calls**: the pre-generation
 "fact extraction" pass (deterministic extraction is now code) and the
 QA-triggered repair pass (there is no gate to repair).
 
 **Live CVE sources** (`/api/v1/cve-recent`, page `/threatintel/cve-list`):
 NVD published + CISA KEV, then gap-fillers MyThreatIntel, cvefeed.io, the CVE
-Telegram channels, dbu.gs, ExploitGrid and **ThreatWire**
+Telegram channels, dbu.gs and **ThreatWire**
 (`api/src/lib/threatwire.ts`, RSS `/feed.xml`). ThreatWire contributes unseen
 ids and annotates known ones with explicit `threatwire_kev` / `threatwire_poc`
 / `threatwire_zero_day` / `threatwire_patched` flags — extracted **only when a
@@ -582,6 +616,21 @@ It is **not** merged into `/api/v1/cve-recent` — trending rows there padded th
 carries only new/exploited records plus per-row `listed_by` corroboration.
 "Trending but not yet in KEV" is the interesting case — that is the window
 where a write-up has value; it belongs on the Trending tab, not in the feed.
+
+**CVE exploits** (`api/src/lib/exploitgrid.ts`, `/api/v1/cve-exploits`): ExploitGrid's
+public exploit/PoC records, surfaced as its own "Exploits" tab in
+`/threatintel/cve-intel` (deep link `/threatintel/cves/exploits`). ExploitGrid
+used to be a `cve-recent` gap-filler tier; it was removed from both the feed and
+the `exploits` discovery runner because its records are **unreviewed**, every
+live row carries `status: PENDING`, and an unvetted PoC index must not inject
+rows into the canonical new-CVE feed. It now has its own probe
+(`PROBE_SOURCES['cve-exploits']` → `exploitgrid`, graded C) and answers "does
+working code exist?" beside the Trending tab's "what is being discussed?".
+Caveats the UI states and the code enforces: `severity` classifies the exploit,
+not a CVSS score (never render it as a CVSS band); an empty page means "we could
+not ask" (`stale: true`), never "no exploits exist" — upstream answers 200 with
+`data: []` for an over-cap `limit`, which `parseExploitGridPayload` treats as
+failure.
 
 ### Admin content-generation UI (/admin/generate + tabs)
 

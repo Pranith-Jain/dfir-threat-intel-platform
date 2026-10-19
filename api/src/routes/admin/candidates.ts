@@ -14,6 +14,7 @@ import {
 } from '../../case-study/storage/candidates';
 import { approve } from '../../case-study/storage/approved';
 import { suppressDedupMany } from '../../case-study/storage/dedup';
+import { candidateUsesBlockedSource } from '../../case-study/source-blocklist';
 import { putDraft } from '../../case-study/storage/drafts';
 import { kv as csKvKeys } from '../../case-study/kv-keys';
 import { generatePost } from '../../case-study/generation';
@@ -45,9 +46,15 @@ async function deleteCandidatesByType(ns: KVNamespace, filterType: CaseStudyType
 
 candidatesRouter.get('/candidates', async (c) => {
   const all = await listAllCandidates(c.env.CASE_STUDIES);
+  // Barred sources are filtered on the way OUT as well as on the way in:
+  // candidates persist in KV for 30 days, so entries discovered before a source
+  // was barred would otherwise keep showing in the queue until their TTL ran
+  // out. See case-study/source-blocklist.ts — this is a standing product rule,
+  // not a temporary filter.
+  const allowed = all.filter((cand) => !candidateUsesBlockedSource(cand));
   // Score order alone put KEV CVEs (severity 1.0) at the top of every screen.
   // Round-robin by type so the operator sees the day's actual mix first.
-  return c.json({ pending: interleaveByType(all) });
+  return c.json({ pending: interleaveByType(allowed), blocked: all.length - allowed.length });
 });
 
 candidatesRouter.post('/candidates/:id/approve', async (c) => {

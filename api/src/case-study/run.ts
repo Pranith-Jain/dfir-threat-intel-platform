@@ -43,7 +43,15 @@ import { runPublisher } from './publishing/publisher';
 import { putCandidate } from './storage/candidates';
 import { listApproved, getApproved, unapprove } from './storage/approved';
 import { setSchedule, markSlotStatus, pickDueSlot } from './storage/schedule';
-import { loadDedupMap, touchDedup, touchDedupMany, isKeySuppressed } from './storage/dedup';
+import { loadDedupMap, touchDedup, touchDedupMany, isKeySuppressed, suppressDedupMany } from './storage/dedup';
+import {
+  buildKevCandidate,
+  fetchKevAdditions,
+  selectKevBatch,
+  KEV_AUTOPUBLISH_MAX_PER_TICK,
+  KEV_AUTOPUBLISH_WINDOW_HOURS,
+} from './kev-autopublish';
+import { enrichFromNvd } from './discovery/cve';
 import { putPost, listPostIndex } from './storage/posts';
 import { putDraft } from './storage/drafts';
 import { recordFailure } from './storage/failed';
@@ -61,6 +69,8 @@ import {
   readAutopostQueue,
   writeAutopostQueue,
   recordAutopostResult,
+  approveSocialPlatform,
+  AUTOPOST_PLATFORMS,
 } from './storage/social-schedule';
 import { postToTwitter, postToLinkedin } from './posting/social-poster';
 import { putPostImage } from './storage/post-images';
@@ -72,7 +82,7 @@ import { kv as csKvKeys } from './kv-keys';
 import { ACTOR_RSS_FEEDS, ADVISORY_RSS_FEEDS } from './config';
 import { getSiteUrl } from '../lib/site-config';
 import type { D1Database } from '@cloudflare/workers-types';
-import type { Candidate } from './types';
+import type { Candidate, Post } from './types';
 import { logError } from '../lib/logger';
 
 /** The subset of bindings the case-study pipeline needs. */
@@ -155,6 +165,8 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
       kept: 0,
       suppressed: 0,
       deduped: 0,
+      blocked: 0,
+      filledFromSuppressed: 0,
       ids: [] as string[],
       byTopic: {} as Record<string, number>,
       byTopicSelected: {} as Record<string, number>,
@@ -167,15 +179,57 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
   const memGet = (k: string) => Promise.resolve(dedupMap[k] ?? null);
   // Anti-repetition gate. Two suppression windows:
   //   - PUBLISHED key  → hard-suppress for 30d (never republish the same story)
-  //   - Surfaced (kept, not published) → hard-suppress for 7d to prevent the
+  //   - Surfaced (kept, not published) → hard-suppress for 5d to prevent the
   //     same candidates from appearing in every daily run. Without this,
-  //     high-severity items keep dominating
-  //     because noveltyScore only soft-deweights them.
+  //     high-severity items keep dominating because noveltyScore only
+  //     soft-deweights them.
   //   - the discovery runner itself consults the dedup map via `getDedup`.
+  //
+  // The surfaced window was 14d and that is what emptied the queue: with ~14
+  // active runners x perTopic, a fortnight of marks covered essentially every
+  // item the RSS-backed runners can return, so a normal day surfaced 2-3
+  // candidates. 5d still means "not every day" (the point of the gate) while
+  // leaving the runners a pool to draw from; `MIN_DAILY_CANDIDATES` below is
+  // the backstop if a day is still thin.
   const REPUBLISH_BLOCK_MS = 30 * 24 * 3600 * 1000;
-  const SURFACED_BLOCK_MS = 14 * 24 * 3600 * 1000;
-  const isSuppressed = (key: string): boolean =>
+  const SURFACED_BLOCK_MS = 5 * 24 * 3600 * 1000;
+  /**
+   * Is this candidate owned by the KEV auto-publish job?
+   *
+   * A fresh CISA-KEV addition is published by the `15 * * * *` cron
+   * (`runKevAutopublishNow`) within the hour. Offering it as a queue candidate
+   * at the same time risks two posts about one CVE — the auto-published one and
+   * a later human-approved one with a different slug — which is exactly the
+   * duplicate the republish block exists to prevent.
+   *
+   * The reservation is a WINDOW, not a veto, so the fallback is automatic: if
+   * the KEV job is broken or unconfigured, the entry stops being reserved after
+   * 48h and discovery offers it normally (by then it also has no `publishedSlug`,
+   * because the job never ran).
+   */
+  const isKevReserved = (c: Candidate): boolean => {
+    const ev = c.evidence as { kev?: unknown; kevAddedAt?: unknown } | undefined;
+    if (ev?.kev !== true || typeof ev.kevAddedAt !== 'string') return false;
+    const added = Date.parse(ev.kevAddedAt);
+    if (!Number.isFinite(added)) return false;
+    return now.getTime() - added < KEV_AUTOPUBLISH_WINDOW_HOURS * 3600 * 1000;
+  };
+  const isSuppressed = (key: string, candidate?: Candidate): boolean =>
+    (candidate ? isKevReserved(candidate) : false) ||
     isKeySuppressed(dedupMap[key] ?? null, now, REPUBLISH_BLOCK_MS, SURFACED_BLOCK_MS);
+
+  /**
+   * Daily floor — the operator's standing requirement is 5-8 fresh options a
+   * day. When the strict pass comes back under this, `runDiscovery` refills
+   * from the same fetched pool under the relaxation rules below.
+   */
+  const MIN_DAILY_CANDIDATES = 6;
+  /**
+   * How stale a previously-surfaced key must be before the top-up may re-offer
+   * it. 2d is deliberately tighter than the 5d strict window: the top-up is a
+   * floor, not a way to repeat yesterday's queue.
+   */
+  const TOPUP_MIN_AGE_MS = 2 * 24 * 3600 * 1000;
   // One rand stream per run, seeded by the UTC date: stable within a day,
   // different the next. Weighted by score so high-value items stay likely
   // (and the single top item is guaranteed) without freezing the queue.
@@ -314,8 +368,9 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
   //     (rotation.ts), so each optional runner surfaces once every four
   //     days.
   //   - Total per day: 10 always-on + ~4 rotating.
-  //   - perTopic=3: each topic contributes up to 3 candidates, so a quiet
-  //     CVE day cannot crowd the other topics out of the queue.
+  //   - perTopic=5: each topic contributes up to 5 candidates, so a quiet
+  //     CVE day cannot crowd the other topics out of the queue while a busy
+  //     one still fills the day's floor on its own.
   //   - trends=3: fewer LLM candidates, higher quality bar enforced by
   //     dedup-avoidance list fed into the prompt.
   const ALWAYS_ON = new Set([
@@ -344,16 +399,44 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
     commitDedup: (keys, n) => touchDedupMany(env.CASE_STUDIES, keys, n),
     now,
     // Diversity controls:
-    //   - perTopic=3: each topic contributes up to 3. With ~14 topics running
+    //   - perTopic=5: each topic contributes up to 5. With ~14 topics running
     //     per day (10 always-on + ~4 rotating), this keeps every category
     //     represented without letting one topic flood the queue.
-    //   - limit=36: comfortable for ~14 active topics × 3, with headroom for
+    //   - limit=60: comfortable for ~14 active topics × 5, with headroom for
     //     context items.
-    //   - trends=3: matches the perTopic default; kept explicit so the
-    //     override is visible if either value is ever tuned.
-    perTopic: 3,
-    limit: 36,
+    //   - trends=3: fewer LLM-generated candidates, so it keeps the old
+    //     budget; kept explicit so the override is visible if either value is
+    //     ever tuned.
+    //   - minKept=6: the daily floor (see MIN_DAILY_CANDIDATES above).
+    perTopic: 5,
+    limit: 60,
     perTopicOverride: { trends: 3 },
+    minKept: MIN_DAILY_CANDIDATES,
+    // Top-up admission policy. Two hard rules, both non-negotiable:
+    //   - an admin skip (`suppressedUntil` in the future) always wins, and
+    //   - an already-PUBLISHED key is never re-offered — no duplicate post.
+    // Only "surfaced, never used" keys older than TOPUP_MIN_AGE_MS qualify.
+    admitSuppressed: (c) => {
+      // The KEV job owns fresh additions (see isKevReserved) — the top-up must
+      // not smuggle one back in through the floor.
+      if (isKevReserved(c)) return false;
+      const rec = dedupMap[c.key];
+      if (!rec) return true;
+      if (rec.suppressedUntil && Date.parse(rec.suppressedUntil) > now.getTime()) return false;
+      if (rec.publishedSlug) return false;
+      const seen = Date.parse(rec.lastSeenAt);
+      return !Number.isFinite(seen) || now.getTime() - seen >= TOPUP_MIN_AGE_MS;
+    },
+    // Fill the floor oldest-first so the top-up surfaces the back of the pool
+    // rather than re-offering the highest-scoring items the strict pass just
+    // declined.
+    rankTopUp: (pool) =>
+      pool.sort((a, b) => {
+        const ta = Date.parse(dedupMap[a.key]?.lastSeenAt ?? '');
+        const tb = Date.parse(dedupMap[b.key]?.lastSeenAt ?? '');
+        if (Number.isFinite(ta) && Number.isFinite(tb) && ta !== tb) return ta - tb;
+        return b.score - a.score;
+      }),
   });
 }
 
@@ -397,71 +480,250 @@ export async function generateSocialForPost(slug: string, env: CaseStudyEnv, now
   }
 }
 
+/**
+ * Shared generation wiring — the candidate → post step every publish path
+ * uses (the scheduled publisher and the KEV auto-publish job). Factored out so
+ * a tuning change (model order, voice profile, reference verification) cannot
+ * apply to one path and silently miss the other.
+ */
+async function generatePostFor(env: CaseStudyEnv, candidate: Candidate, now: Date): Promise<Post> {
+  // Optional validation-env when provider keys exist; undefined lets the
+  // validator's fast-path short-circuit.
+  const validationEnv =
+    env.VT_API_KEY || env.ABUSEIPDB_API_KEY || env.ABUSECH_AUTH_KEY
+      ? { VT_API_KEY: env.VT_API_KEY, ABUSEIPDB_API_KEY: env.ABUSEIPDB_API_KEY, ABUSECH_AUTH_KEY: env.ABUSECH_AUTH_KEY }
+      : undefined;
+  return generatePost({
+    candidate,
+    ai: getAi(env),
+    now,
+    groqKey: env.GROQ_API_KEY,
+    sambanovaKey: env.SAMBANOVA_API_KEY,
+    googleKey: env.GOOGLE_AI_STUDIO_API_KEY,
+    infronKey: env.INFRON_API_KEY,
+    validationEnv,
+    // Cache reference-URL liveness across publishes when a cache binding
+    // exists — one KV blob read + write per generation, vs. re-probing
+    // canonical hosts (nvd, cisa, …) on every post. Falls back to a live
+    // probe when KV_CACHE is unbound. DEEP_LINK_VERIFY=true opts into the
+    // extra ranged-GET soft-404 probe (budget permitting); verdicts cache.
+    verifyRefs: env.KV_CACHE
+      ? createBatchedCachedVerify({
+          kv: env.KV_CACHE,
+          nowMs: now.getTime(),
+          verify:
+            env.DEEP_LINK_VERIFY === 'true' ? (urls) => liveVerifyUrls(urls, { deepSoft404: true }) : liveVerifyUrls,
+        })
+      : undefined,
+    // Research stage: SELF + token let the dossier query the platform's
+    // own API (writeups, trending CVEs, darkweb hits) in addition to
+    // fetching the candidate's own source pages.
+    self: env.SELF,
+    internalTokenSecret: env.INTERNAL_TOKEN_SECRET,
+    // AI illustrations: on by default, disable via BLOG_AI_IMAGES_DISABLED.
+    aiImages:
+      env.BLOG_AI_IMAGES_DISABLED === 'true'
+        ? undefined
+        : { enabled: true, put: (slug, name, bytes) => putPostImage(env.CASE_STUDIES, slug, name, bytes) },
+    // Voice profile: descriptive stats from the author's published posts,
+    // injected into the system prompt so the model matches the real
+    // writing rhythm (sentence length, contraction rate, hook forms,
+    // vocabulary). Cached 24h in KV. Best-effort — falls back to the
+    // prescriptive VOICE_IDENTITY when unavailable.
+    voiceProfile: await getVoiceProfileString(env.CASE_STUDIES).catch(() => ''),
+  });
+}
+
+/** RSS refresh — index-level fields only, so one render covers the whole feed. */
+async function refreshRssFor(env: CaseStudyEnv, index?: Awaited<ReturnType<typeof listPostIndex>>): Promise<void> {
+  const list = index ?? (await listPostIndex(env.CASE_STUDIES));
+  const rss = renderRss(list, { siteUrl: getSiteUrl(env) });
+  await env.CASE_STUDIES.put(csKvKeys.metaRss, rss);
+}
+
+/**
+ * Post-publish side effects shared by both publish paths: social copy, the D1
+ * mirror and the publish notification. The D1 mirror also runs for drafts (the
+ * admin lists them from there), which is why it is not gated on `published`.
+ * Every step is best-effort — none of them may fail a publish.
+ */
+async function recordPostSideEffects(
+  env: CaseStudyEnv,
+  slug: string,
+  now: Date,
+  opts: { published: boolean; post?: Post }
+): Promise<void> {
+  if (opts.published) {
+    // Fire-and-forget: social copy generation must never delay the publish.
+    generateSocialForPost(slug, env, now).catch((err) => logError('auto-social generation failed', err));
+  }
+
+  if (env.BRIEFINGS_DB) {
+    try {
+      let resolved = opts.post;
+      if (!resolved) {
+        const { getPost } = await import('./storage/posts');
+        resolved = (await getPost(env.CASE_STUDIES, slug)) ?? undefined;
+      }
+      if (resolved) {
+        const { upsertCsPostD1 } = await import('./storage/cs-posts-d1');
+        await upsertCsPostD1(env.BRIEFINGS_DB, resolved);
+      }
+    } catch {
+      // D1 sync is non-critical
+    }
+  }
+
+  if (opts.published) {
+    try {
+      const { notifyPublished } = await import('./notifications');
+      await notifyPublished(env as unknown as WebhookEnv, slug, slug, 'published');
+    } catch (err) {
+      logError('notifyPublished failed', err);
+    }
+  }
+}
+
+export interface KevAutopublishResult {
+  /** New KEV additions seen inside the window. */
+  seen: number;
+  /** Keys that passed the already-published / suppression guard. */
+  eligible: number;
+  /** Posts written to the public index (and RSS) this tick. */
+  published: number;
+  slugs: string[];
+  failures: Array<{ key: string; error: string }>;
+  reason?: string;
+}
+
+/**
+ * KEV auto-publish tick — a CVE added to CISA's Known Exploited
+ * Vulnerabilities catalog gets a post, published immediately.
+ *
+ * Why this exists as its own job rather than a faster discovery loop: every
+ * other topic is a suggestion a human vets, but a KEV addition is a confirmed
+ * in-the-wild exploitation event with an authority behind it and a date on it.
+ * Routing it through discovery → approval → planner → slot meant the write-up
+ * landed days after the window it was meant to cover, and the day it landed
+ * was random.
+ *
+ * Trade-offs, all deliberate and all visible in the return value:
+ *   - `BLOG_APPROVAL_REQUIRED` is NOT honored. The draft gate exists so a human
+ *     can reject a topic the platform chose; this topic was chosen for us.
+ *   - Social copy IS generated, but it is enqueued for the drip only when
+ *     `SOCIAL_AUTOPOST_ENABLED === 'true'` — the operator's existing master
+ *     switch for automated posting. With it off the copy sits pending for a
+ *     manual post, exactly as it does for every other published article
+ *     (docs/loops/social-crosspost.md keeps that gate intact).
+ *   - A generation failure does NOT retry every hour: the key is suppressed for
+ *     24h so a persistently failing CVE costs one attempt a day, not 24.
+ *   - The per-tick cap (`KEV_AUTOPUBLISH_MAX_PER_TICK`) keeps a 30-entry KEV
+ *     batch from firing 30 generations at once; the 26h window means the rest
+ *     publish over the following ticks.
+ */
+export async function runKevAutopublishNow(env: CaseStudyEnv, now: Date): Promise<KevAutopublishResult> {
+  const empty: KevAutopublishResult = { seen: 0, eligible: 0, published: 0, slugs: [], failures: [] };
+  if (!env.CASE_STUDIES) return { ...empty, reason: 'no-kv' };
+
+  const dedupMap = await loadDedupMap(env.CASE_STUDIES);
+  const memGet = (k: string) => Promise.resolve(dedupMap[k] ?? null);
+
+  // 1) What is new in KEV? One subrequest.
+  let entries;
+  try {
+    entries = await fetchKevAdditions({ fetch: globalThis.fetch, now, windowHours: KEV_AUTOPUBLISH_WINDOW_HOURS });
+  } catch (err) {
+    logError('kev-autopublish feed fetch failed', err);
+    return { ...empty, reason: 'feed-fetch-failed' };
+  }
+  if (entries.length === 0) return empty;
+
+  // 2) Build candidates (NVD enrichment per entry) and pick this tick's batch
+  //    under the never-double-publish guard.
+  const candidates = await Promise.all(
+    entries.map((e) =>
+      buildKevCandidate(e, {
+        now,
+        getDedup: memGet,
+        enrich: (cveId) => enrichFromNvd(globalThis.fetch, cveId),
+      })
+    )
+  );
+  const batch = selectKevBatch(candidates, dedupMap, now, KEV_AUTOPUBLISH_MAX_PER_TICK);
+  const result: KevAutopublishResult = { ...empty, seen: entries.length, eligible: batch.length };
+  if (batch.length === 0) return result;
+
+  for (const candidate of batch) {
+    try {
+      const post = await generatePostFor(env, candidate, now);
+      const index = await putPost(env.CASE_STUDIES, post);
+      await refreshRssFor(env, index);
+      await touchDedup(env.CASE_STUDIES, candidate.key, now, post.slug);
+
+      // Pre-warm the share card so the first social crawl hits a cached PNG
+      // instead of a cold rasterisation (same reasoning as the publisher).
+      if (env.SELF) {
+        env.SELF.fetch(new Request(`https://self/api/v1/og-image/blog/${encodeURIComponent(post.slug)}.png`)).catch(
+          () => {}
+        );
+      }
+
+      if (env.SOCIAL_AUTOPOST_ENABLED === 'true') {
+        try {
+          for (const platform of AUTOPOST_PLATFORMS) {
+            await approveSocialPlatform(env.CASE_STUDIES, post.slug, platform, now);
+          }
+        } catch (err) {
+          // Approval failure must not undo the publish — the post is live and
+          // the copy can be approved by hand.
+          logError('kev-autopublish social enqueue failed', err);
+        }
+      }
+
+      // Social copy generation is fire-and-forget inside this helper, so a slow
+      // LLM cannot stall the next CVE in the batch.
+      await recordPostSideEffects(env, post.slug, now, { published: true, post });
+
+      result.published += 1;
+      result.slugs.push(post.slug);
+      console.log(
+        JSON.stringify({
+          job: 'kev-autopublish',
+          status: 'published',
+          slug: post.slug,
+          candidateId: candidate.key,
+          cve: (candidate.evidence as { cveId?: string }).cveId,
+        })
+      );
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      result.failures.push({ key: candidate.key, error: msg });
+      // One attempt per day for a CVE that keeps failing to generate. Without
+      // this the same entry would be re-picked on every hourly tick.
+      await suppressDedupMany(env.CASE_STUDIES, [candidate.key], new Date(now.getTime() + 24 * 3600 * 1000), now).catch(
+        () => {}
+      );
+      logError(`kev-autopublish generation failed (${candidate.key})`, err);
+    }
+  }
+
+  return result;
+}
+
 export async function runPublisherNow(env: CaseStudyEnv, now: Date) {
   if (!env.CASE_STUDIES) {
     return Promise.resolve({ published: null as unknown });
   }
   const requireApproval = env.BLOG_APPROVAL_REQUIRED === 'true';
-  // Build the optional validation-env once; pass undefined when no
-  // provider keys are set so the validator's fast-path short-circuits.
-  const validationEnv =
-    env.VT_API_KEY || env.ABUSEIPDB_API_KEY || env.ABUSECH_AUTH_KEY
-      ? { VT_API_KEY: env.VT_API_KEY, ABUSEIPDB_API_KEY: env.ABUSEIPDB_API_KEY, ABUSECH_AUTH_KEY: env.ABUSECH_AUTH_KEY }
-      : undefined;
   const result = await runPublisher({
     pickDueSlot: (n) => pickDueSlot(env.CASE_STUDIES, n),
     markSlotStatus: (cid, status, extras) => markSlotStatus(env.CASE_STUDIES, cid, status, extras),
     getApproved: (k) => getApproved(env.CASE_STUDIES, k),
     unapprove: (k) => unapprove(env.CASE_STUDIES, k),
-    generatePost: async (cand, n) =>
-      generatePost({
-        candidate: cand,
-        ai: getAi(env),
-        now: n,
-        groqKey: env.GROQ_API_KEY,
-        sambanovaKey: env.SAMBANOVA_API_KEY,
-        googleKey: env.GOOGLE_AI_STUDIO_API_KEY,
-        infronKey: env.INFRON_API_KEY,
-        validationEnv,
-        // Cache reference-URL liveness across publishes when a cache binding
-        // exists — one KV blob read + write per generation, vs. re-probing
-        // canonical hosts (nvd, cisa, …) on every post. Falls back to a live
-        // probe when KV_CACHE is unbound. DEEP_LINK_VERIFY=true opts into the
-        // extra ranged-GET soft-404 probe (budget permitting); verdicts cache.
-        verifyRefs: env.KV_CACHE
-          ? createBatchedCachedVerify({
-              kv: env.KV_CACHE,
-              nowMs: n.getTime(),
-              verify:
-                env.DEEP_LINK_VERIFY === 'true'
-                  ? (urls) => liveVerifyUrls(urls, { deepSoft404: true })
-                  : liveVerifyUrls,
-            })
-          : undefined,
-        // Research stage: SELF + token let the dossier query the platform's
-        // own API (writeups, trending CVEs, darkweb hits) in addition to
-        // fetching the candidate's own source pages.
-        self: env.SELF,
-        internalTokenSecret: env.INTERNAL_TOKEN_SECRET,
-        // AI illustrations: on by default, disable via BLOG_AI_IMAGES_DISABLED.
-        aiImages:
-          env.BLOG_AI_IMAGES_DISABLED === 'true'
-            ? undefined
-            : { enabled: true, put: (slug, name, bytes) => putPostImage(env.CASE_STUDIES, slug, name, bytes) },
-        // Voice profile: descriptive stats from the author's published posts,
-        // injected into the system prompt so the model matches the real
-        // writing rhythm (sentence length, contraction rate, hook forms,
-        // vocabulary). Cached 24h in KV. Best-effort — falls back to the
-        // prescriptive VOICE_IDENTITY when unavailable.
-        voiceProfile: await getVoiceProfileString(env.CASE_STUDIES).catch(() => ''),
-      }),
+    generatePost: (cand, n) => generatePostFor(env, cand, n),
     putPost: (p) => putPost(env.CASE_STUDIES, p),
     putDraft: (p) => putDraft(env.CASE_STUDIES, p),
-    refreshRss: async (index) => {
-      const list = index ?? (await listPostIndex(env.CASE_STUDIES));
-      const rss = renderRss(list, { siteUrl: getSiteUrl(env) });
-      await env.CASE_STUDIES.put(csKvKeys.metaRss, rss);
-    },
+    refreshRss: (index) => refreshRssFor(env, index),
     touchDedup: (k, when, slug) => touchDedup(env.CASE_STUDIES, k, when, slug),
     recordFailure: (rec) => recordFailure(env.CASE_STUDIES, rec),
     now,
@@ -479,38 +741,12 @@ export async function runPublisherNow(env: CaseStudyEnv, now: Date) {
       : undefined,
   });
 
-  // Fire-and-forget auto-generation of social copy when a post was published
-  if (result.published === 1 && result.slug) {
-    generateSocialForPost(result.slug, env as unknown as CaseStudyEnv, now).catch((err) =>
-      logError('auto-social generation failed', err)
-    );
+  // Social copy + D1 mirror + publish notification, same wiring the KEV
+  // auto-publish path uses (see recordPostSideEffects).
+  if (result.slug) {
+    await recordPostSideEffects(env, result.slug, now, { published: result.published === 1 });
   }
 
-  // Mirror published post to D1 for search/scale (fire-and-forget; failures non-critical)
-  if (result.slug && env.BRIEFINGS_DB) {
-    void import('./storage/cs-posts-d1')
-      .then(async ({ upsertCsPostD1 }) => {
-        const { getPost } = await import('./storage/posts');
-        try {
-          const post = await getPost(env.CASE_STUDIES, result.slug!);
-          if (post) await upsertCsPostD1(env.BRIEFINGS_DB!, post);
-        } catch {
-          // D1 sync is non-critical
-        }
-      })
-      .catch(() => {});
-  }
-
-  // Notifications
-  if (result.published === 1 && result.slug) {
-    void import('./notifications')
-      .then(({ notifyPublished }) =>
-        notifyPublished(env as unknown as WebhookEnv, result.slug!, result.slug!, 'published').catch((err) =>
-          logError('notifyPublished failed', err)
-        )
-      )
-      .catch(() => {});
-  }
   if (result.published === 0 && result.slug && env.BLOG_APPROVAL_REQUIRED === 'true') {
     void import('./notifications')
       .then(({ notifyDraftReady }) =>

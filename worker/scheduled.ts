@@ -13,6 +13,7 @@ import {
   runDiscoveryNow,
   runPlannerNow,
   runPublisherNow,
+  runKevAutopublishNow,
   runSocialAutopostNow,
   refreshSocialMetricsNow,
   type CaseStudyEnv,
@@ -98,6 +99,9 @@ import { errMessage } from './lib/err';
  * - "5 0 * * *"  → daily case-study discovery + planner (chained; one
  *                  lease, planner runs after discovery finishes so it
  *                  sees the just-updated candidate queue)
+ * - "15 * * * *" → hourly CISA-KEV watch: a CVE added to KEV is generated and
+ *                  published immediately (own cron so it has its own
+ *                  subrequest budget)
  * - "30 0 * * *" → daily briefing for the prior calendar day
  * - "45 0 * * 1" → weekly briefing for the prior ISO week (Mon → Sun)
  * - "0 * * * *"  → warm /api/v1/snapshot + /api/v1/ioc-snapshot once
@@ -196,7 +200,24 @@ export async function executeCronJob(
     ctx.waitUntil(
       (async () => {
         try {
-          await runDiscoveryNow(env as unknown as CaseStudyEnv, csNow);
+          const d = await runDiscoveryNow(env as unknown as CaseStudyEnv, csNow);
+          // Logged unconditionally: the whole point of the daily floor is that
+          // "kept" never silently drops back to 2-3, and a silent drop is
+          // exactly how it read before. `filled` says how much of the day's
+          // queue came from the top-up pass rather than fresh finds — a number
+          // that stays high every day means the runners, not the gate, are the
+          // limit worth fixing next.
+          console.log(
+            JSON.stringify({
+              job: 'discovery',
+              kept: d.kept,
+              total: d.total,
+              suppressed: d.suppressed,
+              blocked: d.blocked,
+              filled: d.filledFromSuppressed,
+              byTopic: d.byTopic,
+            })
+          );
         } catch (e) {
           logCronFail('discovery')(e);
           // Don't rethrow: a discovery failure must not block the planner,
@@ -211,6 +232,38 @@ export async function executeCronJob(
         logCronDone({ path: 'discovery+planner' });
       })()
         .catch(logCronFail('discovery+planner'))
+        .finally(releaseLease)
+    );
+    return;
+  }
+
+  // KEV auto-publish — own cron so it gets its own 50-subrequest budget and
+  // never competes with the hourly pipeline for one. A CVE landing in CISA KEV
+  // is published straight away (see runKevAutopublishNow); off-the-hour so it
+  // doesn't share a burst window with the `0 * * * *` fan-out.
+  if (cron === '15 * * * *') {
+    ctx.waitUntil(
+      (async () => {
+        try {
+          const r = await runKevAutopublishNow(env as unknown as CaseStudyEnv, csNow);
+          if (r.published > 0 || r.failures.length > 0) {
+            console.log(
+              JSON.stringify({
+                job: 'kev-autopublish',
+                seen: r.seen,
+                eligible: r.eligible,
+                published: r.published,
+                slugs: r.slugs,
+                failures: r.failures.length > 0 ? r.failures : undefined,
+              })
+            );
+          }
+        } catch (e) {
+          logCronFail('kev-autopublish')(e);
+        }
+        logCronDone({ path: 'kev-autopublish' });
+      })()
+        .catch(logCronFail('kev-autopublish'))
         .finally(releaseLease)
     );
     return;

@@ -11,8 +11,12 @@ provably within budget.
 
 **Heal architecture (maintainer's call, 2026-06-10; extended 2026-06-21):** the
 daily/weekly self-heal runs **inline at the END of the `0 * * * *` hourly cron**,
-NOT in a dedicated `20 * * * *` cron. wrangler crons are the 4:
-`0 * * * *`, `5 0 * * *`, `30 0 * * *`, `45 0 * * 1`.
+NOT in a dedicated `20 * * * *` cron. wrangler crons are the 6:
+`0 * * * *` (hourly pipeline + inline heal), `5 0 * * *` (case-study discovery +
+planner), `30 0 * * *` (daily briefing), `45 0 * * 1` (weekly briefing),
+`*/30 * * * *` (feed/social drip) and `15 * * * *` (CISA-KEV auto-publish).
+Nothing here is a spare slot to reuse: `15 * * * *` in particular owns its own
+subrequest budget for the KEV watch.
 Do **not** re-introduce a dedicated heal cron / `runBriefingHealOnce` — that was tried
 and explicitly reverted.
 
