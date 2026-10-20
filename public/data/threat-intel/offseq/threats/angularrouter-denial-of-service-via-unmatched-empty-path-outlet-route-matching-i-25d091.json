@@ -1,0 +1,55 @@
+{
+  "slug": "angularrouter-denial-of-service-via-unmatched-empty-path-outlet-route-matching-i-25d091",
+  "externalId": "gcve-osv-ghsa-62vg-58rm-qff7",
+  "source": "GCVE Database",
+  "type": "vulnerability",
+  "title": "@angular/router: Denial of Service via Unmatched Empty-Path Outlet Route Matching in Server-Side Rendering (SSR) (CVE-2026-111752)",
+  "description": "A denial of service (DoS) vulnerability exists in @angular/router when Server-Side Rendering (SSR) is enabled on Node.js. The router fails to validate auxiliary outlet segments in URLs, allowing crafted requests with multiple empty-path outlet segments to cause excessive memory and CPU usage. This leads to Node.js process termination due to heap exhaustion. The vulnerability affects SSR configurations with empty-path or named outlet routes and can be mitigated by upgrading to patched versions or rejecting malicious URL patterns upstream.",
+  "severity": "high",
+  "cvssScore": null,
+  "cvssVector": "CVSS:4.0/AV:N/AC:L/AT:P/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N",
+  "publishedDate": "2026-10-20T14:36:39.000Z",
+  "cveId": "CVE-2026-111752",
+  "cveIds": ["CVE-2026-111752"],
+  "tags": ["gcve", "osv", "ghsa-62vg-58rm-qff7", "cve-2026-111752", "ghsa", "npm"],
+  "knownExploitsInWild": false,
+  "exploited": false,
+  "mirageCountries": [],
+  "patchAvailable": true,
+  "knownThreatActors": [],
+  "affectedCountries": [],
+  "references": [
+    {
+      "title": "",
+      "url": "https://github.com/angular/angular/security/advisories/GHSA-62vg-58rm-qff7",
+      "type": "other"
+    },
+    { "title": "", "url": "https://github.com/angular/angular/issues/70997", "type": "other" },
+    { "title": "", "url": "https://github.com/angular/angular/pull/71055", "type": "other" },
+    {
+      "title": "",
+      "url": "https://github.com/angular/angular/commit/a83f8119acd466b524ae0113096ed188358d6d6c",
+      "type": "other"
+    },
+    {
+      "title": "",
+      "url": "https://github.com/angular/angular/commit/b0d2ba0f54e21cb57ea5a0ca0d8e6065f28e23a0",
+      "type": "other"
+    },
+    {
+      "title": "",
+      "url": "https://github.com/angular/angular/commit/b6bf6504adab1a78cc62ad8402f6bed229e620bd",
+      "type": "other"
+    },
+    {
+      "title": "",
+      "url": "https://github.com/angular/angular/commit/e9bf52aa03a3b9b302c33ffbc967ef0e1de5fb79",
+      "type": "other"
+    },
+    { "title": "", "url": "https://github.com/angular/angular", "type": "other" }
+  ],
+  "url": "https://radar.offseq.com/threats/angularrouter-denial-of-service-via-unmatched-empty-path-outlet-route-matching-i-25d091",
+  "aiSummary": "The vulnerability in @angular/router occurs during route recognition in SSR mode on Node.js. The router does not properly validate whether auxiliary outlet segments in the URL correspond to configured routes for those outlets. Unconfigured empty-path outlet groups are not rejected, causing the router to repeatedly re-evaluate route configurations, instantiate duplicate ActivatedRouteSnapshot trees, and execute canMatch guards and resolvers multiple times. This behavior allows an unauthenticated remote attacker to send crafted URLs with multiple empty-path outlet segments to exhaust the Node.js heap or overwhelm CPU resources, resulting in SSR worker termination. The issue is fixed in versions 22.2.1, 21.2.25, and 20.3.33 by requiring child outlet segments to match configured routes before processing. Workarounds include rejecting URLs containing parentheses or empty-path outlet sequences in middleware or WAF before Angular SSR handles the request.",
+  "aiImpact": "Successful exploitation causes Node.js SSR worker processes to crash due to JavaScript heap out-of-memory errors, resulting in denial of service. Memory exhaustion is transient and occurs during route recognition, with no persistent memory leak. Repeated execution of guards and resolvers can increase backend load and hold connections open. Client-side Angular applications and build-time prerendering are not affected. The vulnerability requires SSR enabled on Node.js with specific route configurations and acceptance of crafted URLs upstream.",
+  "sizeBytes": 3817
+}
