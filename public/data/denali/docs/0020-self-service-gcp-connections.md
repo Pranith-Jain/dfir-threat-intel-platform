@@ -86,6 +86,53 @@ IAM policy bindings, and previously collected evidence remains.
 
 ## Operational consequences
 
+### Optional isolated operator identity for new native connections
+
+Operators may configure the backend-only pair
+`DENALI_GCP_NATIVE_WORKLOAD_IDENTITY_PROVIDER` and
+`DENALI_GCP_NATIVE_RUNTIME_SERVICE_ACCOUNT` to separate new native GCP onboarding
+from the ambient Google credential chain. Both values are required together. They
+are deployed through the existing Modal Secrets, not Vercel or tenant records.
+
+When enabled, newly provisioned native readers carry the server-owned internal
+`operator_credential_profile` value `native_gcp_wif_v1`. Provisioning, validation,
+deployment inventory and bounded Vertex audit activity use that same profile.
+The profile is not accepted from browser input or exposed by public connection
+presenters. It contains no token or key. Unknown profiles, incomplete settings or
+missing workload identity fail closed rather than falling back to ambient ADC.
+
+Existing readers without the marker keep their original ADC behavior. There is
+no automatic credential migration, backfill, principal replacement or project
+scope change. The isolated path must not rewrite `GOOGLE_APPLICATION_CREDENTIALS`
+or the ambient credential files. Native Google Workspace, its delegated JWT
+signing, the Shasta bridge and Platform broker identities remain unchanged.
+
+Before activation, independently verify the chosen federation provider's issuer,
+audience and admission conditions for the production Modal workspace, environment,
+application and API/validation/collection functions. Verify the operator's existing
+`iam.serviceAccounts.create` authority in the configured operator project and its
+`iam.serviceAccounts.getAccessToken` authority on the new reader. An enabled pool
+or configuration-presence check alone is not evidence of either permission.
+Never relax Domain Restricted Sharing or add unrelated roles to overcome a
+misbound operator identity.
+
+Release only reviewed, merged code through the protected production workflow.
+Merge-update only the two new settings in their owning environment-local Secret;
+preserve all existing values and mount names. Record old/new public configuration
+identifiers without tokens, keys or private setup URLs. Verify fresh API and worker
+containers, then test the explicitly approved new organization/reader through
+setup, validation and collection, with partial coverage reported separately.
+Lifecycle acceptance requires an explicitly disposable connection. Do not alter
+an existing connection just to complete the acceptance checklist, and do not
+enable Platform-only creation on the strength of this isolated fix.
+
+Rollback must account for profile-bearing records: do not clear their marker or
+silently send them through legacy ADC. Missing isolated configuration must remain
+a visible failure. Before any new marked reader exists, the prior reviewed release
+can be restored through the normal protected process. Afterwards, use a
+profile-aware known-good release or a forward repair; any disconnect requires its
+own approved scope. Existing unmarked readers remain on their original path.
+
 - Denali's operator identity needs `iam.serviceAccounts.create` in the configured operator
   project (for example through Service Account Creator or a narrower custom role), and the
   IAM Service Account Credentials API must be enabled there. Service-account quota and

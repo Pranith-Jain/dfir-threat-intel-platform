@@ -1,0 +1,32 @@
+{
+  "name": "T2-MCP_Client_Endpoint_PE",
+  "tier": "T2",
+  "confidence": 70,
+  "artifactType": "network_indicator",
+  "artifactClass": "mcp_client_implant",
+  "description": "PE/ELF with a hardcoded public MCP server endpoint — indicates an embedded MCP client. Three anchors confirmed in suspicious corpus samples (21-27 detections, no legitimate-app explanation): Firecrawl (C2AGENT, Unit42 confirmed), Context7 (two clusters Aug + Oct 2026, Telegram C2 in Oct cluster), Exa (Aug-Sep cluster co-occurring with Context7). Legitimate MCP clients (Claude Desktop, Cursor) are 0-detection and filtered by positives:1+ at acquisition.",
+  "family": null,
+  "archetypes": null,
+  "reference": "C2AGENT aaea5809...; context7 cluster 97e9784c + 96c8e5f9 (Telegram C2); exa cluster 4787bca2 + 488e52a1",
+  "strings": [
+    {
+      "id": "$firecrawl",
+      "pattern": "mcp.firecrawl.dev",
+      "nocase": true
+    },
+    {
+      "id": "$context7",
+      "pattern": "mcp.context7.com",
+      "nocase": true
+    },
+    {
+      "id": "$exa",
+      "pattern": "mcp.exa.ai",
+      "nocase": true
+    }
+  ],
+  "condition": "any of them",
+  "source": "github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "sourceUrl": "https://github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "license": "MIT"
+}
