@@ -52,6 +52,12 @@ grant inventory and not a security finding.
 
 ## Consequences
 
+The opt-in Platform shared connection path uses the same fixed report bundle and
+Denali-owned normalizers through a sanitized Reports client. Exact organization,
+customer identity and operator bindings are admitted by Platform and pinned in
+Denali; credentials stay in Platform. Native configuration remains unchanged.
+See [the shared Workspace runbook](../development/shared-google-workspace-connections-pilot.md).
+
 - A Workspace super-admin action remains necessary because Google does not provide Denali with a
   customer-side consent callback equivalent to Entra admin consent for this service-account flow.
 - Domain-wide delegation propagation may delay the first successful validation.

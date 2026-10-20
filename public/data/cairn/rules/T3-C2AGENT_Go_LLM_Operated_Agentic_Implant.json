@@ -1,0 +1,27 @@
+{
+  "name": "T3-C2AGENT_Go_LLM_Operated_Agentic_Implant",
+  "tier": "T3",
+  "confidence": 90,
+  "artifactType": "network_indicator",
+  "artifactClass": "agentic_c2_implant",
+  "description": "C2AGENT (Unit42/Palo Alto) — Go-based Windows LLM-operated agentic implant with a closed goal->prompt->model->execution->feedback loop (40-step cap); built-in MCP client (default Firecrawl); operator-assigned skills/playbooks; Cobalt Strike BOF loader from v2.4; active development v0-v2.4+ (2026-09-10 onward). LLM traffic proxied through C2 server (/llm/<id>/v1/chat/completions), not sent directly to a provider -- hence no T1-LLM_API_Endpoint hit. Anchors: actor C2 domain in contacted_domains (all 20 corpus variants, 0 FP) and hardcoded default MCP server URL in embedded_urls (17/17 agent builds, 0 FP)",
+  "family": "C2AGENT",
+  "archetypes": "A7",
+  "reference": "Discovered by Unit42 (Palo Alto Networks), 2026-10-09. Representative CAIRN sample: aaea58096313c877495ab0c07de3217cefdf1bc9bd9d08df06b44881fe9b90a9 (v2.1). Report: docs/families/C2AGENT.md. Anchors measured 2026-10-13, corpus n=5580: agent.x90.dev -> 20 hits (all C2AGENT, 0 FP), mcp.firecrawl.dev/v2/mcp -> 19 hits (all C2AGENT agent builds, 0 FP)",
+  "strings": [
+    {
+      "id": "$c2",
+      "pattern": "agent.x90.dev",
+      "nocase": true
+    },
+    {
+      "id": "$mcp",
+      "pattern": "mcp.firecrawl.dev/v2/mcp",
+      "nocase": true
+    }
+  ],
+  "condition": "$c2 or $mcp",
+  "source": "github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "sourceUrl": "https://github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "license": "MIT"
+}

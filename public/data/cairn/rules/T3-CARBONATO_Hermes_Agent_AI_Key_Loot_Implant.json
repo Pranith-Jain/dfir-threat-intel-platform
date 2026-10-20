@@ -1,0 +1,32 @@
+{
+  "name": "T3-CARBONATO_Hermes_Agent_AI_Key_Loot_Implant",
+  "tier": "T3",
+  "confidence": 70,
+  "artifactType": "config_string",
+  "artifactClass": "ai_c2_implant",
+  "description": "CARBONATO (ThreatDown, 2026-09-23) — Linux Docker botnet implant; weaponizes the open-source Hermes Agent AI framework by overwriting its SOUL.md persona file with a 39-line malicious prompt that (1) routes operator Telegram tasks through the operator's own LLM gateway as a live C2 brain (A4) and (2) directs the agent to exfiltrate victim AI API keys as explicit #1 loot priority, naming 14 providers (A6). Primary artifacts are shell scripts and text files inside gzip-compressed Docker image layers — not indexed by VT content search. NOTE: rule is unvalidated against VT corpus samples (known hash not on VT); intended for container image forensics and host-based detection, not VT hunting.",
+  "family": "CARBONATO",
+  "archetypes": "A4+A6",
+  "reference": "Discovered by ThreatDown (Malwarebytes), 2026-09-23. Hash 88005097b0b60f340f8267707ebf8ef813fffe32ba1fe73a6485255d31eb5de8 not on VT. Report: docs/families/CARBONATO.md. Strings sourced from verbatim ThreatDown quotes of SOUL.md content.",
+  "strings": [
+    {
+      "id": "$loot_path",
+      "pattern": "/root/.hermes/loot",
+      "nocase": false
+    },
+    {
+      "id": "$ai_priority",
+      "pattern": "AI API keys are the absolute priority",
+      "nocase": false
+    },
+    {
+      "id": "$hermes_soul",
+      "pattern": ".hermes/SOUL.md",
+      "nocase": false
+    }
+  ],
+  "condition": "$loot_path or ($hermes_soul and $ai_priority)",
+  "source": "github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "sourceUrl": "https://github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "license": "MIT"
+}
