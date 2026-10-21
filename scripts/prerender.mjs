@@ -63,6 +63,13 @@ const ROUTES = [
   '/threatintel/cves/advisories',
   '/threatintel/cves/cves',
   '/threatintel/cves/resources',
+  // ── OSINT / dark-web verticals (added with the external-tool
+  // integrations) ─────────────────────────────────────────────────
+  '/threatintel/cve-triage',
+  '/threatintel/leakscope',
+  '/threatintel/darkforums-ip',
+  '/threatintel/domain-registrations',
+  '/threatintel/forum-actors',
   '/threatintel/darkweb/crime',
   '/threatintel/darkweb/deepdark',
   '/threatintel/darkweb/infostealer',
@@ -167,6 +174,8 @@ const ROUTES = [
   '/dfir/lolbins',
   '/dfir/kill-chain',
   '/dfir/grc',
+  // GeoX — X (Twitter) geolocation query builder (external-tool integration).
+  '/dfir/geox',
   '/dfir/data-classification',
   '/dfir/privacy-hub',
 

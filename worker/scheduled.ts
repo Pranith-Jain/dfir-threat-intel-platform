@@ -59,6 +59,7 @@ import { runFullCollection } from '../api/src/lib/cti-collector';
 import { runRetentionSweep } from '../api/src/lib/retention';
 import { runGraphIngest } from '../api/src/routes/graph-ingest';
 import { autoRunFeedJobs } from '../api/src/routes/feed-scheduler';
+import { sweepDomainWatches } from '../api/src/lib/domain-watch-sweep';
 import { enqueueAllFeeds, shouldSkipEnqueueCycle, markEnqueueCycle } from '../api/src/routes/live-iocs';
 import { enqueueGpFeeds, shouldSkipGpEnqueue, markGpEnqueue } from '../api/src/routes/global-pulse';
 import { signInternalToken } from '../api/src/lib/internal-token';
@@ -1317,6 +1318,33 @@ export async function executeCronJob(
                 logCronFail('graph-ingest')(e);
               }
             }
+          }
+
+          // === Newly-registered domain watchlist sweep (daily) ===
+          // The upstream feed publishes one file per day, so sweeping hourly
+          // would re-read the same file and re-find the same domains. A KV
+          // marker gates it to once a day without spending a cron slot —
+          // the free plan allows five and all five are taken.
+          try {
+            if (env.KV_CACHE && db) {
+              const marker = 'domain-watch-sweep:last';
+              const last = await env.KV_CACHE.get(marker, 'text');
+              const today = new Date().toISOString().slice(0, 10);
+              if (last !== today) {
+                const result = await sweepDomainWatches(db);
+                console.log(
+                  JSON.stringify({
+                    job: 'domain-watch-sweep',
+                    watches: result.watches,
+                    recorded: result.recorded,
+                    degraded: result.degraded,
+                  })
+                );
+                await env.KV_CACHE.put(marker, today, { expirationTtl: 60 * 60 * 48 });
+              }
+            }
+          } catch (e) {
+            logCronFail('domain-watch-sweep')(e);
           }
 
           // === Auto-run due feed jobs (every hour, 1 job max) ===

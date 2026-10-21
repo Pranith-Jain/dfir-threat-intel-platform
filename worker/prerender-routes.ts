@@ -127,6 +127,14 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/threatintel/cves/cves', '/__prerendered/threatintel__cves__cves'],
   ['/threatintel/cves/advisories', '/__prerendered/threatintel__cves__advisories'],
   ['/threatintel/cves/resources', '/__prerendered/threatintel__cves__resources'],
+  // ── ThreatIntel: external-tool integrations (2026-10-21) ──────
+  // CVE triage, the breach/dark-forum leak index, the forum IP map, the
+  // newly-registered domain monitor and the forum actor directory.
+  ['/threatintel/cve-triage', '/__prerendered/threatintel__cve-triage'],
+  ['/threatintel/leakscope', '/__prerendered/threatintel__leakscope'],
+  ['/threatintel/darkforums-ip', '/__prerendered/threatintel__darkforums-ip'],
+  ['/threatintel/domain-registrations', '/__prerendered/threatintel__domain-registrations'],
+  ['/threatintel/forum-actors', '/__prerendered/threatintel__forum-actors'],
   // ── DFIR: static catalogs & education ─────────────────────────
   ['/dfir/diamond', '/__prerendered/dfir__diamond'],
   ['/dfir/owasp', '/__prerendered/dfir__owasp'],
@@ -232,6 +240,9 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/dfir/subdomain-takeover', '/__prerendered/dfir__subdomain-takeover'],
   ['/dfir/extract', '/__prerendered/dfir__extract'],
   ['/dfir/google-dorks', '/__prerendered/dfir__google-dorks'],
+  // ── DFIR: external-tool integrations (2026-10-21) ─────────────
+  // GeoX — X (Twitter) geolocation query builder.
+  ['/dfir/geox', '/__prerendered/dfir__geox'],
   ['/dfir/linux-triage', '/__prerendered/dfir__linux-triage'],
   ['/dfir/email-defense', '/__prerendered/dfir__email-defense'],
   ['/dfir/dmarc-analyzer', '/__prerendered/dfir__dmarc-analyzer'],

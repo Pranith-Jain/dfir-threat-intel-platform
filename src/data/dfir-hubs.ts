@@ -560,6 +560,14 @@ export const HUB_META: readonly HubMeta[] = [
         compVar: 'OsintMapper',
       },
       {
+        path: '/dfir/geox',
+        tabId: 'geox',
+        label: 'GeoX',
+        desc: 'Build X (Twitter) search queries scoped to a place - pick a point, set a radius, copy the query.',
+        compVar: 'GeoX',
+        keywords: ['geox', 'geolocation', 'twitter', 'x search', 'geocode', 'radius', 'radius', 'map'],
+      },
+      {
         path: '/dfir/breach',
         tabId: 'breach',
         label: 'Breach Lookup',
