@@ -384,7 +384,7 @@ export function registerReferenceManifestsTools(h: McpToolHost): void {
   );
 
   // ── MITRE CAPEC tools ───────────────────────────────────────
-  // 559 attack patterns with CWE/ATT&CK cross-references.
+  // 615 attack patterns with CWE/ATT&CK cross-references.
   // Data ships in public/data/capec/ built by
   // scripts/build-capec-manifest.mjs.
 

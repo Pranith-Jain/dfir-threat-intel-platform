@@ -74,7 +74,7 @@ export default function Capec(): JSX.Element {
       backLabel="back to dfir"
       icon={<Crosshair className="h-6 w-6" />}
       title="MITRE CAPEC — Attack Patterns"
-      description="559 attack patterns with CWE weakness and ATT&CK technique cross-references. Pivot from a CWE (e.g. CWE-79) to how attackers exploit it, or from a pattern to its mitigations."
+      description={`${data?.total ?? 615} attack patterns with CWE weakness and ATT&CK technique cross-references. Pivot from a CWE (e.g. CWE-79) to how attackers exploit it, or from a pattern to its mitigations.`}
       headerExtra={
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
           <button

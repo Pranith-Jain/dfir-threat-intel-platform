@@ -240,7 +240,7 @@ export default function IocCorrelation(): JSX.Element {
       maxWidthClass="max-w-5xl"
       headerExtra={
         <p className="text-xs text-muted font-mono mb-6">
-          Aggregated across 18 public IOC feeds: TweetFeed, SANS ISC, C2IntelFeeds, Emerging Threats, AlienVault OTX,
+          Aggregated across 21 public IOC feeds: TweetFeed, SANS ISC, C2IntelFeeds, Emerging Threats, AlienVault OTX,
           BlocklistProject (ransomware + scam), the abuse.ch suite, Ipsum, CINS, and more.
         </p>
       }

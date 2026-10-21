@@ -7,7 +7,7 @@ const PAGES = [
   {
     path: '/dfir',
     name: 'DFIR Toolkit',
-    desc: '125+ browser-side security tools for incident response and forensics.',
+    desc: '98+ browser-side security tools for incident response and forensics.',
   },
   {
     path: '/threatintel',
@@ -24,7 +24,7 @@ const PAGES = [
     name: 'Ransomware Live',
     desc: 'Live ransomware leak site monitoring and victim tracking.',
   },
-  { path: '/dfir/catalog', name: 'DFIR Tool Catalog', desc: 'Browse all 125+ tools organized by category.' },
+  { path: '/dfir/catalog', name: 'DFIR Tool Catalog', desc: 'Browse all 98+ tools organized by category.' },
   {
     path: '/threatintel/catalog',
     name: 'Threat Intel Catalog',

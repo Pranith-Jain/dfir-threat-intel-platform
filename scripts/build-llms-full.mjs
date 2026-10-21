@@ -114,7 +114,7 @@ function main() {
   lines.push('');
 
   // MCP server
-  lines.push('## MCP server (AI agent tools, 98 tools)');
+  lines.push('## MCP server (AI agent tools, 426 tools)');
   lines.push('');
   lines.push('Endpoint: https://pranithjain.qzz.io/api/mcp (streamable HTTP)');
   lines.push('Auth: Authorization: Bearer <api-key> or X-API-Key: <key>');

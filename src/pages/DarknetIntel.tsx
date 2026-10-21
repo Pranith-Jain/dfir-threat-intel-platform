@@ -670,7 +670,7 @@ export default function DarknetIntel() {
       backLabel="back to threat intel"
       icon={<Shield className="h-6 w-6" />}
       title="Darknet Intel"
-      description="42 tools across 13 providers - IP reputation, malware analysis, vulnerability lookup, ransomware tracking, breach intelligence, and dark web search."
+      description="43 tools across 13 providers - IP reputation, malware analysis, vulnerability lookup, ransomware tracking, breach intelligence, and dark web search."
       maxWidthClass="max-w-6xl"
     >
       <div className="mb-6 flex flex-wrap gap-1.5">

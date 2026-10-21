@@ -176,8 +176,8 @@ export default function McpCatalogPage(): JSX.Element {
   return (
     <>
       <PageMeta
-        title="DFIR-ThreatIntel MCP - 172 tools for AI agents"
-        description="Connect Claude Desktop, Cursor, or VS Code to the live DFIR + threat-intel platform. 172 MCP tools covering IOC check, CVE/KEV, actor enrichment, ransomware monitoring, MITRE ATT&CK extraction, YARA authoring, Hudson Rock infostealer search, passive DNS, investigation notebooks, and the full security-investigator playbook library."
+        title="DFIR-ThreatIntel MCP - 426 tools for AI agents"
+        description="Connect Claude Desktop, Cursor, or VS Code to the live DFIR + threat-intel platform. 426 MCP tools covering IOC check, CVE/KEV, actor enrichment, ransomware monitoring, MITRE ATT&CK extraction, YARA authoring, Hudson Rock infostealer search, passive DNS, investigation notebooks, and the full security-investigator playbook library."
         section="API"
         canonicalPath="/mcp"
       />
@@ -197,12 +197,12 @@ export default function McpCatalogPage(): JSX.Element {
         <ToolJsonLd
           section="mcp"
           toolName="DFIR-ThreatIntel MCP"
-          description="Model Context Protocol server exposing 98 DFIR + threat-intel tools for AI agents (Claude Desktop, Cursor, VS Code)."
+          description="Model Context Protocol server exposing 426 DFIR + threat-intel tools for AI agents (Claude Desktop, Cursor, VS Code)."
           path="/mcp"
           category="AI Agent Interop"
           features={[
             'Streamable HTTP transport',
-            '98 tools across IOC/CVE/actor/YARA',
+            '426 tools across IOC/CVE/actor/YARA',
             'Claude Desktop / Cursor / VS Code config snippets',
           ]}
         />

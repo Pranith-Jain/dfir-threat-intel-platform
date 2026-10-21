@@ -142,7 +142,7 @@ export const TOOL_TOPICS: ToolTopic[] = [
   {
     term: 'SecOps tools',
     href: '/threatintel/secops-tools',
-    blurb: '~140 curated security tools across 14 categories',
+    blurb: '187 curated security tools across 4 categories',
   },
   {
     term: 'detection engineering',

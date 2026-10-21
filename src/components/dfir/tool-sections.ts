@@ -867,7 +867,7 @@ export const SECTIONS: Section[] = [
         path: '/dfir/capec',
         useCase: 'Learn how attackers exploit a weakness.',
         label: 'MITRE CAPEC Patterns',
-        desc: '559 attack patterns · CWE + ATT&CK cross-references · likelihood and severity',
+        desc: '615 attack patterns · CWE + ATT&CK cross-references · likelihood and severity',
         icon: Crosshair,
       },
       {

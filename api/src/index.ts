@@ -2231,7 +2231,7 @@ app.route('/api/v1', malapiRouter);
 // Data ships in public/data/car/ built by scripts/build-car-manifest.mjs.
 app.route('/api/v1', carRouter);
 
-// MITRE CAPEC — 559 attack patterns with CWE/ATT&CK cross-references.
+// MITRE CAPEC — 615 attack patterns with CWE/ATT&CK cross-references.
 // Data ships in public/data/capec/ built by scripts/build-capec-manifest.mjs.
 app.route('/api/v1', capecRouter);
 

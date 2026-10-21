@@ -1,6 +1,6 @@
 # dfir-threat-intel-platform
 
-**A 135+ tool DFIR toolkit, a live self-updating threat-intel platform, and a 332-tool MCP server — on one Cloudflare Workers deploy.** Edge-cached, free at the edge, no signup required.
+**A 98+ tool DFIR toolkit, a live self-updating threat-intel platform, and a 426-tool MCP server — on one Cloudflare Workers deploy.** Edge-cached, free at the edge, no signup required.
 
 **[Live platform →](https://pranithjain.qzz.io/dfir)** · [Threat Intel →](https://pranithjain.qzz.io/threatintel) · [MCP catalog →](https://pranithjain.qzz.io/mcp)
 
@@ -32,7 +32,7 @@ React + Vite + TypeScript with SSR prerendering. Hero, skills grid, timeline exp
 
 ### 2. DFIR Toolkit — CRUCIBLE (`/dfir/*`)
 
-135+ interactive analyst tools across 21 categories — triage, OSINT, email security, detection engineering, AI security, data security, crypto tracing, malware analysis, and more. Zero signup, zero keys to start. Includes a **universal rule converter** (Sigma / KQL / SPL / Lucene / EQL / YARA / DLP) and a **purpose-built detection engine**.
+98+ interactive analyst tools across 21 categories — triage, OSINT, email security, detection engineering, AI security, data security, crypto tracing, malware analysis, and more. Zero signup, zero keys to start. Includes a **universal rule converter** (Sigma / KQL / SPL / Lucene / EQL / YARA / DLP) and a **purpose-built detection engine**.
 
 ### 3. Threat Intel Platform — PANOPTICON (`/threatintel/*`)
 
@@ -45,7 +45,7 @@ A live CTI surface that updates itself: ransomware leak-site + negotiation track
 | Surface                                 | What it does                                                                                                       |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | Live Ransomware Activity                | Leak-site claims merged across Ransomlook, ransomware.live, MyThreatIntel & Andrea Fortuna; per-victim screenshots |
-| Ransomware Groups Directory             | 620-group leak-site directory — status, 7d victims, profiles, recent moves (Sinon-style reference)                 |
+| Ransomware Groups Directory             | 630-group leak-site directory — status, 7d victims, profiles, recent moves (Sinon-style reference)                 |
 | AI Escape Watch                         | 15-incident agent containment-failure registry — CBS scores, 7-stage chains, absent-guardrail analysis             |
 | Ransomware Negotiations                 | ransomware.live PRO negotiation chats — demand vs. settled, discount %, full transcripts                           |
 | Actor Activity Timeline                 | Per-actor leak-site cadence heatmap + MITRE ATT&CK group/TTP pivot                                                 |
@@ -53,11 +53,11 @@ A live CTI surface that updates itself: ransomware leak-site + negotiation track
 | Infostealer Live Tracker                | HudsonRock victim exposure, log-market threads, stealer-log directory, family-matched IOCs (metadata only)         |
 | Breach / Leak-Forum Tracker             | deepdarkCTI criminal-forum + dark-market directory — names/status/links only                                       |
 | CVE List                                | NVD + CISA KEV merge, EPSS/KEV-aware, MyThreatIntel API-primary with TG-scrape fallback                            |
-| IOC Correlation                         | Cross-source consensus scoring across 18+ feeds                                                                    |
+| IOC Correlation                         | Cross-source consensus scoring across 21 feeds                                                                     |
 | Live IOC Stream                         | Chronological multi-source firehose                                                                                |
 | Threat Pulse                            | Entities ranked by cross-source mentions over 24h                                                                  |
-| Global Pulse                            | 3D interactive threat globe — 700+ geo-coded events across 21 layers                                               |
-| Threat Intel Metrics                    | 15 hand-rolled SVG panels with live deltas                                                                         |
+| Global Pulse                            | 3D interactive threat globe — 700+ geo-coded events across 33 layers                                               |
+| Threat Intel Metrics                    | 16 hand-rolled SVG panels with live deltas                                                                         |
 | Dark Web Watch                          | Aggregated leak-site/breach/research RSS, keyword watchlist                                                        |
 | Telegram / Reddit / Social              | Curated public Telegram channels, infosec subreddits, Bluesky+Mastodon                                             |
 | Live Breach Disclosures                 | Have I Been Pwned feed with verification flags                                                                     |
@@ -68,7 +68,7 @@ A live CTI surface that updates itself: ransomware leak-site + negotiation track
 | Case-Study Blog (`/blog`)               | Autonomous pipeline: discover → score/dedupe → AI generate → QA gate → publish                                     |
 | Writeups / Threat Actors / MITRE ATT&CK | Analyst-blog aggregation, APT catalogue, full matrix, dark-web index                                               |
 | Feed Status                             | Health dashboard for every upstream + internal feed                                                                |
-| Catalogs                                | CVE Resources (~70), SecOps Tools (~140), OSINT Framework (70+), Knowledge Base                                    |
+| Catalogs                                | CVE Resources (~70), SecOps Tools (187), OSINT Framework (70+), Knowledge Base                                     |
 
 ---
 
@@ -94,7 +94,7 @@ A live CTI surface that updates itself: ransomware leak-site + negotiation track
 
 ## MCP Server
 
-A 332-tool MCP (Model Context Protocol) server runs on the same Worker, exposing every DFIR and threat-intel capability to AI agents. Connect Claude Desktop, Cursor, or any MCP client.
+A 426-tool MCP (Model Context Protocol) server runs on the same Worker, exposing every DFIR and threat-intel capability to AI agents. Connect Claude Desktop, Cursor, or any MCP client.
 
 **Repo:** [dfir-mcp-server](https://github.com/Pranith-Jain/dfir-mcp-server)
 
@@ -105,13 +105,13 @@ A 332-tool MCP (Model Context Protocol) server runs on the same Worker, exposing
 | Layer           | Choice                                                                                                               |
 | --------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Frontend        | React 19 + Vite + TypeScript + Tailwind                                                                              |
-| Routing         | React Router v7, lazy-loaded (310+ route components)                                                                 |
+| Routing         | React Router v7, lazy-loaded (299 route components)                                                                  |
 | SSR             | Prerendered routes for instant first paint                                                                           |
 | Backend         | Cloudflare Workers + Hono                                                                                            |
 | Storage         | KV (briefings, dedup, rate-limit), Cache API (provider/feed results), D1 (briefings DB), Vectorize (semantic search) |
-| Durable Objects | 7 — MCP server, cron lock, live feed, report builder, investigator agent, radar crawler, global pulse                |
+| Durable Objects | 8 — MCP server, cron lock, live feed, report builder, investigator agent, radar crawler, global pulse                |
 | AI              | Groq (primary) → Workers AI (fallback) for case-study engine; Gemini for agent QA                                    |
-| Tests           | Vitest — 6,700+ tests across 700+ test files                                                                         |
+| Tests           | Vitest — 6,700+ tests across 528 test files                                                                          |
 | Quality         | ESLint + Prettier + husky/lint-staged; `tsc --noEmit` gate                                                           |
 | CI              | GitHub Actions: lint + typecheck + vitest, per-ref concurrency cancel                                                |
 | Deploy          | `wrangler deploy`                                                                                                    |
@@ -224,7 +224,7 @@ src/                    React app — pages/{dfir,threatintel}, components, lib,
   pages/threatintel/    PANOPTICON platform pages
   data/content.ts       personalInfo + projects (includes PLATFORM_REPO_URL, this repo)
 api/src/                Cloudflare Worker (Hono) — routes/, providers/ (60+ IOC), lib/, case-study/
-worker/                 Worker entry, MCP server (332 tools), Durable Objects, scheduled cron
+worker/                 Worker entry, MCP server (426 tools), Durable Objects, scheduled cron
 public/data/            Generated data manifests (48 verticals) — build output, not hand-edited
 scripts/                Prerender, manifest builders, sync scripts
 docs/                   Design specs, decisions, loop templates

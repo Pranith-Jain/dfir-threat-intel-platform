@@ -293,7 +293,7 @@ export const SECTIONS: Section[] = [
       {
         to: '/threatintel/tools/darknet-intel',
         label: 'Darknet Intel Hub',
-        desc: '42 tools across 13 providers - GreyNoise, Pulsedive, Vulners, IntelX, AbuseIPDB, ransomware, HIBP, abuse.ch, OTX, Hybrid Analysis.',
+        desc: '43 tools across 13 providers - GreyNoise, Pulsedive, Vulners, IntelX, AbuseIPDB, ransomware, HIBP, abuse.ch, OTX, Hybrid Analysis.',
         icon: Shield,
         badge: 'new',
       },

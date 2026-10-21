@@ -11,7 +11,7 @@ export const DFIR_FAQ: { question: string; answer: string }[] = [
   {
     question: 'What is CRUCIBLE (DFIR & Security Toolkit)?',
     answer:
-      'CRUCIBLE is a free, browser-side collection of 125+ utilities for incident response, digital forensics, and detection engineering. It bundles IOC enrichment across 60+ sources, CVE triage with CVSS-EPSS-KEV scoring, Sigma-to-KQL-SPL-YARA rule conversion, SPF-DKIM-DMARC audits, a STIX 2.1 workbench, and a MITRE ATT&CK matrix. Everything runs in your browser, nothing leaves your machine.',
+      'CRUCIBLE is a free, browser-side collection of 98+ utilities for incident response, digital forensics, and detection engineering. It bundles IOC enrichment across 60+ sources, CVE triage with CVSS-EPSS-KEV scoring, Sigma-to-KQL-SPL-YARA rule conversion, SPF-DKIM-DMARC audits, a STIX 2.1 workbench, and a MITRE ATT&CK matrix. Everything runs in your browser, nothing leaves your machine.',
   },
   {
     question: 'How does CRUCIBLE work?',
