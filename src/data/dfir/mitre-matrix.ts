@@ -4,7 +4,7 @@
  *   node scripts/generate-mitre-matrix.mjs
  *
  * Upstream: https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json
- * Generated: 2026-05-13 (ATT&CK v2.0)
+ * Generated: 2026-10-21 (ATT&CK v3.3.0)
  *
  * This file ships the tactic + technique titles only. Per-technique
  * detail (description, procedures, mitigations) loads live from
@@ -35,6 +35,36 @@ export const mitreMatrix: MitreTactic[] = [
       'The adversary is trying to gather information they can use to plan future operations. Reconnaissance consists of techniques that involve adversaries actively or passively gathering information that ca…',
     techniques: [
       {
+        id: 'T1592',
+        name: 'Gather Victim Host Information',
+        subtechniques: [
+          {
+            id: 'T1592.001',
+            name: 'Hardware',
+          },
+          {
+            id: 'T1592.002',
+            name: 'Software',
+          },
+          {
+            id: 'T1592.003',
+            name: 'Firmware',
+          },
+          {
+            id: 'T1592.004',
+            name: 'Client Configurations',
+          },
+        ],
+      },
+      {
+        id: 'T1682',
+        name: 'Query Public AI Services',
+      },
+      {
+        id: 'T1594',
+        name: 'Search Victim-Owned Websites',
+      },
+      {
         id: 'T1589',
         name: 'Gather Victim Identity Information',
         subtechniques: [
@@ -49,6 +79,76 @@ export const mitreMatrix: MitreTactic[] = [
           {
             id: 'T1589.003',
             name: 'Employee Names',
+          },
+        ],
+      },
+      {
+        id: 'T1596',
+        name: 'Search Open Technical Databases',
+        subtechniques: [
+          {
+            id: 'T1596.001',
+            name: 'DNS/Passive DNS',
+          },
+          {
+            id: 'T1596.002',
+            name: 'WHOIS',
+          },
+          {
+            id: 'T1596.003',
+            name: 'Digital Certificates',
+          },
+          {
+            id: 'T1596.004',
+            name: 'CDNs',
+          },
+          {
+            id: 'T1596.005',
+            name: 'Scan Databases',
+          },
+        ],
+      },
+      {
+        id: 'T1681',
+        name: 'Search Threat Vendor Data',
+      },
+      {
+        id: 'T1595',
+        name: 'Active Scanning',
+        subtechniques: [
+          {
+            id: 'T1595.001',
+            name: 'Scanning IP Blocks',
+          },
+          {
+            id: 'T1595.002',
+            name: 'Vulnerability Scanning',
+          },
+          {
+            id: 'T1595.003',
+            name: 'Wordlist Scanning',
+          },
+        ],
+      },
+      {
+        id: 'T1591',
+        name: 'Gather Victim Org Information',
+        subtechniques: [
+          {
+            id: 'T1591.001',
+            name: 'Determine Physical Locations',
+          },
+          {
+            id: 'T1591.002',
+            name: 'Business Relationships',
+          },
+          {
+            id: 'T1591.003',
+            name: 'Identify Business Tempo',
+          },
+          {
+            id: 'T1591.004',
+            name: 'Identify Roles',
           },
         ],
       },
@@ -83,50 +183,6 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1591',
-        name: 'Gather Victim Org Information',
-        subtechniques: [
-          {
-            id: 'T1591.001',
-            name: 'Determine Physical Locations',
-          },
-          {
-            id: 'T1591.002',
-            name: 'Business Relationships',
-          },
-          {
-            id: 'T1591.003',
-            name: 'Identify Business Tempo',
-          },
-          {
-            id: 'T1591.004',
-            name: 'Identify Roles',
-          },
-        ],
-      },
-      {
-        id: 'T1592',
-        name: 'Gather Victim Host Information',
-        subtechniques: [
-          {
-            id: 'T1592.001',
-            name: 'Hardware',
-          },
-          {
-            id: 'T1592.002',
-            name: 'Software',
-          },
-          {
-            id: 'T1592.003',
-            name: 'Firmware',
-          },
-          {
-            id: 'T1592.004',
-            name: 'Client Configurations',
-          },
-        ],
-      },
-      {
         id: 'T1593',
         name: 'Search Open Websites/Domains',
         subtechniques: [
@@ -141,54 +197,6 @@ export const mitreMatrix: MitreTactic[] = [
           {
             id: 'T1593.003',
             name: 'Code Repositories',
-          },
-        ],
-      },
-      {
-        id: 'T1594',
-        name: 'Search Victim-Owned Websites',
-      },
-      {
-        id: 'T1595',
-        name: 'Active Scanning',
-        subtechniques: [
-          {
-            id: 'T1595.001',
-            name: 'Scanning IP Blocks',
-          },
-          {
-            id: 'T1595.002',
-            name: 'Vulnerability Scanning',
-          },
-          {
-            id: 'T1595.003',
-            name: 'Wordlist Scanning',
-          },
-        ],
-      },
-      {
-        id: 'T1596',
-        name: 'Search Open Technical Databases',
-        subtechniques: [
-          {
-            id: 'T1596.001',
-            name: 'DNS/Passive DNS',
-          },
-          {
-            id: 'T1596.002',
-            name: 'WHOIS',
-          },
-          {
-            id: 'T1596.003',
-            name: 'Digital Certificates',
-          },
-          {
-            id: 'T1596.004',
-            name: 'CDNs',
-          },
-          {
-            id: 'T1596.005',
-            name: 'Scan Databases',
           },
         ],
       },
@@ -227,14 +235,6 @@ export const mitreMatrix: MitreTactic[] = [
             name: 'Spearphishing Voice',
           },
         ],
-      },
-      {
-        id: 'T1681',
-        name: 'Search Threat Vendor Data',
-      },
-      {
-        id: 'T1682',
-        name: 'Query Public AI Services',
       },
     ],
   },
@@ -322,24 +322,6 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1585',
-        name: 'Establish Accounts',
-        subtechniques: [
-          {
-            id: 'T1585.001',
-            name: 'Social Media Accounts',
-          },
-          {
-            id: 'T1585.002',
-            name: 'Email Accounts',
-          },
-          {
-            id: 'T1585.003',
-            name: 'Cloud Accounts',
-          },
-        ],
-      },
-      {
         id: 'T1586',
         name: 'Compromise Accounts',
         subtechniques: [
@@ -358,24 +340,68 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1587',
-        name: 'Develop Capabilities',
+        id: 'T1608',
+        name: 'Stage Capabilities',
         subtechniques: [
           {
-            id: 'T1587.001',
-            name: 'Malware',
+            id: 'T1608.001',
+            name: 'Upload Malware',
           },
           {
-            id: 'T1587.002',
-            name: 'Code Signing Certificates',
+            id: 'T1608.002',
+            name: 'Upload Tool',
           },
           {
-            id: 'T1587.003',
-            name: 'Digital Certificates',
+            id: 'T1608.003',
+            name: 'Install Digital Certificate',
           },
           {
-            id: 'T1587.004',
-            name: 'Exploits',
+            id: 'T1608.004',
+            name: 'Drive-by Target',
+          },
+          {
+            id: 'T1608.005',
+            name: 'Link Target',
+          },
+          {
+            id: 'T1608.006',
+            name: 'SEO Poisoning',
+          },
+          {
+            id: 'T1608.007',
+            name: 'AI Result Poisoning',
+          },
+        ],
+      },
+      {
+        id: 'T1683',
+        name: 'Generate Content',
+        subtechniques: [
+          {
+            id: 'T1683.001',
+            name: 'Written Content',
+          },
+          {
+            id: 'T1683.002',
+            name: 'Audio-Visual Content',
+          },
+        ],
+      },
+      {
+        id: 'T1585',
+        name: 'Establish Accounts',
+        subtechniques: [
+          {
+            id: 'T1585.001',
+            name: 'Social Media Accounts',
+          },
+          {
+            id: 'T1585.002',
+            name: 'Email Accounts',
+          },
+          {
+            id: 'T1585.003',
+            name: 'Cloud Accounts',
           },
         ],
       },
@@ -414,50 +440,28 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1608',
-        name: 'Stage Capabilities',
-        subtechniques: [
-          {
-            id: 'T1608.001',
-            name: 'Upload Malware',
-          },
-          {
-            id: 'T1608.002',
-            name: 'Upload Tool',
-          },
-          {
-            id: 'T1608.003',
-            name: 'Install Digital Certificate',
-          },
-          {
-            id: 'T1608.004',
-            name: 'Drive-by Target',
-          },
-          {
-            id: 'T1608.005',
-            name: 'Link Target',
-          },
-          {
-            id: 'T1608.006',
-            name: 'SEO Poisoning',
-          },
-        ],
-      },
-      {
         id: 'T1650',
         name: 'Acquire Access',
       },
       {
-        id: 'T1683',
-        name: 'Generate Content',
+        id: 'T1587',
+        name: 'Develop Capabilities',
         subtechniques: [
           {
-            id: 'T1683.001',
-            name: 'Written Content',
+            id: 'T1587.001',
+            name: 'Malware',
           },
           {
-            id: 'T1683.002',
-            name: 'Audio-Visual Content',
+            id: 'T1587.002',
+            name: 'Code Signing Certificates',
+          },
+          {
+            id: 'T1587.003',
+            name: 'Digital Certificates',
+          },
+          {
+            id: 'T1587.004',
+            name: 'Exploits',
           },
         ],
       },
@@ -471,42 +475,12 @@ export const mitreMatrix: MitreTactic[] = [
       'The adversary is trying to get into your network. Initial Access consists of techniques that use various entry vectors to gain their initial foothold within a network. Techniques used to gain a footho…',
     techniques: [
       {
-        id: 'T1078',
-        name: 'Valid Accounts',
-        subtechniques: [
-          {
-            id: 'T1078.001',
-            name: 'Default Accounts',
-          },
-          {
-            id: 'T1078.002',
-            name: 'Domain Accounts',
-          },
-          {
-            id: 'T1078.003',
-            name: 'Local Accounts',
-          },
-          {
-            id: 'T1078.004',
-            name: 'Cloud Accounts',
-          },
-        ],
-      },
-      {
-        id: 'T1091',
-        name: 'Replication Through Removable Media',
-      },
-      {
         id: 'T1133',
         name: 'External Remote Services',
       },
       {
-        id: 'T1189',
-        name: 'Drive-by Compromise',
-      },
-      {
-        id: 'T1190',
-        name: 'Exploit Public-Facing Application',
+        id: 'T1091',
+        name: 'Replication Through Removable Media',
       },
       {
         id: 'T1195',
@@ -527,12 +501,16 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1199',
-        name: 'Trusted Relationship',
+        id: 'T1190',
+        name: 'Exploit Public-Facing Application',
       },
       {
-        id: 'T1200',
-        name: 'Hardware Additions',
+        id: 'T1659',
+        name: 'Content Injection',
+      },
+      {
+        id: 'T1199',
+        name: 'Trusted Relationship',
       },
       {
         id: 'T1566',
@@ -557,8 +535,34 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1659',
-        name: 'Content Injection',
+        id: 'T1078',
+        name: 'Valid Accounts',
+        subtechniques: [
+          {
+            id: 'T1078.001',
+            name: 'Default Accounts',
+          },
+          {
+            id: 'T1078.002',
+            name: 'Domain Accounts',
+          },
+          {
+            id: 'T1078.003',
+            name: 'Local Accounts',
+          },
+          {
+            id: 'T1078.004',
+            name: 'Cloud Accounts',
+          },
+        ],
+      },
+      {
+        id: 'T1200',
+        name: 'Hardware Additions',
+      },
+      {
+        id: 'T1189',
+        name: 'Drive-by Compromise',
       },
       {
         id: 'T1669',
@@ -571,11 +575,19 @@ export const mitreMatrix: MitreTactic[] = [
     name: 'Execution',
     short_name: 'execution',
     description:
-      'The adversary is trying to run malicious code. Execution consists of techniques that result in adversary-controlled code running on a local or remote system. Techniques that run malicious code are oft…',
+      'The adversary is trying to run malicious code or instructions on a system. Execution consists of techniques that result in adversary-controlled code running on a local or remote system. Techniques tha…',
     techniques: [
       {
         id: 'T1047',
         name: 'Windows Management Instrumentation',
+      },
+      {
+        id: 'T1129',
+        name: 'Shared Modules',
+      },
+      {
+        id: 'T1675',
+        name: 'ESXi Administration Command',
       },
       {
         id: 'T1053',
@@ -602,6 +614,18 @@ export const mitreMatrix: MitreTactic[] = [
             name: 'Container Orchestration Job',
           },
         ],
+      },
+      {
+        id: 'T1106',
+        name: 'Native API',
+      },
+      {
+        id: 'T1610',
+        name: 'Deploy Container',
+      },
+      {
+        id: 'T1674',
+        name: 'Input Injection',
       },
       {
         id: 'T1059',
@@ -662,42 +686,12 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1072',
-        name: 'Software Deployment Tools',
+        id: 'T1677',
+        name: 'Poisoned Pipeline Execution',
       },
       {
-        id: 'T1106',
-        name: 'Native API',
-      },
-      {
-        id: 'T1127',
-        name: 'Trusted Developer Utilities Proxy Execution',
-        subtechniques: [
-          {
-            id: 'T1127.001',
-            name: 'MSBuild',
-          },
-          {
-            id: 'T1127.002',
-            name: 'ClickOnce',
-          },
-          {
-            id: 'T1127.003',
-            name: 'JamPlus',
-          },
-        ],
-      },
-      {
-        id: 'T1129',
-        name: 'Shared Modules',
-      },
-      {
-        id: 'T1197',
-        name: 'BITS Jobs',
-      },
-      {
-        id: 'T1203',
-        name: 'Exploitation for Client Execution',
+        id: 'T1609',
+        name: 'Container Administration Command',
       },
       {
         id: 'T1204',
@@ -726,6 +720,10 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
+        id: 'T1072',
+        name: 'Software Deployment Tools',
+      },
+      {
         id: 'T1559',
         name: 'Inter-Process Communication',
         subtechniques: [
@@ -740,24 +738,6 @@ export const mitreMatrix: MitreTactic[] = [
           {
             id: 'T1559.003',
             name: 'XPC Services',
-          },
-        ],
-      },
-      {
-        id: 'T1569',
-        name: 'System Services',
-        subtechniques: [
-          {
-            id: 'T1569.001',
-            name: 'Launchctl',
-          },
-          {
-            id: 'T1569.002',
-            name: 'Service Execution',
-          },
-          {
-            id: 'T1569.003',
-            name: 'Systemctl',
           },
         ],
       },
@@ -816,32 +796,64 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1609',
-        name: 'Container Administration Command',
+        id: 'T1203',
+        name: 'Exploitation for Client Execution',
       },
       {
-        id: 'T1610',
-        name: 'Deploy Container',
+        id: 'T1197',
+        name: 'BITS Jobs',
       },
       {
-        id: 'T1648',
-        name: 'Serverless Execution',
+        id: 'T1569',
+        name: 'System Services',
+        subtechniques: [
+          {
+            id: 'T1569.001',
+            name: 'Launchctl',
+          },
+          {
+            id: 'T1569.002',
+            name: 'Service Execution',
+          },
+          {
+            id: 'T1569.003',
+            name: 'Systemctl',
+          },
+        ],
       },
       {
         id: 'T1651',
         name: 'Cloud Administration Command',
       },
       {
-        id: 'T1674',
-        name: 'Input Injection',
+        id: 'T1648',
+        name: 'Serverless Execution',
       },
       {
-        id: 'T1675',
-        name: 'ESXi Administration Command',
+        id: 'T1127',
+        name: 'Trusted Developer Utilities Proxy Execution',
+        subtechniques: [
+          {
+            id: 'T1127.001',
+            name: 'MSBuild',
+          },
+          {
+            id: 'T1127.002',
+            name: 'ClickOnce',
+          },
+          {
+            id: 'T1127.003',
+            name: 'JamPlus',
+          },
+        ],
       },
       {
-        id: 'T1677',
-        name: 'Poisoned Pipeline Execution',
+        id: 'T1698',
+        name: 'Indirect Prompt Injection',
+      },
+      {
+        id: 'T1699',
+        name: 'Direct Prompt Injection',
       },
     ],
   },
@@ -879,6 +891,128 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
+        id: 'T1543',
+        name: 'Create or Modify System Process',
+        subtechniques: [
+          {
+            id: 'T1543.001',
+            name: 'Launch Agent',
+          },
+          {
+            id: 'T1543.002',
+            name: 'Systemd Service',
+          },
+          {
+            id: 'T1543.003',
+            name: 'Windows Service',
+          },
+          {
+            id: 'T1543.004',
+            name: 'Launch Daemon',
+          },
+          {
+            id: 'T1543.005',
+            name: 'Container Service',
+          },
+        ],
+      },
+      {
+        id: 'T1133',
+        name: 'External Remote Services',
+      },
+      {
+        id: 'T1547',
+        name: 'Boot or Logon Autostart Execution',
+        subtechniques: [
+          {
+            id: 'T1547.001',
+            name: 'Registry Run Keys / Startup Folder',
+          },
+          {
+            id: 'T1547.002',
+            name: 'Authentication Package',
+          },
+          {
+            id: 'T1547.003',
+            name: 'Time Providers',
+          },
+          {
+            id: 'T1547.004',
+            name: 'Winlogon Helper DLL',
+          },
+          {
+            id: 'T1547.005',
+            name: 'Security Support Provider',
+          },
+          {
+            id: 'T1547.006',
+            name: 'Kernel Modules and Extensions',
+          },
+          {
+            id: 'T1547.007',
+            name: 'Re-opened Applications',
+          },
+          {
+            id: 'T1547.008',
+            name: 'LSASS Driver',
+          },
+          {
+            id: 'T1547.009',
+            name: 'Shortcut Modification',
+          },
+          {
+            id: 'T1547.010',
+            name: 'Port Monitors',
+          },
+          {
+            id: 'T1547.012',
+            name: 'Print Processors',
+          },
+          {
+            id: 'T1547.013',
+            name: 'XDG Autostart Entries',
+          },
+          {
+            id: 'T1547.014',
+            name: 'Active Setup',
+          },
+          {
+            id: 'T1547.015',
+            name: 'Login Items',
+          },
+        ],
+      },
+      {
+        id: 'T1137',
+        name: 'Office Application Startup',
+        subtechniques: [
+          {
+            id: 'T1137.001',
+            name: 'Office Template Macros',
+          },
+          {
+            id: 'T1137.002',
+            name: 'Office Test',
+          },
+          {
+            id: 'T1137.003',
+            name: 'Outlook Forms',
+          },
+          {
+            id: 'T1137.004',
+            name: 'Outlook Home Page',
+          },
+          {
+            id: 'T1137.005',
+            name: 'Outlook Rules',
+          },
+          {
+            id: 'T1137.006',
+            name: 'Add-ins',
+          },
+        ],
+      },
+      {
         id: 'T1053',
         name: 'Scheduled Task/Job',
         subtechniques: [
@@ -905,26 +1039,70 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1078',
-        name: 'Valid Accounts',
+        id: 'T1176',
+        name: 'Software Extensions',
         subtechniques: [
           {
-            id: 'T1078.001',
-            name: 'Default Accounts',
+            id: 'T1176.001',
+            name: 'Browser Extensions',
           },
           {
-            id: 'T1078.002',
-            name: 'Domain Accounts',
-          },
-          {
-            id: 'T1078.003',
-            name: 'Local Accounts',
-          },
-          {
-            id: 'T1078.004',
-            name: 'Cloud Accounts',
+            id: 'T1176.002',
+            name: 'IDE Extensions',
           },
         ],
+      },
+      {
+        id: 'T1205',
+        name: 'Traffic Signaling',
+        subtechniques: [
+          {
+            id: 'T1205.001',
+            name: 'Port Knocking',
+          },
+          {
+            id: 'T1205.002',
+            name: 'Socket Filters',
+          },
+        ],
+      },
+      {
+        id: 'T1525',
+        name: 'Implant Internal Image',
+      },
+      {
+        id: 'T1112',
+        name: 'Modify Registry',
+      },
+      {
+        id: 'T1542',
+        name: 'Pre-OS Boot',
+        subtechniques: [
+          {
+            id: 'T1542.001',
+            name: 'System Firmware',
+          },
+          {
+            id: 'T1542.002',
+            name: 'Component Firmware',
+          },
+          {
+            id: 'T1542.003',
+            name: 'Bootkit',
+          },
+          {
+            id: 'T1542.004',
+            name: 'ROMMONkit',
+          },
+          {
+            id: 'T1542.005',
+            name: 'TFTP Boot',
+          },
+        ],
+      },
+      {
+        id: 'T1554',
+        name: 'Compromise Host Software Binary',
       },
       {
         id: 'T1098',
@@ -961,176 +1139,24 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1112',
-        name: 'Modify Registry',
-      },
-      {
-        id: 'T1133',
-        name: 'External Remote Services',
-      },
-      {
-        id: 'T1136',
-        name: 'Create Account',
+        id: 'T1078',
+        name: 'Valid Accounts',
         subtechniques: [
           {
-            id: 'T1136.001',
-            name: 'Local Account',
+            id: 'T1078.001',
+            name: 'Default Accounts',
           },
           {
-            id: 'T1136.002',
-            name: 'Domain Account',
+            id: 'T1078.002',
+            name: 'Domain Accounts',
           },
           {
-            id: 'T1136.003',
-            name: 'Cloud Account',
-          },
-        ],
-      },
-      {
-        id: 'T1137',
-        name: 'Office Application Startup',
-        subtechniques: [
-          {
-            id: 'T1137.001',
-            name: 'Office Template Macros',
+            id: 'T1078.003',
+            name: 'Local Accounts',
           },
           {
-            id: 'T1137.002',
-            name: 'Office Test',
-          },
-          {
-            id: 'T1137.003',
-            name: 'Outlook Forms',
-          },
-          {
-            id: 'T1137.004',
-            name: 'Outlook Home Page',
-          },
-          {
-            id: 'T1137.005',
-            name: 'Outlook Rules',
-          },
-          {
-            id: 'T1137.006',
-            name: 'Add-ins',
-          },
-        ],
-      },
-      {
-        id: 'T1176',
-        name: 'Software Extensions',
-        subtechniques: [
-          {
-            id: 'T1176.001',
-            name: 'Browser Extensions',
-          },
-          {
-            id: 'T1176.002',
-            name: 'IDE Extensions',
-          },
-        ],
-      },
-      {
-        id: 'T1197',
-        name: 'BITS Jobs',
-      },
-      {
-        id: 'T1205',
-        name: 'Traffic Signaling',
-        subtechniques: [
-          {
-            id: 'T1205.001',
-            name: 'Port Knocking',
-          },
-          {
-            id: 'T1205.002',
-            name: 'Socket Filters',
-          },
-        ],
-      },
-      {
-        id: 'T1505',
-        name: 'Server Software Component',
-        subtechniques: [
-          {
-            id: 'T1505.001',
-            name: 'SQL Stored Procedures',
-          },
-          {
-            id: 'T1505.002',
-            name: 'Transport Agent',
-          },
-          {
-            id: 'T1505.003',
-            name: 'Web Shell',
-          },
-          {
-            id: 'T1505.004',
-            name: 'IIS Components',
-          },
-          {
-            id: 'T1505.005',
-            name: 'Terminal Services DLL',
-          },
-          {
-            id: 'T1505.006',
-            name: 'vSphere Installation Bundles',
-          },
-        ],
-      },
-      {
-        id: 'T1525',
-        name: 'Implant Internal Image',
-      },
-      {
-        id: 'T1542',
-        name: 'Pre-OS Boot',
-        subtechniques: [
-          {
-            id: 'T1542.001',
-            name: 'System Firmware',
-          },
-          {
-            id: 'T1542.002',
-            name: 'Component Firmware',
-          },
-          {
-            id: 'T1542.003',
-            name: 'Bootkit',
-          },
-          {
-            id: 'T1542.004',
-            name: 'ROMMONkit',
-          },
-          {
-            id: 'T1542.005',
-            name: 'TFTP Boot',
-          },
-        ],
-      },
-      {
-        id: 'T1543',
-        name: 'Create or Modify System Process',
-        subtechniques: [
-          {
-            id: 'T1543.001',
-            name: 'Launch Agent',
-          },
-          {
-            id: 'T1543.002',
-            name: 'Systemd Service',
-          },
-          {
-            id: 'T1543.003',
-            name: 'Windows Service',
-          },
-          {
-            id: 'T1543.004',
-            name: 'Launch Daemon',
-          },
-          {
-            id: 'T1543.005',
-            name: 'Container Service',
+            id: 'T1078.004',
+            name: 'Cloud Accounts',
           },
         ],
       },
@@ -1213,6 +1239,173 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
+        id: 'T1671',
+        name: 'Cloud Application Integration',
+      },
+      {
+        id: 'T1197',
+        name: 'BITS Jobs',
+      },
+      {
+        id: 'T1505',
+        name: 'Server Software Component',
+        subtechniques: [
+          {
+            id: 'T1505.001',
+            name: 'SQL Stored Procedures',
+          },
+          {
+            id: 'T1505.002',
+            name: 'Transport Agent',
+          },
+          {
+            id: 'T1505.003',
+            name: 'Web Shell',
+          },
+          {
+            id: 'T1505.004',
+            name: 'IIS Components',
+          },
+          {
+            id: 'T1505.005',
+            name: 'Terminal Services DLL',
+          },
+          {
+            id: 'T1505.006',
+            name: 'vSphere Installation Bundles',
+          },
+        ],
+      },
+      {
+        id: 'T1668',
+        name: 'Exclusive Control',
+      },
+      {
+        id: 'T1136',
+        name: 'Create Account',
+        subtechniques: [
+          {
+            id: 'T1136.001',
+            name: 'Local Account',
+          },
+          {
+            id: 'T1136.002',
+            name: 'Domain Account',
+          },
+          {
+            id: 'T1136.003',
+            name: 'Cloud Account',
+          },
+        ],
+      },
+      {
+        id: 'T1653',
+        name: 'Power Settings',
+      },
+      {
+        id: 'T1556',
+        name: 'Modify Authentication Process',
+        subtechniques: [
+          {
+            id: 'T1556.001',
+            name: 'Domain Controller Authentication',
+          },
+          {
+            id: 'T1556.002',
+            name: 'Password Filter DLL',
+          },
+          {
+            id: 'T1556.003',
+            name: 'Pluggable Authentication Modules',
+          },
+          {
+            id: 'T1556.004',
+            name: 'Network Device Authentication',
+          },
+          {
+            id: 'T1556.005',
+            name: 'Reversible Encryption',
+          },
+          {
+            id: 'T1556.006',
+            name: 'Multi-Factor Authentication',
+          },
+          {
+            id: 'T1556.007',
+            name: 'Hybrid Identity',
+          },
+          {
+            id: 'T1556.008',
+            name: 'Network Provider DLL',
+          },
+          {
+            id: 'T1556.009',
+            name: 'Conditional Access Policies',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'TA0004',
+    name: 'Privilege Escalation',
+    short_name: 'privilege-escalation',
+    description:
+      'The adversary is trying to gain higher-level permissions. Privilege Escalation consists of techniques that adversaries use to gain higher-level permissions on a system or network. Adversaries can ofte…',
+    techniques: [
+      {
+        id: 'T1037',
+        name: 'Boot or Logon Initialization Scripts',
+        subtechniques: [
+          {
+            id: 'T1037.001',
+            name: 'Logon Script (Windows)',
+          },
+          {
+            id: 'T1037.002',
+            name: 'Login Hook',
+          },
+          {
+            id: 'T1037.003',
+            name: 'Network Logon Script',
+          },
+          {
+            id: 'T1037.004',
+            name: 'RC Scripts',
+          },
+          {
+            id: 'T1037.005',
+            name: 'Startup Items',
+          },
+        ],
+      },
+      {
+        id: 'T1543',
+        name: 'Create or Modify System Process',
+        subtechniques: [
+          {
+            id: 'T1543.001',
+            name: 'Launch Agent',
+          },
+          {
+            id: 'T1543.002',
+            name: 'Systemd Service',
+          },
+          {
+            id: 'T1543.003',
+            name: 'Windows Service',
+          },
+          {
+            id: 'T1543.004',
+            name: 'Launch Daemon',
+          },
+          {
+            id: 'T1543.005',
+            name: 'Container Service',
+          },
+        ],
+      },
+      {
         id: 'T1547',
         name: 'Boot or Logon Autostart Execution',
         subtechniques: [
@@ -1271,99 +1464,6 @@ export const mitreMatrix: MitreTactic[] = [
           {
             id: 'T1547.015',
             name: 'Login Items',
-          },
-        ],
-      },
-      {
-        id: 'T1554',
-        name: 'Compromise Host Software Binary',
-      },
-      {
-        id: 'T1556',
-        name: 'Modify Authentication Process',
-        subtechniques: [
-          {
-            id: 'T1556.001',
-            name: 'Domain Controller Authentication',
-          },
-          {
-            id: 'T1556.002',
-            name: 'Password Filter DLL',
-          },
-          {
-            id: 'T1556.003',
-            name: 'Pluggable Authentication Modules',
-          },
-          {
-            id: 'T1556.004',
-            name: 'Network Device Authentication',
-          },
-          {
-            id: 'T1556.005',
-            name: 'Reversible Encryption',
-          },
-          {
-            id: 'T1556.006',
-            name: 'Multi-Factor Authentication',
-          },
-          {
-            id: 'T1556.007',
-            name: 'Hybrid Identity',
-          },
-          {
-            id: 'T1556.008',
-            name: 'Network Provider DLL',
-          },
-          {
-            id: 'T1556.009',
-            name: 'Conditional Access Policies',
-          },
-        ],
-      },
-      {
-        id: 'T1653',
-        name: 'Power Settings',
-      },
-      {
-        id: 'T1668',
-        name: 'Exclusive Control',
-      },
-      {
-        id: 'T1671',
-        name: 'Cloud Application Integration',
-      },
-    ],
-  },
-  {
-    id: 'TA0004',
-    name: 'Privilege Escalation',
-    short_name: 'privilege-escalation',
-    description:
-      'The adversary is trying to gain higher-level permissions. Privilege Escalation consists of techniques that adversaries use to gain higher-level permissions on a system or network. Adversaries can ofte…',
-    techniques: [
-      {
-        id: 'T1037',
-        name: 'Boot or Logon Initialization Scripts',
-        subtechniques: [
-          {
-            id: 'T1037.001',
-            name: 'Logon Script (Windows)',
-          },
-          {
-            id: 'T1037.002',
-            name: 'Login Hook',
-          },
-          {
-            id: 'T1037.003',
-            name: 'Network Logon Script',
-          },
-          {
-            id: 'T1037.004',
-            name: 'RC Scripts',
-          },
-          {
-            id: 'T1037.005',
-            name: 'Startup Items',
           },
         ],
       },
@@ -1448,28 +1548,36 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1068',
-        name: 'Exploitation for Privilege Escalation',
+        id: 'T1611',
+        name: 'Escape to Host',
       },
       {
-        id: 'T1078',
-        name: 'Valid Accounts',
+        id: 'T1548',
+        name: 'Abuse Elevation Control Mechanism',
         subtechniques: [
           {
-            id: 'T1078.001',
-            name: 'Default Accounts',
+            id: 'T1548.001',
+            name: 'Setuid and Setgid',
           },
           {
-            id: 'T1078.002',
-            name: 'Domain Accounts',
+            id: 'T1548.002',
+            name: 'Bypass User Account Control',
           },
           {
-            id: 'T1078.003',
-            name: 'Local Accounts',
+            id: 'T1548.003',
+            name: 'Sudo and Sudo Caching',
           },
           {
-            id: 'T1078.004',
-            name: 'Cloud Accounts',
+            id: 'T1548.004',
+            name: 'Elevated Execution with Prompt',
+          },
+          {
+            id: 'T1548.005',
+            name: 'Temporary Elevated Cloud Access',
+          },
+          {
+            id: 'T1548.006',
+            name: 'TCC Manipulation',
           },
         ],
       },
@@ -1508,70 +1616,30 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1134',
-        name: 'Access Token Manipulation',
+        id: 'T1078',
+        name: 'Valid Accounts',
         subtechniques: [
           {
-            id: 'T1134.001',
-            name: 'Token Impersonation/Theft',
+            id: 'T1078.001',
+            name: 'Default Accounts',
           },
           {
-            id: 'T1134.002',
-            name: 'Create Process with Token',
+            id: 'T1078.002',
+            name: 'Domain Accounts',
           },
           {
-            id: 'T1134.003',
-            name: 'Make and Impersonate Token',
+            id: 'T1078.003',
+            name: 'Local Accounts',
           },
           {
-            id: 'T1134.004',
-            name: 'Parent PID Spoofing',
-          },
-          {
-            id: 'T1134.005',
-            name: 'SID-History Injection',
+            id: 'T1078.004',
+            name: 'Cloud Accounts',
           },
         ],
       },
       {
-        id: 'T1484',
-        name: 'Domain or Tenant Policy Modification',
-        subtechniques: [
-          {
-            id: 'T1484.001',
-            name: 'Group Policy Modification',
-          },
-          {
-            id: 'T1484.002',
-            name: 'Trust Modification',
-          },
-        ],
-      },
-      {
-        id: 'T1543',
-        name: 'Create or Modify System Process',
-        subtechniques: [
-          {
-            id: 'T1543.001',
-            name: 'Launch Agent',
-          },
-          {
-            id: 'T1543.002',
-            name: 'Systemd Service',
-          },
-          {
-            id: 'T1543.003',
-            name: 'Windows Service',
-          },
-          {
-            id: 'T1543.004',
-            name: 'Launch Daemon',
-          },
-          {
-            id: 'T1543.005',
-            name: 'Container Service',
-          },
-        ],
+        id: 'T1068',
+        name: 'Exploitation for Privilege Escalation',
       },
       {
         id: 'T1546',
@@ -1652,100 +1720,44 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1547',
-        name: 'Boot or Logon Autostart Execution',
+        id: 'T1134',
+        name: 'Access Token Manipulation',
         subtechniques: [
           {
-            id: 'T1547.001',
-            name: 'Registry Run Keys / Startup Folder',
+            id: 'T1134.001',
+            name: 'Token Impersonation/Theft',
           },
           {
-            id: 'T1547.002',
-            name: 'Authentication Package',
+            id: 'T1134.002',
+            name: 'Create Process with Token',
           },
           {
-            id: 'T1547.003',
-            name: 'Time Providers',
+            id: 'T1134.003',
+            name: 'Make and Impersonate Token',
           },
           {
-            id: 'T1547.004',
-            name: 'Winlogon Helper DLL',
+            id: 'T1134.004',
+            name: 'Parent PID Spoofing',
           },
           {
-            id: 'T1547.005',
-            name: 'Security Support Provider',
-          },
-          {
-            id: 'T1547.006',
-            name: 'Kernel Modules and Extensions',
-          },
-          {
-            id: 'T1547.007',
-            name: 'Re-opened Applications',
-          },
-          {
-            id: 'T1547.008',
-            name: 'LSASS Driver',
-          },
-          {
-            id: 'T1547.009',
-            name: 'Shortcut Modification',
-          },
-          {
-            id: 'T1547.010',
-            name: 'Port Monitors',
-          },
-          {
-            id: 'T1547.012',
-            name: 'Print Processors',
-          },
-          {
-            id: 'T1547.013',
-            name: 'XDG Autostart Entries',
-          },
-          {
-            id: 'T1547.014',
-            name: 'Active Setup',
-          },
-          {
-            id: 'T1547.015',
-            name: 'Login Items',
+            id: 'T1134.005',
+            name: 'SID-History Injection',
           },
         ],
       },
       {
-        id: 'T1548',
-        name: 'Abuse Elevation Control Mechanism',
+        id: 'T1484',
+        name: 'Domain or Tenant Policy Modification',
         subtechniques: [
           {
-            id: 'T1548.001',
-            name: 'Setuid and Setgid',
+            id: 'T1484.001',
+            name: 'Group Policy Modification',
           },
           {
-            id: 'T1548.002',
-            name: 'Bypass User Account Control',
-          },
-          {
-            id: 'T1548.003',
-            name: 'Sudo and Sudo Caching',
-          },
-          {
-            id: 'T1548.004',
-            name: 'Elevated Execution with Prompt',
-          },
-          {
-            id: 'T1548.005',
-            name: 'Temporary Elevated Cloud Access',
-          },
-          {
-            id: 'T1548.006',
-            name: 'TCC Manipulation',
+            id: 'T1484.002',
+            name: 'Trust Modification',
           },
         ],
-      },
-      {
-        id: 'T1611',
-        name: 'Escape to Host',
       },
     ],
   },
@@ -1765,80 +1777,86 @@ export const mitreMatrix: MitreTactic[] = [
         name: 'Rootkit',
       },
       {
-        id: 'T1027',
-        name: 'Obfuscated Files or Information',
+        id: 'T1564',
+        name: 'Hide Artifacts',
         subtechniques: [
           {
-            id: 'T1027.001',
-            name: 'Binary Padding',
+            id: 'T1564.001',
+            name: 'Hidden Files and Directories',
           },
           {
-            id: 'T1027.002',
-            name: 'Software Packing',
+            id: 'T1564.002',
+            name: 'Hidden Users',
           },
           {
-            id: 'T1027.003',
-            name: 'Steganography',
+            id: 'T1564.003',
+            name: 'Hidden Window',
           },
           {
-            id: 'T1027.004',
-            name: 'Compile After Delivery',
+            id: 'T1564.004',
+            name: 'NTFS File Attributes',
           },
           {
-            id: 'T1027.005',
-            name: 'Indicator Removal from Tools',
+            id: 'T1564.005',
+            name: 'Hidden File System',
           },
           {
-            id: 'T1027.006',
-            name: 'HTML Smuggling',
+            id: 'T1564.006',
+            name: 'Run Virtual Instance',
           },
           {
-            id: 'T1027.007',
-            name: 'Dynamic API Resolution',
+            id: 'T1564.007',
+            name: 'VBA Stomping',
           },
           {
-            id: 'T1027.008',
-            name: 'Stripped Payloads',
+            id: 'T1564.008',
+            name: 'Email Hiding Rules',
           },
           {
-            id: 'T1027.009',
-            name: 'Embedded Payloads',
+            id: 'T1564.009',
+            name: 'Resource Forking',
           },
           {
-            id: 'T1027.010',
-            name: 'Command Obfuscation',
+            id: 'T1564.010',
+            name: 'Process Argument Spoofing',
           },
           {
-            id: 'T1027.011',
-            name: 'Fileless Storage',
+            id: 'T1564.011',
+            name: 'Ignore Process Interrupts',
           },
           {
-            id: 'T1027.012',
-            name: 'LNK Icon Smuggling',
+            id: 'T1564.012',
+            name: 'File/Path Exclusions',
           },
           {
-            id: 'T1027.013',
-            name: 'Encrypted/Encoded File',
+            id: 'T1564.013',
+            name: 'Bind Mounts',
           },
           {
-            id: 'T1027.014',
-            name: 'Polymorphic Code',
+            id: 'T1564.014',
+            name: 'Extended Attributes',
+          },
+        ],
+      },
+      {
+        id: 'T1202',
+        name: 'Indirect Command Execution',
+      },
+      {
+        id: 'T1140',
+        name: 'Deobfuscate/Decode Files or Information',
+      },
+      {
+        id: 'T1684',
+        name: 'Social Engineering',
+        subtechniques: [
+          {
+            id: 'T1684.001',
+            name: 'Impersonation',
           },
           {
-            id: 'T1027.015',
-            name: 'Compression',
-          },
-          {
-            id: 'T1027.016',
-            name: 'Junk Code Insertion',
-          },
-          {
-            id: 'T1027.017',
-            name: 'SVG Smuggling',
-          },
-          {
-            id: 'T1027.018',
-            name: 'Invisible Unicode',
+            id: 'T1684.002',
+            name: 'Email Spoofing',
           },
         ],
       },
@@ -1951,122 +1969,6 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1070',
-        name: 'Indicator Removal',
-        subtechniques: [
-          {
-            id: 'T1070.003',
-            name: 'Clear Command History',
-          },
-          {
-            id: 'T1070.004',
-            name: 'File Deletion',
-          },
-          {
-            id: 'T1070.005',
-            name: 'Network Share Connection Removal',
-          },
-          {
-            id: 'T1070.006',
-            name: 'Timestomp',
-          },
-          {
-            id: 'T1070.007',
-            name: 'Clear Network Connection History and Configurations',
-          },
-          {
-            id: 'T1070.008',
-            name: 'Clear Mailbox Data',
-          },
-          {
-            id: 'T1070.009',
-            name: 'Clear Persistence',
-          },
-          {
-            id: 'T1070.010',
-            name: 'Relocate Malware',
-          },
-        ],
-      },
-      {
-        id: 'T1078',
-        name: 'Valid Accounts',
-        subtechniques: [
-          {
-            id: 'T1078.001',
-            name: 'Default Accounts',
-          },
-          {
-            id: 'T1078.002',
-            name: 'Domain Accounts',
-          },
-          {
-            id: 'T1078.003',
-            name: 'Local Accounts',
-          },
-          {
-            id: 'T1078.004',
-            name: 'Cloud Accounts',
-          },
-        ],
-      },
-      {
-        id: 'T1127',
-        name: 'Trusted Developer Utilities Proxy Execution',
-        subtechniques: [
-          {
-            id: 'T1127.001',
-            name: 'MSBuild',
-          },
-          {
-            id: 'T1127.002',
-            name: 'ClickOnce',
-          },
-          {
-            id: 'T1127.003',
-            name: 'JamPlus',
-          },
-        ],
-      },
-      {
-        id: 'T1134',
-        name: 'Access Token Manipulation',
-        subtechniques: [
-          {
-            id: 'T1134.001',
-            name: 'Token Impersonation/Theft',
-          },
-          {
-            id: 'T1134.002',
-            name: 'Create Process with Token',
-          },
-          {
-            id: 'T1134.003',
-            name: 'Make and Impersonate Token',
-          },
-          {
-            id: 'T1134.004',
-            name: 'Parent PID Spoofing',
-          },
-          {
-            id: 'T1134.005',
-            name: 'SID-History Injection',
-          },
-        ],
-      },
-      {
-        id: 'T1140',
-        name: 'Deobfuscate/Decode Files or Information',
-      },
-      {
-        id: 'T1197',
-        name: 'BITS Jobs',
-      },
-      {
-        id: 'T1202',
-        name: 'Indirect Command Execution',
-      },
-      {
         id: 'T1205',
         name: 'Traffic Signaling',
         subtechniques: [
@@ -2077,24 +1979,6 @@ export const mitreMatrix: MitreTactic[] = [
           {
             id: 'T1205.002',
             name: 'Socket Filters',
-          },
-        ],
-      },
-      {
-        id: 'T1211',
-        name: 'Exploitation for Stealth',
-      },
-      {
-        id: 'T1216',
-        name: 'System Script Proxy Execution',
-        subtechniques: [
-          {
-            id: 'T1216.001',
-            name: 'PubPrn',
-          },
-          {
-            id: 'T1216.002',
-            name: 'SyncAppvPublishingServer',
           },
         ],
       },
@@ -2161,48 +2045,50 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1220',
-        name: 'XSL Script Processing',
-      },
-      {
-        id: 'T1221',
-        name: 'Template Injection',
-      },
-      {
-        id: 'T1480',
-        name: 'Execution Guardrails',
-        subtechniques: [
-          {
-            id: 'T1480.001',
-            name: 'Environmental Keying',
-          },
-          {
-            id: 'T1480.002',
-            name: 'Mutual Exclusion',
-          },
-        ],
-      },
-      {
-        id: 'T1497',
-        name: 'Virtualization/Sandbox Evasion',
-        subtechniques: [
-          {
-            id: 'T1497.001',
-            name: 'System Checks',
-          },
-          {
-            id: 'T1497.002',
-            name: 'User Activity Based Checks',
-          },
-          {
-            id: 'T1497.003',
-            name: 'Time Based Checks',
-          },
-        ],
+        id: 'T1620',
+        name: 'Reflective Code Loading',
       },
       {
         id: 'T1535',
         name: 'Unused/Unsupported Cloud Regions',
+      },
+      {
+        id: 'T1070',
+        name: 'Indicator Removal',
+        subtechniques: [
+          {
+            id: 'T1070.003',
+            name: 'Clear Command History',
+          },
+          {
+            id: 'T1070.004',
+            name: 'File Deletion',
+          },
+          {
+            id: 'T1070.005',
+            name: 'Network Share Connection Removal',
+          },
+          {
+            id: 'T1070.006',
+            name: 'Timestomp',
+          },
+          {
+            id: 'T1070.007',
+            name: 'Clear Network Connection History and Configurations',
+          },
+          {
+            id: 'T1070.008',
+            name: 'Clear Mailbox Data',
+          },
+          {
+            id: 'T1070.009',
+            name: 'Clear Persistence',
+          },
+          {
+            id: 'T1070.010',
+            name: 'Relocate Malware',
+          },
+        ],
       },
       {
         id: 'T1542',
@@ -2231,66 +2117,48 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1564',
-        name: 'Hide Artifacts',
+        id: 'T1612',
+        name: 'Build Image on Host',
+      },
+      {
+        id: 'T1497',
+        name: 'Virtualization/Sandbox Evasion',
         subtechniques: [
           {
-            id: 'T1564.001',
-            name: 'Hidden Files and Directories',
+            id: 'T1497.001',
+            name: 'System Checks',
           },
           {
-            id: 'T1564.002',
-            name: 'Hidden Users',
+            id: 'T1497.002',
+            name: 'User Activity Based Checks',
           },
           {
-            id: 'T1564.003',
-            name: 'Hidden Window',
-          },
-          {
-            id: 'T1564.004',
-            name: 'NTFS File Attributes',
-          },
-          {
-            id: 'T1564.005',
-            name: 'Hidden File System',
-          },
-          {
-            id: 'T1564.006',
-            name: 'Run Virtual Instance',
-          },
-          {
-            id: 'T1564.007',
-            name: 'VBA Stomping',
-          },
-          {
-            id: 'T1564.008',
-            name: 'Email Hiding Rules',
-          },
-          {
-            id: 'T1564.009',
-            name: 'Resource Forking',
-          },
-          {
-            id: 'T1564.010',
-            name: 'Process Argument Spoofing',
-          },
-          {
-            id: 'T1564.011',
-            name: 'Ignore Process Interrupts',
-          },
-          {
-            id: 'T1564.012',
-            name: 'File/Path Exclusions',
-          },
-          {
-            id: 'T1564.013',
-            name: 'Bind Mounts',
-          },
-          {
-            id: 'T1564.014',
-            name: 'Extended Attributes',
+            id: 'T1497.003',
+            name: 'Time Based Checks',
           },
         ],
+      },
+      {
+        id: 'T1480',
+        name: 'Execution Guardrails',
+        subtechniques: [
+          {
+            id: 'T1480.001',
+            name: 'Environmental Keying',
+          },
+          {
+            id: 'T1480.002',
+            name: 'Mutual Exclusion',
+          },
+        ],
+      },
+      {
+        id: 'T1679',
+        name: 'Selective Exclusion',
+      },
+      {
+        id: 'T1678',
+        name: 'Delay Execution',
       },
       {
         id: 'T1574',
@@ -2347,36 +2215,194 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1612',
-        name: 'Build Image on Host',
+        id: 'T1078',
+        name: 'Valid Accounts',
+        subtechniques: [
+          {
+            id: 'T1078.001',
+            name: 'Default Accounts',
+          },
+          {
+            id: 'T1078.002',
+            name: 'Domain Accounts',
+          },
+          {
+            id: 'T1078.003',
+            name: 'Local Accounts',
+          },
+          {
+            id: 'T1078.004',
+            name: 'Cloud Accounts',
+          },
+        ],
       },
       {
-        id: 'T1620',
-        name: 'Reflective Code Loading',
+        id: 'T1027',
+        name: 'Obfuscated Files or Information',
+        subtechniques: [
+          {
+            id: 'T1027.001',
+            name: 'Binary Padding',
+          },
+          {
+            id: 'T1027.002',
+            name: 'Software Packing',
+          },
+          {
+            id: 'T1027.003',
+            name: 'Steganography',
+          },
+          {
+            id: 'T1027.004',
+            name: 'Compile After Delivery',
+          },
+          {
+            id: 'T1027.005',
+            name: 'Indicator Removal from Tools',
+          },
+          {
+            id: 'T1027.006',
+            name: 'HTML Smuggling',
+          },
+          {
+            id: 'T1027.007',
+            name: 'Dynamic API Resolution',
+          },
+          {
+            id: 'T1027.008',
+            name: 'Stripped Payloads',
+          },
+          {
+            id: 'T1027.009',
+            name: 'Embedded Payloads',
+          },
+          {
+            id: 'T1027.010',
+            name: 'Command Obfuscation',
+          },
+          {
+            id: 'T1027.011',
+            name: 'Fileless Storage',
+          },
+          {
+            id: 'T1027.012',
+            name: 'LNK Icon Smuggling',
+          },
+          {
+            id: 'T1027.013',
+            name: 'Encrypted/Encoded File',
+          },
+          {
+            id: 'T1027.014',
+            name: 'Polymorphic Code',
+          },
+          {
+            id: 'T1027.015',
+            name: 'Compression',
+          },
+          {
+            id: 'T1027.016',
+            name: 'Junk Code Insertion',
+          },
+          {
+            id: 'T1027.017',
+            name: 'SVG Smuggling',
+          },
+          {
+            id: 'T1027.018',
+            name: 'Invisible Unicode',
+          },
+        ],
+      },
+      {
+        id: 'T1197',
+        name: 'BITS Jobs',
+      },
+      {
+        id: 'T1221',
+        name: 'Template Injection',
+      },
+      {
+        id: 'T1134',
+        name: 'Access Token Manipulation',
+        subtechniques: [
+          {
+            id: 'T1134.001',
+            name: 'Token Impersonation/Theft',
+          },
+          {
+            id: 'T1134.002',
+            name: 'Create Process with Token',
+          },
+          {
+            id: 'T1134.003',
+            name: 'Make and Impersonate Token',
+          },
+          {
+            id: 'T1134.004',
+            name: 'Parent PID Spoofing',
+          },
+          {
+            id: 'T1134.005',
+            name: 'SID-History Injection',
+          },
+        ],
       },
       {
         id: 'T1622',
         name: 'Debugger Evasion',
       },
       {
-        id: 'T1678',
-        name: 'Delay Execution',
+        id: 'T1220',
+        name: 'XSL Script Processing',
       },
       {
-        id: 'T1679',
-        name: 'Selective Exclusion',
-      },
-      {
-        id: 'T1684',
-        name: 'Social Engineering',
+        id: 'T1216',
+        name: 'System Script Proxy Execution',
         subtechniques: [
           {
-            id: 'T1684.001',
-            name: 'Impersonation',
+            id: 'T1216.001',
+            name: 'PubPrn',
           },
           {
-            id: 'T1684.002',
-            name: 'Email Spoofing',
+            id: 'T1216.002',
+            name: 'SyncAppvPublishingServer',
+          },
+        ],
+      },
+      {
+        id: 'T1211',
+        name: 'Exploitation for Stealth',
+      },
+      {
+        id: 'T1127',
+        name: 'Trusted Developer Utilities Proxy Execution',
+        subtechniques: [
+          {
+            id: 'T1127.001',
+            name: 'MSBuild',
+          },
+          {
+            id: 'T1127.002',
+            name: 'ClickOnce',
+          },
+          {
+            id: 'T1127.003',
+            name: 'JamPlus',
+          },
+        ],
+      },
+      {
+        id: 'T1696',
+        name: 'Anti-Automation Evasion',
+        subtechniques: [
+          {
+            id: 'T1696.001',
+            name: 'Automate CAPTCHA Completion',
+          },
+          {
+            id: 'T1696.002',
+            name: 'Avoid CAPTCHA',
           },
         ],
       },
@@ -2390,12 +2416,64 @@ export const mitreMatrix: MitreTactic[] = [
       'The adversary is trying to break security mechanisms, pipelines, and tooling so defenders can’t see or trust what’s happening. Defense Impairment consists of techniques that degrade, disable, or under…',
     techniques: [
       {
-        id: 'T1112',
-        name: 'Modify Registry',
+        id: 'T1687',
+        name: 'Exploitation for Defense Impairment',
+      },
+      {
+        id: 'T1666',
+        name: 'Modify Cloud Resource Hierarchy',
+      },
+      {
+        id: 'T1578',
+        name: 'Modify Cloud Compute Infrastructure',
+        subtechniques: [
+          {
+            id: 'T1578.001',
+            name: 'Create Snapshot',
+          },
+          {
+            id: 'T1578.002',
+            name: 'Create Cloud Instance',
+          },
+          {
+            id: 'T1578.003',
+            name: 'Delete Cloud Instance',
+          },
+          {
+            id: 'T1578.004',
+            name: 'Revert Cloud Instance',
+          },
+          {
+            id: 'T1578.005',
+            name: 'Modify Cloud Compute Configurations',
+          },
+        ],
+      },
+      {
+        id: 'T1600',
+        name: 'Weaken Encryption',
+        subtechniques: [
+          {
+            id: 'T1600.001',
+            name: 'Reduce Key Space',
+          },
+          {
+            id: 'T1600.002',
+            name: 'Disable Crypto Hardware',
+          },
+        ],
+      },
+      {
+        id: 'T1689',
+        name: 'Downgrade Attack',
       },
       {
         id: 'T1207',
         name: 'Rogue Domain Controller',
+      },
+      {
+        id: 'T1112',
+        name: 'Modify Registry',
       },
       {
         id: 'T1222',
@@ -2412,18 +2490,36 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1484',
-        name: 'Domain or Tenant Policy Modification',
+        id: 'T1647',
+        name: 'Plist File Modification',
+      },
+      {
+        id: 'T1601',
+        name: 'Modify System Image',
         subtechniques: [
           {
-            id: 'T1484.001',
-            name: 'Group Policy Modification',
+            id: 'T1601.001',
+            name: 'Patch System Image',
           },
           {
-            id: 'T1484.002',
-            name: 'Trust Modification',
+            id: 'T1601.002',
+            name: 'Downgrade System Image',
           },
         ],
+      },
+      {
+        id: 'T1599',
+        name: 'Network Boundary Bridging',
+        subtechniques: [
+          {
+            id: 'T1599.001',
+            name: 'Network Address Translation Traversal',
+          },
+        ],
+      },
+      {
+        id: 'T1690',
+        name: 'Prevent Command History Logging',
       },
       {
         id: 'T1553',
@@ -2452,6 +2548,76 @@ export const mitreMatrix: MitreTactic[] = [
           {
             id: 'T1553.006',
             name: 'Code Signing Policy Modification',
+          },
+        ],
+      },
+      {
+        id: 'T1685',
+        name: 'Disable or Modify Tools',
+        subtechniques: [
+          {
+            id: 'T1685.001',
+            name: 'Disable or Modify Windows Event Log',
+          },
+          {
+            id: 'T1685.002',
+            name: 'Disable or Modify Cloud Log',
+          },
+          {
+            id: 'T1685.003',
+            name: 'Modify or Spoof Tool UI',
+          },
+          {
+            id: 'T1685.004',
+            name: 'Disable or Modify Linux Audit System Log',
+          },
+          {
+            id: 'T1685.005',
+            name: 'Clear Windows Event Logs',
+          },
+          {
+            id: 'T1685.006',
+            name: 'Clear Linux or Mac System Logs',
+          },
+          {
+            id: 'T1685.007',
+            name: 'Impair Autonomous Defenses',
+          },
+        ],
+      },
+      {
+        id: 'T1688',
+        name: 'Safe Mode Boot',
+      },
+      {
+        id: 'T1484',
+        name: 'Domain or Tenant Policy Modification',
+        subtechniques: [
+          {
+            id: 'T1484.001',
+            name: 'Group Policy Modification',
+          },
+          {
+            id: 'T1484.002',
+            name: 'Trust Modification',
+          },
+        ],
+      },
+      {
+        id: 'T1686',
+        name: 'Disable or Modify System Firewall',
+        subtechniques: [
+          {
+            id: 'T1686.001',
+            name: 'Cloud Firewall',
+          },
+          {
+            id: 'T1686.002',
+            name: 'Network Device Firewall',
+          },
+          {
+            id: 'T1686.003',
+            name: 'Windows Host Firewall',
           },
         ],
       },
@@ -2497,142 +2663,6 @@ export const mitreMatrix: MitreTactic[] = [
           },
         ],
       },
-      {
-        id: 'T1578',
-        name: 'Modify Cloud Compute Infrastructure',
-        subtechniques: [
-          {
-            id: 'T1578.001',
-            name: 'Create Snapshot',
-          },
-          {
-            id: 'T1578.002',
-            name: 'Create Cloud Instance',
-          },
-          {
-            id: 'T1578.003',
-            name: 'Delete Cloud Instance',
-          },
-          {
-            id: 'T1578.004',
-            name: 'Revert Cloud Instance',
-          },
-          {
-            id: 'T1578.005',
-            name: 'Modify Cloud Compute Configurations',
-          },
-        ],
-      },
-      {
-        id: 'T1599',
-        name: 'Network Boundary Bridging',
-        subtechniques: [
-          {
-            id: 'T1599.001',
-            name: 'Network Address Translation Traversal',
-          },
-        ],
-      },
-      {
-        id: 'T1600',
-        name: 'Weaken Encryption',
-        subtechniques: [
-          {
-            id: 'T1600.001',
-            name: 'Reduce Key Space',
-          },
-          {
-            id: 'T1600.002',
-            name: 'Disable Crypto Hardware',
-          },
-        ],
-      },
-      {
-        id: 'T1601',
-        name: 'Modify System Image',
-        subtechniques: [
-          {
-            id: 'T1601.001',
-            name: 'Patch System Image',
-          },
-          {
-            id: 'T1601.002',
-            name: 'Downgrade System Image',
-          },
-        ],
-      },
-      {
-        id: 'T1647',
-        name: 'Plist File Modification',
-      },
-      {
-        id: 'T1666',
-        name: 'Modify Cloud Resource Hierarchy',
-      },
-      {
-        id: 'T1685',
-        name: 'Disable or Modify Tools',
-        subtechniques: [
-          {
-            id: 'T1685.001',
-            name: 'Disable or Modify Windows Event Log',
-          },
-          {
-            id: 'T1685.002',
-            name: 'Disable or Modify Cloud Log',
-          },
-          {
-            id: 'T1685.003',
-            name: 'Modify or Spoof Tool UI',
-          },
-          {
-            id: 'T1685.004',
-            name: 'Disable or Modify Linux Audit System Log',
-          },
-          {
-            id: 'T1685.005',
-            name: 'Clear Windows Event Logs',
-          },
-          {
-            id: 'T1685.006',
-            name: 'Clear Linux or Mac System Logs',
-          },
-        ],
-      },
-      {
-        id: 'T1686',
-        name: 'Disable or Modify System Firewall',
-        subtechniques: [
-          {
-            id: 'T1686.001',
-            name: 'Cloud Firewall',
-          },
-          {
-            id: 'T1686.002',
-            name: 'Network Device Firewall',
-          },
-          {
-            id: 'T1686.003',
-            name: 'Windows Host Firewall',
-          },
-        ],
-      },
-      {
-        id: 'T1687',
-        name: 'Exploitation for Defense Impairment',
-      },
-      {
-        id: 'T1688',
-        name: 'Safe Mode Boot',
-      },
-      {
-        id: 'T1689',
-        name: 'Downgrade Attack',
-      },
-      {
-        id: 'T1690',
-        name: 'Prevent Command History Logging',
-      },
     ],
   },
   {
@@ -2642,6 +2672,28 @@ export const mitreMatrix: MitreTactic[] = [
     description:
       'The adversary is trying to steal account names and passwords. Credential Access consists of techniques for stealing credentials like account names and passwords. Techniques used to get credentials inc…',
     techniques: [
+      {
+        id: 'T1557',
+        name: 'Adversary-in-the-Middle',
+        subtechniques: [
+          {
+            id: 'T1557.001',
+            name: 'Name Resolution Poisoning and SMB Relay',
+          },
+          {
+            id: 'T1557.002',
+            name: 'ARP Cache Poisoning',
+          },
+          {
+            id: 'T1557.003',
+            name: 'DHCP Spoofing',
+          },
+          {
+            id: 'T1557.004',
+            name: 'Evil Twin',
+          },
+        ],
+      },
       {
         id: 'T1003',
         name: 'OS Credential Dumping',
@@ -2681,72 +2733,68 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
+        id: 'T1539',
+        name: 'Steal Web Session Cookie',
+      },
+      {
         id: 'T1040',
         name: 'Network Sniffing',
       },
       {
-        id: 'T1056',
-        name: 'Input Capture',
+        id: 'T1558',
+        name: 'Steal or Forge Kerberos Tickets',
         subtechniques: [
           {
-            id: 'T1056.001',
-            name: 'Keylogging',
+            id: 'T1558.001',
+            name: 'Golden Ticket',
           },
           {
-            id: 'T1056.002',
-            name: 'GUI Input Capture',
+            id: 'T1558.002',
+            name: 'Silver Ticket',
           },
           {
-            id: 'T1056.003',
-            name: 'Web Portal Capture',
+            id: 'T1558.003',
+            name: 'Kerberoasting',
           },
           {
-            id: 'T1056.004',
-            name: 'Credential API Hooking',
+            id: 'T1558.004',
+            name: 'AS-REP Roasting',
+          },
+          {
+            id: 'T1558.005',
+            name: 'Ccache Files',
           },
         ],
       },
       {
-        id: 'T1110',
-        name: 'Brute Force',
+        id: 'T1555',
+        name: 'Credentials from Password Stores',
         subtechniques: [
           {
-            id: 'T1110.001',
-            name: 'Password Guessing',
+            id: 'T1555.001',
+            name: 'Keychain',
           },
           {
-            id: 'T1110.002',
-            name: 'Password Cracking',
+            id: 'T1555.002',
+            name: 'Securityd Memory',
           },
           {
-            id: 'T1110.003',
-            name: 'Password Spraying',
+            id: 'T1555.003',
+            name: 'Credentials from Web Browsers',
           },
           {
-            id: 'T1110.004',
-            name: 'Credential Stuffing',
+            id: 'T1555.004',
+            name: 'Windows Credential Manager',
+          },
+          {
+            id: 'T1555.005',
+            name: 'Password Managers',
+          },
+          {
+            id: 'T1555.006',
+            name: 'Cloud Secrets Management Stores',
           },
         ],
-      },
-      {
-        id: 'T1111',
-        name: 'Multi-Factor Authentication Interception',
-      },
-      {
-        id: 'T1187',
-        name: 'Forced Authentication',
-      },
-      {
-        id: 'T1212',
-        name: 'Exploitation for Credential Access',
-      },
-      {
-        id: 'T1528',
-        name: 'Steal Application Access Token',
-      },
-      {
-        id: 'T1539',
-        name: 'Steal Web Session Cookie',
       },
       {
         id: 'T1552',
@@ -2787,34 +2835,86 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1555',
-        name: 'Credentials from Password Stores',
+        id: 'T1649',
+        name: 'Steal or Forge Authentication Certificates',
+      },
+      {
+        id: 'T1528',
+        name: 'Steal Application Access Token',
+      },
+      {
+        id: 'T1606',
+        name: 'Forge Web Credentials',
         subtechniques: [
           {
-            id: 'T1555.001',
-            name: 'Keychain',
+            id: 'T1606.001',
+            name: 'Web Cookies',
           },
           {
-            id: 'T1555.002',
-            name: 'Securityd Memory',
-          },
-          {
-            id: 'T1555.003',
-            name: 'Credentials from Web Browsers',
-          },
-          {
-            id: 'T1555.004',
-            name: 'Windows Credential Manager',
-          },
-          {
-            id: 'T1555.005',
-            name: 'Password Managers',
-          },
-          {
-            id: 'T1555.006',
-            name: 'Cloud Secrets Management Stores',
+            id: 'T1606.002',
+            name: 'SAML Tokens',
           },
         ],
+      },
+      {
+        id: 'T1621',
+        name: 'Multi-Factor Authentication Request Generation',
+      },
+      {
+        id: 'T1212',
+        name: 'Exploitation for Credential Access',
+      },
+      {
+        id: 'T1110',
+        name: 'Brute Force',
+        subtechniques: [
+          {
+            id: 'T1110.001',
+            name: 'Password Guessing',
+          },
+          {
+            id: 'T1110.002',
+            name: 'Password Cracking',
+          },
+          {
+            id: 'T1110.003',
+            name: 'Password Spraying',
+          },
+          {
+            id: 'T1110.004',
+            name: 'Credential Stuffing',
+          },
+        ],
+      },
+      {
+        id: 'T1187',
+        name: 'Forced Authentication',
+      },
+      {
+        id: 'T1056',
+        name: 'Input Capture',
+        subtechniques: [
+          {
+            id: 'T1056.001',
+            name: 'Keylogging',
+          },
+          {
+            id: 'T1056.002',
+            name: 'GUI Input Capture',
+          },
+          {
+            id: 'T1056.003',
+            name: 'Web Portal Capture',
+          },
+          {
+            id: 'T1056.004',
+            name: 'Credential API Hooking',
+          },
+        ],
+      },
+      {
+        id: 'T1111',
+        name: 'Multi-Factor Authentication Interception',
       },
       {
         id: 'T1556',
@@ -2859,74 +2959,8 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1557',
-        name: 'Adversary-in-the-Middle',
-        subtechniques: [
-          {
-            id: 'T1557.001',
-            name: 'Name Resolution Poisoning and SMB Relay',
-          },
-          {
-            id: 'T1557.002',
-            name: 'ARP Cache Poisoning',
-          },
-          {
-            id: 'T1557.003',
-            name: 'DHCP Spoofing',
-          },
-          {
-            id: 'T1557.004',
-            name: 'Evil Twin',
-          },
-        ],
-      },
-      {
-        id: 'T1558',
-        name: 'Steal or Forge Kerberos Tickets',
-        subtechniques: [
-          {
-            id: 'T1558.001',
-            name: 'Golden Ticket',
-          },
-          {
-            id: 'T1558.002',
-            name: 'Silver Ticket',
-          },
-          {
-            id: 'T1558.003',
-            name: 'Kerberoasting',
-          },
-          {
-            id: 'T1558.004',
-            name: 'AS-REP Roasting',
-          },
-          {
-            id: 'T1558.005',
-            name: 'Ccache Files',
-          },
-        ],
-      },
-      {
-        id: 'T1606',
-        name: 'Forge Web Credentials',
-        subtechniques: [
-          {
-            id: 'T1606.001',
-            name: 'Web Cookies',
-          },
-          {
-            id: 'T1606.002',
-            name: 'SAML Tokens',
-          },
-        ],
-      },
-      {
-        id: 'T1621',
-        name: 'Multi-Factor Authentication Request Generation',
-      },
-      {
-        id: 'T1649',
-        name: 'Steal or Forge Authentication Certificates',
+        id: 'T1697',
+        name: 'Steal Application Specific Passwords',
       },
     ],
   },
@@ -2938,54 +2972,12 @@ export const mitreMatrix: MitreTactic[] = [
       'The adversary is trying to figure out your environment. Discovery consists of techniques an adversary may use to gain knowledge about the system and internal network. These techniques help adversaries…',
     techniques: [
       {
-        id: 'T1007',
-        name: 'System Service Discovery',
-      },
-      {
-        id: 'T1010',
-        name: 'Application Window Discovery',
-      },
-      {
-        id: 'T1012',
-        name: 'Query Registry',
-      },
-      {
-        id: 'T1016',
-        name: 'System Network Configuration Discovery',
-        subtechniques: [
-          {
-            id: 'T1016.001',
-            name: 'Internet Connection Discovery',
-          },
-          {
-            id: 'T1016.002',
-            name: 'Wi-Fi Discovery',
-          },
-        ],
-      },
-      {
-        id: 'T1018',
-        name: 'Remote System Discovery',
-      },
-      {
         id: 'T1033',
         name: 'System Owner/User Discovery',
       },
       {
-        id: 'T1040',
-        name: 'Network Sniffing',
-      },
-      {
-        id: 'T1046',
-        name: 'Network Service Discovery',
-      },
-      {
-        id: 'T1049',
-        name: 'System Network Connections Discovery',
-      },
-      {
-        id: 'T1057',
-        name: 'Process Discovery',
+        id: 'T1613',
+        name: 'Container and Resource Discovery',
       },
       {
         id: 'T1069',
@@ -3006,12 +2998,62 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
+        id: 'T1615',
+        name: 'Group Policy Discovery',
+      },
+      {
+        id: 'T1652',
+        name: 'Device Driver Discovery',
+      },
+      {
+        id: 'T1007',
+        name: 'System Service Discovery',
+      },
+      {
+        id: 'T1040',
+        name: 'Network Sniffing',
+      },
+      {
+        id: 'T1135',
+        name: 'Network Share Discovery',
+      },
+      {
+        id: 'T1120',
+        name: 'Peripheral Device Discovery',
+      },
+      {
         id: 'T1082',
         name: 'System Information Discovery',
       },
       {
-        id: 'T1083',
-        name: 'File and Directory Discovery',
+        id: 'T1010',
+        name: 'Application Window Discovery',
+      },
+      {
+        id: 'T1580',
+        name: 'Cloud Infrastructure Discovery',
+      },
+      {
+        id: 'T1217',
+        name: 'Browser Information Discovery',
+      },
+      {
+        id: 'T1673',
+        name: 'Virtual Machine Discovery',
+      },
+      {
+        id: 'T1016',
+        name: 'System Network Configuration Discovery',
+        subtechniques: [
+          {
+            id: 'T1016.001',
+            name: 'Internet Connection Discovery',
+          },
+          {
+            id: 'T1016.002',
+            name: 'Wi-Fi Discovery',
+          },
+        ],
       },
       {
         id: 'T1087',
@@ -3036,28 +3078,16 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1120',
-        name: 'Peripheral Device Discovery',
-      },
-      {
-        id: 'T1124',
-        name: 'System Time Discovery',
-      },
-      {
-        id: 'T1135',
-        name: 'Network Share Discovery',
-      },
-      {
-        id: 'T1201',
-        name: 'Password Policy Discovery',
-      },
-      {
-        id: 'T1217',
-        name: 'Browser Information Discovery',
-      },
-      {
         id: 'T1482',
         name: 'Domain Trust Discovery',
+      },
+      {
+        id: 'T1083',
+        name: 'File and Directory Discovery',
+      },
+      {
+        id: 'T1049',
+        name: 'System Network Connections Discovery',
       },
       {
         id: 'T1497',
@@ -3078,6 +3108,48 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
+        id: 'T1619',
+        name: 'Cloud Storage Object Discovery',
+      },
+      {
+        id: 'T1654',
+        name: 'Log Enumeration',
+      },
+      {
+        id: 'T1057',
+        name: 'Process Discovery',
+      },
+      {
+        id: 'T1201',
+        name: 'Password Policy Discovery',
+      },
+      {
+        id: 'T1012',
+        name: 'Query Registry',
+      },
+      {
+        id: 'T1614',
+        name: 'System Location Discovery',
+        subtechniques: [
+          {
+            id: 'T1614.001',
+            name: 'System Language Discovery',
+          },
+        ],
+      },
+      {
+        id: 'T1526',
+        name: 'Cloud Service Discovery',
+      },
+      {
+        id: 'T1018',
+        name: 'Remote System Discovery',
+      },
+      {
+        id: 'T1046',
+        name: 'Network Service Discovery',
+      },
+      {
         id: 'T1518',
         name: 'Software Discovery',
         subtechniques: [
@@ -3092,58 +3164,20 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1526',
-        name: 'Cloud Service Discovery',
-      },
-      {
         id: 'T1538',
         name: 'Cloud Service Dashboard',
-      },
-      {
-        id: 'T1580',
-        name: 'Cloud Infrastructure Discovery',
-      },
-      {
-        id: 'T1613',
-        name: 'Container and Resource Discovery',
-      },
-      {
-        id: 'T1614',
-        name: 'System Location Discovery',
-        subtechniques: [
-          {
-            id: 'T1614.001',
-            name: 'System Language Discovery',
-          },
-        ],
-      },
-      {
-        id: 'T1615',
-        name: 'Group Policy Discovery',
-      },
-      {
-        id: 'T1619',
-        name: 'Cloud Storage Object Discovery',
       },
       {
         id: 'T1622',
         name: 'Debugger Evasion',
       },
       {
-        id: 'T1652',
-        name: 'Device Driver Discovery',
-      },
-      {
-        id: 'T1654',
-        name: 'Log Enumeration',
-      },
-      {
-        id: 'T1673',
-        name: 'Virtual Machine Discovery',
-      },
-      {
         id: 'T1680',
         name: 'Local Storage Discovery',
+      },
+      {
+        id: 'T1124',
+        name: 'System Time Discovery',
       },
     ],
   },
@@ -3154,6 +3188,36 @@ export const mitreMatrix: MitreTactic[] = [
     description:
       'The adversary is trying to move through your environment. Lateral Movement consists of techniques that adversaries use to enter and control remote systems on a network. Following through on their prim…',
     techniques: [
+      {
+        id: 'T1080',
+        name: 'Taint Shared Content',
+      },
+      {
+        id: 'T1091',
+        name: 'Replication Through Removable Media',
+      },
+      {
+        id: 'T1550',
+        name: 'Use Alternate Authentication Material',
+        subtechniques: [
+          {
+            id: 'T1550.001',
+            name: 'Application Access Token',
+          },
+          {
+            id: 'T1550.002',
+            name: 'Pass the Hash',
+          },
+          {
+            id: 'T1550.003',
+            name: 'Pass the Ticket',
+          },
+          {
+            id: 'T1550.004',
+            name: 'Web Session Cookie',
+          },
+        ],
+      },
       {
         id: 'T1021',
         name: 'Remote Services',
@@ -3193,48 +3257,6 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1072',
-        name: 'Software Deployment Tools',
-      },
-      {
-        id: 'T1080',
-        name: 'Taint Shared Content',
-      },
-      {
-        id: 'T1091',
-        name: 'Replication Through Removable Media',
-      },
-      {
-        id: 'T1210',
-        name: 'Exploitation of Remote Services',
-      },
-      {
-        id: 'T1534',
-        name: 'Internal Spearphishing',
-      },
-      {
-        id: 'T1550',
-        name: 'Use Alternate Authentication Material',
-        subtechniques: [
-          {
-            id: 'T1550.001',
-            name: 'Application Access Token',
-          },
-          {
-            id: 'T1550.002',
-            name: 'Pass the Hash',
-          },
-          {
-            id: 'T1550.003',
-            name: 'Pass the Ticket',
-          },
-          {
-            id: 'T1550.004',
-            name: 'Web Session Cookie',
-          },
-        ],
-      },
-      {
         id: 'T1563',
         name: 'Remote Service Session Hijacking',
         subtechniques: [
@@ -3247,6 +3269,18 @@ export const mitreMatrix: MitreTactic[] = [
             name: 'RDP Hijacking',
           },
         ],
+      },
+      {
+        id: 'T1072',
+        name: 'Software Deployment Tools',
+      },
+      {
+        id: 'T1210',
+        name: 'Exploitation of Remote Services',
+      },
+      {
+        id: 'T1534',
+        name: 'Internal Spearphishing',
       },
       {
         id: 'T1570',
@@ -3262,12 +3296,126 @@ export const mitreMatrix: MitreTactic[] = [
       'The adversary is trying to gather data of interest to their goal. Collection consists of techniques adversaries may use to gather information and the sources information is collected from that are rel…',
     techniques: [
       {
-        id: 'T1005',
-        name: 'Data from Local System',
+        id: 'T1113',
+        name: 'Screen Capture',
+      },
+      {
+        id: 'T1557',
+        name: 'Adversary-in-the-Middle',
+        subtechniques: [
+          {
+            id: 'T1557.001',
+            name: 'Name Resolution Poisoning and SMB Relay',
+          },
+          {
+            id: 'T1557.002',
+            name: 'ARP Cache Poisoning',
+          },
+          {
+            id: 'T1557.003',
+            name: 'DHCP Spoofing',
+          },
+          {
+            id: 'T1557.004',
+            name: 'Evil Twin',
+          },
+        ],
+      },
+      {
+        id: 'T1602',
+        name: 'Data from Configuration Repository',
+        subtechniques: [
+          {
+            id: 'T1602.001',
+            name: 'SNMP (MIB Dump)',
+          },
+          {
+            id: 'T1602.002',
+            name: 'Network Device Configuration Dump',
+          },
+        ],
+      },
+      {
+        id: 'T1123',
+        name: 'Audio Capture',
+      },
+      {
+        id: 'T1114',
+        name: 'Email Collection',
+        subtechniques: [
+          {
+            id: 'T1114.001',
+            name: 'Local Email Collection',
+          },
+          {
+            id: 'T1114.002',
+            name: 'Remote Email Collection',
+          },
+          {
+            id: 'T1114.003',
+            name: 'Email Forwarding Rule',
+          },
+        ],
       },
       {
         id: 'T1025',
         name: 'Data from Removable Media',
+      },
+      {
+        id: 'T1119',
+        name: 'Automated Collection',
+      },
+      {
+        id: 'T1115',
+        name: 'Clipboard Data',
+      },
+      {
+        id: 'T1530',
+        name: 'Data from Cloud Storage',
+      },
+      {
+        id: 'T1005',
+        name: 'Data from Local System',
+      },
+      {
+        id: 'T1560',
+        name: 'Archive Collected Data',
+        subtechniques: [
+          {
+            id: 'T1560.001',
+            name: 'Archive via Utility',
+          },
+          {
+            id: 'T1560.002',
+            name: 'Archive via Library',
+          },
+          {
+            id: 'T1560.003',
+            name: 'Archive via Custom Method',
+          },
+        ],
+      },
+      {
+        id: 'T1185',
+        name: 'Browser Session Hijacking',
+      },
+      {
+        id: 'T1125',
+        name: 'Video Capture',
+      },
+      {
+        id: 'T1074',
+        name: 'Data Staged',
+        subtechniques: [
+          {
+            id: 'T1074.001',
+            name: 'Local Data Staging',
+          },
+          {
+            id: 'T1074.002',
+            name: 'Remote Data Staging',
+          },
+        ],
       },
       {
         id: 'T1039',
@@ -3294,62 +3442,6 @@ export const mitreMatrix: MitreTactic[] = [
             name: 'Credential API Hooking',
           },
         ],
-      },
-      {
-        id: 'T1074',
-        name: 'Data Staged',
-        subtechniques: [
-          {
-            id: 'T1074.001',
-            name: 'Local Data Staging',
-          },
-          {
-            id: 'T1074.002',
-            name: 'Remote Data Staging',
-          },
-        ],
-      },
-      {
-        id: 'T1113',
-        name: 'Screen Capture',
-      },
-      {
-        id: 'T1114',
-        name: 'Email Collection',
-        subtechniques: [
-          {
-            id: 'T1114.001',
-            name: 'Local Email Collection',
-          },
-          {
-            id: 'T1114.002',
-            name: 'Remote Email Collection',
-          },
-          {
-            id: 'T1114.003',
-            name: 'Email Forwarding Rule',
-          },
-        ],
-      },
-      {
-        id: 'T1115',
-        name: 'Clipboard Data',
-      },
-      {
-        id: 'T1119',
-        name: 'Automated Collection',
-      },
-      {
-        id: 'T1123',
-        name: 'Audio Capture',
-      },
-      {
-        id: 'T1125',
-        name: 'Video Capture',
-      },
-      {
-        id: 'T1185',
-        name: 'Browser Session Hijacking',
       },
       {
         id: 'T1213',
@@ -3381,64 +3473,6 @@ export const mitreMatrix: MitreTactic[] = [
           },
         ],
       },
-      {
-        id: 'T1530',
-        name: 'Data from Cloud Storage',
-      },
-      {
-        id: 'T1557',
-        name: 'Adversary-in-the-Middle',
-        subtechniques: [
-          {
-            id: 'T1557.001',
-            name: 'Name Resolution Poisoning and SMB Relay',
-          },
-          {
-            id: 'T1557.002',
-            name: 'ARP Cache Poisoning',
-          },
-          {
-            id: 'T1557.003',
-            name: 'DHCP Spoofing',
-          },
-          {
-            id: 'T1557.004',
-            name: 'Evil Twin',
-          },
-        ],
-      },
-      {
-        id: 'T1560',
-        name: 'Archive Collected Data',
-        subtechniques: [
-          {
-            id: 'T1560.001',
-            name: 'Archive via Utility',
-          },
-          {
-            id: 'T1560.002',
-            name: 'Archive via Library',
-          },
-          {
-            id: 'T1560.003',
-            name: 'Archive via Custom Method',
-          },
-        ],
-      },
-      {
-        id: 'T1602',
-        name: 'Data from Configuration Repository',
-        subtechniques: [
-          {
-            id: 'T1602.001',
-            name: 'SNMP (MIB Dump)',
-          },
-          {
-            id: 'T1602.002',
-            name: 'Network Device Configuration Dump',
-          },
-        ],
-      },
     ],
   },
   {
@@ -3448,28 +3482,6 @@ export const mitreMatrix: MitreTactic[] = [
     description:
       'The adversary is trying to communicate with compromised systems to control them. Command and Control consists of techniques that adversaries may use to communicate with systems under their control wit…',
     techniques: [
-      {
-        id: 'T1001',
-        name: 'Data Obfuscation',
-        subtechniques: [
-          {
-            id: 'T1001.001',
-            name: 'Junk Data',
-          },
-          {
-            id: 'T1001.002',
-            name: 'Steganography',
-          },
-          {
-            id: 'T1001.003',
-            name: 'Protocol or Service Impersonation',
-          },
-        ],
-      },
-      {
-        id: 'T1008',
-        name: 'Fallback Channels',
-      },
       {
         id: 'T1071',
         name: 'Application Layer Protocol',
@@ -3497,6 +3509,50 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
+        id: 'T1219',
+        name: 'Remote Access Tools',
+        subtechniques: [
+          {
+            id: 'T1219.001',
+            name: 'IDE Tunneling',
+          },
+          {
+            id: 'T1219.002',
+            name: 'Remote Desktop Software',
+          },
+          {
+            id: 'T1219.003',
+            name: 'Remote Access Hardware',
+          },
+        ],
+      },
+      {
+        id: 'T1659',
+        name: 'Content Injection',
+      },
+      {
+        id: 'T1205',
+        name: 'Traffic Signaling',
+        subtechniques: [
+          {
+            id: 'T1205.001',
+            name: 'Port Knocking',
+          },
+          {
+            id: 'T1205.002',
+            name: 'Socket Filters',
+          },
+        ],
+      },
+      {
+        id: 'T1572',
+        name: 'Protocol Tunneling',
+      },
+      {
+        id: 'T1092',
+        name: 'Communication Through Removable Media',
+      },
+      {
         id: 'T1090',
         name: 'Proxy',
         subtechniques: [
@@ -3519,12 +3575,22 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1092',
-        name: 'Communication Through Removable Media',
-      },
-      {
-        id: 'T1095',
-        name: 'Non-Application Layer Protocol',
+        id: 'T1568',
+        name: 'Dynamic Resolution',
+        subtechniques: [
+          {
+            id: 'T1568.001',
+            name: 'Fast Flux DNS',
+          },
+          {
+            id: 'T1568.002',
+            name: 'Domain Generation Algorithms',
+          },
+          {
+            id: 'T1568.003',
+            name: 'DNS Calculation',
+          },
+        ],
       },
       {
         id: 'T1102',
@@ -3549,80 +3615,26 @@ export const mitreMatrix: MitreTactic[] = [
         name: 'Multi-Stage Channels',
       },
       {
-        id: 'T1105',
-        name: 'Ingress Tool Transfer',
-      },
-      {
-        id: 'T1132',
-        name: 'Data Encoding',
+        id: 'T1001',
+        name: 'Data Obfuscation',
         subtechniques: [
           {
-            id: 'T1132.001',
-            name: 'Standard Encoding',
+            id: 'T1001.001',
+            name: 'Junk Data',
           },
           {
-            id: 'T1132.002',
-            name: 'Non-Standard Encoding',
-          },
-        ],
-      },
-      {
-        id: 'T1205',
-        name: 'Traffic Signaling',
-        subtechniques: [
-          {
-            id: 'T1205.001',
-            name: 'Port Knocking',
+            id: 'T1001.002',
+            name: 'Steganography',
           },
           {
-            id: 'T1205.002',
-            name: 'Socket Filters',
-          },
-        ],
-      },
-      {
-        id: 'T1219',
-        name: 'Remote Access Tools',
-        subtechniques: [
-          {
-            id: 'T1219.001',
-            name: 'IDE Tunneling',
-          },
-          {
-            id: 'T1219.002',
-            name: 'Remote Desktop Software',
-          },
-          {
-            id: 'T1219.003',
-            name: 'Remote Access Hardware',
-          },
-        ],
-      },
-      {
-        id: 'T1568',
-        name: 'Dynamic Resolution',
-        subtechniques: [
-          {
-            id: 'T1568.001',
-            name: 'Fast Flux DNS',
-          },
-          {
-            id: 'T1568.002',
-            name: 'Domain Generation Algorithms',
-          },
-          {
-            id: 'T1568.003',
-            name: 'DNS Calculation',
+            id: 'T1001.003',
+            name: 'Protocol or Service Impersonation',
           },
         ],
       },
       {
         id: 'T1571',
         name: 'Non-Standard Port',
-      },
-      {
-        id: 'T1572',
-        name: 'Protocol Tunneling',
       },
       {
         id: 'T1573',
@@ -3639,12 +3651,34 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1659',
-        name: 'Content Injection',
+        id: 'T1095',
+        name: 'Non-Application Layer Protocol',
+      },
+      {
+        id: 'T1132',
+        name: 'Data Encoding',
+        subtechniques: [
+          {
+            id: 'T1132.001',
+            name: 'Standard Encoding',
+          },
+          {
+            id: 'T1132.002',
+            name: 'Non-Standard Encoding',
+          },
+        ],
+      },
+      {
+        id: 'T1105',
+        name: 'Ingress Tool Transfer',
       },
       {
         id: 'T1665',
         name: 'Hide Infrastructure',
+      },
+      {
+        id: 'T1008',
+        name: 'Fallback Channels',
       },
     ],
   },
@@ -3655,6 +3689,32 @@ export const mitreMatrix: MitreTactic[] = [
     description:
       'The adversary is trying to steal data. Exfiltration consists of techniques that adversaries may use to steal data from your network. Once they’ve collected data, adversaries often package it to avoid…',
     techniques: [
+      {
+        id: 'T1567',
+        name: 'Exfiltration Over Web Service',
+        subtechniques: [
+          {
+            id: 'T1567.001',
+            name: 'Exfiltration to Code Repository',
+          },
+          {
+            id: 'T1567.002',
+            name: 'Exfiltration to Cloud Storage',
+          },
+          {
+            id: 'T1567.003',
+            name: 'Exfiltration to Text Storage Sites',
+          },
+          {
+            id: 'T1567.004',
+            name: 'Exfiltration Over Webhook',
+          },
+        ],
+      },
+      {
+        id: 'T1029',
+        name: 'Scheduled Transfer',
+      },
       {
         id: 'T1011',
         name: 'Exfiltration Over Other Network Medium',
@@ -3674,14 +3734,6 @@ export const mitreMatrix: MitreTactic[] = [
             name: 'Traffic Duplication',
           },
         ],
-      },
-      {
-        id: 'T1029',
-        name: 'Scheduled Transfer',
-      },
-      {
-        id: 'T1030',
-        name: 'Data Transfer Size Limits',
       },
       {
         id: 'T1041',
@@ -3706,6 +3758,14 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
+        id: 'T1030',
+        name: 'Data Transfer Size Limits',
+      },
+      {
+        id: 'T1537',
+        name: 'Transfer Data to Cloud Account',
+      },
+      {
         id: 'T1052',
         name: 'Exfiltration Over Physical Medium',
         subtechniques: [
@@ -3716,30 +3776,8 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1537',
-        name: 'Transfer Data to Cloud Account',
-      },
-      {
-        id: 'T1567',
-        name: 'Exfiltration Over Web Service',
-        subtechniques: [
-          {
-            id: 'T1567.001',
-            name: 'Exfiltration to Code Repository',
-          },
-          {
-            id: 'T1567.002',
-            name: 'Exfiltration to Cloud Storage',
-          },
-          {
-            id: 'T1567.003',
-            name: 'Exfiltration to Text Storage Sites',
-          },
-          {
-            id: 'T1567.004',
-            name: 'Exfiltration Over Webhook',
-          },
-        ],
+        id: 'T1700',
+        name: 'AI-Enabled Exfiltration',
       },
     ],
   },
@@ -3751,26 +3789,22 @@ export const mitreMatrix: MitreTactic[] = [
       'The adversary is trying to manipulate, interrupt, or destroy your systems and data. Impact consists of techniques that adversaries use to disrupt availability or compromise integrity by manipulating b…',
     techniques: [
       {
-        id: 'T1485',
-        name: 'Data Destruction',
+        id: 'T1561',
+        name: 'Disk Wipe',
         subtechniques: [
           {
-            id: 'T1485.001',
-            name: 'Lifecycle-Triggered Deletion',
+            id: 'T1561.001',
+            name: 'Disk Content Wipe',
+          },
+          {
+            id: 'T1561.002',
+            name: 'Disk Structure Wipe',
           },
         ],
       },
       {
-        id: 'T1486',
-        name: 'Data Encrypted for Impact',
-      },
-      {
         id: 'T1489',
         name: 'Service Stop',
-      },
-      {
-        id: 'T1490',
-        name: 'Inhibit System Recovery',
       },
       {
         id: 'T1491',
@@ -3787,44 +3821,38 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
-        id: 'T1495',
-        name: 'Firmware Corruption',
+        id: 'T1657',
+        name: 'Financial Theft',
       },
       {
-        id: 'T1496',
-        name: 'Resource Hijacking',
+        id: 'T1565',
+        name: 'Data Manipulation',
         subtechniques: [
           {
-            id: 'T1496.001',
-            name: 'Compute Hijacking',
+            id: 'T1565.001',
+            name: 'Stored Data Manipulation',
           },
           {
-            id: 'T1496.002',
-            name: 'Bandwidth Hijacking',
+            id: 'T1565.002',
+            name: 'Transmitted Data Manipulation',
           },
           {
-            id: 'T1496.003',
-            name: 'SMS Pumping',
-          },
-          {
-            id: 'T1496.004',
-            name: 'Cloud Service Hijacking',
+            id: 'T1565.003',
+            name: 'Runtime Data Manipulation',
           },
         ],
       },
       {
-        id: 'T1498',
-        name: 'Network Denial of Service',
-        subtechniques: [
-          {
-            id: 'T1498.001',
-            name: 'Direct Network Flood',
-          },
-          {
-            id: 'T1498.002',
-            name: 'Reflection Amplification',
-          },
-        ],
+        id: 'T1531',
+        name: 'Account Access Removal',
+      },
+      {
+        id: 'T1486',
+        name: 'Data Encrypted for Impact',
+      },
+      {
+        id: 'T1667',
+        name: 'Email Bombing',
       },
       {
         id: 'T1499',
@@ -3849,52 +3877,62 @@ export const mitreMatrix: MitreTactic[] = [
         ],
       },
       {
+        id: 'T1496',
+        name: 'Resource Hijacking',
+        subtechniques: [
+          {
+            id: 'T1496.001',
+            name: 'Compute Hijacking',
+          },
+          {
+            id: 'T1496.002',
+            name: 'Bandwidth Hijacking',
+          },
+          {
+            id: 'T1496.003',
+            name: 'SMS Pumping',
+          },
+          {
+            id: 'T1496.004',
+            name: 'Cloud Service Hijacking',
+          },
+        ],
+      },
+      {
+        id: 'T1485',
+        name: 'Data Destruction',
+        subtechniques: [
+          {
+            id: 'T1485.001',
+            name: 'Lifecycle-Triggered Deletion',
+          },
+        ],
+      },
+      {
+        id: 'T1498',
+        name: 'Network Denial of Service',
+        subtechniques: [
+          {
+            id: 'T1498.001',
+            name: 'Direct Network Flood',
+          },
+          {
+            id: 'T1498.002',
+            name: 'Reflection Amplification',
+          },
+        ],
+      },
+      {
+        id: 'T1495',
+        name: 'Firmware Corruption',
+      },
+      {
+        id: 'T1490',
+        name: 'Inhibit System Recovery',
+      },
+      {
         id: 'T1529',
         name: 'System Shutdown/Reboot',
-      },
-      {
-        id: 'T1531',
-        name: 'Account Access Removal',
-      },
-      {
-        id: 'T1561',
-        name: 'Disk Wipe',
-        subtechniques: [
-          {
-            id: 'T1561.001',
-            name: 'Disk Content Wipe',
-          },
-          {
-            id: 'T1561.002',
-            name: 'Disk Structure Wipe',
-          },
-        ],
-      },
-      {
-        id: 'T1565',
-        name: 'Data Manipulation',
-        subtechniques: [
-          {
-            id: 'T1565.001',
-            name: 'Stored Data Manipulation',
-          },
-          {
-            id: 'T1565.002',
-            name: 'Transmitted Data Manipulation',
-          },
-          {
-            id: 'T1565.003',
-            name: 'Runtime Data Manipulation',
-          },
-        ],
-      },
-      {
-        id: 'T1657',
-        name: 'Financial Theft',
-      },
-      {
-        id: 'T1667',
-        name: 'Email Bombing',
       },
     ],
   },

@@ -3,6 +3,7 @@ import type { Env } from '../env';
 import { logError } from '../lib/logger';
 import { badGateway } from '../lib/api-error';
 import { fetchResilient } from '../lib/fetch-resilient';
+import { MITRE_TACTICS } from '../lib/mitre-tactics';
 import { shouldWriteLastGood } from '../lib/lastgood-debounce';
 
 const CACHE_TTL_SECONDS = 24 * 60 * 60; // 24h — MITRE data changes rarely
@@ -125,6 +126,25 @@ export async function attackNavigatorHandler(c: Context<{ Bindings: Env }>): Pro
   >();
   const subToParent = new Map<string, string>();
 
+  // The ATT&CK release version, read from the live bundle.
+  //
+  // `x_mitre_attack_spec_version` is the release; `x_mitre_version` is the
+  // STIX object's own revision number (on the matrix object that is "2.0",
+  // which is where the old hardcoded "ATT&CK v15" label drifted from).
+  const attackVersion = (() => {
+    for (const obj of objects) {
+      if (obj.type === 'x-mitre-matrix' && typeof obj.x_mitre_attack_spec_version === 'string') {
+        return obj.x_mitre_attack_spec_version as string;
+      }
+    }
+    for (const obj of objects) {
+      if (typeof obj.x_mitre_attack_spec_version === 'string') {
+        return obj.x_mitre_attack_spec_version as string;
+      }
+    }
+    return null;
+  })();
+
   for (const obj of objects) {
     if (obj.type === 'x-mitre-tactic') {
       const refs = obj.external_references as Array<{ external_id: string }> | undefined;
@@ -185,23 +205,16 @@ export async function attackNavigatorHandler(c: Context<{ Bindings: Env }>): Pro
     }
   }
 
-  // Build tactic-to-technique mapping
-  const tacticPhaseMap: Record<string, string> = {
-    reconnaissance: 'TA0043',
-    'resource-development': 'TA0042',
-    'initial-access': 'TA0001',
-    execution: 'TA0002',
-    persistence: 'TA0003',
-    'privilege-escalation': 'TA0004',
-    'defense-evasion': 'TA0005',
-    'credential-access': 'TA0006',
-    discovery: 'TA0007',
-    'lateral-movement': 'TA0008',
-    collection: 'TA0009',
-    'command-and-control': 'TA0011',
-    exfiltration: 'TA0010',
-    impact: 'TA0040',
-  };
+  // Build tactic-to-technique mapping.
+  //
+  // Derived from the generated tactic list (api/src/lib/mitre-tactics.ts)
+  // rather than hand-kept. The hand-kept copy was a 14-tactic pre-split
+  // list, which meant the v3.3 split of `defense-evasion` into `stealth`
+  // (TA0005) and `defense-impairment` (TA0112) dropped 204 techniques from
+  // the navigator entirely — `stealth` and `defense-impairment` had no
+  // entry, so `if (!tacticId) continue` threw them away — and the surviving
+  // TA0005 techniques were filed under the wrong tactic.
+  const tacticPhaseMap: Record<string, string> = Object.fromEntries(MITRE_TACTICS.map((t) => [t.short_name, t.id]));
 
   const matrix: MitreTactic[] = [];
   const tacticTechniqueMap = new Map<string, MitreTechnique[]>();
@@ -226,23 +239,8 @@ export async function attackNavigatorHandler(c: Context<{ Bindings: Env }>): Pro
     }
   }
 
-  // Sort tactics by ATT&CK kill chain order
-  const tacticOrder = [
-    'TA0043',
-    'TA0042',
-    'TA0001',
-    'TA0002',
-    'TA0003',
-    'TA0004',
-    'TA0005',
-    'TA0006',
-    'TA0007',
-    'TA0008',
-    'TA0009',
-    'TA0011',
-    'TA0010',
-    'TA0040',
-  ];
+  // Sort tactics by ATT&CK kill chain order — the generated list's order.
+  const tacticOrder = MITRE_TACTICS.map((t) => t.id);
   matrix.sort((a, b) => tacticOrder.indexOf(a.id) - tacticOrder.indexOf(b.id));
 
   // Fetch live threat intel to compute scores
@@ -349,7 +347,7 @@ export async function attackNavigatorHandler(c: Context<{ Bindings: Env }>): Pro
 
   const response: AttackNavigatorResponse = {
     generated_at: new Date().toISOString(),
-    source: 'MITRE ATT&CK v15 + live threat intel (ThreatFox, URLhaus)',
+    source: `MITRE ATT&CK${attackVersion ? ` v${attackVersion}` : ''} + live threat intel (ThreatFox, URLhaus)`,
     total_techniques: techniques.size,
     total_tactics: matrix.length,
     matrix,

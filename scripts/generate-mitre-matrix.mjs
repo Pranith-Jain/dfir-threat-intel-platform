@@ -1,10 +1,28 @@
 /**
- * Regenerate src/data/dfir/mitre-matrix.ts from the upstream MITRE ATT&CK
- * v19 enterprise-attack.json bundle.
+ * Regenerate the MITRE ATT&CK artifacts from the upstream
+ * enterprise-attack.json bundle.
  *
- * The static matrix powers /dfir/mitre's grid view. Per-technique detail
- * still loads live from /api/v1/mitre/technique, so this file only needs
- * tactic names, ordering, technique titles, and sub-technique titles.
+ * Emits TWO files, both from the same fetch so they can never disagree:
+ *
+ *   src/data/dfir/mitre-matrix.ts     the full matrix (tactic + technique
+ *                                     titles) — powers /dfir/mitre's grid
+ *   api/src/lib/mitre-tactics.ts       the canonical ordered tactic list
+ *                                     (id, name, short_name, order) —
+ *                                     consumed by the API's attack-flow
+ *                                     and attack-chain routes
+ *
+ * The second file exists because the API used to hand-maintain its own
+ * tactic list. That list was a 14-tactic pre-split copy, so two live
+ * tactics (Stealth, Defense Impairment — 204 techniques) sorted to the end
+ * of every kill chain, and TA0005 was still labelled "Defense Evasion" after
+ * ATT&CK reassigned that id to Stealth. A hand-maintained list of a
+ * changing taxonomy is a bug waiting for the next release; generating it
+ * from the same bundle the matrix comes from is the fix.
+ *
+ * ATT&CK reorganised its tactic taxonomy in the v3.3 spec: `defense-evasion`
+ * was split into `stealth` (TA0005, reusing the old id) and
+ * `defense-impairment` (TA0112, new). Anything that assumed 14 tactics, or
+ * that mapped a tactic id to a name, was wrong from that release on.
  *
  * Re-run: `node scripts/generate-mitre-matrix.mjs`
  */
@@ -15,6 +33,7 @@ const BUNDLE_URL =
   'https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json';
 
 const OUT = resolve(import.meta.dirname, '..', 'src', 'data', 'dfir', 'mitre-matrix.ts');
+const OUT_TACTICS = resolve(import.meta.dirname, '..', 'api', 'src', 'lib', 'mitre-tactics.ts');
 
 const PRE = `/**
  * AUTO-GENERATED from MITRE ATT&CK enterprise-attack.json. Do not edit by
@@ -45,6 +64,36 @@ export interface MitreTactic {
 }
 
 export const mitreMatrix: MitreTactic[] = `;
+
+const PRE_TACTICS = `/**
+ * AUTO-GENERATED from MITRE ATT&CK enterprise-attack.json. Do not edit by
+ * hand. To resync from upstream, run:
+ *   node scripts/generate-mitre-matrix.mjs
+ *
+ * Upstream: ${BUNDLE_URL}
+ * Generated: %DATE% (ATT&CK %VERSION%)
+ *
+ * The canonical ATT&CK Enterprise tactic list, in kill-chain order.
+ *
+ * This is generated rather than hand-written because ATT&CK's tactic
+ * taxonomy changes: the v3.3 spec split \`defense-evasion\` into
+ * \`stealth\` (TA0005) and \`defense-impairment\` (TA0112). A hand-kept
+ * list silently mis-sorted every technique in the new tactics and kept
+ * labelling the reassigned TA0005 as "Defense Evasion".
+ */
+
+/** One ATT&CK Enterprise tactic, in kill-chain order. */
+export interface MitreTacticMeta {
+  /** ATT&CK external id (TA00xx). */
+  id: string;
+  name: string;
+  /** ATT&CK short name, e.g. \`defense-impairment\`. */
+  short_name: string;
+  /** 1-based kill-chain position. */
+  order: number;
+}
+
+export const MITRE_TACTICS: MitreTacticMeta[] = `;
 
 function externalId(obj) {
   return obj?.external_references?.find((r) => r.source_name === 'mitre-attack')?.external_id;
@@ -84,19 +133,28 @@ async function main() {
 
   // Techniques grouped by parent tactic kill-chain phase.
   const byPhase = new Map();
-  // is-subtechnique map: parent technique X.id → [{id,name}].
+  // Sub-technique map: parent technique external id → [{id,name}].
   const subTechs = new Map();
 
   for (const o of objects) {
     if (o.type !== 'attack-pattern' || o.revoked || o.x_mitre_deprecated) continue;
     if (!o.kill_chain_phases?.some((p) => p.kill_chain_name === 'mitre-attack')) continue;
+    if (!(o.x_mitre_domains ?? []).includes('enterprise-attack')) continue;
     const id = externalId(o);
     if (!id) continue;
     if (o.x_mitre_is_subtechnique) {
+      // A sub-technique's parent is the id prefix (T1059.001 → T1059).
+      // Deriving it from the id rather than from a `subtechnique-of`
+      // relationship is direction-independent: ATT&CK has flipped that
+      // relationship's source/target between releases, and reading it the
+      // wrong way round produces a matrix with zero sub-techniques and no
+      // error to signal it.
       const parent = id.split('.')[0];
       if (!subTechs.has(parent)) subTechs.set(parent, []);
       subTechs.get(parent).push({ id, name: o.name });
     } else {
+      // A parent technique can belong to more than one tactic (145 of them
+      // do in the v3.3 spec), and ATT&CK's own matrix lists it under each.
       for (const phase of o.kill_chain_phases) {
         if (phase.kill_chain_name !== 'mitre-attack') continue;
         if (!byPhase.has(phase.phase_name)) byPhase.set(phase.phase_name, []);
@@ -110,12 +168,6 @@ async function main() {
     arr.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
   }
 
-  // Sort techniques in each tactic by ID (T1001 < T1002).
-  for (const arr of byPhase.values()) {
-    arr.sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
-  }
-
-  // Build the final ordered tactic list.
   const tactics = [];
   for (const ref of orderedTacticRefs) {
     const tactic = tacticById.get(ref);
@@ -133,16 +185,17 @@ async function main() {
     });
   }
 
-  // Version detection — first attempt the marking definition's
-  // x_mitre_attack_spec_version on the matrix; fall back to looking at the
-  // most-recent modified date.
-  const versionObj = objects.find(
-    (o) =>
-      o.type === 'x-mitre-collection' ||
-      (o.type === 'marking-definition' && o.definition_type === 'statement' && /v\d+/.test(o.definition?.statement ?? ''))
-  );
+  // Version detection.
+  //
+  // The ATT&CK *release* version is `x_mitre_attack_spec_version` on the
+  // matrix object. `x_mitre_version` is the STIX object's own revision
+  // number, and on the matrix it is "2.0" — which is where the old
+  // "Generated: … (ATT&CK v2.0)" header came from. That label described
+  // nothing a reader could act on.
   const version =
-    versionObj?.x_mitre_version ?? matrixObj?.x_mitre_version ?? matrixObj?.x_mitre_attack_spec_version ?? 'master';
+    matrixObj?.x_mitre_attack_spec_version ??
+    objects.find((o) => o.x_mitre_attack_spec_version)?.x_mitre_attack_spec_version ??
+    'master';
 
   const totals = {
     tactics: tactics.length,
@@ -159,10 +212,25 @@ async function main() {
     .replace(/^(\s*)"(id|name|short_name|description|techniques|subtechniques)":/gm, '$1$2:')
     .replace(/^/gm, '');
 
-  const header = PRE.replace('%DATE%', new Date().toISOString().slice(0, 10)).replace('%VERSION%', `v${version}`);
+  const date = new Date().toISOString().slice(0, 10);
+  const header = PRE.replace('%DATE%', date).replace('%VERSION%', `v${version}`);
   const out = `${header}${body};\n`;
   writeFileSync(OUT, out);
   console.log(`wrote ${OUT} (${out.length} bytes)`);
+
+  // The canonical ordered tactic list, generated from the same fetch.
+  const tacticList = tactics.map((t, i) => ({
+    id: t.id,
+    name: t.name,
+    short_name: t.short_name,
+    order: i + 1,
+  }));
+  const tacticsBody = JSON.stringify(tacticList, null, 2)
+    .replace(/^(\s*)"(id|name|short_name|order)":/gm, '$1$2:')
+    .replace(/^/gm, '');
+  const tacticsHeader = PRE_TACTICS.replace('%DATE%', date).replace('%VERSION%', `v${version}`);
+  writeFileSync(OUT_TACTICS, `${tacticsHeader}${tacticsBody};\n`);
+  console.log(`wrote ${OUT_TACTICS} (${tacticList.length} tactics)`);
 }
 
 main().catch((e) => {

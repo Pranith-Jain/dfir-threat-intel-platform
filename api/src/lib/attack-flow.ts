@@ -1,26 +1,21 @@
 import type { StixCommon } from './stix-build';
 import { loadedAttackIdIndexOrNull } from './attack-id-lazy';
+import { MITRE_TACTICS } from './mitre-tactics';
 
 /** MITRE Attack-Flow STIX 2.1 extension-definition id (canonical, from the spec). */
 export const ATTACK_FLOW_EXT_ID = 'extension-definition--fb9c968a-745b-4ade-9b25-c324172197f4';
 
 /** Enterprise tactics in kill-chain order (mitre-attack phase_name shortnames). */
-export const TACTIC_ORDER: string[] = [
-  'reconnaissance',
-  'resource-development',
-  'initial-access',
-  'execution',
-  'persistence',
-  'privilege-escalation',
-  'defense-evasion',
-  'credential-access',
-  'discovery',
-  'lateral-movement',
-  'collection',
-  'command-and-control',
-  'exfiltration',
-  'impact',
-];
+/**
+ * Kill-chain order of the ATT&CK Enterprise tactics.
+ *
+ * Derived from the generated tactic list rather than hand-kept. ATT&CK's
+ * v3.3 spec split `defense-evasion` into `stealth` and `defense-impairment`
+ * (and reassigned TA0005 to Stealth), so a hand-kept list left 204
+ * techniques sorting to the end of every kill chain and kept labelling the
+ * reassigned id as "Defense Evasion".
+ */
+export const TACTIC_ORDER: string[] = MITRE_TACTICS.map((t) => t.short_name);
 
 export interface FlowTechnique {
   id: string; // ATT&CK technique id, e.g. T1566 / T1059.001

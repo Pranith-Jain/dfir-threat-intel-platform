@@ -2,6 +2,7 @@ import type { Context } from 'hono';
 import type { Env } from '../env';
 import { badRequest, serviceUnavailable } from '../lib/api-error';
 import type { D1Database } from '@cloudflare/workers-types';
+import { MITRE_TACTICS as MITRE_TACTIC_META } from '../lib/mitre-tactics';
 
 /**
  * Attack Chain Reconstruction — map IOCs to MITRE ATT&CK kill chain.
@@ -33,22 +34,37 @@ interface MitreTechnique {
   platforms: string[];
 }
 
-const MITRE_TACTICS: MitreTactic[] = [
-  { id: 'TA0043', name: 'Reconnaissance', description: 'Gathering information for targeting', order: 1 },
-  { id: 'TA0042', name: 'Resource Development', description: 'Establishing resources for operations', order: 2 },
-  { id: 'TA0001', name: 'Initial Access', description: 'Gaining foothold in the network', order: 3 },
-  { id: 'TA0002', name: 'Execution', description: 'Running malicious code', order: 4 },
-  { id: 'TA0003', name: 'Persistence', description: 'Maintaining access', order: 5 },
-  { id: 'TA0004', name: 'Privilege Escalation', description: 'Gaining higher permissions', order: 6 },
-  { id: 'TA0005', name: 'Defense Evasion', description: 'Avoiding detection', order: 7 },
-  { id: 'TA0006', name: 'Credential Access', description: 'Stealing credentials', order: 8 },
-  { id: 'TA0007', name: 'Discovery', description: 'Mapping the environment', order: 9 },
-  { id: 'TA0008', name: 'Lateral Movement', description: 'Moving through the network', order: 10 },
-  { id: 'TA0009', name: 'Collection', description: 'Gathering data of interest', order: 11 },
-  { id: 'TA0011', name: 'Command and Control', description: 'Communicating with compromised systems', order: 12 },
-  { id: 'TA0010', name: 'Exfiltration', description: 'Stealing data', order: 13 },
-  { id: 'TA0040', name: 'Impact', description: 'Disrupting operations', order: 14 },
-];
+/**
+ * The ATT&CK Enterprise tactics, in kill-chain order.
+ *
+ * Ids, names and order come from the generated tactic list (see
+ * api/src/lib/mitre-tactics.ts) so they cannot drift from the matrix. The
+ * short one-line descriptions are editorial and stay here.
+ */
+const TACTIC_DESCRIPTIONS: Record<string, string> = {
+  reconnaissance: 'Gathering information for targeting',
+  'resource-development': 'Establishing resources for operations',
+  'initial-access': 'Gaining foothold in the network',
+  execution: 'Running malicious code',
+  persistence: 'Maintaining access',
+  'privilege-escalation': 'Gaining higher permissions',
+  stealth: 'Avoiding detection and hiding activity',
+  'defense-impairment': 'Disabling defensive tooling and controls',
+  'credential-access': 'Stealing credentials',
+  discovery: 'Mapping the environment',
+  'lateral-movement': 'Moving through the network',
+  collection: 'Gathering data of interest',
+  'command-and-control': 'Communicating with compromised systems',
+  exfiltration: 'Stealing data',
+  impact: 'Disrupting operations',
+};
+
+const MITRE_TACTICS: MitreTactic[] = MITRE_TACTIC_META.map((t) => ({
+  id: t.id,
+  name: t.name,
+  description: TACTIC_DESCRIPTIONS[t.short_name] ?? '',
+  order: t.order,
+}));
 
 // IOC pattern → technique mapping
 const IOC_TECHNIQUE_MAP: Array<{
