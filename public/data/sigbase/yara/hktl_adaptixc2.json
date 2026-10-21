@@ -1,0 +1,23 @@
+{
+  "slug": "hktl_adaptixc2",
+  "filename": "hktl_adaptixc2.yar",
+  "source": "github.com/Neo23x0/signature-base",
+  "license": "Detection Rule License 1.1",
+  "headerComment": "",
+  "rules": [
+    {
+      "name": "HKTL_AdaptixC2_Beacon_Apr26",
+      "meta": {
+        "description": "Detects the Windows beacon of the AdaptixC2 post-exploitation framework by its stock Itanium-ABI RTTI type names and default HTTP heartbeat header. Matches an unmodified build regardless of operator.",
+        "license": "CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/",
+        "author": "The Hunters Ledger",
+        "reference": "https://github.com/Adaptix-Framework/AdaptixC2",
+        "date": "2026-04-30",
+        "score": "80",
+        "hash1": "358edb5d7e3e38c2da0a2ef323a281283aa96d47a8649014d114923b06866c12",
+        "id": "952a09e1-dbbd-5758-ab76-bb9f215d96b5"
+      }
+    }
+  ],
+  "body": "\nrule HKTL_AdaptixC2_Beacon_Apr26 {\n   meta:\n      description = \"Detects the Windows beacon of the AdaptixC2 post-exploitation framework by its stock Itanium-ABI RTTI type names and default HTTP heartbeat header. Matches an unmodified build regardless of operator.\"\n      license = \"CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/\"\n      author = \"The Hunters Ledger\"\n      reference = \"https://github.com/Adaptix-Framework/AdaptixC2\"\n      date = \"2026-04-30\"\n      score = 80\n      hash1 = \"358edb5d7e3e38c2da0a2ef323a281283aa96d47a8649014d114923b06866c12\"\n      id = \"952a09e1-dbbd-5758-ab76-bb9f215d96b5\"\n   strings:\n      $a1 = \"9Connector\" ascii\n      $a2 = \"13ConnectorHTTP\" ascii\n      $a3 = \"X-Beacon-Id\" ascii\n\n      $s1 = \"GetVersions\" ascii\n      $s2 = \"Mingw-w64 runtime failure:\" ascii\n   condition:\n      uint16(0) == 0x5a4d\n      and filesize < 300KB\n      and all of ($a*)\n      and 1 of ($s*)\n}\n"
+}
