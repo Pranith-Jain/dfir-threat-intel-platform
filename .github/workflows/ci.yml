@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
       - run: npm ci --no-fund
       # api/ has its own package.json + lockfile. The nested api/eslint.config.js
@@ -57,7 +57,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
       - run: npm ci --no-fund
       # Two compilation units (root SPA + api/ worker). Run both — they catch
@@ -85,7 +85,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
       - run: npm ci --no-fund
       # Node:test suites for the data-pipeline scripts (mcp-manifest parser,
@@ -96,6 +96,14 @@ jobs:
         run: npm run test:scripts
       - run: npm run test:run
 
+      - name: Scale claims match their registries
+        # The README, CLAUDE.md, package.json and the UI quote how big the
+        # platform is. Every one of those numbers was a hand-written copy of
+        # something the code computes, and they all drifted at once — the
+        # README claimed "135+ tool DFIR toolkit" (98) and a "332-tool MCP
+        # server" (426) in its first line.
+        run: npm run check:counts
+
   coverage:
     name: Coverage gate (protected surfaces)
     runs-on: ubuntu-latest
@@ -103,7 +111,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
       - run: npm ci --no-fund
       # Verifies every protected lib (rule-convert, detection-engine, etc.)
@@ -133,7 +141,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
       - run: npm ci --no-fund
       # api/ has its own package.json + lockfile; @cloudflare/vitest-pool-workers
@@ -221,7 +229,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
       - run: npm ci --no-fund
       - name: install api deps
@@ -241,7 +249,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
       - run: npm ci --no-fund
       - name: Build client
@@ -264,7 +272,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
       - run: npm ci --no-fund
       - name: Report Cloudflare deploy secret status
@@ -301,7 +309,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
       - run: npm ci --no-fund
       # knip resolves imports in api/ + worker/, which need api/node_modules to

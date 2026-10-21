@@ -15,9 +15,16 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
+import { createRequire } from 'node:module';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
+// This file is ESM, so the bare `require` identifier does not exist — the
+// old `require.resolve(...)` threw a ReferenceError that the catch below
+// swallowed, so `coverageAvailable()` always answered false and the
+// "protected surfaces" gate silently degraded to a test-file-existence
+// check. createRequire gives a real resolver in an ESM module.
+const require = createRequire(import.meta.url);
 
 // Protected surfaces: per-module minimum coverage (lines %). Bumping
 // any of these is a deliberate decision — easier to ratchet up than
@@ -62,12 +69,19 @@ function coverageAvailable() {
 }
 
 function runCoverage() {
-  // Run vitest with the json reporter so we can read coverage-summary.json.
+  // The COVERAGE reporter is what matters here, not the test reporter.
+  // `--reporter=json` overrides the *test* reporter and writes a test-run
+  // dump to coverage-results.json; the per-file line coverage the gate
+  // reads comes from the `json-summary` COVERAGE reporter, which writes
+  // coverage/coverage-summary.json.
   try {
-    execSync('npx vitest run --coverage --reporter=json --outputFile=coverage-results.json', {
-      cwd: ROOT,
-      stdio: 'inherit',
-    });
+    execSync(
+      'npx vitest run --coverage --coverage.reporter=json-summary --coverage.reportsDirectory=coverage',
+      {
+        cwd: ROOT,
+        stdio: 'inherit',
+      }
+    );
   } catch (err) {
     console.error('vitest coverage run failed (see output above)');
     process.exit(1);
