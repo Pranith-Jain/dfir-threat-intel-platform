@@ -1,0 +1,31 @@
+{
+  "slug": "when-built-with-wolfssl-curl-can-successfully-validate-a-pinned-public-key-hash--a25cae",
+  "externalId": "gcve-osv-ghsa-wq9f-qmpx-2cc8",
+  "source": "GCVE Database",
+  "type": "vulnerability",
+  "title": "When built with wolfSSL, curl can successfully validate a pinned public key hash against a key the TLS peer does not possess. (CVE-2026-87866)",
+  "description": "A vulnerability exists in curl when built with wolfSSL where curl can incorrectly validate a pinned public key hash against a key that the TLS peer does not actually possess. This occurs because curl re-parses the TLS certificate and is tricked by a manipulated validity length field to extract and match a different embedded key, leading to incorrect authorization of the pinned public key.",
+  "severity": "high",
+  "cvssScore": null,
+  "cvssVector": null,
+  "publishedDate": "2026-10-20T21:31:08.000Z",
+  "cveId": "CVE-2026-87866",
+  "cveIds": ["CVE-2026-87866"],
+  "tags": ["gcve", "osv", "ghsa-wq9f-qmpx-2cc8", "cve-2026-87866", "ghsa"],
+  "knownExploitsInWild": false,
+  "exploited": false,
+  "mirageCountries": [],
+  "patchAvailable": false,
+  "knownThreatActors": [],
+  "affectedCountries": [],
+  "references": [
+    { "title": "", "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-87866", "type": "advisory" },
+    { "title": "", "url": "https://hackerone.com/reports/3989514", "type": "other" },
+    { "title": "", "url": "https://curl.se/docs/CVE-2026-87866.html", "type": "other" },
+    { "title": "", "url": "https://curl.se/docs/CVE-2026-87866.json", "type": "other" }
+  ],
+  "url": "https://radar.offseq.com/threats/when-built-with-wolfssl-curl-can-successfully-validate-a-pinned-public-key-hash--a25cae",
+  "aiSummary": "The vulnerability in curl arises when it is compiled with wolfSSL as the TLS backend. During the TLS handshake, wolfSSL correctly validates the connection and certificate. However, curl subsequently re-parses the same certificate and, due to a manipulated validity length field, extracts a different embedded public key than the one validated by wolfSSL. This causes curl to successfully validate a pinned public key hash against a key that the TLS peer does not actually possess, potentially allowing incorrect authorization decisions based on the pinned key.",
+  "aiImpact": "This vulnerability could allow an attacker to bypass public key pinning validation in curl when using wolfSSL, potentially enabling unauthorized connections to be accepted as valid. This undermines the security guarantees of public key pinning, which is intended to prevent man-in-the-middle attacks by ensuring the server's public key matches a known pinned key.",
+  "sizeBytes": 2515
+}

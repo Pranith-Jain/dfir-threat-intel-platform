@@ -2,12 +2,12 @@
   "source": "github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
   "sourceUrl": "https://github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
   "license": "MIT",
-  "replicatedAt": "2026-10-13",
+  "replicatedAt": "2026-10-20",
   "counts": {
-    "rules": 31,
+    "rules": 34,
     "t1": 9,
-    "t2": 8,
-    "t3": 14,
+    "t2": 9,
+    "t3": 16,
     "filters": 27,
     "filtersEnabled": 24,
     "archetypes": 12,
@@ -293,6 +293,33 @@
       "description": "MANTLEMAZE — VMProtect-packed Win64 BYOVD loader with multi-format prompt-injection arsenal and fabricated authority props; A3 AI-Analysis Evasion; April-July 2026 campaign",
       "family": "MANTLEMAZE",
       "stringCount": 5
+    },
+    {
+      "name": "T2-MCP_Client_Endpoint_PE",
+      "tier": "T2",
+      "confidence": 70,
+      "artifactClass": "mcp_client_implant",
+      "description": "PE/ELF with a hardcoded public MCP server endpoint — indicates an embedded MCP client. Three anchors confirmed in suspicious corpus samples (21-27 detections, no legitimate-app explanation): Firecrawl (C2AGENT, Unit42 confirmed), Context7 (two clusters Aug + Oct 2026, Telegram C2 in Oct cluster), Exa (Aug-Sep cluster co-occurring with Context7). Legitimate MCP clients (Claude Desktop, Cursor) are 0-detection and filtered by positives:1+ at acquisition.",
+      "family": null,
+      "stringCount": 3
+    },
+    {
+      "name": "T3-C2AGENT_Go_LLM_Operated_Agentic_Implant",
+      "tier": "T3",
+      "confidence": 90,
+      "artifactClass": "agentic_c2_implant",
+      "description": "C2AGENT (Unit42/Palo Alto) — Go-based Windows LLM-operated agentic implant with a closed goal->prompt->model->execution->feedback loop (40-step cap); built-in MCP client (default Firecrawl); operator-assigned skills/playbooks; Cobalt Strike BOF loader from v2.4; active development v0-v2.4+ (2026-09-10 onward). LLM traffic proxied through C2 server (/llm/<id>/v1/chat/completions), not sent directly to a provider -- hence no T1-LLM_API_Endpoint hit. Anchors: actor C2 domain in contacted_domains (all 20 corpus variants, 0 FP) and hardcoded default MCP server URL in embedded_urls (17/17 agent builds, 0 FP)",
+      "family": "C2AGENT",
+      "stringCount": 2
+    },
+    {
+      "name": "T3-CARBONATO_Hermes_Agent_AI_Key_Loot_Implant",
+      "tier": "T3",
+      "confidence": 70,
+      "artifactClass": "ai_c2_implant",
+      "description": "CARBONATO (ThreatDown, 2026-09-23) — Linux Docker botnet implant; weaponizes the open-source Hermes Agent AI framework by overwriting its SOUL.md persona file with a 39-line malicious prompt that (1) routes operator Telegram tasks through the operator's own LLM gateway as a live C2 brain (A4) and (2) directs the agent to exfiltrate victim AI API keys as explicit #1 loot priority, naming 14 providers (A6). Primary artifacts are shell scripts and text files inside gzip-compressed Docker image layers — not indexed by VT content search. NOTE: rule is unvalidated against VT corpus samples (known hash not on VT); intended for container image forensics and host-based detection, not VT hunting.",
+      "family": "CARBONATO",
+      "stringCount": 3
     }
   ],
   "families": [

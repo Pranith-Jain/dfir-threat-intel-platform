@@ -1,0 +1,31 @@
+{
+  "slug": "enabling-curloptcrlf-causes-curl-to-advertise-the-raw-input-byte-count-in-the-im-5e1118",
+  "externalId": "gcve-osv-ghsa-mxp6-wxxv-r9rj",
+  "source": "GCVE Database",
+  "type": "vulnerability",
+  "title": "Enabling CURLOPT_CRLF causes curl to advertise the raw input byte count in the IMAP APPEND {N} literal while transmitting line-ending expanded data. (CVE-2026-87864)",
+  "description": "Enabling the CURLOPT_CRLF option in curl causes it to advertise the raw input byte count in the IMAP APPEND {N} literal while transmitting data with expanded line endings. The IMAP server reads only the specified N bytes for the payload, but any overflow bytes beyond N are interpreted as additional IMAP commands within the authenticated session.",
+  "severity": "high",
+  "cvssScore": null,
+  "cvssVector": null,
+  "publishedDate": "2026-10-20T21:31:10.000Z",
+  "cveId": "CVE-2026-87864",
+  "cveIds": ["CVE-2026-87864"],
+  "tags": ["gcve", "osv", "ghsa-mxp6-wxxv-r9rj", "cve-2026-87864", "ghsa"],
+  "knownExploitsInWild": false,
+  "exploited": false,
+  "mirageCountries": [],
+  "patchAvailable": false,
+  "knownThreatActors": [],
+  "affectedCountries": [],
+  "references": [
+    { "title": "", "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-87864", "type": "advisory" },
+    { "title": "", "url": "https://hackerone.com/reports/3972403", "type": "other" },
+    { "title": "", "url": "https://curl.se/docs/CVE-2026-87864.html", "type": "other" },
+    { "title": "", "url": "https://curl.se/docs/CVE-2026-87864.json", "type": "other" }
+  ],
+  "url": "https://radar.offseq.com/threats/enabling-curloptcrlf-causes-curl-to-advertise-the-raw-input-byte-count-in-the-im-5e1118",
+  "aiSummary": "This vulnerability arises when curl's CURLOPT_CRLF option is enabled. Curl advertises the raw byte count of the input in the IMAP APPEND {N} literal, but due to line-ending expansion during transmission, the actual data sent is longer than N bytes. The IMAP server reads only N bytes as the payload, causing the extra bytes to be treated as subsequent IMAP commands. This can lead to unintended command execution within the authenticated IMAP session.",
+  "aiImpact": "An attacker able to influence the transmitted data could exploit this discrepancy to inject and execute additional IMAP commands beyond the intended payload. This could potentially lead to unauthorized actions within the authenticated IMAP session. However, no known exploits in the wild have been reported.",
+  "sizeBytes": 2329
+}

@@ -1,0 +1,31 @@
+{
+  "slug": "an-authenticated-https-origin-can-supply-an-hsts-max-age-value-that-the-parser-a-67a405",
+  "externalId": "gcve-osv-ghsa-53q4-87wj-266h",
+  "source": "GCVE Database",
+  "type": "vulnerability",
+  "title": "An authenticated HTTPS origin can supply an HSTS max-age value that the parser accepts, but time serialization later fails to process. (CVE-2026-87863)",
+  "description": "CVE-2026-87863 is a vulnerability where an authenticated HTTPS origin can supply an HSTS max-age value that the parser accepts, but later fails during time serialization. On 64-bit systems, extremely large max-age values cause expiry times that exceed calendar time structure limits. This leads to cache save operations truncating the original HSTS file and deleting the temporary replacement file, resulting in an empty or partial HSTS cache. The error is silently ignored, causing curl to exit successfully despite data loss.",
+  "severity": "medium",
+  "cvssScore": null,
+  "cvssVector": null,
+  "publishedDate": "2026-10-20T21:31:08.000Z",
+  "cveId": "CVE-2026-87863",
+  "cveIds": ["CVE-2026-87863"],
+  "tags": ["gcve", "osv", "ghsa-53q4-87wj-266h", "cve-2026-87863", "ghsa"],
+  "knownExploitsInWild": false,
+  "exploited": false,
+  "mirageCountries": [],
+  "patchAvailable": false,
+  "knownThreatActors": [],
+  "affectedCountries": [],
+  "references": [
+    { "title": "", "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-87863", "type": "advisory" },
+    { "title": "", "url": "https://hackerone.com/reports/3972373", "type": "other" },
+    { "title": "", "url": "https://curl.se/docs/CVE-2026-87863.html", "type": "other" },
+    { "title": "", "url": "https://curl.se/docs/CVE-2026-87863.json", "type": "other" }
+  ],
+  "url": "https://radar.offseq.com/threats/an-authenticated-https-origin-can-supply-an-hsts-max-age-value-that-the-parser-a-67a405",
+  "aiSummary": "This vulnerability involves the handling of HSTS max-age values by curl on 64-bit systems. While the parser accepts very large max-age values, the subsequent time serialization fails because the computed absolute expiry time exceeds the bounds of the calendar time structure. During cache save operations, curl truncates the original HSTS file before writing a temporary replacement. If serialization fails, the temporary file is deleted, leaving the HSTS cache empty or partially written. The failure is silently ignored, so curl exits without error even though the HSTS cache data is lost.",
+  "aiImpact": "The impact is loss of HSTS cache data due to failure in saving the cache when processing extreme max-age values. This could lead to the loss of HSTS policy persistence, potentially weakening HTTPS security enforcement for affected origins until the cache is rebuilt. There is no indication of remote code execution or direct compromise. The error is silent, which may cause unnoticed degradation of security posture.",
+  "sizeBytes": 2746
+}

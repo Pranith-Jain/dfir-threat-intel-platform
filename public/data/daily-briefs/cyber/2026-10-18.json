@@ -1,0 +1,128 @@
+{
+  "type": "cyber",
+  "date": "2026-10-18",
+  "threatLevel": "",
+  "executiveSummary": "Multiple, concurrent edge-device and OT controller compromises elevate the near-term risk of industrial process disruption. Actively exploited remote-access appliances (Ivanti Connect Secure, BeyondTrust Remote Support, F5 BIG-IP APM, Citrix NetScaler) are providing initial access, persistence, and lateral movement opportunities that can bridge IT into OT where segmentation is weak. Security Advisory Security Advisory Direct OT targeting continues: a joint advisory warns of active attempts to access Siemens S7 PLCs using S7comm and commodity libraries, creating potential for logic tampering and unsafe states-especially in water utilities. Security Advisory Industrial gateways with critical unauthenticated control paths remain exposed. Recent CISA bulletins detail multiple RCE and missing-auth conditions in Advantech EKI-1242 protocol gateways and WISE-6610 LoRaWAN gateways, enabling remote takeover of industrial conduits if unpatched. Security Bulletin Security Bulletin Refrigeration control systems in France were actively compromised, prompting rapid removal of internet exposure; older Danfoss models and outdated firmware are implicated, threatening cold-chain integrity. Security Advisory View Article Mass exploitation of enterprise platforms continues to drive extortion and potential supply-chain impact. ShinyHunters abused a new Oracle PeopleSoft flaw at scale, impacting government and aviation-adjacent services; defenders should patch and normalize URL decoding at WAFs to catch evasion. Supporting Report View Article Nation-state and criminal campaigns persist. Chinese government-linked operators and a Gunra ransomware RaaS are both active against critical sectors; immediate patching of VPNs/edges, MFA enforcement, and segmentation remain essential. Security Advisory Security Advisory",
+  "keyFindings": [
+    {
+      "title": "Actively exploited remote-access appliances (Ivanti, BeyondTrust, F5 BIG-IP APM,",
+      "summary": "Actively exploited remote-access appliances (Ivanti, BeyondTrust, F5 BIG-IP APM, NetScaler) are top ingress vectors; immediate patching and compromise assessment are required. Security Advisory Security Advisory"
+    },
+    {
+      "title": "OT controllers and gateways with missing authentication/RCE remain exposed",
+      "summary": "Advantech EKI-1242 protocol gateways and WISE-6610 LoRaWAN gateways enable unauthenticated control/RCE. Security Bulletin Security Bulletin"
+    },
+    {
+      "title": "Siemens S7 PLCs are under active probing/targeting using S7comm and open-source ",
+      "summary": "Siemens S7 PLCs are under active probing/targeting using S7comm and open-source client libraries, risking logic manipulation in sectors like water/wastewater. Security Advisory"
+    },
+    {
+      "title": "Cold-chain OT (Danfoss AK-SM/AK-SC/xweb) has observed compromises; older/unsuppo",
+      "summary": "Cold-chain OT (Danfoss AK-SM/AK-SC/xweb) has observed compromises; older/unsupported models and unpatched AK-SM800A firmware are at higher risk. Security Advisory"
+    },
+    {
+      "title": "PeopleSoft CVE-2026-35273 mass exploitation fuels data-extortion; aviation suppo",
+      "summary": "PeopleSoft CVE-2026-35273 mass exploitation fuels data-extortion; aviation support systems were impacted, underscoring supply-chain risk. View Article"
+    },
+    {
+      "title": "Chinese government-linked actors maintain broad targeting of critical infrastruc",
+      "summary": "Chinese government-linked actors maintain broad targeting of critical infrastructure; defenders should hunt for LOTL and botnet-enabled access. Security Advisory"
+    },
+    {
+      "title": "Gunra ransomware affiliates exploit Fortinet SSL-VPN and delete backups; operato",
+      "summary": "Gunra ransomware affiliates exploit Fortinet SSL-VPN and delete backups; operators should enforce MFA, patch VPNs, and test immutable recovery. Security Advisory"
+    },
+    {
+      "title": "F5 BIG-IP APM OAuth RCE (CVE-2026-94127) is under active exploitation; apply hot",
+      "summary": "F5 BIG-IP APM OAuth RCE (CVE-2026-94127) is under active exploitation; apply hotfixes or iRule workaround and hunt for TMM cores and OAuth anomalies. Security Advisory"
+    },
+    {
+      "title": "NetScaler ADC/Gateway RCEs (CVE-2026-88771/88772) observed in the wild; patch an",
+      "summary": "NetScaler ADC/Gateway RCEs (CVE-2026-88771/88772) observed in the wild; patch and investigate for compromise, disable DTLS until updated. Security Advisory"
+    },
+    {
+      "title": "Danfoss iC7 drives expose engineering/debug paths enabling unsigned code uploads",
+      "summary": "Danfoss iC7 drives expose engineering/debug paths enabling unsigned code uploads in certain versions; isolate and update per vendor guidance. Security Bulletin"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "HIGH",
+        "label": "Overall OT Cyber Threat Level"
+      },
+      {
+        "value": "12",
+        "label": "Escalated Events"
+      },
+      {
+        "value": "16",
+        "label": "Monitor Events"
+      },
+      {
+        "value": "8",
+        "label": "Ignore (Informational/Low)"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Siemens (S7-1200/1500/200/300/400, STEP 7/TIA Portal); Advantech (EKI-1242EIMS/IEIMS, WISE-6610); Danfoss (AK-SM/AK-SC, iC7); Copeland/Dixell (xweb); Citrix NetScaler ADC/Gateway; F5 BIG-IP APM; Ivanti Connect Secure; BeyondTrust Remote Support (Bomgar); Oracle PeopleSoft."
+    ],
+    "sectors": [
+      "Water and Wastewater Systems; Energy; Manufacturing; Food Retail/Cold Chain and Logistics; Healthcare/Public Health; Aviation Support Services; Government and Judiciary; Transportation."
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "Chinese government-linked operators leveraging botnets, VPN infrastructure, and LOTL techniques against critical sectors; anticipate continued edge exploitation and stealth persistence. Security Advisory",
+        "Gunra ransomware affiliates exploiting Fortinet SSL-VPN, using Impacket/RDP/SMB for lateral movement, and exfiltrating Microsoft 365 data pre-encryption. Security Advisory",
+        "ShinyHunters mass-exploitation of Oracle PeopleSoft (CVE-2026-35273) leading to cross-sector extortion including aviation-adjacent systems; WAF URL-encoding evasion observed. View Article"
+      ]
+    }
+  ],
+  "relevance": "Risk to industrial operations this week is elevated by: (1) active PLC targeting with potential ladder-logic tampering; (2) widely deployed OT gateways with unauthenticated control/RCE; and (3) exploited perimeter/VPN/support appliances that often broker access to control environments. Cold-chain incidents demonstrate tangible operational impact beyond data loss, while enterprise platform mass exploitation (PeopleSoft) amplifies extortion and supply-chain exposure.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Advantech EKI-1242EIMS/IEIMS protocol gateways: multiple unauth RCE/missing-auth/cleartext management and OPC UA DoS weaknesses. Security Bulletin",
+        "Advantech WISE-6610 LoRaWAN gateways: remote command injection (public exploits) enabling device takeover. Security Bulletin",
+        "F5 BIG-IP APM OAuth server: CVE-2026-94127 actively exploited; unauth RCE; hotfixes and iRule available. Security Advisory",
+        "Citrix NetScaler ADC/Gateway: CVE-2026-88771/88772 RCEs exploited; patch and investigate. Security Advisory",
+        "Danfoss iC7 drives: insecure engineering/debug interfaces allow unsigned app/EEPROM/firmware upload-operational disruption risk. Security Bulletin",
+        "Ivanti Connect Secure: CVE-2026-104935 auth bypass with active exploitation; factory-reset/forensics guidance provided. Security Advisory",
+        "BeyondTrust Remote Support: CVE-2026-102764 auth bypass (KEV); patch BT26-05-RS; hunt for persistence. Security Advisory"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Exploit Public-Facing Application (ATT&CK T1190): Ivanti, NetScaler, BIG-IP APM, PeopleSoft.",
+      "Valid Accounts (T1078): VPN/session hijack, OAuth app abuse; BeyondTrust, ConnectWise OAuth incident (M365 tenants). View Article",
+      "Remote Services (T1021): WinRM/RDP/SMB lateral movement; DCSync (T1003.006); Impacket atexec; portproxy.",
+      "Command and Control via Application Protocols (T1071): MQTT/Matrix for backdoor C2; potential crossover to OT MQTT. View Article",
+      "ICS-specific: S7comm reads/writes against Siemens PLCs; OT gateway takeover enabling protocol manipulation; refrigeration controller abuse."
+    ],
+    "mitreIds": [
+      "T1190",
+      "T1078",
+      "T1021",
+      "T1003.006",
+      "T1071"
+    ]
+  },
+  "outlook72h": "Expect continued scanning and exploitation waves against NetScaler, Ivanti, BeyondTrust, and BIG-IP appliances; prioritize patch/containment windows and compromise assessment. Monitor OT edges (Advantech EKI/WISE) for anomalous admin actions and firmware changes; deploy temporary ACLs and IDS signatures. Hunt for S7comm anomalies and unauthorized logic uploads on Siemens PLCs; validate golden program backups. Cold-chain operators: validate controller exposure removal, credential changes, and alarm integrity; stage manual failovers.",
+  "relatedCves": [
+    "CVE-2026-35273",
+    "CVE-2026-94127",
+    "CVE-2026-88771",
+    "CVE-2026-104935",
+    "CVE-2026-102764",
+    "CVE-2026-103663",
+    "CVE-2026-63316"
+  ]
+}

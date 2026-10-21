@@ -3,13 +3,13 @@
   "repo": "Lab700xOrg/aisbom",
   "category": "scanner",
   "scope": ["modfile"],
-  "stars": 82,
+  "stars": 83,
   "description": "Static security scanner for ML model files — detects pickle bombs, Keras Lambda RCE and GGUF template injection, and generates CycloneDX / SPDX AI-BOMs (AIBOM) as EU AI Act, CRA and FDA §524B evidence.",
   "homepage": "https://www.aisbom.io/",
   "added": "2026-09-14",
-  "checkedAt": "2026-10-18T03:20:15Z",
-  "pushedAt": "2026-10-17",
-  "daysIdle": 1,
+  "checkedAt": "2026-10-20T03:20:37Z",
+  "pushedAt": "2026-10-18",
+  "daysIdle": 2,
   "archived": false,
   "license": "Apache-2.0",
   "upstream": {
@@ -18,32 +18,32 @@
       "description": "Produces the compliance artefact as well as the verdict: a CycloneDX or SPDX bill of materials for a model file, alongside the Keras, GGUF and ONNX payloads it found while reading it."
     },
     "derived": {
-      "checked_at": "2026-10-18T03:20:15Z",
+      "checked_at": "2026-10-20T03:20:37Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-10-17",
-        "days_since_push": 1,
-        "total_commits": 220,
-        "last100_span_days": 140,
+        "pushed_at": "2026-10-18",
+        "days_since_push": 2,
+        "total_commits": 226,
+        "last100_span_days": 156,
         "last100_authors": 2,
-        "last_commit_sha": "75234b5",
-        "last_commit_message": "fix(scanner): report unreadable model files as errors, not clean LOW-risk artifacts (#131) (#115)\n\n* fix(scanner): report unreadable model files as errors, not clean LOW-risk artifacts (#131)\n\n`LOW` is an assertion: AIsbom opened the artifact and found nothing\ndangerous. For a file no parser could read, the honest answer is\ndifferent — and collapsing the two meant a truncated download passed a\nCI gate as a clean model.\n\nFive inspectors already recorded their own parse failure in\n`meta[\"error\"]` and nothing in the codebase ever read it. Two corruption\nshapes never raise at all (a text `.pt`, a two-byte pickle), and a\ngit-LFS pointer set that key to the empty string, so a truthiness check\nwould still have missed it. Each inspector now reports whether its parse\nactually succeeded.\n\nUnreadable files land in `results[\"errors\"]` with a closed-set subtype\n(LfsPointer, EmptyFile, TruncatedStream, UnrecognizedFormat), print in\ntheir own \"Could not read\" section, and exit 1 — which is what the\nREADME's exit-code table has always documented for \"a file failed to\nparse\". The component stays in the SBOM so an auditor sees the file was\npresent, but carries no framework label and no risk verdict, marked with\n`aisbom:unreadable` properties. Dropping the label is what stops\n`aisbom:format` claiming 200 random bytes are SafeTensors. `aisbom score`\nrefuses to grade such a scan via the existing #114 gate.\n\nAlso fixed, as the same class of problem:\n\n- The three `UNKNOWN (...)` verdicts (GGUF invalid header, Keras\n  unrecognized container, unparsable ONNX) were honest but scored 0 in\n  `_risk_score` — below LOW — so those files exited 0 and rated safer\n  than a clean model.\n- Any text file in `.pt`/`.pth`/`.bin` was classified as a Python path\n  config, so an HTML error page saved over a checkpoint scored LOW. That\n  classification is now `.pth`-only and validated against the format's\n  actual spec.\n- A SafeTensors header longer than the file is rejected before the read,\n  replacing an internal OverflowError with a message naming the problem.\n\nA real-tree probe drove one design decision: requiring the pickle opcode\nwalk to reach STOP flagged 75 valid files — every `.pkl` in joblib's own\ntest corpus — because joblib appends array data as raw bytes after STOP.\nThe rule is \"nothing past the protocol header disassembled\" instead, and\nthat file shape is now a regression test. The probe over 35,283\nartifacts (141 real `.pth` files, a node_modules tree, an HF cache, a\ngenerated valid-model corpus) reports zero false positives.\n\nBREAKING: a tree containing unreadable files now exits 1 where it\nexited 0. Called out at the top of the changelog entry and in a README\nupgrade note.\n\n* fix(scanner): apply unreadable handling to remote scans and caught parse errors (#131)\n\nAddresses all three findings from the Codex review on PR #115.\n\nP1 — remote artifacts skipped the fix entirely. Every unreadable\nrecording was guarded on `local_path is not None`, so `hf://` and HTTPS\nscans — the flagship \"verify before you `git clone`\" path — kept the old\nbehaviour: a remote `.safetensors` of random bytes came back\n`framework=\"SafeTensors\"`, `risk_level=\"LOW\"` and exit 0. Each inspector\nnow finalizes through one shared `_finalize_inspection`, identified by\n`local_path or name`, so local and remote are reported identically.\n\nThe git-LFS subtype survives on the remote path too, which is a real\ncase rather than a contrived one: `raw.githubusercontent.com` serves the\npointer text, not the file, for anything LFS-tracked. The head is\nre-read only after a parse has already failed, so the extra Range\nrequest is never paid by a healthy file.\n\nP2 — a caught inspector exception stayed a clean verdict. All five\ninspectors wrap their body in `except Exception: meta[\"error\"] = ...`,\nand nothing read that key; GGUF, Keras and ONNX seed `risk_level` to LOW,\nso a file that threw mid-parse exited 0 as clean. `_finalize_inspection`\nnow picks that up — by key membership, not truthiness, because the LFS\nstub sets it to the empty string.\n\nA verdict already reached is never overwritten: an inspector can find a\nCRITICAL payload and then throw, and downgrading that to \"unreadable\"\nwould lose the finding — the one outcome worse than the bug being fixed.\nOnly the seeded UNKNOWN/LOW placeholders give way. Pinned by test.\n\nP2 — `.pth` path entries may contain spaces. `site.addpackage` only\nrstrips a line before joining it, so `/opt/My Models/site-packages` and\nthe Windows `C:\\Program Files\\...` shape are valid and were being called\ncorrupt. Rejecting only control characters (as suggested) would have let\n`totally not a model at all` read as a path and undone the fix, so a\nline carrying whitespace must additionally hold a path separator: prose\nhas none, a directory path does. The 141-file probe corpus contained no\nspaced path, which is why the real-tree probe could not catch this.\n\nVerification: 1498 tests pass (+8), coverage 93.79%. Real-tree probe\nre-run after the `.pth` change — still zero false positives, 141 `.pth`\nfiles kept clean. Scorecard, full-repo scan and `--strict` gates all\nexit 0.",
-        "last_commit_at": "2026-09-19",
+        "last_commit_sha": "d7133df",
+        "last_commit_message": "chore(deps): bump torch from 2.13.0 to 2.14.1 (#122)\n\nBumps [torch](https://github.com/pytorch/pytorch) from 2.13.0 to 2.14.1.\n- [Release notes](https://github.com/pytorch/pytorch/releases)\n- [Changelog](https://github.com/pytorch/pytorch/blob/main/RELEASE.md)\n- [Commits](https://github.com/pytorch/pytorch/compare/v2.13.0...v2.14.1)\n\n---\nupdated-dependencies:\n- dependency-name: torch\n  dependency-version: 2.14.1\n  dependency-type: direct:production\n  update-type: version-update:semver-minor\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>\nCo-authored-by: lab700xdev <lab700xdev@gmail.com>",
+        "last_commit_at": "2026-10-18",
         "releases": 52,
         "latest_release_at": "2026-09-14",
-        "days_since_release": 34,
-        "days_idle": 1,
+        "days_since_release": 36,
+        "days_idle": 2,
         "relocated": false
       },
       "identity": {
         "canonical_repo": "Lab700xOrg/aisbom",
-        "stars": 82,
+        "stars": 83,
         "forks": 7,
         "created_at": "2025-12-07",
         "is_fork": false,
         "contributors": 2,
-        "top_contributor_share": 0.78,
+        "top_contributor_share": 0.76,
         "homepage": "https://www.aisbom.io/",
         "description": "Static security scanner for ML model files — detects pickle bombs, Keras Lambda RCE and GGUF template injection, and generates CycloneDX / SPDX AI-BOMs (AIBOM) as EU AI Act, CRA and FDA §524B evidence.",
         "topics": [
@@ -87,8 +87,7 @@
       },
       "substrate": { "bundled": [], "manifests": [] },
       "rebadge": [],
-      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false },
-      "risk_where": {}
+      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false }
     }
   }
 }
