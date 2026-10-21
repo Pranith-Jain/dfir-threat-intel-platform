@@ -5,8 +5,8 @@
   "sourceFile": "lolc2_abused_domains.csv",
   "valueColumn": "domain",
   "description": "Legitimate domains abused by C2 frameworks for traffic relay (LOLC2 project).",
-  "entryCount": 19,
-  "sizeBytes": 4191,
+  "entryCount": 40,
+  "sizeBytes": 8263,
   "columns": ["url_root_domain", "dest", "dest_nt_domain", "metadata_type", "metadata_priority", "metadata_comment"],
   "entries": [
     {
@@ -16,6 +16,26 @@
       "metadata": {
         "dest": "*.blob.core.windows.net",
         "destNtDomain": "*.blob.core.windows.net",
+        "type": "domain_fronting"
+      }
+    },
+    {
+      "value": "windows.net",
+      "priority": "high",
+      "comment": "Azure Storage static website hosting",
+      "metadata": {
+        "dest": "*.web.core.windows.net",
+        "destNtDomain": "*.web.core.windows.net",
+        "type": "domain_fronting"
+      }
+    },
+    {
+      "value": "windows.net",
+      "priority": "medium",
+      "comment": "Azure Relay / Service Bus hybrid connections",
+      "metadata": {
+        "dest": "*.servicebus.windows.net",
+        "destNtDomain": "*.servicebus.windows.net",
         "type": "domain_fronting"
       }
     },
@@ -56,16 +76,6 @@
       "metadata": { "dest": "*.s3.amazonaws.com", "destNtDomain": "*.s3.amazonaws.com", "type": "delivery" }
     },
     {
-      "value": "oraclecloud.com",
-      "priority": "low",
-      "comment": "Oracle Cloud storage",
-      "metadata": {
-        "dest": "*.objectstorage.*.oraclecloud.com",
-        "destNtDomain": "*.objectstorage.*.oraclecloud.com",
-        "type": "delivery"
-      }
-    },
-    {
       "value": "workers.dev",
       "priority": "high",
       "comment": "Cloudflare Workers (serverless edge) - https://lolc2.github.io/",
@@ -94,26 +104,6 @@
       "metadata": { "dest": "*.cfargotunnel.com", "destNtDomain": "*.cfargotunnel.com", "type": "domain_fronting" }
     },
     {
-      "value": "cloudflarestorage.com",
-      "priority": "low",
-      "comment": "Cloudflare R2 object storage",
-      "metadata": {
-        "dest": "*.*.r2.cloudflarestorage.com",
-        "destNtDomain": "*.*.r2.cloudflarestorage.com",
-        "type": "delivery"
-      }
-    },
-    {
-      "value": "amazonaws.com",
-      "priority": "high",
-      "comment": "S3 static website endpoints",
-      "metadata": {
-        "dest": "*.s3-website-*.*.amazonaws.com",
-        "destNtDomain": "*.s3-website-*.*.amazonaws.com",
-        "type": "domain_fronting"
-      }
-    },
-    {
       "value": "on.aws",
       "priority": "high",
       "comment": "Serverless Computing AWS Lambda  - https://lolc2.github.io/",
@@ -136,16 +126,176 @@
       "metadata": { "dest": "*.trycloudflare.com", "destNtDomain": "*.trycloudflare.com", "type": "domain_fronting" }
     },
     {
-      "value": "azuredge.net",
+      "value": "azureedge.net",
       "priority": "medium",
       "comment": "Azure Edge (not working since 2025)",
-      "metadata": { "dest": "*.azuredge.net", "destNtDomain": "*.azuredge.net", "type": "domain_fronting" }
+      "metadata": { "dest": "*.azureedge.net", "destNtDomain": "*.azureedge.net", "type": "domain_fronting" }
     },
     {
       "value": "trafficmanager.net",
       "priority": "high",
       "comment": "Azure Traffic Manager",
       "metadata": { "dest": "*.trafficmanager.net", "destNtDomain": "*.trafficmanager.net", "type": "domain_fronting" }
+    },
+    {
+      "value": "azure-api.net",
+      "priority": "high",
+      "comment": "Azure API Management gateway used as redirector",
+      "metadata": { "dest": "*.azure-api.net", "destNtDomain": "*.azure-api.net", "type": "domain_fronting" }
+    },
+    {
+      "value": "azurestaticapps.net",
+      "priority": "high",
+      "comment": "Azure Static Web Apps",
+      "metadata": {
+        "dest": "*.azurestaticapps.net",
+        "destNtDomain": "*.azurestaticapps.net",
+        "type": "domain_fronting"
+      }
+    },
+    {
+      "value": "azurecontainerapps.io",
+      "priority": "high",
+      "comment": "Azure Container Apps",
+      "metadata": {
+        "dest": "*.azurecontainerapps.io",
+        "destNtDomain": "*.azurecontainerapps.io",
+        "type": "domain_fronting"
+      }
+    },
+    {
+      "value": "azurecontainer.io",
+      "priority": "medium",
+      "comment": "Azure Container Instances public FQDN",
+      "metadata": { "dest": "*.azurecontainer.io", "destNtDomain": "*.azurecontainer.io", "type": "domain_fronting" }
+    },
+    {
+      "value": "cloudfront.net",
+      "priority": "high",
+      "comment": "AWS CloudFront distributions",
+      "metadata": { "dest": "*.cloudfront.net", "destNtDomain": "*.cloudfront.net", "type": "domain_fronting" }
+    },
+    {
+      "value": "amazonaws.com",
+      "priority": "high",
+      "comment": "AWS API Gateway (FireProx-style redirectors)",
+      "metadata": {
+        "dest": "*.execute-api.*.amazonaws.com",
+        "destNtDomain": "*.execute-api.*.amazonaws.com",
+        "type": "domain_fronting"
+      }
+    },
+    {
+      "value": "run.app",
+      "priority": "high",
+      "comment": "Google Cloud Run",
+      "metadata": { "dest": "*.run.app", "destNtDomain": "*.run.app", "type": "domain_fronting" }
+    },
+    {
+      "value": "cloudfunctions.net",
+      "priority": "high",
+      "comment": "Google Cloud Functions",
+      "metadata": { "dest": "*.cloudfunctions.net", "destNtDomain": "*.cloudfunctions.net", "type": "domain_fronting" }
+    },
+    {
+      "value": "web.app",
+      "priority": "high",
+      "comment": "Firebase Hosting",
+      "metadata": { "dest": "*.web.app", "destNtDomain": "*.web.app", "type": "domain_fronting" }
+    },
+    {
+      "value": "firebaseapp.com",
+      "priority": "high",
+      "comment": "Firebase Hosting (legacy domain)",
+      "metadata": { "dest": "*.firebaseapp.com", "destNtDomain": "*.firebaseapp.com", "type": "domain_fronting" }
+    },
+    {
+      "value": "firebaseio.com",
+      "priority": "high",
+      "comment": "Firebase Realtime Database - https://lolc2.github.io/",
+      "metadata": { "dest": "*.firebaseio.com", "destNtDomain": "*.firebaseio.com", "type": "api_abuse" }
+    },
+    {
+      "value": "firebasedatabase.app",
+      "priority": "high",
+      "comment": "Firebase Realtime Database (regional)",
+      "metadata": { "dest": "*.firebasedatabase.app", "destNtDomain": "*.firebasedatabase.app", "type": "api_abuse" }
+    },
+    {
+      "value": "r2.dev",
+      "priority": "medium",
+      "comment": "Cloudflare R2 public bucket URLs",
+      "metadata": { "dest": "*.r2.dev", "destNtDomain": "*.r2.dev", "type": "delivery" }
+    },
+    {
+      "value": "edgecompute.app",
+      "priority": "high",
+      "comment": "Fastly Compute serverless",
+      "metadata": { "dest": "*.edgecompute.app", "destNtDomain": "*.edgecompute.app", "type": "domain_fronting" }
+    },
+    {
+      "value": "amazonaws.com",
+      "priority": "low",
+      "comment": "S3 regional virtual-host style",
+      "metadata": { "dest": "*.s3.*.amazonaws.com", "destNtDomain": "*.s3.*.amazonaws.com", "type": "delivery" }
+    },
+    {
+      "value": "amazonaws.com",
+      "priority": "low",
+      "comment": "S3 path-style (global)",
+      "metadata": { "dest": "s3.amazonaws.com", "destNtDomain": "s3.amazonaws.com", "type": "delivery" }
+    },
+    {
+      "value": "amazonaws.com",
+      "priority": "low",
+      "comment": "S3 path-style (regional)",
+      "metadata": { "dest": "s3.*.amazonaws.com", "destNtDomain": "s3.*.amazonaws.com", "type": "delivery" }
+    },
+    {
+      "value": "amazonaws.com",
+      "priority": "high",
+      "comment": "S3 static website endpoints (dash and dot styles)",
+      "metadata": {
+        "dest": "*.s3-website*.amazonaws.com",
+        "destNtDomain": "*.s3-website*.amazonaws.com",
+        "type": "domain_fronting"
+      }
+    },
+    {
+      "value": "cloudflarestorage.com",
+      "priority": "low",
+      "comment": "Cloudflare R2 object storage (account and bucket endpoints)",
+      "metadata": {
+        "dest": "*.r2.cloudflarestorage.com",
+        "destNtDomain": "*.r2.cloudflarestorage.com",
+        "type": "delivery"
+      }
+    },
+    {
+      "value": "oraclecloud.com",
+      "priority": "low",
+      "comment": "Oracle Cloud storage (shared path-style and namespace endpoints)",
+      "metadata": {
+        "dest": "*objectstorage.*.oraclecloud.com",
+        "destNtDomain": "*objectstorage.*.oraclecloud.com",
+        "type": "delivery"
+      }
+    },
+    {
+      "value": "customer-oci.com",
+      "priority": "low",
+      "comment": "Oracle Cloud storage dedicated endpoints",
+      "metadata": {
+        "dest": "*objectstorage.*.customer-oci.com",
+        "destNtDomain": "*objectstorage.*.customer-oci.com",
+        "type": "delivery"
+      }
+    },
+    {
+      "value": "googleapis.com",
+      "priority": "low",
+      "comment": "GCS path-style URLs",
+      "metadata": { "dest": "storage.googleapis.com", "destNtDomain": "storage.googleapis.com", "type": "delivery" }
     }
   ]
 }
