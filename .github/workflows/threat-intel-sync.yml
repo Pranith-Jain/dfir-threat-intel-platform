@@ -84,6 +84,35 @@ jobs:
         continue-on-error: true
         run: node scripts/sync-threaticon.mjs --concurrency 1 --gap-ms 1300
 
+      - name: Sync LeakScope (breach / dark-forum leak index)
+        # Metadata only — the upstream index carries no URL to any leak, and
+        # the sync strips every URL-shaped column before writing.
+        continue-on-error: true
+        run: node scripts/sync-leakscope.mjs
+
+      - name: Sync DarkForums IP intelligence
+        # 41 MB of forum IP/actor observations + the DB-IP country ranges.
+        continue-on-error: true
+        run: node scripts/sync-darkforums-ip.mjs
+
+      - name: Sync forum actor directory (Actores Maliciosos)
+        # 149 MB MyBB dump behind Git LFS. The build drops credential
+        # material and every misaligned row before anything is written.
+        continue-on-error: true
+        run: node scripts/sync-actor-forums.mjs
+
+      - name: Build LeakScope manifest
+        continue-on-error: true
+        run: node scripts/build-leakscope.mjs
+
+      - name: Build DarkForums IP manifest
+        continue-on-error: true
+        run: node scripts/build-darkforums-ip.mjs
+
+      - name: Build forum actor manifest
+        continue-on-error: true
+        run: node scripts/build-actor-forums.mjs
+
       - name: Build manifest
         continue-on-error: true
         run: node scripts/build-threat-intel.mjs

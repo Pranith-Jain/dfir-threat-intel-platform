@@ -79,6 +79,7 @@ endpoints (admin, write operations) require an API key or admin token issued at 
 - [Wi-Fi / BSSID Investigation](https://pranithjain.qzz.io/dfir/wifi-investigation) (dfir): Wireless network - BSSID vendor lookup, SSID analysis, security flags.
 - [SOCMINT](https://pranithjain.qzz.io/dfir/socmint) (dfir): Social-media intelligence - X / Reddit / Telegram / Mastodon pivots.
 - [OSINT Mapper](https://pranithjain.qzz.io/dfir/osint-mapper) (dfir): Build a mind-map of an investigation - nodes are entities, edges are pivots.
+- [GeoX](https://pranithjain.qzz.io/dfir/geox) (dfir): Build X (Twitter) search queries scoped to a place - pick a point, set a radius, copy the query.
 - [Breach Lookup](https://pranithjain.qzz.io/dfir/breach) (dfir): Email / username / domain - cross-correlate public breach corpora.
 - [Image Intelligence](https://pranithjain.qzz.io/dfir/image-intel) (dfir): Image analysis - reverse search, perceptual fingerprinting, and OCR screenshot intelligence.
 - [Brand Impersonation](https://pranithjain.qzz.io/dfir/brand-impersonation) (dfir): Detect typosquats / look-alike domains targeting your brand.
@@ -158,6 +159,11 @@ endpoints (admin, write operations) require an API key or admin token issued at 
 - [CVE Intel](https://pranithjain.qzz.io/threatintel/cves/cves) (threatintel): Unified CVE intelligence - NVD + KEV + EPSS + exploit availability.
 - [GitHub Advisories](https://pranithjain.qzz.io/threatintel/cves/advisories) (threatintel): GitHub security advisories with affected versions and patches.
 - [CVE Resources](https://pranithjain.qzz.io/threatintel/cves/resources) (threatintel): CVE resource catalogs - patch priority, exploit DB, vendor bulletins.
+- [CVE Triage](https://pranithjain.qzz.io/threatintel/cve-triage) (threatintel): Score one CVE, order a patch list, and track what changed this week.
+- [LeakScope](https://pranithjain.qzz.io/threatintel/leakscope) (threatintel): Breach and dark-forum leak thread index - metadata only, no links to leaked data.
+- [DarkForums IP Map](https://pranithjain.qzz.io/threatintel/darkforums-ip) (threatintel): Forum IP and actor observations mapped by country, with per-actor infrastructure grouping.
+- [Domain Registrations](https://pranithjain.qzz.io/threatintel/domain-registrations) (threatintel): Newly registered domains filtered by keyword, with a daily watchlist.
+- [Forum Actors](https://pranithjain.qzz.io/threatintel/forum-actors) (threatintel): Search 324k accounts from a compromised forum by handle or registered address.
 - [Malware IOCs](https://pranithjain.qzz.io/threatintel/malware/iocs) (threatintel): Malware IOC feeds across 50+ families.
 - [Malware Sandbox](https://pranithjain.qzz.io/threatintel/malware/sandbox) (threatintel): Hash lookup across 10+ sandbox platforms - consensus verdict.
 - [Supply-Chain Incidents](https://pranithjain.qzz.io/threatintel/supply-chain) (threatintel): Confirmed supply-chain compromise incidents - npm · PyPI · containers · AI agents. Data: supplychainattack.org.
@@ -344,8 +350,11 @@ Drop-in configs: https://pranithjain.qzz.io/mcp/{claude-desktop,cursor,vscode-mc
 - [cti_bookmarks_get](https://pranithjain.qzz.io/mcp) (mcp:other): Return the full details of a single CTI bookmark by slug. Use cti_bookmarks_list first to discover slugs.
 - [cti_bookmarks_list](https://pranithjain.qzz.io/mcp) (mcp:other): List curated CTI bookmarks (threat intel links, tools, feeds, frameworks). Filter by level (Operational, Tactical, Strategic, Tools), category, integration status (live, reference, missing), or keyword.
 - [cti_bookmarks_stats](https://pranithjain.qzz.io/mcp) (mcp:other): Return cache + manifest stats for the CTI Bookmarks directory: totals by level and integration status (live/reference/missing gap counts).
+- [cve_compare](https://pranithjain.qzz.io/mcp) (mcp:cve): Compare 2-10 CVEs and get a patch order, where every position states the signal that separated it from the one below (KEV override, score gap, or a specific tiebreaker).
 - [cve_health](https://pranithjain.qzz.io/mcp) (mcp:cve): Check the health of CVE data pipelines. Validates NVD API, EPSS API, CISA KEV, GitHub API rate limit, KV intel cache (EPSS coverage, KEV count, field completeness), and Exploit-DB mirror availability. Returns overall status (healthy/degraded/unhealthy) with per-check details.
+- [cve_landscape](https://pranithjain.qzz.io/mcp) (mcp:cve): Weekly multi-source threat landscape: seven panels (CISA KEV additions, exploited-but-not-in-KEV, newly weaponized, EPSS risers, new critical CVEs, Project Zero zero-days, CISA advisories) plus the CVEs two or more independent sources agree on.
 - [cve_poc_map](https://pranithjain.qzz.io/mcp) (mcp:cve): Get the cached CVE-to-GitHub-repo mapping. Pass ?id=CVE-XXXX-XXXXX for a single CVE, or ?year=YYYY for a year-scoped index of all mapped CVEs. Results are KV-cached for 24h.
+- [cve_triage](https://pranithjain.qzz.io/mcp) (mcp:cve): Triage one CVE: composite risk score with its components, SSVC v2 CISA Deployer decision, public-exploit tier and evidence, and the patch urgency with its reason. Use this to answer "should I patch this and why".
 - [cyber_news](https://pranithjain.qzz.io/mcp) (mcp:other): Aggregate cybersecurity news from 11 RSS feeds across 5 tiers (Advisory, Exploit, Research, Vendor, Community). Supports tier filtering and keyword search. Sources: CISA, Rapid7, Packet Storm, BleepingComputer, Hacker News, GitHub Security, ZDI, Reddit netsec/exploitdev/bugbounty.
 - [db_get_brief](https://pranithjain.qzz.io/mcp) (mcp:other): Return the full daily intelligence brief for a given type and date. Includes executive summary, key findings, events/incidents, and structured data. Use db_list_briefs to discover available dates.
 - [db_list_briefs](https://pranithjain.qzz.io/mcp) (mcp:other): List available daily intelligence briefs by type (cyber, deepfake, disaster). Returns dates and metadata. Use db_get_brief to retrieve the full brief body.

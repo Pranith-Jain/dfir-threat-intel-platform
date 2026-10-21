@@ -15,6 +15,7 @@ import { registerScriptsRenderAiTools } from './mcp-tools/scripts-render-ai';
 import { registerSiAnalystTools } from './mcp-tools/si-analyst';
 import { registerIdentityOsintTools } from './mcp-tools/identity-osint';
 import { registerWorkspaceCveTools } from './mcp-tools/workspace-cve';
+import { registerCveTriageTools } from './mcp-tools/cve-triage';
 import { registerTelegramDarknetAgentTools } from './mcp-tools/telegram-darknet-agent';
 import { registerDnSourcesTools } from './mcp-tools/dn-sources';
 import { registerSampleVelociraptorTools } from './mcp-tools/sample-velociraptor';
@@ -185,6 +186,7 @@ export class DfirMcpServer extends McpAgent<McpAgentEnv, Record<string, never>, 
     registerSiAnalystTools(h);
     registerIdentityOsintTools(h);
     registerWorkspaceCveTools(h);
+    registerCveTriageTools(h);
     registerTelegramDarknetAgentTools(h);
     registerDnSourcesTools(h);
     registerSampleVelociraptorTools(h);

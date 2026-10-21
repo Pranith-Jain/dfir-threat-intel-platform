@@ -107,6 +107,23 @@ import {
 import { cveThreatMapHandler } from './routes/cve-threat-map';
 import { cvePocScanHandler } from './routes/cve-poc-scan';
 import { cvePocMapHandler } from './routes/cve-poc-map';
+import { cveTriageHandler } from './routes/cve-triage';
+import { cveCompareHandler } from './routes/cve-compare';
+import { cveLandscapeHandler } from './routes/cve-landscape';
+import {
+  darkforumsActorsHandler,
+  darkforumsCountryHandler,
+  darkforumsIpHandler,
+  leakScopeHandler,
+} from './routes/osint-verticals';
+import { forumActorsHandler, forumActorsStatsHandler } from './routes/forum-actors';
+import {
+  domainMonitorSearchHandler,
+  domainWatchlistCreateHandler,
+  domainWatchlistDeleteHandler,
+  domainWatchlistListHandler,
+  domainWatchlistMatchesHandler,
+} from './routes/domain-monitor';
 import { cyberNewsHandler } from './routes/cyber-news';
 import { cveHealthHandler } from './routes/cve-health';
 import { socCveReportHandler, socCveReportJsonHandler } from './routes/soc-cve-report';
@@ -876,6 +893,11 @@ const ADMIN_GATED_PREFIXES = [
   '/api/v1/dashboard',
   '/api/v1/rag',
   '/api/v1/report',
+  // The newly-registered domain watchlist is shared operator state too: a
+  // watch is a standing instruction to look, and one watchlist shared by a
+  // team is a piece of the team's coverage. The public keyword SEARCH stays
+  // ungated — only the watchlist below this path is operator-only.
+  '/api/v1/threat-intel/domain-monitor/watchlist',
 ];
 for (const base of ADMIN_GATED_PREFIXES) {
   app.use(base, requireAdminMiddleware);
@@ -1469,6 +1491,38 @@ app.get('/api/v1/promptintel/prompts', promptintelPromptsHandler);
 app.get('/api/v1/cve-threat-map', cveThreatMapHandler);
 app.get('/api/v1/cve-poc-scan', cvePocScanHandler);
 app.get('/api/v1/cve-poc-map', cvePocMapHandler);
+// Single-CVE triage — "should I patch this today, and why?". Composes the
+// risk scorer (CVSS×0.20 + EPSS×0.35 + KEV×0.30 + PoC×0.15, with the KEV
+// hard override) with the SSVC v2 Deployer decision and the public-exploit
+// tier. Depth controls cost: quick = cached NVD/EPSS/KEV only, standard adds
+// three live exploit lookups, deep adds ENISA EUVD.
+app.get('/api/v1/cve-triage/:cveId', cveTriageHandler);
+// Patch ordering for a scanner report — 2..10 CVEs, every position explained.
+app.get('/api/v1/cve-compare', cveCompareHandler);
+// Weekly multi-source landscape with cross-panel correlation: a CVE needs
+// two or more independent signals to be listed as a pattern.
+app.get('/api/v1/cve-landscape', cveLandscapeHandler);
+// ── OSINT verticals (bulk static manifests, searched server-side) ──
+// LeakScope: breach / dark-forum leak thread METADATA only — the upstream
+// index carries no URL to any leak, and this route surfaces no link.
+app.get('/api/v1/threat-intel/leakscope', leakScopeHandler);
+// DarkForums IP intelligence: forum IP/actor observations with country
+// attribution. The country map loads one country file at a time.
+app.get('/api/v1/threat-intel/darkforums-ip', darkforumsIpHandler);
+app.get('/api/v1/threat-intel/darkforums-ip/country/:iso', darkforumsCountryHandler);
+app.get('/api/v1/threat-intel/darkforums-ip/actors', darkforumsActorsHandler);
+// Newly-registered domain monitor (DominiosINT). The GET routes are public
+// reads; the watchlist writes are covered by the global admin gate on
+// POST/DELETE.
+// Forum actor directory (Actores Maliciosos). Username prefix search and
+// email hash lookup. Credential material is not part of the manifest.
+app.get('/api/v1/threat-intel/forum-actors', forumActorsHandler);
+app.get('/api/v1/threat-intel/forum-actors/stats', forumActorsStatsHandler);
+app.get('/api/v1/threat-intel/domain-monitor', domainMonitorSearchHandler);
+app.get('/api/v1/threat-intel/domain-monitor/watchlist', domainWatchlistListHandler);
+app.post('/api/v1/threat-intel/domain-monitor/watchlist', domainWatchlistCreateHandler);
+app.delete('/api/v1/threat-intel/domain-monitor/watchlist/:id', domainWatchlistDeleteHandler);
+app.get('/api/v1/threat-intel/domain-monitor/watchlist/:id/matches', domainWatchlistMatchesHandler);
 app.get('/api/v1/cyber-news', cyberNewsHandler);
 app.get('/api/v1/cve-health', cveHealthHandler);
 app.post('/api/v1/soc-cve-report', socCveReportHandler);

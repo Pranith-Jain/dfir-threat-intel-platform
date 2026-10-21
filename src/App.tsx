@@ -113,6 +113,7 @@ const ZeroTrustAiAgents = lazy(() => import('./pages/dfir/ZeroTrustAiAgents'));
 const SecurityGroupAnalyzer = lazy(() => import('./pages/dfir/SecurityGroupAnalyzer'));
 const CloudTrailTriage = lazy(() => import('./pages/dfir/CloudTrailTriage'));
 const CvePrioritizer = lazy(() => import('./pages/dfir/CvePrioritizer'));
+const GeoX = lazy(() => import('./pages/dfir/GeoX'));
 const EstateWatch = lazy(() => import('./pages/dfir/EstateWatch'));
 const RuleConverter = lazy(() => import('./pages/dfir/RuleConverter'));
 const LinuxTriage = lazy(() => import('./pages/dfir/LinuxTriage'));
@@ -215,6 +216,11 @@ const ToolsDirectory = lazy(() => import('./pages/threatintel/ToolsDirectory'));
 const OsintDirectory = lazy(() => import('./pages/threatintel/OsintDirectory'));
 const CtiBookmarks = lazy(() => import('./pages/threatintel/CtiBookmarks'));
 const CveIntel = lazy(() => import('./pages/threatintel/CveIntel'));
+const CveTriage = lazy(() => import('./pages/threatintel/CveTriage'));
+const LeakScope = lazy(() => import('./pages/threatintel/LeakScope'));
+const DarkforumsMap = lazy(() => import('./pages/threatintel/DarkforumsMap'));
+const DomainRegistrationMonitor = lazy(() => import('./pages/threatintel/DomainRegistrationMonitor'));
+const ForumActors = lazy(() => import('./pages/threatintel/ForumActors'));
 const CveResourcesCatalog = lazy(() => import('./pages/dfir/CveResourcesCatalog'));
 const CyberCrime = lazy(() => import('./pages/threatintel/CyberCrime'));
 const DarkWeb = lazy(() => import('./pages/threatintel/DarkWebOsintTools'));
@@ -481,6 +487,7 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/dfir/kill-chain', Component: KillChain },
   { path: '/dfir/diamond', Component: Diamond },
   { path: '/dfir/osint-mapper', Component: OsintMapper },
+  { path: '/dfir/geox', Component: GeoX },
   { path: '/dfir/lolbins', Component: Lolbins },
   { path: '/dfir/lots', Component: Lots },
   { path: '/dfir/malapi', Component: Malapi },
@@ -548,6 +555,11 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/live-feed', Component: LiveFeed },
   { path: '/threatintel/cve/:id', Component: CveDetail },
   { path: '/threatintel/cves/:cveId', Component: CveDetail },
+  { path: '/threatintel/cve-triage', Component: CveTriage },
+  { path: '/threatintel/leakscope', Component: LeakScope },
+  { path: '/threatintel/darkforums-ip', Component: DarkforumsMap },
+  { path: '/threatintel/domain-registrations', Component: DomainRegistrationMonitor },
+  { path: '/threatintel/forum-actors', Component: ForumActors },
   // ── Threat Intel: direct page URLs (auto-added by audit) ──
   { path: '/threatintel/actors/hub', Component: ActorHub },
   { path: '/threatintel/actors/attribution', Component: Attribution },

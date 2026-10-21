@@ -1,6 +1,6 @@
 # DFIR-ThreatIntel MCP - tool catalog
 
-**423 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
+**426 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
 
 ## Quick start
 
@@ -411,6 +411,15 @@
 - `ioc_watchlist_list` - List all watched IOCs. Optionally filter by type.
 - `ioc_watchlist_stats` - Get watchlist dashboard stats: total watches, alerts by type, webhook delivery rate.
 
+### cve (6)
+
+- `cve_compare` - Compare 2-10 CVEs and get a patch order, where every position states the signal that separated it from the one below (KEV override, score gap, or a specific tiebreaker).
+- `cve_health` - Check the health of CVE data pipelines. Validates NVD API, EPSS API, CISA KEV, GitHub API rate limit, KV intel cache (EPSS coverage, KEV count, field completeness), and Exploit-DB mirror availability. Returns overall status (healthy/degraded/unhealthy) with per-check details.
+- `cve_landscape` - Weekly multi-source threat landscape: seven panels (CISA KEV additions, exploited-but-not-in-KEV, newly weaponized, EPSS risers, new critical CVEs, Project Zero zero-days, CISA advisories) plus the CVEs two or more independent sources agree on.
+- `cve_poc_map` - Get the cached CVE-to-GitHub-repo mapping. Pass ?id=CVE-XXXX-XXXXX for a single CVE, or ?year=YYYY for a year-scoped index of all mapped CVEs. Results are KV-cached for 24h.
+- `cve_triage` - Triage one CVE: composite risk score with its components, SSVC v2 CISA Deployer decision, public-exploit tier and evidence, and the patch urgency with its reason. Use this to answer "should I patch this and why".
+- `lookup_cve` - Look up a CVE by ID. Returns description, CVSS score, EPSS probability, CISA KEV status, affected products, and references.
+
 ### notebook (6)
 
 - `notebook_add_entry` - Add a note, IOC, finding, timeline event, or artifact to a notebook.
@@ -450,12 +459,6 @@
 - `winreg_list_artifacts` - List Windows Registry forensic artifacts from the WinReg DFIR reference. Filter by category, hive, MITRE technique, or free-text keyword.
 - `winreg_list_categories` - List the Windows Registry artifact categories in the WinReg DFIR reference. Returns category keys, names, descriptions, and artifact counts.
 - `winreg_stats` - Return cache + manifest stats for the WinReg DFIR data: artifact counts, hive types, MITRE technique coverage, and LRU body-cache hit/miss ratios.
-
-### cve (3)
-
-- `cve_health` - Check the health of CVE data pipelines. Validates NVD API, EPSS API, CISA KEV, GitHub API rate limit, KV intel cache (EPSS coverage, KEV count, field completeness), and Exploit-DB mirror availability. Returns overall status (healthy/degraded/unhealthy) with per-check details.
-- `cve_poc_map` - Get the cached CVE-to-GitHub-repo mapping. Pass ?id=CVE-XXXX-XXXXX for a single CVE, or ?year=YYYY for a year-scoped index of all mapped CVEs. Results are KV-cached for 24h.
-- `lookup_cve` - Look up a CVE by ID. Returns description, CVSS score, EPSS probability, CISA KEV status, affected products, and references.
 
 ### identity (3)
 
