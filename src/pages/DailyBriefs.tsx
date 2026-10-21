@@ -248,7 +248,11 @@ export default function DailyBriefs() {
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 flex gap-1 rounded-xl bg-surface-300 p-1">
+      {/* The tab row is wider than a phone. Without an explicit scroll
+          container it stretches the page instead of scrolling, which pushed
+          /daily-briefs 110px past the viewport on a 375px screen. The row
+          now scrolls sideways inside its own box; the page does not move. */}
+      <div className="mb-6 flex flex-nowrap gap-1 overflow-x-auto rounded-xl bg-surface-300 p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {TAB_CONFIG.map(({ id, label, icon: Icon, color }) => (
           <button
             key={id}

@@ -394,7 +394,11 @@ export default function Blog() {
                       <Link
                         key={t}
                         to={`/blog/t/${t}`}
-                        className={`rounded border px-2 py-0.5 text-mini font-mono transition-colors ${
+                        // The tag chips were 21px tall — well under the
+                        // 44px touch minimum, 340 of them on one phone
+                        // screen. `min-h-[32px]` plus a taller padding
+                        // keeps the chip compact but tappable.
+                        className={`inline-flex min-h-[32px] items-center rounded border px-2 py-1 text-mini font-mono transition-colors ${
                           tagFilter === t
                             ? 'border-brand-500/60 bg-brand-500/10 text-brand-700 dark:text-brand-300'
                             : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-line-1 dark:bg-surface-200 dark:text-muted hover:border-brand-500/40 hover:text-brand-600 dark:hover:text-brand-400'

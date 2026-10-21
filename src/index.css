@@ -858,6 +858,10 @@
 @media (max-width: 639px) {
   .text-\[10px\],
   .text-\[11px\],
+  /* .text-eyebrow was missing from this list, so every section kicker
+     ("Experience", "Tooling", "Expertise") stayed at 11px on a phone while
+     its siblings were lifted to 12px. */
+  .text-eyebrow,
   .text-micro,
   .text-mini {
     font-size: 12px;
@@ -938,4 +942,27 @@
     box-shadow: none !important;
     border: 1px solid #e2e8f0 !important;
   }
+}
+
+/* ── Dark basemap tiles ───────────────────────────────────────────────────
+ * The OSM standard layer is a light basemap. `invert` flips it to dark and
+ * the 180° hue rotation puts the water back to blue (a plain invert turns
+ * water orange). The brightness/contrast trim keeps the result from looking
+ * flat.
+ *
+ * Applied to the TILE PANE only — Leaflet's controls and popups sit in
+ * sibling panes and must not be inverted.
+ */
+.leaflet-dark-tiles .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.75);
+}
+
+/* Leaflet's zoom controls are 30×30 by default — under the 44px touch
+ * minimum, and they are the primary way to move the map on a phone. */
+.leaflet-bar a.leaflet-control-zoom-in,
+.leaflet-bar a.leaflet-control-zoom-out {
+  width: 44px;
+  height: 44px;
+  line-height: 44px;
+  font-size: 20px;
 }

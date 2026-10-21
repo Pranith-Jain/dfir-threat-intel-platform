@@ -172,7 +172,7 @@ export default function GeoX(): JSX.Element {
       <div className="grid gap-5 lg:grid-cols-[1fr_22rem]">
         {/* ── Map ──────────────────────────────────────────────────────── */}
         <Card padding="none" radius="panel">
-          <div className="relative h-[30rem] w-full overflow-hidden rounded-panel">
+          <div className="relative h-[52vh] min-h-[22rem] w-full overflow-hidden rounded-panel sm:h-[30rem]">
             {LeafletMap ? (
               <LeafletMap
                 center={point}
@@ -205,7 +205,7 @@ export default function GeoX(): JSX.Element {
                 onClick={() => setRadius((r) => Math.min(MAX_RADIUS_KM, r + 1))}
                 disabled={radius >= MAX_RADIUS_KM}
                 aria-label="Increase radius"
-                className="px-2.5 py-1.5 text-muted hover:bg-surface-300 hover:text-heading disabled:opacity-40"
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center px-3 py-2 text-muted hover:bg-surface-300 hover:text-heading disabled:opacity-40"
               >
                 <Plus size={14} />
               </button>
@@ -217,7 +217,7 @@ export default function GeoX(): JSX.Element {
                 onClick={() => setRadius((r) => Math.max(MIN_RADIUS_KM, r - 1))}
                 disabled={radius <= MIN_RADIUS_KM}
                 aria-label="Decrease radius"
-                className="px-2.5 py-1.5 text-muted hover:bg-surface-300 hover:text-heading disabled:opacity-40"
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center px-3 py-2 text-muted hover:bg-surface-300 hover:text-heading disabled:opacity-40"
               >
                 <Minus size={14} />
               </button>
@@ -300,7 +300,7 @@ export default function GeoX(): JSX.Element {
                     <button
                       type="button"
                       onClick={() => void copy(q.id, q.query)}
-                      className="inline-flex items-center gap-1 rounded border border-line-1 px-2 py-0.5 font-mono text-micro text-muted hover:border-brand-500/40"
+                      className="inline-flex min-h-[32px] items-center gap-1 rounded border border-line-1 px-2 py-1 font-mono text-micro text-muted hover:border-brand-500/40"
                     >
                       {copied === q.id ? <Check size={11} /> : <Copy size={11} />}
                       {copied === q.id ? 'Copied' : 'Copy'}

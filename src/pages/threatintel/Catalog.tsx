@@ -238,7 +238,10 @@ const BADGE_STYLES: Record<NonNullable<HubPageBadge>, string> = {
 function CatalogCard({ entry, hubIcon }: { entry: HubPage; hubIcon: LucideIcon }): JSX.Element {
   const Icon = entry.icon ?? hubIcon;
   return (
-    <li>
+    // `min-w-0` lets the grid item shrink below its content's intrinsic
+    // width. Without it the card's own padding plus the unbreakable path
+    // text set a floor that pushed the grid 23px past a 375px viewport.
+    <li className="min-w-0">
       <Link
         to={entry.path}
         className="group tile-reveal block h-full surface-card p-3 transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-rose-500/40 hover:shadow-e2 focus-visible:-translate-y-0.5 focus-visible:border-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/30 hover-rose"
@@ -262,7 +265,7 @@ function CatalogCard({ entry, hubIcon }: { entry: HubPage; hubIcon: LucideIcon }
         </h3>
         <p className="mt-0.5 line-clamp-2 text-tool text-muted">{entry.desc}</p>
         <div className="mt-2 flex items-center justify-between gap-2 font-mono text-micro text-muted">
-          <code className="truncate font-mono">{entry.path}</code>
+          <code className="min-w-0 truncate font-mono">{entry.path}</code>
           <span className="inline-flex items-center gap-0.5 text-rose-600 dark:text-rose-400 opacity-0 transition-opacity group-hover:opacity-100">
             open <ArrowRight size={10} />
           </span>

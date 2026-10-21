@@ -309,7 +309,13 @@ function TriageView(): JSX.Element {
           </div>
         </CardHeader>
         <form onSubmit={submit} className="flex flex-wrap items-end gap-3">
-          <div className="min-w-[16rem] flex-1">
+          {/* `min-w-[16rem]` pinned the input to 256px and left the depth
+              select ~39px, but the select's longest option
+              ("standard — + exploit evidence") needs 323px — so the select
+              rendered 325px wide and pushed 3px past a 375px viewport. The
+              input now yields on narrow screens and the select is capped to
+              the width it is given. */}
+          <div className="w-full min-w-0 flex-1 sm:min-w-[16rem]">
             <label htmlFor="cve-id" className="mb-1.5 block font-mono text-micro uppercase tracking-wider text-muted">
               CVE id
             </label>
@@ -320,7 +326,7 @@ function TriageView(): JSX.Element {
               placeholder="CVE-2024-3400"
               autoComplete="off"
               spellCheck={false}
-              className="w-full rounded border border-line-1 bg-surface-100 px-3 py-2 font-mono text-tool text-heading placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+              className="min-h-[44px] w-full rounded border border-line-1 bg-surface-100 px-3 py-2 font-mono text-tool text-heading placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
             />
           </div>
           <div>
@@ -334,7 +340,7 @@ function TriageView(): JSX.Element {
               id="cve-depth"
               value={depth}
               onChange={(e) => setDepth(e.target.value as 'quick' | 'standard' | 'deep')}
-              className="rounded border border-line-1 bg-surface-100 px-3 py-2 font-mono text-tool text-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+              className="w-full max-w-full min-h-[44px] rounded border border-line-1 bg-surface-100 px-3 py-2 font-mono text-tool text-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
             >
               <option value="quick">quick — cached signals only</option>
               <option value="standard">standard — + exploit evidence</option>
@@ -343,7 +349,7 @@ function TriageView(): JSX.Element {
           </div>
           <button
             type="submit"
-            className="inline-flex items-center gap-1.5 rounded bg-brand-600 px-4 py-2 font-mono text-meta text-on-fill transition-colors hover:bg-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="inline-flex min-h-[44px] items-center gap-1.5 rounded bg-brand-600 px-4 py-2 font-mono text-meta text-on-fill transition-colors hover:bg-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
           >
             <Search size={14} /> Triage
           </button>

@@ -181,7 +181,11 @@ export function SidebarContent({ config }: { config: SidebarConfig }): JSX.Eleme
                         <Link
                           to={item.href}
                           aria-current={active ? 'page' : undefined}
-                          className={`group flex items-center gap-2 px-2 py-1.5 text-tool transition focus:outline-none focus-visible:ring-2 ${focusRing} ${
+                          // `py-1.5` made the drawer links 32px tall —
+                          // under the 44px touch minimum. The drawer is
+                          // the primary navigation on a phone, so its
+                          // targets get the full height.
+                          className={`group flex min-h-[44px] items-center gap-2 px-2 py-1.5 text-tool transition focus:outline-none focus-visible:ring-2 ${focusRing} ${
                             active
                               ? `${activeBg} font-medium`
                               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-muted dark:hover:bg-wash dark:hover:text-slate-200'

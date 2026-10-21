@@ -65,8 +65,15 @@ export function Experience({ experiences }: ExperienceProps) {
                     {exp.location && ` • ${exp.location}`} • {exp.period}
                   </div>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  {exp.badge && <Badge tone="success">{exp.badge}</Badge>}
+                {/* `shrink-0` on this row kept the badge at its full width
+                    and pushed the card 35px past the viewport on a phone.
+                    The badge now shrinks and wraps; the chevron does not. */}
+                <div className="flex min-w-0 items-center gap-3">
+                  {exp.badge && (
+                    <span className="min-w-0 shrink">
+                      <Badge tone="success">{exp.badge}</Badge>
+                    </span>
+                  )}
                   <ChevronDown
                     className={`h-4 w-4 text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`}
                     aria-hidden="true"

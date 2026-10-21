@@ -105,7 +105,7 @@ export const Footer = memo(function Footer({ personalInfo }: FooterProps) {
                 <li key={l.href}>
                   <Link
                     to={l.href}
-                    className="text-sm text-muted hover:text-brand-600 dark:hover:text-brand-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                    className="inline-flex min-h-[44px] items-center text-sm text-muted hover:text-brand-600 dark:hover:text-brand-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                   >
                     {l.label}
                   </Link>
@@ -122,7 +122,7 @@ export const Footer = memo(function Footer({ personalInfo }: FooterProps) {
                 <li key={l.href}>
                   <Link
                     to={l.href}
-                    className="text-sm text-muted hover:text-brand-600 dark:hover:text-brand-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                    className="inline-flex min-h-[44px] items-center text-sm text-muted hover:text-brand-600 dark:hover:text-brand-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                   >
                     {l.label}
                   </Link>

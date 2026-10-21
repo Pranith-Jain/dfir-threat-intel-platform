@@ -91,7 +91,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext value={value}>
       {children}
       <div
-        className="fixed bottom-4 right-4 left-4 sm:left-auto z-[70] flex w-full sm:max-w-sm flex-col gap-2 pointer-events-none"
+        // `left-4 right-4` already sizes the container to the viewport with
+        // a 16px gutter on each side. Adding `w-full` on top over-constrains
+        // it (left + right + width), so CSS drops `right` and the element
+        // becomes 100% of the viewport offset 16px from the left — 16px off
+        // the right edge on every phone. `w-auto` lets left+right win.
+        className="fixed bottom-4 right-4 left-4 sm:left-auto z-[70] flex w-auto sm:w-full sm:max-w-sm flex-col gap-2 pointer-events-none"
         aria-live="polite"
         aria-atomic="false"
       >

@@ -282,8 +282,11 @@ export default function CveList({ bare }: CveListProps): JSX.Element {
       />
 
       <section className="surface-card p-4 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1">
+        {/* The search row is a flex line whose button has a fixed intrinsic
+            width; on a phone the row overflowed the card by 14px. It now
+            wraps, and the search box takes the full width on its own row. */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-full min-w-0 flex-1 sm:w-auto">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
             <input
               type="search"
