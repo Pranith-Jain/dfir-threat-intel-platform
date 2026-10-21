@@ -20,6 +20,7 @@ import { useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Circle, Popup, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { DARK_TILE_CLASS, TILE_ATTRIBUTION, TILE_MAX_ZOOM, TILE_SUBDOMAINS, TILE_URL } from '../../lib/basemap-tiles';
 
 export interface LeafletMarkerSpec {
   /** Stable key for React and for the popup. */
@@ -90,14 +91,9 @@ export default function LeafletMap({
       maxZoom={maxZoom}
       scrollWheelZoom
       style={style}
-      className={className}
+      className={`${DARK_TILE_CLASS} ${className ?? ''}`.trim()}
     >
-      <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-        subdomains="abcd"
-        maxZoom={20}
-      />
+      <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} subdomains={TILE_SUBDOMAINS} maxZoom={TILE_MAX_ZOOM} />
       {onPick && <ClickCapture onPick={onPick} />}
       <Recenter lat={center.lat} lng={center.lng} zoom={zoom} />
 

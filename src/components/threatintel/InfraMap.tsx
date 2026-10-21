@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, ZoomControl, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import { DARK_TILE_CLASS, TILE_ATTRIBUTION, TILE_SUBDOMAINS, TILE_URL } from '../../lib/basemap-tiles';
 import 'leaflet/dist/leaflet.css';
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -144,13 +145,13 @@ export default function InfraMap({
       .map((r) => r.category);
   }, [results]);
 
-  const tileUrl = darkTiles
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-
-  const tileAttribution = darkTiles
-    ? '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
-    : '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>';
+  // Carto's dark basemap now requires an API key, and an unauthenticated
+  // request returns a gray "API KEY REQUIRED" watermark tile rather than
+  // failing — so the dark map rendered as a gray box. The keyless OSM
+  // standard layer is used for both themes, and the dark one is produced
+  // with a CSS filter on the tile pane.
+  const tileUrl = TILE_URL;
+  const tileAttribution = TILE_ATTRIBUTION;
 
   return (
     <MapContainer
@@ -159,8 +160,11 @@ export default function InfraMap({
       style={{ height: '100%', width: '100%' }}
       scrollWheelZoom={true}
       zoomControl={false}
+      // The dark toggle now switches the tile filter rather than the tile
+      // provider — both themes use the same keyless OSM layer.
+      className={darkTiles ? DARK_TILE_CLASS : ''}
     >
-      <TileLayer attribution={tileAttribution} url={tileUrl} />
+      <TileLayer attribution={tileAttribution} url={tileUrl} subdomains={TILE_SUBDOMAINS} maxZoom={19} />
       <ZoomControl position="topleft" />
       {onToggleDark && <MapControls onToggleDark={onToggleDark} />}
       {global && <GlobalView />}
