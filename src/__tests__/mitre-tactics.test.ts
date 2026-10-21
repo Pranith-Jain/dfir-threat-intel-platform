@@ -37,8 +37,15 @@ describe('MITRE tactic list', () => {
 
   it('matches the vendored matrix tactic for tactic', () => {
     // Pull the matrix's tactic blocks out of the generated source.
+    //
+    // The quote style is not fixed: the generator writes double quotes and
+    // the pre-commit hook runs prettier over the file, which rewrites them
+    // as single quotes. Matching either keeps the test honest about what
+    // it checks (the tactic set) rather than about the formatter.
     const matrixTactics = [
-      ...MATRIX.matchAll(/id: "(TA\d+)",\s*\n\s*name: "([^"]+)",\s*\n\s*short_name: "([a-z-]+)"/g),
+      ...MATRIX.matchAll(
+        /id:\s*['"](TA\d+)['"],\s*\n\s*name:\s*['"]([^'"]+)['"],\s*\n\s*short_name:\s*['"]([a-z-]+)['"]/g
+      ),
     ].map((m) => ({ id: m[1], name: m[2], short_name: m[3] }));
     expect(matrixTactics.length).toBe(MITRE_TACTICS.length);
     expect(matrixTactics.map((t) => t.id)).toEqual(MITRE_TACTICS.map((t) => t.id));
