@@ -41,6 +41,16 @@ export { PRERENDERED_ROUTES };
  * worker change to render — just an entry in PRERENDERED_ROUTES for
  * the parent and a slug-aware React Router <Route>.
  */
+/**
+ * The SPA shell's empty root div.
+ *
+ * Used to tell a real prerendered page apart from the shell that ASSETS
+ * returns for a missing asset (`not_found_handling: "single-page-application"`
+ * answers a miss with the shell and a 200, not a 404). A prerendered page
+ * has content inside the root div; the shell does not.
+ */
+const EMPTY_ROOT_MARKER = '<div id="root"></div>';
+
 const DYNAMIC_ROUTE_FALLBACKS: ReadonlyArray<[RegExp, string]> = [
   // ── ThreatIntel: category filter on the home (legacy) ─────────
   [/^\/threatintel\/c\/[^/]+$/i, '/__prerendered/threatintel__catalog'],
@@ -155,10 +165,33 @@ export async function fetchPrerenderedOrShell(
     const internal = new URL(request.url);
     internal.pathname = candidate;
     const r = await env.ASSETS.fetch(new Request(internal.toString(), request));
-    if (r.status !== 404) {
+    if (r.status === 404) continue;
+    const ct = r.headers.get('content-type') ?? '';
+    if (!ct.toLowerCase().includes('text/html')) {
       prerenderRes = r;
       break;
     }
+    // ASSETS runs with `not_found_handling: "single-page-application"`, so a
+    // MISSING asset comes back as the SPA shell with a 200 — NOT a 404. The
+    // status check above therefore cannot tell "found the prerender" from
+    // "fell back to the shell", and on the tools surface the tools-tree
+    // candidate (which deliberately does not carry AppShell routes) won that
+    // comparison. Every /threatintel and /dfir page was serving the empty
+    // shell instead of its prerendered HTML — the prerender pipeline was
+    // dead on all seven tools hosts, which is where the threat-intel platform
+    // actually lives.
+    //
+    // The shell's root div is empty; a prerendered page's is not. That is the
+    // same marker scripts/prerender.mjs uses to detect drift, so comparing
+    // against it is consistent with the build side.
+    const html = await r.text();
+    if (html.includes(EMPTY_ROOT_MARKER)) continue;
+    prerenderRes = new Response(html, {
+      status: r.status,
+      statusText: r.statusText,
+      headers: r.headers,
+    });
+    break;
   }
   if (!prerenderRes) {
     const r = await getOrInjectOg(request, env, ctx, url);
