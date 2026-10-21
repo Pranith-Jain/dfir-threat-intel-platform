@@ -480,7 +480,8 @@ export async function veraSessionsListHandler(c: Context<{ Bindings: Env }>): Pr
     const db = c.env.BRIEFINGS_DB as D1Database | undefined;
     if (!db) return internalError(c, new Error('BRIEFINGS_DB not bound'));
 
-    const limit = Math.min(Number(c.req.query('limit') ?? 20), 100);
+    const limitRaw = Number(c.req.query('limit') ?? 20);
+    const limit = Math.min(Number.isFinite(limitRaw) ? limitRaw : 20, 100);
 
     const vis = ownerVisibilityFilter(c);
     const res = await db

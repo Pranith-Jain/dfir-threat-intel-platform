@@ -46,10 +46,16 @@ export class CronJobDO extends DurableObject<Env> {
     if (typeof body.cron !== 'string' || typeof body.scheduledTime !== 'number') {
       return Response.json({ error: 'cron and scheduledTime required' }, { status: 400 });
     }
-    await this.ctx.storage.put<PendingJob>(JOB_KEY, body);
-    // Defer the actual work to a durable alarm so this fetch returns fast and
-    // the heavy CPU lands in its own invocation.
-    await this.ctx.storage.setAlarm(Date.now() + 500);
+    // Don't clobber an already-pending job: a duplicate/overlapping dispatch
+    // before the alarm fires must not reset the stored scheduledTime or the
+    // alarm, otherwise the earlier job's payload is silently dropped.
+    const existing = await this.ctx.storage.get<PendingJob>(JOB_KEY);
+    if (!existing) {
+      await this.ctx.storage.put<PendingJob>(JOB_KEY, body);
+      // Defer the actual work to a durable alarm so this fetch returns fast and
+      // the heavy CPU lands in its own invocation.
+      await this.ctx.storage.setAlarm(Date.now() + 500);
+    }
     return new Response(JSON.stringify({ ok: true }), {
       status: 202,
       headers: { 'content-type': 'application/json' },

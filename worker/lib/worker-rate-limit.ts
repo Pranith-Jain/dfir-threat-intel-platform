@@ -61,8 +61,13 @@ export async function workerRateLimit(
         'cache-control': `private, max-age=${WINDOW_SEC + 5}`,
       },
     });
-    // Fire-and-forget; if the put races, worst case is a slightly stale count.
-    caches.default.put(cacheKey, entry).catch(() => {});
+    // Await so the incremented counter is durable before the next request in
+    // this colo reads it; otherwise concurrent requests all see count 0.
+    try {
+      await caches.default.put(cacheKey, entry);
+    } catch {
+      /* best-effort */
+    }
 
     return { allowed, remaining: Math.max(0, limit - count), limit, resetSeconds };
   } catch {

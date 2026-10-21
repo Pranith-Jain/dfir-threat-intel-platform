@@ -25,10 +25,11 @@ function imgShadowReq(slug: string, name: string): Request {
  * Validates slug/name against a strict charset to refuse path traversal.
  */
 export async function handleBlogImage(request: Request, url: URL, env: Env): Promise<Response> {
-  const m = url.pathname.match(/^\/api\/v1\/blog-image\/([^/]+)\/([^/.]+)(?:\.(?:jpe?g|png))?$/);
+  const m = url.pathname.match(/^\/api\/v1\/blog-image\/([^/]+)\/([^/.]+)(?:\.(jpe?g|png))?$/);
   if (!m) return new Response('not found', { status: 404 });
   const slug = m[1]!;
   const name = m[2]!;
+  const ext = (m[3] ?? 'jpeg').toLowerCase();
   if (slug.length > 200 || !SLUG_RE.test(slug) || !NAME_RE.test(name)) {
     return new Response('bad request', { status: 400 });
   }
@@ -59,7 +60,7 @@ export async function handleBlogImage(request: Request, url: URL, env: Env): Pro
   const res = new Response(bytes, {
     status: 200,
     headers: {
-      'content-type': 'image/jpeg',
+      'content-type': ext === 'png' ? 'image/png' : 'image/jpeg',
       // Images are content-addressed by slug+name and regenerated only on a
       // fresh publish, so a long immutable cache is safe.
       'cache-control': 'public, max-age=86400, immutable',

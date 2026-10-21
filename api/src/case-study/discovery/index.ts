@@ -1,4 +1,5 @@
 import type { Candidate } from '../types';
+import { candidateUsesBlockedSource } from '../source-blocklist';
 
 export interface RunDiscoveryDeps {
   /** Topic name → runner. Generic so new topics (breach, scam, aisec,
@@ -23,8 +24,13 @@ export interface RunDiscoveryDeps {
   /**
    * Hard novelty gate. Returns true if a candidate key was already
    * surfaced/published recently and must NOT be re-suggested yet.
+   *
+   * The candidate is passed alongside its key because some gates are properties
+   * of the candidate rather than of its history — e.g. a fresh CISA-KEV
+   * addition is "suppressed" because the KEV auto-publish job owns it for the
+   * next 48h, not because it was seen before.
    */
-  isSuppressed?: (key: string) => boolean;
+  isSuppressed?: (key: string, candidate: Candidate) => boolean;
   /**
    * Per-topic selector. Default = strict top-N by score.
    */
@@ -33,6 +39,30 @@ export interface RunDiscoveryDeps {
    * Per-topic override for `perTopic`.
    */
   perTopicOverride?: Record<string, number>;
+  /**
+   * Daily floor. When the strict pass keeps fewer than this many candidates,
+   * the top-up below refills from the runners' already-fetched pool. Unset =
+   * no floor (previous behaviour).
+   *
+   * A floor rather than a bigger `perTopic`: the queue was coming back with
+   * 2-3 items because the anti-repetition gate suppressed everything the
+   * runners returned, not because the per-topic budget was full. Raising the
+   * budget alone changes nothing when the gate is what emptied the pool.
+   */
+  minKept?: number;
+  /**
+   * Gate for the top-up pass: may this *suppressed* candidate be re-offered to
+   * reach the floor? The caller owns the policy (in run.ts it means "never
+   * republish; allow items whose last surfacing is older than N days"), which
+   * is why it is injected rather than a window constant here.
+   */
+  admitSuppressed?: (c: Candidate) => boolean;
+  /**
+   * In-place ordering for the top-up pool. Default = score desc; run.ts sorts
+   * by how long ago each key was last surfaced instead, so the floor is filled
+   * with genuinely stale items rather than the strict pass's runners-up.
+   */
+  rankTopUp?: (pool: Candidate[]) => void;
 }
 
 export interface RunDiscoveryResult {
@@ -40,6 +70,15 @@ export interface RunDiscoveryResult {
   kept: number;
   /** Candidates dropped by the hard novelty gate (anti-repetition). */
   suppressed: number;
+  /** Candidates dropped because they came from a barred source. */
+  blocked: number;
+  /**
+   * Of `kept`, how many came from the top-up pass (i.e. were suppressed by the
+   * strict gate and re-admitted to reach `minKept`). 0 = the day was not thin.
+   * Logged so "the queue is thin again" is distinguishable from "the floor is
+   * being carried by re-surfaced items every day".
+   */
+  filledFromSuppressed: number;
   /** Candidates dropped by cross-runner URL dedup. */
   deduped: number;
   ids: string[];
@@ -61,7 +100,12 @@ export async function runDiscovery(deps: RunDiscoveryDeps): Promise<RunDiscovery
   const byTopicSelected: Record<string, number> = {};
   let total = 0;
   let suppressed = 0;
+  let blocked = 0;
   let selected: Candidate[] = [];
+  // Per-topic bags of everything each runner returned, kept so the top-up pass
+  // can refill from candidates already in memory. Calling the runners again for
+  // the floor would pay their subrequests twice.
+  const bags: Record<string, { suppressed: Candidate[] }> = {};
   const entries = Object.entries(deps.runners);
 
   // Run up to 4 runners in parallel per batch to stay within subrequest
@@ -83,19 +127,26 @@ export async function runDiscovery(deps: RunDiscoveryDeps): Promise<RunDiscovery
     for (const { name, cands, error } of batchResults) {
       if (error) {
         byTopicSelected[name] = 0;
+        bags[name] = { suppressed: [] };
         continue;
       }
       total += cands.length;
-      // Drop already-surfaced keys BEFORE selection so a fresher,
-      // lower-scored candidate can take the slot instead of the same
-      // recurring story.
-      const fresh = cands.filter((c) => {
-        if (isSuppressed(c.key)) {
-          suppressed += 1;
+      // Barred sources never enter the queue (see source-blocklist.ts). Applied
+      // here, at the boundary, so no runner can surface one by accident.
+      const allowed = cands.filter((c) => {
+        if (candidateUsesBlockedSource(c)) {
+          blocked += 1;
           return false;
         }
         return true;
       });
+      // Drop already-surfaced keys BEFORE selection so a fresher,
+      // lower-scored candidate can take the slot instead of the same
+      // recurring story.
+      const gateSuppressed = allowed.filter((c) => isSuppressed(c.key, c));
+      suppressed += gateSuppressed.length;
+      const fresh = allowed.filter((c) => !isSuppressed(c.key, c));
+      bags[name] = { suppressed: gateSuppressed };
       const topicPerTopic = deps.perTopicOverride?.[name] ?? perTopic;
       const select =
         deps.selectPerTopic ?? ((cs: Candidate[], k: number) => [...cs].sort((a, b) => b.score - a.score).slice(0, k));
@@ -152,27 +203,77 @@ export async function runDiscovery(deps: RunDiscoveryDeps): Promise<RunDiscovery
     }
   }
 
-  selected = selected.filter((c) => {
-    const urls = new Set<string>();
-    pushEvidenceUrls(c.evidence ?? {}, urls);
-    // If the candidate has no evidence URLs at all it's not dedupable — keep it.
-    if (urls.size === 0) return true;
-    // If ANY URL was already seen, drop this candidate as a duplicate.
-    for (const u of urls) {
-      if (seenUrl.has(u)) {
-        deduped += 1;
-        return false;
+  /** URL-dedup one candidate list against the shared `seenUrl` set. */
+  const dropUrlDuplicates = (cands: Candidate[]): Candidate[] =>
+    cands.filter((c) => {
+      const urls = new Set<string>();
+      pushEvidenceUrls(c.evidence ?? {}, urls);
+      // If the candidate has no evidence URLs at all it's not dedupable — keep it.
+      if (urls.size === 0) return true;
+      // If ANY URL was already seen, drop this candidate as a duplicate.
+      for (const u of urls) {
+        if (seenUrl.has(u)) {
+          deduped += 1;
+          return false;
+        }
       }
-    }
-    // Mark ALL candidate URLs as seen so future candidates with any overlap
-    // are dropped regardless of which field the URL lives in.
-    for (const u of urls) seenUrl.add(u);
-    return true;
-  });
+      // Mark ALL candidate URLs as seen so future candidates with any overlap
+      // are dropped regardless of which field the URL lives in.
+      for (const u of urls) seenUrl.add(u);
+      return true;
+    });
+
+  selected = dropUrlDuplicates(selected);
 
   // Sort by score for the optional global cap.
   selected.sort((a, b) => b.score - a.score);
-  const kept = typeof deps.limit === 'number' ? selected.slice(0, deps.limit) : selected;
+  let kept = typeof deps.limit === 'number' ? selected.slice(0, deps.limit) : selected;
+
+  // ── Daily floor ────────────────────────────────────────────────────────
+  // The queue used to come back with 2-3 items on a normal day: the runners
+  // found plenty, the anti-repetition gate suppressed most of it, and nothing
+  // refilled the gap. When the strict pass lands under `minKept`, refill from
+  // the pool the runners ALREADY returned — no extra fetches — using the
+  // caller's relaxation policy (`admitSuppressed`, which never admits an
+  // already-published key) and round-robin across topics so the top-up cannot
+  // arrive as a wall of one type.
+  let filledFromSuppressed = 0;
+  const minKept = deps.minKept ?? 0;
+  if (minKept > 0 && kept.length < minKept && deps.admitSuppressed) {
+    const tookKeys = new Set(kept.map((c) => c.key));
+    const pools = Object.entries(bags)
+      .map(([topic, bag]) => ({
+        topic,
+        pool: bag.suppressed.filter((c) => !tookKeys.has(c.key) && deps.admitSuppressed!(c)),
+      }))
+      .filter((p) => p.pool.length > 0);
+    for (const p of pools) (deps.rankTopUp ?? ((pool: Candidate[]) => pool.sort((a, b) => b.score - a.score)))(p.pool);
+
+    const extras: Candidate[] = [];
+    const shortfall = minKept - kept.length;
+    let progressed = true;
+    while (extras.length < shortfall && progressed) {
+      progressed = false;
+      for (const { pool } of pools) {
+        if (extras.length >= shortfall) break;
+        const next = pool.shift();
+        if (!next) continue;
+        // Route through the URL dedup so a top-up cannot resurrect the same
+        // article a kept candidate already covers.
+        if (dropUrlDuplicates([next]).length === 0) {
+          progressed = true;
+          continue;
+        }
+        extras.push(next);
+        tookKeys.add(next.key);
+        progressed = true;
+      }
+    }
+    if (extras.length > 0) {
+      kept = [...kept, ...extras];
+      filledFromSuppressed = extras.length;
+    }
+  }
 
   // Recompute byTopic from the *actual* kept candidates so the admin sees
   // the real topic mix. `byTopicSelected` would over-count topics whose
@@ -202,6 +303,8 @@ export async function runDiscovery(deps: RunDiscoveryDeps): Promise<RunDiscovery
     kept: kept.length,
     suppressed,
     deduped,
+    blocked,
+    filledFromSuppressed,
     ids: kept.map((c) => c.key),
     byTopic,
     byTopicSelected,

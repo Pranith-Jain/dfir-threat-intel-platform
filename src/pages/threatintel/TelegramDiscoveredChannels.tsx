@@ -1,5 +1,5 @@
 import { errMessage, logCatch } from '../../lib/log';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { DataState } from '../../components/DataState';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { RefreshCw, Radio, ExternalLink, Check, X, Search, Lock } from 'lucide-react';
@@ -26,6 +26,7 @@ export default function TelegramDiscoveredChannels(): JSX.Element {
   const [busy, setBusy] = useState<string | null>(null);
   const [filterReviewed, setFilterReviewed] = useState<string>('false');
   const [search, setSearch] = useState('');
+  const fetchSeqRef = useRef(0);
 
   // Operator admin token (shared localStorage key with the rest of the admin UI).
   const [token, setToken] = useState<string>(() => readAdminToken() ?? '');
@@ -33,6 +34,7 @@ export default function TelegramDiscoveredChannels(): JSX.Element {
   const authed = token.trim().length > 0;
 
   const fetchData = useCallback(async () => {
+    const seq = ++fetchSeqRef.current;
     setLoading(true);
     setError(null);
     try {
@@ -42,12 +44,14 @@ export default function TelegramDiscoveredChannels(): JSX.Element {
       const res = await fetch(`/api/v1/telegram-leaks/discovered-channels?${params}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const d = (await res.json()) as { channels: DiscoveredChannel[] };
+      if (seq !== fetchSeqRef.current) return;
       setChannels(d.channels ?? []);
     } catch (e) {
+      if (seq !== fetchSeqRef.current) return;
       console.error('TelegramDiscoveredChannels failed:', errMessage(e));
       setError(errMessage(e));
     } finally {
-      setLoading(false);
+      if (seq === fetchSeqRef.current) setLoading(false);
     }
   }, [filterReviewed]);
 

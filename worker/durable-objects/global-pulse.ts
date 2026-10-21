@@ -199,10 +199,10 @@ export class GlobalPulseDO extends DurableObject<Env> {
     if (now - this.lastRebuildAt < REBUILD_THROTTLE_MS) return;
     const age = this.lastGeneratedAt ? now - new Date(this.lastGeneratedAt).getTime() : Infinity;
     if (age < REBUILD_STALE_MS) return;
-    this.lastRebuildAt = now;
 
     const tokenSecret = (this.env as unknown as { INTERNAL_TOKEN_SECRET?: string }).INTERNAL_TOKEN_SECRET;
     if (!tokenSecret) return;
+    this.lastRebuildAt = now;
 
     try {
       const token = await signInternalToken('global-pulse-do', tokenSecret);
@@ -215,6 +215,7 @@ export class GlobalPulseDO extends DurableObject<Env> {
       );
       if (!res.ok) {
         console.log(JSON.stringify({ job: 'gp-do-rebuild', status: 'failed', http: res.status }));
+        this.lastRebuildAt = 0; // allow retry
         return;
       }
       const body = (await res.json()) as GlobalPulseResponse;
@@ -229,6 +230,7 @@ export class GlobalPulseDO extends DurableObject<Env> {
       );
     } catch (_catchErr) {
       console.error('handler failed:', errMessage(_catchErr));
+      this.lastRebuildAt = 0; // allow retry
       /* best-effort — the next alarm / connect retries */
     }
   }

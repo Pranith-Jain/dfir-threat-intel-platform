@@ -231,7 +231,8 @@ export async function agentSessionsHandler(c: Context<{ Bindings: Env }>): Promi
   const db = c.env.BRIEFINGS_DB;
   if (!db) return serviceUnavailable(c, 'database not configured');
 
-  const limit = Math.min(Number(c.req.query('limit') ?? 20), 50);
+  const limitRaw = Number(c.req.query('limit') ?? 20);
+  const limit = Math.min(Number.isFinite(limitRaw) ? limitRaw : 20, 50);
 
   const res = await db
     .prepare(
@@ -277,7 +278,8 @@ export async function agentProviderHealthHandler(c: Context<{ Bindings: Env }>):
 export async function agentMemoryHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const db = c.env.BRIEFINGS_DB;
   if (!db) return serviceUnavailable(c, 'database not configured');
-  const limit = Math.min(Number(c.req.query('limit') ?? 15), 50);
+  const limitRaw = Number(c.req.query('limit') ?? 15);
+  const limit = Math.min(Number.isFinite(limitRaw) ? limitRaw : 15, 50);
   const { getRecentInvestigations } = await import('../lib/agent/investigation-memory');
   const investigations = await getRecentInvestigations(db, limit);
   return c.json({ investigations }, 200, { 'Cache-Control': 'public, max-age=30' });
@@ -290,7 +292,8 @@ export async function agentMemoryHandler(c: Context<{ Bindings: Env }>): Promise
 export async function agentKnowledgeGraphHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const db = c.env.BRIEFINGS_DB;
   if (!db) return serviceUnavailable(c, 'database not configured');
-  const limit = Math.min(Number(c.req.query('limit') ?? 100), 300);
+  const limitRaw = Number(c.req.query('limit') ?? 100);
+  const limit = Math.min(Number.isFinite(limitRaw) ? limitRaw : 100, 300);
   const { getKnowledgeGraph } = await import('../lib/agent/knowledge-graph');
   const graph = await getKnowledgeGraph(db, limit);
   return c.json(graph, 200, { 'Cache-Control': 'public, max-age=60' });

@@ -67,7 +67,7 @@ export const FILTER_CATALOGUE: FilterEndpoint[] = [
   {
     path: '/api/v1/cve-recent',
     method: 'GET',
-    summary: 'Recently published and known-exploited CVEs, merged across eight priority sources.',
+    summary: 'Recently published and known-exploited CVEs, merged across seven priority sources.',
     params: [
       { name: 'days', type: 'number', description: 'Only CVEs published in the last N days.', example: '7' },
       {
@@ -78,6 +78,28 @@ export const FILTER_CATALOGUE: FilterEndpoint[] = [
       },
       { name: 'kev', type: 'boolean', description: 'Restrict to CISA Known Exploited Vulnerabilities.' },
       { name: 'limit', type: 'number', description: 'Maximum rows to return.' },
+    ],
+  },
+  {
+    path: '/api/v1/cve-exploits',
+    method: 'GET',
+    summary:
+      'Public exploit records from ExploitGrid. Deliberately separate from cve-recent — unreviewed community PoCs, and the question is "does working code exist?" rather than "what is new".',
+    params: [
+      {
+        name: 'severity',
+        type: 'enum',
+        description:
+          'Filter by the exploit record’s own classification. This is not a CVSS score; UNKNOWN is ExploitGrid’s "UNRATED" bucket.',
+        values: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'UNKNOWN'],
+      },
+      {
+        name: 'q',
+        type: 'string',
+        description: 'Substring match across title, software, CVE ids, platform and exploit type.',
+      },
+      { name: 'page', type: 'number', description: 'Upstream page. 100 records per page.', example: '1' },
+      { name: 'limit', type: 'number', description: 'Records per page. Upstream caps at 100.' },
     ],
   },
   {
@@ -174,7 +196,7 @@ export const FILTER_CATALOGUE: FilterEndpoint[] = [
         name: 'origin',
         type: 'enum',
         description: 'Source feed that first surfaced the CVE.',
-        values: ['nvd', 'kev', 'mti', 'cvefeed', 'cvenotify', 'tg', 'dbugs', 'exploitgrid', 'threatwire'],
+        values: ['nvd', 'kev', 'mti', 'cvefeed', 'cvenotify', 'tg', 'dbugs', 'threatwire'],
       },
       { name: 'kev', type: 'boolean', description: 'Only CISA Known Exploited Vulnerabilities.' },
       { name: 'days', type: 'number', description: 'Only CVEs published in the last N days.' },

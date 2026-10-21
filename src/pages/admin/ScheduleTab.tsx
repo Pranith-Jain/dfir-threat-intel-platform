@@ -40,7 +40,8 @@ export default function ScheduleTab() {
   const slotsByDay = useMemo(() => {
     const map = new Map<string, Slot[]>();
     for (const s of schedule) {
-      const key = s.slotAt.slice(0, 10);
+      const d = new Date(s.slotAt);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       const list = map.get(key) ?? [];
       list.push(s);
       map.set(key, list);

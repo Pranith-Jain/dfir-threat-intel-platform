@@ -6,7 +6,9 @@
 import { withSecurityHeaders } from './csp';
 import { validateRawKey } from '../api/src/lib/auth';
 import { workerRateLimit, rateLimitResponse } from './lib/worker-rate-limit';
+import { getThreatDb } from '../api/src/lib/do-database';
 import type { Env } from './env';
+import type { D1Database } from '@cloudflare/workers-types';
 
 const RADAR_LIMIT = 10;
 
@@ -31,7 +33,13 @@ export async function handleRadarCrawl(
 
   const authz = request.headers.get('authorization') ?? '';
   const rawKey = /^Bearer\s+(\S+)/i.exec(authz)?.[1] ?? request.headers.get('x-api-key') ?? '';
-  if (!rawKey || !env.BRIEFINGS_DB) {
+  let radarDb: D1Database | null = null;
+  try {
+    radarDb = getThreatDb(env as { THREAT_DATA_DO?: DurableObjectNamespace; BRIEFINGS_DB?: D1Database });
+  } catch {
+    radarDb = env.BRIEFINGS_DB ?? null;
+  }
+  if (!rawKey || !radarDb) {
     return withSecurityHeaders(
       new Response(JSON.stringify({ error: 'api key required' }), {
         status: 401,
@@ -41,7 +49,7 @@ export async function handleRadarCrawl(
       url.origin
     );
   }
-  const user = await validateRawKey(env.BRIEFINGS_DB, rawKey);
+  const user = await validateRawKey(radarDb!, rawKey);
   if (!user || user.role !== 'admin') {
     return withSecurityHeaders(
       new Response(JSON.stringify({ error: 'admin api key required' }), {

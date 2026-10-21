@@ -3,6 +3,7 @@ import { cveKey } from '../stable-keys';
 import { recencyScore, severityScore, noveltyScore, finalScore } from '../scoring';
 import { verifyUrl, type LinkStatus } from '../../lib/verify-url';
 import { formatAffectedVersions } from '../../lib/cve-versions';
+import { formatKevTitle } from '../kev-autopublish';
 
 const KEV_URL = 'https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json';
 const NVD_API = 'https://services.nvd.nist.gov/rest/json/cves/2.0';
@@ -51,7 +52,15 @@ export interface DiscoverDeps {
   getDedup: (stableKey: string) => Promise<DedupRecord | null>;
 }
 
-async function enrichFromNvd(
+/**
+ * NVD enrichment for one CVE (CVSS, affected versions, CWE).
+ *
+ * Exported because the KEV auto-publish path (`case-study/kev-autopublish.ts`)
+ * needs exactly this and must not grow a second NVD parser — the drift risk is
+ * a CVSS field read differently in two places, which is how "CONFIRMED"-looking
+ * "affected versions" shipped once already (see the CPE comment below).
+ */
+export async function enrichFromNvd(
   fetchFn: typeof globalThis.fetch,
   cveId: string
 ): Promise<Partial<Record<string, unknown>>> {
@@ -159,23 +168,12 @@ export async function discoverCves(deps: DiscoverDeps): Promise<Candidate[]> {
         sourceWeight: 1.0,
       });
 
-      // vulnerabilityName is often the full NVD title which already includes vendor
-      // and product. Avoid triple/tandem repeats like "Microsoft Microsoft Exchange...".
-      const titleVendor = k.vendorProject.charAt(0).toUpperCase() + k.vendorProject.slice(1);
-      const nameIncludesVendor = k.vulnerabilityName.toLowerCase().startsWith(titleVendor.toLowerCase());
-      const nameIncludesProduct = k.vulnerabilityName.toLowerCase().includes(k.product.toLowerCase());
-      const productAlreadyHasVendor = k.product.toLowerCase().includes(k.vendorProject.toLowerCase());
-      const titleName =
-        nameIncludesVendor || nameIncludesProduct
-          ? k.vulnerabilityName
-          : productAlreadyHasVendor
-            ? `${k.product} ${k.vulnerabilityName}`
-            : `${titleVendor} ${k.product} ${k.vulnerabilityName}`;
-
       candidates.push({
         key: stable,
         type: 'cve',
-        title: `${k.cveID} — ${titleName}`,
+        // Shared with the KEV auto-publish path so the same CVE is named
+        // identically whichever surface found it first.
+        title: formatKevTitle(k),
         rationale: `Added to CISA KEV ${k.dateAdded}` + (evidence.ransomwareUse ? '; known ransomware use' : ''),
         score,
         evidence,

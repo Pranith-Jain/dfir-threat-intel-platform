@@ -5,6 +5,7 @@ import { SOURCE_RELIABILITY_REGISTRY } from '../lib/confidence';
 import { SNAPSHOT_CACHE_KEY } from './snapshot';
 import { CVE_RECENT_CACHE_KEY } from './cve-recent';
 import { CVE_TRENDS_CACHE_KEY } from '../lib/cvemon';
+import { EXPLOITGRID_PAGE_CACHE_KEY } from '../lib/exploitgrid';
 import { CVE_DIGEST_CACHE_KEY } from './cve-digest';
 import { MALWARE_SAMPLES_CACHE_KEY } from './malware-samples';
 import { PHISHING_URLS_CACHE_KEY } from './phishing-urls';
@@ -222,7 +223,11 @@ export const PROBE_SOURCES: Record<string, string[]> = {
   'stealer-forum-intel': ['hudson-rock'],
   // dbu.gs (B) sits alongside the A-grade advisory sources: it is a gap-filler,
   // so NVD/KEV remain the probe's reliability anchor and the aggregate stays A.
-  'cve-recent': ['nvd', 'cisa-kev', 'dbugs', 'exploitgrid', 'threatwire'],
+  'cve-recent': ['nvd', 'cisa-kev', 'dbugs', 'threatwire'],
+  // ExploitGrid (C) is its own surface now, not a cve-recent tier, so it gets
+  // its own probe — a dead exploit index shows up as a dead feed row rather
+  // than as a silently missing gap-filler count inside another probe.
+  'cve-exploits': ['exploitgrid'],
   // The 24h digest is anchored on ctiwatch (B) with VulnTracker volume for
   // context — best-evidence-wins keeps it at B.
   'cve-digest': ['ctiwatch', 'vulntracker', 'offseq-radar'],
@@ -289,14 +294,13 @@ export const PROBES: FeedProbeSpec[] = [
       const nvdCount = find('nvd-published-14d')?.count ?? 0;
       const kevCount = find('cisa-kev-added-30d')?.count ?? 0;
       const dbugsCount = find('dbugs')?.count ?? 0;
-      const exploitGridCount = find('exploitgrid')?.count ?? 0;
       const threatWireCount = find('threatwire')?.count ?? 0;
       const status: Status = nvdCount > 0 && kevCount > 0 ? 'ok' : count > 0 ? 'degraded' : 'down';
       return {
         status,
         reason:
           nvdCount > 0 && kevCount > 0
-            ? `NVD ${nvdCount} + KEV ${kevCount} entries${dbugsCount > 0 || exploitGridCount > 0 || threatWireCount > 0 ? ` + ${dbugsCount} dbu.gs / ${exploitGridCount} exploitgrid / ${threatWireCount} threatwire gap-fills` : ''}`
+            ? `NVD ${nvdCount} + KEV ${kevCount} entries${dbugsCount > 0 || threatWireCount > 0 ? ` + ${dbugsCount} dbu.gs / ${threatWireCount} threatwire gap-fills` : ''}`
             : nvdCount === 0
               ? 'NVD rate-limited — serving KEV only'
               : 'KEV unreachable — serving NVD only',
@@ -307,7 +311,6 @@ export const PROBES: FeedProbeSpec[] = [
           nvd: nvdCount,
           kev: kevCount,
           dbugs: dbugsCount,
-          exploitgrid: exploitGridCount,
           threatwire: threatWireCount,
         },
         ageS,
@@ -317,7 +320,9 @@ export const PROBES: FeedProbeSpec[] = [
   {
     id: 'cve-trends',
     label: 'CVE trending — social attention (cvemon)',
-    page_path: '/threatintel/cve-intel?tab=trending',
+    // Was '/threatintel/cve-intel?tab=trending' — no such route exists, so the
+    // source-health row linked to a dead path. This is the real CveIntel route.
+    page_path: '/threatintel/cves/cves?tab=trending',
     api_path: '/api/v1/cve-trends',
     cache_key: CVE_TRENDS_CACHE_KEY,
     sourceIds: PROBE_SOURCES['cve-trends'],
@@ -340,6 +345,38 @@ export const PROBES: FeedProbeSpec[] = [
               : `${count} CVEs trending on social`
             : 'cvemon returned no trending CVEs',
         metrics: { count },
+        ageS,
+      };
+    },
+  },
+  {
+    id: 'cve-exploits',
+    label: 'CVE exploits — public PoC index (ExploitGrid)',
+    page_path: '/threatintel/cves/cves?tab=exploits',
+    api_path: '/api/v1/cve-exploits',
+    cache_key: EXPLOITGRID_PAGE_CACHE_KEY,
+    sourceIds: PROBE_SOURCES['cve-exploits'],
+    evaluate: (body) => {
+      const count = intField(body, 'count') ?? 0;
+      const ageS = ageSeconds(strField(body, 'generated_at'));
+      const stale = (body as { stale?: boolean }).stale === true;
+      const withCve = (body as { source?: { with_cve?: number } }).source?.with_cve ?? 0;
+      // Single upstream, no fallback tier: either ExploitGrid answered or the
+      // page is empty because we could not ask. `stale` is surfaced because an
+      // empty exploit list reads as "no PoCs exist", which is a different and
+      // much more dangerous statement than "we could not ask".
+      const status: Status = count > 0 ? (stale ? 'degraded' : 'ok') : 'down';
+      return {
+        status,
+        reason:
+          count > 0
+            ? stale
+              ? 'ExploitGrid unreachable — serving cached page'
+              : `${count} exploit records on this page (${withCve} CVE-linked)`
+            : stale
+              ? 'ExploitGrid unreachable'
+              : 'ExploitGrid returned no exploit records',
+        metrics: { count, with_cve: withCve },
         ageS,
       };
     },

@@ -77,7 +77,18 @@ export class CronLockDO extends DurableObject<Env> {
       const cur = await this.ctx.storage.get<Lease>(key);
       // Token-matched so a stale fire can never release a live lease.
       // Constant-time: the token is a bearer capability (see `heartbeat`).
-      if (cur && token !== undefined && safeEqual(cur.token, token)) await this.ctx.storage.delete(key);
+      //
+      // The response is idempotent-ok BY DESIGN: a release that did not match
+      // (wrong token, or no lease at all) still answers `ok: true`, because
+      // "the lease is not held by you" and "the lease was not there" are the
+      // same outcome — there is nothing left to release. The caller learns
+      // whether the lease survived by asking again (`acquire`), which is the
+      // only question that matters. Reporting `ok: false` here instead would
+      // have made a correct release look like a failure to a caller that
+      // simply ran out of work to do.
+      if (cur && token !== undefined && safeEqual(cur.token, token)) {
+        await this.ctx.storage.delete(key);
+      }
       return Response.json({ ok: true });
     }
 

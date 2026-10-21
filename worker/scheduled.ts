@@ -13,6 +13,7 @@ import {
   runDiscoveryNow,
   runPlannerNow,
   runPublisherNow,
+  runKevAutopublishNow,
   runSocialAutopostNow,
   refreshSocialMetricsNow,
   type CaseStudyEnv,
@@ -98,6 +99,10 @@ import { errMessage } from './lib/err';
  * - "5 0 * * *"  → daily case-study discovery + planner (chained; one
  *                  lease, planner runs after discovery finishes so it
  *                  sees the just-updated candidate queue)
+ *                  The hourly tick ALSO runs the CISA-KEV auto-publish watch
+ *                  (a CVE added to KEV is generated + published immediately).
+ *                  It rides this cron rather than its own because the account
+ *                  is on the free plan's 5-cron limit — see wrangler.jsonc.
  * - "30 0 * * *" → daily briefing for the prior calendar day
  * - "45 0 * * 1" → weekly briefing for the prior ISO week (Mon → Sun)
  * - "0 * * * *"  → warm /api/v1/snapshot + /api/v1/ioc-snapshot once
@@ -196,7 +201,24 @@ export async function executeCronJob(
     ctx.waitUntil(
       (async () => {
         try {
-          await runDiscoveryNow(env as unknown as CaseStudyEnv, csNow);
+          const d = await runDiscoveryNow(env as unknown as CaseStudyEnv, csNow);
+          // Logged unconditionally: the whole point of the daily floor is that
+          // "kept" never silently drops back to 2-3, and a silent drop is
+          // exactly how it read before. `filled` says how much of the day's
+          // queue came from the top-up pass rather than fresh finds — a number
+          // that stays high every day means the runners, not the gate, are the
+          // limit worth fixing next.
+          console.log(
+            JSON.stringify({
+              job: 'discovery',
+              kept: d.kept,
+              total: d.total,
+              suppressed: d.suppressed,
+              blocked: d.blocked,
+              filled: d.filledFromSuppressed,
+              byTopic: d.byTopic,
+            })
+          );
         } catch (e) {
           logCronFail('discovery')(e);
           // Don't rethrow: a discovery failure must not block the planner,
@@ -927,6 +949,33 @@ export async function executeCronJob(
           // enqueueGpFeeds moved to the TOP of this hourly handler — it must land
           // before the pipeline exhausts the subrequest cap (see above).
           fireAndForget.push(runPublisherNow(env as unknown as CaseStudyEnv, csNow).catch(logCronFail('publisher')));
+          // CISA-KEV auto-publish: a CVE added to KEV gets a post, published
+          // immediately (no candidate queue, no approval gate, no slot).
+          //
+          // Why it rides the hourly cron: the free plan caps the ACCOUNT at 5
+          // cron triggers and this account is already at 5, so a dedicated
+          // `15 * * * *` schedule is not deployable (error 10072). Cost is
+          // bounded and mostly zero — one KEV feed read on a tick with nothing
+          // new, and at most KEV_AUTOPUBLISH_MAX_PER_TICK (2) generations when
+          // a CVE actually landed in the catalogue.
+          fireAndForget.push(
+            runKevAutopublishNow(env as unknown as CaseStudyEnv, csNow)
+              .then((r) => {
+                if (r.published > 0 || r.failures.length > 0) {
+                  console.log(
+                    JSON.stringify({
+                      job: 'kev-autopublish',
+                      seen: r.seen,
+                      eligible: r.eligible,
+                      published: r.published,
+                      slugs: r.slugs,
+                      failures: r.failures.length > 0 ? r.failures : undefined,
+                    })
+                  );
+                }
+              })
+              .catch(logCronFail('kev-autopublish'))
+          );
           // Drip auto-post tick: releases approved + due X/LinkedIn posts at the
           // configured rate. No-op unless SOCIAL_AUTOPOST_ENABLED === 'true'.
           fireAndForget.push(

@@ -67,7 +67,9 @@ export function LandscapeView({ actors, feed }: Props) {
 
     const avgActive =
       filteredActors.length > 0
-        ? Math.round(filteredActors.reduce((s, a) => s + (2025 - a.active_since), 0) / filteredActors.length)
+        ? Math.round(
+            filteredActors.reduce((s, a) => s + (new Date().getFullYear() - a.active_since), 0) / filteredActors.length
+          )
         : 0;
     const totalTTPs = filteredActors.reduce((s, a) => s + a.ttps.length, 0);
     const totalMalware = filteredActors.reduce((s, a) => s + a.malware.length, 0);

@@ -134,7 +134,8 @@ export async function tgTimelineHandler(c: Context<{ Bindings: Env }>): Promise<
 
   const q = c.req.query('q') || '';
   const channel = c.req.query('channel');
-  const days = Math.min(Number(c.req.query('days') ?? '30'), 365);
+  const daysRaw = Number(c.req.query('days') ?? '30');
+  const days = Math.min(365, Math.max(1, Number.isFinite(daysRaw) ? daysRaw : 30));
 
   const whereParts: string[] = [`discovered_at >= date('now', '-${days} days')`];
   const params: unknown[] = [];

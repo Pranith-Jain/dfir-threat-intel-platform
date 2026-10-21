@@ -6,6 +6,7 @@ import { Bug } from 'lucide-react';
 
 const CveList = lazy(() => import('./CveList'));
 const CveTrends = lazy(() => import('./CveTrends'));
+const CveExploits = lazy(() => import('./CveExploits'));
 const CveDigest = lazy(() => import('./CveDigest'));
 const ExploitableCves = lazy(() => import('./ExploitableCves'));
 const CisaKevCatalog = lazy(() => import('./CisaKevCatalog'));
@@ -15,7 +16,8 @@ const PocScanner = lazy(() => import('./PocScanner'));
 const CyberNewsFeed = lazy(() => import('./CyberNewsFeed'));
 const CveHealthCheck = lazy(() => import('./CveHealthCheck'));
 
-type TabId = 'all' | 'trending' | 'digest' | 'exploitable' | 'kev' | 'k8s' | 'cert-in' | 'poc' | 'news' | 'health';
+type TabId =
+  'all' | 'trending' | 'exploits' | 'digest' | 'exploitable' | 'kev' | 'k8s' | 'cert-in' | 'poc' | 'news' | 'health';
 
 const TABS: Array<{ id: TabId; label: string; desc: string }> = [
   { id: 'all', label: 'All Recent', desc: 'NVD + KEV + MyThreatIntel + cvefeed.io + CVE Telegram channels + EPSS' },
@@ -23,6 +25,11 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
     id: 'trending',
     label: 'Trending',
     desc: 'CVEs trending on social media (cvemon) with CVSS, KEV, EPSS and exploit status — discussion ahead of confirmation',
+  },
+  {
+    id: 'exploits',
+    label: 'Exploits',
+    desc: 'Public exploit and PoC records indexed by ExploitGrid — the "does working code exist?" question, separate from the new-CVE feed',
   },
   {
     id: 'digest',
@@ -103,6 +110,7 @@ export default function CveIntel(): JSX.Element {
         <Suspense fallback={<TabLoader />}>
           {activeTab === 'all' && <CveList bare />}
           {activeTab === 'trending' && <CveTrends />}
+          {activeTab === 'exploits' && <CveExploits />}
           {activeTab === 'digest' && <CveDigest bare />}
           {activeTab === 'exploitable' && <ExploitableCves bare />}
           {activeTab === 'kev' && <CisaKevCatalog bare />}

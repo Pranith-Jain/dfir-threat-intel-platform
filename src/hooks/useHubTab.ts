@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 /**
@@ -27,6 +27,14 @@ export function useHubTab<T extends string>(tabs: ReadonlyArray<{ id: T }>, defa
   const requested = searchParams.get('tab') as T | null;
   const initial = requested && tabs.some((t) => t.id === requested) ? requested : defaultTab;
   const [active, setActiveState] = useState<T>(initial);
+
+  // Keep active in sync when the URL param changes externally (deep links,
+  // browser back/forward, same-route navigation that only changes ?tab=).
+  useEffect(() => {
+    const requested = searchParams.get('tab') as T | null;
+    const next = requested && tabs.some((t) => t.id === requested) ? requested : defaultTab;
+    setActiveState((prev) => (prev === next ? prev : next));
+  }, [searchParams, tabs, defaultTab]);
 
   const setActive = useCallback(
     (id: T) => {

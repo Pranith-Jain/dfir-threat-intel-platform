@@ -23,7 +23,7 @@ interface RecentCve {
   kev_due?: string;
   kev_ransomware?: boolean;
   actors?: Array<{ slug: string; mitre_id?: string; mitre_url?: string; mitre_name?: string }>;
-  origin: 'nvd' | 'kev' | 'mti' | 'cvefeed' | 'cvenotify' | 'tg' | 'dbugs' | 'exploitgrid' | 'threatwire';
+  origin: 'nvd' | 'kev' | 'mti' | 'cvefeed' | 'cvenotify' | 'tg' | 'dbugs' | 'threatwire';
   /** Every source that independently listed this CVE, highest-authority first. */
   listed_by?: string[];
   listed_by_count?: number;
@@ -112,11 +112,6 @@ const ORIGIN_PILL: Record<RecentCve['origin'], { label: string; cls: string; too
     label: 'dbu.gs',
     cls: 'border-teal-500/40 bg-teal-500/10 text-teal-700 dark:text-teal-300',
     tooltip: 'Gap-filled from dbu.gs — carries vendor/product/CWE plus exploit- and fix-availability flags',
-  },
-  exploitgrid: {
-    label: 'ExploitGrid',
-    cls: 'border-orange-500/40 bg-orange-500/10 text-orange-700 dark:text-orange-300',
-    tooltip: 'Gap-filled from ExploitGrid — a public proof-of-concept exists for this CVE',
   },
   threatwire: {
     label: 'ThreatWire',
@@ -598,11 +593,10 @@ export default function CveList({ bare }: CveListProps): JSX.Element {
           <p className="text-muted mb-2 max-w-3xl leading-relaxed">
             Up to <strong>1,500 CVEs newly published in the last 30 days</strong> (NVD) merged with{' '}
             <strong>CISA KEV</strong> additions, <strong>MyThreatIntel</strong> alerts,{' '}
-            <strong>cvefeed.io high-severity</strong> RSS, CVE Telegram channels, <strong>dbu.gs</strong>,{' '}
-            <strong>ExploitGrid</strong> and the <strong>ThreatWire</strong> wire as gap-fillers. Every entry is
-            enriched with <strong>FIRST EPSS</strong> exploitation probability where available. NVD reports ~5,500 CVEs
-            per 30-day window - this is a triage view that prioritises high-signal records, not the full corpus. For
-            exhaustive search use{' '}
+            <strong>cvefeed.io high-severity</strong> RSS, CVE Telegram channels, <strong>dbu.gs</strong> and the{' '}
+            <strong>ThreatWire</strong> wire as gap-fillers. Every entry is enriched with <strong>FIRST EPSS</strong>{' '}
+            exploitation probability where available. NVD reports ~5,500 CVEs per 30-day window - this is a triage view
+            that prioritises high-signal records, not the full corpus. For exhaustive search use{' '}
             <a
               href="https://nvd.nist.gov/vuln/search"
               target="_blank"
@@ -621,7 +615,7 @@ export default function CveList({ bare }: CveListProps): JSX.Element {
           <p className="text-xs text-muted font-mono">
             Sources: <span className="text-body">NVD published-CVE feed</span> merged with the{' '}
             <span className="text-body">CISA KEV catalogue</span>, MyThreatIntel, cvefeed.io RSS, CVE Telegram channels,
-            dbu.gs, ExploitGrid and <span className="text-body">ThreatWire</span>. Scores:{' '}
+            dbu.gs and <span className="text-body">ThreatWire</span>. Scores:{' '}
             <span className="text-body">NVD CVSS</span> + <span className="text-body">FIRST EPSS</span>. Each row lists
             every independent source that carries the CVE — filter to <span className="text-body">multi-source</span>{' '}
             records to see only corroborated entries.
