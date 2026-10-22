@@ -1,0 +1,37 @@
+{
+  "slug": "php2shell-quick-mitigation-pre-patch-39956c1870f74a40-6f429a",
+  "externalId": "reddit-t3_1xc0t9g",
+  "source": "Reddit Cybersecurity",
+  "type": "vulnerability",
+  "title": "PHP2Shell - quick mitigation pre-patch",
+  "description": "A use-after-free (UAF) vulnerability exists in PHP's session.upload_progress handler related to serialize-state cross-request handling. This vulnerability does not lead to remote code execution but can cause memory safety issues and arbitrary memory reads/writes. The vulnerability affects prefork-based PHP setups and is confirmed with a medium severity impact. A pre-patch mitigation is available by disabling session.upload_progress in PHP configuration. Official patches are expected in PHP versions 8.2.35, 8.3.36, 8.4.27, and 8.5.11.",
+  "severity": "medium",
+  "cvssScore": null,
+  "cvssVector": null,
+  "publishedDate": "2026-10-21T22:00:11.000Z",
+  "cveId": null,
+  "cveIds": [],
+  "tags": ["cybersecurity", "reddit", "patch"],
+  "knownExploitsInWild": false,
+  "exploited": false,
+  "mirageCountries": [],
+  "patchAvailable": false,
+  "knownThreatActors": [],
+  "affectedCountries": [],
+  "references": [
+    {
+      "title": "PHP2Shell - quick mitigation pre-patch",
+      "url": "https://jackalsyn.com/posts/php-up-2026.html",
+      "type": "news"
+    },
+    {
+      "title": "Reddit Discussion: PHP2Shell - quick mitigation pre-patch",
+      "url": "https://www.reddit.com/r/cybersecurity/comments/1xc0t9g/php2shell_quick_mitigation_prepatch/",
+      "type": "other"
+    }
+  ],
+  "url": "https://radar.offseq.com/threats/php2shell-quick-mitigation-pre-patch-39956c1870f74a40-6f429a",
+  "aiSummary": "The PHP session.upload_progress feature contains a use-after-free vulnerability (CVE-2026-109618 and CVE-2026-109619) involving the serialize-state cross-request handling in the session upload progress handler. The bug arises because the serialize/unserialize globals are not properly reset before PHP request initialization, leading to reuse of freed memory blocks and arbitrary memory read/write conditions. The cached-pointer path initially thought exploitable is confirmed dead, but the serialize-state UAF remains a real memory safety issue with a CVSS-equivalent severity of 5.3 (medium). This vulnerability affects prefork MPM with mod_php setups and requires specific heap grooming for exploitation. Disabling session.upload_progress in php.ini or .htaccess closes both vulnerable paths. Additional mitigation includes clamping multipart uploads at the network edge. Official patches are planned for PHP 8.2.35, 8.3.36, 8.4.27, and 8.5.11.",
+  "aiImpact": "The vulnerability allows use-after-free memory corruption leading to arbitrary memory read/write primitives but does not enable remote code execution. It can cause application crashes (SIGSEGV) and memory exhaustion. The impact is limited to prefork PHP setups with session.upload_progress enabled and is mitigated by disabling this feature. No active exploits in the wild are reported.",
+  "sizeBytes": 2848
+}
