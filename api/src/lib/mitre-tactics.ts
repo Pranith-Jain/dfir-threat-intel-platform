@@ -4,7 +4,7 @@
  *   node scripts/generate-mitre-matrix.mjs
  *
  * Upstream: https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json
- * Generated: 2026-10-21 (ATT&CK v3.3.0)
+ * Generated: 2026-10-22 (ATT&CK v3.3.0)
  *
  * The canonical ATT&CK Enterprise tactic list, in kill-chain order.
  *
