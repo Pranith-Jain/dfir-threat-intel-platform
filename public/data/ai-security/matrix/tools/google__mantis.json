@@ -3,13 +3,13 @@
   "repo": "google/mantis",
   "category": "agent",
   "scope": ["code"],
-  "stars": 2507,
+  "stars": 2515,
   "description": "A modular, stack-agnostic toolkit for AI coding agents to autonomously find, reproduce, and patch vulnerabilities.",
   "homepage": "https://cloud.google.com/",
   "added": "2026-10-01",
-  "checkedAt": "2026-10-22T03:20:28Z",
-  "pushedAt": "2026-10-20",
-  "daysIdle": 2,
+  "checkedAt": "2026-10-23T03:20:24Z",
+  "pushedAt": "2026-10-23",
+  "daysIdle": 0,
   "archived": false,
   "license": "Apache-2.0",
   "upstream": {
@@ -18,32 +18,32 @@
       "description": "Reads a codebase and its commit history, builds a threat model from them, and sends agents to chase each hypothesis it raises. It then tries to reproduce each finding in a sandbox and attacks its own patch to check the fix holds, working from source alone with no running target."
     },
     "derived": {
-      "checked_at": "2026-10-22T03:20:28Z",
+      "checked_at": "2026-10-23T03:20:24Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-10-20",
-        "days_since_push": 2,
-        "total_commits": 136,
+        "pushed_at": "2026-10-23",
+        "days_since_push": 0,
+        "total_commits": 144,
         "last100_span_days": 95,
         "last100_authors": 2,
-        "last_commit_sha": "674f331",
-        "last_commit_message": "fix(core): node prompts are literal text, not ADK state templates\n\nFound by the first evolved harness to reach a rollout: the domain proposer\nquoted code in the threat modeler's prompt (f\"... WHERE name='{name}'\",\nORDER BY {column} {direction}) and the stage died before its first model\ncall with KeyError: \"Context variable not found: `name`\". ADK renders a\nstring instruction as a template -- {name} is a session-state lookup,\n{artifact.x} an artifact load -- and a missing key is fatal at run time,\nafter validate_tree and the production loader have both passed the\nworkflow. Anyone hand-editing a prompt to include a code snippet hits the\nsame wall; the shipped prompts survive only because none of them contains\na bare {word}.\n\nMantis uses no state templating in node instructions (the seed prompt's\n{filepath} is substituted by main.py itself), so every agent node now hands\nits instruction to ADK as a provider, which ADK uses verbatim\n(canonical_instruction returns bypass_state_injection=True).\nLiteralInstruction is that provider and reads like the string it carries\n(in, startswith, str, ==, len), so code that inspects an agent's prompt\nkeeps working.\n\nAlso in evals/evolve, from live attempts 6 and 7:\n- the proposer's per-request timeout is 900 s (MANTIS_PROPOSER_LLM_TIMEOUT):\n  a writing turn that emits several whole prompt files legitimately runs for\n  minutes, and a 300 s cut was retried from zero and never completed; the\n  session bound and the process kill guard against a dead connection;\n- the proposer's output budget is 65k tokens clamped to the model's ceiling\n  (MANTIS_PROPOSER_MAX_OUTPUT_TOKENS): the investigation proposer's writing\n  turn hit the provider default (FinishReason.MAX_TOKENS) twice, losing\n  every edit in it; the instructions now also say one file per call, at\n  most two per turn.\n\nTests: tests/test_literal_instruction.py reproduces the KeyError through\nADK's inject_session_state on the string form and shows the provider form\nbypasses it, checks every shipped node carries one, and loads an evolved\nprompt with braces verbatim; tests/test_evolve.py covers the timeout floor\nand the output clamp.\n\nChange-Id: I4f067259b9d72c9eaf81e0a902c28d8e380491d0",
-        "last_commit_at": "2026-10-20",
+        "last_commit_sha": "665bb59",
+        "last_commit_message": "feat(reproduce): a harness observes the sink; it never alters it\n\nThe live run on the research target reproduced a tar-slip whose payload\nthe guest's Python had already stopped: tarfile's default extraction\nfilter raised OutsideDestinationError. The retry monkeypatched\nTarFile.extractall to pass filter=\"fully_trusted\", wrote the sentinel\nfrom inside that hook whenever a member name held \"..\", and the gate\naccepted it. The finding went out as an arbitrary file write that was\n\"verified by file creation outside the staging directory\", which never\nhappened on that runtime.\n\nNothing in the reproducer prompt or the skill said what a hook may do.\nBoth now say it, in the same words: prefer evidence the payload itself\nproduces at the sink; a hook or wrapper is a last resort for effects the\nsandbox cannot show, and may only observe -- same arguments through to\nthe original, sentinel written on the condition that the attacker value\narrived -- never changing the sink's arguments, defaults, filters,\nenvironment, permissions or exception handling. And a safeguard in the\nruntime or a library that stops the payload is a result, recorded as\nfailed_repro / failed_to_reproduce citing \"Mitigated by runtime:\n<safeguard> (<component and version>)\", so the report says\nexploitability depends on the deployed version; it is not disabled or\ndowngraded to make the payload land.\n\nPrompt and skill only; the deterministic side (detecting a sink that was\nrebound by the PoC) is separate work.\n\nChange-Id: I18b50aef7766c97a81ceb95244a7bd0f24179649",
+        "last_commit_at": "2026-10-22",
         "releases": 0,
         "latest_release_at": null,
         "days_since_release": null,
-        "days_idle": 2,
+        "days_idle": 0,
         "relocated": false
       },
       "identity": {
         "canonical_repo": "google/mantis",
-        "stars": 2507,
-        "forks": 216,
+        "stars": 2515,
+        "forks": 215,
         "created_at": "2026-06-15",
         "is_fork": false,
         "contributors": 3,
-        "top_contributor_share": 0.96,
+        "top_contributor_share": 0.97,
         "homepage": "https://cloud.google.com/",
         "description": "A modular, stack-agnostic toolkit for AI coding agents to autonomously find, reproduce, and patch vulnerabilities.",
         "topics": [
@@ -71,9 +71,9 @@
       },
       "licence": { "file": "Apache-2.0", "api_spdx": "Apache-2.0", "readme_claim": null, "conflict": null },
       "shape": {
-        "loc": 80105,
-        "code_files": 156,
-        "files": 222,
+        "loc": 81313,
+        "code_files": 158,
+        "files": 224,
         "has_ci": true,
         "has_tests": true,
         "has_dockerfile": true,
@@ -87,7 +87,8 @@
       },
       "substrate": { "bundled": [], "manifests": [] },
       "rebadge": null,
-      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false }
+      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false },
+      "risk_where": {}
     }
   }
 }
