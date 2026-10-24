@@ -4,7 +4,7 @@
  *   node scripts/generate-mitre-matrix.mjs
  *
  * Upstream: https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json
- * Generated: 2026-10-21 (ATT&CK v3.3.0)
+ * Generated: 2026-10-22 (ATT&CK v3.3.0)
  *
  * This file ships the tactic + technique titles only. Per-technique
  * detail (description, procedures, mitigations) loads live from
