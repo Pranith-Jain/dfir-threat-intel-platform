@@ -7,9 +7,9 @@
   "description": "Static security scanner for ML model files — detects pickle bombs, Keras Lambda RCE and GGUF template injection, and generates CycloneDX / SPDX AI-BOMs (AIBOM) as EU AI Act, CRA and FDA §524B evidence.",
   "homepage": "https://www.aisbom.io/",
   "added": "2026-09-14",
-  "checkedAt": "2026-10-24T03:19:53Z",
-  "pushedAt": "2026-10-18",
-  "daysIdle": 6,
+  "checkedAt": "2026-10-25T03:19:50Z",
+  "pushedAt": "2026-10-25",
+  "daysIdle": 0,
   "archived": false,
   "license": "Apache-2.0",
   "upstream": {
@@ -18,22 +18,22 @@
       "description": "Produces the compliance artefact as well as the verdict: a CycloneDX or SPDX bill of materials for a model file, alongside the Keras, GGUF and ONNX payloads it found while reading it."
     },
     "derived": {
-      "checked_at": "2026-10-24T03:19:53Z",
+      "checked_at": "2026-10-25T03:19:50Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-10-18",
-        "days_since_push": 6,
-        "total_commits": 226,
-        "last100_span_days": 156,
+        "pushed_at": "2026-10-25",
+        "days_since_push": 0,
+        "total_commits": 227,
+        "last100_span_days": 162,
         "last100_authors": 2,
-        "last_commit_sha": "d7133df",
-        "last_commit_message": "chore(deps): bump torch from 2.13.0 to 2.14.1 (#122)\n\nBumps [torch](https://github.com/pytorch/pytorch) from 2.13.0 to 2.14.1.\n- [Release notes](https://github.com/pytorch/pytorch/releases)\n- [Changelog](https://github.com/pytorch/pytorch/blob/main/RELEASE.md)\n- [Commits](https://github.com/pytorch/pytorch/compare/v2.13.0...v2.14.1)\n\n---\nupdated-dependencies:\n- dependency-name: torch\n  dependency-version: 2.14.1\n  dependency-type: direct:production\n  update-type: version-update:semver-minor\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>\nCo-authored-by: lab700xdev <lab700xdev@gmail.com>",
-        "last_commit_at": "2026-10-18",
+        "last_commit_sha": "616f073",
+        "last_commit_message": "fix(remote): scan hf:// model files in subfolders and on every listing page (#125)\n\nThe Hugging Face tree listing was requested without recursive=true and only its first page was read, so supported files under any folder (onnx/, unet/, text_encoder/, ...) were skipped silently. A repo with all of its weights in subfolders scanned as 'No AI models found' and exited 0.\n\n- List recursively and follow the Link next cursor, up to 100 pages. A failure on any page propagates; a next link off huggingface.co is refused because the token rides on every page; a non-list page is an error.\n- Skip directory entries and percent-encode paths in resolve URLs.\n- Name hf:// components by repo-relative path so same-named files in different folders no longer collide. Root-level files keep their bare names.\n- A listing that stops at the page cap still scans what it listed, then records a ListingTruncated target error so the scan exits 1.\n\nVerified old-vs-new on all-MiniLM-L6-v2 (3 -> 14 components), bert-base-uncased (4 -> 5) and tiny-stable-diffusion-pipe (0 -> 4): additive only, no existing component changed.",
+        "last_commit_at": "2026-10-25",
         "releases": 52,
         "latest_release_at": "2026-09-14",
-        "days_since_release": 40,
-        "days_idle": 6,
+        "days_since_release": 41,
+        "days_idle": 0,
         "relocated": false
       },
       "identity": {
@@ -71,7 +71,7 @@
       },
       "licence": { "file": "Apache-2.0", "api_spdx": "Apache-2.0", "readme_claim": null, "conflict": null },
       "shape": {
-        "loc": 29519,
+        "loc": 29833,
         "code_files": 74,
         "files": 109,
         "has_ci": true,
@@ -87,7 +87,8 @@
       },
       "substrate": { "bundled": [], "manifests": [] },
       "rebadge": [],
-      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false }
+      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false },
+      "risk_where": {}
     }
   }
 }
