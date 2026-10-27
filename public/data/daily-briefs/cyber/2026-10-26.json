@@ -1,0 +1,127 @@
+{
+  "type": "cyber",
+  "date": "2026-10-26",
+  "threatLevel": "",
+  "executiveSummary": "Active, multi-agency alert of targeting against Siemens S7 PLCs across U.S. critical infrastructure with concrete OT exploitation methods (S7comm, snap7); immediate hardening and segmentation recommended. Security Advisory Multiple unauthenticated remote-compromise paths on Advantech EKI-1242 industrial gateways (remote root on TCP/5058, unsigned firmware acceptance, OPC UA DoS) create direct process disruption risk; prioritize isolation and updates. Supporting Report PHP \"php2shell\" runtime RCE (CVE-2026-109618/109619) is under mass scanning and exploitation against public sites; immediate patching and DMZ-to-OT segmentation required to reduce IT-to-OT pivot risk. View Article Supporting Report Edge/VPN devices remain high-risk: active NetScaler ADC RCE exploitation and a critical BeyondTrust Remote Support auth bypass are enabling rapid enterprise compromise and potential OT pivots; patch and perform compromise hunts now. Security Advisory CISA Alert France's ANSSI reports ongoing intrusions against energy and water operators via internet-exposed HMIs/PLCs, including a wind farm shutdown; remove exposure, enforce VPN/MFA, and monitor industrial protocol writes. Supporting Report Ransomware and supply chain threats persist: SafePay ransomware is actively impacting critical sectors, and a LiteLLM package compromise stole secrets and shipped a backdoor-rotate keys and validate build provenance. Security Advisory View Article Notable OT advisories: Siemens SIMATIC S7 Webserver API library flaws (path traversal, password exposure) and Siemens building controllers (APOGEE/TALON/Desigo) unauthenticated DoS-apply updates and enforce OT network isolation. ICS Advisory ICS Advisory",
+  "keyFindings": [
+    {
+      "title": "Active targeting of Siemens S7 PLCs leverages open-source snap7 and exposed TCP/",
+      "summary": "Active targeting of Siemens S7 PLCs leverages open-source snap7 and exposed TCP/102 to enumerate and modify PLC logic; evidence indicates pre-positioning in multiple sectors. Security Advisory"
+    },
+    {
+      "title": "Industrial gateways (Advantech EKI-1242 EIMS/IEIMS) contain multiple unauthentic",
+      "summary": "Industrial gateways (Advantech EKI-1242 EIMS/IEIMS) contain multiple unauthenticated RCE and integrity-bypass issues enabling remote takeover, configuration manipulation, and OPC UA DoS. Supporting Report"
+    },
+    {
+      "title": "PHP runtime RCE (\"php2shell\") is being exploited at scale; widespread public-fac",
+      "summary": "PHP runtime RCE (\"php2shell\") is being exploited at scale; widespread public-facing servers (and embedded admin UIs) risk web shells and lateral movement. View Article"
+    },
+    {
+      "title": "NetScaler ADC/Gateway multiple RCEs (incl. DTLS-enabled VPN) under active exploi",
+      "summary": "NetScaler ADC/Gateway multiple RCEs (incl. DTLS-enabled VPN) under active exploitation; patch to 14.1-73.37/13.1-64.23 or later and hunt for webshells and anomalous sessions. Advisory"
+    },
+    {
+      "title": "BeyondTrust Remote Support auth bypass (KEV-listed) actively abused for initial ",
+      "summary": "BeyondTrust Remote Support auth bypass (KEV-listed) actively abused for initial access and privilege escalation; self-hosted B Series appliances require urgent patching and forensic review. CISA Alert"
+    },
+    {
+      "title": "France's ANSSI documents ongoing intrusions into renewable energy and water sect",
+      "summary": "France's ANSSI documents ongoing intrusions into renewable energy and water sectors via exposed HMIs/PLCs; at least one wind farm outage confirmed. CERT-FR Guidance"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "",
+        "label": "Events - Escalate"
+      },
+      {
+        "value": "",
+        "label": "Events - Monitor"
+      },
+      {
+        "value": "",
+        "label": "Events - Ignore"
+      },
+      {
+        "value": "",
+        "label": "Actively Exploited Items"
+      },
+      {
+        "value": "",
+        "label": "Vendors/Tech Affected"
+      },
+      {
+        "value": "",
+        "label": "Impacted Sectors (observed)"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Siemens (S7 PLCs, APOGEE/TALON/Desigo, RUGGEDCOM CROSSBOW)",
+      "Advantech (EKI-1242, WISE-6610)",
+      "AVEVA Pipeline Integrity Monitor",
+      "Danfoss iC7 Drives",
+      "Citrix NetScaler ADC/Gateway",
+      "BeyondTrust Remote Support",
+      "PHP runtimes (Apache/PHP-FPM/php-cgi)",
+      "Envoy / Istio / Node.js (Brotli)",
+      "CGM CLININET",
+      "Collabora Online (CODE)",
+      "SiteGuard Server Edition"
+    ],
+    "sectors": [
+      "Energy (generation, wind), Water/Wastewater, Building Automation (HVAC/alarms), Manufacturing and Logistics/Warehouse operations Healthcare (hospital information systems), Government and Public Administration, Transportation systems"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "APT41 \"BlackX\" bootkit revives BlackLotus techniques to bypass Secure Boot; while targets are diplomatic, persistence capability endangers engineering workstations. View Article",
+        "\"Prince of Persia\" (Iran) operating U.S.-hosted C2, multi-stage malware over HTTPS/Telegram; identity-centric hardening recommended. View Article",
+        "Lazarus-linked scanning observed in ongoing PHP2Shell activity; watch for low-and-slow multipart probes and AD relay follow-on. View Article",
+        "#StopRansomware: SafePay active internationally against CI sectors; enforce MFA, segmentation, offline backups, and EDR. Security Advisory"
+      ]
+    }
+  ],
+  "relevance": "Multiple items in this cycle directly affect industrial controllers, gateways, and building automation platforms, with credible evidence of active exploitation and pre-positioning (Siemens S7 PLCs; Advantech gateways; NetScaler and BeyondTrust enabling OT pivots). Mass exploitation of PHP services increases the likelihood of enterprise entry and lateral movement into poorly segmented OT perimeters. National-level advisories (CISA, CERT-FR/ANSSI) cite real-world operational disruptions and ongoing targeting of energy and water sectors.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Siemens SIMATIC S7 Webserver API .NET client library - path traversal arbitrary write and restore password exposure: update to V3.3.61/3.3.62+. ICS Advisory",
+        "Siemens APOGEE/TALON/Desigo PXC/PXM - unauthenticated remote DoS on web upload service; many legacy lines have no fix; segment and disable services by default. ICS Advisory",
+        "Siemens RUGGEDCOM CROSSBOW ( ICS Advisory",
+        "Danfoss iC7 drives - exposed debug/service interfaces and unsigned firmware/app loading enabling sabotage risk; segment and apply vendor updates. Weekly Summary",
+        "Advantech EKI-1242 EIMS/IEIMS - remote root, unsigned firmware acceptance, web command injection; block TCP/5058, update firmware. Weekly Summary",
+        "Advantech WISE-6610 LoRaWAN gateways - public exploits for RCE; remove internet exposure and update. Weekly Summary",
+        "AVEVA Pipeline Integrity Monitor - sensitive project data/weak hashes; rotate secrets and patch. Weekly Summary",
+        "Brotli decoder (CVE-2026-111497) - RCE in libbrotli affecting Node.js/Envoy/Istio; patch and consider disabling Brotli temporarily. View Article",
+        "PHP runtime RCE (CVE-2026-109618/109619) - patch to 8.2.35/8.3.36/8.4.27/8.5.12; disable upload progress interim. JPCERT Advisory"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Initial Access: Exploit Public-Facing Application (T1190); Edge/VPN device RCE; Supply-chain package trojanization",
+      "Execution: Webshells on PHP; OS command injection on security middleware; DLL sideloading; UEFI bootkits",
+      "Persistence/Defense Evasion: Pre-OS persistence (UEFI); credential/token theft; abuse of default/weak credentials on OT devices",
+      "Lateral Movement: RDP/SMB/PsExec/WinRM; SD-WAN/BMS controller admin interfaces; OT gateways and management consoles",
+      "Command and Control: HTTPS/cloud storage APIs (Google Drive/OneDrive/Yandex); Telegram API; GitHub/Dropbox abuse",
+      "ICS-specific: Unauthorized Command Message to Controller (ATT&CK for ICS), Modify Controller Logic/Parameters; OPC UA session exhaustion (DoS)"
+    ],
+    "mitreIds": [
+      "T1190"
+    ]
+  },
+  "outlook72h": "- Prioritize patch windows for NetScaler ADC/Gateway, BeyondTrust Remote Support, and PHP across internet-facing assets; validate with compromise hunts post-update. - Isolate and ACL OT gateways and building controllers; remove any residual internet exposure and enforce jump-host-only access paths. - Run targeted hunts in SIEM/EDR for web shells, anomalous PHP multipart POSTs, unexpected PLC writes (S7comm), and new admin sessions on edge devices. - Stage and test ICS firmware/client library updates (Siemens S7 Webserver API); rotate exposed restore passwords/secrets found in logs. - Review vendor advisories in recent CISA weekly summaries for OT-relevant components (Advantech WISE-6610, Danfoss iC7, AVEVA PIM) and schedule risk-based remediation.",
+  "relatedCves": [
+    "CVE-2026-109618",
+    "CVE-2026-111497",
+    "CVE-2026-106931",
+    "CVE-2025-30043"
+  ]
+}
