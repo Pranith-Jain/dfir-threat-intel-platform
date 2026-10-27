@@ -3,13 +3,13 @@
   "repo": "cisco-ai-defense/skill-scanner",
   "category": "scanner",
   "scope": ["agentic"],
-  "stars": 2633,
+  "stars": 2648,
   "description": "Security Scanner for Agent Skills",
   "homepage": "https://cisco-ai-defense.github.io/docs/skill-scanner",
   "added": "2026-10-05",
-  "checkedAt": "2026-10-26T03:20:41Z",
-  "pushedAt": "2026-10-22",
-  "daysIdle": 4,
+  "checkedAt": "2026-10-27T03:20:46Z",
+  "pushedAt": "2026-10-26",
+  "daysIdle": 1,
   "archived": false,
   "license": "Apache-2.0",
   "upstream": {
@@ -23,39 +23,39 @@
       "description": "Rules on whether an agent skill is malicious, with a model judge whose catch and false-positive rates are published against a labelled test set. A team picks a policy and suppresses known findings, so the same skill gets the same verdict on every run."
     },
     "derived": {
-      "checked_at": "2026-10-26T03:20:41Z",
+      "checked_at": "2026-10-27T03:20:46Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-10-22",
-        "days_since_push": 4,
-        "total_commits": 150,
-        "last100_span_days": 202,
+        "pushed_at": "2026-10-26",
+        "days_since_push": 1,
+        "total_commits": 152,
+        "last100_span_days": 203,
         "last100_authors": 38,
-        "last_commit_sha": "de5fcf0",
-        "last_commit_message": "fix(ci): run release evidence scans in a network namespace (#280)\n\n* fix(ci): run release evidence scans in a network namespace\n\nThe release evidence job blocked all outbound traffic for the runner UID\nwith iptables while the scans ran. On hosted runners the runner agent runs\nas the same user, so it lost its own connection to GitHub, and the job\nfailed with \"The hosted runner lost communication with the server\". The\n2.2.2, 2.3.0 and 2.3.1 evidence runs each needed several dispatches because\nof it.\n\nRun the scan body as the same user in a fresh network namespace instead,\nas detection-impact.yml already does. The namespace has only a down\nloopback interface, so the scans still cannot open any socket, loopback\nincluded, and the existing isolation check runs inside it. Only an\nexplicit list of variables, plus UV_*, crosses into the sandbox, and the\ncredential strip still runs before it.\n\n* fix(ci): drop sudo and docker access inside the scan sandboxes\n\nThe scans still ran as the runner user with its passwordless sudo, so a\nscan process could nsenter back into the host network namespace.\n--init-groups also kept the docker group, and the docker socket is not\nnetwork-namespaced. Both sandboxes, release evidence and detection impact,\nnow run with --clear-groups --no-new-privs, and each fails if sudo still\nworks inside it. The old iptables rule had the same gap.",
-        "last_commit_at": "2026-10-22",
-        "releases": 25,
-        "latest_release_at": "2026-10-21",
-        "days_since_release": 5,
-        "days_idle": 4,
+        "last_commit_sha": "f782465",
+        "last_commit_message": "fix(llm): send the same LLM prompt for the same skill under every preset (#283)\n\n* fix(llm): send the same prompt for the same skill under every preset\n\nThe LLM's severity and title for the same issue moved between rescans, and\nmoved with the preset: strict rated one issue lower than balanced and\npermissive did. Two parts of the prompt changed for reasons unrelated to the\nskill.\n\nThe untrusted-content delimiter was a fresh random token on every scan, so\nno two scans sent the same prompt. It is now a SHA-256 of the wrapped\ncontent. Content cannot carry its own delimiter, because the delimiter is a\nhash of the text that would have to contain it.\n\nThe structured pre-scan context listed every static finding, including LOW\nand INFO package-hygiene findings whose thresholds are preset knobs. Strict's\n512-character description limit, for example, added a LOW\nMANIFEST_DESCRIPTION_TOO_LONG lead that only strict scans sent. The context\nnow carries MEDIUM and higher findings only. Reported findings do not change.\n\n* fix(policy): give every preset the same LLM context budgets\n\nStrict gave the LLM smaller content budgets than balanced and permissive\ngave it larger ones, so on large skills strict read the least. A budget does\nnot change what is reported; it only limits what the model sees, and content\nover it is excerpted or skipped with an INFO note. Strict and permissive now\nuse the default budgets, as low-noise and quiet already do, so a preset\nchanges which findings are reported rather than how much of the skill the\nLLM reads.",
+        "last_commit_at": "2026-10-26",
+        "releases": 26,
+        "latest_release_at": "2026-10-26",
+        "days_since_release": 1,
+        "days_idle": 1,
         "relocated": false
       },
       "identity": {
         "canonical_repo": "cisco-ai-defense/skill-scanner",
-        "stars": 2633,
+        "stars": 2648,
         "forks": 337,
         "created_at": "2026-01-29",
         "is_fork": false,
         "contributors": 52,
-        "top_contributor_share": 0.4,
+        "top_contributor_share": 0.39,
         "homepage": "https://cisco-ai-defense.github.io/docs/skill-scanner",
         "description": "Security Scanner for Agent Skills",
         "topics": ["agent", "agent-skills", "security"]
       },
       "licence": { "file": "Apache-2.0", "api_spdx": null, "readme_claim": "Apache-2.0", "conflict": null },
       "shape": {
-        "loc": 215194,
+        "loc": 215280,
         "code_files": 502,
         "files": 803,
         "has_ci": true,
@@ -71,7 +71,8 @@
       },
       "substrate": { "bundled": [], "manifests": [] },
       "rebadge": null,
-      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false }
+      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false },
+      "risk_where": {}
     }
   }
 }
