@@ -134,3 +134,30 @@ code remains explicit partial coverage. Valid CloudFormation/SAM declarations wi
 deployment scope or provider-generated names are recorded as unresolved/unmatched candidates,
 not fabricated deployed identities or evidence relationships. A complete analysis can correctly
 contain such unmatched declarations; it does not prove deployment.
+
+## Bounded completion for oversized repositories
+
+Once the fixed 2,000-file analysis capacity is full, acquisition stops downloading
+additional candidate inputs, including generic JSON that cannot enter the analysis
+tree. Remaining candidates are reported as uninspected, not classified as irrelevant
+or covered. File and byte limits remain unchanged.
+
+If the local per-repository request budget runs out after verified inputs have been
+downloaded, the collector can analyze that bounded subset at the pinned commit and
+record the omitted inputs as explicit partial coverage. It must not discard useful
+inputs and repeatedly download the same prefix until the interruption limit is hit.
+This is not complete source acquisition: the source and downstream analysis planes
+remain partial, and incomplete evidence cannot withdraw earlier evidence as if the
+repository had been fully inspected.
+
+Provider quota and soft-deadline interruptions still yield to the durable scheduler
+at the pinned revision; they are not converted into local-budget completion. Quota
+and deadline signals take priority over a concurrent local-request limit. Identity,
+permission and malformed-provider errors retain their fail-closed handling. A run
+with no acquired inputs retains the existing bounded interruption behavior.
+
+This internal acquisition change does not alter saved connections, repository
+selection, provider grants, API/CLI/MCP schemas, checkpoint identity, worker leases
+or the existing retry and lifetime limits. Retried incomplete repositories still use
+the authenticated historical-recovery workflow; complete historical repositories
+remain untouched and keep their original coverage timestamps.
