@@ -3,13 +3,17 @@ name: Daily auto-merge + stale-PR housekeeping
 # Daily housekeeping for pull requests:
 #   1. Merge every open PR that is mergeable, has green checks, and is either
 #      on a data-sync branch (chore/*-sync — the established pattern in this
-#      repo) or explicitly labeled `automerge`.
+#      repo) or explicitly labeled `automerge`. Sync-branch PRs whose only
+#      failing check is the non-required `Workers Builds:` Cloudflare watcher
+#      are merged too (see scripts/automerge-sync-pr.sh — that check never
+#      actually blocks a merge; the sync workflows self-merge the same way).
 #   2. Post a stale notice on open PRs older than 14 days — reported, never
 #      merged or closed automatically.
 #
 # Safety rules (per CLAUDE.md: never rebase/force-push, never `branch -f main`):
 #   - DIRTY (merge conflict) PRs are skipped and get a skip comment.
-#   - UNSTABLE / BLOCKED / pending-checks PRs are skipped.
+#   - UNSTABLE / BLOCKED / pending-checks PRs are skipped — except sync-branch
+#     PRs whose only failing check is the non-required Workers Builds watcher.
 #   - DRAFT PRs are never merged.
 #   - Non-sync branches without the `automerge` label are skipped.
 #   - BEHIND branches get exactly one `gh pr update-branch` attempt (an
@@ -82,7 +86,7 @@ jobs:
             fi
 
             if ! branch_is_sync "$branch" && [ "$labels" != "automerge" ] \
-               && ! printf '%s' "$labels" | grep -q '(^|,)automerge(,|$)'; then
+               && ! printf '%s' "$labels" | grep -Eq '(^|,)automerge(,|$)'; then
               echo "- ⏭️ PR #$num ($branch) — skipped (no \`automerge\` label)" >> "$GITHUB_STEP_SUMMARY"
               skip_other=$((skip_other + 1))
               continue
@@ -99,6 +103,24 @@ jobs:
                 if gh pr update-branch "$num" >/dev/null 2>&1; then
                   sleep 5
                   state="$(gh pr view "$num" --json mergeStateStatus -q .mergeStateStatus)"
+                fi
+                ;;
+              UNSTABLE)
+                # UNSTABLE = mergeable but some commit check failed. For data-sync
+                # branches the only failing check is the non-required
+                # `Workers Builds:` Cloudflare watcher (it builds main, not the
+                # PR head) and main is unprotected, so nothing actually blocks
+                # the merge — the shared script tolerates exactly that and
+                # refuses on any other failing check.
+                if branch_is_sync "$branch"; then
+                  if bash scripts/automerge-sync-pr.sh "$num"; then
+                    echo "- ✅ PR #$num ($branch) — merged (UNSTABLE: only the non-required Workers Builds check fails)" >> "$GITHUB_STEP_SUMMARY"
+                    merged=$((merged + 1))
+                  else
+                    echo "- ❌ PR #$num ($branch) — merge attempt failed (UNSTABLE)" >> "$GITHUB_STEP_SUMMARY"
+                    failed_sync=$((failed_sync + 1))
+                  fi
+                  continue
                 fi
                 ;;
             esac

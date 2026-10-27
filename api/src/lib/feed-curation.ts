@@ -332,24 +332,28 @@ export const CURATED_FEEDS: readonly CuratedFeed[] = [
   {
     id: 'threatfox-hostfile',
     name: 'abuse.ch ThreatFox hostfile',
-    url: 'https://threatfox.abuse.ch/downloads/hostfile/',
-    // NB: domain, not IP. The file is hosts(5)-format and its address column is
+    // NB: domain, not IP. The retired hosts(5)-format file's address column was
     // the literal `127.0.0.1` placeholder on all 38,123 rows (audited
-    // 2026-10-05) — upstream ships a DOMAIN blocklist in hosts syntax. See
-    // `parseThreatfoxHostfile`.
+    // 2026-10-05) — upstream shipped a DOMAIN blocklist in hosts syntax. See
+    // `parseThreatfoxHostfile`. That export 410s since 2026-10-21; the data
+    // now comes from the authenticated ThreatFox JSON API (see live-iocs
+    // `authAbuseCh`), filtered to domains. `url` documents the upstream
+    // platform, not a fetchable anonymous artifact.
+    url: 'https://threatfox-api.abuse.ch/api/v1/',
     kind: 'domain',
     context: 'ThreatFox botnet C2 host',
-    fallbackUrls: ['https://raw.githubusercontent.com/drb-ra/C2IntelFeeds/master/feeds/domainC2s.csv'],
     priority: 1,
     auditRows: 38122,
   },
   {
     id: 'threatfox-urls',
     name: 'abuse.ch ThreatFox recent URLs',
-    url: 'https://threatfox.abuse.ch/export/csv/urls/recent/',
+    // Retired CSV export (410 since 2026-10-21) — data now flows from the
+    // authenticated ThreatFox JSON API, filtered to URLs (live-iocs
+    // `authAbuseCh`). `url` documents the upstream platform.
+    url: 'https://threatfox-api.abuse.ch/api/v1/',
     kind: 'url',
     context: entryContextFor('ThreatFox payload delivery'),
-    fallbackUrls: ['https://urlhaus.abuse.ch/downloads/csv_recent/'],
     priority: 1,
     auditRows: 328,
   },

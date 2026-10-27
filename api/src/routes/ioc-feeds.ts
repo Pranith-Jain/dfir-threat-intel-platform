@@ -4,10 +4,12 @@ import { logError } from '../lib/logger';
 import { badGateway } from '../lib/api-error';
 
 import { buildSummary, FEED_SOURCES, type SourceId } from '../lib/ioc-feed-parsers';
+import { abuseChFeedRequestForEnv, type AbuseChFeedSource } from '../lib/abusech';
 import { safeErrorMessage } from '../lib/error';
 
 const TIMEOUT_MS = 15_000;
 const VALID_SOURCES = new Set<string>(Object.keys(FEED_SOURCES));
+const ABUSECH_SOURCES = new Set<SourceId>(['urlhaus', 'malwarebazaar', 'threatfox']);
 
 export async function iocFeedSummaryHandler(c: Context<{ Bindings: Env }>) {
   const sourceParam = c.req.query('source');
@@ -36,11 +38,16 @@ export async function iocFeedSummaryHandler(c: Context<{ Bindings: Env }>) {
   const feed = FEED_SOURCES[sourceId];
 
   try {
-    const upstream = await fetch(feed.url, {
+    const abuse = ABUSECH_SOURCES.has(sourceId)
+      ? abuseChFeedRequestForEnv(c.env, sourceId as AbuseChFeedSource, { days: 7 })
+      : null;
+    const upstream = await fetch(abuse?.url ?? feed.url, {
+      ...abuse?.init,
       redirect: 'follow',
       headers: {
         'user-agent': 'pranithjain-ioc-feed-aggregator/1.0',
         accept: '*/*',
+        ...((abuse?.init.headers as Record<string, string> | undefined) ?? {}),
       },
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });

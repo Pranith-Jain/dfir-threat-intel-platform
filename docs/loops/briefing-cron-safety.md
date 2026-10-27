@@ -16,7 +16,7 @@ the free plan's **hard 5-cron limit**, so a 6th is not deployable — the code s
 and the schedule update fails with `10072`):
 `0 * * * *` (hourly pipeline + inline heal + publisher + CISA-KEV auto-publish),
 `5 0 * * *` (case-study discovery + planner), `30 0 * * *` (daily briefing),
-`45 0 * * 1` (weekly briefing), `*/30 * * * *` (feed/social drip).
+`45 0 * * 2` (weekly briefing — MONDAY 00:45 UTC; Cloudflare cron DOW is 0=Sunday, so the old `45 0 * * 1` fired SUNDAY), `*/30 * * * *` (feed/social drip).
 New recurring work goes INSIDE one of these, and its subrequest cost has to be
 budgeted inside that tick.
 Do **not** re-introduce a dedicated heal cron / `runBriefingHealOnce` — that was tried
@@ -50,7 +50,7 @@ token) — a dedicated request with a fresh 50-subrequest budget.
 **Weekly = rollup-first (added 2026-08-03).** The weekly build used to run the
 FULL live fan-out (~45–50 subrequests: 7-day NVD pagination + up to 15 individual
 KEV CVE lookups + the 9-source ransomware merge + 4 IOC feeds + OSSF + Webamon +
-LLM) and THEN merge the daily rollup in. But the weekly cron (`45 0 * * 1`) runs
+LLM) and THEN merge the daily rollup in. But the weekly cron (`45 0 * * 2`) runs
 the briefing build + landscape sync + TI-dashboard build + watchlist digest in
 ONE invocation — so the build blew the free-plan 50-subrequest cap, Cloudflare
 aborted it with HTTP 503, and no row persisted (the hourly heal failed the same
@@ -131,7 +131,7 @@ update each pass.
 
 ## Steps (Agent Actions)
 
-1. **Pick the invocation** — the `0 * * * *` hourly cron (cache-warm fan-out + inline tail self-heal), the `30 0 * * *` daily build, or the `45 0 * * 1` weekly build.
+1. **Pick the invocation** — the `0 * * * *` hourly cron (cache-warm fan-out + inline tail self-heal), the `30 0 * * *` daily build, or the `45 0 * * 2` weekly build.
 2. **Count builds** — confirm ≤1 build per invocation (the inline heal is conditional and rebuilds at most one slug).
 3. **Count subrequests** — sum KV + Cache-API ops in the IOC fan-out; confirm batched (one read + one write).
 4. **Fix at the source** — batch fan-out / split work across ticks; never raise the assumed cap; never add a dedicated heal cron.

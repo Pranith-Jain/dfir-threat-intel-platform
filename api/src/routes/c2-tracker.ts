@@ -1,10 +1,10 @@
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';
+import { abuseChFeedRequestForEnv } from '../lib/abusech';
 
 const C2INTEL_30D = 'https://raw.githubusercontent.com/drb-ra/C2IntelFeeds/master/feeds/IPPortC2s-30day.csv';
 const C2INTEL_90D = 'https://raw.githubusercontent.com/drb-ra/C2IntelFeeds/master/feeds/IPPortC2s-90day.csv';
-const THREATFOX_CSV = 'https://threatfox.abuse.ch/export/csv/recent/';
 // CriticalPathSecurity Public-Intelligence-Feeds — hourly-updated CS
 // beacon IPs aggregated from multiple operator sources, plaintext one
 // IP per line. Added 2026-05-24.
@@ -58,6 +58,28 @@ async function fetchText(url: string): Promise<string | null> {
     return await res.text();
   } catch (_catchErr) {
     logError('fetchText failed', _catchErr);
+    return null;
+  }
+}
+
+/** abuse.ch variant of fetchText — resolves URL + headers from `lib/abusech.ts`. */
+async function fetchAbuseCh(req: { url: string; init: RequestInit }): Promise<string | null> {
+  try {
+    const res = await fetch(req.url, {
+      ...req.init,
+      signal: AbortSignal.timeout(FETCH_TIMEOUT),
+      headers: {
+        'user-agent': 'pranithjain-dfir/1.0',
+        accept: '*/*',
+        ...((req.init.headers as Record<string, string>) ?? {}),
+      },
+      cf: { cacheTtl: 1500, cacheEverything: true },
+    } as RequestInit);
+    if (!res.ok) return null;
+    const text = await res.text();
+    return text.trim() ? text : null;
+  } catch (_catchErr) {
+    logError('fetchAbuseCh(threatfox) failed', _catchErr);
     return null;
   }
 }
@@ -131,6 +153,9 @@ function parseC2Intels(body: string, sourceLabel: string): C2Entry[] {
 // ─── ThreatFox parser ──────────────────────────────────────────────────────
 
 function parseThreatfoxC2(body: string): C2Entry[] {
+  // The authenticated ThreatFox path returns the JSON `get_iocs` shape; the
+  // no-key fallback the retired CSV. Handle both.
+  if (body.trimStart().startsWith('{')) return parseThreatfoxC2Json(body);
   const entries: C2Entry[] = [];
   for (const line of body.split('\n')) {
     const trimmed = line.trim();
@@ -157,6 +182,39 @@ function parseThreatfoxC2(body: string): C2Entry[] {
       first_seen: firstSeen,
       sources: ['threatfox'],
       context: context,
+      port: port !== undefined && isFinite(port) ? port : undefined,
+    });
+  }
+  return entries;
+}
+
+/** JSON `get_iocs` variant — same output rows as the CSV branch. */
+function parseThreatfoxC2Json(body: string): C2Entry[] {
+  let doc: { query_status?: string; data?: unknown };
+  try {
+    doc = JSON.parse(body) as { query_status?: string; data?: unknown };
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(doc.data)) return [];
+  const entries: C2Entry[] = [];
+  for (const raw of doc.data) {
+    if (!raw || typeof raw !== 'object') continue;
+    const item = raw as Record<string, unknown>;
+    if (String(item.ioc_type ?? '') !== 'ip:port') continue;
+    const rawValue = String(item.ioc ?? '').trim();
+    const colon = rawValue.lastIndexOf(':');
+    const ip = colon === -1 ? rawValue : rawValue.slice(0, colon);
+    if (!ip || !IPV4_RE.test(ip)) continue;
+    const port = colon === -1 ? undefined : parseInt(rawValue.slice(colon + 1), 10);
+    const malware = String(item.malware ?? '').trim();
+    const printable = String(item.malware_printable ?? '').trim();
+    entries.push({
+      ip,
+      framework: malware ? threatfoxFramework(malware) : 'unknown',
+      first_seen: String(item.first_seen ?? '').trim(),
+      sources: ['threatfox'],
+      context: printable || malware || 'C2',
       port: port !== undefined && isFinite(port) ? port : undefined,
     });
   }
@@ -330,11 +388,12 @@ async function fetchCriminalIp(): Promise<string | null> {
   return null;
 }
 
-async function fetchC2Tracker(): Promise<C2Response> {
+async function fetchC2Tracker(env?: Env): Promise<C2Response> {
+  const tfReq = abuseChFeedRequestForEnv(env, 'threatfox', { days: 7 });
   const rawTexts = await Promise.all([
     fetchText(C2INTEL_30D),
     fetchText(C2INTEL_90D),
-    fetchText(THREATFOX_CSV),
+    fetchAbuseCh(tfReq),
     fetchText(CPS_CS_IPS),
     fetchCriminalIp(),
     fetchText(TWEETFEED_WEEK),
@@ -418,7 +477,7 @@ export async function c2TrackerHandler(c: Context<{ Bindings: Env }>): Promise<R
   const cached = await cache.match(cacheKey);
   if (cached) return new Response(cached.body, cached);
 
-  const data = await fetchC2Tracker();
+  const data = await fetchC2Tracker(c.env);
   const body = JSON.stringify(data);
 
   const response = new Response(body, {

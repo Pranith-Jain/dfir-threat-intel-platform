@@ -79,6 +79,11 @@ const NOT_PLAIN_GET = new Set([
   'phishing',
   'phishtank',
   'webamon-campaigns', // 403 without WEBAMON_API_KEY — retired from the registry
+  // ThreatFox JSON API — the anonymous hostfile/recent-URL exports 410 since
+  // 2026-10-21; the data is fetched via the key-gated `get_iocs` POST
+  // (see live-iocs `authAbuseCh`). The curated `url` documents the API.
+  'threatfox-hostfile',
+  'threatfox-urls',
 ]);
 
 /**
@@ -145,21 +150,35 @@ async function readRegistryUrls() {
   // The one-line form matched first and its `\s*\}` consumed the closing brace of
   // the FOLLOWING entry for the quoted-key layout, collapsing ~35 sources. Both
   // forms are matched independently, then de-duped by id.
-  const ONE_LINE = /([A-Za-z0-9_-]+|'[a-z0-9-]+'):\s*\{\s*url:\s*'([^']+)'\s*\},?\n/g;
+  //
+  // 2026-10-27: abuse.ch entries carry `abuseCh: '…'` (the authenticated
+  // request is built by lib/abusech.ts at runtime) and their `url` may be the
+  // `LEGACY_ABUSECH_URLS.<source>` identifier rather than a quoted literal —
+  // the regexes accept both, and abuseCh entries are never probed (key-gated).
+  const ONE_LINE = /([A-Za-z0-9_-]+|'[a-z0-9-]+'):\s*\{\s*url:\s*('([^']+)'|[A-Za-z_][A-Za-z0-9_.]*|LEGACY_ABUSECH_URLS\.\w+)\s*,?\s*(abuseCh:\s*'([a-z]+)')?\s*\},?\n/g;
   const MULTI_LINE =
-    /'?([A-Za-z0-9_-]+)'?:\s*\{\s*\n\s*url:\s*'([^']+)',?\s*(?:\n\s*fallbackUrls:\s*\[([^\]]*)\],?)?\s*\n\s*\}/g;
+    /'?([A-Za-z0-9_-]+)'?:\s*\{\s*\n\s*url:\s*('([^']+)'|LEGACY_ABUSECH_URLS\.\w+),?\s*((?:\n\s*(?:fallbackUrls:\s*\[([^\]]*)\]|abuseCh:\s*'([a-z]+)'),?)*)\s*\n\s*\}/g;
+
+  const LEGACY_URL_FALLBACKS = {
+    // Mirrors LEGACY_ABUSECH_URLS in api/src/lib/abusech.ts — the audit tool
+    // cannot import TS. Keep in sync (guard test below).
+    'LEGACY_ABUSECH_URLS.urlhaus': 'https://urlhaus.abuse.ch/downloads/csv_recent/',
+    'LEGACY_ABUSECH_URLS.malwarebazaar': 'https://bazaar.abuse.ch/export/csv/recent/',
+    'LEGACY_ABUSECH_URLS.threatfox': 'https://threatfox.abuse.ch/export/csv/recent/',
+  };
 
   const byId = new Map();
-  const add = (rawId, url, fbBlock) => {
+  const add = (rawId, url, fbBlock, abuseCh) => {
     const id = rawId.replace(/^'|'$/g, '');
-    const fallbackUrls = fbBlock ? [...fbBlock.matchAll(/'([^']+)'/g)].map((x) => x[1]) : [];
+    const resolved = url.startsWith("'") ? url.slice(1, -1) : LEGACY_URL_FALLBACKS[url] ?? url;
+    const fallbackUrls = fbBlock ? [...fbBlock.matchAll(/'(https?:\/\/[^']+)'/g)].map((x) => x[1]) : [];
     // First writer wins; both regexes must not produce two records per source.
-    if (!byId.has(id)) byId.set(id, { id, url, fallbackUrls, from: 'registry' });
+    if (!byId.has(id)) byId.set(id, { id, url: resolved, fallbackUrls, abuseCh: abuseCh ?? null, from: 'registry' });
   };
 
   let m;
-  while ((m = ONE_LINE.exec(body)) !== null) add(m[1], m[2]);
-  while ((m = MULTI_LINE.exec(body)) !== null) add(m[1], m[2], m[3]);
+  while ((m = ONE_LINE.exec(body)) !== null) add(m[1], m[2], undefined, m[5]);
+  while ((m = MULTI_LINE.exec(body)) !== null) add(m[1], m[2], m[5], m[6]);
 
   return [...byId.values()];
   return out;
@@ -167,7 +186,13 @@ async function readRegistryUrls() {
 
 /** Parse CURATED_FEEDS entries out of feed-curation.ts. */
 async function readCuratedFeeds() {
-  const src = await readFile(join(ROOT, 'api/src/lib/feed-curation.ts'), 'utf8');
+  // Comment lines are stripped first — entries document their upstream
+  // between the fields (e.g. the threatfox entries explaining that the URL
+  // is now the JSON API), and the regex below expects adjacent fields.
+  const src = (await readFile(join(ROOT, 'api/src/lib/feed-curation.ts'), 'utf8')).replace(
+    /^[ \t]*\/\/.*$/gm,
+    ''
+  );
   const out = [];
   const re = /\{\s*id:\s*'([a-z0-9-]+)',\s*name:\s*'([^']+)',\s*url:\s*'([^']+)',([\s\S]*?)\n  \}/g;
   let m;
@@ -283,14 +308,20 @@ async function main() {
     if (!registry.some((r) => r.id === id)) registry.push({ id, url, fallbackUrls: [], from: 'registry-extra' });
   }
   // Keep the entries so the report is complete, but never probe them: they
-  // cannot answer a plain GET by design (see NOT_PLAIN_GET).
-  for (const r of registry) {
-    if (NOT_PLAIN_GET.has(r.id)) r.skipProbe = true;
-  }
+  // Keep the entries so the report is complete, but never probe them: they
+  // cannot answer a plain GET by design (see NOT_PLAIN_GET). Entries whose
+  // request is built by lib/abusech.ts (`abuseCh`) are key-gated too — the
+  // local audit run has no ABUSECH_AUTH_KEY, and probing the authenticated
+  // URL is what runtime `?debug=1` does.
   for (const c of curated) {
     if (!registry.some((r) => r.id === c.id)) {
-      registry.push({ id: c.id, url: c.url, fallbackUrls: c.fallbackUrls, from: 'curated' });
+      registry.push({ id: c.id, url: c.url, fallbackUrls: c.fallbackUrls, abuseCh: null, from: 'curated' });
     }
+  }
+  // Apply skipProbe AFTER the curated merge so curated-only entries (e.g. the
+  // ThreatFox JSON API feeds) are covered too.
+  for (const r of registry) {
+    if (NOT_PLAIN_GET.has(r.id) || r.abuseCh) r.skipProbe = true;
   }
 
   const seen = new Set();

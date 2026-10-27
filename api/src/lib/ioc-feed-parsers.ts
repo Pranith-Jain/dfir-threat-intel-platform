@@ -4,6 +4,8 @@
  * No network calls — takes raw text/object, returns normalized entries.
  */
 
+import { LEGACY_ABUSECH_URLS, looksLikeJson } from './abusech';
+
 export type IocType = 'url' | 'domain' | 'ipv4' | 'hash' | 'cve';
 
 export interface IocEntry {
@@ -126,7 +128,9 @@ export function parseUrlhaus(body: string, cap: number = CAP): IocEntry[] {
   for (const cols of csvLines(body)) {
     if (cols.length < 3) continue;
     const value = unquote(cols[2] ?? '');
-    if (!value) continue;
+    // Guard against a header row (`id,dateadded,url,…`) that the
+    // authenticated v2 export may emit — a header is not an indicator.
+    if (!/^https?:\/\//i.test(value)) continue;
     const threat = unquote(cols[5] ?? '');
     const tags = unquote(cols[6] ?? '');
     const context = [threat, tags].filter(Boolean).join(' | ') || undefined;
@@ -148,12 +152,14 @@ export function parseMalwarebazaar(body: string, cap: number = CAP): IocEntry[] 
   for (const cols of csvLines(body)) {
     if (cols.length < 2) continue;
     const value = unquote(cols[1] ?? '');
-    if (!value) continue;
+    // A hash, not a header cell / "n/a" placeholder. The authenticated v2
+    // export may prepend `first_seen_utc,sha256_hash,…`.
+    if (!/^[a-f0-9]{32}(?:[a-f0-9]{32})?$/i.test(value)) continue;
     const signature = unquote(cols[8] ?? '');
     const fileType = unquote(cols[6] ?? '');
     const context = [signature, fileType].filter(Boolean).join(' | ') || undefined;
     const timestamp = unquote(cols[0] ?? '') || undefined;
-    entries.push({ type: 'hash', value, context, timestamp });
+    entries.push({ type: 'hash', value: value.toLowerCase(), context, timestamp });
     if (entries.length >= cap) break;
   }
   return entries;
@@ -201,6 +207,54 @@ export function parseThreatfox(body: string, cap: number = CAP): IocEntry[] {
     const context = unquote(cols[7] ?? '') || undefined;
     const timestamp = unquote(cols[0] ?? '') || undefined;
     entries.push({ type, value, context, timestamp });
+    if (entries.length >= cap) break;
+  }
+  return entries;
+}
+
+/**
+ * ThreatFox JSON community API (`get_iocs`) — the authenticated replacement
+ * for the retired CSV export.
+ *
+ * Shape (verified against the public API docs):
+ *   { query_status: "ok", data: [{ ioc, ioc_type, malware, malware_printable,
+ *     first_seen, last_seen, confidence_level, … }] }
+ *
+ * `first_seen` is `"2020-12-08 13:36:27 UTC"`; normalise it to ISO so the
+ * briefing window filter (which uses Date.parse) is not at the mercy of
+ * engine-specific handling of a space-separated timestamp.
+ */
+export function parseThreatfoxJson(body: string, cap: number = CAP): IocEntry[] {
+  let doc: { query_status?: string; data?: unknown };
+  try {
+    doc = JSON.parse(body) as { query_status?: string; data?: unknown };
+  } catch {
+    return [];
+  }
+  if (doc.query_status && doc.query_status !== 'ok') return [];
+  if (!Array.isArray(doc.data)) return [];
+  const entries: IocEntry[] = [];
+  for (const raw of doc.data) {
+    if (!raw || typeof raw !== 'object') continue;
+    const item = raw as Record<string, unknown>;
+    const type = threatfoxIocType(String(item.ioc_type ?? ''));
+    if (!type) continue;
+    let value = String(item.ioc ?? '').trim();
+    if (!value) continue;
+    if (type === 'ipv4') {
+      const colon = value.lastIndexOf(':');
+      if (colon !== -1) value = value.substring(0, colon);
+    }
+    const printable = String(item.malware_printable ?? '').trim();
+    const malware = String(item.malware ?? '').trim();
+    const context =
+      [printable, malware && malware !== printable ? malware : ''].filter(Boolean).join(' | ') || undefined;
+    entries.push({
+      type,
+      value,
+      context,
+      timestamp: looseDateToIso(String(item.first_seen ?? '')) ?? (String(item.first_seen ?? '') || undefined),
+    });
     if (entries.length >= cap) break;
   }
   return entries;
@@ -540,20 +594,24 @@ export interface FeedSource {
 }
 
 export const FEED_SOURCES: Record<SourceId, FeedSource> = {
+  // abuse.ch's anonymous file exports were retired on 2026-10-21 (HTTP 410).
+  // These values are the legacy fallback / human-readable origin only — every
+  // runtime fetch goes through `abuseChFeedRequest()` in lib/abusech.ts, which
+  // swaps in the authenticated v2 export (or the ThreatFox JSON API).
   urlhaus: {
     id: 'urlhaus',
     name: 'Abuse.ch URLhaus',
-    url: 'https://urlhaus.abuse.ch/downloads/csv_recent/',
+    url: LEGACY_ABUSECH_URLS.urlhaus,
   },
   malwarebazaar: {
     id: 'malwarebazaar',
     name: 'Abuse.ch MalwareBazaar',
-    url: 'https://bazaar.abuse.ch/export/csv/recent/',
+    url: LEGACY_ABUSECH_URLS.malwarebazaar,
   },
   threatfox: {
     id: 'threatfox',
     name: 'Abuse.ch ThreatFox',
-    url: 'https://threatfox.abuse.ch/export/csv/recent/',
+    url: LEGACY_ABUSECH_URLS.threatfox,
   },
   openphish: {
     id: 'openphish',
@@ -1181,7 +1239,10 @@ export function buildSummary(sourceId: SourceId, rawBody: string, cap: number = 
       entries = parseMalwarebazaar(rawBody, cap);
       break;
     case 'threatfox':
-      entries = parseThreatfox(rawBody, cap);
+      // The authenticated path uses the JSON community API; fixtures and the
+      // legacy fallback still use CSV. Sniff rather than plumb a format flag
+      // through every caller.
+      entries = looksLikeJson(rawBody) ? parseThreatfoxJson(rawBody, cap) : parseThreatfox(rawBody, cap);
       break;
     case 'openphish':
       entries = parseOpenPhish(rawBody, cap);

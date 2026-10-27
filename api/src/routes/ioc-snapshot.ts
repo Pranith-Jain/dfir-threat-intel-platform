@@ -1,7 +1,8 @@
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';
-import { buildSummary, FEED_SOURCES, type IocFeedSummary, type SourceId } from '../lib/ioc-feed-parsers';
+import { buildSummary, type IocFeedSummary, type SourceId } from '../lib/ioc-feed-parsers';
+import { abuseChFeedRequestForEnv, type AbuseChFeedSource } from '../lib/abusech';
 
 /**
  * IOC live-snapshot — paired with /threatintel/threat-map.
@@ -34,14 +35,16 @@ export interface IocSnapshotResponse {
   sources: Record<string, SourcePayload>;
 }
 
-async function fetchOne(id: SourceId): Promise<SourcePayload> {
-  const feed = FEED_SOURCES[id];
+async function fetchOne(id: SourceId, env: Env): Promise<SourcePayload> {
   try {
-    const r = await fetch(feed.url, {
+    const abuse = abuseChFeedRequestForEnv(env, id as AbuseChFeedSource, { days: 7 });
+    const r = await fetch(abuse.url, {
+      ...abuse.init,
       redirect: 'follow',
       headers: {
         'user-agent': 'pranithjain-ioc-snapshot/1.0',
         accept: '*/*',
+        ...((abuse.init.headers as Record<string, string> | undefined) ?? {}),
       },
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
@@ -65,7 +68,7 @@ export async function iocSnapshotHandler(c: Context<{ Bindings: Env }>): Promise
   const cached = await cache.match(cacheKey);
   if (cached) return new Response(cached.body, cached);
 
-  const settled = await Promise.all(SNAPSHOT_SOURCES.map(fetchOne));
+  const settled = await Promise.all(SNAPSHOT_SOURCES.map((id) => fetchOne(id, c.env)));
   const sources: Record<string, SourcePayload> = {};
   for (let i = 0; i < SNAPSHOT_SOURCES.length; i++) {
     const id = SNAPSHOT_SOURCES[i];

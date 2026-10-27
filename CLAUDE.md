@@ -33,11 +33,21 @@ repo's footguns so you don't rediscover them.
   "Successful trigger changes were not rolled back" / "This account has reached the
   Workers Free limit of 5 cron triggers" — the script deploys, the schedule does not.
   New recurring work must ride an existing tick (`0 * * * *` hourly,
-  `5 0 * * *` discovery+planner, `30 0 * * *` daily briefing, `45 0 * * 1`
-  weekly, `*/30 * * * *` feed/social drip).
+  `5 0 * * *` discovery+planner, `30 0 * * *` daily briefing, `45 0 * * 2`
+  weekly (Cloudflare cron DOW: 1=Sunday — `45 0 * * 1` fired SUNDAY, a day
+  early; `2` is Monday), `*/30 * * * *` feed/social drip).
 - **Free-plan limits.** 50 subrequests per invocation (KV + Cache-API both count); the
   IOC fan-out must use one batched `primeBatch` + one `flushBatch`. Briefing self-heal
   runs its own `20 * * * *` cron, one build per invocation.
+- **abuse.ch feeds go through one helper.** Upstream retired every anonymous
+  bulk export on 2026-10-21 (all legacy `downloads/…`/`export/…` URLs 410).
+  All URLs, auth headers and the ThreatFox JSON `get_iocs` POST are built in
+  `api/src/lib/abusech.ts` (`abuseChFeedRequestForEnv`, `abuseChExportUrl`,
+  `abuseChHeaders`). Never hand-roll an abuse.ch URL in a consumer — the
+  `scripts/abusech-auth-guard.test.mjs` guard fails CI if the legacy URLs
+  reappear, and authenticated bulk data needs `ABUSECH_AUTH_KEY` (a Worker
+  secret; absent locally, so consumers fall back to the legacy URL and fail
+  loudly with 410 instead of silently returning nothing).
 - **KV policy — Cache API first.** The free per-colo `caches.default` fronts every
   read-heavy request path; KV is the cross-colo durable layer only. Use the shared
   helpers, never hand-roll a third pattern: `kvBackedGet`/`kvBackedPut`

@@ -111,7 +111,13 @@
     // 5 is the Workers FREE plan hard limit per account — adding a 6th cron
     // fails the deploy with error 10072 ("partially updated" triggers, code
     // deployed, schedule not). New recurring work goes IN an existing tick.
-    "crons": ["0 * * * *", "5 0 * * *", "30 0 * * *", "45 0 * * 1", "*/30 * * * *"],
+    // Weekly briefing: `45 0 * * 2` = MONDAY 00:45 UTC. Cloudflare cron DOW
+    // follows 0=Sunday…6=Saturday, so the old `45 0 * * 1` was firing
+    // SUNDAY — it built the weekly rollup from a week that still had one
+    // day's dailies missing. `2` is Monday on Cloudflare (unlike POSIX
+    // 1=Monday), verified empirically: the W42 row was created exactly at
+    // 00:45:13Z on Sunday 2026-10-25.
+    "crons": ["0 * * * *", "5 0 * * *", "30 0 * * *", "45 0 * * 2", "*/30 * * * *"],
   },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["LiveFeedDO"] },

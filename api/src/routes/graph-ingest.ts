@@ -16,6 +16,8 @@ import {
   type IngestResult,
 } from '../lib/graph-ingest';
 import { ensureGraphTables, upsertNode, type NodeType } from './threat-graph';
+import { abuseChFeedRequestForEnv } from '../lib/abusech';
+import { buildSummary } from '../lib/ioc-feed-parsers';
 
 type SourceName = 'ioc' | 'phishing' | 'telegram' | 'ransomware' | 'all';
 
@@ -75,55 +77,43 @@ async function ingestBulkIocs(db: D1Database, items: LiveIoc[], maxItems: number
 
 // ── Direct IOC source fetchers (bypasses the aggregated live-iocs handler) ──
 
-function unq(s: string): string {
-  return s.replace(/^["'\s]+|["'\s]+$/g, '');
-}
-
-async function parseThreatfoxCsv(csv: string): Promise<LiveIoc[]> {
-  const items: LiveIoc[] = [];
-  const lines = csv.split('\n');
-  let headerFound = false;
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-    if (!headerFound) {
-      headerFound = true;
-      continue;
-    }
-    const cols = trimmed.split(',').map(unq);
-    if (cols.length < 6) continue;
-    const iocValue = cols[2];
-    const typeRaw = cols[3];
-    const malware = cols[5];
-    const alias = cols[6];
-    let kind: 'ip' | 'domain' | 'hash' | 'url' | null = null;
-    if (typeRaw === 'ipv4' || typeRaw === 'ip') kind = 'ip';
-    else if (typeRaw === 'domain') kind = 'domain';
-    else if (typeRaw === 'url') kind = 'url';
-    else if (typeRaw === 'md5_hash' || typeRaw === 'sha256_hash') kind = 'hash';
-    if (!kind || !iocValue) continue;
-    items.push({
-      value: iocValue,
+function parseThreatfoxCsv(csv: string): LiveIoc[] {
+  // The authenticated ThreatFox path returns the JSON `get_iocs` shape, the
+  // no-key fallback the retired CSV — buildSummary sniffs and normalises both
+  // (shared parser = one mapping table to keep in sync, not three).
+  return buildSummary('threatfox', csv).entries.map((e) => {
+    const type = e.type;
+    const kind: 'ip' | 'domain' | 'hash' | 'url' =
+      type === 'ipv4' ? 'ip' : type === 'domain' ? 'domain' : type === 'url' ? 'url' : 'hash';
+    return {
+      value: e.value,
       kind,
-      source: 'threatfox',
-      context: malware || alias || undefined,
-      observed_at: new Date().toISOString(),
-    });
-  }
-  return items;
+      source: 'threatfox' as const,
+      context: e.context,
+      observed_at: e.timestamp ?? new Date().toISOString(),
+    };
+  });
 }
 
-async function ingestLiveIocs(db: D1Database): Promise<IngestResult> {
+async function ingestLiveIocs(db: D1Database, env?: Env): Promise<IngestResult> {
   try {
-    const res = await fetch('https://threatfox.abuse.ch/export/csv/recent/', {
-      headers: { 'user-agent': 'pranithjain-graph-ingest/1.0', accept: 'text/csv' },
-      // threatfox sometimes stalls on the CSV export; 20s ceiling so a
-      // hung cron subrequest doesn't pin the Worker past the CPU limit.
+    // The anonymous ThreatFox CSV export upstream retired on 2026-10-21
+    // (HTTP 410) — fetch through the shared authenticated helper instead.
+    const req = abuseChFeedRequestForEnv(env, 'threatfox', { days: 7 });
+    const res = await fetch(req.url, {
+      ...req.init,
+      headers: {
+        'user-agent': 'pranithjain-graph-ingest/1.0',
+        accept: '*/*',
+        ...((req.init.headers as Record<string, string>) ?? {}),
+      },
+      // threatfox sometimes stalls; 20s ceiling so a hung cron subrequest
+      // doesn't pin the Worker past the CPU limit.
       signal: AbortSignal.timeout(20_000),
-    });
+    } as RequestInit);
     if (!res.ok) return { nodes_upserted: 0, edges_created: 0, errors: [`live-iocs: threatfox HTTP ${res.status}`] };
-    const csv = await res.text();
-    const items = await parseThreatfoxCsv(csv);
+    const body = await res.text();
+    const items = parseThreatfoxCsv(body);
     if (!items.length) return { nodes_upserted: 0, edges_created: 0, errors: ['live-iocs: no data'] };
 
     // Limit to 18 per batch to stay within 50-subrequest limit:
@@ -236,7 +226,7 @@ export async function runGraphIngest(
   const results: Record<string, IngestResult> = {};
 
   if (source === 'all' || source === 'ioc') {
-    results['ioc'] = await ingestLiveIocs(db);
+    results['ioc'] = await ingestLiveIocs(db, env);
   }
   if (source === 'all' || source === 'phishing') {
     results['phishing'] = await ingestPhishingUrls(db);

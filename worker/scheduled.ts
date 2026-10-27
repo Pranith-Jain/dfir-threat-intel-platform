@@ -105,7 +105,15 @@ import { errMessage } from './lib/err';
  *                  It rides this cron rather than its own because the account
  *                  is on the free plan's 5-cron limit — see wrangler.jsonc.
  * - "30 0 * * *" → daily briefing for the prior calendar day
- * - "45 0 * * 1" → weekly briefing for the prior ISO week (Mon → Sun)
+ * - "45 0 * * 2" → weekly briefing for the prior ISO week (Mon → Sun).
+ *                  Was `45 0 * * 1`: on Cloudflare, cron DOW 1 is SUNDAY
+ *                  (0=Sun…6=Sat), so the weekly build fired a day early,
+ *                  before the week's last daily rollup existed — and then
+ *                  the dedupe/slug logic had nothing to heal it with.
+ *                  `2` is Monday on Cloudflare. `45 0 * * 1` stays accepted
+ *                  in the dispatch below so a stale trigger entry firing
+ *                  during the schedule transition still builds instead of
+ *                  deadlocking its CronLockDO lease.
  * - "0 * * * *"  → warm /api/v1/snapshot + /api/v1/ioc-snapshot once
  *                  per hour. Was every 5 min — that cadence was burning
  *                  Workers KV writes for negligible UX gain. Snapshot
@@ -1789,7 +1797,12 @@ export async function executeCronJob(
     return;
   }
 
-  if (cron !== '30 0 * * *' && cron !== '45 0 * * 1') {
+  // The weekly cron moved from DOW 1 to DOW 2 (Cloudflare counts 1=Sunday,
+  // so the old string fired a day early and skipped the week's last daily).
+  // Accept both during the schedule transition — a stale `45 0 * * 1` fire
+  // must still build a briefing, not block its DO lease for the full TTL.
+  const WEEKLY_CRONS = ['45 0 * * 2', '45 0 * * 1'];
+  if (cron !== '30 0 * * *' && !WEEKLY_CRONS.includes(cron)) {
     // Unknown cron string — release the lease immediately so a stale entry
     // doesn't block a future (legitimate) fire of the same string for the
     // full TTL window.
@@ -1823,7 +1836,7 @@ export async function executeCronJob(
     return;
   }
 
-  const isWeekly = cron === '45 0 * * 1';
+  const isWeekly = WEEKLY_CRONS.includes(cron);
   const type = isWeekly ? 'weekly' : 'daily';
 
   const briefingHrt = setInterval(() => {
@@ -1836,7 +1849,7 @@ export async function executeCronJob(
           const briefing = await buildBriefing(type, undefined, {
             nvdApiKey: env.NVD_API_KEY,
             env: env as unknown as ApiEnv,
-            // The 30 00 * * * / 45 0 * * 1 build is the PRIMARY producer of
+            // The 30 00 * * * / 45 0 * * 2 build is the PRIMARY producer of
             // briefing rows, and it was the one call site e22c69672 missed when
             // it added `skipLlm` to "every persistence path" — the two cron
             // heals and all three admin/backfill paths got it, this one did not.

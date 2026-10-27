@@ -3,7 +3,6 @@ import type { Env } from '../env';
 import { logError } from '../lib/logger';
 import {
   parseUrlhaus,
-  parseThreatfox,
   parseIpsum,
   parsePlainTextIps,
   parseSslblC2,
@@ -20,6 +19,8 @@ import { trackEvent, visitorCountry } from '../lib/analytics';
 import { safeNullLog } from '../lib/safe-catch';
 import { fetchMtiSource, type MtiIoc } from '../lib/mythreatintel-api';
 import { ingestTelegramLeaksFromD1 } from '../lib/telegram-ioc-extract';
+import { abuseChFeedRequestForEnv, type AbuseChFeedSource } from '../lib/abusech';
+import { buildSummary } from '../lib/ioc-feed-parsers';
 
 /**
  * IOC Cross-Source Correlation
@@ -88,6 +89,33 @@ async function fetchText(url: string): Promise<string | null> {
     return await res.text();
   } catch (_catchErr) {
     logError('fetchText failed', _catchErr);
+    return null;
+  }
+}
+
+/**
+ * Fetch one abuse.ch bulk feed with the authenticated request shape
+ * (`lib/abusech.ts`). Same failure contract as `fetchText` — null, never a
+ * throw — so a single dead platform degrades that source only.
+ */
+async function fetchAbuseCh(env: Env | undefined, source: AbuseChFeedSource): Promise<string | null> {
+  try {
+    const req = abuseChFeedRequestForEnv(env, source, { days: 7 });
+    const res = await fetch(req.url, {
+      ...req.init,
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      headers: {
+        'user-agent': 'pranithjain-dfir/1.0',
+        accept: '*/*',
+        ...((req.init.headers as Record<string, string>) ?? {}),
+      },
+      cf: { cacheTtl: 1800, cacheEverything: true },
+    } as RequestInit);
+    if (!res.ok) return null;
+    const text = await res.text();
+    return text.trim() ? text : null;
+  } catch (_catchErr) {
+    logError(`fetchAbuseCh(${source}) failed`, _catchErr);
     return null;
   }
 }
@@ -168,14 +196,16 @@ export async function fetchIocCorrelation(env?: Env): Promise<IocCorrelationResp
     sansIscText,
     c2IntelText,
   ] = await Promise.all([
-    fetchText('https://urlhaus.abuse.ch/downloads/csv_recent/'),
-    fetchText('https://threatfox.abuse.ch/export/csv/recent/'),
+    // abuse.ch: authenticated v2 exports / ThreatFox JSON API. The anonymous
+    // export URLs upstream retired on 2026-10-21 all answer 410 now.
+    fetchAbuseCh(env, 'urlhaus'),
+    fetchAbuseCh(env, 'threatfox'),
     fetchText('https://raw.githubusercontent.com/stamparm/ipsum/master/levels/3.txt'),
     fetchText('https://cinsscore.com/list/ci-badguys.txt'),
     fetchText('https://raw.githubusercontent.com/bitwire-it/ipblocklist/main/outbound.txt'),
     fetchText('https://lists.blocklist.de/lists/all.txt'),
     fetchText('https://www.binarydefense.com/banlist.txt'),
-    fetchText('https://bazaar.abuse.ch/export/csv/recent/'),
+    fetchAbuseCh(env, 'malwarebazaar'),
     fetchText('https://openphish.com/feed.txt'),
     fetchText('https://phishing.army/download/phishing_army_blocklist.txt'),
     // ─── NEW SOURCES ───
@@ -272,7 +302,9 @@ export async function fetchIocCorrelation(env?: Env): Promise<IocCorrelationResp
 
   // ─── ThreatFox: mixed (url / domain / ip / hash) ────────────────────────
   if (threatfoxText) {
-    const e = parseThreatfox(threatfoxText, PER_FEED_CAP);
+    // buildSummary sniffs JSON (authenticated `get_iocs`) vs CSV (legacy
+    // fallback) and normalises both through the same entry shape.
+    const e = buildSummary('threatfox', threatfoxText, PER_FEED_CAP).entries;
     for (const x of e) {
       if (x.type === 'ipv4') add(ipBucket, x.value, 'threatfox', x.context, x.timestamp);
       else if (x.type === 'url') {

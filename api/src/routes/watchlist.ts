@@ -2,7 +2,7 @@
  * Watchlist + Digests.
  *
  * Actor watchlist with CRUD + sector-filtered weekly digest generation.
- * Piggybacks on the existing Monday cron slot (45 0 * * 1) for digest
+ * Piggybacks on the existing Monday cron slot (45 0 * * 2) for digest
  * generation since we're at the 5-cron free-plan cap.
  *
  * Endpoints:

@@ -50,6 +50,7 @@ jobs:
           du -sh signature-base-replication/ || true
 
       - name: Open PR if data changed
+        id: pr
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "chore(sigbase): sync from Neo23x0/signature-base"
@@ -70,3 +71,15 @@ jobs:
           add-paths: |
             public/data/sigbase/
             signature-base-replication/
+
+      - name: Auto-merge sync PR
+        # The sync output is data-only and main is unprotected, so the PR
+        # merges itself here — no human in the loop for the routine data land.
+        # (create-pull-request outputs nothing when there were no changes.)
+        # The shared script tolerates the non-required `Workers Builds:`
+        # Cloudflare watcher check failing on bot PRs, which left these PRs
+        # UNSTABLE and unmerged for days (see the script header).
+        if: steps.pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/automerge-sync-pr.sh "${{ steps.pr.outputs.pull-request-number }}"

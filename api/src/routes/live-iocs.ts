@@ -30,7 +30,9 @@ import {
   parseBotvrijDomains,
   parsePlainDomainList,
   parseSslblJa3,
+  buildSummary,
 } from '../lib/ioc-feed-parsers';
+import { abuseChFeedRequestForEnv, LEGACY_ABUSECH_URLS, type AbuseChFeedSource } from '../lib/abusech';
 import { CURATED_FEEDS, curatedFeed, type CuratedFeed } from '../lib/feed-curation';
 import { fetchMalwareSamplesCached } from './malware-samples';
 import { fetchPhishingUrlsCached } from './phishing-urls';
@@ -193,7 +195,11 @@ function consumeBudget(budget: { used: number; max: number } | undefined, n = 1)
   return true;
 }
 
-async function fetchText(url: string, budget?: { used: number; max: number }): Promise<string | null> {
+async function fetchText(
+  url: string,
+  budget?: { used: number; max: number },
+  init?: RequestInit
+): Promise<string | null> {
   // The shared fan-out budget counts REAL subrequests (this fetch + the KV
   // reads cached helpers make). Reserve before launching so a source can't
   // overshoot the free-plan 50-subrequest cap mid-run; an exhausted budget
@@ -203,8 +209,13 @@ async function fetchText(url: string, budget?: { used: number; max: number }): P
   if (!consumeBudget(budget)) return null;
   try {
     const res = await fetch(url, {
+      ...init,
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      headers: { 'user-agent': 'pranithjain-dfir/1.0', accept: '*/*' },
+      headers: {
+        'user-agent': 'pranithjain-dfir/1.0',
+        accept: '*/*',
+        ...((init?.headers as Record<string, string>) ?? {}),
+      },
       // No `cacheEverything: true` — that would cache upstream 5xx/429
       // responses for 25 min and poison every consumer / fan-out in
       // that window, surfacing as "sources show 0" with no way to tell
@@ -238,13 +249,19 @@ async function fetchText(url: string, budget?: { used: number; max: number }): P
  * network error for each unreachable source. Not on the hot path.
  */
 async function fetchTextDiag(
-  url: string
+  url: string,
+  init?: RequestInit
 ): Promise<{ ok: boolean; status?: number; bytes?: number; error?: string; duration_ms?: number }> {
   const t0 = Date.now();
   try {
     const res = await fetch(url, {
+      ...init,
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      headers: { 'user-agent': 'pranithjain-dfir/1.0', accept: '*/*' },
+      headers: {
+        'user-agent': 'pranithjain-dfir/1.0',
+        accept: '*/*',
+        ...((init?.headers as Record<string, string>) ?? {}),
+      },
       // Mirrors fetchText — see comment there re: cacheEverything.
       cf: { cacheTtl: 1500 },
     });
@@ -359,14 +376,23 @@ const FEED_FANOUT_CONCURRENCY = 5;
  * mirror neither references a retired upstream nor misses a registry source —
  * both failure modes are otherwise invisible until someone opens `?debug=1`.
  */
-export const FEED_SOURCE_DEBUG_URLS: Record<string, { url: string; fallbackUrls?: string[] }> = {
+export interface FeedSourceDebugEntry {
+  url: string;
+  fallbackUrls?: string[];
+  /** Set for abuse.ch sources — `?debug=1` resolves the authenticated URL/init
+   *  from `ABUSECH_AUTH_KEY` through `abuseChFeedRequestForEnv()` instead of
+   *  probing the retired anonymous export directly. */
+  abuseCh?: AbuseChFeedSource;
+}
+
+export const FEED_SOURCE_DEBUG_URLS: Record<string, FeedSourceDebugEntry> = {
   tweetfeed: { url: 'https://raw.githubusercontent.com/0xDanielLopez/TweetFeed/master/today.csv' },
   'sans-isc': { url: 'https://isc.sans.edu/api/sources/attacks/200/?json' },
   'c2-intel': { url: 'https://raw.githubusercontent.com/drb-ra/C2IntelFeeds/master/feeds/IPC2s.csv' },
-  urlhaus: { url: 'https://urlhaus.abuse.ch/downloads/csv_recent/' },
+  urlhaus: { url: LEGACY_ABUSECH_URLS.urlhaus, abuseCh: 'urlhaus' },
   'emerging-threats': { url: 'https://rules.emergingthreats.net/blockrules/compromised-ips.txt' },
   'otx-reputation': { url: 'https://reputation.alienvault.com/reputation.generic' },
-  threatfox: { url: 'https://threatfox.abuse.ch/export/csv/recent/' },
+  threatfox: { url: LEGACY_ABUSECH_URLS.threatfox, abuseCh: 'threatfox' },
   malwarebazaar: { url: 'https://mb-api.abuse.ch/api/v1/' },
   phishing: { url: 'https://data.phishtank.com/data/online-valid.json' },
   'crypto-scam': {
@@ -475,7 +501,12 @@ export const FEED_SOURCE_DEBUG_URLS: Record<string, { url: string; fallbackUrls?
   ...Object.fromEntries(
     CURATED_FEEDS.map((f) => [
       f.id,
-      { url: f.url, ...(f.fallbackUrls?.length ? { fallbackUrls: f.fallbackUrls } : {}) },
+      {
+        url: f.url,
+        ...(f.fallbackUrls?.length ? { fallbackUrls: f.fallbackUrls } : {}),
+        // ThreatFox's hostfile/recent-URL exports are fed by the JSON API now.
+        ...(f.id === 'threatfox-hostfile' || f.id === 'threatfox-urls' ? { abuseCh: 'threatfox' as const } : {}),
+      },
     ])
   ),
 };
@@ -511,6 +542,14 @@ interface TextFeedConfig {
    *  use case. The first URL to return 2xx with a non-empty body wins;
    *  only when ALL URLs fail do we report `ok:false`. */
   fallbackUrls?: string[];
+  /**
+   * abuse.ch bulk source for this feed. When set, the fetch goes through
+   * `abuseChFeedRequestForEnv()` — authenticated v2 CSV export for
+   * urlhaus/malwarebazaar, JSON `get_iocs` for threatfox — instead of the
+   * static `url` (which upstream retired on 2026-10-21 and now 410s).
+   * `cfg.url` stays as the no-key / debug fallback.
+   */
+  authAbuseCh?: AbuseChFeedSource;
 }
 
 /** Use the parser's per-entry context verbatim. */
@@ -526,14 +565,25 @@ function textFeedSource(cfg: TextFeedConfig): FeedSource {
   return {
     id: cfg.id,
     run: async (deps) => {
-      const urls = [cfg.url, ...(cfg.fallbackUrls ?? [])];
+      // abuse.ch feeds: build the authenticated request from the env key
+      // (falls back to the legacy URL when unset — see lib/abusech.ts).
+      // Every other feed keeps the static-URL list with fallbacks.
+      const requests: { url: string; init?: RequestInit }[] = cfg.authAbuseCh
+        ? [abuseChFeedRequestForEnv(deps?.env, cfg.authAbuseCh, { days: 7 })]
+        : [cfg.url, ...(cfg.fallbackUrls ?? [])].map((u) => ({ url: u }));
       let text: string | null = null;
-      for (const u of urls) {
-        text = await fetchText(u, deps?.budget);
+      for (const r of requests) {
+        text = await fetchText(r.url, deps?.budget, r.init);
         if (text) break;
       }
       if (!text) return { items: [], sources: [{ id: cfg.id, ok: false, count: 0 }] };
-      const parsed = cfg.parse(text, PER_FEED_CAP);
+      // The ThreatFox JSON API has a different shape than the retired CSV, so
+      // route it through buildSummary's JSON branch (same normalisation both
+      // ways). CSV bodies keep the configured parser.
+      const parsed =
+        cfg.authAbuseCh === 'threatfox' && text.trimStart().startsWith('{')
+          ? buildSummary('threatfox', text, PER_FEED_CAP).entries
+          : cfg.parse(text, PER_FEED_CAP);
       const items: LiveIoc[] = [];
       for (const e of parsed) {
         if (cfg.filterType && e.type !== cfg.filterType) continue;
@@ -637,11 +687,13 @@ const tweetfeedSource: FeedSource = {
 /** MalwareBazaar: hash samples with family + file-type context. */
 const malwarebazaarSource: FeedSource = {
   id: 'malwarebazaar',
-  run: async ({ executionCtx, budget }) => {
+  run: async ({ executionCtx, budget, env }) => {
     // The cached helper does a fetch + a KV read — consume both so the shared
     // budget stays honest (the old per-source slot reservation didn't).
     if (!consumeBudget(budget, 2)) return { items: [], sources: [{ id: 'malwarebazaar', ok: false, count: 0 }] };
-    const malwareBazaarResult = await safeNullLog('fetch-malwarebazaar', fetchMalwareSamplesCached(executionCtx));
+    // env carries ABUSECH_AUTH_KEY — the anonymous recent.csv export 410s
+    // since 2026-10-21, so the key decides whether this source works at all.
+    const malwareBazaarResult = await safeNullLog('fetch-malwarebazaar', fetchMalwareSamplesCached(executionCtx, env));
     const items: LiveIoc[] = [];
     if (!malwareBazaarResult) return { items, sources: [{ id: 'malwarebazaar', ok: false, count: 0 }] };
     let count = 0;
@@ -920,6 +972,13 @@ const curatedSource = (f: CuratedFeed): FeedSource => {
     reporter: f.name,
     context: f.context,
     withTimestamp: CURATED_DATED.has(f.id),
+    // The ThreatFox hostfile + recent-URL exports upstream retired (both 410
+    // since 2026-10-21). Their data now comes from the same authenticated
+    // ThreatFox JSON feed as the main threatfox source; `filterType` keeps
+    // each entry to its declared kind — domains for the hostfile, URLs for
+    // recent-urls.
+    authAbuseCh: f.id === 'threatfox-hostfile' || f.id === 'threatfox-urls' ? 'threatfox' : undefined,
+    filterType: f.id === 'threatfox-hostfile' ? 'domain' : f.id === 'threatfox-urls' ? 'url' : undefined,
     // An empty body from a 200 means the feed collapsed upstream — report it
     // unhealthy rather than letting it read as a healthy-but-quiet source.
     okRequiresItems: true,
@@ -965,7 +1024,8 @@ const FEED_SOURCES: FeedSource[] = [
   }),
   textFeedSource({
     id: 'urlhaus',
-    url: 'https://urlhaus.abuse.ch/downloads/csv_recent/',
+    url: LEGACY_ABUSECH_URLS.urlhaus,
+    authAbuseCh: 'urlhaus',
     parse: parseUrlhaus,
     kind: 'url',
     reporter: 'abuse.ch URLhaus',
@@ -991,7 +1051,8 @@ const FEED_SOURCES: FeedSource[] = [
   }),
   textFeedSource({
     id: 'threatfox',
-    url: 'https://threatfox.abuse.ch/export/csv/recent/',
+    url: LEGACY_ABUSECH_URLS.threatfox,
+    authAbuseCh: 'threatfox',
     parse: parseThreatfox,
     kind: 'per-entry',
     reporter: 'abuse.ch ThreatFox',
@@ -1744,21 +1805,26 @@ export async function liveIocsHandler(c: Context<{ Bindings: Env }>): Promise<Re
     const gate = requireAdmin(c);
     if ('error' in gate) return gate.error;
     const t0 = Date.now();
-    const sourceUrls: { id: string; url: string; fallbackUrls?: string[] }[] = [];
+    const sourceUrls: { id: string; url: string; fallbackUrls?: string[]; init?: RequestInit }[] = [];
     for (const s of FEED_SOURCES) {
       // Walk the registry. We don't have a public way to recover the cfg
       // from a built FeedSource, but every textFeedSource registers a
       // single upstream URL (or list of fallbacks) on its `id`. The named
       // sources (mti, openphish, etc.) have their own URL helpers below.
-      const cfg = (FEED_SOURCE_DEBUG_URLS as Record<string, { url: string; fallbackUrls?: string[] }>)[s.id];
-      if (cfg) sourceUrls.push({ id: s.id, ...cfg });
+      const cfg = (FEED_SOURCE_DEBUG_URLS as Record<string, FeedSourceDebugEntry>)[s.id];
+      if (!cfg) continue;
+      // abuse.ch sources resolve their authenticated request (v2 CSV export
+      // / ThreatFox JSON POST) so the diagnostic reports what production
+      // actually fetches, not the retired anonymous export.
+      const req = cfg.abuseCh ? abuseChFeedRequestForEnv(c.env, cfg.abuseCh, { days: 7 }) : null;
+      sourceUrls.push({ id: s.id, url: req?.url ?? cfg.url, fallbackUrls: cfg.fallbackUrls, init: req?.init });
     }
     const diagEntries = await concurrentMap(
       sourceUrls,
-      async ({ id, url, fallbackUrls }) => {
+      async ({ id, url, fallbackUrls, init }) => {
         const tried: { url: string; ok: boolean; status?: number; error?: string; bytes?: number }[] = [];
         for (const u of [url, ...(fallbackUrls ?? [])]) {
-          const r = await fetchTextDiag(u);
+          const r = await fetchTextDiag(u, init);
           tried.push({ url: u, ...r });
           if (r.ok) break;
         }

@@ -1,5 +1,6 @@
 import type { Env } from '../../env';
-import { FEED_SOURCES, UNCAPPED, buildSummary, type IocEntry, type SourceId } from '../ioc-feed-parsers';
+import { UNCAPPED, buildSummary, type IocEntry, type SourceId } from '../ioc-feed-parsers';
+import { abuseChFeedRequestForEnv, type AbuseChFeedSource } from '../abusech';
 import { fetchResilient } from '../fetch-resilient';
 import { readLastGood, writeLastGood } from '../lastgood';
 import { NVD_UA, NVD_API, KEV_FEED, LASTGOOD_TTL_SEC, nvdHeaders } from './config';
@@ -221,15 +222,23 @@ export async function fetchNvdByIds(cveIds: string[], apiKey?: string): Promise<
 }
 
 async function fetchAbuseFeed(
+  env: Env | undefined,
   source: SourceId,
   opts: { startMs?: number; endMs?: number; timeoutMs?: number } = {}
 ): Promise<IocEntry[]> {
   const { startMs, endMs, timeoutMs = 15_000 } = opts;
-  const meta = FEED_SOURCES[source];
-  const sep = meta.url.includes('?') ? '&' : '?';
-  const url = `${meta.url}${sep}_briefing=${Date.now()}`;
+  // abuse.ch retired the anonymous exports on 2026-10-21. Every request goes
+  // through the shared helper so URLhaus/MalwareBazaar use the authenticated
+  // v2 CSV export and ThreatFox uses its JSON `get_iocs` API.
+  const resolved = abuseChFeedRequestForEnv(env, source as AbuseChFeedSource, { days: 7 });
+  const sep = resolved.url.includes('?') ? '&' : '?';
+  // Cache-buster only for the CSV GETs; the ThreatFox request is a POST whose
+  // URL is an API endpoint (a query param would be ignored, not harmful, but
+  // keeping it off avoids confusing upstream request logs).
+  const url = source === 'threatfox' ? resolved.url : `${resolved.url}${sep}_briefing=${Date.now()}`;
   const res = await fetch(url, {
-    headers: { 'user-agent': NVD_UA },
+    ...resolved.init,
+    headers: { 'user-agent': NVD_UA, ...(resolved.init.headers as Record<string, string>) },
     signal: AbortSignal.timeout(timeoutMs),
     cf: { cacheEverything: false },
   } as RequestInit);
@@ -257,7 +266,7 @@ export async function fetchFeedResilient(
 ): Promise<IocEntry[]> {
   const key = `briefing-feed-${source}`;
   try {
-    const entries = await fetchAbuseFeed(source, { startMs: window?.startMs, endMs: window?.endMs });
+    const entries = await fetchAbuseFeed(env, source, { startMs: window?.startMs, endMs: window?.endMs });
     if (entries.length > 0) {
       if (env) await writeLastGood(env, key, entries, { ttlSeconds: LASTGOOD_TTL_SEC });
       return entries;

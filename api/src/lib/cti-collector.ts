@@ -10,6 +10,7 @@
 
 import type { D1Database } from '@cloudflare/workers-types';
 import { unwrapBingNewsLink } from './rss-parser';
+import { abuseChApiUrl, abuseChExportUrl, abuseChHeaders, THREATFOX_API_URL } from './abusech';
 
 const FETCH_TIMEOUT_MS = 15_000;
 const HEADERS = { 'User-Agent': 'PranithJain-CTI/1.0' };
@@ -66,9 +67,9 @@ async function safeFetch(url: string, opts: RequestInit = {}): Promise<Response 
 // ── Abuse.ch sources ───────────────────────────────────────────────────
 
 async function fetchThreatFox(abuseChKey?: string): Promise<CollectedIoc[]> {
-  const res = await safeFetch('https://threatfox-api.abuse.ch/api/v1/', {
+  const res = await safeFetch(THREATFOX_API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...HEADERS, ...(abuseChKey ? { 'Auth-Key': abuseChKey } : {}) },
+    headers: abuseChHeaders(abuseChKey, { ...HEADERS, 'Content-Type': 'application/json' }),
     body: JSON.stringify({ query: 'get_iocs', days: 1 }),
   });
   if (!res) return [];
@@ -89,57 +90,97 @@ async function fetchThreatFox(abuseChKey?: string): Promise<CollectedIoc[]> {
     .filter((i) => i.value);
 }
 
-async function fetchUrlhaus(abuseChKey?: string): Promise<CollectedIoc[]> {
-  const res = await safeFetch('https://urlhaus-api.abuse.ch/v1/urls/recent/', {
-    headers: abuseChKey ? { 'Auth-Key': abuseChKey } : {},
-  });
-  if (!res) {
-    // Fallback: CSV bulk feed
-    const csvRes = await safeFetch('https://urlhaus.abuse.ch/downloads/csv_online/');
-    if (!csvRes) return [];
-    const text = await csvRes.text();
-    const now = new Date().toISOString();
-    return text
-      .split('\n')
-      .filter((l) => l.trim() && !l.startsWith('#'))
-      .slice(0, 300)
-      .map((line) => {
-        const parts = line.split(',').map((p) => p.trim().replace(/"/g, ''));
-        return {
-          value: parts[2] || '',
-          type: 'url',
-          source: 'urlhaus',
-          confidence: 75,
-          tags: parts[6] ? parts[6].split(',').map((t: string) => t.trim()) : [],
-          first_seen: parts[1] || now,
-        };
-      })
-      .filter((i) => i.value && i.value.startsWith('http'));
-  }
-  const data = (await res.json()) as { urls: Array<Record<string, unknown>> };
+/**
+ * Parse a URLhaus bulk CSV (authenticated v2 `files/exports` recent.csv, or
+ * the legacy csv_online layout) into collected IOCs. Header-aware: resolves
+ * the `url` / `threat` / `tags` columns by name, falling back to the legacy
+ * positional mapping when no recognizable header is present.
+ */
+function parseUrlhausCsv(text: string, cap = 300): CollectedIoc[] {
   const now = new Date().toISOString();
-  return (data.urls || [])
-    .slice(0, 200)
-    .map((item) => ({
-      value: String(item.url || ''),
+  const lines = text.split('\n').filter((l) => l.trim() && !l.startsWith('#'));
+  if (!lines.length) return [];
+  // Find the column indexes from the header row (quoted CSV — strip quotes).
+  const headerCells = (lines[0] ?? '').split(',').map((p) => p.trim().replace(/"/g, '').toLowerCase());
+  const idxOf = (name: string) => headerCells.indexOf(name);
+  const urlIdx = idxOf('url');
+  const threatIdx = idxOf('threat');
+  const tagsIdx = idxOf('tags');
+  const timeIdx = idxOf('timeadded');
+  // Legacy layouts are id,timeadded,url,… or id,url,… — both put the URL at
+  // index 2; treat the first row as a header only when it clearly looks like
+  // one (a named `url` column plus several other named columns).
+  const looksLikeHeader = urlIdx > -1 && headerCells.filter((c) => c.length > 2).length > 3;
+  const out: CollectedIoc[] = [];
+  for (const line of lines.slice(looksLikeHeader ? 1 : 0)) {
+    const parts = line.split(',').map((p) => p.trim().replace(/"/g, ''));
+    const url = (looksLikeHeader ? parts[urlIdx] : parts[2]) || '';
+    if (!url || !/^https?:\/\//i.test(url)) continue;
+    const threat = looksLikeHeader && threatIdx > -1 ? (parts[threatIdx] ?? '') : '';
+    const tagsRaw = looksLikeHeader && tagsIdx > -1 ? (parts[tagsIdx] ?? '') : '';
+    const tagList = tagsRaw
+      ? tagsRaw
+          .split(/[|;]/)
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : [];
+    out.push({
+      value: url,
       type: 'url',
       source: 'urlhaus',
       confidence: 75,
-      tags: (item.tags as string[]) || [],
-      raw_json: item,
-      first_seen: String(item.date_added || now),
-    }))
-    .filter((i) => i.value);
+      tags: threat ? [threat, ...tagList] : tagList,
+      first_seen: looksLikeHeader && timeIdx > -1 ? (parts[timeIdx] ?? now) : now,
+    });
+    if (out.length >= cap) break;
+  }
+  return out;
+}
+
+async function fetchUrlhaus(abuseChKey?: string): Promise<CollectedIoc[]> {
+  // Primary: the authenticated v2 bulk CSV export (Auth-Key in the URL path,
+  // built by lib/abusech.ts). Fallback: the v1 anonymous API endpoint — no
+  // key gets 401 and no data. The old `downloads/csv_online/` fallback was
+  // retired upstream on 2026-10-21 (HTTP 410); the keyless path is gone by
+  // design — bulk data now requires a key.
+  const csvRes = await safeFetch(abuseChExportUrl('urlhaus', abuseChKey), {
+    headers: abuseChHeaders(abuseChKey, HEADERS),
+  });
+  if (csvRes) return parseUrlhausCsv(await csvRes.text());
+  const res = await safeFetch('https://urlhaus-api.abuse.ch/v1/urls/recent/', {
+    method: 'POST',
+    headers: abuseChHeaders(abuseChKey, { ...HEADERS, 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ query: 'urls_recent', limit: 1000 }),
+  });
+  if (!res) return [];
+  try {
+    const data = (await res.json()) as { query_status?: string; urls?: Array<Record<string, unknown>> };
+    if (data.query_status && data.query_status !== 'ok') return [];
+    const now = new Date().toISOString();
+    return (data.urls || [])
+      .slice(0, 200)
+      .map((item) => ({
+        value: String(item.url || ''),
+        type: 'url',
+        source: 'urlhaus',
+        confidence: 75,
+        tags: (item.tags as string[]) || [],
+        raw_json: item,
+        first_seen: String(item.date_added || now),
+      }))
+      .filter((i) => i.value && /^https?:\/\//i.test(i.value));
+  } catch {
+    return [];
+  }
 }
 
 async function fetchMalwareBazaar(abuseChKey?: string): Promise<CollectedIoc[]> {
-  const res = await safeFetch('https://mb-api.abuse.ch/api/v1/', {
+  const res = await safeFetch(abuseChApiUrl('malwarebazaar', abuseChKey), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+    headers: abuseChHeaders(abuseChKey, {
       ...HEADERS,
-      ...(abuseChKey ? { 'Auth-Key': abuseChKey } : {}),
-    },
+      'Content-Type': 'application/x-www-form-urlencoded',
+    }),
     body: 'query=get_recent&selector=100',
   });
   if (!res) return [];

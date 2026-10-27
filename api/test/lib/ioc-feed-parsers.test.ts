@@ -3,6 +3,7 @@ import {
   parseUrlhaus,
   parseMalwarebazaar,
   parseThreatfox,
+  parseThreatfoxJson,
   parseOpenPhish,
   parseCisaKev,
   parseSslblC2,
@@ -128,6 +129,111 @@ describe('parseThreatfox', () => {
   it('maps md5_hash ioc_type to hash', () => {
     const entries = parseThreatfox(TF_FIXTURE);
     expect(entries[3]).toMatchObject({ type: 'hash' });
+  });
+});
+
+// ─── ThreatFox JSON (authenticated get_iocs, replacing the retired CSV) ─────
+const TF_JSON_FIXTURE = JSON.stringify({
+  query_status: 'ok',
+  data: [
+    {
+      id: '1001',
+      ioc: 'http://malicious.url/cmd',
+      ioc_type: 'url',
+      malware: 'win.malware.autoit.020',
+      malware_printable: 'AgentTesla',
+      confidence_level: 90,
+      first_seen: '2026-10-25 09:00:00',
+      reporter: 'reporter1',
+    },
+    {
+      id: '1002',
+      ioc: 'evil-domain.ru',
+      ioc_type: 'domain',
+      malware: 'c2',
+      malware_printable: 'DarkComet',
+      confidence_level: 75,
+      first_seen: '2026-10-25 08:00:00',
+    },
+    {
+      id: '1003',
+      ioc: '10.20.30.40:4444',
+      ioc_type: 'ip:port',
+      malware: 'bot.fam',
+      confidence_level: 80,
+      first_seen: '2026-10-25 07:00:00',
+    },
+    {
+      id: '1004',
+      ioc: 'a1b2c3d4e5f60718293a4b5c6d7e8f90',
+      ioc_type: 'md5_hash',
+      malware: 'AgentTesla',
+      confidence_level: 70,
+      first_seen: '2026-10-25 06:00:00',
+    },
+    // Unknown type + blank ioc rows must be dropped, not crash.
+    { id: '1005', ioc: 'weird', ioc_type: 'ftp_store', first_seen: '2026-10-25' },
+    { id: '1006', ioc: '', ioc_type: 'url', first_seen: '2026-10-25' },
+  ],
+});
+
+describe('parseThreatfoxJson', () => {
+  it('maps url/domain/ip:port/hash and skips unknown or empty iocs', () => {
+    const entries = parseThreatfoxJson(TF_JSON_FIXTURE);
+    expect(entries).toHaveLength(4);
+    expect(entries[0]).toMatchObject({ type: 'url', value: 'http://malicious.url/cmd' });
+    expect(entries[1]).toMatchObject({ type: 'domain', value: 'evil-domain.ru' });
+    expect(entries[2]).toMatchObject({ type: 'ipv4', value: '10.20.30.40' });
+    expect(entries[3]).toMatchObject({ type: 'hash', value: 'a1b2c3d4e5f60718293a4b5c6d7e8f90' });
+  });
+
+  it('strips the port from ip:port values', () => {
+    const entries = parseThreatfoxJson(TF_JSON_FIXTURE);
+    expect(entries[2]!.value).toBe('10.20.30.40');
+  });
+
+  it('builds context from printable malware + family', () => {
+    const entries = parseThreatfoxJson(TF_JSON_FIXTURE);
+    expect(entries[0]!.context).toContain('AgentTesla');
+    expect(entries[0]!.context).toContain('win.malware.autoit.020');
+  });
+
+  it('carries first_seen as the timestamp (normalised by looseDateToIso)', () => {
+    const entries = parseThreatfoxJson(TF_JSON_FIXTURE);
+    expect(entries[1]!.timestamp).toBe('2026-10-25T08:00:00.000Z');
+  });
+
+  it('returns [] for non-ok query_status, bad JSON, or missing data', () => {
+    expect(parseThreatfoxJson(JSON.stringify({ query_status: 'no_results' }))).toEqual([]);
+    expect(parseThreatfoxJson('not json')).toEqual([]);
+    expect(parseThreatfoxJson(JSON.stringify({ query_status: 'ok' }))).toEqual([]);
+  });
+
+  it('honours the cap', () => {
+    const many = JSON.stringify({
+      query_status: 'ok',
+      data: Array.from({ length: 12 }, (_, i) => ({
+        id: String(i),
+        ioc: `10.0.0.${i}:80`,
+        ioc_type: 'ip:port',
+        first_seen: '2026-10-25',
+      })),
+    });
+    expect(parseThreatfoxJson(many, 5)).toHaveLength(5);
+  });
+});
+
+describe('buildSummary threatfox JSON sniffing', () => {
+  it('routes the authenticated JSON body through the JSON parser', () => {
+    const s = buildSummary('threatfox', TF_JSON_FIXTURE);
+    expect(s.count).toBe(4);
+    expect(s.entries[2]).toMatchObject({ type: 'ipv4', value: '10.20.30.40' });
+  });
+
+  it('still parses the legacy CSV fallback shape', () => {
+    const s = buildSummary('threatfox', TF_FIXTURE);
+    expect(s.count).toBe(4);
+    expect(s.entries[0]).toMatchObject({ type: 'url', value: 'http://malicious.url/cmd' });
   });
 });
 

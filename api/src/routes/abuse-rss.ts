@@ -11,6 +11,7 @@ import { logError } from '../lib/logger';
 import { badRequest, badGateway } from '../lib/api-error';
 import { getSiteUrl } from '../lib/site-config';
 import { FEED_SOURCES, buildSummary, type IocEntry, type SourceId } from '../lib/ioc-feed-parsers';
+import { abuseChFeedRequestForEnv, type AbuseChFeedSource } from '../lib/abusech';
 
 const SUPPORTED: SourceId[] = ['urlhaus', 'threatfox', 'malwarebazaar'];
 const FETCH_UA = 'Mozilla/5.0 (compatible; pranithjain-dfir/1.0; +https://pranithjain.qzz.io)';
@@ -51,8 +52,13 @@ export async function abuseRssHandler(c: Context<{ Bindings: Env }>) {
 
   let entries: IocEntry[] = [];
   try {
-    const upstream = await fetch(meta.url, {
-      headers: { 'user-agent': FETCH_UA },
+    const req = abuseChFeedRequestForEnv(c.env, sourceParam as AbuseChFeedSource, { days: 7 });
+    const upstream = await fetch(req.url, {
+      ...req.init,
+      headers: {
+        'user-agent': FETCH_UA,
+        ...((req.init.headers as Record<string, string> | undefined) ?? {}),
+      },
       signal: AbortSignal.timeout(15_000),
       cf: { cacheTtlByStatus: { '200-299': 1800, '400-599': 0 }, cacheEverything: true },
     } as RequestInit);

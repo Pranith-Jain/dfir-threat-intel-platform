@@ -1,14 +1,10 @@
 import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';
-import {
-  parseUrlhaus,
-  parseThreatfox,
-  parseIpsum,
-  parsePlainTextIps,
-  parseMalwarebazaar,
-} from '../lib/ioc-feed-parsers';
+import { parseUrlhaus, parseIpsum, parsePlainTextIps, parseMalwarebazaar } from '../lib/ioc-feed-parsers';
 import { trackEvent, visitorCountry } from '../lib/analytics';
+import { abuseChFeedRequestForEnv, type AbuseChFeedSource } from '../lib/abusech';
+import { buildSummary } from '../lib/ioc-feed-parsers';
 
 /**
  * Cyber Threat Map
@@ -112,6 +108,28 @@ async function fetchText(url: string): Promise<string | null> {
     return await res.text();
   } catch (_catchErr) {
     logError('fetchText failed', _catchErr);
+    return null;
+  }
+}
+
+/**
+ * abuse.ch bulk fetch — authenticated v2 export / ThreatFox JSON API via the
+ * shared helper. Same null-on-failure contract as `fetchText`.
+ */
+async function fetchAbuseCh(env: Env | undefined, source: AbuseChFeedSource): Promise<string | null> {
+  try {
+    const req = abuseChFeedRequestForEnv(env, source, { days: 7 });
+    const res = await fetch(req.url, {
+      ...req.init,
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      cf: { cacheTtl: 1800, cacheEverything: true },
+    } as RequestInit);
+    if (res.status === 429) return null;
+    if (!res.ok) return null;
+    const text = await res.text();
+    return text.trim() ? text : null;
+  } catch (_catchErr) {
+    logError(`fetchAbuseCh(${source}) failed`, _catchErr);
     return null;
   }
 }
@@ -269,15 +287,15 @@ async function geolocateBatch(ips: string[]): Promise<GeoResult> {
  * returns, just without the Response/cache wrapping so the snapshot endpoint
  * can compose it without a worker-internal HTTP call.
  */
-export async function fetchThreatMap(): Promise<ThreatMapResponse> {
+export async function fetchThreatMap(env?: Env): Promise<ThreatMapResponse> {
   // Fan out to all IOC feeds we have access to, in parallel.
   const [urlhausText, threatfoxText, ipsumText, cinsText, bitwireText, malwarebazaarText] = await Promise.all([
-    fetchText('https://urlhaus.abuse.ch/downloads/csv_recent/'),
-    fetchText('https://threatfox.abuse.ch/export/csv/recent/'),
+    fetchAbuseCh(env, 'urlhaus'),
+    fetchAbuseCh(env, 'threatfox'),
     fetchText('https://raw.githubusercontent.com/stamparm/ipsum/master/levels/3.txt'),
     fetchText('https://cinsscore.com/list/ci-badguys.txt'),
     fetchText('https://raw.githubusercontent.com/bitwire-it/ipblocklist/main/outbound.txt'),
-    fetchText('https://bazaar.abuse.ch/export/csv/recent/'),
+    fetchAbuseCh(env, 'malwarebazaar'),
   ]);
 
   // Parse each feed ONCE, then bucket from that single result.
@@ -291,7 +309,9 @@ export async function fetchThreatMap(): Promise<ThreatMapResponse> {
   const PARSE_CAP = MAX_IPS + MAX_PER_TYPE * 4;
 
   const urlhausEntries = urlhausText ? parseUrlhaus(urlhausText, PARSE_CAP) : [];
-  const threatfoxEntries = threatfoxText ? parseThreatfox(threatfoxText, PARSE_CAP) : [];
+  // ThreatFox: the authenticated path returns the JSON `get_iocs` shape, the
+  // no-key fallback the retired CSV — buildSummary sniffs and normalises both.
+  const threatfoxEntries = threatfoxText ? buildSummary('threatfox', threatfoxText, PARSE_CAP).entries : [];
   const malwarebazaarEntries = malwarebazaarText ? parseMalwarebazaar(malwarebazaarText, PARSE_CAP) : [];
 
   // Build a map of IP → set of sources, capped at MAX_IPS unique IPs.
@@ -462,7 +482,7 @@ export async function threatMapHandler(c: Context<{ Bindings: Env }>) {
     });
   }
 
-  const body = await fetchThreatMap();
+  const body = await fetchThreatMap(c.env);
 
   /**
    * Do not cache a degenerate payload.
