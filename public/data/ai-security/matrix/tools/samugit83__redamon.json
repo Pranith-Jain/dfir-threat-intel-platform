@@ -3,13 +3,13 @@
   "repo": "samugit83/redamon",
   "category": "agent",
   "scope": ["redteam", "ad", "network", "recon"],
-  "stars": 3221,
+  "stars": 3226,
   "description": "Open-source, self-hosted AI penetration testing framework: maps your attack surface into a graph, autonomously exploits it from a Kali sandbox with human approval gates, and opens PRs that fix what it finds. MCP both ways: plug in any MCP …",
   "homepage": "https://www.redamon.org",
   "added": "2026-09-12",
-  "checkedAt": "2026-10-27T03:17:32Z",
-  "pushedAt": "2026-10-22",
-  "daysIdle": 5,
+  "checkedAt": "2026-10-28T03:17:30Z",
+  "pushedAt": "2026-10-27",
+  "daysIdle": 1,
   "archived": false,
   "license": "MIT",
   "upstream": {
@@ -23,32 +23,32 @@
       "description": "Chains recon, exploitation and post-exploitation, then carries a finding further than a report: it writes the fix and opens a pull request on your repository."
     },
     "derived": {
-      "checked_at": "2026-10-27T03:17:32Z",
+      "checked_at": "2026-10-28T03:17:30Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-10-22",
-        "days_since_push": 5,
-        "total_commits": 1738,
-        "last100_span_days": 0,
+        "pushed_at": "2026-10-27",
+        "days_since_push": 1,
+        "total_commits": 2027,
+        "last100_span_days": 2,
         "last100_authors": 1,
-        "last_commit_sha": "4585b34",
-        "last_commit_message": "chore: update skill",
-        "last_commit_at": "2026-10-22",
+        "last_commit_sha": "ccaf282",
+        "last_commit_message": "fix(cli): an arrow key never lands in a password or a confirmation either (#210)\n\nPR #211 moved the admin name/email and the reset email onto `read -e`. The\nother prompts still read without readline, so an arrow key reached the value\nas raw escape bytes.\n\n- passwords (admin create, reset, deploy.sh SSH): Left pressed to fix a typo\n  in the hidden field stored \"\\e[D\". Typed the same way twice it passed the\n  confirm check, and no browser login could ever match it. -s still hides\n  the input: readline does not echo while the terminal's echo is off.\n- confirmations ([y/N] clean and KB ingestion, 'yes' for purge, INIT in\n  deploy.sh): an arrow pressed before the prompt turned \"yes\" into a cancel.\n\nChecked through a pty on bash 3.2, 4.4, 5.1, 5.2 and 5.3; piped stdin and a\nmissing /dev/tty behave as before. tests/redamon_admin_test.sh drives the\nadmin and reset prompts through a pty with early arrows and Left-arrow typo\nfixes, and fails on any prompted read in redamon.sh or deploy.sh without -e.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+        "last_commit_at": "2026-10-27",
         "releases": 16,
         "latest_release_at": "2026-09-11",
-        "days_since_release": 46,
-        "days_idle": 5,
+        "days_since_release": 47,
+        "days_idle": 1,
         "relocated": false
       },
       "identity": {
         "canonical_repo": "samugit83/redamon",
-        "stars": 3221,
-        "forks": 685,
+        "stars": 3226,
+        "forks": 684,
         "created_at": "2025-12-29",
         "is_fork": false,
-        "contributors": 24,
-        "top_contributor_share": 0.76,
+        "contributors": 25,
+        "top_contributor_share": 0.79,
         "homepage": "https://www.redamon.org",
         "description": "Open-source, self-hosted AI penetration testing framework: maps your attack surface into a graph, autonomously exploits it from a Kali sandbox with human approval gates, and opens PRs that fix what it finds. MCP both ways: plug in any MCP server as a tool, or drive RedAmon from Claude Code or your own agent.",
         "topics": [
@@ -76,9 +76,9 @@
       },
       "licence": { "file": "MIT", "api_spdx": "MIT", "readme_claim": null, "conflict": null },
       "shape": {
-        "loc": 831196,
-        "code_files": 3551,
-        "files": 4353,
+        "loc": 874020,
+        "code_files": 3794,
+        "files": 4591,
         "has_ci": false,
         "has_tests": true,
         "has_dockerfile": true,
@@ -86,7 +86,7 @@
         "ai_layer": true,
         "providers": ["openai", "litellm", "langchain", "google-genai", "ollama"],
         "mcp_server": true,
-        "tool_defs": 86,
+        "tool_defs": 87,
         "readme_tool_claim": {
           "count": 11,
           "context": "en a CodeFix agent clones your repository, navigates the codebase with 11 code-aware tools"
@@ -111,7 +111,12 @@
         "manifests": ["mcp/kali-sandbox/Dockerfile", "mcp/kali-sandbox/entrypoint.sh"]
       },
       "rebadge": [],
-      "risk": { "licence": false, "install": true, "phones_home": true, "opaque": false, "host_access": true }
+      "risk": { "licence": false, "install": true, "phones_home": true, "opaque": false, "host_access": true },
+      "risk_where": {
+        "host_access": "docker-compose.yml:409",
+        "install": "scanners/ai_attack_surface_scan/Dockerfile:49",
+        "phones_home": "webapp/src/lib/trufflehogDetectors.ts:56"
+      }
     }
   }
 }
