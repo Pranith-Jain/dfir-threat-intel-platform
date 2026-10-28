@@ -891,6 +891,13 @@ export const HUB_META: readonly HubMeta[] = [
         desc: 'AI attack-flow visualizer: report URL/text → ATT&CK graph with PNG/STIX/.afb export.',
         compVar: 'FlowViz',
       },
+      {
+        path: '/threatintel/ti-mindmap',
+        tabId: 'ti-mindmap',
+        label: 'TI Mindmap',
+        desc: 'LLM threat-report mindmaps: dossier, Mermaid mindmap, TTP timeline, Navigator layer.',
+        compVar: 'TiMindmap',
+      },
 
       {
         path: '/threatintel/research-hub/knowledge',

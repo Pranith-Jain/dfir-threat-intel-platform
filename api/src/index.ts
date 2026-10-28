@@ -2395,6 +2395,9 @@ app.route('/api/v1', knowledgeGraphRouter);
 // (edge port of netandneedle/procedure-extraction-pipeline, Apache-2.0) ──
 app.route('/api/v1', flowvizRouter);
 app.route('/api/v1', proceduresRouter);
+// ── TI Mindmap Studio (research port of TI-Mindmap-GPT / TI Mindmap HUB) ──
+import { tiMindmapRouter } from './routes/ti-mindmap';
+app.route('/api/v1', tiMindmapRouter);
 // ── CTI Collector (VHunt-inspired IOC fusion + AI prediction + mutation) ──
 import {
   ctiCollectHandler,
