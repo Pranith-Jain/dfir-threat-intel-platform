@@ -45,7 +45,7 @@ A live CTI surface that updates itself: ransomware leak-site + negotiation track
 | Surface                                 | What it does                                                                                                       |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | Live Ransomware Activity                | Leak-site claims merged across Ransomlook, ransomware.live, MyThreatIntel & Andrea Fortuna; per-victim screenshots |
-| Ransomware Groups Directory             | 630-group leak-site directory — status, 7d victims, profiles, recent moves (Sinon-style reference)                 |
+| Ransomware Groups Directory             | 635-group leak-site directory — status, 7d victims, profiles, recent moves (Sinon-style reference)                 |
 | AI Escape Watch                         | 15-incident agent containment-failure registry — CBS scores, 7-stage chains, absent-guardrail analysis             |
 | Ransomware Negotiations                 | ransomware.live PRO negotiation chats — demand vs. settled, discount %, full transcripts                           |
 | Actor Activity Timeline                 | Per-actor leak-site cadence heatmap + MITRE ATT&CK group/TTP pivot                                                 |
@@ -111,7 +111,7 @@ A 426-tool MCP (Model Context Protocol) server runs on the same Worker, exposing
 | Storage         | KV (briefings, dedup, rate-limit), Cache API (provider/feed results), D1 (briefings DB), Vectorize (semantic search) |
 | Durable Objects | 8 — MCP server, cron lock, live feed, report builder, investigator agent, radar crawler, global pulse                |
 | AI              | Groq (primary) → Workers AI (fallback) for case-study engine; Gemini for agent QA                                    |
-| Tests           | Vitest — 6,700+ tests across 528 test files                                                                          |
+| Tests           | Vitest — 6,700+ tests across 530 test files                                                                          |
 | Quality         | ESLint + Prettier + husky/lint-staged; `tsc --noEmit` gate                                                           |
 | CI              | GitHub Actions: lint + typecheck + vitest, per-ref concurrency cancel                                                |
 | Deploy          | `wrangler deploy`                                                                                                    |

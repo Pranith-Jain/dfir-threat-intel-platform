@@ -572,7 +572,7 @@ export const HUB_META: readonly HubMeta[] = [
         path: '/threatintel/ransomware-groups',
         tabId: 'ransomware-groups',
         label: 'Ransomware Groups',
-        desc: 'Directory of every tracked ransomware leak site - status, recent victims, and profiles (630 groups).',
+        desc: 'Directory of every tracked ransomware leak site - status, recent victims, and profiles (635 groups).',
         compVar: 'RansomwareGroups',
         badge: 'new',
         keywords: ['ransomware', 'groups', 'leak site', 'directory', 'status', 'profile'],
