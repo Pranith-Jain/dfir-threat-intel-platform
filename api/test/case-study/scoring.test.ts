@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   recencyScore,
   severityScore,
+  severityFromText,
   noveltyScore,
   finalScore,
   finalScoreWithTrending,
@@ -137,5 +138,57 @@ describe('finalScoreWithTrending', () => {
     // noTrending: 0.3*0 + 0.35*0 + 0.25*1 + 0.1*0 = 0.25
     // yesTrending: 0.25*0 + 0.25*0 + 0.2*1 + 0.1*0 + 0.2*1 = 0.4
     expect(yesTrending).toBeGreaterThan(noTrending);
+  });
+});
+
+describe('severityFromText', () => {
+  it('tiers confirmed exploitation at 1.0', () => {
+    expect(severityFromText('Actively exploited flaw in Citrix appliances')).toBe(1.0);
+    expect(severityFromText('CISA adds CVE-2026-1234 to KEV catalog')).toBe(1.0);
+  });
+
+  it('tiers weaponisation and the criminal economy at 0.9', () => {
+    expect(severityFromText('Zero-day exploit traded for weeks before disclosure')).toBe(0.9);
+    expect(severityFromText('Ransomware group claims breach of hospital chain')).toBe(0.9);
+    expect(severityFromText('Operator arrested in coordinated takedown')).toBe(0.9);
+    expect(severityFromText('Supply chain backdoor found in update channel')).toBe(0.9);
+  });
+
+  it('tiers the credential economy at 0.8', () => {
+    expect(severityFromText('2.5 million records dumped after breach of payroll vendor')).toBe(0.8);
+    expect(severityFromText('Stolen credentials from stealer logs offered for sale')).toBe(0.8);
+    expect(severityFromText('Access broker listing for VPN appliance')).toBe(0.8);
+  });
+
+  it('tiers critical/attribution signals at 0.7', () => {
+    expect(severityFromText('Critical vulnerability patched in release notes')).toBe(0.7);
+    expect(severityFromText('Researchers attribute the campaign to a tracked actor')).toBe(0.7);
+  });
+
+  it('keeps routine reporting above the floor but below campaigns', () => {
+    const s = severityFromText('Vendor ships advisory for minor issue');
+    expect(s).toBeGreaterThanOrEqual(0.55);
+    expect(s).toBeLessThan(0.7);
+  });
+
+  it('falls back to the 0.3 floor for non-security prose', () => {
+    expect(severityFromText('Quarterly earnings beat expectations')).toBe(0.3);
+    expect(severityFromText('')).toBe(0.3);
+  });
+
+  it('takes the highest matching tier when several appear', () => {
+    const s = severityFromText('Routine advisory discloses a critical bug that is actively exploited');
+    expect(s).toBe(1.0);
+  });
+});
+
+describe('severityScore mentions alias', () => {
+  it('scores mention counts on the victims scale', () => {
+    expect(severityScore({ mentions: 5 })).toBe(1.0);
+    expect(severityScore({ mentions: 1 })).toBeCloseTo(0.2, 2);
+  });
+
+  it('prefers victims when both are present', () => {
+    expect(severityScore({ victims: 2, mentions: 10 })).toBeCloseTo(0.4, 2);
   });
 });

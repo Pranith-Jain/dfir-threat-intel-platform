@@ -146,7 +146,7 @@ describe('enrichFromPlatform', () => {
 
   it('is inert without the SELF binding, the secret, or a keyword', async () => {
     const stub = selfStub({});
-    const empty = { writeups: [], relatedCves: [], trendingCves: [], actors: [] };
+    const empty = { writeups: [], relatedCves: [], trendingCves: [], actors: [], victimClaims: [] };
 
     await expect(enrichFromPlatform(undefined, { INTERNAL_TOKEN_SECRET: SECRET }, 'x')).resolves.toEqual(empty);
     await expect(enrichFromPlatform(stub, {}, 'x')).resolves.toEqual(empty);

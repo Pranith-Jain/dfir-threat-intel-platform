@@ -1,10 +1,11 @@
 import type { CaseStudyType } from '../types';
 import {
-  VOICE_IDENTITY,
-  ANSWER_FIRST,
+  answerFirst,
+  formatContract,
+  voiceIdentity,
   GROUNDING_CONTRACT,
   PIPELINE_OUTPUT_GUARDRAIL,
-  FORMAT_CONTRACT,
+  type VoiceFamily,
 } from './copywriting';
 import { renderDossier, type ResearchDossier } from '../research/dossier';
 import { scrubString } from './scrub-prompt';
@@ -56,11 +57,11 @@ The description is mandatory; a bare link is not an acceptable citation. Cite on
 
 // ── Shared prompt preamble ───────────────────────────────────────────────
 
-function systemPrompt(formatGuidance: string): string {
+function systemPrompt(formatGuidance: string, family: VoiceFamily): string {
   return (
-    VOICE_IDENTITY +
+    voiceIdentity(family) +
     '\n' +
-    ANSWER_FIRST +
+    answerFirst(family) +
     '\n' +
     GROUNDING_CONTRACT +
     '\n' +
@@ -72,7 +73,7 @@ function systemPrompt(formatGuidance: string): string {
     '\n' +
     PIPELINE_OUTPUT_GUARDRAIL +
     '\n' +
-    FORMAT_CONTRACT
+    formatContract(family)
   );
 }
 
@@ -427,6 +428,42 @@ const FORMAT_GUIDANCE: Record<CaseStudyType, string> = {
 };
 
 /**
+ * Which voice family a content type belongs to. The family decides the
+ * system-preamble voice (what a "concrete artifact" is), the answer-first
+ * lead, and the traceability contract — NOT the format guidance, which stays
+ * per type.
+ */
+export const TYPE_FAMILY: Record<CaseStudyType, VoiceFamily> = {
+  cve: 'vuln',
+  vulnfaq: 'vuln',
+  exploit: 'vuln',
+  darkweb: 'underground',
+  breach: 'underground',
+  scam: 'underground',
+  actor: 'adversary',
+  malware: 'adversary',
+  aisec: 'ai',
+  llm: 'ai',
+  agentic: 'ai',
+  aisecops: 'ai',
+  supplychain: 'craft',
+  intel: 'craft',
+  osint: 'craft',
+  methodology: 'craft',
+  trend: 'craft',
+  briefing: 'craft',
+  analysis: 'craft',
+  tool: 'craft',
+  news: 'craft',
+  hunting: 'craft',
+  report: 'craft',
+};
+
+export function familyForType(type: CaseStudyType): VoiceFamily {
+  return TYPE_FAMILY[type] ?? 'craft';
+}
+
+/**
  * `requiredSections` is retained only as an empty advisory for the rewrite
  * path. Section requirements are gone: forcing fixed headings is what made
  * every post the same shape, and the research dossier now carries enough
@@ -442,6 +479,12 @@ export interface BuildPromptInput {
   dossier: ResearchDossier;
   /** Optional voice-profile string describing the author's real rhythm. */
   voiceProfile?: string;
+  /**
+   * Evidence subtype the candidate carried (e.g. a re-leak victim's
+   * `subtype: 'releak'`). Subtypes get an extra format beat so the piece
+   * leans into the specific narrative instead of the generic per-type one.
+   */
+  subtype?: string;
   /** Free-text steering from an admin regenerating a draft. */
   notes?: string;
 }
@@ -451,13 +494,43 @@ export interface BuiltPrompt {
   user: string;
 }
 
+/**
+ * Re-leak beat: the same victim claimed by 2+ ransomware groups. The story
+ * is the pattern (failed double extortion, affiliate movement, list
+ * recycling), not any single group's listing.
+ */
+const RELEAK_GUIDANCE =
+  `\n<subtype name="re-leak">\n` +
+  `The victim here is claimed by more than one ransomware group. That is the ` +
+  `story, so lead with the pattern and say which of the standard explanations ` +
+  `the claims fit: a failed double extortion the first group dropped, an ` +
+  `affiliate that moved programs with the haul, a recycled victim list, or a ` +
+  `second independent hit. Use the claim dates per group to argue for one.\n` +
+  `- The re-leak itself is the angle: do not write a per-group victim ` +
+  `  summary that could have been written before the second claim existed.\n` +
+  `- Give each claiming group its own line: group, claim date, where it was ` +
+  `  listed.\n` +
+  `- Be explicit that cross-group claims are usually one of the four patterns ` +
+  `  above, and that two claims are not twice the confirmation.\n` +
+  `- Close on the defensive takeaway a re-leak specifically implies: the ` +
+  `  first compromise probably never got cleaned up, so the check is not ` +
+  `  "are we on the list" but "was the original incident fully remediated".\n` +
+  `</subtype>\n`;
+
 export function buildPrompt(input: BuildPromptInput): BuiltPrompt {
+  const family = familyForType(input.type);
   const rendered = renderDossier(input.dossier);
-  const system = systemPrompt(FORMAT_GUIDANCE[input.type] ?? GENERIC_GUIDANCE) + (input.voiceProfile ?? '');
+  let guidance = FORMAT_GUIDANCE[input.type] ?? GENERIC_GUIDANCE;
+  if (input.type === 'darkweb' && input.subtype === 'releak') guidance += RELEAK_GUIDANCE;
+  const system = systemPrompt(guidance, family) + (input.voiceProfile ?? '');
 
   const sourcesNote = input.dossier.pages.filter((p) => p.ok).length
     ? `Link the sources you actually read. Use their publisher as the link text.`
-    : `No source page could be read for this topic. Cite the canonical authorities the dossier names (NVD, CISA KEV, vendor advisory) and mark anything else as unconfirmed.`;
+    : family === 'underground'
+      ? `No source page could be read for this topic. Cite the listing sources the dossier names (leak sites, monitoring channels, trackers) and mark anything else as unconfirmed.`
+      : family === 'adversary'
+        ? `No source page could be read for this topic. Cite the tracking sources the dossier names (actor trackers, vendor reports) and mark anything else as unconfirmed.`
+        : `No source page could be read for this topic. Cite the canonical authorities the dossier names (NVD, CISA KEV, vendor advisory) and mark anything else as unconfirmed.`;
 
   const user = [
     `TITLE: ${scrubString(input.title)}`,

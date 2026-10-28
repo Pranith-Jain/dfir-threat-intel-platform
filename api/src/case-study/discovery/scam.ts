@@ -1,6 +1,6 @@
 import type { Candidate, DedupRecord } from '../types';
 import { topicKey } from '../stable-keys';
-import { recencyScore, severityScore, noveltyScore, finalScore } from '../scoring';
+import { recencyScore, severityFromText, noveltyScore, finalScore } from '../scoring';
 import { parseRssItems } from './rss-util';
 
 /**
@@ -43,7 +43,7 @@ export async function discoverScams(deps: DiscoverDeps): Promise<Candidate[]> {
         const dedup = await deps.getDedup(key);
         const score = finalScore({
           recency: recencyScore(item.date.toISOString(), deps.now),
-          severity: severityScore({}),
+          severity: severityFromText(item.title),
           novelty: noveltyScore(dedup, deps.now),
           sourceWeight: 0.7,
         });

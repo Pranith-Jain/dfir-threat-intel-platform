@@ -1,13 +1,15 @@
 import type { Ai } from '@cloudflare/workers-types';
-import type { Candidate, Post, SocialContent, SocialCheck } from '../types';
+import type { Candidate, CaseStudyType, Post, SocialContent, SocialCheck } from '../types';
 import { runCompletion } from './ai-client';
 import {
-  VOICE_IDENTITY,
-  ANSWER_FIRST,
+  voiceIdentity,
+  answerFirst,
+  formatContract,
   GROUNDING_CONTRACT,
   PIPELINE_OUTPUT_GUARDRAIL,
-  FORMAT_CONTRACT,
+  type VoiceFamily,
 } from './copywriting';
+import { familyForType } from './templates';
 import { stripUntrustedUrls, findUngroundedCves } from '../../lib/ai-output-validator';
 import { slugify } from '../stable-keys';
 import type { ContentSlide } from '../social/slide-spec';
@@ -50,10 +52,10 @@ export type { SocialContent, SocialCheck };
  * dossier) rather than by a critic.
  */
 
-const SOCIAL_SYSTEM =
-  VOICE_IDENTITY +
+const SOCIAL_SYSTEM = (family: VoiceFamily): string =>
+  voiceIdentity(family) +
   '\n' +
-  ANSWER_FIRST +
+  answerFirst(family) +
   '\n' +
   // Social copy is derived from the same dossier as the article, so it obeys
   // the same grounding contract — otherwise a thread is exactly where an
@@ -63,7 +65,7 @@ const SOCIAL_SYSTEM =
   '\n' +
   PIPELINE_OUTPUT_GUARDRAIL +
   '\n' +
-  FORMAT_CONTRACT;
+  formatContract(family);
 
 export interface SocialSource {
   slug: string;
@@ -71,6 +73,8 @@ export interface SocialSource {
   body: string;
   hashtags?: string[];
   performanceNote?: string;
+  /** Content type — picks the voice family for the system prompt. */
+  type?: CaseStudyType;
   /** Live research dossier, when one is in hand (candidate preview paths). */
   dossier?: ResearchDossier;
   /** Persisted research facts from the published Post — the normal path,
@@ -319,6 +323,7 @@ function buildInstagramPrompt(src: SocialSource): string {
  */
 async function generateOne(
   ai: Ai,
+  system: string,
   userPrompt: string,
   platform: 'twitter' | 'linkedin' | 'instagram',
   sourceBody: string,
@@ -327,7 +332,7 @@ async function generateOne(
 ): Promise<{ text: string; check: SocialCheck }> {
   const result = await runCompletion(
     ai,
-    { system: SOCIAL_SYSTEM, user: userPrompt, temperature: 0.7, maxTokens },
+    { system, user: userPrompt, temperature: 0.7, maxTokens },
     { ...keys, quality: true, preferGroq: true }
   );
 
@@ -349,7 +354,7 @@ async function generateInstagramFromSource(
   keys: KeySet
 ): Promise<{ caption: string; check?: SocialCheck; slides: ContentSlide[] }> {
   const [captionRes, slides] = await Promise.all([
-    generateOne(ai, buildInstagramPrompt(src), 'instagram', src.body, keys, 1200).catch(() => ({
+    generateOne(ai, socialSystem(src), buildInstagramPrompt(src), 'instagram', src.body, keys, 1200).catch(() => ({
       text: '',
       check: undefined as SocialCheck | undefined,
     })),
@@ -360,12 +365,18 @@ async function generateInstagramFromSource(
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
+/** The social system prompt for this source's voice family. */
+function socialSystem(src: SocialSource): string {
+  return SOCIAL_SYSTEM(familyForType(src.type ?? 'intel'));
+}
+
 /** Convert a Post to a SocialSource. */
 function postToSource(post: Post): SocialSource {
   return {
     slug: post.slug,
     title: post.title,
     body: post.body,
+    type: post.type,
     hashtags: buildHashtags({ type: post.type, title: post.title, evidence: post.evidence ?? {} }),
     // Persisted at generation time — carries the exact affected versions,
     // CVE facts and timeline into the social prompts.
@@ -403,8 +414,8 @@ async function generateSocialFromSource(
   post?: Post
 ): Promise<SocialContent> {
   const [twitterRes, linkedinRes, igRes] = await Promise.allSettled([
-    generateOne(ai, buildTwitterPrompt(src), 'twitter', src.body, keys, 1500),
-    generateOne(ai, buildLinkedinPrompt(src), 'linkedin', src.body, keys, 2000),
+    generateOne(ai, socialSystem(src), buildTwitterPrompt(src), 'twitter', src.body, keys, 1500),
+    generateOne(ai, socialSystem(src), buildLinkedinPrompt(src), 'linkedin', src.body, keys, 2000),
     post
       ? generateInstagramFromSource(src, post, ai, keys)
       : Promise.resolve({ caption: '', slides: [] as ContentSlide[] }),
@@ -458,7 +469,8 @@ export async function generateTwitterContent(
   nvidiaKey?: string,
   infronKey?: string
 ): Promise<{ twitter: string; generatedAt: string; _validation?: { check: SocialCheck } }> {
-  const r = await generateOne(ai, buildTwitterPrompt(postToSource(post)), 'twitter', post.body, {
+  const src = postToSource(post);
+  const r = await generateOne(ai, socialSystem(src), buildTwitterPrompt(src), 'twitter', post.body, {
     groqKey,
     googleKey,
     nvidiaKey,
@@ -476,7 +488,8 @@ export async function generateLinkedinContent(
   nvidiaKey?: string,
   infronKey?: string
 ): Promise<{ linkedin: string; generatedAt: string; _validation?: { check: SocialCheck } }> {
-  const r = await generateOne(ai, buildLinkedinPrompt(postToSource(post)), 'linkedin', post.body, {
+  const src = postToSource(post);
+  const r = await generateOne(ai, socialSystem(src), buildLinkedinPrompt(src), 'linkedin', post.body, {
     groqKey,
     googleKey,
     nvidiaKey,
@@ -499,6 +512,7 @@ export async function generateSocialFromCandidate(
     slug,
     title: candidate.title,
     body: formatEvidenceText(candidate.evidence),
+    type: candidate.type,
     hashtags: buildHashtags({ type: candidate.type, title: candidate.title, evidence: candidate.evidence }),
   };
   return generateSocialFromSource(src, ai, now, { groqKey, googleKey, nvidiaKey, infronKey });
@@ -518,9 +532,10 @@ export async function generateTwitterFromCandidate(
     slug,
     title: candidate.title,
     body: formatEvidenceText(candidate.evidence),
+    type: candidate.type,
     hashtags: buildHashtags({ type: candidate.type, title: candidate.title, evidence: candidate.evidence }),
   };
-  const r = await generateOne(ai, buildTwitterPrompt(src), 'twitter', src.body, {
+  const r = await generateOne(ai, socialSystem(src), buildTwitterPrompt(src), 'twitter', src.body, {
     groqKey,
     googleKey,
     nvidiaKey,
@@ -543,9 +558,10 @@ export async function generateLinkedinFromCandidate(
     slug,
     title: candidate.title,
     body: formatEvidenceText(candidate.evidence),
+    type: candidate.type,
     hashtags: buildHashtags({ type: candidate.type, title: candidate.title, evidence: candidate.evidence }),
   };
-  const r = await generateOne(ai, buildLinkedinPrompt(src), 'linkedin', src.body, {
+  const r = await generateOne(ai, socialSystem(src), buildLinkedinPrompt(src), 'linkedin', src.body, {
     groqKey,
     googleKey,
     nvidiaKey,
@@ -575,7 +591,7 @@ export async function generateTwitterFromNotes(
   nvidiaKey?: string,
   infronKey?: string
 ): Promise<{ twitter: string; generatedAt: string; _validation?: { check: SocialCheck } }> {
-  const r = await generateOne(ai, buildTwitterPrompt(notes), 'twitter', notes.body, {
+  const r = await generateOne(ai, socialSystem(notes), buildTwitterPrompt(notes), 'twitter', notes.body, {
     groqKey,
     googleKey,
     nvidiaKey,
@@ -593,7 +609,7 @@ export async function generateLinkedinFromNotes(
   nvidiaKey?: string,
   infronKey?: string
 ): Promise<{ linkedin: string; generatedAt: string; _validation?: { check: SocialCheck } }> {
-  const r = await generateOne(ai, buildLinkedinPrompt(notes), 'linkedin', notes.body, {
+  const r = await generateOne(ai, socialSystem(notes), buildLinkedinPrompt(notes), 'linkedin', notes.body, {
     groqKey,
     googleKey,
     nvidiaKey,

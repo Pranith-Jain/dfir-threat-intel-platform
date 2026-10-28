@@ -42,6 +42,7 @@ const EMPTY_PLATFORM: PlatformFacts = {
   relatedCves: [],
   trendingCves: [],
   actors: [],
+  victimClaims: [],
 };
 
 /** Collect every candidate source URL, preserving order and dropping dupes. */
@@ -113,9 +114,12 @@ export async function researchCandidate(deps: ResearchDeps): Promise<ResearchDos
   // 2. Platform corpus.
   const keyword = topicKeyword(candidate.title);
   const self: SelfBinding | undefined = deps.self;
-  const platform = await enrichFromPlatform(self, { INTERNAL_TOKEN_SECRET: deps.internalTokenSecret }, keyword).catch(
-    () => EMPTY_PLATFORM
-  );
+  const platform = await enrichFromPlatform(
+    self,
+    { INTERNAL_TOKEN_SECRET: deps.internalTokenSecret },
+    keyword,
+    candidate.type
+  ).catch(() => EMPTY_PLATFORM);
 
   // 3. A page that failed is not a source. Keep only readable pages in the
   //    citable list, but record the failures so the writer does not "cite"

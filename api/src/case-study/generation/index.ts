@@ -182,6 +182,7 @@ export async function generatePost(deps: GeneratePostDeps): Promise<Post> {
     title: candidate.title,
     dossier,
     voiceProfile: deps.voiceProfile,
+    subtype: typeof candidate.evidence?.subtype === 'string' ? candidate.evidence.subtype : undefined,
     notes,
   });
 

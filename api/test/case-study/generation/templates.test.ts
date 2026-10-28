@@ -60,6 +60,7 @@ function makeDossier(overrides: Partial<ResearchDossier> = {}): ResearchDossier 
       relatedCves: [],
       trendingCves: [],
       actors: [],
+      victimClaims: [],
     },
     timeline: [{ date: '2026-08-05', event: 'Added to CISA KEV' }],
     indicators: [{ type: 'ipv4', values: [SYNTHETIC_IP], total: 1 }],
@@ -142,6 +143,70 @@ describe('buildPrompt — the dossier is the input', () => {
     }));
     const { user } = buildPrompt({ type: 'vulnfaq', title: 'Synthetic', dossier: makeDossier({ pages }) });
     expect(user.length).toBeLessThan(40_000);
+  });
+});
+
+describe('buildPrompt — voice family follows the material', () => {
+  it('keeps the identifiers-first lead for vulnerability topics', () => {
+    const { system } = buildPrompt({ type: 'cve', title: 'Synthetic', dossier: makeDossier() });
+    expect(system).toContain('the CVE id with its CVSS score');
+  });
+
+  it('leads underground pieces with the claim, not identifiers', () => {
+    const { system } = buildPrompt({ type: 'darkweb', title: 'Synthetic leak claim', dossier: makeDossier() });
+    expect(system).not.toContain('the CVE id with its CVSS score');
+    expect(system).toMatch(/which group, on what date/);
+    expect(system).toMatch(/A claim repeated without its specifics is/i);
+  });
+
+  it('leads adversary pieces with the campaign shape', () => {
+    const { system } = buildPrompt({ type: 'actor', title: 'Synthetic actor', dossier: makeDossier() });
+    expect(system).toMatch(/who is hitting whom, since when/);
+  });
+
+  it('leads craft pieces with the claim and its evidence', () => {
+    const { system } = buildPrompt({ type: 'trend', title: 'Synthetic trend', dossier: makeDossier() });
+    expect(system).toMatch(/the claim itself and the strongest evidence/);
+  });
+
+  it('keeps the shared discipline in every family', () => {
+    for (const type of ['cve', 'darkweb', 'actor', 'llm', 'trend'] as CaseStudyType[]) {
+      const { system } = buildPrompt({ type, title: 'Synthetic', dossier: makeDossier() });
+      expect(system).toMatch(/only source of facts/i);
+      expect(system).toMatch(/Do not restate the dossier/);
+    }
+  });
+});
+
+describe('buildPrompt — re-leak subtype', () => {
+  it('appends the re-leak beat for darkweb releak candidates', () => {
+    const { system } = buildPrompt({
+      type: 'darkweb',
+      title: 'Synthetic victim re-leaked across groups',
+      dossier: makeDossier(),
+      subtype: 'releak',
+    });
+    expect(system).toContain('<subtype name="re-leak">');
+    expect(system).toMatch(/was the original incident fully remediated/i);
+  });
+
+  it('does not append the re-leak beat to other types', () => {
+    const { system } = buildPrompt({ type: 'darkweb', title: 'Synthetic', dossier: makeDossier(), subtype: 'releak' });
+    expect(system).toContain('<subtype name="re-leak">');
+    const plain = buildPrompt({ type: 'cve', title: 'Synthetic', dossier: makeDossier(), subtype: 'releak' });
+    expect(plain.system).not.toContain('<subtype name="re-leak">');
+  });
+
+  it('cites listing sources for underground pieces when nothing could be read', () => {
+    const dossier = makeDossier({ pages: [], unread: [{ url: 'https://example.org/a', reason: 'timeout' }] });
+    const { user } = buildPrompt({ type: 'darkweb', title: 'Synthetic', dossier });
+    expect(user).toMatch(/leak sites, monitoring channels, trackers/i);
+  });
+
+  it('cites vendor advisories for vulnerability pieces when nothing could be read', () => {
+    const dossier = makeDossier({ pages: [], unread: [{ url: 'https://example.org/a', reason: 'timeout' }] });
+    const { user } = buildPrompt({ type: 'cve', title: 'Synthetic', dossier });
+    expect(user).toMatch(/NVD, CISA KEV, vendor advisory/);
   });
 });
 

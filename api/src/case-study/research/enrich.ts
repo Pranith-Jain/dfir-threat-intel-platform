@@ -50,8 +50,15 @@ export function findCveIds(type: unknown, title: string, evidence: Record<string
     }
   }
 
-  const blob = `${title}\n${JSON.stringify(evidence).slice(0, 8000)}`;
-  for (const m of blob.match(CVE_RE) ?? []) out.push(m.toUpperCase());
+  // Blob-scan only for vulnerability-shaped topics. For a leak or actor
+  // piece, a CVE id the source title mentions in passing is context, not
+  // this story — enriching it used to graft a CVE section onto the dossier
+  // and pull the whole piece toward advisory shape.
+  const isVulnType = typeof type === 'string' && /cve|vulnfaq|exploit/i.test(type);
+  if (isVulnType) {
+    const blob = `${title}\n${JSON.stringify(evidence).slice(0, 8000)}`;
+    for (const m of blob.match(CVE_RE) ?? []) out.push(m.toUpperCase());
+  }
 
   return [...new Set(out)].slice(0, MAX_CVES);
 }
@@ -216,6 +223,13 @@ export interface PlatformFacts {
   trendingCves: Array<{ id: string; rank: number; hypeScore: number }>;
   /** Tracked actors or campaigns matching the topic (MISP Galaxy index). */
   actors: Array<{ name: string; slug?: string; mitre?: string | null }>;
+  /**
+   * Cross-group victim claims (/api/v1/victim-releaks) matching the topic —
+   * the underground counterpart of `relatedCves`. Populated for leak-shaped
+   * topics only; including CVE rows in a leak dossier is how the old
+   * "(no CVE could be resolved for this topic)" dossier happened.
+   */
+  victimClaims: Array<{ victim: string; groups: string[]; latest?: string; sector?: string }>;
 }
 
 /** Minimal shape of the SELF service binding — matches `self-fetch.ts`. */
@@ -260,20 +274,30 @@ function matchesTopic(text: string, keyword: string): boolean {
 export async function enrichFromPlatform(
   self: Fetcher,
   env: { INTERNAL_TOKEN_SECRET?: string },
-  keyword: string
+  keyword: string,
+  type?: string
 ): Promise<PlatformFacts> {
-  const empty: PlatformFacts = { writeups: [], relatedCves: [], trendingCves: [], actors: [] };
+  const empty: PlatformFacts = { writeups: [], relatedCves: [], trendingCves: [], actors: [], victimClaims: [] };
   if (!self || !env.INTERNAL_TOKEN_SECRET || !keyword) return empty;
   const fetcher: SelfFetcher = self;
+
+  // Vulnerability-shaped topics get the CVE surfaces; everything else gets
+  // the leak/victim surface. Asking a leak topic what the platform's CVE
+  // corpus knows produced dossiers whose only "verified facts" line was
+  // "(no CVE could be resolved for this topic)".
+  const VULN_TYPES = new Set(['cve', 'vulnfaq', 'exploit']);
+  const isVuln = !type || VULN_TYPES.has(type);
 
   const q = encodeURIComponent(keyword);
   const paths = [
     // `/api/v1/writeups` has no keyword parameter — it returns the newest
     // pieces across all covered sources. Filter client-side below.
     '/api/v1/writeups',
-    `/api/v1/cve-recent?limit=60`,
-    `/api/v1/cve-trends?limit=10`,
+    ...(isVuln ? [`/api/v1/cve-recent?limit=60`, `/api/v1/cve-trends?limit=10`] : []),
     `/api/v1/misp-galaxy-actors?limit=5&q=${q}`,
+    // Cross-group victim claims: leak stories cite them like a vuln piece
+    // cites KEV. Rows carry raw_names + claiming groups.
+    ...(isVuln ? [] : [`/api/v1/victim-releaks`]),
   ];
 
   const settled = await Promise.all(paths.map((p) => selfFetchJson<unknown>(fetcher, p, env)));
@@ -295,40 +319,71 @@ export async function enrichFromPlatform(
     .map((w) => ({ title: w.title, url: w.url, summary: w.summary }))
     .slice(0, 5);
 
-  // Trending CVEs: the freshest hype signal available, used as a "this is
-  // what people are actually reading about" cross-check.
-  empty.trendingCves = asArray(byPath.get(paths[2] ?? ''))
-    .slice(0, 10)
-    .map((c) => ({
-      id: String(c.id ?? c.cve_id ?? ''),
-      rank: Number(c.rank ?? 0),
-      hypeScore: Number(c.hype_score ?? c.hypeScore ?? 0),
-    }))
-    .filter((c) => /^CVE-\d{4}-\d{4,7}$/.test(c.id))
-    .sort((a, b) => b.hypeScore - a.hypeScore);
+  // MISP actors: always fetched (attribution matters to every topic).
+  const actorPath = paths.find((p) => p.startsWith('/api/v1/misp-galaxy-actors'));
+  if (actorPath) {
+    empty.actors = asArray(byPath.get(actorPath))
+      .slice(0, 5)
+      .map((a) => ({
+        // MISP Galaxy names the canonical value field `value`; keep the old
+        // aliases so the mapper survives either shape.
+        name: String(a.value ?? a.name ?? a.actor ?? ''),
+        slug: typeof a.slug === 'string' ? a.slug : undefined,
+        mitre: typeof a.mitre_id === 'string' ? a.mitre_id : null,
+      }))
+      .filter((a) => a.name);
+  }
 
-  // cve-recent is a full recent dump — sort by CVSS and take the top slice as
-  // "what else is live right now", which gives the writer a sense of scale.
-  empty.relatedCves = asArray(byPath.get(paths[1] ?? ''))
-    .map((c) => ({
-      id: String(c.id ?? c.cve_id ?? ''),
-      score: typeof c.score === 'number' ? c.score : null,
-      severity: typeof c.severity === 'string' ? c.severity : undefined,
-    }))
-    .filter((c) => /^CVE-\d{4}-\d{4,7}$/.test(c.id))
-    .sort((a, b) => (b.score ?? -1) - (a.score ?? -1))
-    .slice(0, 8);
+  if (isVuln) {
+    const recentPath = paths.find((p) => p.startsWith('/api/v1/cve-recent'));
+    const trendsPath = paths.find((p) => p.startsWith('/api/v1/cve-trends'));
+    // Trending CVEs: the freshest hype signal available, used as a "this is
+    // what people are actually reading about" cross-check.
+    if (trendsPath) {
+      empty.trendingCves = asArray(byPath.get(trendsPath))
+        .slice(0, 10)
+        .map((c) => ({
+          id: String(c.id ?? c.cve_id ?? ''),
+          rank: Number(c.rank ?? 0),
+          hypeScore: Number(c.hype_score ?? c.hypeScore ?? 0),
+        }))
+        .filter((c) => /^CVE-\d{4}-\d{4,7}$/.test(c.id))
+        .sort((a, b) => b.hypeScore - a.hypeScore);
+    }
 
-  empty.actors = asArray(byPath.get(paths[3] ?? ''))
-    .slice(0, 5)
-    .map((a) => ({
-      // MISP Galaxy names the canonical value field `value`; keep the old
-      // aliases so the mapper survives either shape.
-      name: String(a.value ?? a.name ?? a.actor ?? ''),
-      slug: typeof a.slug === 'string' ? a.slug : undefined,
-      mitre: typeof a.mitre_id === 'string' ? a.mitre_id : null,
-    }))
-    .filter((a) => a.name);
+    // cve-recent is a full recent dump — sort by CVSS and take the top slice as
+    // "what else is live right now", which gives the writer a sense of scale.
+    if (recentPath) {
+      empty.relatedCves = asArray(byPath.get(recentPath))
+        .map((c) => ({
+          id: String(c.id ?? c.cve_id ?? ''),
+          score: typeof c.score === 'number' ? c.score : null,
+          severity: typeof c.severity === 'string' ? c.severity : undefined,
+        }))
+        .filter((c) => /^CVE-\d{4}-\d{4,7}$/.test(c.id))
+        .sort((a, b) => (b.score ?? -1) - (a.score ?? -1))
+        .slice(0, 8);
+    }
+  } else {
+    // Victim claims: keep only rows whose victim name matches the topic
+    // keyword (the endpoint lists all tracked re-leaks).
+    const releakPath = paths.find((p) => p.startsWith('/api/v1/victim-releaks'));
+    if (releakPath) {
+      empty.victimClaims = asArray(byPath.get(releakPath))
+        .map((r) => ({
+          victim: String(r.victim ?? r.key ?? r.raw_victim ?? ''),
+          groups: Array.isArray(r.groups)
+            ? r.groups.filter((g): g is string => typeof g === 'string')
+            : Array.isArray(r.raw_names)
+              ? r.raw_names.filter((n): n is string => typeof n === 'string').slice(0, 1)
+              : [],
+          latest: typeof r.latest === 'string' ? r.latest.slice(0, 10) : undefined,
+          sector: typeof r.sector === 'string' ? r.sector : undefined,
+        }))
+        .filter((v) => v.victim && matchesTopic(`${v.victim} ${v.groups.join(' ')}`, keyword))
+        .slice(0, 5);
+    }
+  }
 
   return empty;
 }

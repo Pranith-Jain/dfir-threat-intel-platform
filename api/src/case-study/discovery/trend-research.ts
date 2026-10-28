@@ -1,6 +1,6 @@
 import type { Candidate, DedupRecord, CaseStudyType } from '../types';
 import { topicKey } from '../stable-keys';
-import { severityScore, noveltyScore, finalScore } from '../scoring';
+import { severityFromText, noveltyScore, finalScore } from '../scoring';
 import { dayOfYear } from './rotation';
 import { selfFetchJson } from '../../lib/self-fetch';
 import { verifyUrls, type LinkStatus } from '../../lib/verify-url';
@@ -345,7 +345,18 @@ export async function discoverTrendResearch(deps: TrendResearchDeps): Promise<Ca
 
     const score = finalScore({
       recency: 1,
-      severity: severityScore({}),
+      // Severity follows the signal kind: a KEV addition is confirmed
+      // exploitation (the corpus picked it up because it landed in the
+      // catalog); an EPSS spike is a probability signal; a writeup is
+      // analysis of a live topic.
+      severity:
+        signal.kind === 'new-kev'
+          ? 1.0
+          : signal.kind === 'epss-spike'
+            ? // The spike doubled the baseline, so the probability itself is
+              // the severity signal: EPSS 5% -> ~0.6, 20% -> 0.65, 50%+ -> 0.8+.
+              Math.min(0.95, Math.max(0.55, 0.55 + (num(signal.facts.epss) ?? 0) * 0.5))
+            : severityFromText(signal.title),
       novelty: noveltyScore(dedup, now),
       sourceWeight: signal.weight,
     });

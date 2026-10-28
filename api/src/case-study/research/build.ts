@@ -25,6 +25,55 @@ export interface BuildDossierInput {
   now: Date;
 }
 
+/** Non-vulnerability topics whose facts are the discovery evidence itself. */
+const CLAIM_TYPES = new Set<CaseStudyType>(['darkweb', 'breach', 'malware', 'actor', 'intel', 'scam']);
+
+/** Structured claim field: what the evidence asserts, with its label. */
+export interface TopicClaim {
+  label: string;
+  value: string;
+}
+
+/**
+ * Pull the discovery evidence's own structured fields into a citable
+ * claims list.
+ *
+ * This is what replaces the old "(no CVE could be resolved for this topic)"
+ * placeholder in the dossier for non-vulnerability pieces: a re-leak's
+ * verified facts are the victim, the claiming groups, the sector and the
+ * dates — all of which sit in `evidence` — while a CVE block would be
+ * nothing but an apology.
+ */
+export function mineStructuredClaims(evidence: Record<string, unknown>): TopicClaim[] {
+  const out: TopicClaim[] = [];
+  const str = (v: unknown): string | null => {
+    const s = typeof v === 'string' ? v.trim() : typeof v === 'number' && Number.isFinite(v) ? String(v) : '';
+    return s ? s : null;
+  };
+  const push = (label: string, v: unknown): void => {
+    const s = str(v);
+    if (s) out.push({ label, value: s.slice(0, 400) });
+  };
+  push('Claimed victim', evidence.victim ?? evidence.victimName ?? evidence.entity ?? evidence.title_leak);
+  const groups = Array.isArray(evidence.groups)
+    ? evidence.groups.filter((g): g is string => typeof g === 'string')
+    : [];
+  if (groups.length) push('Groups making the claim', groups.join(', '));
+  if (typeof evidence.group_count === 'number' && evidence.group_count > 1)
+    push('Distinct groups claiming', String(evidence.group_count));
+  push('Sector', evidence.sector ?? evidence.industry);
+  push('Latest claim date', str(evidence.latest) ?? str(evidence.discovered));
+  push('Credential volume', str(evidence.totalCreds) ?? str(evidence.total_creds) ?? str(evidence.credentials));
+  push('Leak channel', evidence.channel ?? evidence.source_channel);
+  push('On offer', evidence.access ?? evidence.offering ?? evidence.price);
+  push('Reported accounts affected', str(evidence.PwnCount) ?? str(evidence.pwnCount));
+  push('Malware family', evidence.family);
+  push('Mentioned across surfaces', typeof evidence.mentions === 'number' ? String(evidence.mentions) : null);
+  push('Observations', typeof evidence.observationCount === 'number' ? String(evidence.observationCount) : null);
+  push('Published by', evidence.publisher);
+  return out.slice(0, 14);
+}
+
 const IPV4_RE = /\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d?\d)\b/g;
 const SHA256_RE = /\b[a-f0-9]{64}\b/gi;
 const DOMAIN_RE = /\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}\b/gi;
@@ -131,7 +180,12 @@ function mineEntities(evidence: Record<string, unknown>, cves: CveFacts[]): Rese
   return { vendors: clean(vendors), products: clean(products), actors: clean(actors), techniques: clean(techniques) };
 }
 
-function buildTimeline(cves: CveFacts[], pages: ExtractedPage[]): ResearchDossier['timeline'] {
+function buildTimeline(
+  type: CaseStudyType,
+  cves: CveFacts[],
+  pages: ExtractedPage[],
+  evidence: Record<string, unknown>
+): ResearchDossier['timeline'] {
   const events: Array<{ date: string; event: string }> = [];
   const push = (date: string | undefined, event: string) => {
     if (date && /^\d{4}-\d{2}/.test(date)) events.push({ date: date.slice(0, 10), event });
@@ -145,6 +199,23 @@ function buildTimeline(cves: CveFacts[], pages: ExtractedPage[]): ResearchDossie
     }
     if (c.pocCount && c.pocCount > 0)
       push(c.lastModified, `${c.pocCount} public exploit/PoC reference(s) recorded for ${c.id}`);
+  }
+  // Claim events: for underground pieces the timeline is the claims
+  // themselves (who listed whom, when), not CVE milestones.
+  const victim = typeof evidence.victim === 'string' ? evidence.victim : undefined;
+  if (type === 'darkweb' && victim && Array.isArray(evidence.claims)) {
+    for (const c of evidence.claims as Array<Record<string, unknown>>) {
+      if (typeof c.group === 'string' && typeof c.discovered === 'string')
+        push(c.discovered, `${c.group} claimed ${victim}`);
+    }
+  }
+  if (type === 'breach') {
+    push(
+      (typeof evidence.BreachDate === 'string' ? evidence.BreachDate : undefined) ??
+        (typeof evidence.breachDate === 'string' ? evidence.breachDate : undefined),
+      'Reported breach occurrence date'
+    );
+    push(typeof evidence.publishedAt === 'string' ? evidence.publishedAt : undefined, 'Disclosure published');
   }
   for (const p of pages) {
     if (p.ok && p.publishedAt) push(p.publishedAt, `${p.publisher} published "${p.title.slice(0, 120)}"`);
@@ -179,6 +250,7 @@ function buildGaps(
         : 'No source URL was available to read.';
     gaps.push(`${reason} Write only what the candidate evidence states, and never assert details it does not contain.`);
   }
+  // CVE-shaped gaps only apply when there are CVEs to shape.
   if (cves.length > 0 && cves.every((c) => !c.kev?.in_kev)) {
     gaps.push(
       'None of these CVEs is in the CISA KEV catalog: there is no confirmed in-the-wild exploitation and no federal deadline to cite.'
@@ -194,7 +266,29 @@ function buildGaps(
     gaps.push(
       `No public exploit or proof-of-concept was found for ${noPoc.map((c) => c.id).join(', ')}. Do not assert weaponisation.`
     );
-  if (platform.actors.length === 0)
+  // Underground pieces have their own honesty gap: the claim is the group's.
+  if (type === 'darkweb')
+    gaps.push(
+      'The victim list and claims come from the group itself; no independent confirmation is in this dossier. Carry the claim AS a claim everywhere you use it.'
+    );
+  if (type === 'breach')
+    gaps.push(
+      'The mechanism of the breach is often disputed after disclosure. Stick to what the disclosure and the reporting state, and mark the rest as unconfirmed.'
+    );
+  // Attribution matters where the piece discusses an actor; it is not a gap
+  // for a tool write-up or a methodology piece.
+  const attributionTypes = new Set<CaseStudyType>([
+    'cve',
+    'vulnfaq',
+    'exploit',
+    'news',
+    'intel',
+    'trend',
+    'supplychain',
+    'aisec',
+    'llm',
+  ]);
+  if (platform.actors.length === 0 && attributionTypes.has(type))
     gaps.push('No tracked actor is associated with this topic. Leave attribution open rather than guessing a group.');
   if (type === 'vulnfaq' || type === 'cve' || type === 'exploit') {
     gaps.push(
@@ -213,11 +307,13 @@ export function buildDossier(input: BuildDossierInput): ResearchDossier {
       : scrubString(title);
 
   return {
+    type,
     subject,
     cves,
     pages,
     platform,
-    timeline: buildTimeline(cves, pages),
+    claims: CLAIM_TYPES.has(type) ? mineStructuredClaims(evidence) : undefined,
+    timeline: buildTimeline(type, cves, pages, evidence),
     indicators: mineIndicators(evidence),
     entities: mineEntities(evidence, cves),
     gaps: buildGaps(type, cves, pages, platform, unread),

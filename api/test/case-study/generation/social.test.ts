@@ -66,7 +66,7 @@ const mockPostWithFacts: Post = {
         references: [`https://nvd.nist.gov/vuln/detail/${SYNTHETIC_CVE}`],
       },
     ],
-    platform: { writeups: [], relatedCves: [], trendingCves: [], actors: [] },
+    platform: { writeups: [], relatedCves: [], trendingCves: [], actors: [], victimClaims: [] },
     timeline: [{ date: '2026-08-05', event: 'Added to CISA KEV' }],
     indicators: [],
     entities: { vendors: ['examplecorp'], products: ['edge gateway'], actors: [], techniques: ['T1190'] },

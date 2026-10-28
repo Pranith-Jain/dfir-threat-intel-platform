@@ -1,6 +1,6 @@
 import type { Candidate, CaseStudyType } from '../types';
 import { topicKey } from '../stable-keys';
-import { recencyScore, severityScore, noveltyScore, finalScore } from '../scoring';
+import { recencyScore, severityFromText, noveltyScore, finalScore } from '../scoring';
 import { parseRssItems, isValidHttpUrl, type RssRunnerDeps } from './rss-util';
 import { dayOfYear } from './rotation';
 
@@ -111,7 +111,7 @@ export const discoverInfostealers = async (deps: DiscoverDeps): Promise<Candidat
           score: Number(
             finalScore({
               recency: recencyScore(item.date.toISOString(), deps.now),
-              severity: severityScore({}),
+              severity: severityFromText(item.title),
               novelty: noveltyScore(dedup, deps.now),
               // Hudson Rock publishes primary infostealer measurements;
               // the rest is vendor analysis of the same ecosystem.

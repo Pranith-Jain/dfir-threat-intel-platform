@@ -1,6 +1,6 @@
 import type { Candidate, DedupRecord } from '../types';
 import { topicKey } from '../stable-keys';
-import { recencyScore, severityScore, noveltyScore, finalScore } from '../scoring';
+import { recencyScore, severityFromText, noveltyScore, finalScore } from '../scoring';
 import { unwrapBingNewsLink } from '../../lib/rss-parser';
 
 /* ── RSS/Atom parser ────────────────────────────────────────────── */
@@ -107,7 +107,11 @@ export function createRssRunner(config: RssRunnerConfig) {
           const dedup = await deps.getDedup(key);
           const score = finalScore({
             recency: recencyScore(item.date.toISOString(), deps.now),
-            severity: severityScore({}),
+            // Severity from the headline itself: an RSS title that says
+            // "actively exploited" outranks a routine advisory. This is what
+            // broke the old "CVEs and leaks first" queue — every RSS item
+            // used to share the flat 0.3 severity floor.
+            severity: severityFromText(item.title),
             novelty: noveltyScore(dedup, deps.now),
             sourceWeight: config.sourceWeight,
           });

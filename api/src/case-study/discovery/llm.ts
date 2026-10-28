@@ -1,6 +1,6 @@
 import type { Candidate, CaseStudyType } from '../types';
 import { topicKey } from '../stable-keys';
-import { recencyScore, severityScore, noveltyScore, finalScore } from '../scoring';
+import { recencyScore, severityFromText, noveltyScore, finalScore } from '../scoring';
 import { parseRssItems, isValidHttpUrl, type RssRunnerDeps } from './rss-util';
 import { dayOfYear } from './rotation';
 
@@ -75,7 +75,7 @@ export const discoverLlmSec = async (deps: DiscoverDeps): Promise<Candidate[]> =
         const dedup = await deps.getDedup(key);
         const score = finalScore({
           recency: recencyScore(item.date.toISOString(), deps.now),
-          severity: severityScore({}),
+          severity: severityFromText(item.title),
           novelty: noveltyScore(dedup, deps.now),
           // Research desks and preprints are the primary sources for this
           // topic; arXiv in particular is where new attack classes appear

@@ -15,6 +15,13 @@ export interface SeverityInput {
   cvss?: number;
   kev?: boolean;
   victims?: number;
+  /**
+   * Distinct independent sources describing the same event (threat-pulse
+   * `source_count`, multi-outlet coverage). Scored on the same scale as
+   * `victims` — the semantic is identical ("how much independent signal is
+   * there"), the alias keeps call sites honest about what the number is.
+   */
+  mentions?: number;
 }
 
 /** A numeric input that is actually usable. `undefined` and `NaN` both mean
@@ -28,7 +35,69 @@ function finiteNumber(n: unknown): n is number {
 export function severityScore(input: SeverityInput): number {
   if (input.kev) return 1.0;
   if (finiteNumber(input.cvss)) return Math.min(1, Math.max(0, input.cvss / 10));
-  if (finiteNumber(input.victims)) return Math.min(1, Math.max(0, input.victims / 5));
+  const n = finiteNumber(input.victims) ? input.victims : input.mentions;
+  if (finiteNumber(n)) return Math.min(1, Math.max(0, n / 5));
+  return 0.3;
+}
+
+// ── Text-derived severity ────────────────────────────────────────────────
+
+/**
+ * Severity for candidates whose only signal is prose (RSS titles, advisories
+ * without a CVSS, underground claims).
+ *
+ * Before this existed every RSS-backed runner passed `severityScore({})` and
+ * got the flat 0.3 floor, while the CVE runner passed cvss/kev (-> 1.0) and
+ * the leak runners passed victim counts (-> 1.0). With severity weighted 0.30
+ * in the final score, that meant ONLY CVEs and leak rows could ever outrank
+ * the floor: a multi-outlet story about an actively exploited appliance lost
+ * to a CVSS 5 CVE that merely had a number attached. The queue read as
+ * "CVEs and leaks first, everything else filler" — which was true.
+ *
+ * The tiers encode the exploitation/impact ladder defenders actually triage
+ * by (CISA KEV > in-the-wild exploitation > ransomware/credential economy >
+ * critical/APT campaigns > patch noise). The highest matching tier wins;
+ * signals do not stack, because stacking rewards keyword-stuffed titles.
+ */
+const SEVERITY_TEXT_TIERS: Array<{ tier: number; re: RegExp }> = [
+  // 1.0 — confirmed exploitation. The strongest thing a headline can say.
+  { tier: 1.0, re: /\bactively exploit(ed|ing|ation)?\b/i },
+  { tier: 1.0, re: /\bexploited in the wild\b/i },
+  { tier: 1.0, re: /\bknown exploited vulnerab/i },
+  { tier: 1.0, re: /\bcisa (adds|added|lists|listed)\b/i },
+  // 0.9 — weaponisation and the criminal economy in motion.
+  { tier: 0.9, re: /\bzero-?day\b[\s\S]{0,80}\bexploit/i },
+  { tier: 0.9, re: /\bexploit\b[\s\S]{0,80}\bzero-?day\b/i },
+  { tier: 0.9, re: /\bransomware (attack|gang|group|operators?|campaign)\b/i },
+  { tier: 0.9, re: /\b(takedown|arrest(ed|s)?|charged|seized|seizes)\b/i },
+  { tier: 0.9, re: /\bsupply[- ]chain\b[\s\S]{0,80}\b(backdoor|compromise|implant)\b/i },
+  // 0.8 — data exposure and the credential economy.
+  {
+    tier: 0.8,
+    re: /\b\d[\d,.]*\+?\s*(million|billion)?\s*(records|rows|accounts|users|credentials|emails|victims)\b/i,
+  },
+  { tier: 0.8, re: /\b(leak(ed|ing|s)?)\b[\s\S]{0,60}\b\d[\d,.]*\b/i },
+  { tier: 0.8, re: /\bstolen (data|credentials|database)\b/i },
+  { tier: 0.8, re: /\baccess (broker|sales?|listing)\b/i },
+  { tier: 0.8, re: /\bdata (breach|exposure|dump)\b/i },
+  // 0.7 — critical severity and attributed campaigns.
+  { tier: 0.7, re: /\bcritical(ly)?\b/i },
+  { tier: 0.7, re: /\bAPT\b/ },
+  { tier: 0.7, re: /\bthreat (actor|group)s?\b/i },
+  { tier: 0.7, re: /\b(new|novel) (backdoor|implant|stealer|botnet|rat|loader)\b/i },
+  { tier: 0.7, re: /\battribut(e|es|ed|ing|ion)\b/i },
+  { tier: 0.7, re: /\bcve-\d{4}-\d{4,7}\b/i },
+  // 0.55 — routine security-reporting signals above the floor.
+  { tier: 0.55, re: /\b(malware|phishing|infostealer|stealer|botnet|ransomware)\b/i },
+  { tier: 0.55, re: /\b(patches?|patched|advisory|vulnerab|exploit)\b/i },
+];
+
+/** Highest matching tier, else the 0.3 "no structured signal" floor. */
+export function severityFromText(text: string): number {
+  if (!text) return 0.3;
+  for (const { tier, re } of SEVERITY_TEXT_TIERS) {
+    if (re.test(text)) return tier;
+  }
   return 0.3;
 }
 

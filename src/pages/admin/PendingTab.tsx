@@ -228,7 +228,21 @@ export default function PendingTab() {
                 {shown.map((c) => {
                   return (
                     <tr key={`${c.type}:${c.key}`} className="border-b border-line-1 align-top">
-                      <td className="py-2 pr-4 text-muted uppercase text-xs">{c.type}</td>
+                      <td className="py-2 pr-4 text-muted uppercase text-xs">
+                        {c.type}
+                        {(() => {
+                          const subtype = typeof c.evidence?.subtype === 'string' ? c.evidence.subtype : '';
+                          if (!subtype) return null;
+                          return (
+                            <span
+                              className="ml-1 inline-block rounded border border-line-1 px-1 py-px text-[10px] tracking-wide text-brand-600 dark:text-brand-400"
+                              title="Evidence subtype — gets a dedicated narrative beat when drafted"
+                            >
+                              {subtype}
+                            </span>
+                          );
+                        })()}
+                      </td>
                       <td className="py-2 pr-4 text-heading">{c.title}</td>
                       <td className="py-2 pr-4 text-body tabular-nums">{c.score.toFixed(2)}</td>
                       <td className="py-2 pr-4 text-muted max-w-md">{c.rationale}</td>

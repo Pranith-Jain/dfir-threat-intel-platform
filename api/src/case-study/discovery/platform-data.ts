@@ -26,7 +26,7 @@
 
 import type { Candidate, DedupRecord } from '../types';
 import { topicKey } from '../stable-keys';
-import { recencyScore, severityScore, noveltyScore, finalScore } from '../scoring';
+import { recencyScore, severityScore, noveltyScore, finalScore, finalScoreWithTrending } from '../scoring';
 
 export interface PlatformDataDeps {
   /** Fetch from the platform's own API endpoints (internal, no auth needed). */
@@ -198,11 +198,16 @@ export async function discoverFromTrendingIocs(deps: PlatformDataDeps): Promise<
       const key = topicKey('trending-ioc', `${iocType}-${ioc.indicator.slice(0, 20)}`);
       const dedup = await deps.getDedup(key);
 
-      const score = finalScore({
+      // `count` is the real trending signal (24h observation volume), so this
+      // runner is where the trending-aware scorer actually earns its keep:
+      // observation volume feeds BOTH severity (impact proxy) and trending
+      // (cross-source traction). 100+ observations in a day = maximum.
+      const score = finalScoreWithTrending({
         recency: recencyScore(lastSeen, deps.now),
         severity: severityScore({ victims: count / 10 }),
         novelty: noveltyScore(dedup, deps.now),
         sourceWeight: 0.8,
+        trending: Math.min(1, count / 100),
       });
 
       // Only surface high-activity IOCs
@@ -281,11 +286,16 @@ export async function discoverFromThreatPulse(deps: PlatformDataDeps): Promise<C
       const sources = entity.sources ?? [];
       const key = topicKey(kind === 'actor' ? 'pulse-actor' : 'pulse-malware', label.toLowerCase());
       const dedup = await deps.getDedup(key);
-      const score = finalScore({
+      // Mentions across independent intel surfaces are both the impact proxy
+      // (severity) and the traction signal (trending). The trending term is
+      // what makes an 8-source actor genuinely outrank a 3-source one even at
+      // equal recency — under the old flat scorer the two could tie.
+      const score = finalScoreWithTrending({
         recency: recencyScore(generatedAt, deps.now),
         severity: severityScore({ victims: mentions }),
         novelty: noveltyScore(dedup, deps.now),
         sourceWeight: 0.9,
+        trending: Math.min(1, mentions / 8),
       });
 
       if (score < 0.6) continue;

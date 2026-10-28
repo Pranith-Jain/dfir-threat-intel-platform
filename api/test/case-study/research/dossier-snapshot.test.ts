@@ -46,7 +46,7 @@ const dossier: ResearchDossier = {
       text: 'This excerpt text lives only in the live dossier, never the snapshot.',
     },
   ],
-  platform: { writeups: [], relatedCves: [], trendingCves: [], actors: [] },
+  platform: { writeups: [], relatedCves: [], trendingCves: [], actors: [], victimClaims: [] },
   timeline: [{ date: '2026-08-05', event: 'Added to CISA KEV' }],
   indicators: [{ type: 'ipv4', values: ['203.0.113.10'], total: 1 }],
   entities: { vendors: ['examplecorp'], products: ['edge gateway'], actors: [], techniques: ['T1190'] },
@@ -89,5 +89,42 @@ describe('renderFactsSnapshot', () => {
     const out = renderFactsSnapshot(snapshotDossier(dossier), { budget: 200 });
     expect(out.endsWith('[research snapshot truncated]')).toBe(true);
     expect(out.length).toBeLessThanOrEqual(200 + '\n[research snapshot truncated]'.length);
+  });
+});
+
+describe('renderFactsSnapshot — family-aware facts', () => {
+  const releakDossier: ResearchDossier = {
+    ...dossier,
+    type: 'darkweb',
+    cves: [],
+    claims: [
+      { label: 'Claimed victim', value: 'Example Medical Group' },
+      { label: 'Groups making the claim', value: 'ExampleGroupA, ExampleGroupB' },
+      { label: 'Distinct groups claiming', value: '2' },
+      { label: 'Sector', value: 'healthcare' },
+    ],
+  };
+
+  it('renders discovery claims as the verified facts for underground topics', () => {
+    const out = renderFactsSnapshot(snapshotDossier(releakDossier));
+    expect(out).toContain('=== VERIFIED FACTS (from the discovery evidence) ===');
+    expect(out).toContain('- Claimed victim: Example Medical Group');
+    expect(out).toContain('- Groups making the claim: ExampleGroupA, ExampleGroupB');
+  });
+
+  it('never shows the CVE-apology placeholder for underground topics', () => {
+    const out = renderFactsSnapshot(snapshotDossier(releakDossier));
+    expect(out).not.toContain('(no CVE could be resolved for this topic)');
+  });
+
+  it('keeps the CVE-led facts block for vulnerability topics', () => {
+    const out = renderFactsSnapshot(snapshotDossier({ ...dossier, type: 'cve' }));
+    expect(out).toContain('=== VERIFIED FACTS (authoritative: NVD, CISA KEV, FIRST EPSS, CISA ADP) ===');
+    expect(out).toContain(SYNTHETIC_CVE);
+  });
+
+  it('carries the type into the snapshot', () => {
+    expect(snapshotDossier(releakDossier).type).toBe('darkweb');
+    expect(snapshotDossier(releakDossier).claims?.length).toBe(4);
   });
 });

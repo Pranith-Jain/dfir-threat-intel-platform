@@ -24,15 +24,21 @@
  * and that anything not in sections 1-4 must not appear as fact.
  */
 
+import type { CaseStudyType } from '../types';
 import type { CveFacts, PlatformFacts } from './enrich';
 import type { ExtractedPage } from './extract';
+import type { TopicClaim } from './build';
 import { scrubString } from '../generation/scrub-prompt';
 
 export interface ResearchDossier {
+  /** The candidate type — decides whether facts lead with CVEs or claims. */
+  type?: CaseStudyType;
   /** One-line statement of what this piece is about. */
   subject: string;
   /** Authoritative, machine-sourced facts. */
   cves: CveFacts[];
+  /** Structured claims from the discovery evidence (non-vuln topics). */
+  claims?: TopicClaim[];
   /** Pages that were fetched and read. */
   pages: ExtractedPage[];
   /** The platform's own intel on the topic. */
@@ -57,6 +63,9 @@ export interface ResearchDossier {
 }
 
 // ── Rendering ────────────────────────────────────────────────────────────
+
+/** Types whose authoritative facts ARE vulnerability records. */
+const VULN_TYPES = new Set<CaseStudyType>(['cve', 'vulnfaq', 'exploit']);
 
 function renderCveBlock(c: CveFacts): string {
   const lines: string[] = [`### ${c.id}`];
@@ -109,16 +118,20 @@ function renderSources(pages: ExtractedPage[]): string {
     .join('\n\n');
 }
 
-function renderPlatform(platform: PlatformFacts): string {
+function renderPlatform(platform: PlatformFacts, type?: CaseStudyType): string {
   const lines: string[] = [];
-  if (platform.trendingCves.length) {
+  const isVuln = !type || VULN_TYPES.has(type);
+  // CVE surfaces (trending + related records) are noise for underground and
+  // adversary pieces — including them is how a leak dossier grew a CVE
+  // section. Only vulnerability pieces get them.
+  if (isVuln && platform.trendingCves.length) {
     lines.push(
       `Trending right now on social (cvemon): ${platform.trendingCves
         .map((c) => `${c.id} (rank ${c.rank}, hype ${c.hypeScore})`)
         .join('; ')}`
     );
   }
-  if (platform.relatedCves.length) {
+  if (isVuln && platform.relatedCves.length) {
     lines.push(
       `Other live CVEs on the platform: ${platform.relatedCves.map((c) => `${c.id}${c.score != null ? ` CVSS ${c.score}` : ''}`).join('; ')}`
     );
@@ -129,6 +142,11 @@ function renderPlatform(platform: PlatformFacts): string {
   if (platform.actors.length) {
     lines.push(
       `Tracked actors on this topic: ${platform.actors.map((a) => `${a.name}${a.mitre ? ` (${a.mitre})` : ''}`).join('; ')}`
+    );
+  }
+  if (platform.victimClaims?.length) {
+    lines.push(
+      `Cross-group claims in our corpus: ${platform.victimClaims.map((v) => `${v.victim} — ${v.groups.join(', ')}`).join('; ')}`
     );
   }
   return lines.length ? lines.join('\n') : '(nothing on this topic in the platform corpus)';
@@ -158,6 +176,39 @@ function renderEntities(entities: ResearchDossier['entities']): string {
   return parts.join('\n') || '(none)';
 }
 
+/**
+ * The facts section, shaped by the topic.
+ *
+ * - Vulnerability topics lead with NVD/KEV/EPSS records (their authoritative
+ *   facts ARE those records).
+ * - Underground and data-exposure topics lead with the discovery evidence's
+ *   own structured claims (victim, groups, counts, dates); CVE records, when
+ *   any were legitimately resolved, follow as a secondary block instead of a
+ *   placeholder telling the model "this piece has no facts".
+ *
+ * Accepts the minimal shape both the full dossier and the persisted snapshot
+ * carry — type, cves, claims — so the social path can reuse it.
+ */
+function renderFacts(s: Pick<ResearchDossier, 'type' | 'cves' | 'claims'>): { header: string; body: string } {
+  const isVuln = s.type ? VULN_TYPES.has(s.type) : s.cves.length > 0;
+  if (isVuln) {
+    return {
+      header: '=== VERIFIED FACTS (authoritative: NVD, CISA KEV, FIRST EPSS, CISA ADP) ===',
+      body: s.cves.length ? s.cves.map(renderCveBlock).join('\n\n') : '(no CVE could be resolved for this topic)',
+    };
+  }
+  const claims = s.claims ?? [];
+  if (claims.length === 0 && s.cves.length === 0)
+    return { header: '=== VERIFIED FACTS ===', body: '(no structured facts beyond the sources below)' };
+  const lines: string[] = [];
+  if (claims.length) lines.push(claims.map((c) => `- ${c.label}: ${c.value}`).join('\n'));
+  if (s.cves.length)
+    lines.push(
+      `Related vulnerability records (only cite these if the piece actually relies on them):\n${s.cves.map(renderCveBlock).join('\n\n')}`
+    );
+  return { header: '=== VERIFIED FACTS (from the discovery evidence) ===', body: lines.join('\n\n') };
+}
+
 export interface RenderDossierOptions {
   /** Extra cap on the rendered length. Keeps the prompt inside the window. */
   budget?: number;
@@ -173,8 +224,10 @@ export interface RenderDossierOptions {
  * structured data (no page excerpts), so it stays small in KV.
  */
 export interface DossierFactsSnapshot {
+  type?: CaseStudyType;
   subject: string;
   cves: CveFacts[];
+  claims?: TopicClaim[];
   platform: PlatformFacts;
   timeline: ResearchDossier['timeline'];
   indicators: ResearchDossier['indicators'];
@@ -185,8 +238,10 @@ export interface DossierFactsSnapshot {
 /** Reduce a full dossier to the persistable snapshot. */
 export function snapshotDossier(d: ResearchDossier): DossierFactsSnapshot {
   return {
+    type: d.type,
     subject: d.subject,
     cves: d.cves,
+    claims: d.claims,
     platform: d.platform,
     timeline: d.timeline,
     indicators: d.indicators,
@@ -202,14 +257,15 @@ export function snapshotDossier(d: ResearchDossier): DossierFactsSnapshot {
  */
 export function renderFactsSnapshot(s: DossierFactsSnapshot, opts: RenderDossierOptions = {}): string {
   const budget = opts.budget ?? 6_000;
+  const facts = renderFacts(s);
   const body = [
     `SUBJECT: ${scrubString(s.subject)}`,
     '',
-    '=== VERIFIED FACTS (authoritative: NVD, CISA KEV, FIRST EPSS, CISA ADP) ===',
-    s.cves.length ? s.cves.map(renderCveBlock).join('\n\n') : '(no CVE could be resolved for this topic)',
+    facts.header,
+    facts.body,
     '',
     '=== PLATFORM SIGNAL (what our own corpus already knows) ===',
-    renderPlatform(s.platform),
+    renderPlatform(s.platform, s.type),
     '',
     '=== DATED EVENTS ===',
     renderTimeline(s.timeline),
@@ -236,18 +292,19 @@ export function renderFactsSnapshot(s: DossierFactsSnapshot, opts: RenderDossier
  */
 export function renderDossier(d: ResearchDossier, opts: RenderDossierOptions = {}): string {
   const budget = opts.budget ?? 16_000;
+  const facts = renderFacts(d);
 
   const body = [
     `SUBJECT: ${scrubString(d.subject)}`,
     '',
-    '=== VERIFIED FACTS (authoritative: NVD, CISA KEV, FIRST EPSS, CISA ADP) ===',
-    d.cves.length ? d.cves.map(renderCveBlock).join('\n\n') : '(no CVE could be resolved for this topic)',
+    facts.header,
+    facts.body,
     '',
     '=== SOURCES READ (pages fetched during research) ===',
     renderSources(d.pages),
     '',
     '=== PLATFORM SIGNAL (what our own corpus already knows) ===',
-    renderPlatform(d.platform),
+    renderPlatform(d.platform, d.type),
     '',
     '=== DATED EVENTS ===',
     renderTimeline(d.timeline),
