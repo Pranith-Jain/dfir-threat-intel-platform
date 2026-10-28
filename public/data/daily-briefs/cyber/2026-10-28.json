@@ -1,0 +1,118 @@
+{
+  "type": "cyber",
+  "date": "2026-10-28",
+  "threatLevel": "",
+  "executiveSummary": "- Active campaigns and high-impact vulnerabilities elevate OT/ICS risk this week. U.S. government agencies warn of ongoing targeting of Siemens S7 PLCs via S7comm, with credible potential for process disruption across Water/Wastewater, Energy, and Manufacturing sectors. Security Advisory - CISA highlights multiple OT-adjacent exposures in weekly bulletins: publicly exploitable flaws in IIoT gateways (Advantech WISE-6610), Check Point VPN perimeters, and industrial messaging (Fast-DDS). These enable remote takeover or DoS of telemetry and control paths. CISA Bulletin - EPICS Base (≤7.0.10), widely used in industrial control/research environments, contains network-exploitable flaws allowing DoS, info disclosure, and potential RCE; update to 7.0.11 and isolate EPICS services. ICS Advisory - Embedded web server GoAhead (in routers, gateways, printers, and some ICS devices) has TLS/authentication weaknesses permitting revoked-cert logins and session decryption depending on TLS backends; upgrade to 6.1.1 and enforce strong TLS validation. View Article - Critical PHP RCEs (CVE-2026-109618/109619) are under mass exploitation and now KEV-listed; compromise of public portals at CI operators continues to provide initial access and web-shell footholds. Prioritize patching and web-tier containment. Security Advisory - ANSSI reports real impacts from attacks on exposed OT HMIs and industrial protocols in Energy and Water, including a wind farm shutdown; immediate exposure reduction and strong remote-access controls are advised. Government Advisory - Ransomware pressure remains elevated: a joint #StopRansomware advisory details SafePay's rapid intrusion playbook (VPN/edge exploits, RMM tools, LOTL), reinforcing the need for segmentation and immutable backups. Security Advisory - Nation-state activity persists: U.S. partners attribute data-theft operations against CI sectors to PRC-linked entities; defenders should harden edges, enforce MFA, and hunt for LOTL persistence. Security Advisory",
+  "keyFindings": [
+    {
+      "title": "Siemens S7 PLCs face active threat activity leveraging S7comm over TCP/102; imme",
+      "summary": "Siemens S7 PLCs face active threat activity leveraging S7comm over TCP/102; immediate inventory, patching, and PG/OP restriction are recommended. Security Advisory"
+    },
+    {
+      "title": "Advantech EKI-1242 industrial gateways expose unauthenticated command execution ",
+      "summary": "Advantech EKI-1242 industrial gateways expose unauthenticated command execution and unsigned firmware paths; isolate management ports and apply vendor fixes. CISA Bulletin"
+    },
+    {
+      "title": "EPICS Base ≤7.0.10 permits remote disruption and potential RCE; update to 7.0.11",
+      "summary": "EPICS Base ≤7.0.10 permits remote disruption and potential RCE; update to 7.0.11 and remove internet exposure of EPICS services. ICS Advisory"
+    },
+    {
+      "title": "GoAhead embedded server TLS/auth issues enable revoked-cert use and decryption r",
+      "summary": "GoAhead embedded server TLS/auth issues enable revoked-cert use and decryption risks; upgrade to 6.1.1 and enforce strict mTLS and cipher policies. View Article"
+    },
+    {
+      "title": "Critical PHP RCEs (CVE-2026-109618/109619) are widely exploited (\"php2shell\" cla",
+      "summary": "Critical PHP RCEs (CVE-2026-109618/109619) are widely exploited (\"php2shell\" class); prioritize patching and hunt for web shells on public portals. Security Advisory"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "34 8 Escalate 18 Monitor 8 Ignore",
+        "label": "Events This Brief"
+      },
+      {
+        "value": "6 PHP, Collabora, Arista VeloCloud, Adobe/Magento, Brotli, Windows 0-day",
+        "label": "Actively Exploited (KEV / Confirmed)"
+      },
+      {
+        "value": "Energy, Water/Wastewater, Manufacturing, Healthcare, Gov",
+        "label": "Sectors Impacted"
+      },
+      {
+        "value": "IT-to-OT pivots, Edge device exploits, Web RCE, Supply chain, AI-enabled ops",
+        "label": "Key Themes"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Siemens S7 PLCs (S7-200/300/400/1200/1500)",
+      "Advantech WISE-6610 IIoT gateways",
+      "EPICS Base",
+      "EmbedThis GoAhead (embedded web server)",
+      "Eclipse Arrowhead / Eclipse Ditto",
+      "PHP (multiple branches)",
+      "Collabora Online (CODE Server)",
+      "Arista VeloCloud Orchestrator",
+      "Fast-DDS (eProsima)",
+      "Check Point VPN/Quantum",
+      "Microsoft Windows (Shell SFB 0-day)"
+    ],
+    "sectors": [
+      "Water and Wastewater Systems; Energy (incl. renewables); Critical Manufacturing; Healthcare (clinical HIS/CLININET); Government and Education; Communications/Networking."
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "SafePay ransomware: rapid exploitation of VPN/edge devices, RMM tooling, and LOTL to exfiltrate and encrypt across CI sectors. Security Advisory",
+        "PRC-linked data-theft operations against multiple CI sectors using botnets, VPNs, and LOTL persistence. Security Advisory",
+        "Lazarus \"Operation FlashHole\": supply-chain and watering-hole intrusions via mandatory security clients; GitHub/Dropbox C2; potential comms infra supply-chain risk. View Article"
+      ]
+    }
+  ],
+  "relevance": "- The Siemens S7 advisory indicates current adversary attention on engineering and control interfaces. This, combined with IIoT gateway and EPICS weaknesses, materially raises the probability of disruptive actions if segmentation and access controls are weak. - Multiple edge/perimeter and web-tier KEV items (PHP, Collabora, Arista VeloCloud) increase initial-access opportunities into enterprise networks that often bridge to OT via vendor portals, jump hosts, or shared identities. - ANSSI's notification of real operational impacts in Energy/Water environments (e.g., wind farm shutdown) underscores the ongoing risk posed by exposed HMIs and unauthenticated industrial protocols.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "EPICS Base ≤7.0.10: network-triggered DoS/info leak/RCE; fix in 7.0.11. ICS Advisory",
+        "Advantech EKI-1242EIMS/IEIMS: unauth RCE/unsigned firmware/cleartext mgmt; block TCP 5058; patch. CISA Bulletin",
+        "GoAhead 3.4.5-6.1.0: TLS/auth flaws (revoked-cert acceptance; session decryption risk); upgrade 6.1.1. View Article",
+        "Eclipse Arrowhead/Ditto: management-path bypass, MQTT auth bypass, SSRF/policy injection on digital twins. CISA Bulletin",
+        "PHP CVE-2026-109618/109619: mass-exploited pre-auth RCE across common stacks. Security Advisory"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Initial Access: Exploit Public-Facing Application (T1190) - PHP RCE; Collabora/Arista orchestrator exploits; GoAhead TLS/auth weaknesses.",
+      "Valid Accounts (T1078) / Use of Default Credentials - industrial interfaces and VPNs; revoked-cert abuse in embedded stacks.",
+      "Command and Control: Web Services (T1102) - GitHub/Dropbox C2 (Lazarus); Encrypted Tunnels via VPN/botnets.",
+      "Lateral Movement: Remote Services (T1021), PsExec/WinRM (SafePay), RMM tools (AnyDesk/TeamViewer/ScreenConnect).",
+      "Impact: Inhibit System Recovery (T1490), Data Encrypted for Impact (T1486), and OT-specific process disruption via unauthorized PLC logic operations."
+    ],
+    "mitreIds": [
+      "T1190",
+      "T1078",
+      "T1102",
+      "T1021",
+      "T1490",
+      "T1486"
+    ]
+  },
+  "outlook72h": "Complete emergency reviews for internet-exposed OT assets (S7 PLCs, IIoT gateways, EPICS endpoints). Quarantine unknown exposure. Patch/virtually patch PHP and Collabora/CODE; deploy WAF signatures; initiate web-shell hunts on public sites. For GoAhead-based equipment, verify TLS backend behavior and revocation checks; rotate short-lived device certs. Harden VPN/SD-WAN orchestrators (Arista VeloCloud): patch, restrict exposure to VPN/allowlists, rotate tokens/creds. Simulate ransomware lateral movement paths; validate restore times and offline backup integrity for critical OT systems. ESCALATE Active Targeting of Siemens S7 PLCs ESCALATE Actors using AI-generated S7comm tooling to read/write on S7-200/300/400/1200/1500. Remove exposure, restrict PG/OP, baseline S7 traffic. Security Advisory Water/Wastewater Energy Manufacturing Advantech EKI-1242 Gateways: Multi-vector RCE/DoS ESCALATE Unauthenticated command execution (TCP 5058), unsigned firmware acceptance, OPC UA session DoS; isolate and patch. CISA Bulletin IIoT OPC UA Gateways EPICS Base ≤7.0.10 - Patch to 7.0.11 ESCALATE Network-exploitable DoS/info leak with potential RCE. Remove internet exposure; use OT DMZ and strict ACLs. ICS Advisory Research Manufacturing Embedded GoAhead TLS/Auth Weaknesses ESCALATE Revoked-cert acceptance and session decryption risks in embedded web stacks; upgrade 6.1.1; enforce strict mTLS. View Article Routers/Gateways Printers ICS devices Critical PHP RCE - Immediate Patching Required ESCALATE Mass exploitation (\"php2shell\"). Patch to fixed PHP branches, deploy WAF rules, and hunt for web shells on public portals. Security Advisory View Article Initial Access Web Shells Ongoing PRC-Linked CI Targeting ESCALATE Data-theft operations blending automated and hands-on TTPs; harden edges, enforce MFA, and hunt for LOTL persistence. Security Advisory Gov Healthcare Manufacturing #StopRansomware: SafePay ESCALATE Rapid intrusion via VPN/edge exploits, RMM tools, PsExec/WinRM; enforce MFA, contain RMM, and protect backups. Security Advisory Ransomware IT→OT Risk France: Attacks on Energy/Water OT Exposure ESCALATE Exposed HMIs/industrial protocols exploited; one wind farm reportedly shut down. Remove exposure, enforce VPN+MFA. Government Advisory Energy Water CI-Relevant Vulnerabilities Roundup ESCALATE Eclipse Arrowhead/Ditto, Checkmk mTLS trust, Erlang/httpd issues increase IIoT/management risk; prioritize patches and segmentation. CISA Bulletin IIoT Digital Twins MONITOR Collabora Online (CODE) - KEV Command Injection MONITOR Actively exploited OS command injection; inventory exposure, patch, and assess compromise. Security Advisory Arista VeloCloud Orchestrator - KEV SQLi MONITOR Confirmed exploitation of SD-WAN orchestrator; patch, restrict admin exposure, rotate tokens, and verify enrollments. Security Advisory SiteGuard Server Edition WAF - Exploited RCE MONITOR OS command injection via default statistics feature; collect diagnostics, patch/disable feature, and hunt for persistence. JPCERT Advisory boneIO Black (Building Automation) - Multiple RCE/No-Auth MONITOR Unauthenticated Node-RED/MQTT control and credential exposure; upgrade to 1.6.0; segment and secure OT VLANs. CERT Polska CGM CLININET (Hospital IS) - Multiple RCE/Auth Bypass MONITOR Root-level RCE via HL7/deserialization; patch to 2026.MS3; segment clinical networks from enterprise. CERT Polska Microsoft Authenticator (Android) - Token Theft MONITOR Fixed flaw allowing app impersonation to steal Graph tokens; enforce minimum versions, revoke sessions, monitor app consent. View Article Brotli (C impl) - OOB Write (CVE-2026-111497) MONITOR RCE/DoS risk in HTTP compression libraries (Node.js/Bun/PyPI). Inventory dependencies; patch; consider disabling \"br\". JPCERT Advisory Teams External Chat Impersonation → Ransomware MONITOR Rapid intrusions using external Teams chats + Quick Assist/RMM; restrict external chats and RMM tool use. View Article ANSSI/CERT-FR - PHP RCE Update MONITOR Multiple PHP RCEs incl. EoL branches; harden runtimes and migrate off unsupported versions. CERT-FR Advisory CISA KEV - PHP (109618/109619) MONITOR KEV-listed PHP RCEs; patch and verify compromise pre-patch per BOD 26-04. CISA KEV UNM Health - Operational Disruption (Ransomware) MONITOR Service outages and diversions reported; reinforce segmentation, IR runbooks, and backup strategy. View Article S7: Exposure Scanning & Recon Techniques MONITOR Honeypot-observed recon via HTTP headers; monitor anomalies; restrict admin portals; patch firewalls. SANS ISC Diary Starlink AdTech Targeting for Profiling/Delivery MONITOR Evidence of large-scale Starlink-targeted ad buys; harden remote endpoints, block trackers, segregate OT. View Article Operational Trend: AI-Accelerated Web Exploitation MONITOR Cloudflare and researchers warn of shrinking exploit windows; accelerate patching/WAF protections. View Article Microsoft Patch Cycle - Windows Shell 0-day MONITOR Large Patch Tuesday incl. in-the-wild Shell SFB; prioritize OT-adjacent Windows after staging tests. View Article CISA Weekly Vulnerability Summary (Infra) MONITOR Multiple NetScaler/Brocade/Tomcat/Qpid issues; patch internet-exposed appliances and logging/management planes. CISA Bulletin JPCERT: Surge in Unauthorized Access (Metabase SQLi) MONITOR Wide web/API abuse with concrete IOCs; patch, rate-limit, and lock down APIs; hunt for .war/.jsp shells. JPCERT Advisory IGNORE ISC2: Cyber-AI Workforce Coalition IGNORE Workforce initiative; no immediate threat intel or OT impact. View Article Kali Linux 2026.3 Feature Release IGNORE Tooling update; indirect risk only (wardriving/NFC); no active CI threats. View Article Magento Skimming Campaigns IGNORE E-commerce focus; monitor only if shared hosting intersects CI assets. View Article CleanShot X (macOS) Deserialization IGNORE Enterprise endpoint concern; low direct OT/ICS relevance. CERT Polska Policy/Opinion & Non-actionable Posts IGNORE General AI/cyber commentary and promos without IOCs/TTPs. NCSC",
+  "relatedCves": [
+    "CVE-2026-109618",
+    "CVE-2026-110447",
+    "CVE-2026-114625",
+    "CVE-2026-111497",
+    "CVE-2026-96951",
+    "CVE-2026-77052",
+    "CVE-2025-30043",
+    "CVE-2026-16477"
+  ]
+}
