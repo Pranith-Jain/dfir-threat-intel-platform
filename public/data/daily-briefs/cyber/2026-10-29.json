@@ -1,0 +1,88 @@
+{
+  "type": "cyber",
+  "date": "2026-10-29",
+  "threatLevel": "",
+  "executiveSummary": "Active targeting of Siemens S7 PLCs across multiple sectors (including Water/Wastewater) is confirmed; actors use automated scans and S7comm memory read/write to develop disruption capability. Immediate S7 hardening and segmentation are required. Security Advisory Volt Typhoon leveraged a covert \"Silent Train\" multi-hop access network and four zero-days against management/control-plane platforms (e.g., SD-WAN controllers) with impacts to U.S. critical infrastructure, including water and energy. Restrict and monitor management planes. View Article Widespread, actively exploited PHP RCEs (CVE-2026-109618/109619) enable webshell deployment on internet-facing portals (Drupal/WordPress/Joomla/Magento), raising pivot risk into CI environments. Patch or virtually patch immediately and hunt for webshells. View Article KEV Alert High-impact OT device issues: Advantech EKI-1242 industrial gateways with unauthenticated remote root and missing-auth critical functions; Danfoss iC7 drives expose unsigned update and debug paths. Isolate, block management ports, and plan urgent remediation. CISA Bulletin CISA Bulletin In-the-wild OS command injection in SiteGuard Server Edition (CVE-2026-106931) via a default-enabled feature enables root/SYSTEM takeover on perimeter servers, widely deployed in Japan. Disable statistics and update immediately. JPCERT Advisory Ransomware and state activity: SafePay ransomware is impacting hundreds of victims including CI; UNM Health experienced care disruption; U.S. multi-agency advisory highlights Chinese government-linked data theft using botnets and LOTL techniques. #StopRansomware View Article Advisory OT software maintenance: EPICS Base network parsing flaws and Mitsubishi/ICONICS DCOM misconfiguration issues warrant expedited patching and DCOM hardening for HMI/SCADA/historians. CISA ICS Advisory CISA ICS Advisory",
+  "keyFindings": [],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "",
+        "label": "Escalate-Level Events"
+      },
+      {
+        "value": "",
+        "label": "KEV Bulletins Referenced"
+      },
+      {
+        "value": "",
+        "label": "OT/ICS Targeted/Relevant Advisories"
+      },
+      {
+        "value": "",
+        "label": "Active Widespread Exploitation"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Siemens S7 PLCs; Advantech EKI-1242; Danfoss iC7 drives; EPICS Base; ICONICS/GENESIS/Hyper Historian; eProsima Fast DDS; Oracle E-Business Suite; SiteGuard Server Edition; VMware ESX; Linux kernel; Adobe Commerce/Magento; Google Brotli; Collabora Online/CODE; various PHP-based CMS (Drupal/WordPress/Joomla/Magento); SD-WAN/management-plane platforms (Versa, Cisco, Arista VeloCloud, N-able)."
+    ],
+    "sectors": [
+      "Water and Wastewater Systems; Energy; Manufacturing; Transportation; Healthcare; Government Services; Telecommunications; Higher Education/Research (EPICS)."
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [],
+  "relevance": "Direct OT impact: Siemens S7 PLC targeting; Advantech EKI-1242 gateways; Danfoss iC7 variable frequency drives; EPICS Base parsing flaws; ICONICS/Mitsubishi DCOM defaults; eProsima Fast DDS messaging risks. Security Advisory CISA Bulletin EPICS Advisory OT-adjacent/perimeter: Volt Typhoon control-plane exploits; SiteGuard RCE; Oracle E-Business Suite RCE probes; Collabora/CODE KEV; ESX/Linux KEVs (hypervisors, DMZ). View Article KEV Alert Enterprise-to-OT pivot vectors expanding via widespread PHP exploitation, ransomware activity, and management-plane abuse; strong IT/OT segmentation remains critical. #StopRansomware",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "EPICS Base ≤7.0.10 parsing flaws - DoS/memory disclosure/PCE; update to 7.0.11; isolate EPICS networks. CISA ICS Advisory",
+        "ICONICS/Mitsubishi GENESIS/Hyper Historian/DCOM defaults - over-broad DCOM permissions; patch to 10.98+, isolate legacy MC Works64. CISA ICS Advisory",
+        "Advantech EKI-1242(E)IMS - unauth RCE, missing-auth critical functions; block TCP 5058, segment, apply updates when available. CISA Bulletin",
+        "Danfoss iC7 drives - unsigned updates/debug interfaces allow code/firmware upload; segment, enforce secure updates. CISA Bulletin",
+        "eProsima Fast DDS - memory disclosure/DoS across industrial messaging stacks; upgrade and restrict DDS networks. CISA Bulletin",
+        "PHP RCE (CVE-2026-109618/109619) - active exploitation at scale; upgrade or virtually patch; hunt webshells. KEV View Article",
+        "SiteGuard Server Edition (CVE-2026-106931) - in-the-wild RCE via \"statistics\"; disable and update. JPCERT",
+        "Collabora Online/CODE (CVE-2026-110447) - OS command injection (KEV). KEV",
+        "VMware ESX (CVE-2026-41709) and Linux kernel (CVE-2026-46300) - active exploitation; patch, restrict mgmt interfaces. KEV",
+        "Adobe Commerce/Magento (CVE-2026-48356) and Google Brotli (CVE-2026-111497) - file upload / compression library exploit (KEV). KEV"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Exploit Public-Facing Application (ATT&CK T1190): PHP RCE; SiteGuard stats RCE; Oracle EBS SQLi; Collabora/CODE injection; SD-WAN/Orchestrator zero-days.",
+      "Valid Accounts / Credential Access (T1078/T1003): VPN/SSO abuse (SafePay); AD/Graph API abuse; credential theft following web compromise.",
+      "Command and Scripting Interpreter (T1059) and Web Shell (T1505.003): PHP webshells across portals; OS command injection on perimeters.",
+      "Tunneling/Exfiltration (T1572/T1041): Reverse SSH; chisel/frp tunnels; cloud storage exfil (RClone/OneDrive).",
+      "Living-off-the-Land (LOLBins): PsExec, WinRM, PowerShell, WMI for lateral movement and execution.",
+      "ICS ATT&CK: Inhibit Response Function and Manipulate Control (via S7comm writes; gateway/drive takeovers); Unauthorized Command Messages."
+    ],
+    "mitreIds": [
+      "T1190",
+      "T1078",
+      "T1003",
+      "T1059",
+      "T1505.003",
+      "T1572",
+      "T1041"
+    ]
+  },
+  "outlook72h": "Expect continued mass scanning/exploitation of PHP RCEs with rapid webshell deployment; virtual patching will remain essential until full patches propagate. Increased probing of SiteGuard statistics endpoints likely in JP networks; watch for anomalous child processes on webservers. Ongoing reconnaissance against SD-WAN/orchestrators as actors seek durable footholds; look for short-lived tunnels and SSH key drops on appliances. Heightened risk of IT-to-OT pivot attempts where OT gateways/drives remain reachable from enterprise subnets; tune OT IDS for S7comm write attempts and OPC/DDS anomalies. Ransomware operators will opportunistically weaponize new KEVs (ESX/Linux/Adobe/Magento); validate isolation of hypervisors and DMZ services.",
+  "relatedCves": [
+    "CVE-2026-109618",
+    "CVE-2026-106931",
+    "CVE-2026-110447",
+    "CVE-2026-41709",
+    "CVE-2026-46300",
+    "CVE-2026-48356",
+    "CVE-2026-111497",
+    "CVE-2026-101767",
+    "CVE-2026-77052",
+    "CVE-2026-107145",
+    "CVE-2026-105420"
+  ]
+}
