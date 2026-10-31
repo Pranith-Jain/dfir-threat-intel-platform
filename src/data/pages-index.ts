@@ -2214,6 +2214,15 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     keywords: ['entity', 'graph', 'topology', 'relationship', 'visualization', 'network'],
   },
   {
+    path: '/threatintel/ti-mindmap',
+    label: 'TI Mindmap',
+    description:
+      'LLM threat-report mindmaps - dossier, Mermaid mindmap, TTP timeline, and NAVIGATOR layer from a report URL or pasted text.',
+    sectionLabel: 'Threat Intel · Tools',
+    group: 'threatintel',
+    keywords: ['ti mindmap', 'mindmap', 'mermaid', 'ttp', 'dossier', 'navigator', 'attack layer'],
+  },
+  {
     path: '/threatintel/malpedia',
     label: 'Malpedia (alias)',
     description: 'Alias for the Malware Hub malpedia view.',
@@ -3618,6 +3627,14 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     description: 'C2 infrastructure tracker.',
     sectionLabel: 'Threat Intel · IOCs',
     group: 'threatintel',
+  },
+  {
+    path: '/threatintel/iocs/c2-playbooks',
+    label: 'C2 Playbooks',
+    description: 'MANTIS hunting query catalog - 1,029 queries across 9 engines, favicon MMH3 and JARM fingerprints.',
+    sectionLabel: 'Threat Intel · IOCs',
+    group: 'threatintel',
+    keywords: ['c2', 'mantis', 'hunting', 'favicon', 'jarm', 'shodan', 'netlas', 'censys', 'urlscan'],
   },
   {
     path: '/threatintel/iocs/map',

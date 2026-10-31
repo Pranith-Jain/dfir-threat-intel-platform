@@ -95,6 +95,7 @@ const ROUTES = [
   '/threatintel/infra/infra',
   '/threatintel/infra/webamon',
   '/threatintel/iocs/c2',
+  '/threatintel/iocs/c2-playbooks',
   '/threatintel/iocs/correlation',
   '/threatintel/iocs/enrichment',
   '/threatintel/iocs/entity',

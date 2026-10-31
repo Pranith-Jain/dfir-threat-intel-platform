@@ -103,6 +103,7 @@ export const RAW_COLORS_BASELINE = [
   "src/pages/threatintel/AiHoneypotObservatory.tsx",
   "src/pages/threatintel/AssessmentDetail.tsx",
   "src/pages/threatintel/BreachForums.tsx",
+  "src/pages/threatintel/C2Playbooks.tsx",
   "src/pages/threatintel/Catalog.tsx",
   "src/pages/threatintel/CertInAdvisories.tsx",
   "src/pages/threatintel/CisaKevCatalog.tsx",

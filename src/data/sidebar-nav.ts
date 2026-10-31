@@ -24,6 +24,7 @@ import {
   Cloud,
   Code as CodeIcon,
   Compass,
+  Crosshair,
   Database,
   ExternalLink,
   Eye,
@@ -144,6 +145,7 @@ const PAGE_ICON_OVERRIDES: Record<string, LucideIcon> = {
   '/threatintel/iocs/feeds': Rss,
   '/threatintel/iocs/entity': Layers,
   '/threatintel/iocs/c2': Wifi,
+  '/threatintel/iocs/c2-playbooks': Crosshair,
   '/threatintel/iocs/map': Map,
   '/threatintel/iocs/correlation': Share2,
   // CVEs

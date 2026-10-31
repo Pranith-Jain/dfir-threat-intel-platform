@@ -1,0 +1,127 @@
+name: GenIOC + C2 playbook sync (weekly)
+
+# Rebuilds the two build-time manifests that snapshot third-party catalogs:
+#   public/data/genioc/       (scripts/build-genioc-manifest.mjs — Gen Threat Labs
+#                              IOC repo, gendigitalinc/ioc)
+#   public/data/c2-playbooks/ (scripts/build-c2-playbooks.mjs — MANTIS C2
+#                              hunting catalog, fareedfauzi/MANTIS, MIT)
+# Both sources change slowly, so weekly is enough; manifests are committed so
+# plain `npm run build` never needs network access to these repos.
+# Runs 06:00 UTC Monday (outside the weekday 04:00–08:30 sync cluster).
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch: {}
+
+concurrency:
+  group: genioc-c2-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        run: npm ci --no-fund || npm install --no-fund
+
+      - name: Rebuild manifests
+        run: |
+          node scripts/build-genioc-manifest.mjs
+          node scripts/build-c2-playbooks.mjs
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git add public/data/genioc public/data/c2-playbooks
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No manifest changes — skipping deploy."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit to main
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          # Auto/data commits: skip husky/lint-staged (prettier reformats the
+          # generated files back to HEAD, making the commit empty and aborting
+          # the run — same fix as daily-briefs-sync.yml / webamon-dtb-sync.yml).
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --cached --quiet HEAD; then
+            echo "Nothing to commit after all."
+          else
+            git commit --no-verify -m "chore(data): genioc + c2 playbook sync $(date -u +%Y-%m-%d)"
+            # Push may race with other auto-syncs pushing to main — rebase and
+            # retry instead of failing the run on a stale ref.
+            for attempt in 1 2 3; do
+              if git push origin main 2>/dev/null; then
+                echo "Push succeeded (attempt $attempt)."
+                exit 0
+              fi
+              echo "Push rejected (attempt $attempt) — rebasing onto origin/main and retrying."
+              git pull --rebase origin main || git rebase --abort
+            done
+            echo "::error::push failed after 3 attempts"
+            exit 1
+          fi
+
+      # ── Deploy (only when manifests changed) ────────────────────────
+      - name: Typecheck
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          npx tsc --noEmit -p tsconfig.json
+          npx tsc --noEmit -p api/tsconfig.json
+          npx tsc --noEmit -p api/tsconfig.worker.json
+
+      - name: Build
+        if: steps.changes.outputs.changed == 'true'
+        run: npm run build
+
+      - name: Budget check
+        if: steps.changes.outputs.changed == 'true'
+        run: node scripts/check-budgets.mjs
+
+      # Why a guard instead of more `!= ''` skips: when this repo secret was
+      # missing, every deploy step below skipped silently for days while main
+      # raced ahead with fresh syncs, and the run stayed green - the live site
+      # kept serving stale feeds with nothing in Actions marking why. A missing
+      # token is a config error; make the run red instead of quietly stale.
+      - name: Require CLOUDFLARE_API_TOKEN for deploy
+        if: steps.changes.outputs.changed == 'true' && env.CLOUDFLARE_API_TOKEN == ''
+        run: |
+          echo "::error title=Missing repo secret::CLOUDFLARE_API_TOKEN is not set - deploy steps would skip silently and the live site keeps serving stale feeds while main races ahead."
+          echo "Fix: create a Cloudflare API token (Account Resources: Workers Scripts - Edit; User: Memberships + Details - Read) and set the repo secret:"
+          echo "  gh secret set CLOUDFLARE_API_TOKEN --repo $GITHUB_REPOSITORY"
+          echo "This data run still landed in main; only the deploy was blocked."
+          exit 1
+
+      - name: Deploy to Cloudflare Workers
+        if: steps.changes.outputs.changed == 'true' && env.CLOUDFLARE_API_TOKEN != ''
+        run: npx wrangler deploy
+
+      - name: Smoke test
+        if: steps.changes.outputs.changed == 'true' && env.CLOUDFLARE_API_TOKEN != ''
+        run: |
+          sleep 8
+          code=$(curl -s -o /dev/null -w "%{http_code}" "https://pranithjain.qzz.io/data/genioc/index.json")
+          echo "genioc/index.json -> HTTP $code"
+          test "$code" = "200" || { echo "::error::genioc/index.json returned HTTP $code"; exit 1; }
