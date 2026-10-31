@@ -3620,6 +3620,14 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     group: 'threatintel',
   },
   {
+    path: '/threatintel/iocs/c2-playbooks',
+    label: 'C2 Playbooks',
+    description: 'MANTIS hunting query catalog - 1,029 queries across 9 engines, favicon MMH3 and JARM fingerprints.',
+    sectionLabel: 'Threat Intel · IOCs',
+    group: 'threatintel',
+    keywords: ['c2', 'mantis', 'hunting', 'favicon', 'jarm', 'shodan', 'netlas', 'censys', 'urlscan'],
+  },
+  {
     path: '/threatintel/iocs/map',
     label: 'Threat Map',
     description: 'Geo-visualization of IOCs by country.',

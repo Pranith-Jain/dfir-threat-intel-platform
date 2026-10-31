@@ -206,6 +206,7 @@ const AttackFlowLibrary = lazy(() => import('./pages/threatintel/AttackFlowLibra
 const Attribution = lazy(() => import('./pages/threatintel/AttributionFramework'));
 const AwesomeLists = lazy(() => import('./pages/dfir/AwesomeLists'));
 const C2Tracker = lazy(() => import('./pages/threatintel/C2Tracker'));
+const C2Playbooks = lazy(() => import('./pages/threatintel/C2Playbooks'));
 const CertStreamLive = lazy(() => import('./pages/threatintel/CertStreamLive'));
 const CloudThreatLandscape = lazy(() => import('./pages/threatintel/CloudThreatLandscape'));
 const Copilot = lazy(() => import('./pages/threatintel/Copilot'));
@@ -632,6 +633,7 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/iocs/feeds', Component: IocFeedsPage },
   { path: '/threatintel/iocs/entity', Component: EntityResolution },
   { path: '/threatintel/iocs/c2', Component: C2Tracker },
+  { path: '/threatintel/iocs/c2-playbooks', Component: C2Playbooks },
   { path: '/threatintel/iocs/map', Component: ThreatMap },
   { path: '/threatintel/iocs/correlation', Component: IocCorrelation },
   { path: '/threatintel/wiki/wiki', Component: Wiki },
