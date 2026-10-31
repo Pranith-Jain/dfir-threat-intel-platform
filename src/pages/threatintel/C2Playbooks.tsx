@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Check, Copy, ExternalLink, Fingerprint, Radar, Search } from 'lucide-react';
+import { Check, Copy, ExternalLink, Fingerprint, Lock, Radar, Search, Telescope } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { sanitizeUrl } from '../../lib/sanitize-url';
-import { fetchJsonCached } from '../../lib/api-client';
+import { fetchJsonCached, api } from '../../lib/api-client';
 
 // ─── Manifest shapes (public/data/c2-playbooks/, build-time snapshot) ───
 
@@ -81,6 +81,45 @@ interface FpResult {
   families: string[];
 }
 
+// ─── Seed hunt planner (GET /api/v1/mantis-hunt/preview) ────────────────────
+
+interface HuntFeatureRow {
+  kind: string;
+  value: string;
+  weight: number;
+}
+
+interface HuntQuery {
+  provider: string;
+  query: string;
+  mode: string;
+  external_url: string;
+  estimated_strength: number;
+  signals: { kind: string; value: string }[];
+  notes?: string;
+}
+
+interface HuntSignature {
+  slug: string;
+  name: string;
+  family: string;
+  description: string;
+  false_positive_notes: string;
+  matched_evidence: { kind: string; value: string }[];
+}
+
+interface HuntPlan {
+  seed: string;
+  seedKind: 'ip' | 'domain';
+  generatedAt: string;
+  features: { count: number; ranked: HuntFeatureRow[] };
+  queries: HuntQuery[];
+  signatures: HuntSignature[];
+  readiness: { provider: string; label: string; keyEnv: string | null; available: boolean }[];
+  notes: string;
+  cached?: boolean;
+}
+
 export default function C2Playbooks() {
   const [index, setIndex] = useState<C2PlaybooksIndex | null>(null);
   const [entries, setEntries] = useState<C2PlaybookEntry[]>([]);
@@ -95,6 +134,31 @@ export default function C2Playbooks() {
   // Fingerprint checker state
   const [fpInput, setFpInput] = useState('');
   const [fpResult, setFpResult] = useState<FpResult | null>(null);
+
+  // Seed hunt planner state
+  const [huntSeed, setHuntSeed] = useState('');
+  const [huntPlan, setHuntPlan] = useState<HuntPlan | null>(null);
+  const [huntLoading, setHuntLoading] = useState(false);
+  const [huntError, setHuntError] = useState<string | null>(null);
+
+  const runHuntPlan = (raw: string) => {
+    const seed = raw.trim();
+    if (!seed || huntLoading) return;
+    setHuntSeed(seed);
+    setHuntLoading(true);
+    setHuntError(null);
+    api
+      .get<HuntPlan>(`/api/v1/mantis-hunt/preview?seed=${encodeURIComponent(seed)}`, { timeoutMs: 45_000 })
+      .then((plan) => {
+        setHuntPlan(plan);
+        setHuntLoading(false);
+      })
+      .catch((e) => {
+        setHuntError(String(e instanceof Error ? e.message : e));
+        setHuntPlan(null);
+        setHuntLoading(false);
+      });
+  };
 
   useEffect(() => {
     let alive = true;
@@ -345,6 +409,135 @@ export default function C2Playbooks() {
             )}
           </section>
 
+          {/* Seed hunt planner (MANTIS infra-hunt planner port, keyless upstreams) */}
+          <section className="surface-card p-4">
+            <h2 className="font-display font-bold text-lg flex items-center gap-2">
+              <Telescope size={17} className="text-rose-600 dark:text-rose-400" /> Seed hunt planner
+            </h2>
+            <p className="text-xs text-muted mt-1">
+              Paste an IP or domain and get a ready-to-run engine query plan: crt.sh + RIPEstat seed intel (no keys
+              needed) feeds the MANTIS infra-hunt planner, which composes per-engine compound queries with launch links.
+            </p>
+            <div className="flex flex-wrap gap-2 mt-3">
+              <input
+                type="text"
+                value={huntSeed}
+                onChange={(e) => setHuntSeed(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') runHuntPlan(huntSeed);
+                }}
+                placeholder="185.216.35.17 or c2.example-domain.com"
+                className="flex-1 min-w-[240px] font-mono text-sm px-3 py-2 rounded border border-line-2 bg-surface-200 text-heading placeholder:text-muted focus:outline-none focus:border-rose-500/50"
+              />
+              <button
+                type="button"
+                onClick={() => runHuntPlan(huntSeed)}
+                disabled={huntLoading || !huntSeed.trim()}
+                className="text-xs font-mono px-3 py-2 rounded border border-rose-500/60 bg-rose-500/15 text-rose-700 dark:text-rose-300 disabled:opacity-40"
+              >
+                {huntLoading ? 'planning...' : 'plan hunt'}
+              </button>
+            </div>
+            {huntError && <p className="text-sm font-mono text-rose-600 dark:text-rose-400 mt-3">{huntError}</p>}
+            {huntPlan && (
+              <div className="mt-4 space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-micro font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border bg-brand-500/15 text-brand-700 dark:text-brand-300 border-brand-500/30">
+                    {huntPlan.seedKind} seed
+                  </span>
+                  <span className="text-micro font-mono text-muted">
+                    {huntPlan.features.count} signals · {huntPlan.queries.length} engine queries ·{' '}
+                    {huntPlan.signatures.length} signature matches{huntPlan.cached ? ' · cached' : ''} ·{' '}
+                    {huntPlan.generatedAt.slice(0, 10)}
+                  </span>
+                </div>
+
+                {/* Ranked seed signals */}
+                <div className="flex flex-wrap gap-1.5">
+                  {huntPlan.features.ranked.slice(0, 10).map((f, i) => (
+                    <span
+                      key={`${f.kind}:${f.value}:${i}`}
+                      className="text-micro font-mono px-1.5 py-0.5 rounded border bg-slate-500/10 text-muted border-slate-500/30"
+                      title={`weight ${f.weight}`}
+                    >
+                      {f.kind}
+                      <span className="opacity-70">
+                        :{f.value.length > 34 ? `${f.value.slice(0, 34)}...` : f.value}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+
+                {/* Signature pack matches */}
+                {huntPlan.signatures.map((sig) => (
+                  <div key={sig.slug} className="rounded border border-rose-500/30 bg-rose-500/10 p-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-micro font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30">
+                        {sig.family}
+                      </span>
+                      <span className="text-sm text-heading">{sig.name}</span>
+                    </div>
+                    <p className="text-xs text-muted mt-1">
+                      {sig.description} - matched:{' '}
+                      {sig.matched_evidence.map((ev) => `${ev.kind}=${ev.value}`).join(', ')}
+                    </p>
+                    <p className="text-micro font-mono text-muted mt-1">{sig.false_positive_notes}</p>
+                  </div>
+                ))}
+
+                {/* Composed engine queries */}
+                <div className="grid gap-2">
+                  {huntPlan.queries.map((q, i) => {
+                    const readiness = huntPlan.readiness.find((r) => r.provider === q.provider);
+                    return (
+                      <div key={`${q.provider}:${i}`} className="rounded border border-line-1 bg-surface-200 p-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className={`text-micro font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border ${ENGINE_COLORS[q.provider] ?? 'bg-slate-500/15 text-muted border-slate-500/30'}`}
+                          >
+                            {q.provider}
+                          </span>
+                          <span className="text-micro font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border bg-slate-500/15 text-muted border-slate-500/30">
+                            {q.mode}
+                          </span>
+                          {readiness?.available ? (
+                            <span className="text-micro font-mono px-1.5 py-0.5 rounded border bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30">
+                              key ready
+                            </span>
+                          ) : (
+                            <span className="text-micro font-mono px-1.5 py-0.5 rounded border bg-slate-500/10 text-muted border-slate-500/30 inline-flex items-center gap-1">
+                              <Lock size={9} />
+                              {readiness?.keyEnv ? `needs ${readiness.keyEnv}` : 'no key binding'}
+                            </span>
+                          )}
+                          <span className="text-micro font-mono text-muted ml-auto">
+                            strength {q.estimated_strength}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <code className="font-mono text-xs text-muted flex-1 break-all">{q.query}</code>
+                          <CopyQueryButton query={q.query} />
+                        </div>
+                        {q.notes && <p className="text-micro font-mono text-muted mt-1">{q.notes}</p>}
+                        {sanitizeUrl(q.external_url) && (
+                          <a
+                            href={sanitizeUrl(q.external_url)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-micro font-mono text-rose-600 dark:text-rose-400 hover:underline inline-flex items-center gap-1 mt-1.5"
+                          >
+                            run on {q.provider} <ExternalLink size={10} />
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-micro font-mono text-muted">{huntPlan.notes}</p>
+              </div>
+            )}
+          </section>
+
           {/* Results */}
           <section className="surface-card p-4">
             <div className="flex flex-wrap items-baseline justify-between gap-3 mb-3">
@@ -437,9 +630,10 @@ export default function C2Playbooks() {
 
           <section className="surface-card p-4">
             <p className="text-xs font-mono text-muted">
-              Source: MANTIS c2_hunting_catalog.py ({index.license}) - ported to a build-time manifest by
-              scripts/build-c2-playbooks.mjs. The live API surface is
-              <code className="mx-1">/api/v1/c2-playbooks/entries</code>when the Worker serves dynamic queries.
+              Source: MANTIS c2_hunting_catalog.py + infra_hunt_service.py ({index.license}) - ported to a build-time
+              manifest by scripts/build-c2-playbooks.mjs. The catalog API lives at
+              <code className="mx-1">/api/v1/c2-playbooks/entries</code>; the seed hunt planner runs at
+              <code className="mx-1">/api/v1/mantis-hunt/preview?seed=</code>(keyless crt.sh + RIPEstat upstreams).
             </p>
           </section>
         </div>

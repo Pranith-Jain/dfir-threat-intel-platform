@@ -80,6 +80,9 @@ by the weekly `genioc-c2-sync` workflow: the C2 playbook catalog (above) is port
 `npm run build:c2-playbooks`), and the malware IOC manifest from
 [Gen Threat Labs](https://github.com/gendigitalinc/ioc) (IOCs published by Gen contributors, per that
 repo's readme, via `npm run build:genioc`). API surfaces: `/api/v1/genioc/**` and `/api/v1/c2-playbooks/**`.
+MANTIS's infrastructure-hunt planner is also ported (`api/src/lib/mantis-infra-hunt.ts`, pinned to upstream
+golden outputs): `GET /api/v1/mantis-hunt/preview?seed=<ip|domain>` turns a seed into ranked signals, per-engine
+compound queries with launch links, and C2 signature matches using keyless crt.sh + RIPEstat seed intel.
 
 ---
 
@@ -116,13 +119,13 @@ A 426-tool MCP (Model Context Protocol) server runs on the same Worker, exposing
 | Layer           | Choice                                                                                                               |
 | --------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Frontend        | React 19 + Vite + TypeScript + Tailwind                                                                              |
-| Routing         | React Router v7, lazy-loaded (300 route components)                                                                  |
+| Routing         | React Router v7, lazy-loaded (301 route components)                                                                  |
 | SSR             | Prerendered routes for instant first paint                                                                           |
 | Backend         | Cloudflare Workers + Hono                                                                                            |
 | Storage         | KV (briefings, dedup, rate-limit), Cache API (provider/feed results), D1 (briefings DB), Vectorize (semantic search) |
 | Durable Objects | 8 — MCP server, cron lock, live feed, report builder, investigator agent, radar crawler, global pulse                |
 | AI              | Groq (primary) → Workers AI (fallback) for case-study engine; Gemini for agent QA                                    |
-| Tests           | Vitest — 6,700+ tests across 531 test files                                                                          |
+| Tests           | Vitest — 6,700+ tests across 533 test files                                                                          |
 | Quality         | ESLint + Prettier + husky/lint-staged; `tsc --noEmit` gate                                                           |
 | CI              | GitHub Actions: lint + typecheck + vitest, per-ref concurrency cancel                                                |
 | Deploy          | `wrangler deploy`                                                                                                    |
