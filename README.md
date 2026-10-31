@@ -1,6 +1,6 @@
 # dfir-threat-intel-platform
 
-**A 98+ tool DFIR toolkit, a live self-updating threat-intel platform, and a 426-tool MCP server — on one Cloudflare Workers deploy.** Edge-cached, free at the edge, no signup required.
+**A 98+ tool DFIR toolkit, a live self-updating threat-intel platform, and a 429-tool MCP server — on one Cloudflare Workers deploy.** Edge-cached, free at the edge, no signup required.
 
 **[Live platform →](https://pranithjain.qzz.io/dfir)** · [Threat Intel →](https://pranithjain.qzz.io/threatintel) · [MCP catalog →](https://pranithjain.qzz.io/mcp)
 
@@ -105,7 +105,7 @@ repo's readme, via `npm run build:genioc`). API surfaces: `/api/v1/genioc/**` an
 
 ## MCP Server
 
-A 426-tool MCP (Model Context Protocol) server runs on the same Worker, exposing every DFIR and threat-intel capability to AI agents. Connect Claude Desktop, Cursor, or any MCP client.
+A 429-tool MCP (Model Context Protocol) server runs on the same Worker, exposing every DFIR and threat-intel capability to AI agents. Connect Claude Desktop, Cursor, or any MCP client.
 
 **Repo:** [dfir-mcp-server](https://github.com/Pranith-Jain/dfir-mcp-server)
 
@@ -116,7 +116,7 @@ A 426-tool MCP (Model Context Protocol) server runs on the same Worker, exposing
 | Layer           | Choice                                                                                                               |
 | --------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Frontend        | React 19 + Vite + TypeScript + Tailwind                                                                              |
-| Routing         | React Router v7, lazy-loaded (301 route components)                                                                  |
+| Routing         | React Router v7, lazy-loaded (303 route components)                                                                  |
 | SSR             | Prerendered routes for instant first paint                                                                           |
 | Backend         | Cloudflare Workers + Hono                                                                                            |
 | Storage         | KV (briefings, dedup, rate-limit), Cache API (provider/feed results), D1 (briefings DB), Vectorize (semantic search) |
@@ -235,7 +235,7 @@ src/                    React app — pages/{dfir,threatintel}, components, lib,
   pages/threatintel/    PANOPTICON platform pages
   data/content.ts       personalInfo + projects (includes PLATFORM_REPO_URL, this repo)
 api/src/                Cloudflare Worker (Hono) — routes/, providers/ (60+ IOC), lib/, case-study/
-worker/                 Worker entry, MCP server (426 tools), Durable Objects, scheduled cron
+worker/                 Worker entry, MCP server (429 tools), Durable Objects, scheduled cron
 public/data/            Generated data manifests (49 verticals) — build output, not hand-edited
 scripts/                Prerender, manifest builders, sync scripts
 docs/                   Design specs, decisions, loop templates

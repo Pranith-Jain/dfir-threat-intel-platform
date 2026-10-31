@@ -40,7 +40,7 @@ export const API_DOCS_HTML = /* html */ `<!doctype html>
     <h1>DFIR &amp; Threat Intel API</h1>
     <p>
       Live, browsable OpenAPI 3.1 spec.
-      <a href="/mcp">MCP server (426 tools)</a> &middot;
+      <a href="/mcp">MCP server (429 tools)</a> &middot;
       <a href="/api/v1/openapi.json" download>Download spec</a> &middot;
       <a href="/api/v1/health">Health</a>
     </p>
