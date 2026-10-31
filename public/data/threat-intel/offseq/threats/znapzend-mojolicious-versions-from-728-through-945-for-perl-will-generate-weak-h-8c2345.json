@@ -4,7 +4,7 @@
   "source": "GCVE Database",
   "type": "vulnerability",
   "title": "Znapzend: Mojolicious versions from 7.28 through 9.45 for Perl will generate weak HMAC session cookie secrets via…",
-  "description": "Mojolicious versions from 7.28 through 9.45 for Perl will generate weak HMAC session cookie secrets via \"mojo generate app\" by default.\n\nWhen creating a default app skeleton with the \"mojo generate app\" tool, a weak secret is written to the application's configuration file using the insecure rand() function, and used for authenticating and protecting the integrity of the application's sessions. This may allow an attacker to brute force the application's session keys.\n\nRelease 9.46 fixes the issue by providing high quality randomness, even in absence of CryptX.\n\nUsers should be aware that the update does not replace previously generated weak secrets.  A secret generated with the previous version MUST be replaced to ensure the updated version is using a strong secret.",
+  "description": "Mojolicious versions 7.28 through 9.45 for Perl generate weak HMAC session cookie secrets by default when using the \"mojo generate app\" tool. This occurs because the tool uses the insecure rand() function to create the secret, which is used for session authentication and integrity. The weakness may allow attackers to brute force session keys. Version 9.46 fixes this by using high-quality randomness. Users must manually replace any previously generated weak secrets to ensure security.",
   "severity": "medium",
   "cvssScore": 5.3,
   "cvssVector": null,
@@ -22,5 +22,5 @@
   "url": "https://radar.offseq.com/threats/znapzend-mojolicious-versions-from-728-through-945-for-perl-will-generate-weak-h-8c2345",
   "aiSummary": null,
   "aiImpact": null,
-  "sizeBytes": 1639
+  "sizeBytes": 1343
 }
