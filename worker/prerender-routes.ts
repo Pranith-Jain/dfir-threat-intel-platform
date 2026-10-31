@@ -76,6 +76,7 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/threatintel/iocs/feeds', '/__prerendered/threatintel__iocs__feeds'],
   ['/threatintel/iocs/entity', '/__prerendered/threatintel__iocs__entity'],
   ['/threatintel/iocs/c2', '/__prerendered/threatintel__iocs__c2'],
+  ['/threatintel/iocs/c2-playbooks', '/__prerendered/threatintel__iocs__c2__playbooks'],
   ['/threatintel/iocs/map', '/__prerendered/threatintel__iocs__map'],
   ['/threatintel/iocs/correlation', '/__prerendered/threatintel__iocs__correlation'],
   ['/threatintel/wiki/wiki', '/__prerendered/threatintel__wiki__wiki'],

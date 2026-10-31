@@ -206,6 +206,7 @@ const AttackFlowLibrary = lazy(() => import('./pages/threatintel/AttackFlowLibra
 const Attribution = lazy(() => import('./pages/threatintel/AttributionFramework'));
 const AwesomeLists = lazy(() => import('./pages/dfir/AwesomeLists'));
 const C2Tracker = lazy(() => import('./pages/threatintel/C2Tracker'));
+const C2Playbooks = lazy(() => import('./pages/threatintel/C2Playbooks'));
 const CertStreamLive = lazy(() => import('./pages/threatintel/CertStreamLive'));
 const CloudThreatLandscape = lazy(() => import('./pages/threatintel/CloudThreatLandscape'));
 const Copilot = lazy(() => import('./pages/threatintel/Copilot'));
@@ -252,6 +253,8 @@ const CtiwatchFeeds = lazy(() => import('./pages/threatintel/Ctiwatch'));
 const DestroylistFeeds = lazy(() => import('./pages/threatintel/Destroylist'));
 const LivingThreatFeeds = lazy(() => import('./pages/threatintel/LivingThreat'));
 const MalwareAnalyzerFeeds = lazy(() => import('./pages/threatintel/MalwareAnalyzer'));
+const CveNowFeeds = lazy(() => import('./pages/threatintel/CveNow'));
+const IncidentDeskFeeds = lazy(() => import('./pages/threatintel/IncidentDesk'));
 const ThreatClusterEntities = lazy(() => import('./pages/threatintel/ThreatClusterEntities'));
 const FlowViz = lazy(() => import('./pages/threatintel/FlowViz'));
 const TiMindmap = lazy(() => import('./pages/threatintel/TiMindmap'));
@@ -621,6 +624,8 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/feeds/destroylist', Component: DestroylistFeeds },
   { path: '/threatintel/feeds/living-threat', Component: LivingThreatFeeds },
   { path: '/threatintel/feeds/malwareanalyzer', Component: MalwareAnalyzerFeeds },
+  { path: '/threatintel/feeds/cve-now', Component: CveNowFeeds },
+  { path: '/threatintel/feeds/incident-desk', Component: IncidentDeskFeeds },
   { path: '/threatintel/feeds/threatfeeds', Component: ThreatFeeds },
   { path: '/threatintel/feeds/mythreatintel', Component: MyThreatIntel },
   { path: '/threatintel/infra/cloud', Component: CloudThreatLandscape },
@@ -632,6 +637,7 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/iocs/feeds', Component: IocFeedsPage },
   { path: '/threatintel/iocs/entity', Component: EntityResolution },
   { path: '/threatintel/iocs/c2', Component: C2Tracker },
+  { path: '/threatintel/iocs/c2-playbooks', Component: C2Playbooks },
   { path: '/threatintel/iocs/map', Component: ThreatMap },
   { path: '/threatintel/iocs/correlation', Component: IocCorrelation },
   { path: '/threatintel/wiki/wiki', Component: Wiki },

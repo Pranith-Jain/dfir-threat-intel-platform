@@ -55,6 +55,8 @@ A live CTI surface that updates itself: ransomware leak-site + negotiation track
 | CVE List                                | NVD + CISA KEV merge, EPSS/KEV-aware, MyThreatIntel API-primary with TG-scrape fallback                            |
 | IOC Correlation                         | Cross-source consensus scoring across 21 feeds                                                                     |
 | Live IOC Stream                         | Chronological multi-source firehose                                                                                |
+| C2 Hunting Playbooks                    | MANTIS catalog port — 1,029 hunting queries across 9 engines, favicon MMH3 + JARM fingerprints                     |
+| Malware IOCs                            | Gen Threat Labs manifest (gendigitalinc/ioc) — 61 families, 11k hashes, 3.3k network IoCs, YARA + README context   |
 | Threat Pulse                            | Entities ranked by cross-source mentions over 24h                                                                  |
 | Global Pulse                            | 3D interactive threat globe — 700+ geo-coded events across 33 layers                                               |
 | Threat Intel Metrics                    | 16 hand-rolled SVG panels with live deltas                                                                         |
@@ -69,6 +71,15 @@ A live CTI surface that updates itself: ransomware leak-site + negotiation track
 | Writeups / Threat Actors / MITRE ATT&CK | Analyst-blog aggregation, APT catalogue, full matrix, dark-web index                                               |
 | Feed Status                             | Health dashboard for every upstream + internal feed                                                                |
 | Catalogs                                | CVE Resources (~70), SecOps Tools (187), OSINT Framework (70+), Knowledge Base                                     |
+
+---
+
+**Upstream catalogs.** Two surfaces are build-time snapshots of third-party sources, rebuilt and committed
+by the weekly `genioc-c2-sync` workflow: the C2 playbook catalog (above) is ported from
+[MANTIS](https://github.com/fareedfauzi/MANTIS) (MIT, `backend/c2_hunting_catalog.py` via
+`npm run build:c2-playbooks`), and the malware IOC manifest from
+[Gen Threat Labs](https://github.com/gendigitalinc/ioc) (IOCs published by Gen contributors, per that
+repo's readme, via `npm run build:genioc`). API surfaces: `/api/v1/genioc/**` and `/api/v1/c2-playbooks/**`.
 
 ---
 
@@ -105,13 +116,13 @@ A 426-tool MCP (Model Context Protocol) server runs on the same Worker, exposing
 | Layer           | Choice                                                                                                               |
 | --------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Frontend        | React 19 + Vite + TypeScript + Tailwind                                                                              |
-| Routing         | React Router v7, lazy-loaded (299 route components)                                                                  |
+| Routing         | React Router v7, lazy-loaded (301 route components)                                                                  |
 | SSR             | Prerendered routes for instant first paint                                                                           |
 | Backend         | Cloudflare Workers + Hono                                                                                            |
 | Storage         | KV (briefings, dedup, rate-limit), Cache API (provider/feed results), D1 (briefings DB), Vectorize (semantic search) |
 | Durable Objects | 8 — MCP server, cron lock, live feed, report builder, investigator agent, radar crawler, global pulse                |
 | AI              | Groq (primary) → Workers AI (fallback) for case-study engine; Gemini for agent QA                                    |
-| Tests           | Vitest — 6,700+ tests across 530 test files                                                                          |
+| Tests           | Vitest — 6,700+ tests across 531 test files                                                                          |
 | Quality         | ESLint + Prettier + husky/lint-staged; `tsc --noEmit` gate                                                           |
 | CI              | GitHub Actions: lint + typecheck + vitest, per-ref concurrency cancel                                                |
 | Deploy          | `wrangler deploy`                                                                                                    |
@@ -225,7 +236,7 @@ src/                    React app — pages/{dfir,threatintel}, components, lib,
   data/content.ts       personalInfo + projects (includes PLATFORM_REPO_URL, this repo)
 api/src/                Cloudflare Worker (Hono) — routes/, providers/ (60+ IOC), lib/, case-study/
 worker/                 Worker entry, MCP server (426 tools), Durable Objects, scheduled cron
-public/data/            Generated data manifests (48 verticals) — build output, not hand-edited
+public/data/            Generated data manifests (49 verticals) — build output, not hand-edited
 scripts/                Prerender, manifest builders, sync scripts
 docs/                   Design specs, decisions, loop templates
 ```
