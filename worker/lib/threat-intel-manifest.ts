@@ -931,6 +931,11 @@ let cachedCtiwatchIndex: CtiwatchIndex | null = null;
 let cachedCtiwatchIndexAt: number | null = null;
 const ltShardCache: BodyCache<LivingThreatIncidentBody[]> = { map: new Map(), hits: 0, misses: 0 };
 const maFeedCache: BodyCache<MaFeedEntry[]> = { map: new Map(), hits: 0, misses: 0 };
+const cveNowBatchCache: BodyCache<CveNowBody[]> = { map: new Map(), hits: 0, misses: 0 };
+let cachedCveNowIndex: CveNowIndex | null = null;
+let cachedCveNowIndexAt: number | null = null;
+let cachedIncidentDeskIndex: IncidentDeskIndex | null = null;
+let cachedIncidentDeskIndexAt: number | null = null;
 let cachedIndex: TiIndex | null = null;
 let cachedIndexAt: number | null = null;
 let cachedKev: TiKevEntry[] | null = null;
@@ -1579,6 +1584,201 @@ export function filterLivingThreatIncidents(
   return out;
 }
 
+// ─── cve.now (cve.now, free public vulnerability feed) ──────────────────
+//
+// cve.now (github.com/sazabi/cve.now) merges CVE List, NVD, CISA KEV,
+// GitHub Advisory Database, OSV, ENISA EUVD, FIRST EPSS, Exploit-DB,
+// Metasploit, Nuclei and PoC-in-GitHub into one deduplicated entry per
+// vulnerability. Free, keyless; entry summaries CC-BY 4.0, service docs
+// Apache-2.0. The build ships the newest ~240 upstream entries as a slim
+// index + per-batch full bodies; upstream source health rides along.
+
+export interface CveNowIndexEntry {
+  id: string;
+  batch: number;
+  sequence: number;
+  title: string | null;
+  publishedAt: string | null;
+  firstSeenAt: string | null;
+  modifiedAt: string | null;
+  cvss: number | null;
+  severity: string;
+  kev: boolean;
+  hasFix: boolean;
+  product: string | null;
+  sizeBytes: number;
+}
+
+export interface CveNowIndex {
+  source: string;
+  sourceUrl: string;
+  repoUrl: string;
+  description: string;
+  license: string;
+  syncedAt: string;
+  meta: {
+    feedUrl: string;
+    entriesUrl: string;
+    window: string | null;
+    batchCount: number;
+    batchSize: number;
+  };
+  counts: {
+    entries: number;
+    kev: number;
+    withFix: number;
+    batches: number;
+    bySeverity: Record<string, number>;
+  };
+  topProducts: { product: string; count: number }[];
+  sourcesHealth: {
+    checkedAt: string | null;
+    cursor: string | null;
+    sources: Record<string, { ok: boolean; at: string }> | null;
+  } | null;
+  entries: CveNowIndexEntry[];
+}
+
+export interface CveNowBody {
+  id: string;
+  batch: number;
+  title: string | null;
+  product: string | null;
+  fix: string[];
+  modifiedAt: string | null;
+  upstreamPage: string;
+  sizeBytes: number;
+}
+
+export interface IncidentDeskBrief {
+  title: string | null;
+  link: string | null;
+  guid: string | null;
+  published: string | null;
+  publishedRaw: string | null;
+  description: string | null;
+  imageUrl: string | null;
+  slug: string;
+}
+
+export interface IncidentDeskIndex {
+  source: string;
+  sourceUrl: string;
+  description: string;
+  license: string;
+  syncedAt: string;
+  meta: {
+    feedUrl: string;
+    feedTitle: string | null;
+  };
+  counts: {
+    briefs: number;
+    withImage: number;
+    byMonth: Record<string, number>;
+  };
+  briefs: IncidentDeskBrief[];
+}
+
+export interface TiListCveNowOptions {
+  severity?: string;
+  kev?: boolean;
+  hasFix?: boolean;
+  product?: string;
+  keyword?: string;
+  limit?: number;
+}
+
+export function filterCveNowEntries(idx: CveNowIndex, opts: TiListCveNowOptions = {}): CveNowIndexEntry[] {
+  const { severity, kev, hasFix, product, keyword, limit = 100 } = opts;
+  const sevNeedle = severity?.toLowerCase();
+  const prodNeedle = product?.toLowerCase();
+  const needle = keyword?.toLowerCase();
+  const out: CveNowIndexEntry[] = [];
+  for (const e of idx.entries) {
+    if (sevNeedle && e.severity.toLowerCase() !== sevNeedle) continue;
+    if (kev !== undefined && e.kev !== kev) continue;
+    if (hasFix !== undefined && e.hasFix !== hasFix) continue;
+    if (prodNeedle && !e.product?.toLowerCase().includes(prodNeedle)) continue;
+    if (needle && !`${e.id} ${e.title ?? ''} ${e.product ?? ''}`.toLowerCase().includes(needle)) continue;
+    out.push(e);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+export async function loadCveNowIndex(assets: Fetcher, opts: { forceRefresh?: boolean } = {}): Promise<CveNowIndex> {
+  if (cachedCveNowIndex && !opts.forceRefresh) return cachedCveNowIndex;
+  const idx = await fetchJson<CveNowIndex>(assets, `${DATA_PREFIX}/cve-now/index.json`);
+  if (!idx) {
+    throw new Error(
+      `cve.now manifest not found at ${DATA_PREFIX}/cve-now/index.json — ` +
+        'did the build run? Run `node scripts/sync-cve-now.mjs && node scripts/build-cve-now.mjs`.'
+    );
+  }
+  cachedCveNowIndex = idx;
+  cachedCveNowIndexAt = Date.now();
+  return idx;
+}
+
+export async function getCveNowEntry(assets: Fetcher, id: string): Promise<CveNowBody | null> {
+  const idx = await loadCveNowIndex(assets);
+  const wanted = id.toUpperCase();
+  const entry = idx.entries.find((e) => e.id.toUpperCase() === wanted);
+  if (!entry) return null;
+  const batchKey = String(entry.batch).padStart(3, '0');
+  const cacheKey = `batch-${batchKey}`;
+  const hit = trackHit(cveNowBatchCache, cacheKey);
+  let batch: CveNowBody[] | null = hit ?? null;
+  if (!batch) {
+    batch = await fetchJson<CveNowBody[]>(assets, `${DATA_PREFIX}/cve-now/bodies/batch-${batchKey}.json`);
+    if (!batch) return null;
+    recordHit(cveNowBatchCache, cacheKey, batch, MAX_BODY_CACHE);
+  }
+  return batch.find((b) => b.id.toUpperCase() === wanted) ?? null;
+}
+
+export async function loadIncidentDeskIndex(
+  assets: Fetcher,
+  opts: { forceRefresh?: boolean } = {}
+): Promise<IncidentDeskIndex> {
+  if (cachedIncidentDeskIndex && !opts.forceRefresh) return cachedIncidentDeskIndex;
+  const idx = await fetchJson<IncidentDeskIndex>(assets, `${DATA_PREFIX}/incident-desk/index.json`);
+  if (!idx) {
+    throw new Error(
+      `Incident Desk manifest not found at ${DATA_PREFIX}/incident-desk/index.json — ` +
+        'did the build run? Run `node scripts/sync-incident-desk.mjs && node scripts/build-incident-desk.mjs`.'
+    );
+  }
+  cachedIncidentDeskIndex = idx;
+  cachedIncidentDeskIndexAt = Date.now();
+  return idx;
+}
+
+export function getIncidentDeskBrief(idx: IncidentDeskIndex, slug: string): IncidentDeskBrief | null {
+  const needle = slug.toLowerCase();
+  return idx.briefs.find((b) => b.slug.toLowerCase() === needle) ?? null;
+}
+
+export interface TiListIncidentDeskOptions {
+  keyword?: string;
+  limit?: number;
+}
+
+export function filterIncidentDeskBriefs(
+  idx: IncidentDeskIndex,
+  opts: TiListIncidentDeskOptions = {}
+): IncidentDeskBrief[] {
+  const { keyword, limit = 50 } = opts;
+  const needle = keyword?.toLowerCase();
+  const out: IncidentDeskBrief[] = [];
+  for (const b of idx.briefs) {
+    if (needle && !`${b.title ?? ''} ${b.description ?? ''}`.toLowerCase().includes(needle)) continue;
+    out.push(b);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
 // ─── MalwareAnalyzer loaders ────────────────────────────────────────────
 
 export async function loadMaIndex(assets: Fetcher, opts: { forceRefresh?: boolean } = {}): Promise<MaIndex> {
@@ -2139,6 +2339,15 @@ export function tiCacheStats(): {
     indexAgeMs: number | null;
     feeds: { size: number; hits: number; misses: number };
   };
+  cveNow: {
+    indexLoaded: boolean;
+    indexAgeMs: number | null;
+    batches: { size: number; hits: number; misses: number };
+  };
+  incidentDesk: {
+    indexLoaded: boolean;
+    indexAgeMs: number | null;
+  };
 } {
   return {
     indexLoaded: cachedIndex !== null,
@@ -2219,6 +2428,15 @@ export function tiCacheStats(): {
       indexAgeMs: cachedMaIndexAt ? Date.now() - cachedMaIndexAt : null,
       feeds: { size: maFeedCache.map.size, hits: maFeedCache.hits, misses: maFeedCache.misses },
     },
+    cveNow: {
+      indexLoaded: cachedCveNowIndex !== null,
+      indexAgeMs: cachedCveNowIndexAt ? Date.now() - cachedCveNowIndexAt : null,
+      batches: { size: cveNowBatchCache.map.size, hits: cveNowBatchCache.hits, misses: cveNowBatchCache.misses },
+    },
+    incidentDesk: {
+      indexLoaded: cachedIncidentDeskIndex !== null,
+      indexAgeMs: cachedIncidentDeskIndexAt ? Date.now() - cachedIncidentDeskIndexAt : null,
+    },
   };
 }
 
@@ -2291,6 +2509,12 @@ export function _resetTiCacheForTests(): void {
   maFeedCache.hits = maFeedCache.misses = 0;
   cachedMaIndex = null;
   cachedMaIndexAt = null;
+  cveNowBatchCache.map.clear();
+  cveNowBatchCache.hits = cveNowBatchCache.misses = 0;
+  cachedCveNowIndex = null;
+  cachedCveNowIndexAt = null;
+  cachedIncidentDeskIndex = null;
+  cachedIncidentDeskIndexAt = null;
 }
 
 export { severityFromScore };

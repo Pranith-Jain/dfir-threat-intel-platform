@@ -2529,6 +2529,15 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     group: 'threatintel',
   },
   {
+    path: '/threatintel/ti-mindmap',
+    label: 'TI Mindmap Studio',
+    description:
+      'Paste a threat-report URL or text; the edge LLM writes a tweet-length dossier, a Mermaid mindmap, an execution-ordered TTP timeline, and an ATT&CK Navigator layer. Independently ported from format81/TI-Mindmap-GPT (GPLv3) + TI Mindmap HUB research (CC BY-NC) onto the platform LLM chain.',
+    sectionLabel: 'Threat Intel · Tools',
+    group: 'threatintel',
+    keywords: ['ti mindmap', 'mindmap studio', 'mermaid', 'navigator layer', 'ttp', 'dossier', 'threat report', 'llm'],
+  },
+  {
     path: '/threatintel/mcp-search',
     label: 'MCP Search · TI Mindmap Hub',
     description:
@@ -3523,6 +3532,46 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     sectionLabel: 'Threat Intel · Feeds',
     group: 'threatintel',
     keywords: ['malwareanalyzer', 'cyble', 'malware', 'url', 'verdict', 'reputation', 'ioc', 'scan', 'detonation'],
+  },
+  {
+    path: '/threatintel/feeds/cve-now',
+    label: 'CVE.now Wire',
+    description:
+      'Free public vulnerability feed merging CVE List, NVD, CISA KEV, GitHub Advisories, OSV, ENISA EUVD, FIRST EPSS, Exploit-DB, Metasploit, Nuclei and PoC-in-GitHub into one deduplicated entry per CVE, with severity, CVSS, fix availability and affected product.',
+    sectionLabel: 'Threat Intel · Feeds',
+    group: 'threatintel',
+    keywords: [
+      'cve now',
+      'cvenow',
+      'aggregate',
+      'deduplicated',
+      'vulnerability feed',
+      'kev',
+      'epss',
+      'poc',
+      'exploit-db',
+      'nuclei',
+      'metasploit',
+    ],
+  },
+  {
+    path: '/threatintel/feeds/incident-desk',
+    label: 'Incident Desk',
+    description:
+      'Emergency briefings on live security incidents through an identity lens - machine identity, CA misissuance, identity supply chains, secret management failures, AI-key theft. Replicated from the iamnicholasmartin.co.uk RSS feed.',
+    sectionLabel: 'Threat Intel · Feeds',
+    group: 'threatintel',
+    keywords: [
+      'incident desk',
+      'incident',
+      'identity',
+      'machine identity',
+      'ca',
+      'certificate',
+      'secrets',
+      'briefing',
+      'rss',
+    ],
   },
   {
     path: '/threatintel/feeds/threatfeeds',

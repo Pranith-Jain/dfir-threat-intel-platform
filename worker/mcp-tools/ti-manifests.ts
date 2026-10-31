@@ -45,10 +45,12 @@ import {
   checkDestroylistDomain,
   filterIocs,
   filterCves,
+  filterCveNowEntries,
   filterDarknetSites,
   filterDphishIndicators,
   filterLists,
   filterLivingThreatIncidents,
+  filterIncidentDeskBriefs,
   filterCtiwatchVulns,
   filterOffseqThreats,
   filterMaFeed,
@@ -65,6 +67,7 @@ import {
   getDphishIndicator,
   getCtiwatchVulnerability,
   getCtiwatchVictim,
+  getCveNowEntry,
   getOffseqThreat,
   getLivingThreatIncident,
   getMaFeed,
@@ -82,6 +85,8 @@ import {
   loadDphishIndex,
   loadKevSnapshot,
   loadLivingThreatIndex,
+  loadCveNowIndex,
+  loadIncidentDeskIndex,
   loadMaIndex,
   loadCtiwatchIndex,
   loadOffseqIndex,
@@ -1153,6 +1158,89 @@ export async function registerTiManifestsTools(h: McpToolHost): Promise<void> {
         });
       }
       return untrustedToolResult(body);
+    }
+  );
+
+  // ── cve.now (cve.now) ───────────────────────────────────────────
+  // Free public vulnerability feed merging CVE List, NVD, CISA KEV,
+  // GitHub Advisories, OSV, EUVD, FIRST EPSS, Exploit-DB, Metasploit,
+  // Nuclei + PoC-in-GitHub into one deduplicated entry per CVE
+  // (CC-BY 4.0 summaries). Newest ~240 entries ship in
+  // public/data/threat-intel/cve-now/; see scripts/sync-cve-now.mjs +
+  // scripts/build-cve-now.mjs.
+
+  h.tools(
+    'ti_list_cve_now',
+    'List entries from the cve.now aggregate vulnerability feed: one deduplicated entry per CVE merging CVE List, NVD, CISA KEV, GitHub Advisories, OSV, ENISA EUVD, FIRST EPSS, Exploit-DB, Metasploit, Nuclei and PoC-in-GitHub, with CVSS score, severity band, KEV membership, fix versions and affected product. Filter by severity, KEV membership, fix availability, product substring or keyword. Use ti_get_cve_now for the full record.',
+    {
+      severity: z.string().optional().describe('Severity band: CRITICAL | HIGH | MEDIUM | LOW | UNKNOWN'),
+      kev: z.boolean().optional().describe('Only KEV-listed (true) or only non-KEV (false) entries'),
+      hasFix: z.boolean().optional().describe('Only entries with (true) or without (false) known fix versions'),
+      product: z.string().optional().describe('Affected-product substring (e.g. "WordPress", "Rancher")'),
+      keyword: z.string().optional().describe('Case-insensitive substring match against id / title / product'),
+      limit: z.number().int().min(1).max(240).optional().describe('Max entries to return (default 100)'),
+    },
+    async ({ severity, kev, hasFix, product, keyword, limit }) => {
+      const idx = await loadCveNowIndex(ASSETS);
+      const out = filterCveNowEntries(idx, { severity, kev, hasFix, product, keyword, limit: limit ?? 100 });
+      return untrustedToolResult({
+        source: idx.source,
+        sourceUrl: idx.sourceUrl,
+        repoUrl: idx.repoUrl,
+        syncedAt: idx.syncedAt,
+        counts: idx.counts,
+        sourcesHealth: idx.sourcesHealth,
+        returned: out.length,
+        filters: { severity, kev, hasFix, product, keyword },
+        entries: out,
+      });
+    }
+  );
+
+  h.tools(
+    'ti_get_cve_now',
+    'Return the full cve.now record for one CVE id: deduplicated cross-source summary, CVSS score and severity, KEV membership, fix versions and the upstream entry page. Use ti_list_cve_now to discover ids.',
+    {
+      id: z.string().describe('CVE id (e.g. "CVE-2026-119466"). Get these from ti_list_cve_now.'),
+    },
+    async ({ id }) => {
+      const body = await getCveNowEntry(ASSETS, id);
+      if (!body) {
+        return untrustedToolResult({
+          error: 'cve_now_entry_not_found',
+          id,
+          hint: 'Call ti_list_cve_now to see available ids (the manifest ships the newest ~240 upstream entries).',
+        });
+      }
+      return untrustedToolResult(body);
+    }
+  );
+
+  // ── Incident Desk (iamnicholasmartin.co.uk/incidents) ──────────
+  // Emergency briefings on live security incidents through an identity
+  // lens, from the public RSS feed. Ships in
+  // public/data/threat-intel/incident-desk/; see
+  // scripts/sync-incident-desk.mjs + scripts/build-incident-desk.mjs.
+
+  h.tools(
+    'ti_list_incident_desk',
+    'List briefs from the Incident Desk (iamnicholasmartin.co.uk): emergency briefings on live security incidents through an identity lens — machine identity, CA misissuance, identity supply chains, secret management failures, AI-key theft. Each brief carries title, date, summary, image and a canonical source link. Filter by keyword.',
+    {
+      keyword: z.string().optional().describe('Case-insensitive substring match against title / summary'),
+      limit: z.number().int().min(1).max(50).optional().describe('Max briefs to return (default 50)'),
+    },
+    async ({ keyword, limit }) => {
+      const idx = await loadIncidentDeskIndex(ASSETS);
+      const out = filterIncidentDeskBriefs(idx, { keyword, limit: limit ?? 50 });
+      return untrustedToolResult({
+        source: idx.source,
+        sourceUrl: idx.sourceUrl,
+        syncedAt: idx.syncedAt,
+        counts: idx.counts,
+        returned: out.length,
+        filters: { keyword },
+        briefs: out,
+      });
     }
   );
 

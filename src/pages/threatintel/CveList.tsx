@@ -23,16 +23,10 @@ interface RecentCve {
   kev_due?: string;
   kev_ransomware?: boolean;
   actors?: Array<{ slug: string; mitre_id?: string; mitre_url?: string; mitre_name?: string }>;
-  origin: 'nvd' | 'kev' | 'mti' | 'cvefeed' | 'cvenotify' | 'tg' | 'dbugs' | 'threatwire';
+  origin: 'nvd' | 'kev' | 'mti' | 'cvefeed' | 'cvenotify' | 'tg' | 'dbugs';
   /** Every source that independently listed this CVE, highest-authority first. */
   listed_by?: string[];
   listed_by_count?: number;
-  /** ThreatWire post for this CVE (contributed row or editorial annotation). */
-  threatwire_url?: string;
-  threatwire_kev?: boolean;
-  threatwire_poc?: boolean;
-  threatwire_zero_day?: boolean;
-  threatwire_patched?: boolean;
   /** dbu.gs vendor (origin 'dbugs'). */
   vendor?: string;
   /** dbu.gs product (origin 'dbugs'). */
@@ -112,11 +106,6 @@ const ORIGIN_PILL: Record<RecentCve['origin'], { label: string; cls: string; too
     label: 'dbu.gs',
     cls: 'border-teal-500/40 bg-teal-500/10 text-teal-700 dark:text-teal-300',
     tooltip: 'Gap-filled from dbu.gs — carries vendor/product/CWE plus exploit- and fix-availability flags',
-  },
-  threatwire: {
-    label: 'ThreatWire',
-    cls: 'border-teal-500/40 bg-teal-500/10 text-teal-700 dark:text-teal-300',
-    tooltip: 'Gap-filled from the ThreatWire CVE wire — editorial record with explicit PoC/KEV status',
   },
 };
 
@@ -487,10 +476,9 @@ export default function CveList({ bare }: CveListProps): JSX.Element {
                   </span>
                 </div>
               </div>
-              {/* Corroboration + ThreatWire's explicit exploitability status.
-                  A CVE NVD, CISA KEV and dbu.gs all carry is a much stronger
-                  lead than a single Telegram relay; this line is where that
-                  difference is visible without opening the record. */}
+              {/* Corroboration: a CVE NVD, CISA KEV and dbu.gs all carry is a
+                  much stronger lead than a single Telegram relay; this line is
+                  where that difference is visible without opening the record. */}
               <div className="flex flex-wrap items-center gap-1.5 mb-2">
                 <span
                   className="text-micro font-mono uppercase tracking-wider text-muted"
@@ -506,41 +494,6 @@ export default function CveList({ bare }: CveListProps): JSX.Element {
                     {src}
                   </span>
                 ))}
-                {c.threatwire_zero_day && (
-                  <span
-                    className="text-micro font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border border-rose-500/50 bg-rose-500/10 text-rose-700 dark:text-rose-300"
-                    title="ThreatWire reports exploitation in the wild / zero-day"
-                  >
-                    0-day
-                  </span>
-                )}
-                {c.threatwire_poc && (
-                  <span
-                    className="text-micro font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-300"
-                    title="ThreatWire reports a public proof-of-concept"
-                  >
-                    PoC public
-                  </span>
-                )}
-                {c.threatwire_patched && (
-                  <span
-                    className="text-micro font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                    title="ThreatWire reports a fix has shipped"
-                  >
-                    fixed
-                  </span>
-                )}
-                {c.threatwire_url && (
-                  <a
-                    href={sanitizeUrl(c.threatwire_url) || undefined}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-micro font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border border-teal-500/40 bg-teal-500/10 text-teal-700 dark:text-teal-300 hover:underline inline-flex items-center gap-1"
-                    title="ThreatWire editorial record"
-                  >
-                    ThreatWire <ExternalLink size={8} />
-                  </a>
-                )}
               </div>
               <div className="flex items-center gap-2 mt-2">
                 <PostAnalysisButton title={c.id} description={c.description} source={c.origin} compact />
@@ -596,10 +549,10 @@ export default function CveList({ bare }: CveListProps): JSX.Element {
           <p className="text-muted mb-2 max-w-3xl leading-relaxed">
             Up to <strong>1,500 CVEs newly published in the last 30 days</strong> (NVD) merged with{' '}
             <strong>CISA KEV</strong> additions, <strong>MyThreatIntel</strong> alerts,{' '}
-            <strong>cvefeed.io high-severity</strong> RSS, CVE Telegram channels, <strong>dbu.gs</strong> and the{' '}
-            <strong>ThreatWire</strong> wire as gap-fillers. Every entry is enriched with <strong>FIRST EPSS</strong>{' '}
-            exploitation probability where available. NVD reports ~5,500 CVEs per 30-day window - this is a triage view
-            that prioritises high-signal records, not the full corpus. For exhaustive search use{' '}
+            <strong>cvefeed.io high-severity</strong> RSS, CVE Telegram channels and <strong>dbu.gs</strong> as
+            gap-fillers. Every entry is enriched with <strong>FIRST EPSS</strong> exploitation probability where
+            available. NVD reports ~5,500 CVEs per 30-day window - this is a triage view that prioritises high-signal
+            records, not the full corpus. For exhaustive search use{' '}
             <a
               href="https://nvd.nist.gov/vuln/search"
               target="_blank"
@@ -617,11 +570,10 @@ export default function CveList({ bare }: CveListProps): JSX.Element {
           </p>
           <p className="text-xs text-muted font-mono">
             Sources: <span className="text-body">NVD published-CVE feed</span> merged with the{' '}
-            <span className="text-body">CISA KEV catalogue</span>, MyThreatIntel, cvefeed.io RSS, CVE Telegram channels,
-            dbu.gs and <span className="text-body">ThreatWire</span>. Scores:{' '}
-            <span className="text-body">NVD CVSS</span> + <span className="text-body">FIRST EPSS</span>. Each row lists
-            every independent source that carries the CVE — filter to <span className="text-body">multi-source</span>{' '}
-            records to see only corroborated entries.
+            <span className="text-body">CISA KEV catalogue</span>, MyThreatIntel, cvefeed.io RSS, CVE Telegram channels
+            and dbu.gs. Scores: <span className="text-body">NVD CVSS</span> +{' '}
+            <span className="text-body">FIRST EPSS</span>. Each row lists every independent source that carries the CVE
+            — filter to <span className="text-body">multi-source</span> records to see only corroborated entries.
           </p>
         </>
       }

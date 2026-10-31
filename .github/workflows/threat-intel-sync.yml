@@ -12,7 +12,7 @@ name: Threat Intel sync (daily)
 
 on:
   schedule:
-    - cron: "30 5 * * *"
+    - cron: '30 5 * * *'
   workflow_dispatch: {}
 
 concurrency:
@@ -37,7 +37,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
           cache: npm
 
       - name: Install
@@ -76,6 +76,18 @@ jobs:
       - name: Sync MalwareAnalyzer by Cyble feeds
         continue-on-error: true
         run: node scripts/sync-malwareanalyzer.mjs
+
+      - name: Sync cve.now aggregate vulnerability feed
+        # Newest ~240 upstream entries (deduplicated cross-source records:
+        # CVE List, NVD, KEV, GHSA, OSV, EUVD, EPSS, Exploit-DB, Metasploit,
+        # Nuclei, PoC-in-GitHub) + per-source polling health. Keyless.
+        continue-on-error: true
+        run: node scripts/sync-cve-now.mjs
+
+      - name: Sync Incident Desk briefings (RSS)
+        # Emergency incident briefings through an identity lens. Keyless RSS.
+        continue-on-error: true
+        run: node scripts/sync-incident-desk.mjs
 
       - name: Sync Threaticon catalog (actors, malware, coverage, map)
         # The main threaticon vertical (actor profiles, malware dictionary,
@@ -151,6 +163,14 @@ jobs:
         continue-on-error: true
         run: node scripts/build-malwareanalyzer.mjs
 
+      - name: Build cve.now manifest
+        continue-on-error: true
+        run: node scripts/build-cve-now.mjs
+
+      - name: Build Incident Desk manifest
+        continue-on-error: true
+        run: node scripts/build-incident-desk.mjs
+
       - name: Build Threaticon manifest
         continue-on-error: true
         run: node scripts/build-threaticon.mjs
@@ -174,7 +194,7 @@ jobs:
         id: pr
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: "chore(ti): sync threat intel from upstream sources"
+          commit-message: 'chore(ti): sync threat intel from upstream sources'
           title: "Threat Intel upstream sync — ${{ github.event.schedule || 'manual' }}"
           body: |
             Automated daily sync of threat intelligence data.
@@ -217,6 +237,10 @@ jobs:
               5000 of ~21k incidents mapped to MITRE ATT&CK chains)
             - malwareanalyzer.com (MalwareAnalyzer by Cyble — malicious +
               newly-observed URL feeds, keyless)
+            - cve.now (aggregate vulnerability feed — newest ~240
+              deduplicated cross-source CVE entries + source health, keyless)
+            - iamnicholasmartin.co.uk/incidents (Incident Desk —
+              identity-lens live-incident briefings, public RSS)
             - detection.wiki (15,957 detection rules from Sigma, Elastic,
               Splunk, Kusto mapped to MITRE ATT&CK + detection labs)
 
@@ -248,6 +272,20 @@ jobs:
         run: |
           gh pr merge "${{ steps.pr.outputs.pull-request-number }}" \
             --merge --delete-branch
+
+      # Why a guard instead of more `!= ''` skips: when this repo secret was
+      # missing, every self-deploy step below skipped silently for days while
+      # main raced ahead with fresh syncs, and the run stayed green — the live
+      # site kept serving stale feeds with nothing in Actions marking why. A
+      # missing token is a config error; make the run red instead.
+      - name: Require CLOUDFLARE_API_TOKEN for self-deploy
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN == ''
+        run: |
+          echo "::error title=Missing repo secret::CLOUDFLARE_API_TOKEN is not set — self-deploy steps would skip silently and the live site keeps serving stale feeds while main races ahead."
+          echo "Fix: create a Cloudflare API token (Account Resources: Workers Scripts — Edit; User: Memberships + Details — Read) and set the repo secret:"
+          echo "  gh secret set CLOUDFLARE_API_TOKEN --repo $GITHUB_REPOSITORY"
+          echo "The sync PR still auto-merged into main; only the deploy was blocked."
+          exit 1
 
       # ── Self-deploy (only when the sync PR actually landed) ──────────
       - name: Checkout merged main
@@ -285,3 +323,8 @@ jobs:
           code=$(curl -s -o /dev/null -w "%{http_code}" "https://pranithjain.qzz.io/data/threat-intel/threatcluster/index.json")
           echo "threatcluster index -> HTTP $code"
           test "$code" = "200" || { echo "::error::threatcluster index returned HTTP $code"; exit 1; }
+          for m in cve-now incident-desk; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "https://pranithjain.qzz.io/data/threat-intel/$m/index.json")
+            echo "$m index -> HTTP $code"
+            test "$code" = "200" || { echo "::error::$m index returned HTTP $code"; exit 1; }
+          done

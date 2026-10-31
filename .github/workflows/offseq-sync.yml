@@ -17,7 +17,7 @@ name: OffSeq Threat Radar sync (30 min)
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: '*/30 * * * *'
   workflow_dispatch: {}
 
 concurrency:
@@ -42,7 +42,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
           cache: npm
 
       - name: Install
@@ -60,7 +60,7 @@ jobs:
         id: pr
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: "chore(offseq): sync threat radar from radar.offseq.com"
+          commit-message: 'chore(offseq): sync threat radar from radar.offseq.com'
           title: "OffSeq Threat Radar sync — ${{ github.event.schedule || 'manual' }}"
           body: |
             Automated 30-min sync of the OffSeq Threat Radar feed.
@@ -89,6 +89,20 @@ jobs:
           gh pr merge "${{ steps.pr.outputs.pull-request-number }}" \
             --merge --delete-branch
 
+      # Why a guard instead of more `!= ''` skips: when this repo secret was
+      # missing, every self-deploy step below skipped silently for days while
+      # main raced ahead with fresh syncs, and the run stayed green - the live
+      # site kept serving stale feeds with nothing in Actions marking why. A
+      # missing token is a config error; make the run red instead.
+      - name: Require CLOUDFLARE_API_TOKEN for self-deploy
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN == ''
+        run: |
+          echo "::error title=Missing repo secret::CLOUDFLARE_API_TOKEN is not set - self-deploy steps would skip silently and the live site keeps serving stale feeds while main races ahead."
+          echo "Fix: create a Cloudflare API token (Account Resources: Workers Scripts - Edit; User: Memberships + Details - Read) and set the repo secret:"
+          echo "  gh secret set CLOUDFLARE_API_TOKEN --repo $GITHUB_REPOSITORY"
+          echo "The sync PR still auto-merged into main; only the deploy was blocked."
+          exit 1
+
       # ── Self-deploy (only when the sync PR actually landed) ──────────
       - name: Checkout merged main
         if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
@@ -101,7 +115,7 @@ jobs:
         if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
           cache: npm
 
       - name: Install for deploy

@@ -244,7 +244,10 @@ A second data vertical replicating the SI pattern (`public/data/threat-intel/`, 
 - `.github/workflows/threat-intel-sync.yml` — daily sync workflow (05:30 UTC). Each sync/build
   step is isolated with `continue-on-error` so one flaky upstream (NVD times out under load)
   never aborts the other verticals; covers threat-intel, darknetlist, ThreatCluster, dPhish,
-  Living Threat, MalwareAnalyzer, and Threaticon (main vertical, 1 req/s pacing).
+  Living Threat, MalwareAnalyzer, cve.now, Incident Desk, and Threaticon (main vertical,
+  1 req/s pacing). The self-deploy section fails loudly (`Require CLOUDFLARE_API_TOKEN for
+self-deploy`) when the repo secret is missing instead of the historical silent skip that
+  left the live site days behind main.
 - `docs/loops/threat-intel-sync.md` — loop template for manual sync
 - `public/data/threat-intel/` — generated manifest tree (not committed empty; populate via sync + build)
 
@@ -614,12 +617,10 @@ QA-triggered repair pass (there is no gate to repair).
 
 **Live CVE sources** (`/api/v1/cve-recent`, page `/threatintel/cve-list`):
 NVD published + CISA KEV, then gap-fillers MyThreatIntel, cvefeed.io, the CVE
-Telegram channels, dbu.gs and **ThreatWire**
-(`api/src/lib/threatwire.ts`, RSS `/feed.xml`). ThreatWire contributes unseen
-ids and annotates known ones with explicit `threatwire_kev` / `threatwire_poc`
-/ `threatwire_zero_day` / `threatwire_patched` flags — extracted **only when a
-post covers exactly one CVE**, because a multi-CVE roundup makes "Fixed in
-15.5.28" ambiguous. Every row carries `listed_by` + `listed_by_count`
+Telegram channels and dbu.gs. (The ThreatWire tier was removed on 2026-10-30
+at the owner's request — `api/src/lib/threatwire.ts` no longer exists, and the
+`cve-recent` KV cache key bumped to v16 so warm colos stop serving ThreatWire
+rows.) Every row carries `listed_by` + `listed_by_count`
 (corroboration: which independent sources list the id, authority-ordered by
 `CVE_SOURCE_ORDER`); the UI badges that and can filter to ≥2 sources. Adding a
 tier means updating `CVE_SOURCE_ORDER`, the `applyCorroboration` label map, and

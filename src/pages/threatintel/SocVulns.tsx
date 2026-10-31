@@ -26,7 +26,7 @@ interface RecentCve {
   kev_added?: string;
   kev_ransomware?: boolean;
   actors?: Array<{ slug: string; mitre_id?: string; mitre_url?: string; mitre_name?: string }>;
-  origin: 'nvd' | 'kev' | 'mti' | 'cvefeed' | 'cvenotify' | 'tg' | 'dbugs' | 'threatwire';
+  origin: 'nvd' | 'kev' | 'mti' | 'cvefeed' | 'cvenotify' | 'tg' | 'dbugs';
 }
 
 interface CveRecentResponse {
