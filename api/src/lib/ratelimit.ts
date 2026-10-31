@@ -228,7 +228,8 @@ const AI_STRICT_EXACT = new Set<string>([
   '/api/v1/fivew',
   '/api/v1/image-ioc', // vision model, raw image bytes
   '/api/v1/report-analyzer',
-  '/api/v1/ti-mindmap',
+  '/api/v1/ti-mindmap/analyze',
+  '/api/v1/ti-mindmap/assistant', // LLM threat-report mindmap builder (per-request AI budget)
   '/api/v1/threat-intel/ach',
   '/api/v1/campaign-generator',
   '/api/v1/unified-search/summarize',

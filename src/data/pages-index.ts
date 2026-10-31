@@ -2214,6 +2214,15 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     keywords: ['entity', 'graph', 'topology', 'relationship', 'visualization', 'network'],
   },
   {
+    path: '/threatintel/ti-mindmap',
+    label: 'TI Mindmap',
+    description:
+      'LLM threat-report mindmaps - dossier, Mermaid mindmap, TTP timeline, and NAVIGATOR layer from a report URL or pasted text.',
+    sectionLabel: 'Threat Intel · Tools',
+    group: 'threatintel',
+    keywords: ['ti mindmap', 'mindmap', 'mermaid', 'ttp', 'dossier', 'navigator', 'attack layer'],
+  },
+  {
     path: '/threatintel/malpedia',
     label: 'Malpedia (alias)',
     description: 'Alias for the Malware Hub malpedia view.',
