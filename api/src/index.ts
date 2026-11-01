@@ -272,6 +272,7 @@ import { aggregatedFeedsHandler } from './routes/aggregated-feeds';
 import { malwareFamilyListHandler, malwareFamilyDetailHandler } from './routes/malware-iocs';
 import { geniocRouter } from './routes/genioc';
 import { c2PlaybooksRouter } from './routes/c2-playbooks';
+import { mantisHuntRouter } from './routes/mantis-hunt';
 import { feedCatalogHandler } from './routes/feed-catalog';
 import { yaraHubListHandler, yaraHubRuleHandler } from './routes/yara-hub';
 import {
@@ -1586,6 +1587,8 @@ app.get('/api/v1/malware-iocs/:family', malwareFamilyDetailHandler);
 app.route('/api/v1', geniocRouter);
 // C2 hunting playbook catalog (MANTIS port, build-time snapshot).
 app.route('/api/v1', c2PlaybooksRouter);
+// MANTIS infra-hunt planner (seed → engine queries, keyless upstreams).
+app.route('/api/v1', mantisHuntRouter);
 app.get('/api/v1/feed-catalog', feedCatalogHandler);
 app.get('/api/v1/yara-hub', yaraHubListHandler);
 app.get('/api/v1/yara-hub/rule/:uuid', yaraHubRuleHandler);

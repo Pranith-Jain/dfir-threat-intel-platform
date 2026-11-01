@@ -345,7 +345,7 @@ function TiMindmapInner(): JSX.Element {
               )}
               <p className="mt-3 text-xs font-mono text-muted">
                 tweet: {res.branches.tweet} · mindmap: {res.branches.mindmap} · IOCs / STIX / Diamond live on{' '}
-                <a className="underline" href="/dfir/report-analyzer">
+                <a className="underline" href="/dfir/report-hub?tab=analyzer">
                   report-analyzer
                 </a>
               </p>
