@@ -256,6 +256,25 @@ export const rssFeeds: RSSFeed[] = [
     language: 'en',
   },
   {
+    id: 'daily-dark-web',
+    name: 'Daily Dark Web',
+    url: 'https://dailydarkweb.net/feed/',
+    description:
+      'Daily dark web reporting - new markets, leak-site posts, threat actor forums, and underground service listings',
+    category: 'threat-intel',
+    source: 'dailydarkweb.net',
+    language: 'en',
+  },
+  {
+    id: 'emsisoft-blog',
+    name: 'Emsisoft Blog',
+    url: 'https://www.emsisoft.com/en/blog/feed/',
+    description: 'Ransomware response research, extortion group data analysis, and decryption guidance from Emsisoft',
+    category: 'threat-intel',
+    source: 'emsisoft.com',
+    language: 'en',
+  },
+  {
     id: 'hunters-ledger',
     name: "The Hunter's Ledger",
     url: 'https://the-hunters-ledger.com/feed.xml',
@@ -419,6 +438,15 @@ export const rssFeeds: RSSFeed[] = [
     source: 'medium.com/mitre-attack',
     language: 'en',
   },
+  {
+    id: 'offsec-blog',
+    name: 'OffSec Blog',
+    url: 'https://www.offsec.com/rss.xml',
+    description: 'OffSec research blog - exploitation techniques, red-team tradecraft, and offensive tooling research',
+    category: 'threat-intel',
+    source: 'offsec.com',
+    language: 'en',
+  },
 
   {
     id: 'dfir-lab',
@@ -437,6 +465,24 @@ export const rssFeeds: RSSFeed[] = [
     category: 'threat-intel',
     source: 'DFIR Radar',
     language: 'en-US',
+  },
+  {
+    id: 'dfir-diva',
+    name: 'DFIR Diva',
+    url: 'https://dfirdiva.com/feed/',
+    description: 'Long-running curated DFIR index - tools, training, datasets, and community resources',
+    category: 'threat-intel',
+    source: 'dfirdiva.com',
+    language: 'en',
+  },
+  {
+    id: 'invictus-ir',
+    name: 'Invictus IR',
+    url: 'https://www.invictus-ir.com/news/rss.xml',
+    description: 'Intelligence-led incident response writeups, IR case notes, and adversary infrastructure analysis',
+    category: 'threat-intel',
+    source: 'invictus-ir.com',
+    language: 'en',
   },
   {
     id: 'sans-isc',
@@ -1253,6 +1299,15 @@ export const rssFeeds: RSSFeed[] = [
     language: 'en',
   },
   {
+    id: 'danielmiessler',
+    name: 'Daniel Miessler',
+    url: 'https://danielmiessler.com/feed',
+    description: 'Essays on threat intelligence, security engineering, and AI security from Daniel Miessler',
+    category: 'threat-intel',
+    source: 'danielmiessler.com',
+    language: 'en',
+  },
+  {
     id: 'rapid7-blog',
     name: 'Rapid7 Blog',
     url: 'https://www.rapid7.com/rss.xml',
@@ -1567,6 +1622,14 @@ export const landingThreatInvestigation = [
   'embracethered',
   'darknet',
   'offseq-radar',
+  // ThreatFeed (jozeta/ThreatFeed) registry cross-check 2026-11-01 - six curated
+  // security sources our hub lacked; each URL probed and confirmed RSS.
+  'dfir-diva',
+  'invictus-ir',
+  'daily-dark-web',
+  'offsec-blog',
+  'emsisoft-blog',
+  'danielmiessler',
 ];
 
 // Reddit blocks Cloudflare Worker egress IPs at the network level (see
