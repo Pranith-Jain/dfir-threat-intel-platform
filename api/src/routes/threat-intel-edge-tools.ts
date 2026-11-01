@@ -1212,6 +1212,132 @@ threatIntelRouter.get('/threat-intel/malwareanalyzer/lookup', async (c) => {
   }
 });
 
+// ─── cve.now (cve.now — free public vulnerability feed) ─────────────────
+// Deduplicated cross-source vulnerability feed (CVE List, NVD, CISA KEV,
+// GitHub Advisories, OSV, EUVD, EPSS, Exploit-DB, Metasploit, Nuclei,
+// PoC-in-GitHub) staged in public/data/threat-intel/cve-now/.
+
+threatIntelRouter.get('/threat-intel/cve-now', async (c) => {
+  try {
+    const mod = await loadTiMod();
+    const idx = await mod.loadCveNowIndex(c.env.ASSETS);
+    return c.json({
+      source: idx.source,
+      sourceUrl: idx.sourceUrl,
+      repoUrl: idx.repoUrl,
+      description: idx.description,
+      license: idx.license,
+      syncedAt: idx.syncedAt,
+      meta: idx.meta,
+      counts: idx.counts,
+      topProducts: idx.topProducts,
+      sourcesHealth: idx.sourcesHealth,
+      stats: mod.tiCacheStats().cveNow,
+    });
+  } catch (e) {
+    logError('handler failed', e);
+    return internalError(c, `ti_cve_now_index_failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+});
+
+threatIntelRouter.get('/threat-intel/cve-now/entries', async (c) => {
+  try {
+    const mod = await loadTiMod();
+    const idx = await mod.loadCveNowIndex(c.env.ASSETS);
+    const severity = c.req.query('severity') || undefined;
+    const product = c.req.query('product') || undefined;
+    const keyword = c.req.query('q') || undefined;
+    const kevParam = c.req.query('kev');
+    const fixParam = c.req.query('has-fix');
+    if (kevParam !== undefined && kevParam !== 'true' && kevParam !== 'false') {
+      return badRequest(c, `ti_cve_now_kev_invalid: ${kevParam} (expected true | false)`);
+    }
+    if (fixParam !== undefined && fixParam !== 'true' && fixParam !== 'false') {
+      return badRequest(c, `ti_cve_now_fix_invalid: ${fixParam} (expected true | false)`);
+    }
+    const limitRaw = c.req.query('limit');
+    const limit = limitRaw ? Math.min(240, Math.max(1, Number(limitRaw) || 100)) : undefined;
+    const out = mod.filterCveNowEntries(idx, {
+      severity,
+      product,
+      keyword,
+      kev: kevParam === undefined ? undefined : kevParam === 'true',
+      hasFix: fixParam === undefined ? undefined : fixParam === 'true',
+      limit,
+    });
+    return c.json({
+      source: idx.source,
+      syncedAt: idx.syncedAt,
+      total: idx.counts.entries,
+      returned: out.length,
+      filters: { severity, product, keyword, kev: kevParam, hasFix: fixParam },
+      entries: out,
+    });
+  } catch (e) {
+    logError('handler failed', e);
+    return internalError(c, `ti_cve_now_entries_failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+});
+
+threatIntelRouter.get('/threat-intel/cve-now/entries/:id', async (c) => {
+  const assets = c.env.ASSETS;
+  if (!assets) return internalError(c, 'ti_cve_now_no_assets');
+  const id = c.req.param('id').toUpperCase();
+  if (!/^CVE-\d{4}-\d{4,}$/.test(id)) return badRequest(c, `ti_cve_now_id_invalid: ${id}`);
+  try {
+    const mod = await loadTiMod();
+    const body = await mod.getCveNowEntry(assets, id);
+    if (!body) return notFound(c, `ti_cve_now_entry_not_found: ${id}`);
+    return c.json(body);
+  } catch (e) {
+    logError('handler failed', e);
+    return internalError(c, `ti_cve_now_entry_failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+});
+
+// ─── Incident Desk (iamnicholasmartin.co.uk/incidents) ──────────────────
+// Identity-lens incident briefings from the public RSS feed, staged in
+// public/data/threat-intel/incident-desk/.
+
+threatIntelRouter.get('/threat-intel/incident-desk', async (c) => {
+  try {
+    const mod = await loadTiMod();
+    const idx = await mod.loadIncidentDeskIndex(c.env.ASSETS);
+    const keyword = c.req.query('q') || undefined;
+    const limitRaw = c.req.query('limit');
+    const limit = limitRaw ? Math.min(50, Math.max(1, Number(limitRaw) || 50)) : undefined;
+    const briefs = mod.filterIncidentDeskBriefs(idx, { keyword, limit });
+    return c.json({
+      source: idx.source,
+      sourceUrl: idx.sourceUrl,
+      description: idx.description,
+      license: idx.license,
+      syncedAt: idx.syncedAt,
+      meta: idx.meta,
+      counts: idx.counts,
+      returned: briefs.length,
+      briefs,
+    });
+  } catch (e) {
+    logError('handler failed', e);
+    return internalError(c, `ti_incident_desk_failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+});
+
+threatIntelRouter.get('/threat-intel/incident-desk/briefs/:slug', async (c) => {
+  const slug = c.req.param('slug');
+  try {
+    const mod = await loadTiMod();
+    const idx = await mod.loadIncidentDeskIndex(c.env.ASSETS);
+    const brief = mod.getIncidentDeskBrief(idx, slug);
+    if (!brief) return notFound(c, `ti_incident_desk_brief_not_found: ${slug}`);
+    return c.json(brief);
+  } catch (e) {
+    logError('handler failed', e);
+    return internalError(c, `ti_incident_desk_brief_failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+});
+
 // ─── Live enrichment search routes ──────────────────────────────────────
 const SEARCH_TIMEOUT_MS = 20_000;
 

@@ -220,7 +220,17 @@ describe('API route classification (auth + cost control coverage)', () => {
     // coverage — the most likely way these lists rot, and how
     // `/api/v1/ti-dashboard/build` and `/api/v1/auth/register` were found.
     const routesByPath = new Set(routes.map((r) => r.path));
-    const orphans = [...AI_STRICT_EXACT].filter((p) => !routesByPath.has(p) && !p.startsWith('/api/v1/taxii2'));
+    const orphans = [...AI_STRICT_EXACT].filter((p) => {
+      if (routesByPath.has(p) || p.startsWith('/api/v1/taxii2')) return false;
+      // isAiStrict treats an exact entry as covering its own sub-paths
+      // (`pathname.startsWith(`${p}/`)`) — mirror that contract here, or an
+      // entry whose handler lives below its collection root reads as stale
+      // (ti-mindmap mounts POSTs at `/ti-mindmap/analyze|assistant`).
+      for (const r of routesByPath) {
+        if (r.startsWith(`${p}/`)) return false;
+      }
+      return true;
+    });
     expect(orphans, `AI_STRICT_EXACT entries with no matching route: ${orphans.join(', ')}`).toEqual([]);
   });
 

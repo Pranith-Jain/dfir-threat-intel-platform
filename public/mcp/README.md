@@ -1,6 +1,6 @@
 # DFIR-ThreatIntel MCP - tool catalog
 
-**426 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
+**429 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
 
 ## Quick start
 
@@ -14,7 +14,7 @@
 
 ## Tools by category
 
-### other (309)
+### other (312)
 
 - `ai_advisories` - AI advisory firehose — per-package GHSA advisories, cvelistV5 CVE commits matched to known AI CVEs, tool release trains (garak, PyRIT, promptfoo, litellm, vllm, ollama, langchain, MCP SDK, MITRE ATLAS, OWASP GenAI), ExploitDB PoCs.
 - `ai_playbook_cve_refs` - CVE references cited by the AI Security Playbook, enriched against our local CISA KEV snapshot so you can see which are known-exploited. Enrichment comes from our own feed, never upstream.
@@ -246,6 +246,7 @@
 - `ti_get_ctiwatch_victim` - Return the full CTIWatch victim record for one id: name, group, country, sector, attack date, website, and description. Use the CTIWatch index (ti_list is not paginated for victims — fetch /api/v1/threat-intel/ctiwatch and read .victims).
 - `ti_get_ctiwatch_vuln` - Return the full CTIWatch vulnerability body for one CVE id: title, description, severity, CVSS, KEV flag, exploit status, published date, CWEs, vendor/product, priority score, EPSS, references, and affected products. Use ti_list_ctiwatch_vulns to discover CVE ids.
 - `ti_get_cve` - Return the full CVE body with CVSS vector, CWE IDs, references, and (where populated) BSI description and LLM summary/recommended action. Use ti_list_cves first to discover CVE IDs.
+- `ti_get_cve_now` - Return the full cve.now record for one CVE id: deduplicated cross-source summary, CVSS score and severity, KEV membership, fix versions and the upstream entry page. Use ti_list_cve_now to discover ids.
 - `ti_get_darknet_category` - Return all sites in a darknetlist.is category (markets, search, forums, news, security, communications, crypto, tools, ai) with full details: onion URLs, status, latency, HTTP codes, fingerprints.
 - `ti_get_darknet_site` - Return the full site body from the darknetlist.is directory: name, DWD ID, category, onion URL, clearnet URL (if any), live status, mirror counts, latency, HTTP code, page size, and fingerprint. Use ti_list_darknet first to discover site slugs (DWD IDs).
 - `ti_get_detection_list` - Return the full detection list body with all entries (indicator values + metadata: description, tool, severity, category, reference, regex). Optionally search within the list by keyword or severity. Use ti_list_detection_lists first to discover slugs.
@@ -255,10 +256,12 @@
 - `ti_get_offseq_threat` - Return the full OffSeq threat body for one slug: title, description, severity, CVSS, CVE ids, AI-generated summary and impact, Mirage exploitation telemetry (countries), patch availability, known threat actors, affected countries, references, and tags. Use ti_list_offseq_threats to discover slugs.
 - `ti_get_threaticon_actor` - Return the full Threaticon actor profile: executive summary, key capabilities, goals & targeting, MITRE ATT&CK tactics and techniques (T-numbers), software/tooling, IOC patterns, recommended actions, campaigns & victims, targeted sectors and countries, aliases, and confidence. Use ti_list_threaticon_actors to discover slugs.
 - `ti_list_ctiwatch_vulns` - List recent CVEs from CTIWatch (ctiwatch.com): CVE id, title, severity, CVSS, KEV flag, exploit status, published date, CWEs, vendor/product, priority score, and EPSS. Filter by KEV-only, severity, or keyword. Use ti_get_ctiwatch_vuln for the full body (description, references, affected products).
+- `ti_list_cve_now` - List entries from the cve.now aggregate vulnerability feed: one deduplicated entry per CVE merging CVE List, NVD, CISA KEV, GitHub Advisories, OSV, ENISA EUVD, FIRST EPSS, Exploit-DB, Metasploit, Nuclei and PoC-in-GitHub, with CVSS score, severity band, KEV membership, fix versions and affected product. Filter by severity, KEV membership, fix availability, product substring or keyword. Use ti_get_cve_now for the full record.
 - `ti_list_cves` - List CVEs from the threat-intel vertical (NVD + CISA KEV). CVEs are enriched with priority scoring (CVSS + KEV + recency). Filter by severity, KEV-only, vendor, recency, or keyword.
 - `ti_list_darknet` - List Tor-accessible sites from the darknetlist.is directory (markets, forums, news, security, comms, crypto, tools, AI). Each site has live up/down status, onion URL, response code, and fingerprint. Filter by category, status, recommended, or keyword.
 - `ti_list_detection_lists` - List SOC/DFIR detection lists (suspicious named pipes, ports, user-agents, mutexes, ransomware extensions, etc.) sourced from mthcht/awesome-lists. Each list is a curated CSV of indicators with metadata (tool, severity, category, reference). Filter by category or keyword.
 - `ti_list_dphish` - List phishing indicators from the dPhish public TAXII 2.1 collection (dphish.com): malicious domains, phishing URLs, sender IPs, phone numbers, and attachment detection rules — with active/revoked status, STIX observable type, confidence, OpenCTI score, and validity window. Filter by category, active-only, or keyword. Use ti_get_dphish_indicator to fetch the full STIX body (pattern, description, labels).
+- `ti_list_incident_desk` - List briefs from the Incident Desk (iamnicholasmartin.co.uk): emergency briefings on live security incidents through an identity lens — machine identity, CA misissuance, identity supply chains, secret management failures, AI-key theft. Each brief carries title, date, summary, image and a canonical source link. Filter by keyword.
 - `ti_list_iocs` - List IOC families (ransomware, malware, APT groups, C2 frameworks, stealers, phishing kits) from the threat-intel vertical, sourced from Daily-Hunt references and tracked by this Worker.
 - `ti_list_kev` - Return the full CISA Known Exploited Vulnerabilities (KEV) snapshot — actively exploited CVEs with required actions and due dates. Each entry includes vendor, product, short description, required action, and due date.
 - `ti_list_living_threat` - List incidents from the Living Threat Repository (living-threat.rabitanoor.com): real-world incidents mapped to MITRE ATT&CK tactic/technique chains, with severity, priority score, CVEs/actor/tool counts. Filter by tactic, technique ID (e.g. T1190), severity, actor name, keyword, or minimum priority score. Use ti_get_living_threat_incident to fetch the full incident (per-kill-chain-stage analyses, detection + remediation notes, hunt-pack guidance).

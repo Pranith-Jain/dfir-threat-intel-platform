@@ -58,9 +58,15 @@ function extractHubs(hubsPath) {
     }
     if (!cur) continue;
     const labelM = /label:\s*'([^']+)'/.exec(line);
-    if (labelM && !cur.label) { cur.label = labelM[1]; continue; }
+    if (labelM && !cur.label) {
+      cur.label = labelM[1];
+      continue;
+    }
     const descM = /desc:\s*'([^']+)'/.exec(line);
-    if (descM && !cur.desc) { cur.desc = descM[1]; continue; }
+    if (descM && !cur.desc) {
+      cur.desc = descM[1];
+      continue;
+    }
   }
   if (cur) tools.push(cur);
   return tools.filter((t) => t.path && t.label);
@@ -84,7 +90,9 @@ function main() {
   lines.push('## Overview');
   lines.push('');
   lines.push('Pranith Jain is an Associate Cyber Security Analyst on the Capgemini CERT team (Threat and');
-  lines.push('Vulnerability Intelligence group) working AI automation, autonomous workflows, and AI threat intelligence.');
+  lines.push(
+    'Vulnerability Intelligence group) working AI automation, autonomous workflows, and AI threat intelligence.'
+  );
   lines.push('He builds and runs a live, edge-deployed DFIR and threat-intelligence platform at');
   lines.push('https://pranithjain.qzz.io . The platform has three surfaces:');
   lines.push('');
@@ -114,7 +122,7 @@ function main() {
   lines.push('');
 
   // MCP server
-  lines.push('## MCP server (AI agent tools, 426 tools)');
+  lines.push('## MCP server (AI agent tools, 429 tools)');
   lines.push('');
   lines.push('Endpoint: https://pranithjain.qzz.io/api/mcp (streamable HTTP)');
   lines.push('Auth: Authorization: Bearer <api-key> or X-API-Key: <key>');

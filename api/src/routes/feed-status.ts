@@ -223,7 +223,7 @@ export const PROBE_SOURCES: Record<string, string[]> = {
   'stealer-forum-intel': ['hudson-rock'],
   // dbu.gs (B) sits alongside the A-grade advisory sources: it is a gap-filler,
   // so NVD/KEV remain the probe's reliability anchor and the aggregate stays A.
-  'cve-recent': ['nvd', 'cisa-kev', 'dbugs', 'threatwire'],
+  'cve-recent': ['nvd', 'cisa-kev', 'dbugs'],
   // ExploitGrid (C) is its own surface now, not a cve-recent tier, so it gets
   // its own probe — a dead exploit index shows up as a dead feed row rather
   // than as a silently missing gap-filler count inside another probe.
@@ -294,13 +294,12 @@ export const PROBES: FeedProbeSpec[] = [
       const nvdCount = find('nvd-published-14d')?.count ?? 0;
       const kevCount = find('cisa-kev-added-30d')?.count ?? 0;
       const dbugsCount = find('dbugs')?.count ?? 0;
-      const threatWireCount = find('threatwire')?.count ?? 0;
       const status: Status = nvdCount > 0 && kevCount > 0 ? 'ok' : count > 0 ? 'degraded' : 'down';
       return {
         status,
         reason:
           nvdCount > 0 && kevCount > 0
-            ? `NVD ${nvdCount} + KEV ${kevCount} entries${dbugsCount > 0 || threatWireCount > 0 ? ` + ${dbugsCount} dbu.gs / ${threatWireCount} threatwire gap-fills` : ''}`
+            ? `NVD ${nvdCount} + KEV ${kevCount} entries${dbugsCount > 0 ? ` + ${dbugsCount} dbu.gs gap-fills` : ''}`
             : nvdCount === 0
               ? 'NVD rate-limited — serving KEV only'
               : 'KEV unreachable — serving NVD only',
@@ -311,7 +310,6 @@ export const PROBES: FeedProbeSpec[] = [
           nvd: nvdCount,
           kev: kevCount,
           dbugs: dbugsCount,
-          threatwire: threatWireCount,
         },
         ageS,
       };

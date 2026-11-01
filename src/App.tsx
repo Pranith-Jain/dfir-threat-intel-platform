@@ -253,6 +253,8 @@ const CtiwatchFeeds = lazy(() => import('./pages/threatintel/Ctiwatch'));
 const DestroylistFeeds = lazy(() => import('./pages/threatintel/Destroylist'));
 const LivingThreatFeeds = lazy(() => import('./pages/threatintel/LivingThreat'));
 const MalwareAnalyzerFeeds = lazy(() => import('./pages/threatintel/MalwareAnalyzer'));
+const CveNowFeeds = lazy(() => import('./pages/threatintel/CveNow'));
+const IncidentDeskFeeds = lazy(() => import('./pages/threatintel/IncidentDesk'));
 const ThreatClusterEntities = lazy(() => import('./pages/threatintel/ThreatClusterEntities'));
 const FlowViz = lazy(() => import('./pages/threatintel/FlowViz'));
 const TiMindmap = lazy(() => import('./pages/threatintel/TiMindmap'));
@@ -622,6 +624,8 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/feeds/destroylist', Component: DestroylistFeeds },
   { path: '/threatintel/feeds/living-threat', Component: LivingThreatFeeds },
   { path: '/threatintel/feeds/malwareanalyzer', Component: MalwareAnalyzerFeeds },
+  { path: '/threatintel/feeds/cve-now', Component: CveNowFeeds },
+  { path: '/threatintel/feeds/incident-desk', Component: IncidentDeskFeeds },
   { path: '/threatintel/feeds/threatfeeds', Component: ThreatFeeds },
   { path: '/threatintel/feeds/mythreatintel', Component: MyThreatIntel },
   { path: '/threatintel/infra/cloud', Component: CloudThreatLandscape },

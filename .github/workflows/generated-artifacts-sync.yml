@@ -11,7 +11,7 @@ name: Generated artifacts sync (daily)
 
 on:
   schedule:
-    - cron: "30 3 * * *"
+    - cron: '30 3 * * *'
   workflow_dispatch: {}
 
 concurrency:
@@ -36,7 +36,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
           cache: npm
 
       - name: Install
@@ -110,6 +110,20 @@ jobs:
       - name: Budget check
         if: steps.changes.outputs.changed == 'true'
         run: node scripts/check-budgets.mjs
+
+      # Why a guard instead of more `!= ''` skips: when this repo secret was
+      # missing, every deploy step below skipped silently for days while main
+      # raced ahead with fresh syncs, and the run stayed green - the live site
+      # kept serving stale feeds with nothing in Actions marking why. A missing
+      # token is a config error; make the run red instead of quietly stale.
+      - name: Require CLOUDFLARE_API_TOKEN for deploy
+        if: steps.changes.outputs.changed == 'true' && env.CLOUDFLARE_API_TOKEN == ''
+        run: |
+          echo "::error title=Missing repo secret::CLOUDFLARE_API_TOKEN is not set - deploy steps would skip silently and the live site keeps serving stale feeds while main races ahead."
+          echo "Fix: create a Cloudflare API token (Account Resources: Workers Scripts - Edit; User: Memberships + Details - Read) and set the repo secret:"
+          echo "  gh secret set CLOUDFLARE_API_TOKEN --repo $GITHUB_REPOSITORY"
+          echo "This data run still landed in main; only the deploy was blocked."
+          exit 1
 
       - name: Deploy to Cloudflare Workers
         if: steps.changes.outputs.changed == 'true' && env.CLOUDFLARE_API_TOKEN != ''

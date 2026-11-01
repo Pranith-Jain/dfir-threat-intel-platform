@@ -49,11 +49,21 @@ import {
   loadMaIndex,
   getMaFeed,
   filterMaFeed,
+  loadCveNowIndex,
+  getCveNowEntry,
+  filterCveNowEntries,
+  loadIncidentDeskIndex,
+  getIncidentDeskBrief,
+  filterIncidentDeskBriefs,
   type LivingThreatIndex,
   type LivingThreatIncidentBody,
   type LivingThreatIndexEntry,
   type MaIndex,
   type MaFeedEntry,
+  type CveNowIndex,
+  type CveNowIndexEntry,
+  type IncidentDeskBrief,
+  type IncidentDeskIndex,
   loadThreatClusterIndex,
   getTcCluster,
   getTcVuln,
@@ -1180,6 +1190,127 @@ function makeAssetsFixture() {
     online: { registered: 1, anonymous: 5, total: 6 },
     engines: { measured: 46, sampleSize: 59306, source: 'median' },
   });
+
+  // ── cve.now (cve.now aggregate vulnerability feed) ─────────────────
+  const cnEntry1: CveNowIndexEntry = {
+    id: 'CVE-2026-88801',
+    batch: 0,
+    sequence: 0,
+    title: 'Widget Suite RCE',
+    publishedAt: '2026-10-30T16:16:28.198Z',
+    firstSeenAt: '2026-10-30T16:18:34.471Z',
+    modifiedAt: '2026-10-30T16:16:28.198Z',
+    cvss: 9.8,
+    severity: 'CRITICAL',
+    kev: true,
+    hasFix: false,
+    product: 'Acme Widget Suite',
+    sizeBytes: 320,
+  };
+  const cnEntry2: CveNowIndexEntry = {
+    ...cnEntry1,
+    id: 'CVE-2026-88802',
+    sequence: 1,
+    title: 'Gadget SSRF',
+    publishedAt: '2026-10-29T12:00:00.000Z',
+    firstSeenAt: '2026-10-29T12:05:00.000Z',
+    modifiedAt: '2026-10-29T12:05:00.000Z',
+    cvss: 5.4,
+    severity: 'MEDIUM',
+    kev: false,
+    hasFix: true,
+    product: 'Boxy Gadget',
+    sizeBytes: 260,
+  };
+  const cnIdx: CveNowIndex = {
+    source: 'cve.now',
+    sourceUrl: 'https://cve.now/',
+    repoUrl: 'https://github.com/sazabi/cve.now',
+    description: 'Aggregate vulnerability feed.',
+    license: 'Entry summaries CC-BY 4.0',
+    syncedAt: '2026-10-30T16:20:00.000Z',
+    meta: {
+      feedUrl: 'https://cve.now/feed',
+      entriesUrl: 'https://cve.now/api/v1/entries',
+      window: 'newest 240 upstream entries',
+      batchCount: 1,
+      batchSize: 100,
+    },
+    counts: {
+      entries: 2,
+      kev: 1,
+      withFix: 1,
+      batches: 1,
+      bySeverity: { CRITICAL: 1, MEDIUM: 1 },
+    },
+    topProducts: [
+      { product: 'Acme Widget Suite', count: 1 },
+      { product: 'Boxy Gadget', count: 1 },
+    ],
+    sourcesHealth: {
+      checkedAt: '2026-10-30T15:54:34.422Z',
+      cursor: null,
+      sources: { kev: { ok: true, at: '2026-10-30T15:54:34.422Z' } },
+    },
+    entries: [cnEntry1, cnEntry2],
+  };
+  data.set('/data/threat-intel/cve-now/index.json', cnIdx);
+  data.set('/data/threat-intel/cve-now/bodies/batch-000.json', [
+    {
+      id: cnEntry1.id,
+      batch: 0,
+      title: cnEntry1.title,
+      product: cnEntry1.product,
+      fix: [],
+      modifiedAt: cnEntry1.modifiedAt,
+      upstreamPage: `https://cve.now/${cnEntry1.id}`,
+      sizeBytes: 320,
+    },
+    {
+      id: cnEntry2.id,
+      batch: 0,
+      title: cnEntry2.title,
+      product: cnEntry2.product,
+      fix: ['2.1.0'],
+      modifiedAt: cnEntry2.modifiedAt,
+      upstreamPage: `https://cve.now/${cnEntry2.id}`,
+      sizeBytes: 260,
+    },
+  ]);
+
+  // ── Incident Desk (iamnicholasmartin.co.uk/incidents) ─────────────
+  const idBrief1: IncidentDeskBrief = {
+    title: 'CA misissuance roundup',
+    link: 'https://iamnicholasmartin.co.uk/blog/iam-incident-digest-2026w44-58',
+    guid: 'https://iamnicholasmartin.co.uk/blog/iam-incident-digest-2026w44-58',
+    published: '2026-10-26T08:08:18.000Z',
+    publishedRaw: 'Mon, 26 Oct 2026 08:08:18 +0000',
+    description: 'Guessable CA keys, hijacked LiteLLM pipeline, AI-key theft.',
+    imageUrl: 'https://iamnicholasmartin.co.uk/static/images/blog/digest-2026w44-hero.webp',
+    slug: 'iam-incident-digest-2026w44-58',
+  };
+  const idBrief2: IncidentDeskBrief = {
+    ...idBrief1,
+    title: 'Secrets in plain env vars',
+    published: '2026-10-23T10:00:00.000Z',
+    description: 'Railway breach post-mortem through a secrets lens.',
+    imageUrl: null,
+    slug: 'iam-incident-railway-20261023-30-55',
+  };
+  const idIdx: IncidentDeskIndex = {
+    source: 'iamnicholasmartin.co.uk/incidents',
+    sourceUrl: 'https://iamnicholasmartin.co.uk/incidents',
+    description: 'Incident Desk — identity-lens incident briefings.',
+    license: 'Copyright the author',
+    syncedAt: '2026-10-30T16:30:00.000Z',
+    meta: {
+      feedUrl: 'https://iamnicholasmartin.co.uk/incidents/feed.xml',
+      feedTitle: 'Incident Desk | Nicholas Martin',
+    },
+    counts: { briefs: 2, withImage: 1, byMonth: { '2026-10': 2 } },
+    briefs: [idBrief1, idBrief2],
+  };
+  data.set('/data/threat-intel/incident-desk/index.json', idIdx);
 
   const assets = {
     fetch: vi.fn(async (req: Request) => {
@@ -2461,5 +2592,131 @@ describe('_resetTiCacheForTests (offseq + ctiwatch)', () => {
     const s = tiCacheStats();
     expect(s.offseq.indexLoaded).toBe(false);
     expect(s.ctiwatch.indexLoaded).toBe(false);
+  });
+});
+
+describe('cve.now (loadCveNowIndex / getCveNowEntry)', () => {
+  beforeEach(() => _resetTiCacheForTests());
+
+  it('fetches and caches the index', async () => {
+    const { assets } = makeAssetsFixture();
+    const idx = await loadCveNowIndex(assets);
+    expect(idx.source).toBe('cve.now');
+    expect(idx.counts.entries).toBe(2);
+    expect(idx.counts.bySeverity.CRITICAL).toBe(1);
+    expect(idx.sourcesHealth && idx.sourcesHealth.sources && idx.sourcesHealth.sources.kev?.ok).toBe(true);
+    const again = await loadCveNowIndex(assets);
+    expect(again).toBe(idx);
+  });
+
+  it('resolves an id through the body batch and caches the batch', async () => {
+    const { assets } = makeAssetsFixture();
+    const body = await getCveNowEntry(assets, 'cve-2026-88802');
+    expect(body).not.toBeNull();
+    expect(body!.title).toBe('Gadget SSRF');
+    expect(body!.fix).toEqual(['2.1.0']);
+    expect(body!.upstreamPage).toBe('https://cve.now/CVE-2026-88802');
+    const again = await getCveNowEntry(assets, 'CVE-2026-88802');
+    expect(again).toBe(body);
+  });
+
+  it('returns null for an unknown id and rejects malformed paths', async () => {
+    const { assets } = makeAssetsFixture();
+    expect(await getCveNowEntry(assets, 'CVE-2099-9999')).toBeNull();
+  });
+
+  it('throws with a build hint when the manifest is missing', async () => {
+    const empty = {
+      fetch: vi.fn(async () => new Response('not found', { status: 404 })),
+    } as unknown as Fetcher;
+    await expect(loadCveNowIndex(empty)).rejects.toThrow(/sync-cve-now\.mjs/);
+  });
+});
+
+describe('cve.now (filterCveNowEntries)', () => {
+  beforeEach(() => _resetTiCacheForTests());
+
+  it('filters by severity, kev, hasFix, product, keyword with limit', async () => {
+    const { assets } = makeAssetsFixture();
+    const idx = await loadCveNowIndex(assets);
+    expect(filterCveNowEntries(idx, { severity: 'critical' })).toHaveLength(1);
+    expect(filterCveNowEntries(idx, { kev: true })).toHaveLength(1);
+    expect(filterCveNowEntries(idx, { kev: false })).toHaveLength(1);
+    expect(filterCveNowEntries(idx, { hasFix: true })).toHaveLength(1);
+    expect(filterCveNowEntries(idx, { product: 'gadget' })).toHaveLength(1);
+    expect(filterCveNowEntries(idx, { keyword: 'widget' })).toHaveLength(1);
+    expect(filterCveNowEntries(idx, { limit: 1 })).toHaveLength(1);
+  });
+});
+
+describe('Incident Desk (loadIncidentDeskIndex / briefs)', () => {
+  beforeEach(() => _resetTiCacheForTests());
+
+  it('fetches and caches the index', async () => {
+    const { assets } = makeAssetsFixture();
+    const idx = await loadIncidentDeskIndex(assets);
+    expect(idx.source).toBe('iamnicholasmartin.co.uk/incidents');
+    expect(idx.counts.briefs).toBe(2);
+    expect(idx.briefs[0]!.imageUrl).toContain('digest-2026w44-hero.webp');
+    const again = await loadIncidentDeskIndex(assets);
+    expect(again).toBe(idx);
+  });
+
+  it('resolves a brief by slug (case-insensitive)', () => {
+    const idx: IncidentDeskIndex = {
+      source: 'iamnicholasmartin.co.uk/incidents',
+      sourceUrl: 'https://iamnicholasmartin.co.uk/incidents',
+      description: 'x',
+      license: 'y',
+      syncedAt: '2026-10-30T16:30:00.000Z',
+      meta: { feedUrl: 'https://iamnicholasmartin.co.uk/incidents/feed.xml', feedTitle: null },
+      counts: { briefs: 2, withImage: 1, byMonth: { '2026-10': 2 } },
+      briefs: [
+        {
+          title: 'A',
+          link: null,
+          guid: null,
+          published: null,
+          publishedRaw: null,
+          description: null,
+          imageUrl: null,
+          slug: 'first-post',
+        },
+        {
+          title: 'B',
+          link: null,
+          guid: null,
+          published: null,
+          publishedRaw: null,
+          description: null,
+          imageUrl: null,
+          slug: 'second-post',
+        },
+      ],
+    };
+    expect(getIncidentDeskBrief(idx, 'FIRST-POST')?.title).toBe('A');
+    expect(getIncidentDeskBrief(idx, 'nope')).toBeNull();
+    expect(filterIncidentDeskBriefs(idx, { keyword: 'b' })).toHaveLength(1);
+    expect(filterIncidentDeskBriefs(idx, { limit: 1 })).toHaveLength(1);
+  });
+
+  it('throws with a build hint when the manifest is missing', async () => {
+    const empty = {
+      fetch: vi.fn(async () => new Response('not found', { status: 404 })),
+    } as unknown as Fetcher;
+    await expect(loadIncidentDeskIndex(empty)).rejects.toThrow(/sync-incident-desk\.mjs/);
+  });
+});
+
+describe('_resetTiCacheForTests (cve.now + incident desk)', () => {
+  beforeEach(() => _resetTiCacheForTests());
+  it('clears the new vertical caches', async () => {
+    const { assets } = makeAssetsFixture();
+    await loadCveNowIndex(assets);
+    await loadIncidentDeskIndex(assets);
+    _resetTiCacheForTests();
+    const s = tiCacheStats();
+    expect(s.cveNow.indexLoaded).toBe(false);
+    expect(s.incidentDesk.indexLoaded).toBe(false);
   });
 });
