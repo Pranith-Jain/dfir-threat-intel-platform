@@ -136,7 +136,7 @@ jobs:
         if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
         run: |
           for i in 1 2 3 4 5; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 (compatible; smoke/1.0)" "https://pranithjain.qzz.io/api/v1/threat-intel/offseq")
+            code=$(curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 (compatible; smoke/1.0)" -H "Origin: https://pranithjain.qzz.io" "https://pranithjain.qzz.io/api/v1/threat-intel/offseq")
             echo "attempt $i: HTTP $code"
             [ "$code" = "200" ] && exit 0
             sleep 5

@@ -123,7 +123,7 @@ jobs:
         if: steps.changes.outputs.changed == 'true' && env.CLOUDFLARE_API_TOKEN != ''
         run: |
           sleep 8
-          code=$(curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 (compatible; smoke/1.0)" "https://pranithjain.qzz.io/api/v1/daily-briefs/")
+          code=$(curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 (compatible; smoke/1.0)" -H "Origin: https://pranithjain.qzz.io" "https://pranithjain.qzz.io/api/v1/daily-briefs")
           echo "/api/v1/daily-briefs/ -> HTTP $code"
           if [ "$code" = "403" ]; then
               echo "::warning::the manifest keeps returning HTTP 403 from the runner IP — Cloudflare bot mitigation (site verified reachable outside runners); not a deploy regression."
