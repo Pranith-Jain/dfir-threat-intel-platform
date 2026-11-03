@@ -2,12 +2,12 @@
   "source": "github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
   "sourceUrl": "https://github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
   "license": "MIT",
-  "replicatedAt": "2026-10-27",
+  "replicatedAt": "2026-11-03",
   "counts": {
-    "rules": 34,
+    "rules": 38,
     "t1": 9,
     "t2": 9,
-    "t3": 16,
+    "t3": 20,
     "filters": 27,
     "filtersEnabled": 24,
     "archetypes": 12,
@@ -319,6 +319,42 @@
       "artifactClass": "ai_c2_implant",
       "description": "CARBONATO (ThreatDown, 2026-09-23) — Linux Docker botnet implant; weaponizes the open-source Hermes Agent AI framework by overwriting its SOUL.md persona file with a 39-line malicious prompt that (1) routes operator Telegram tasks through the operator's own LLM gateway as a live C2 brain (A4) and (2) directs the agent to exfiltrate victim AI API keys as explicit #1 loot priority, naming 14 providers (A6). Primary artifacts are shell scripts and text files inside gzip-compressed Docker image layers — not indexed by VT content search. NOTE: rule is unvalidated against VT corpus samples (known hash not on VT); intended for container image forensics and host-based detection, not VT hunting.",
       "family": "CARBONATO",
+      "stringCount": 3
+    },
+    {
+      "name": "T3-PANDORA_Defacement_OpenAI_Tool",
+      "tier": "T3",
+      "confidence": 90,
+      "artifactClass": "llm_api_backdoor",
+      "description": "Detects PANDORA web defacement and OSINT tool with OpenAI integration — actor MrSanZz; kosred.com multimedia CDN; thatsthem.com OSINT scraping with typo variable {victm_mails}; both GPT-3.5 legacy and chat/completions endpoints",
+      "family": "PANDORA",
+      "stringCount": 6
+    },
+    {
+      "name": "T3-WURM_Python_Impacket_LLM_Worm",
+      "tier": "T3",
+      "confidence": 90,
+      "artifactClass": "llm_api_backdoor",
+      "description": "Detects WURM Python worm — Impacket-based network propagation with OpenAI LLM tasking, Slack webhook C2, and Ethereum/Infura blockchain component; template config vars (C2, your-webhook) suggest deploy-time substitution",
+      "family": "WURM",
+      "stringCount": 5
+    },
+    {
+      "name": "T3-LUNAV2_Glide_Linked_Telegram_RAT",
+      "tier": "T3",
+      "confidence": 90,
+      "artifactClass": "rat",
+      "description": "LUNAV2 - Go/garble Telegram-C2 RAT dropped by a VB.NET GZip dropper, statically linking EinStack Glide v1.0.0 as an UNREACHABLE library. Tracks the family so a future build that activates the linked gateway (--config + routers: YAML) is caught. A0 in all builds seen to date",
+      "family": "LUNAV2",
+      "stringCount": 15
+    },
+    {
+      "name": "T3-VOLTA_Autodoxer_Stealer_LLM_Target_Assessment",
+      "tier": "T3",
+      "confidence": 90,
+      "artifactClass": "infostealer",
+      "description": "Detects VOLTA ('VOLTA AUTODOXER') — an x64 MSVC infostealer (browsers incl. Chromium app-bound-encryption via headless Chrome, wallets/seed phrases, cards, Discord/Telegram/Steam/Roblox sessions, Wi-Fi, Microsoft OAuth tokens) with a doxing stage: it builds an 'evidence bundle' about the victim (home GPS, employer, address, live Gmail receipt search, food-delivery orders, Roblox account value) and POSTs it to OpenRouter with a hardcoded 'forensic intelligence analyst ... target assessment' system prompt that ranks the victim by monetization value, falling back to the next model on refusal. Operator-held key; exfil via Telegram sendDocument. RE-confirmed 2026-10-12: A7. Anchors are the program's own debug-log filename and headless-Chrome profile prefix (both format strings in the binary, observed in sandbox behaviour) — the prompt and [dox] strings never reach VT metadata",
+      "family": "VOLTA",
       "stringCount": 3
     }
   ],
