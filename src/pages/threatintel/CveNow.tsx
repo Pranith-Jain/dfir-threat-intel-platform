@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { relativeAgo } from '../../lib/relativeTime';
-import { ExternalLink, Flame, Loader2, Search, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { ExternalLink, Cpu, Flame, Loader2, Search, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { errMessage } from '../../lib/log';
 
 /**
@@ -28,6 +28,14 @@ interface CveNowEntry {
   kev: boolean;
   hasFix: boolean;
   product: string | null;
+  stack?: string[];
+}
+
+interface CveNowStackFacet {
+  id: string;
+  label: string;
+  description: string;
+  count: number;
 }
 
 interface CveNowResponse {
@@ -40,8 +48,10 @@ interface CveNowResponse {
     kev: number;
     withFix: number;
     bySeverity: Record<string, number>;
+    byStack?: Record<string, number>;
   };
   topProducts: Array<{ product: string; count: number }>;
+  stackFacets?: CveNowStackFacet[];
   sourcesHealth: {
     checkedAt: string | null;
     sources: Record<string, { ok: boolean; at: string }> | null;
@@ -100,14 +110,16 @@ export default function CveNow(): JSX.Element {
   const [q, setQ] = useState('');
   const [kevOnly, setKevOnly] = useState(false);
   const [withFixOnly, setWithFixOnly] = useState(false);
+  const [stack, setStack] = useState('');
   const [filtered, setFiltered] = useState<ListResult | null>(null);
   const [filterError, setFilterError] = useState<string | null>(null);
   const [listing, setListing] = useState(false);
 
   /** Any active filter → swap the default list for the filtered query. */
-  const hasFilter = q.trim().length > 0 || kevOnly || withFixOnly;
+  const hasFilter = q.trim().length > 0 || kevOnly || withFixOnly || stack.length > 0;
 
-  async function runList() {
+  async function runList(overrides: { stack?: string } = {}) {
+    const activeStack = 'stack' in overrides ? (overrides.stack ?? '') : stack;
     setListing(true);
     setFilterError(null);
     try {
@@ -115,6 +127,7 @@ export default function CveNow(): JSX.Element {
       if (q.trim()) params.set('q', q.trim());
       if (kevOnly) params.set('kev', 'true');
       if (withFixOnly) params.set('has-fix', 'true');
+      if (activeStack) params.set('stack', activeStack);
       params.set('limit', '240');
       const res = await fetch(`/api/v1/threat-intel/cve-now/entries?${params.toString()}`, {
         signal: AbortSignal.timeout(15_000),
@@ -127,6 +140,19 @@ export default function CveNow(): JSX.Element {
       setListing(false);
     }
   }
+
+  function selectStack(next: string) {
+    const selected = stack === next ? '' : next;
+    setStack(selected);
+    if (selected || q.trim() || kevOnly || withFixOnly) {
+      void runList({ stack: selected });
+    } else {
+      setFiltered(null);
+      setFilterError(null);
+    }
+  }
+
+  const facetMap = new Map((data?.stackFacets ?? []).map((f) => [f.id, f]));
 
   const listError = filterError ?? listFetchError;
 
@@ -172,6 +198,64 @@ export default function CveNow(): JSX.Element {
           </div>
         ))}
       </div>
+
+      {/* AI / agent stack facets */}
+      {data?.stackFacets && data.stackFacets.length > 0 && (
+        <section className="surface-card p-5 mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <Cpu size={16} className="text-brand-600 dark:text-brand-400" aria-hidden="true" />
+            <h2 className="text-lg font-bold text-heading">AI / agent stack</h2>
+          </div>
+          <p className="text-meta text-muted mb-3">
+            Build-time classification of this window by affected component. A CVE can sit in more than one facet; click
+            one to filter the wire. For the full AI-specific watchlist, open{' '}
+            <a href="/threatintel/ai-vulns" className="text-brand-600 dark:text-brand-400 hover:underline">
+              AI Vulns
+            </a>
+            .
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => selectStack('')}
+              aria-pressed={!stack}
+              className={`text-micro font-mono uppercase tracking-wider px-2 py-1 rounded border transition-colors ${
+                !stack
+                  ? 'border-brand-500/50 bg-brand-500/10 text-brand-700 dark:text-brand-300'
+                  : 'border-line-2 bg-surface-100 text-muted hover:border-brand-500/30'
+              }`}
+            >
+              All stacks
+            </button>
+            {data.stackFacets.map((facet) => {
+              const active = stack === facet.id;
+              return (
+                <button
+                  key={facet.id}
+                  type="button"
+                  onClick={() => selectStack(facet.id)}
+                  aria-pressed={active}
+                  disabled={!active && facet.count === 0}
+                  title={facet.description}
+                  className={`text-micro font-mono uppercase tracking-wider px-2 py-1 rounded border transition-colors inline-flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed ${
+                    active
+                      ? 'border-violet-500/60 bg-violet-500/10 text-violet-700 dark:text-violet-300'
+                      : 'border-line-2 bg-surface-100 text-muted hover:border-violet-500/30'
+                  }`}
+                >
+                  {facet.label}
+                  <span className="tabular-nums opacity-80">{facet.count}</span>
+                </button>
+              );
+            })}
+          </div>
+          {stack && (
+            <p className="mt-2 text-micro text-muted">
+              Filtering by <span className="font-mono text-body">{facetMap.get(stack)?.label ?? stack}</span>.
+            </p>
+          )}
+        </section>
+      )}
 
       {/* Upstream source health */}
       {data?.sourcesHealth?.sources && (
@@ -288,6 +372,15 @@ export default function CveNow(): JSX.Element {
                             {e.product}
                           </span>
                         )}
+                        {e.stack?.map((id) => (
+                          <span
+                            key={id}
+                            title={facetMap.get(id)?.description}
+                            className="text-micro font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border border-violet-500/40 bg-violet-500/10 text-violet-700 dark:text-violet-300"
+                          >
+                            {facetMap.get(id)?.label ?? id}
+                          </span>
+                        ))}
                       </>
                     );
                   })()}

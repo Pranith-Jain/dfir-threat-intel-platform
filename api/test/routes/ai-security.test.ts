@@ -301,6 +301,34 @@ describe('ai-security routes', () => {
     expect((await app.request('/api/v1/ai-security/vulns/CVE-1999-0000', {}, env)).status).toBe(404);
   });
 
+  it('GET /vulns classifies and filters by AI stack facet', async () => {
+    const app = setup();
+    const env = makeEnv();
+    const all = (await (await app.request('/api/v1/ai-security/vulns', {}, env)).json()) as {
+      stackFacets: { id: string; count: number }[];
+      vulns: { id: string; stack?: string[] }[];
+    };
+    const inference = all.stackFacets.find((f) => f.id === 'inference');
+    expect(inference?.count).toBe(2);
+    expect(all.vulns.find((v) => v.id === 'CVE-2026-42271')?.stack).toContain('inference');
+
+    const filtered = (await (await app.request('/api/v1/ai-security/vulns?stack=inference', {}, env)).json()) as {
+      returned: number;
+      vulns: { id: string }[];
+    };
+    expect(filtered.returned).toBe(2);
+
+    const none = (await (await app.request('/api/v1/ai-security/vulns?stack=agents', {}, env)).json()) as {
+      returned: number;
+    };
+    expect(none.returned).toBe(0);
+
+    const body = (await (await app.request('/api/v1/ai-security/vulns/CVE-2026-42271', {}, env)).json()) as {
+      stack?: string[];
+    };
+    expect(body.stack).toContain('inference');
+  });
+
   it('GET /advisories + /research filter by source + q', async () => {
     const app = setup();
     const env = makeEnv();

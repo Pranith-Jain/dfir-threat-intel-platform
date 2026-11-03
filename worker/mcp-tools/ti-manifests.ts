@@ -1171,27 +1171,40 @@ export async function registerTiManifestsTools(h: McpToolHost): Promise<void> {
 
   h.tools(
     'ti_list_cve_now',
-    'List entries from the cve.now aggregate vulnerability feed: one deduplicated entry per CVE merging CVE List, NVD, CISA KEV, GitHub Advisories, OSV, ENISA EUVD, FIRST EPSS, Exploit-DB, Metasploit, Nuclei and PoC-in-GitHub, with CVSS score, severity band, KEV membership, fix versions and affected product. Filter by severity, KEV membership, fix availability, product substring or keyword. Use ti_get_cve_now for the full record.',
+    'List entries from the cve.now aggregate vulnerability feed: one deduplicated entry per CVE merging CVE List, NVD, CISA KEV, GitHub Advisories, OSV, ENISA EUVD, FIRST EPSS, Exploit-DB, Metasploit, Nuclei and PoC-in-GitHub, with CVSS score, severity band, KEV membership, fix versions, affected product and an AI/agent stack facet. Filter by severity, KEV membership, fix availability, product substring, stack facet or keyword. Use ti_get_cve_now for the full record.',
     {
       severity: z.string().optional().describe('Severity band: CRITICAL | HIGH | MEDIUM | LOW | UNKNOWN'),
       kev: z.boolean().optional().describe('Only KEV-listed (true) or only non-KEV (false) entries'),
       hasFix: z.boolean().optional().describe('Only entries with (true) or without (false) known fix versions'),
       product: z.string().optional().describe('Affected-product substring (e.g. "WordPress", "Rancher")'),
+      stack: z
+        .string()
+        .optional()
+        .describe('AI/agent stack facet: mcp | agents | inference | retrieval | mlops | runtime | apps (exact match)'),
       keyword: z.string().optional().describe('Case-insensitive substring match against id / title / product'),
       limit: z.number().int().min(1).max(240).optional().describe('Max entries to return (default 100)'),
     },
-    async ({ severity, kev, hasFix, product, keyword, limit }) => {
+    async ({ severity, kev, hasFix, product, stack, keyword, limit }) => {
       const idx = await loadCveNowIndex(ASSETS);
-      const out = filterCveNowEntries(idx, { severity, kev, hasFix, product, keyword, limit: limit ?? 100 });
+      const out = filterCveNowEntries(idx, {
+        severity,
+        kev,
+        hasFix,
+        product,
+        stack,
+        keyword,
+        limit: limit ?? 100,
+      });
       return untrustedToolResult({
         source: idx.source,
         sourceUrl: idx.sourceUrl,
         repoUrl: idx.repoUrl,
         syncedAt: idx.syncedAt,
         counts: idx.counts,
+        stackFacets: idx.stackFacets ?? [],
         sourcesHealth: idx.sourcesHealth,
         returned: out.length,
-        filters: { severity, kev, hasFix, product, keyword },
+        filters: { severity, kev, hasFix, product, stack, keyword },
         entries: out,
       });
     }

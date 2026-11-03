@@ -1606,7 +1606,16 @@ export interface CveNowIndexEntry {
   kev: boolean;
   hasFix: boolean;
   product: string | null;
+  /** AI / agent stack facets classified at build time (canonical order). */
+  stack?: string[];
   sizeBytes: number;
+}
+
+export interface CveNowStackFacet {
+  id: string;
+  label: string;
+  description: string;
+  count: number;
 }
 
 export interface CveNowIndex {
@@ -1629,8 +1638,10 @@ export interface CveNowIndex {
     withFix: number;
     batches: number;
     bySeverity: Record<string, number>;
+    byStack?: Record<string, number>;
   };
   topProducts: { product: string; count: number }[];
+  stackFacets?: CveNowStackFacet[];
   sourcesHealth: {
     checkedAt: string | null;
     cursor: string | null;
@@ -1644,6 +1655,8 @@ export interface CveNowBody {
   batch: number;
   title: string | null;
   product: string | null;
+  /** AI / agent stack facets classified at build time (canonical order). */
+  stack?: string[];
   fix: string[];
   modifiedAt: string | null;
   upstreamPage: string;
@@ -1684,14 +1697,17 @@ export interface TiListCveNowOptions {
   kev?: boolean;
   hasFix?: boolean;
   product?: string;
+  /** Exact AI / agent stack facet id, e.g. "inference" or "mcp". */
+  stack?: string;
   keyword?: string;
   limit?: number;
 }
 
 export function filterCveNowEntries(idx: CveNowIndex, opts: TiListCveNowOptions = {}): CveNowIndexEntry[] {
-  const { severity, kev, hasFix, product, keyword, limit = 100 } = opts;
+  const { severity, kev, hasFix, product, stack, keyword, limit = 100 } = opts;
   const sevNeedle = severity?.toLowerCase();
   const prodNeedle = product?.toLowerCase();
+  const stackNeedle = stack?.toLowerCase();
   const needle = keyword?.toLowerCase();
   const out: CveNowIndexEntry[] = [];
   for (const e of idx.entries) {
@@ -1699,6 +1715,7 @@ export function filterCveNowEntries(idx: CveNowIndex, opts: TiListCveNowOptions 
     if (kev !== undefined && e.kev !== kev) continue;
     if (hasFix !== undefined && e.hasFix !== hasFix) continue;
     if (prodNeedle && !e.product?.toLowerCase().includes(prodNeedle)) continue;
+    if (stackNeedle && !(e.stack ?? []).some((s) => s.toLowerCase() === stackNeedle)) continue;
     if (needle && !`${e.id} ${e.title ?? ''} ${e.product ?? ''}`.toLowerCase().includes(needle)) continue;
     out.push(e);
     if (out.length >= limit) break;
