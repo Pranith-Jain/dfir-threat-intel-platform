@@ -309,8 +309,6 @@ export const FEED_ALLOWED_HOSTS = new Set<string>([
   'www.dfirdiva.com',
   'invictus-ir.com',
   'www.invictus-ir.com',
-  'dailydarkweb.net',
-  'www.dailydarkweb.net',
   'offsec.com',
   'www.offsec.com',
   'emsisoft.com',

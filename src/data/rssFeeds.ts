@@ -256,16 +256,6 @@ export const rssFeeds: RSSFeed[] = [
     language: 'en',
   },
   {
-    id: 'daily-dark-web',
-    name: 'Daily Dark Web',
-    url: 'https://dailydarkweb.net/feed/',
-    description:
-      'Daily dark web reporting - new markets, leak-site posts, threat actor forums, and underground service listings',
-    category: 'threat-intel',
-    source: 'dailydarkweb.net',
-    language: 'en',
-  },
-  {
     id: 'emsisoft-blog',
     name: 'Emsisoft Blog',
     url: 'https://www.emsisoft.com/en/blog/feed/',
@@ -1622,11 +1612,11 @@ export const landingThreatInvestigation = [
   'embracethered',
   'darknet',
   'offseq-radar',
-  // ThreatFeed (jozeta/ThreatFeed) registry cross-check 2026-11-01 - six curated
+  // ThreatFeed (jozeta/ThreatFeed) registry cross-check 2026-11-01 - curated
   // security sources our hub lacked; each URL probed and confirmed RSS.
+  // daily-dark-web dropped 2026-11-03: publisher stopped posting 2026-04-27.
   'dfir-diva',
   'invictus-ir',
-  'daily-dark-web',
   'offsec-blog',
   'emsisoft-blog',
   'danielmiessler',
