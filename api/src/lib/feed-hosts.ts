@@ -301,4 +301,20 @@ export const FEED_ALLOWED_HOSTS = new Set<string>([
   // 2026-10 allowlist-drift fix: was only in feeds.ts, so the aggregator
   // answered host_not_in_allowlist for a healthy feed.
   'blog.trailofbits.com',
+  // 2026-11-03: six ThreatFeed-curated sources were added to rssFeeds.ts
+  // without their hosts, so /threatintel/threat-feeds dropped all six at the
+  // aggregator with host_not_in_allowlist. Apex + www both listed because the
+  // per-hop redirect check re-validates variants.
+  'dfirdiva.com',
+  'www.dfirdiva.com',
+  'invictus-ir.com',
+  'www.invictus-ir.com',
+  'dailydarkweb.net',
+  'www.dailydarkweb.net',
+  'offsec.com',
+  'www.offsec.com',
+  'emsisoft.com',
+  'www.emsisoft.com',
+  'danielmiessler.com',
+  'www.danielmiessler.com',
 ]);
