@@ -1,0 +1,47 @@
+{
+  "name": "T3-PANDORA_Defacement_OpenAI_Tool",
+  "tier": "T3",
+  "confidence": 90,
+  "artifactType": "api_key_pattern",
+  "artifactClass": "llm_api_backdoor",
+  "description": "Detects PANDORA web defacement and OSINT tool with OpenAI integration — actor MrSanZz; kosred.com multimedia CDN; thatsthem.com OSINT scraping with typo variable {victm_mails}; both GPT-3.5 legacy and chat/completions endpoints",
+  "family": "PANDORA",
+  "archetypes": null,
+  "reference": "VT SHA256 8f90ed037479cb110e0a57063f93f1d172a62dc0bdf2392aa0cb0ba7b8305e24; actor MrSanZz (github.com/MrSanZz, t.me/MrSanZzXe); kosred.com CDN; 3 near-identical variants submitted 2025-07-08",
+  "strings": [
+    {
+      "id": "$cdn",
+      "pattern": "kosred.com",
+      "nocase": true
+    },
+    {
+      "id": "$typo_var",
+      "pattern": "{victm_mails}",
+      "nocase": false
+    },
+    {
+      "id": "$actor_gh",
+      "pattern": "github.com/MrSanZz",
+      "nocase": true
+    },
+    {
+      "id": "$actor_tg",
+      "pattern": "t.me/MrSanZzXe",
+      "nocase": true
+    },
+    {
+      "id": "$defacement",
+      "pattern": "fuck.you/index.php",
+      "nocase": true
+    },
+    {
+      "id": "$av_label",
+      "pattern": "Defacement-AH",
+      "nocase": true
+    }
+  ],
+  "condition": "$cdn or $typo_var or $actor_gh or $actor_tg or $defacement or $av_label",
+  "source": "github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "sourceUrl": "https://github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "license": "MIT"
+}

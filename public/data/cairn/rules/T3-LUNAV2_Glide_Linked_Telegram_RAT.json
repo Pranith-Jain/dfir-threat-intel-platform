@@ -1,0 +1,92 @@
+{
+  "name": "T3-LUNAV2_Glide_Linked_Telegram_RAT",
+  "tier": "T3",
+  "confidence": 90,
+  "artifactType": "no_ai_content",
+  "artifactClass": "rat",
+  "description": "LUNAV2 - Go/garble Telegram-C2 RAT dropped by a VB.NET GZip dropper, statically linking EinStack Glide v1.0.0 as an UNREACHABLE library. Tracks the family so a future build that activates the linked gateway (--config + routers: YAML) is caught. A0 in all builds seen to date",
+  "family": "LUNAV2",
+  "archetypes": "A0",
+  "reference": "CAIRN investigation 2026-08-06; static RE 2026-08-07 (dropper 6302d6b8, Go RAT 28d47ea0, .NET stage b5675f9f); trojan.msil/cassiopeia; 3-binary family, single 2025-08-06 submission burst",
+  "strings": [
+    {
+      "id": "$glide_azure",
+      "pattern": "api.openai.com/v1azure",
+      "nocase": true
+    },
+    {
+      "id": "$glide_octoml",
+      "pattern": "text.octoai.run/v1octoml",
+      "nocase": true
+    },
+    {
+      "id": "$glide_repo",
+      "pattern": "github.com/EinStack/glide",
+      "nocase": true
+    },
+    {
+      "id": "$glide_cohere",
+      "pattern": "api.cohere.ai/v1",
+      "nocase": true
+    },
+    {
+      "id": "$name_luna",
+      "pattern": "LunaV2",
+      "nocase": false
+    },
+    {
+      "id": "$name_lunaalt",
+      "pattern": "LunaV2alt.exe",
+      "nocase": false
+    },
+    {
+      "id": "$name_myproj",
+      "pattern": "myproject.exe",
+      "nocase": false
+    },
+    {
+      "id": "$res_dropper",
+      "pattern": "kungvzfgscr",
+      "nocase": false
+    },
+    {
+      "id": "$tg_send",
+      "pattern": "api.telegram.org/bot%25s/sendMessage",
+      "nocase": true
+    },
+    {
+      "id": "$tg_send2",
+      "pattern": "api.telegram.org/bot%s/sendMessage",
+      "nocase": true
+    },
+    {
+      "id": "$wd_excl",
+      "pattern": "Add-MpPreference -ExclusionPath",
+      "nocase": true
+    },
+    {
+      "id": "$wd_temp_svc",
+      "pattern": "AppData\\Local\\Temp\\svchost.exe",
+      "nocase": true
+    },
+    {
+      "id": "$act_config",
+      "pattern": "glide.yaml",
+      "nocase": true
+    },
+    {
+      "id": "$act_routers",
+      "pattern": "routers:",
+      "nocase": false
+    },
+    {
+      "id": "$act_strategy",
+      "pattern": "weighted-round-robin",
+      "nocase": true
+    }
+  ],
+  "condition": "$res_dropper or (1 of ($name_lunaalt, $name_myproj)) or ($glide_repo and 1 of ($name_luna, $tg_send, $tg_send2)) or (2 of ($glide_azure, $glide_octoml, $glide_repo, $glide_cohere)) or ($glide_azure and 1 of ($name_luna, $tg_send, $tg_send2)) or ($name_luna and 1 of ($tg_send, $tg_send2)) or ($name_luna and $wd_excl and $wd_temp_svc) or (1 of ($act_config, $act_routers, $act_strategy) and 2 of ($glide_azure, $glide_octoml, $glide_repo, $glide_cohere))",
+  "source": "github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "sourceUrl": "https://github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "license": "MIT"
+}

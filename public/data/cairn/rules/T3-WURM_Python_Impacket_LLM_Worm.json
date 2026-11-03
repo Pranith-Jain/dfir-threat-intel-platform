@@ -1,0 +1,42 @@
+{
+  "name": "T3-WURM_Python_Impacket_LLM_Worm",
+  "tier": "T3",
+  "confidence": 90,
+  "artifactType": "orchestration_logic",
+  "artifactClass": "llm_api_backdoor",
+  "description": "Detects WURM Python worm — Impacket-based network propagation with OpenAI LLM tasking, Slack webhook C2, and Ethereum/Infura blockchain component; template config vars (C2, your-webhook) suggest deploy-time substitution",
+  "family": "WURM",
+  "archetypes": null,
+  "reference": "VT SHA256 ed6660a9029d54c335bc574ee6cc3dbdda85eb9840c0f1c04dd77ddb37277432; Microsoft: Trojan:Python/Reldein.A; legit-cdn.com payload CDN; obfuscated variant e51cf070...; Impacket+LLM+Slack+Infura operational architecture",
+  "strings": [
+    {
+      "id": "$ms_label",
+      "pattern": "Trojan:Python/Reldein.A",
+      "nocase": true
+    },
+    {
+      "id": "$cdn_payload",
+      "pattern": "legit-cdn.com/payload.bin",
+      "nocase": true
+    },
+    {
+      "id": "$slack_c2",
+      "pattern": "hooks.slack.com",
+      "nocase": true
+    },
+    {
+      "id": "$infura",
+      "pattern": "mainnet.infura.io",
+      "nocase": true
+    },
+    {
+      "id": "$c2_template",
+      "pattern": "http://C2/payload.bin",
+      "nocase": true
+    }
+  ],
+  "condition": "$ms_label or $cdn_payload or $c2_template or ($slack_c2 and $infura)",
+  "source": "github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "sourceUrl": "https://github.com/Cisco-Talos/Cognitive-Artifact-Intelligence-Research-Network",
+  "license": "MIT"
+}
