@@ -19,6 +19,8 @@
  *   /data/ai-security/research/index.json     (research rows)
  */
 
+import { classifyCveStack, CVE_STACK_FACETS } from './cve-stack.mjs';
+
 export interface AiSecurityHubIndex {
   hub: string;
   builtAt: string;
@@ -223,6 +225,15 @@ export interface AiVuln {
   packages: string[];
   vendor: string | null;
   product: string | null;
+  /** AI / agent stack facets classified at load time (canonical order). */
+  stack?: string[];
+}
+
+export interface AiStackFacet {
+  id: string;
+  label: string;
+  description: string;
+  count: number;
 }
 
 export interface VulnsIndex {
@@ -230,6 +241,9 @@ export interface VulnsIndex {
   total: number;
   kev: number;
   vulns: AiVuln[];
+  /** Facet counts over the full index; computed once at load. */
+  stackFacets?: AiStackFacet[];
+  byStack?: Record<string, number>;
 }
 
 export interface AdvisoryItem {
@@ -284,6 +298,16 @@ export async function loadVulnsIndex(assets: Fetcher): Promise<VulnsIndex> {
   if (cachedVulns) return cachedVulns;
   const idx = await fetchJson<VulnsIndex>(assets, `${DATA_PREFIX}/vulns/index.json`);
   if (!idx) throw new Error(`Vulns index not found at ${DATA_PREFIX}/vulns/index.json.`);
+  // The source index predates the stack facet. Classify once here (the index
+  // is cached for the isolate lifetime) so the JSON manifest stays unchanged
+  // and the counts cover all rows, not just the page the UI requested.
+  const byStack: Record<string, number> = {};
+  for (const v of idx.vulns) {
+    v.stack = classifyCveStack(v);
+    for (const facet of v.stack) byStack[facet] = (byStack[facet] ?? 0) + 1;
+  }
+  idx.byStack = byStack;
+  idx.stackFacets = CVE_STACK_FACETS.map((facet) => ({ ...facet, count: byStack[facet.id] ?? 0 }));
   cachedVulns = idx;
   return idx;
 }
@@ -317,20 +341,31 @@ export async function getVuln(
     if (!all) return null;
     cachedVulnBodies = all;
   }
-  return cachedVulnBodies[id] ?? null;
+  const body = cachedVulnBodies[id] ?? null;
+  if (body) body.stack = classifyCveStack(body);
+  return body;
 }
 
 export function filterVulns(
   idx: VulnsIndex,
-  opts: { q?: string; kevOnly?: boolean; minEpss?: number; source?: string; limit?: number } = {}
+  opts: {
+    q?: string;
+    kevOnly?: boolean;
+    minEpss?: number;
+    source?: string;
+    stack?: string;
+    limit?: number;
+  } = {}
 ): AiVuln[] {
-  const { q, kevOnly, minEpss, source, limit = 100 } = opts;
+  const { q, kevOnly, minEpss, source, stack, limit = 100 } = opts;
   const needle = q?.toLowerCase().trim();
+  const stackNeedle = stack?.toLowerCase();
   const out: AiVuln[] = [];
   for (const v of idx.vulns) {
     if (kevOnly && !v.kev) continue;
     if (minEpss !== undefined && (v.epss ?? -1) < minEpss) continue;
     if (source && source !== 'all' && !v.sources.includes(source)) continue;
+    if (stackNeedle && !(v.stack ?? []).some((s) => s.toLowerCase() === stackNeedle)) continue;
     if (
       needle &&
       !`${v.id} ${v.title} ${(v.aliases ?? []).join(' ')} ${(v.packages ?? []).join(' ')} ${v.vendor ?? ''} ${v.product ?? ''}`

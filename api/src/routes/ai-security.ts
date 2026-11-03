@@ -10,7 +10,7 @@
  *   GET  /ai-security/incidents         — report rows (?q, cite, limit)
  *   GET  /ai-security/incidents/:id     — full report body
  *   GET  /ai-security/escape-parity     — two-way parity report vs ai-escape.watch
- *   GET  /ai-security/vulns             — vuln rows (?q, kev_only, min_epss, source, limit)
+ *   GET  /ai-security/vulns             — vuln rows (?q, kev_only, min_epss, source, stack, limit)
  *   GET  /ai-security/vulns/:id         — full vuln body
  *   GET  /ai-security/advisories        — advisory rows (?q, source, kind, limit)
  *   GET  /ai-security/research          — research rows (?q, source, limit)
@@ -111,14 +111,24 @@ aiSecurityRouter.get('/ai-security/vulns', async (c) => {
     const mod = await loadMod();
     const idx = await mod.loadVulnsIndex(c.env.ASSETS);
     const kevOnly = c.req.query('kev_only');
+    const stack = c.req.query('stack') || undefined;
     const vulns = mod.filterVulns(idx, {
       q: c.req.query('q') || undefined,
       kevOnly: kevOnly === 'true' ? true : kevOnly === 'false' ? false : undefined,
       minEpss: c.req.query('min_epss') ? Number(c.req.query('min_epss')) : undefined,
       source: c.req.query('source') || undefined,
+      stack,
       limit: c.req.query('limit') ? Number(c.req.query('limit')) : 100,
     });
-    return c.json({ total: idx.total, kev: idx.kev, returned: vulns.length, vulns });
+    return c.json({
+      total: idx.total,
+      kev: idx.kev,
+      returned: vulns.length,
+      stackFacets: idx.stackFacets ?? [],
+      byStack: idx.byStack ?? {},
+      filters: { stack },
+      vulns,
+    });
   } catch (e) {
     logError('ai-security vulns failed', e);
     return internalError(c, `ai_security_vulns_failed: ${e instanceof Error ? e.message : String(e)}`);

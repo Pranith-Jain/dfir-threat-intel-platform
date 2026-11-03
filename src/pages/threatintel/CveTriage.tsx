@@ -90,6 +90,13 @@ interface ExploitSummary {
   total_sources_found: number;
   poc_in_github: number;
   degraded: string[];
+  maturity: {
+    observed: boolean;
+    weaponized: boolean;
+    public_exploit: boolean;
+    public_poc: boolean;
+    scannable: boolean;
+  };
   github: Array<{
     full_name: string;
     html_url: string;
@@ -576,6 +583,50 @@ function TriageView(): JSX.Element {
             </span>
           </div>
         </CardHeader>
+
+        <div className="mb-3 flex flex-wrap gap-1.5">
+          {[
+            {
+              key: 'observed',
+              label: 'Observed in wild',
+              on: exploit.maturity.observed,
+              cls: 'border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300',
+            },
+            {
+              key: 'weaponized',
+              label: 'Weaponized',
+              on: exploit.maturity.weaponized,
+              cls: 'border-orange-500/40 bg-orange-500/10 text-orange-700 dark:text-orange-300',
+            },
+            {
+              key: 'public_exploit',
+              label: 'Public exploit',
+              on: exploit.maturity.public_exploit,
+              cls: 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300',
+            },
+            {
+              key: 'public_poc',
+              label: 'Public PoC',
+              on: exploit.maturity.public_poc,
+              cls: 'border-sky-500/40 bg-sky-500/10 text-sky-700 dark:text-sky-300',
+            },
+            {
+              key: 'scannable',
+              label: 'Scannable',
+              on: exploit.maturity.scannable,
+              cls: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+            },
+          ]
+            .filter((m) => m.on)
+            .map((m) => (
+              <span
+                key={m.key}
+                className={`rounded border px-2 py-0.5 font-mono text-micro uppercase tracking-wider ${m.cls}`}
+              >
+                {m.label}
+              </span>
+            ))}
+        </div>
 
         {exploit.degraded.length > 0 && (
           <p className="mb-3 rounded border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-micro text-amber-700 dark:text-amber-300">

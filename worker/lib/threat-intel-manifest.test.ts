@@ -1205,6 +1205,7 @@ function makeAssetsFixture() {
     kev: true,
     hasFix: false,
     product: 'Acme Widget Suite',
+    stack: ['runtime'],
     sizeBytes: 320,
   };
   const cnEntry2: CveNowIndexEntry = {
@@ -1220,6 +1221,7 @@ function makeAssetsFixture() {
     kev: false,
     hasFix: true,
     product: 'Boxy Gadget',
+    stack: ['mcp', 'agents'],
     sizeBytes: 260,
   };
   const cnIdx: CveNowIndex = {
@@ -1242,10 +1244,16 @@ function makeAssetsFixture() {
       withFix: 1,
       batches: 1,
       bySeverity: { CRITICAL: 1, MEDIUM: 1 },
+      byStack: { runtime: 1, mcp: 1, agents: 1 },
     },
     topProducts: [
       { product: 'Acme Widget Suite', count: 1 },
       { product: 'Boxy Gadget', count: 1 },
+    ],
+    stackFacets: [
+      { id: 'mcp', label: 'MCP', description: 'Model Context Protocol', count: 1 },
+      { id: 'agents', label: 'Agents', description: 'Agent frameworks', count: 1 },
+      { id: 'runtime', label: 'Runtime', description: 'AI runtimes', count: 1 },
     ],
     sourcesHealth: {
       checkedAt: '2026-10-30T15:54:34.422Z',
@@ -2644,6 +2652,9 @@ describe('cve.now (filterCveNowEntries)', () => {
     expect(filterCveNowEntries(idx, { kev: false })).toHaveLength(1);
     expect(filterCveNowEntries(idx, { hasFix: true })).toHaveLength(1);
     expect(filterCveNowEntries(idx, { product: 'gadget' })).toHaveLength(1);
+    expect(filterCveNowEntries(idx, { stack: 'runtime' })).toHaveLength(1);
+    expect(filterCveNowEntries(idx, { stack: 'mcp' })).toHaveLength(1);
+    expect(filterCveNowEntries(idx, { stack: 'NOPE' })).toHaveLength(0);
     expect(filterCveNowEntries(idx, { keyword: 'widget' })).toHaveLength(1);
     expect(filterCveNowEntries(idx, { limit: 1 })).toHaveLength(1);
   });

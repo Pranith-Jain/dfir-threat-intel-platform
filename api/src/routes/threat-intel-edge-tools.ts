@@ -1231,6 +1231,7 @@ threatIntelRouter.get('/threat-intel/cve-now', async (c) => {
       meta: idx.meta,
       counts: idx.counts,
       topProducts: idx.topProducts,
+      stackFacets: idx.stackFacets ?? [],
       sourcesHealth: idx.sourcesHealth,
       stats: mod.tiCacheStats().cveNow,
     });
@@ -1246,6 +1247,7 @@ threatIntelRouter.get('/threat-intel/cve-now/entries', async (c) => {
     const idx = await mod.loadCveNowIndex(c.env.ASSETS);
     const severity = c.req.query('severity') || undefined;
     const product = c.req.query('product') || undefined;
+    const stack = c.req.query('stack') || undefined;
     const keyword = c.req.query('q') || undefined;
     const kevParam = c.req.query('kev');
     const fixParam = c.req.query('has-fix');
@@ -1255,11 +1257,15 @@ threatIntelRouter.get('/threat-intel/cve-now/entries', async (c) => {
     if (fixParam !== undefined && fixParam !== 'true' && fixParam !== 'false') {
       return badRequest(c, `ti_cve_now_fix_invalid: ${fixParam} (expected true | false)`);
     }
+    if (stack && idx.stackFacets && !idx.stackFacets.some((f) => f.id === stack.toLowerCase())) {
+      return badRequest(c, `ti_cve_now_stack_invalid: ${stack}`);
+    }
     const limitRaw = c.req.query('limit');
     const limit = limitRaw ? Math.min(240, Math.max(1, Number(limitRaw) || 100)) : undefined;
     const out = mod.filterCveNowEntries(idx, {
       severity,
       product,
+      stack,
       keyword,
       kev: kevParam === undefined ? undefined : kevParam === 'true',
       hasFix: fixParam === undefined ? undefined : fixParam === 'true',
@@ -1270,7 +1276,7 @@ threatIntelRouter.get('/threat-intel/cve-now/entries', async (c) => {
       syncedAt: idx.syncedAt,
       total: idx.counts.entries,
       returned: out.length,
-      filters: { severity, product, keyword, kev: kevParam, hasFix: fixParam },
+      filters: { severity, product, stack, keyword, kev: kevParam, hasFix: fixParam },
       entries: out,
     });
   } catch (e) {

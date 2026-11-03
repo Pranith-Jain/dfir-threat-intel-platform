@@ -757,20 +757,25 @@ export function registerRegistryRenderTools(h: McpToolHost): void {
   // ── AI Security hub — realtime AI vulns / advisories / research ──
   h.tools(
     'ai_vulns',
-    'Realtime AI vulnerability tracking — EUVD + NVD + OSV watchlist (litellm, vllm, langchain, mcp, transformers…), CISA/EU KEV overlap, FIRST EPSS exploit-probability. KEV-listed rows sort first.',
+    'Realtime AI vulnerability tracking — EUVD + NVD + OSV watchlist (litellm, vllm, langchain, mcp, transformers…), CISA/EU KEV overlap, FIRST EPSS exploit-probability and an AI/agent stack facet. KEV-listed rows sort first.',
     {
       q: z.string().optional().describe('Search CVE/GHSA ids, packages, vendors, e.g. "litellm" or "mcp".'),
       kev_only: z.boolean().optional().describe('Only KEV-listed (actively exploited) vulns.'),
       min_epss: z.number().optional().describe('Minimum EPSS exploit probability 0-1, e.g. 0.5.'),
       source: z.string().optional().describe('Source filter: euvd, nvd, osv, kev.'),
+      stack: z
+        .string()
+        .optional()
+        .describe('AI/agent stack facet: mcp | agents | inference | retrieval | mlops | runtime | apps.'),
       limit: z.number().optional().describe('Max entries (default 100).'),
     },
-    async ({ q, kev_only, min_epss, source, limit }) => {
+    async ({ q, kev_only, min_epss, source, stack, limit }) => {
       const params = new URLSearchParams();
       if (q) params.set('q', q);
       if (kev_only) params.set('kev_only', 'true');
       if (min_epss !== undefined) params.set('min_epss', String(min_epss));
       if (source) params.set('source', source);
+      if (stack) params.set('stack', stack);
       if (limit) params.set('limit', String(limit));
       const r = await apiFetch(h.env.SELF, `/api/v1/ai-security/vulns?${params}`, h.apiKey);
       return untrustedToolResult(r);

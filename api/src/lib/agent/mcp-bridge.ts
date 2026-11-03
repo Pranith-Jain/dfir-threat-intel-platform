@@ -1425,12 +1425,18 @@ export function bridgeMcpTools(
   add({
     name: 'ai_vulns',
     description:
-      'Realtime AI vulnerability tracking (EUVD + NVD + OSV watchlist, KEV overlap, EPSS). Filter by query, KEV-only, min EPSS, source.',
+      'Realtime AI vulnerability tracking (EUVD + NVD + OSV watchlist, KEV overlap, EPSS, AI/agent stack facet). Filter by query, KEV-only, min EPSS, source or stack.',
     params: [
       { name: 'q', type: 'string', description: 'Search CVE/GHSA ids, packages, vendors', required: false },
       { name: 'kev_only', type: 'boolean', description: 'Only KEV-listed vulns', required: false },
       { name: 'min_epss', type: 'number', description: 'Minimum EPSS 0-1', required: false },
       { name: 'source', type: 'string', description: 'Source: euvd, nvd, osv, kev', required: false },
+      {
+        name: 'stack',
+        type: 'string',
+        description: 'AI/agent stack facet: mcp, agents, inference, retrieval, mlops, runtime, apps',
+        required: false,
+      },
       { name: 'limit', type: 'number', description: 'Max entries (default 100)', required: false },
     ],
     execute: async (args) => {
@@ -1439,6 +1445,7 @@ export function bridgeMcpTools(
       if (args.kev_only) params.set('kev_only', 'true');
       if (args.min_epss !== undefined) params.set('min_epss', String(args.min_epss));
       if (args.source) params.set('source', args.source as string);
+      if (args.stack) params.set('stack', args.stack as string);
       if (args.limit) params.set('limit', String(args.limit));
       const qs = params.toString();
       return apiFetch(`/api/v1/ai-security/vulns${qs ? `?${qs}` : ''}`);

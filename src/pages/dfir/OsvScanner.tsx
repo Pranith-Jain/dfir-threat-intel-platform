@@ -1,110 +1,25 @@
-import { errMessage, logCatch } from '../../lib/log';
+import { logCatch } from '../../lib/log';
 import { useState, useRef } from 'react';
 import { BackLink } from '../../components/BackLink';
 import { ShieldAlert, ShieldCheck, Loader2, ExternalLink } from 'lucide-react';
 import { Textarea } from '../../components/ui/Input';
+import { parseManifest } from '../../lib/lockfile-parsers';
 
 /**
  * OSV Dependency Scanner - paste a lockfile/manifest → known
  * vulnerabilities via OSV.dev (proxied server-side; OSV has no browser
  * CORS). Parsing is 100% client-side; only the {name,ecosystem,version}
  * list is sent. Supports npm (package-lock/package.json), PyPI
- * (requirements.txt), Go (go.mod), crates.io (Cargo.lock), RubyGems
- * (Gemfile.lock).
+ * (requirements.txt/Pipfile.lock/poetry.lock), Go (go.mod), crates.io
+ * (Cargo.lock), RubyGems (Gemfile.lock), Packagist (composer.lock) and
+ * yarn/pnpm lockfiles.
  */
 
-interface Pkg {
-  name: string;
-  ecosystem: string;
-  version?: string;
-}
 interface VulnRow {
   package: string;
   version: string;
   ecosystem: string;
   vulns: { id: string; summary?: string; severity?: string; aliases?: string[]; fixed?: string }[];
-}
-
-const stripRange = (v: string) =>
-  v
-    .replace(/^[\^~>=<\s]+/, '')
-    .replace(/\s.*$/, '')
-    .trim();
-
-function parseManifest(text: string): { packages: Pkg[]; kind: string } {
-  const t = text.trim();
-  // JSON → npm lockfile or package.json
-  if (t.startsWith('{')) {
-    try {
-      const j = JSON.parse(t) as Record<string, unknown>;
-      if (j.lockfileVersion || j.packages) {
-        const out: Pkg[] = [];
-        const pkgs = (j.packages as Record<string, { version?: string }>) ?? {};
-        for (const [k, v] of Object.entries(pkgs)) {
-          if (!k.startsWith('node_modules/') || !v?.version) continue;
-          out.push({ name: k.replace(/^.*node_modules\//, ''), ecosystem: 'npm', version: v.version });
-        }
-        const deps = (j.dependencies as Record<string, { version?: string }>) ?? {};
-        for (const [k, v] of Object.entries(deps))
-          if (v?.version) out.push({ name: k, ecosystem: 'npm', version: v.version });
-        return { packages: dedupe(out), kind: 'npm package-lock.json' };
-      }
-      const out: Pkg[] = [];
-      for (const field of ['dependencies', 'devDependencies', 'peerDependencies']) {
-        const d = (j[field] as Record<string, string>) ?? {};
-        for (const [name, ver] of Object.entries(d))
-          out.push({ name, ecosystem: 'npm', version: stripRange(String(ver)) || undefined });
-      }
-      return { packages: dedupe(out), kind: 'npm package.json' };
-    } catch (_catchErr) {
-      console.error('parseManifest failed:', errMessage(_catchErr));
-      /* fall through to text parsers */
-    }
-  }
-  // requirements.txt (PyPI)
-  if (/^[\w.-]+\s*==\s*[\w.]+/m.test(t) || /(^|\n)[\w.-]+\s*[<>=!~]=/.test(t)) {
-    const out: Pkg[] = [];
-    for (const line of t.split('\n')) {
-      const m = /^\s*([A-Za-z0-9._-]+)\s*==\s*([\w.]+)/.exec(line);
-      if (m) out.push({ name: m[1]!.toLowerCase(), ecosystem: 'PyPI', version: m[2] });
-    }
-    if (out.length) return { packages: dedupe(out), kind: 'requirements.txt (PyPI)' };
-  }
-  // go.mod
-  if (/^module\s+\S+/m.test(t) || /^\s*require\s/m.test(t)) {
-    const out: Pkg[] = [];
-    for (const m of t.matchAll(/(?:^|\n)\s*(?:require\s+)?([\w.\-/]+\.[\w.\-/]+)\s+v([\w.\-+]+)/g))
-      out.push({ name: m[1]!, ecosystem: 'Go', version: `v${m[2]}` });
-    if (out.length) return { packages: dedupe(out), kind: 'go.mod (Go)' };
-  }
-  // Cargo.lock
-  if (/\[\[package\]\]/.test(t)) {
-    const out: Pkg[] = [];
-    for (const block of t.split('[[package]]')) {
-      const n = /name\s*=\s*"([^"]+)"/.exec(block);
-      const v = /version\s*=\s*"([^"]+)"/.exec(block);
-      if (n && v) out.push({ name: n[1]!, ecosystem: 'crates.io', version: v[1] });
-    }
-    if (out.length) return { packages: dedupe(out), kind: 'Cargo.lock (crates.io)' };
-  }
-  // Gemfile.lock
-  if (/^GEM\b/m.test(t) && /specs:/.test(t)) {
-    const out: Pkg[] = [];
-    for (const m of t.matchAll(/^\s{4}([a-z0-9._-]+) \(([\w.]+)\)/gim))
-      out.push({ name: m[1]!, ecosystem: 'RubyGems', version: m[2] });
-    if (out.length) return { packages: dedupe(out), kind: 'Gemfile.lock (RubyGems)' };
-  }
-  return { packages: [], kind: '' };
-}
-
-function dedupe(p: Pkg[]): Pkg[] {
-  const seen = new Set<string>();
-  return p.filter((x) => {
-    const k = `${x.ecosystem}:${x.name}@${x.version ?? ''}`;
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
 }
 
 export default function OsvScanner(): JSX.Element {
@@ -121,7 +36,7 @@ export default function OsvScanner(): JSX.Element {
     const { packages, kind } = parseManifest(input);
     if (packages.length === 0) {
       setErr(
-        'No packages parsed. Supported: package-lock.json / package.json, requirements.txt, go.mod, Cargo.lock, Gemfile.lock.'
+        'No packages parsed. Supported: package-lock.json / package.json / yarn.lock / pnpm-lock.yaml, requirements.txt / Pipfile.lock / poetry.lock, go.mod, Cargo.lock, Gemfile.lock, composer.lock.'
       );
       setRows(null);
       setMeta(null);
@@ -167,9 +82,9 @@ export default function OsvScanner(): JSX.Element {
       <div className="animate-fade-in-up">
         <h1 className="text-3xl sm:text-4xl font-display font-semibold mb-2">OSV Dependency Scanner</h1>
         <p className="text-muted mb-6 max-w-2xl">
-          Paste a lockfile/manifest - <span className="font-mono text-tool">package-lock.json</span> / package.json,
-          requirements.txt, go.mod, Cargo.lock, Gemfile.lock. Parsed in your browser; only the name/version list is
-          checked against{' '}
+          Paste a lockfile/manifest - <span className="font-mono text-tool">package-lock.json</span> / package.json /
+          yarn.lock / pnpm-lock.yaml, requirements.txt / Pipfile.lock / poetry.lock, go.mod, Cargo.lock, Gemfile.lock,
+          composer.lock. Parsed in your browser; only the name/version list is checked against{' '}
           <a
             href="https://osv.dev"
             target="_blank"
@@ -215,7 +130,7 @@ export default function OsvScanner(): JSX.Element {
         id="osv-input"
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        placeholder="Paste package-lock.json / requirements.txt / go.mod / Cargo.lock / Gemfile.lock"
+        placeholder="Paste package-lock.json / yarn.lock / pnpm-lock.yaml / requirements.txt / poetry.lock / go.mod / Cargo.lock / Gemfile.lock / composer.lock"
         rows={12}
         spellCheck={false}
         aria-label="Lockfile / manifest"
