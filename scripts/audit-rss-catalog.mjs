@@ -97,6 +97,8 @@ const LOW_FREQUENCY = new Map([
   ['objective-see', 'macOS/iOS research; newest Aug 2026'],
   ['idtheftcenter', 'quarterly breach reports; newest Aug 2026'],
   ['tisiphone', 'personal DFIR blog; newest Jul 2026'],
+  ['dfir-lab', 'research blog; newest Sep 2026 (roughly monthly)'],
+  ['malwaretech', 'malware-analysis deep dives; newest Sep 2026 (multi-month cadence)'],
 ]);
 
 /** Extract quoted strings from a Set literal / array literal body. */
