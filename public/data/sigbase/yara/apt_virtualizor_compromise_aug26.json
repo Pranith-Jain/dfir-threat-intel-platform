@@ -12,7 +12,8 @@
         "author": "Florian Roth",
         "date": "2026-08-31",
         "reference": "https://lowendtalk.com/discussion/220625/urgent-virtualizor-compromised-31st-aug/p1",
-        "score": "75"
+        "score": "75",
+        "id": "3507b25a-1003-4825-bf65-fa977ca75bc3"
       }
     },
     {
@@ -23,9 +24,10 @@
         "date": "2026-08-31",
         "reference": "https://lowendtalk.com/discussion/220625/urgent-virtualizor-compromised-31st-aug/p1",
         "hash": "b81a4e1fab9fc4e404d57224fe71e2c143aa93942bd46998789bdc944a7870c7",
-        "score": "80"
+        "score": "80",
+        "id": "2ba47313-3db9-48d2-94b6-b8441be5e080"
       }
     }
   ],
-  "body": "rule APT_Virtualizor_Compromise_ForensicArtifacts_Aug26 {\n   meta:\n      description = \"Detects forensic artifacts found in a campaign against compromised hosting providers using Virtualizor software\"\n      author = \"Florian Roth\"\n      date = \"2026-08-31\"\n      reference = \"https://lowendtalk.com/discussion/220625/urgent-virtualizor-compromised-31st-aug/p1\"\n      score = 75\n   strings:\n      $x1 = \"AAAAC3NzaC1lZDI1NTE5AAAAIP13pPAm5jmInLQYD3XNb3HwrW4cAKDcphoT4kSKrnte\"\n      $x2 = \"/tmp/.vz_svc_done\"\n      $x3 = \"/tmp/widdow.jar\"\n      $x4 = \"31.77.220.138:2025\"  // Java connection\n\n      $sa1 = \"proxyuser\"\n      $sb1 = \"193.32.127.248\"\n   condition:\n      filesize < 5MB\n      and (\n         1 of ($x*)\n         or all of ($s*)\n      )\n}\n\nrule APT_Virtualizor_Compromise_Payload_Aug26 {\n   meta:\n      description = \"Detects java based payload used in a campaign against compromised hosting providers using Virtualizor software\"\n      author = \"Jonathan Peters (cod3nym)\"\n      date = \"2026-08-31\"\n      reference = \"https://lowendtalk.com/discussion/220625/urgent-virtualizor-compromised-31st-aug/p1\"\n      hash = \"b81a4e1fab9fc4e404d57224fe71e2c143aa93942bd46998789bdc944a7870c7\"\n      score = 80\n   strings:\n      $s1 = \"net/ikvm/clientvds/stresser/methods/impl/l4/minecraft/protocollib/\" ascii\n      $s2 = \"oshi/util/VirtualizationDetector\" ascii\n      $s3 = \"META-INF/proguard/base.proUT\" ascii\n   condition:\n      uint16(0) == 0x4b50\n      and filesize < 20MB\n      and all of them\n}\n"
+  "body": "rule APT_Virtualizor_Compromise_ForensicArtifacts_Aug26 {\n   meta:\n      description = \"Detects forensic artifacts found in a campaign against compromised hosting providers using Virtualizor software\"\n      author = \"Florian Roth\"\n      date = \"2026-08-31\"\n      reference = \"https://lowendtalk.com/discussion/220625/urgent-virtualizor-compromised-31st-aug/p1\"\n      score = 75\n      id = \"3507b25a-1003-4825-bf65-fa977ca75bc3\"\n   strings:\n      $x1 = \"AAAAC3NzaC1lZDI1NTE5AAAAIP13pPAm5jmInLQYD3XNb3HwrW4cAKDcphoT4kSKrnte\"\n      $x2 = \"/tmp/.vz_svc_done\"\n      $x3 = \"/tmp/widdow.jar\"\n      $x4 = \"31.77.220.138:2025\"  // Java connection\n\n      $sa1 = \"proxyuser\"\n      $sb1 = \"193.32.127.248\"\n   condition:\n      filesize < 5MB\n      and (\n         1 of ($x*)\n         or all of ($s*)\n      )\n}\n\nrule APT_Virtualizor_Compromise_Payload_Aug26 {\n   meta:\n      description = \"Detects java based payload used in a campaign against compromised hosting providers using Virtualizor software\"\n      author = \"Jonathan Peters (cod3nym)\"\n      date = \"2026-08-31\"\n      reference = \"https://lowendtalk.com/discussion/220625/urgent-virtualizor-compromised-31st-aug/p1\"\n      hash = \"b81a4e1fab9fc4e404d57224fe71e2c143aa93942bd46998789bdc944a7870c7\"\n      score = 80\n      id = \"2ba47313-3db9-48d2-94b6-b8441be5e080\"\n   strings:\n      $s1 = \"net/ikvm/clientvds/stresser/methods/impl/l4/minecraft/protocollib/\" ascii\n      $s2 = \"oshi/util/VirtualizationDetector\" ascii\n      $s3 = \"META-INF/proguard/base.proUT\" ascii\n   condition:\n      uint16(0) == 0x4b50\n      and filesize < 20MB\n      and all of them\n}\n"
 }
