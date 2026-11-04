@@ -3,13 +3,13 @@
   "repo": "xalgorix/xalgorix",
   "category": "agent",
   "scope": ["recon", "webapp", "network"],
-  "stars": 1290,
+  "stars": 1294,
   "description": "Autonomous AI pentesting agents — real-time reconnaissance, vulnerability detection, and exploitation orchestration. Go + TypeScript.",
   "homepage": "https://www.xalgorix.com",
   "added": "2026-09-14",
-  "checkedAt": "2026-11-03T03:19:32Z",
-  "pushedAt": "2026-10-30",
-  "daysIdle": 4,
+  "checkedAt": "2026-11-04T03:19:23Z",
+  "pushedAt": "2026-11-03",
+  "daysIdle": 1,
   "archived": false,
   "license": "Apache-2.0",
   "upstream": {
@@ -23,31 +23,31 @@
       "description": "Runs a second, independent agent whose only job is to re-exploit what the first one claimed, so a finding is either reproduced or dropped. One self-hosted binary with a local dashboard."
     },
     "derived": {
-      "checked_at": "2026-11-03T03:19:32Z",
+      "checked_at": "2026-11-04T03:19:23Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-10-30",
-        "days_since_push": 4,
-        "total_commits": 1370,
-        "last100_span_days": 27,
-        "last100_authors": 2,
-        "last_commit_sha": "4a90ea3",
-        "last_commit_message": "fix(llm): surface in-completion gateway errors and log why a completion was empty (#851)\n\n* fix(llm): surface in-completion gateway errors and log why a completion was empty\n\nA chat-completions 200 response with empty content and no tool calls was returned as an empty string, so the agent burned its empty-response budget without any record of the cause. Decode the choice-level error, finish_reason, native_finish_reason, refusal and reasoning presence; return an error when the gateway reports one inside the completion, and log a one-line diagnostic otherwise.\n\nRefs #23\n\n* fix(llm): decode refusal as raw JSON so non-string shapes cannot break parsing",
-        "last_commit_at": "2026-10-29",
+        "pushed_at": "2026-11-03",
+        "days_since_push": 1,
+        "total_commits": 1379,
+        "last100_span_days": 32,
+        "last100_authors": 4,
+        "last_commit_sha": "b354953",
+        "last_commit_message": "fix(ledger): keep path case in endpoint keys (#859)\n\nLedger and finding-dedup keys lowercased the whole endpoint, so /Api/x\nmerged into /api/x. Most servers route paths case-sensitively, and a\ncase-variant mount reaching protected handlers without authentication is\nits own finding: merging the two put the bypass evidence on the\ncanonical route's record and deduplicated the finding away. Keys now\nlowercase only the scheme and host. Ledgers saved with the old keys\nre-derive them on load.",
+        "last_commit_at": "2026-11-03",
         "releases": 100,
-        "latest_release_at": "2026-10-30",
-        "days_since_release": 4,
-        "days_idle": 4,
+        "latest_release_at": "2026-11-03",
+        "days_since_release": 1,
+        "days_idle": 1,
         "relocated": false
       },
       "identity": {
         "canonical_repo": "xalgorix/xalgorix",
-        "stars": 1290,
+        "stars": 1294,
         "forks": 249,
         "created_at": "2026-03-13",
         "is_fork": false,
-        "contributors": 17,
+        "contributors": 19,
         "top_contributor_share": 0.94,
         "homepage": "https://www.xalgorix.com",
         "description": "Autonomous AI pentesting agents — real-time reconnaissance, vulnerability detection, and exploitation orchestration. Go + TypeScript.",
@@ -74,9 +74,9 @@
       },
       "licence": { "file": "Apache-2.0", "api_spdx": "Apache-2.0", "readme_claim": "Apache-2.0", "conflict": null },
       "shape": {
-        "loc": 167954,
-        "code_files": 539,
-        "files": 1487,
+        "loc": 170486,
+        "code_files": 549,
+        "files": 1497,
         "has_ci": true,
         "has_tests": true,
         "has_dockerfile": true,
@@ -90,7 +90,12 @@
       },
       "substrate": { "bundled": ["httpx", "naabu", "nuclei"], "manifests": ["Dockerfile"] },
       "rebadge": [],
-      "risk": { "licence": false, "install": true, "phones_home": true, "opaque": false, "host_access": true }
+      "risk": { "licence": false, "install": true, "phones_home": true, "opaque": false, "host_access": true },
+      "risk_where": {
+        "host_access": "docker-compose.yml:27",
+        "install": "README.md:90",
+        "phones_home": "internal/tools/reporting/reporting.go:2813"
+      }
     }
   }
 }
