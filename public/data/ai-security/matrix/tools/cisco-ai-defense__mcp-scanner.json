@@ -7,9 +7,9 @@
   "description": "Scan MCP servers for potential threats & security findings.",
   "homepage": "https://blogs.cisco.com/ai/securing-the-ai-agent-supply-chain-with-ciscos-open-source-mcp-scanner",
   "added": "2026-09-14",
-  "checkedAt": "2026-11-03T03:20:01Z",
-  "pushedAt": "2026-10-30",
-  "daysIdle": 4,
+  "checkedAt": "2026-11-04T03:19:45Z",
+  "pushedAt": "2026-11-03",
+  "daysIdle": 1,
   "archived": false,
   "license": "Apache-2.0",
   "upstream": {
@@ -23,32 +23,32 @@
       "description": "Judges an MCP server's tool definitions three ways, by YARA rule, by hosted inspection API and by asking a model, so a poisoned tool description has to clear more than one kind of reader."
     },
     "derived": {
-      "checked_at": "2026-11-03T03:20:01Z",
+      "checked_at": "2026-11-04T03:19:45Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-10-30",
-        "days_since_push": 4,
-        "total_commits": 154,
-        "last100_span_days": 315,
-        "last100_authors": 24,
-        "last_commit_sha": "21a87b4",
-        "last_commit_message": "fix(examples): port stdio_example.py to the mcp 2.x low-level Server API (#291)\n\n* fix(examples): port stdio_example.py to the mcp 2.x low-level Server API\n\npyproject requires mcp>=2.0.0, and the other six example servers already\nuse MCPServer. stdio_example.py still used @server.list_tools() and\n@server.call_tool(), which the mcp 2.x low-level Server no longer has, so\nthe module failed with an AttributeError on import. Pass the handlers to\nServer(on_list_tools=..., on_call_tool=...) and return ListToolsResult /\nCallToolResult; the tool list and responses are unchanged.\n\n* fix(examples): return tool exceptions as an error result, as the v1 decorator did\n\n* fix(examples): validate stdio example arguments against the tool schema; add a test\n\nThe v1 @server.call_tool() decorator checked arguments against the tool's\ninputSchema before the handler ran. Restore that, so innocent_calculator with\na=\"x\", b=\"y\" returns an error result instead of \"Result: xy\".\n\ntests/test_stdio_example_server.py imports the example, so the AttributeError\nat import on mcp 2.x can't come back unnoticed, and covers a valid call, a\nschema-invalid call and a tool exception.\n\n---------\n\nCo-authored-by: Harish <hsanthan@cisco.com>",
-        "last_commit_at": "2026-10-28",
+        "pushed_at": "2026-11-03",
+        "days_since_push": 1,
+        "total_commits": 155,
+        "last100_span_days": 320,
+        "last100_authors": 25,
+        "last_commit_sha": "275938f",
+        "last_commit_message": "fix(tests): read files as UTF-8 so tests pass on Windows (#301)\n\nPath.read_text() without an encoding uses the OS default (cp1252 on Windows), which fails on prompt files containing non-ASCII characters. Pass encoding=\"utf-8\" explicitly.",
+        "last_commit_at": "2026-11-03",
         "releases": 51,
         "latest_release_at": "2026-10-20",
-        "days_since_release": 14,
-        "days_idle": 4,
+        "days_since_release": 15,
+        "days_idle": 1,
         "relocated": false
       },
       "identity": {
         "canonical_repo": "cisco-ai-defense/mcp-scanner",
         "stars": 1106,
-        "forks": 156,
+        "forks": 157,
         "created_at": "2025-09-24",
         "is_fork": false,
-        "contributors": 31,
-        "top_contributor_share": 0.49,
+        "contributors": 32,
+        "top_contributor_share": 0.48,
         "homepage": "https://blogs.cisco.com/ai/securing-the-ai-agent-supply-chain-with-ciscos-open-source-mcp-scanner",
         "description": "Scan MCP servers for potential threats & security findings.",
         "topics": ["agents", "ai", "mcp", "security"]
@@ -71,7 +71,8 @@
       },
       "substrate": { "bundled": [], "manifests": [] },
       "rebadge": [],
-      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false }
+      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false },
+      "risk_where": {}
     }
   }
 }
