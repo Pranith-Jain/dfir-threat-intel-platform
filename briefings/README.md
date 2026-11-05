@@ -2,14 +2,14 @@
 
 Automated CTI briefings from [PANOPTICON](https://pranithjain.qzz.io/threatintel/briefings).
 
-> Last synced: 2026-11-04 · 30 briefings
+> Last synced: 2026-11-05 · 30 briefings
 
 ## Briefings
 
 - [weekly-2026-W44](./weekly-2026-W44.md)
 - [weekly-2026-W43](./weekly-2026-W43.md)
 - [weekly-2026-W42](./weekly-2026-W42.md)
-- [weekly-2026-W41](./weekly-2026-W41.md)
+- [daily-2026-11-04](./daily-2026-11-04.md)
 - [daily-2026-11-03](./daily-2026-11-03.md)
 - [daily-2026-11-02](./daily-2026-11-02.md)
 - [daily-2026-11-01](./daily-2026-11-01.md)
