@@ -1,0 +1,133 @@
+{
+  "type": "cyber",
+  "date": "2026-11-07",
+  "threatLevel": "",
+  "executiveSummary": "Threat activity against OT-adjacent edge appliances, identity and email systems, and even PLCs remains elevated. Multiple government alerts confirm active exploitation and pre-positioning in critical sectors, alongside mass exploitation of widely deployed network gear and VPNs. Notable risks this period include: (1) active reconnaissance and capability development targeting Siemens S7 PLCs across water, energy, chemical, and manufacturing sectors Security Advisory ; (2) attacks on industrial refrigeration and cold-chain controllers resulting in real operational losses and public-health risks Supporting Report View Article ; (3) unauthenticated exploitation paths against NetScaler ADC/Gateway at the enterprise perimeter Security Advisory ; (4) an OpenSSH password-authentication bypass in musl-based Linux (notably Alpine) observed exploited within hours View Article ; and (5) mass exploitation of Zyxel GS1900 access switches enabling unauthenticated root command execution and configuration theft View Article . Nation-state posture remains a concern at the edge: U.S. and allied advisories warn of Russian FSB Center 16 campaigns abusing router misconfigurations and legacy services to exfiltrate configs and pivot inward Security Advisory , while China-nexus groups increasingly operate via covert networks of compromised SOHO/IoT devices to mask origins and pre-position in critical infrastructure Security Advisory . Concurrently, #StopRansomware guidance highlights affiliates actively exploiting internet-facing VPN/firewall devices, with Fortinet paths favored by Gunra, to drive destructive business outages that can cascade into OT when segmentation is weak Security Advisory . Enterprise IT systems that often bridge to operations also saw aggressive targeting: a Zimbra webmail zero-day used by Russian state-linked actors to exfiltrate mailboxes and persist via app passwords Security Advisory ; mass exploitation of Oracle PeopleSoft (CVE-2026-35273) impacting government and aviation supply chains with WAF-bypass techniques View Article View Article ; and KEV-listed flaws in GitLab and Cisco ASA/FTD confirming active exploitation of key perimeter and DevOps platforms Security Advisory . Given the confluence of OT-relevant advisories, active exploitation at the edge, and rapid weaponization of new issues, we assess the OT/ICS threat level as HIGH for the next 1-2 weeks. Focus remediation on exposed edge appliances, remote-access paths, and identity/email systems with direct conduits to operations.",
+  "keyFindings": [
+    {
+      "title": "Targeted activity and capability development against Siemens S7 PLCs across mult",
+      "summary": "Targeted activity and capability development against Siemens S7 PLCs across multiple U.S. critical infrastructure sectors (Water, Energy, Chemical, Manufacturing). Security Advisory"
+    },
+    {
+      "title": "Industrial refrigeration controllers (Danfoss/Copeland-Dixell) are being attacke",
+      "summary": "Industrial refrigeration controllers (Danfoss/Copeland-Dixell) are being attacked in the wild, with real inventory loss; immediate hardening and exposure reduction urged. Supporting Report View Article"
+    },
+    {
+      "title": "NetScaler ADC/Gateway unauthenticated exploitation paths under active abuse agai",
+      "summary": "NetScaler ADC/Gateway unauthenticated exploitation paths under active abuse against default configurations (including DTLS-enabled VPN vServers). Security Advisory"
+    },
+    {
+      "title": "OpenSSH \"SSHole\" auth-bypass on musl-based Linux (Alpine) is being exploited wit",
+      "summary": "OpenSSH \"SSHole\" auth-bypass on musl-based Linux (Alpine) is being exploited within hours; OT gateways/containers running Alpine are at risk. View Article"
+    },
+    {
+      "title": "Zyxel GS1900 switch exploitation enables unauthenticated root command execution;",
+      "summary": "Zyxel GS1900 switch exploitation enables unauthenticated root command execution; access switches in OT DMZs present pivot risk. View Article"
+    },
+    {
+      "title": "Russian FSB Center 16 targeting routers via SNMP/TFTP and Cisco Smart Install ab",
+      "summary": "Russian FSB Center 16 targeting routers via SNMP/TFTP and Cisco Smart Install abuse enables credential theft and lateral movement. Security Advisory"
+    },
+    {
+      "title": "China-nexus covert device networks (SOHO/IoT) used to mask origin and pre-positi",
+      "summary": "China-nexus covert device networks (SOHO/IoT) used to mask origin and pre-position in critical infrastructure environments. Security Advisory"
+    },
+    {
+      "title": "Gunra ransomware affiliates actively exploit edge VPN/firewall devices (e.g., Fo",
+      "summary": "Gunra ransomware affiliates actively exploit edge VPN/firewall devices (e.g., Fortinet) and living-off-the-land to stage enterprise-wide encryption. Security Advisory"
+    },
+    {
+      "title": "Russian state-linked activity exploiting a Zimbra webmail zero-day to exfiltrate",
+      "summary": "Russian state-linked activity exploiting a Zimbra webmail zero-day to exfiltrate data and persist via app passwords. Security Advisory"
+    },
+    {
+      "title": "Oracle PeopleSoft mass exploitation (CVE-2026-35273) with WAF-bypass observed ac",
+      "summary": "Oracle PeopleSoft mass exploitation (CVE-2026-35273) with WAF-bypass observed across government and aviation suppliers; rotate credentials and apply Oracle fixes. View Article"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "HIGH",
+        "label": "Overall Threat Level"
+      },
+      {
+        "value": "12",
+        "label": "Escalate Events (this brief)"
+      },
+      {
+        "value": "12",
+        "label": "Monitor Events (this brief)"
+      },
+      {
+        "value": "8",
+        "label": "KEV/Actively Exploited Items Highlighted"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Siemens: S7-200/300/400/1200/1500 PLC families; STEP 7/TIA Portal (engineering access) NetScaler (Cloud Software Group/Citrix): ADC/Gateway (incl. FIPS/NDcPP) Fortinet (FortiOS/FortiGate); Cisco Secure Firewall ASA/FTD; Zyxel GS1900 switches OpenSSH on musl-based Linux (Alpine); GitLab CE/EE; Zimbra Collaboration Suite Hitachi Energy CoreTec4/CoreTec5 (Energy sector OT); Subnet Solutions PowerSYSTEM Center Advantech EKI/IEIMS gateways; Eclipse Milo (OPC UA); Autel EV chargers (OCPP) Danfoss/Copeland-Dixell industrial refrigeration controllers"
+    ],
+    "sectors": [
+      "Water and Wastewater Systems; Energy and Utilities; Critical Manufacturing; Chemical Healthcare & Public Health (cold-chain/medical storage); Food & Agriculture (refrigeration) Transportation Systems (aviation navigation supply chains) Government Facilities and DIB (email/HR/edge devices)"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "FSB Center 16 (Russia) campaigns abusing SNMP/TFTP and Cisco Smart Install for router config theft and pivoting. Security Advisory",
+        "China-nexus operators leveraging covert SOHO/IoT device networks (Volt/Flax Typhoon TTPs) to route operations and pre-position in CI. Security Advisory",
+        "Gunra RaaS (Conti-derived) exploiting edge VPNs/firewalls (e.g., Fortinet) with LOTL tools, data theft, and broad encryption. Security Advisory",
+        "Void Blizzard/LAUNDRY BEAR (Russia) exploiting Zimbra zero-day for mailbox theft and persistence via IMAP app passwords. Security Advisory",
+        "ShinyHunters data-extortion exploiting Oracle PeopleSoft (CVE-2026-35273) at scale; notable sector impact to government and aviation supply chains. View Article"
+      ]
+    }
+  ],
+  "relevance": "Operational risk this period is driven by (a) direct PLC targeting and cold-chain controller attacks with process impacts; (b) exploitation of enterprise edge appliances (NetScaler, ASA/FTD, Zyxel switches, OpenSSH on Alpine) that commonly sit on or guard conduits into OT; and (c) identity/email compromises (Zimbra) and HR/ERP exposure (PeopleSoft) that enable persistent access and lateral movement toward operations. Nation-state advisories emphasize stealthy ingress via routers and covert SOHO/IoT networks. For asset owners, the risk pattern remains initial foothold in IT via exposed or misconfigured edge → credential theft and LOTL movement → targeting of high-value management planes and OT adjacencies.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Advantech EKI/IEIMS gateways: multiple unauth RCE/critical function bypass; isolate, block TCP/5058, and patch when available. CISA Weekly",
+        "Eclipse Milo (OPC UA): method execution auth bypass, diagnostics exposure, padding oracle, monitored-item/UA-TCP DoS-update stacks, enforce strong policies, segment OPC UA. CISA Weekly",
+        "Autel EV chargers (OCPP/WebSockets): remotely exploitable → charger takeover and potential grid manipulation; segment and restrict OCPP. CISA Weekly",
+        "Hitachi Energy CoreTec: OS command injection and Linux IPsec ESP LPE-upgrade to CoreTec5 v5.0.0; harden management access. ICS Advisory",
+        "Subnet Solutions PowerSYSTEM Center: low-privileged resource exposure and authenticated SQLi; upgrade to fixed releases; restrict report designer. ICS Advisory",
+        "PHP RCE chain (CVE-2026-109618/109619) in KEV-urgent patching; hunt for webshells on public-facing sites. KEV Notice",
+        "Brotli library (CVE-2026-111497) in KEV-update libraries or disable Brotli on edge until patched. KEV Notice",
+        "GitLab CE/EE and Cisco ASA/FTD added to KEV-evidence of exploitation at perimeter and DevOps platforms. KEV Notice"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "T1090 Proxy/Multiple Hops: Covert SOHO/IoT networks; residential proxy SDKs on enterprise/government devices.",
+      "T1133 External Remote Services: Exploitation of VPN/firewall appliances; OpenSSH auth bypass on Alpine.",
+      "T1190 Exploit Public-Facing Application: NetScaler ADC/Gateway, Zimbra, Oracle PeopleSoft, PHP RCE, EV charger OCPP.",
+      "T1041 Exfiltration Over C2 Channel / T1048 Exfiltration Over Alternative Protocol: Zimbra webmail exfil via SOAP/DNS/HTTPS; router TFTP config copies.",
+      "T1003 Credential Dumping / T1555 Credentials from Password Stores: Router/SNMP config theft; Zimbra IMAP app passwords; PeopleSoft session abuse.",
+      "T1105 Ingress Tool Transfer / T1059 Command and Scripting Interpreter: LOTL PowerShell/WMI/Impacket; PLC S7comm PUT/GET scripting (snap7)."
+    ],
+    "mitreIds": [
+      "T1090",
+      "T1133",
+      "T1190",
+      "T1041",
+      "T1048",
+      "T1003",
+      "T1555",
+      "T1105",
+      "T1059"
+    ]
+  },
+  "outlook72h": "Edge Hotfix Sprint: NetScaler, ASA/FTD, OpenSSH (musl/Alpine), Zyxel GS1900-patch/mitigate; remove any public admin exposure; enforce MFA. OT Exposure Sweep: Identify and immediately remove Internet-facing refrigeration controllers, EV chargers (OCPP), OPC UA endpoints, and PLC web servers. Email & HR Footholds: Patch Zimbra and PeopleSoft; revoke app passwords/tokens; enable DLP for mailbox/HR data exports; update WAF normalization for encoding evasions. Router Hygiene: Disable SNMPv1/v2, TFTP, Cisco Smart Install; rotate creds; baseline SNMP; block UDP/69 and TCP/4786 at edges. PLC Hardening & Monitoring: Enforce engineering workstation allowlists; deploy ICS IDS rules for S7comm; validate backups and code-signing where supported. Execution Tip: Treat KEV-listed items as time-boxed tasks with verification for pre-patch compromise. Stage changes through an OT maintenance window with defined rollback.",
+  "relatedCves": [
+    "CVE-2026-35273",
+    "CVE-2026-109618",
+    "CVE-2026-111497",
+    "CVE-2026-66911"
+  ]
+}
