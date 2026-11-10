@@ -1,0 +1,104 @@
+{
+  "type": "cyber",
+  "date": "2026-11-10",
+  "threatLevel": "",
+  "executiveSummary": "Multiple, concurrent threat streams elevate OT/ICS risk this week. First, confirmed sabotage operations targeting industrial refrigeration and cold-chain controllers have caused real-world spoilage and medical risk in Europe, with U.S. agencies urging immediate hardening (remove internet exposure, enforce strong auth, patch controllers, monitor setpoint changes). Security Advisory Supporting Report Actively targeted PLCs: A U.S. multi-agency CSA warns of active threat activity against Siemens S7 series PLCs using AI-assisted scripts over S7comm (TCP/102), emphasizing asset inventory, removal of internet reachability, and monitoring for unauthorized PUT/GET operations. Security Advisory Edge-perimeter exploitation continues: CISA and national CERTs report active exploitation and/or KEV additions for SonicWall SonicOS SSLVPN (MFA-bypass condition), Citrix NetScaler ADC/Gateway unauthenticated RCE, critical PHP RCEs with mass exploitation, and OpenSSH \"SSHole\" exploitation attempts-collectively driving elevated risk of IT-to-OT pivoting. KEV Notice JPCERT Advisory Industrial gateway and drive vulnerabilities: Multiple CISA bulletins detail high-impact flaws in Advantech EKI/WISE gateways and Danfoss iC7 drives, enabling remote command execution, management bypass, and unsigned firmware uploads-creating credible pathways for process manipulation if exposed. CISA Bulletin CISA Bulletin Supply-chain/RMM exposure: N-able took Hosted N-central offline and advised shutting down on-prem instances following the disclosure of 33 zero-days with public PoCs-posing a material MSP route to managed CI environments. View Article Operational takeaway: Prioritize removal of direct internet exposure for OT assets, accelerate patching and mitigations on VPN/ADC/SSH/PHP perimeters, and treat vendor-admin/RMM channels as Tier-0 with monitored, least-privileged access to any OT-adjacent networks.",
+  "keyFindings": [
+    {
+      "title": "Confirmed cold-chain sabotage and U.S. partner advisory",
+      "summary": "remove direct internet access, enforce strong authentication, patch, and monitor setpoint changes. Security Advisory"
+    },
+    {
+      "title": "Active targeting of Siemens S7 PLCs with AI-assisted tooling; monitor S7comm (TC",
+      "summary": "Active targeting of Siemens S7 PLCs with AI-assisted tooling; monitor S7comm (TCP/102), disable unnecessary PUT/GET, and segment OT. Security Advisory"
+    },
+    {
+      "title": "Citrix NetScaler ADC/Gateway unauthenticated RCE actively exploited; patch immed",
+      "summary": "Citrix NetScaler ADC/Gateway unauthenticated RCE actively exploited; patch immediately and investigate for compromise. JPCERT Advisory"
+    },
+    {
+      "title": "SonicWall SonicOS SSLVPN added to KEV for active exploitation; enforce MFA, rest",
+      "summary": "SonicWall SonicOS SSLVPN added to KEV for active exploitation; enforce MFA, restrict exposure, rotate credentials/tokens. KEV Notice"
+    },
+    {
+      "title": "Industrial gateways and drives contain critical flaws enabling remote takeover a",
+      "summary": "Industrial gateways and drives contain critical flaws enabling remote takeover and firmware abuse; reduce exposure and patch. Advantech Gateways Danfoss iC7 Drives"
+    },
+    {
+      "title": "N-able N-central",
+      "summary": "33 public zero-days with PoCs; isolate/disable until fixed; audit for rogue admins/tokens and lateral movement. View Article"
+    },
+    {
+      "title": "Mass-exploited PHP RCEs impacting internet-facing sites; urgent patching plus we",
+      "summary": "Mass-exploited PHP RCEs impacting internet-facing sites; urgent patching plus web shell hunts and egress controls recommended. JPCERT Advisory"
+    },
+    {
+      "title": "OpenSSH \"SSHole\" exploitation attempts",
+      "summary": "restrict SSH to management networks/VPNs; enforce key-based auth; monitor for persistence. View Article"
+    }
+  ],
+  "dashboard": {
+    "kpis": [],
+    "activelyExploited": [
+      "Cold-Chain OT Impact",
+      "PLC Targeting",
+      "Edge RCE",
+      "VPN KEV",
+      "RMM Supply Chain",
+      "KEV / Mass Exploit",
+      "SSH Perimeter",
+      "OT Gateways",
+      "OPC UA",
+      "Drives/Actuators",
+      "State Actors",
+      "Ransomware",
+      "Aviation/Supply Chain"
+    ],
+    "vendors": [
+      "Observed across reporting period (non-exhaustive): Citrix NetScaler ADC/Gateway; SonicWall SonicOS SSLVPN; Siemens S7-200/300/400/1200/1500; Advantech EKI/IEIMS & WISE-6610; Danfoss iC7 drives; Subnet Solutions PowerSYSTEM Center; Eclipse Milo (OPC UA); PHP (8.2/8.3/8.4/8.5 branches); OpenSSH; N-able N-central; Cisco ASA/FTD; WordPress Core; Zimbra Collaboration; Intelbras IP cameras; ARKETEAM Protectel; Wing FTP; NetScaler DTLS; refrigeration controllers (Copeland/Dixell, Danfoss Store systems)."
+    ],
+    "sectors": [
+      "Food & Agriculture (cold-chain); Healthcare & Public Health (medical storage); Water & Wastewater Systems (adjacent via enterprise perimeters); Energy (OT platforms, PLCs); Critical Manufacturing; Transportation (aviation digital ops); Government Facilities; Communications (telecom); Financial Services (identity/email platforms)."
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "China-nexus activity leveraging covert device networks and living-off-the-land techniques for stealthy access to CI operators' networks. Security Advisory",
+        "Ransomware operations: Gunra and SafePay advisories list active TTPs across sectors, with lateral movement via RDP/SMB/Impacket and cloud exfiltration paths. #StopRansomware: Gunra #StopRansomware: SafePay",
+        "Russian-linked phishing/exfiltration via Zimbra zero-day, at scale against energy/government/DIB/NGOs, plausible enterprise foothold near OT perimeters. Security Advisory",
+        "ShinyHunters mass-exploitation of Oracle PeopleSoft used to extort across sectors, including aviation digital ops provider-enterprise risk with safety implications. KrebsOnSecurity",
+        "AI-enabled offensive tooling and campaigns (ARTEX prevalence; Operation Snowball) illustrate rapid adaptation against enterprise perimeters and apps serving CI tenants. View Article View Article"
+      ]
+    }
+  ],
+  "relevance": "The week's risk profile is OT-centric: confirmed manipulation of refrigeration control systems and guidance to harden cold-chain networks, plus an explicit advisory on Siemens S7 PLC targeting, elevate the probability of direct process impact. Simultaneously, exploitation of remote access and edge appliances (SonicWall SSLVPN, NetScaler ADC, OpenSSH \"SSHole,\" PHP RCEs) increases the likelihood of IT-to-OT pivoting where segmentation is weak or jump hosts are under-protected. High-impact industrial gateway/drive vulnerabilities (Advantech EKI/WISE, Danfoss iC7) raise the consequence of exposure and unpatched systems. Supply-chain vectors (MSP RMM) remain a critical concern for operators leveraging third-party remote administration.",
+  "cveWatch": [],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Exploit Public-Facing Applications (ATT&CK T1190): NetScaler ADC/GW, PHP RCE, SharePoint/PeopleSoft vulns; refrigeration controller auth bypass.",
+      "Valid Accounts (T1078), MFA bypass/abuse; SAML enforcement gap paths on VPNs; vendor/RMM trust abuse.",
+      "Proxy/Multi-hop Infrastructure (T1090/T1090.003): China-nexus covert device networks; residential proxy misuse.",
+      "Credential Access: LSASS dumping, DCSync; ADCS ESC1; token theft/refresh abuse; app passwords (Zimbra).",
+      "Lateral Movement: RDP/SMB/Impacket; WinRM/WMI; domain discovery via LDAP.",
+      "Command & Control: Cloudfronted HTTPS/DNS egress; residential/VPN egress; custom tunnels.",
+      "ICS-specific: S7comm unauthorized PUT/GET; gateway parameter/firmware manipulation; setpoint/defrost tampering in refrigeration systems."
+    ],
+    "mitreIds": [
+      "T1190",
+      "T1078",
+      "T1090",
+      "T1090.003"
+    ]
+  },
+  "outlook72h": "Expect continued probing of NetScaler ADC/Gateway and SonicWall SSLVPN portals; prioritize patch windows and access restrictions. Monitor refrigeration controllers for anomalous setpoint or defrost commands, especially weekends/after-hours; stage manual override procedures. Increased scanning/exploitation attempts for PHP and OpenSSH \"SSHole\" on public sites and gateways; ensure WAF/IDS signatures current. RMM-focused exploitation attempts and credential replay likely following N-central disclosures; prepare contingency isolation steps for RMM servers. Watch for S7comm anomalies indicative of reconnaissance or unauthorized PUT/GET operations on Siemens PLCs.",
+  "relatedCves": [
+    "CVE-2026-19868",
+    "CVE-2026-105420",
+    "CVE-2026-66911",
+    "CVE-2026-105454"
+  ]
+}
