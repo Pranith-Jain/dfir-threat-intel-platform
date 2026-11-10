@@ -1,0 +1,23 @@
+{
+  "slug": "apt_nk_contagious_interview_nov26",
+  "filename": "apt_nk_contagious_interview_nov26.yar",
+  "source": "github.com/Neo23x0/signature-base",
+  "license": "Detection Rule License 1.1",
+  "headerComment": "",
+  "rules": [
+    {
+      "name": "MAL_APT_NK_JS_ContagiousInterview_TCP_Backdoor_Nov26",
+      "meta": {
+        "description": "Detects the Node.js backdoor of the Contagious Interview campaign (git hook lure) that talks to its C2 over plain TCP with newline-delimited JSON. Works on the javascript-obfuscator output as distributed: it relies on top-level names that the obfuscator keeps (renameGlobals is off by default) and on key strings, which end up either as literals or in the base64 encoded string array",
+        "author": "n4uu",
+        "reference": "https://n4uu.github.io/2026/raw-tcp-backdoor-cleverstack/",
+        "date": "2026-11-05",
+        "score": "80",
+        "hash1": "281d4d60fc99cf7f54819defb1c7c14b9202d46890936c4c6b9ebe3ddc75dd2f",
+        "hash2": "6db4c3d2ab56227d36eff59d1dc9e13eadf9959996fab1e0b04591cc5e637d04",
+        "id": "fdd732d7-e852-4f09-b57c-f1893cc1ec64"
+      }
+    }
+  ],
+  "body": "rule MAL_APT_NK_JS_ContagiousInterview_TCP_Backdoor_Nov26 {\n   meta:\n      description = \"Detects the Node.js backdoor of the Contagious Interview campaign (git hook lure) that talks to its C2 over plain TCP with newline-delimited JSON. Works on the javascript-obfuscator output as distributed: it relies on top-level names that the obfuscator keeps (renameGlobals is off by default) and on key strings, which end up either as literals or in the base64 encoded string array\"\n      author = \"n4uu\"\n      reference = \"https://n4uu.github.io/2026/raw-tcp-backdoor-cleverstack/\"\n      date = \"2026-11-05\"\n      score = 80\n      hash1 = \"281d4d60fc99cf7f54819defb1c7c14b9202d46890936c4c6b9ebe3ddc75dd2f\"\n      hash2 = \"6db4c3d2ab56227d36eff59d1dc9e13eadf9959996fab1e0b04591cc5e637d04\"\n      id = \"fdd732d7-e852-4f09-b57c-f1893cc1ec64\"\n   strings:\n      $r1 = \"require(\" ascii\n\n      // top-level identifiers, not renamed by javascript-obfuscator\n      $g1 = \"GIT_CHECKER_MARKER\" ascii fullword\n      $g2 = \"LOCK_UPDATE_INTERVAL\" ascii fullword\n      $g3 = \"getHandleParam\" ascii fullword\n      $g4 = \"createSocketConnection\" ascii fullword\n      $g5 = \"lockUpdateTimer\" ascii fullword\n      $g6 = \"git_content\" ascii fullword\n      $g7 = \"SERVER_API_URL\" ascii fullword\n      $g8 = \"attemptReconnect\" ascii fullword\n\n      // key strings as literals or encoded with the javascript-obfuscator base64 alphabet\n      $s1 = \"vscode-ext.lock\" ascii\n      $s2 = \".git-checker\" ascii\n      $s3 = \"start /b cmd /c \\\"cd /d \" ascii\n      $s4 = \"ss_exec \" ascii\n      $sb1 = \"vscode-ext.lock\" base64\n      $sb2 = \".git-checker\" base64\n      $sb3 = \"start /b cmd /c \\\"cd /d \" base64\n      $sb4 = \"ss_exec \" base64\n   condition:\n      filesize < 1MB\n      and $r1\n      and (\n         6 of ($g*)\n         or ( 3 of ($g*) and 2 of ($s*) )\n         // still matches a build with renameGlobals enabled\n         or 3 of ($s*)\n      )\n}\n"
+}
