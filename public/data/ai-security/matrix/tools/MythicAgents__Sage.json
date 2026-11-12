@@ -3,13 +3,13 @@
   "repo": "MythicAgents/Sage",
   "category": "agent",
   "scope": ["redteam", "ad"],
-  "stars": 43,
+  "stars": 45,
   "description": "Sage is a virtual Mythic agent that that uses an AI agentic system to operate Mythic and Mythic agents running on compromised hosts.",
   "homepage": null,
   "added": "2026-09-16",
-  "checkedAt": "2026-11-11T03:20:10Z",
-  "pushedAt": "2026-10-30",
-  "daysIdle": 12,
+  "checkedAt": "2026-11-12T03:20:31Z",
+  "pushedAt": "2026-11-12",
+  "daysIdle": 0,
   "archived": false,
   "license": "GPL-3.0",
   "upstream": {
@@ -18,27 +18,27 @@
       "description": "Installs into a Mythic C2 server and operates it from the inside, reasoning over the live callbacks and the BloodHound graph to issue Mythic tasks. It never touches the target itself."
     },
     "derived": {
-      "checked_at": "2026-11-11T03:20:10Z",
+      "checked_at": "2026-11-12T03:20:31Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-10-30",
-        "days_since_push": 12,
-        "total_commits": 424,
-        "last100_span_days": 21,
+        "pushed_at": "2026-11-12",
+        "days_since_push": 0,
+        "total_commits": 551,
+        "last100_span_days": 13,
         "last100_authors": 1,
-        "last_commit_sha": "fe151bf",
-        "last_commit_message": "Install Sage from the published release image\n\nmythic-cli install now pulls ghcr.io/mythicagents/sage:0.2.0, named in\nconfig.json's remote_images, instead of building the container locally.\nOperators who want a local build set sage_use_build_context to true.\n\nThe release version check and the version tests now require that image\nreference to match agent_version, so a version bump cannot leave the\ninstaller pointing at an older release.",
-        "last_commit_at": "2026-10-23",
+        "last_commit_sha": "95b3c99",
+        "last_commit_message": "Stop two payload-handoff wall-limit tests from flaking under load\n\nBoth tests drive the handoff case until a provider call is hanging, then\ncheck that hitting the time limit while that call is in flight is reported\nas a wall-time stop with uncertain usage. They set the limit to about a\nsecond and assumed the call was dispatched before it fired. On a busy\nrunner the setup and seed replay can take longer than that, so the limit\nfired before the call was in flight: the transport rejected it at the\ndeadline check before recording it, and the result then carried neither\nthe in-flight request nor the uncertainty flag the tests expect. They\npassed on a fast machine and failed in CI.\n\nDrive the stop off the call actually being in flight instead of racing a\none-second budget against setup. The limit is now generous, and each test\ntrips the deadline the moment its provider is entered, which the transport\nreaches only after it has recorded the request. The behavior each test\nasserts is unchanged; only the trigger is made deterministic. This touches\ntest code alone.",
+        "last_commit_at": "2026-11-12",
         "releases": 3,
         "latest_release_at": "2026-10-23",
-        "days_since_release": 19,
-        "days_idle": 12,
+        "days_since_release": 20,
+        "days_idle": 0,
         "relocated": false
       },
       "identity": {
         "canonical_repo": "MythicAgents/sage",
-        "stars": 43,
+        "stars": 45,
         "forks": 5,
         "created_at": "2025-04-03",
         "is_fork": false,
@@ -50,9 +50,9 @@
       },
       "licence": { "file": "GPL-3.0", "api_spdx": "GPL-3.0", "readme_claim": null, "conflict": null },
       "shape": {
-        "loc": 366001,
-        "code_files": 743,
-        "files": 1139,
+        "loc": 410770,
+        "code_files": 822,
+        "files": 1220,
         "has_ci": true,
         "has_tests": true,
         "has_dockerfile": true,
@@ -66,7 +66,8 @@
       },
       "substrate": { "bundled": [], "manifests": [] },
       "rebadge": [],
-      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false }
+      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false },
+      "risk_where": {}
     }
   }
 }
