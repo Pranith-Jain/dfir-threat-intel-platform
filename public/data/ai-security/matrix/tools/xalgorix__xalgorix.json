@@ -3,13 +3,13 @@
   "repo": "xalgorix/xalgorix",
   "category": "agent",
   "scope": ["recon", "webapp", "network"],
-  "stars": 1349,
+  "stars": 1353,
   "description": "Autonomous AI pentesting agents — real-time reconnaissance, vulnerability detection, and exploitation orchestration. Go + TypeScript.",
   "homepage": "https://www.xalgorix.com",
   "added": "2026-09-14",
-  "checkedAt": "2026-11-14T03:19:03Z",
-  "pushedAt": "2026-11-13",
-  "daysIdle": 1,
+  "checkedAt": "2026-11-15T03:19:07Z",
+  "pushedAt": "2026-11-15",
+  "daysIdle": 0,
   "archived": false,
   "license": "Apache-2.0",
   "upstream": {
@@ -23,28 +23,28 @@
       "description": "Runs a second, independent agent whose only job is to re-exploit what the first one claimed, so a finding is either reproduced or dropped. One self-hosted binary with a local dashboard."
     },
     "derived": {
-      "checked_at": "2026-11-14T03:19:03Z",
+      "checked_at": "2026-11-15T03:19:07Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-11-13",
-        "days_since_push": 1,
-        "total_commits": 1405,
-        "last100_span_days": 38,
+        "pushed_at": "2026-11-15",
+        "days_since_push": 0,
+        "total_commits": 1419,
+        "last100_span_days": 24,
         "last100_authors": 4,
-        "last_commit_sha": "5fed1aa",
-        "last_commit_message": "fix(sandbox): keep the agent file tools off the scanner's credential files (#889)\n\nThe agent file tools read anywhere outside a deny-list and write anywhere\nunder Data_Dir, ~/.xalgorix and /tmp. The deny-list did not include the\nscanner's own credential files, and the provider key store and auth\nprofile store live at the Data_Dir root, inside the write roots. An agent\nsteered by content from a scanned target could therefore read the\ndashboard password, API tokens and provider keys, or rewrite a stored\nprovider base URL so later model requests (with the key) go elsewhere.\n\n- config: add the scanner's credential files to the default deny-list:\n  /etc/xalgorix.env, /root/.xalgorix.env, ~/.xalgorix.env (and the\n  SUDO_USER copy), <Data_Dir>/llm_keys.json, <Data_Dir>/auth-profiles.json\n  and the CLI credential files the auth drivers import. The env file is\n  now staged as \"<env file>.tmp-*\".\n- sandbox: the deny-list now wins over the write Allow_List and the\n  active ScanDir in CheckResolve; deny entries are also kept in their\n  symlink-resolved form; an entry also covers its \".tmp\" siblings (where\n  the stores stage atomic rewrites); /proc/<pid>/environ files are\n  refused, since the process environment carries the env-file values.\n  Path canonicalization now resolves symlinks component by component,\n  including dangling links and paths with several missing trailing\n  components, so a link shipped in the scan workspace cannot carry a\n  write to a target outside the Allow_List or onto a deny-listed file;\n  symlink loops, and a \"..\" that would step back out of a missing\n  component, fail closed; symlinked write roots are kept in their\n  resolved form too.\n- fileedit: search_files honors the deny-list on the symlink-resolved\n  root (refuses a deny-listed root, the filesystem root or one under\n  /proc, skips deny-listed names under the root), passes the pattern\n  after \"--\", and no longer passes -r to ripgrep, where it means\n  --replace and made the search run over the process working directory;\n  ripgrep now also searches hidden and ignored files, as grep -r does.\n  list_files checks the resolved directory against the deny-list.\n- terminal: the best-effort command guard also matches /etc/xalgorix.env,\n  llm_keys.json and auth-profiles.json.",
-        "last_commit_at": "2026-11-13",
+        "last_commit_sha": "30cd4ee",
+        "last_commit_message": "Merge pull request #899 from xalgorix/fix/offtarget-false-blocks\n\nfix(agent): stop off-target guard blocking namespaces, resolvers, and UA strings",
+        "last_commit_at": "2026-11-15",
         "releases": 100,
-        "latest_release_at": "2026-11-13",
-        "days_since_release": 1,
-        "days_idle": 1,
+        "latest_release_at": "2026-11-15",
+        "days_since_release": 0,
+        "days_idle": 0,
         "relocated": false
       },
       "identity": {
         "canonical_repo": "xalgorix/xalgorix",
-        "stars": 1349,
-        "forks": 275,
+        "stars": 1353,
+        "forks": 276,
         "created_at": "2026-03-13",
         "is_fork": false,
         "contributors": 19,
@@ -76,9 +76,9 @@
       },
       "licence": { "file": "Apache-2.0", "api_spdx": "Apache-2.0", "readme_claim": "Apache-2.0", "conflict": null },
       "shape": {
-        "loc": 178644,
-        "code_files": 583,
-        "files": 1531,
+        "loc": 180201,
+        "code_files": 589,
+        "files": 1537,
         "has_ci": true,
         "has_tests": true,
         "has_dockerfile": true,
@@ -96,7 +96,7 @@
       "risk_where": {
         "host_access": "docker-compose.yml:27",
         "install": "README.md:90",
-        "phones_home": "internal/tools/reporting/reporting.go:2828"
+        "phones_home": "internal/tools/reporting/reporting.go:2832"
       }
     }
   }
