@@ -2,6 +2,575 @@
   {
     "Adversary": {
       "Aliases": [],
+      "Associated_Groups": ["Maze", "Egregor", "Conti", "REvil", "BlackBasta"],
+      "Description": "Ransomware gangs targeting Veeam backup servers",
+      "Known_Campaigns": [],
+      "Motivation": "Financial gain through data theft and disruption",
+      "Sophistication": "High",
+      "Strategic_Objectives": "Steal sensitive data, disrupt backup restoration",
+      "TTPs_Employed": ["Remote Code Execution", "Data Exfiltration", "Backup Deletion"]
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Exploitation of CVE-2026-44963 for RCE",
+        "Detection": "Monitor for unusual domain user activity on backup servers",
+        "Remediation": "Apply Veeam's security patch for CVE-2026-44963",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "Gaining access to a system or network",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exploiting a vulnerability to execute code",
+            "technique_id": "T1203",
+            "technique_name": "Exploitation for Client Execution"
+          }
+        ],
+        "Techniques": ["T1203"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Potential data theft and backup deletion",
+        "Detection": "Monitor for large data transfers from backup servers",
+        "Remediation": "Ensure regular backups and test restoration processes",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          { "tactic_description": "Stealing data from a network", "tactic_id": "TA0010", "tactic_name": "Exfiltration" }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exfiltrating data automatically",
+            "technique_id": "T1020",
+            "technique_name": "Automated Exfiltration"
+          }
+        ],
+        "Techniques": ["T1020"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": ["CVE-2026-44963"],
+    "Capability": {
+      "Defensive_Evasion_Tactics": [],
+      "Description": "Exploitation of RCE vulnerability in Veeam Backup & Replication",
+      "Exploits": ["CVE-2026-44963"],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": [],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [],
+    "Extracted_Entities": {
+      "Assets": ["Backup servers"],
+      "Breach_Types": ["Remote Code Execution"],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Veeam"],
+      "Countries": [],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["RCE", "vulnerability", "patch", "ransomware"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": ["Security patch for CVE-2026-44963"],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Various"],
+      "Software": ["Veeam Backup & Replication"],
+      "Technologies": ["Backup software"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": ["CVE-2026-44963"]
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "Domain-joined Veeam backup servers",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Remote Code Execution"],
+      "Tools": []
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "Critical",
+    "Threat_Actors": ["Maze", "Egregor", "Conti", "REvil", "BlackBasta"],
+    "Timestamp": "2026-06-09T10:27:00Z",
+    "Title": "Veeam Backup & Replication RCE Vulnerability CVE-2026-44963",
+    "Tools": ["Veeam Backup & Replication"],
+    "Victim": {
+      "Access_Vectors": ["Domain-joined servers"],
+      "Data_Types_At_Risk": ["Sensitive Data"],
+      "Description": "Organizations using Veeam Backup & Replication",
+      "Geography": "Global",
+      "Impact_Severity": "Critical",
+      "Industry": "Various, including Fortune 500 and Global 2,000 firms",
+      "Security_Posture": "Vulnerable if unpatched",
+      "Targeted_Assets": ["Backup Servers"]
+    },
+    "diamond_model_summary": "The incident involves ransomware gangs exploiting a critical RCE vulnerability (CVE-2026-44963) in Veeam Backup & Replication software. The adversaries are financially motivated, targeting domain-joined backup servers to steal data and disrupt operations. The infrastructure includes vulnerable Veeam servers, and the victims are organizations using these products globally.",
+    "doc_summary": "Veeam has released security updates to patch a critical vulnerability (CVE-2026-44963) in Veeam Backup & Replication (VBR) 12.3.2.4465 and earlier versions, allowing remote code execution (RCE) by authenticated domain users on domain-joined backup servers. The flaw does not affect version 13.x due to architectural changes. Despite no active exploitation reports, Veeam warns of potential exploit development following patch release. Ransomware gangs often target Veeam servers to steal data and disrupt restoration. The vulnerability was reported by WatchTowr's Sina Kheirkhah. Veeam's products are widely used, including by 82% of Fortune 500 companies.",
+    "enrichment": null,
+    "id": "82c986c918466bea8198ab4d589c3256",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The kill chain involves exploiting a critical RCE vulnerability in Veeam Backup & Replication software. The exploitation stage is crucial, allowing attackers to execute code on domain-joined backup servers. Actions on objectives include potential data theft and backup deletion, with ransomware gangs targeting these vulnerabilities for financial gain.",
+    "operational_tags": ["High Priority", "CVE-linked"],
+    "priority_score": 96,
+    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes the exploitation of a specific vulnerability (CVE-2026-44963) in Veeam Backup & Replication software. The lack of specific hashes, IPs, or domains limits the indicators available for detection. The primary focus is on patching the vulnerability to prevent exploitation.",
+    "relevance_score": 68,
+    "sequence": 20834,
+    "source": "https://www.bleepingcomputer.com/news/security/new-veeam-vulnerability-exposes-backup-servers-to-rce-attacks/",
+    "slug": "Veeam_Backup___Replication_RCE_Vulnerability_CVE-2026-44963-020834",
+    "shard": 4
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
+      "Description": "The adversary is linked to the Miasma/Shai-Hulud supply-chain campaign, targeting open-source ecosystems.",
+      "Known_Campaigns": ["Miasma", "Shai-Hulud"],
+      "Motivation": "Supply-chain compromise",
+      "Sophistication": "High",
+      "Strategic_Objectives": "Compromise software supply chains to distribute malicious content",
+      "TTPs_Employed": []
+    },
+    "Analyses": [
+      {
+        "Description": "The adversary likely conducted reconnaissance to identify vulnerable repositories and npm packages.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [
+          {
+            "tactic_description": "Gathering information to plan future operations.",
+            "tactic_id": "TA0043",
+            "tactic_name": "Reconnaissance"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may gather information about the victim's host environment.",
+            "technique_id": "T1592",
+            "technique_name": "Gather Victim Host Information"
+          }
+        ],
+        "Techniques": ["T1592"]
+      },
+      {
+        "Description": "The adversary weaponized the attack by injecting malicious content into repositories.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [
+          {
+            "tactic_description": "Developing resources to support operations.",
+            "tactic_id": "TA0042",
+            "tactic_name": "Resource Development"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may develop capabilities to support operations.",
+            "technique_id": "T1587.001",
+            "technique_name": "Develop Capabilities"
+          }
+        ],
+        "Techniques": ["T1587.001"]
+      },
+      {
+        "Description": "Malicious content was delivered through compromised GitHub repositories.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [
+          {
+            "tactic_description": "Executing malicious code on victim systems.",
+            "tactic_id": "TA0007",
+            "tactic_name": "Execution"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may exploit vulnerabilities to execute code.",
+            "technique_id": "T1203",
+            "technique_name": "Exploitation for Client Execution"
+          }
+        ],
+        "Techniques": ["T1203"]
+      },
+      {
+        "Description": "Exploitation occurred when developers pulled malicious content from compromised repositories.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "Gaining access to victim systems.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may exploit vulnerabilities in public-facing applications.",
+            "technique_id": "T1190",
+            "technique_name": "Exploit Public-Facing Application"
+          }
+        ],
+        "Techniques": ["T1190"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Actions on Objectives",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": [],
+      "Description": "The adversary demonstrated the ability to compromise GitHub repositories and inject malicious content.",
+      "Exploits": [],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": ["Miasma"],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [],
+    "Extracted_Entities": {
+      "Assets": ["GitHub repositories"],
+      "Breach_Types": ["Supply-chain attack"],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Microsoft", "Red Hat"],
+      "Countries": ["United States"],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["supply-chain", "compromise", "malicious content"],
+      "Malware_Families": ["Miasma"],
+      "Malware_Filenames": [],
+      "Patches": [],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Technology"],
+      "Software": ["Azure", "GitHub", "Azure Functions"],
+      "Technologies": ["AI coding tools"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": []
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "The attack leveraged GitHub repositories and npm packages for distribution.",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": [],
+      "Tools": ["Miasma"]
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "High",
+    "Threat_Actors": ["Miasma"],
+    "Timestamp": "2026-06-09T11:42:00Z",
+    "Title": "Microsoft GitHub Repositories Compromised in Miasma/Shai-Hulud Supply-Chain Attack",
+    "Tools": ["Miasma", "Azure", "GitHub", "Azure Functions"],
+    "Victim": {
+      "Access_Vectors": ["Supply-chain"],
+      "Data_Types_At_Risk": ["Source code"],
+      "Description": "Microsoft's GitHub repositories were targeted, affecting developers using Azure Functions.",
+      "Geography": "United States",
+      "Impact_Severity": "High",
+      "Industry": "Technology",
+      "Security_Posture": "Compromised",
+      "Targeted_Assets": ["GitHub repositories", "Azure Functions"]
+    },
+    "diamond_model_summary": "The incident involved the Miasma/Shai-Hulud campaign targeting Microsoft's GitHub repositories. The adversary demonstrated high sophistication by compromising repositories and injecting malicious content. The attack leveraged GitHub infrastructure, affecting the technology sector, specifically developers using Azure Functions. The strategic objective was to compromise software supply chains.",
+    "doc_summary": "Microsoft removed 73 repositories from its Azure, microsoft, Azure-Samples, and MicrosoftDocs organizations on GitHub due to potential malicious content linked to a Miasma/Shai-Hulud supply-chain campaign. The incident, occurring on June 5, 2023, disrupted continuous integration pipelines and affected the 'durabletask' repository, which had been compromised in May. The attack targeted AI coding tools and involved a pivot from Red Hat's npm packages. The repositories were restored after investigation, but the incident highlighted vulnerabilities in open-source ecosystems. Microsoft notified affected customers and continues to investigate.",
+    "enrichment": null,
+    "id": "8ed74d22954f6d04eae5d0131aa92845",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The attack followed a structured kill chain, starting with reconnaissance to identify vulnerable repositories. Weaponization involved injecting malicious content into repositories. Delivery occurred through compromised GitHub repositories, leading to exploitation when developers pulled the malicious content. The attack highlighted vulnerabilities in open-source ecosystems and the need for improved supply-chain security.",
+    "operational_tags": ["High Priority"],
+    "priority_score": 72,
+    "pyramid_of_pain_summary": "The Pyramid of Pain analysis reveals a lack of specific indicators such as hashes, IPs, or domains. The attack primarily leveraged GitHub repositories and npm packages, making it challenging to identify concrete indicators. The focus should be on improving detection and remediation strategies for supply-chain attacks, emphasizing the need for robust security measures in open-source ecosystems.",
+    "relevance_score": 67,
+    "sequence": 20833,
+    "source": "https://www.bleepingcomputer.com/news/security/github-disables-microsoft-repos-pushing-password-stealing-malware/",
+    "slug": "Microsoft_GitHub_Repositories_Compromised_in_Miasma__Shai-Hulud_Supply-C-020833",
+    "shard": 4
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
+      "Description": "No significant information detected",
+      "Known_Campaigns": [],
+      "Motivation": "",
+      "Sophistication": "",
+      "Strategic_Objectives": "",
+      "TTPs_Employed": []
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Exploitation of out-of-bounds memory access in V8 engine",
+        "Detection": "Monitor for unusual activity in Chrome processes • Check for updates and patches applied to Chrome",
+        "Remediation": "Update Chrome to version 149.0.7827.102/.103 • Apply security patches to Chromium-based browsers",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to get into your network.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exploitation of a vulnerability in client applications to execute code.",
+            "technique_id": "T1203",
+            "technique_name": "Exploitation for Client Execution"
+          }
+        ],
+        "Techniques": ["T1203"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Actions on Objectives",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": ["CVE-2026-11645", "CVE-2026-2441", "CVE-2026-3909", "CVE-2026-3910", "CVE-2026-5281"],
+    "Capability": {
+      "Defensive_Evasion_Tactics": [],
+      "Description": "Exploitation of out-of-bounds memory access in V8 engine",
+      "Exploits": ["CVE-2026-11645"],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": [],
+      "Zero_Days": ["CVE-2026-11645"]
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [],
+    "Extracted_Entities": {
+      "Assets": ["Web browsers"],
+      "Breach_Types": [],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Google"],
+      "Countries": [],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["CVE-2026-11645", "out-of-bounds memory access", "zero-day"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": ["149.0.7827.102", "149.0.7827.103"],
+      "Phishing_Infrastructure": [],
+      "Sectors": [],
+      "Software": ["Google Chrome", "V8 JavaScript engine"],
+      "Technologies": ["JavaScript", "WebAssembly"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": ["CVE-2026-11645"]
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "No significant information detected",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["CVE-2026-11645"],
+      "Tools": []
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "High",
+    "Threat_Actors": [],
+    "Timestamp": "2026-06-08T18:30:00Z",
+    "Title": "Google Chrome V8 Out-of-Bounds Vulnerability Exploited in the Wild",
+    "Tools": ["Google Chrome", "V8 JavaScript engine"],
+    "Victim": {
+      "Access_Vectors": ["Remote"],
+      "Data_Types_At_Risk": ["Arbitrary code execution"],
+      "Description": "Users of Google Chrome and Chromium-based browsers",
+      "Geography": "",
+      "Impact_Severity": "High",
+      "Industry": "",
+      "Security_Posture": "",
+      "Targeted_Assets": ["Web browsers"]
+    },
+    "diamond_model_summary": "The incident involves a high-severity vulnerability in Google Chrome's V8 engine, actively exploited in the wild. The adversary exploited CVE-2026-11645, an out-of-bounds memory access flaw, allowing remote code execution. Google has released patches to mitigate the threat, urging users to update their browsers.",
+    "doc_summary": "Google has released security updates to address 74 vulnerabilities in Chrome, including CVE-2026-11645, a high-severity out-of-bounds memory access vulnerability in the V8 JavaScript engine. This vulnerability, with a CVSS score of 8.8, allows remote code execution via a crafted HTML page. Discovered by researcher 303f06e3, it has been actively exploited in the wild. Google has acknowledged the existence of an exploit but withheld specifics to ensure user protection. Users are advised to update Chrome to the latest versions for Windows, macOS, and Linux. Other Chromium-based browsers like Edge, Brave, Opera, and Vivaldi should also apply the fixes. This incident is part of a series of five actively exploited Chrome zero-days in 2026, including CVE-2026-2441, CVE-2026-3909, CVE-2026-3910, and CVE-2026-5281.",
+    "enrichment": null,
+    "id": "adbab8ad222f667e2fb3984da7631702b66efac809d184de3c2e4c9571540608",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The attack chain involves exploiting a zero-day vulnerability in Chrome's V8 engine, allowing remote code execution. The exploitation stage is critical, with Google releasing patches to prevent further attacks. Users are advised to update their browsers to the latest versions to mitigate the risk.",
+    "operational_tags": ["High Priority", "CVE-linked"],
+    "priority_score": 71,
+    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident is primarily focused on the TTPs, specifically the exploitation of CVE-2026-11645. No specific hashes, IPs, or domains were identified, but the zero-day nature of the vulnerability highlights the challenge in detection and response. Updating Chrome is crucial for mitigation.",
+    "relevance_score": 45,
+    "sequence": 20832,
+    "source": "https://thehackernews.com/2026/06/chrome-v8-zero-day-cve-2026-11645.html",
+    "slug": "Google_Chrome_V8_Out-of-Bounds_Vulnerability_Exploited_in_the_Wild-020832",
+    "shard": 4
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
       "Associated_Groups": [],
       "Description": "The adversary is an AI-driven worm developed as a proof-of-concept by researchers at the University of Toronto.",
       "Known_Campaigns": [],
@@ -103292,669 +103861,6 @@
     "sequence": 20339,
     "source": "https://thehackernews.com/2026/04/litellm-cve-2026-42208-sql-injection.html",
     "slug": "Exploitation_of_CVE-2026-42208_in_BerriAI_s_LiteLLM_Python_Package-020339",
-    "shard": 4
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "ShinyHunters is an extortion group known for data breaches and ransom demands.",
-      "Known_Campaigns": [],
-      "Motivation": "Financial gain through extortion",
-      "Sophistication": "High",
-      "Strategic_Objectives": "Monetize stolen data through ransom demands",
-      "TTPs_Employed": []
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Exploitation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "ShinyHunters exfiltrated data from Vimeo's systems.",
-        "Detection": "Monitor for unusual data access patterns • Track access to Snowflake and BigQuery instances",
-        "Remediation": "Revoke compromised authentication tokens • Enhance monitoring of data access",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary is trying to steal data.",
-            "tactic_id": "TA0010",
-            "tactic_name": "Exfiltration"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Data is exfiltrated through automated processes.",
-            "technique_id": "T1020",
-            "technique_name": "Automated Exfiltration"
-          }
-        ],
-        "Techniques": ["T1020"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "ShinyHunters used stolen authentication tokens to access and exfiltrate data.",
-      "Exploits": [],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": [],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": ["customer data", "technical data"],
-      "Breach_Types": ["data breach", "extortion"],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["Vimeo", "Anodot"],
-      "Countries": ["United States"],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["data breach", "extortion", "ShinyHunters"],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Technology"],
-      "Software": ["Snowflake", "BigQuery"],
-      "Technologies": [],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": []
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "The breach involved accessing Vimeo's Snowflake and BigQuery instances.",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [
-      "Conduct a thorough investigation with third-party security experts",
-      "Notify affected customers and provide guidance on protective measures"
-    ],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["T1020"],
-      "Tools": []
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "Moderate",
-    "Threat_Actors": ["ShinyHunters"],
-    "Timestamp": "2026-04-28T15:04:00Z",
-    "Title": "Vimeo Data Breach Linked to Anodot Incident",
-    "Tools": ["Snowflake", "BigQuery"],
-    "Victim": {
-      "Access_Vectors": ["Stolen authentication tokens"],
-      "Data_Types_At_Risk": ["Email addresses", "Video titles", "Metadata"],
-      "Description": "Vimeo, a video hosting and streaming platform, was targeted.",
-      "Geography": "United States",
-      "Impact_Severity": "Medium",
-      "Industry": "Technology",
-      "Security_Posture": "Compromised",
-      "Targeted_Assets": ["Customer data", "Technical data"]
-    },
-    "diamond_model_summary": "The incident involves ShinyHunters, an extortion group, targeting Vimeo through a breach at Anodot. The adversary used stolen authentication tokens to access Vimeo's Snowflake and BigQuery instances, exfiltrating customer data. The victim, Vimeo, is a major player in the Technology sector, providing video hosting services. The attack's impact is medium, with customer data exposed but no video content or payment information compromised.",
-    "doc_summary": "Vimeo disclosed a data breach linked to Anodot, affecting customer data. ShinyHunters claimed responsibility, threatening to leak data unless a ransom is paid. The breach involved unauthorized access to email addresses, technical data, video titles, and metadata. ShinyHunters accessed Vimeo's Snowflake and BigQuery instances, exfiltrating data. The breach did not affect video content, account credentials, or payment information. Vimeo disabled Anodot credentials and removed its integration, working with security experts and law enforcement. The breach's full impact remains unclear, with ShinyHunters also targeting other organizations.",
-    "enrichment": null,
-    "id": "d9c1c747cd99d192d9052ab74fdff830",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The attack on Vimeo by ShinyHunters follows a structured kill chain. The adversary exploited stolen authentication tokens to access Vimeo's data infrastructure, specifically targeting Snowflake and BigQuery instances. The primary action on objectives was data exfiltration, with ShinyHunters threatening to leak the data unless a ransom was paid. The breach highlights the importance of securing authentication mechanisms and monitoring data access patterns.",
-    "operational_tags": [],
-    "priority_score": 45,
-    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident is limited due to the lack of specific indicators such as hashes, IP addresses, or domains. The primary challenge lies in detecting and responding to the use of stolen authentication tokens, which facilitated unauthorized access to Vimeo's data infrastructure. The incident underscores the need for robust monitoring and incident response capabilities to detect and mitigate such threats.",
-    "relevance_score": 53,
-    "sequence": 20338,
-    "source": "https://www.bleepingcomputer.com/news/security/video-service-vimeo-confirms-anodot-breach-exposed-user-data/",
-    "slug": "Vimeo_Data_Breach_Linked_to_Anodot_Incident-020338",
-    "shard": 4
-  },
-  {
-    "Adversary": {
-      "Aliases": ["DyPolarLofy"],
-      "Associated_Groups": [],
-      "Description": "LofyGang is a Brazilian cybercrime group targeting Minecraft players with LofyStealer malware.",
-      "Known_Campaigns": ["LofyStealer targeting Minecraft players"],
-      "Motivation": "Financial gain through theft of credit card data and user accounts.",
-      "Sophistication": "Medium",
-      "Strategic_Objectives": "Steal sensitive data from gaming and streaming service users.",
-      "TTPs_Employed": ["Typosquatting", "JavaScript loader execution", "Data exfiltration"]
-    },
-    "Analyses": [
-      {
-        "Description": "LofyGang identifies targets within the Minecraft gaming community.",
-        "Detection": "Monitor forums and social media for discussions about Minecraft hacks.",
-        "Remediation": "Educate users about the risks of downloading unofficial game modifications.",
-        "Stage": "Reconnaissance",
-        "Tactics": [
-          {
-            "tactic_description": "Gathering information to identify targets.",
-            "tactic_id": "TA0043",
-            "tactic_name": "Reconnaissance"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Collecting information about victims to tailor attacks.",
-            "technique_id": "T1592",
-            "technique_name": "Gather Victim Identity Information"
-          }
-        ],
-        "Techniques": ["T1592"]
-      },
-      {
-        "Description": "LofyGang develops LofyStealer malware disguised as a Minecraft hack.",
-        "Detection": "Analyze file hashes and signatures for known malware patterns.",
-        "Remediation": "Implement strict code review processes for software packages.",
-        "Stage": "Weaponization",
-        "Tactics": [
-          {
-            "tactic_description": "Creating a malicious payload.",
-            "tactic_id": "TA0042",
-            "tactic_name": "Weaponization"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Using obfuscation to disguise malicious code.",
-            "technique_id": "T1027",
-            "technique_name": "Obfuscated Files or Information"
-          }
-        ],
-        "Techniques": ["T1027"]
-      },
-      {
-        "Description": "LofyGang uses typosquatted npm packages to deliver LofyStealer.",
-        "Detection": "Monitor npm registry for typosquatted packages.",
-        "Remediation": "Use package integrity verification tools.",
-        "Stage": "Delivery",
-        "Tactics": [
-          {
-            "tactic_description": "Delivering the payload to the target.",
-            "tactic_id": "TA0007",
-            "tactic_name": "Delivery"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Inserting malicious code into software dependencies.",
-            "technique_id": "T1195.002",
-            "technique_name": "Supply Chain Compromise: Compromise Software Dependencies and Development Tools"
-          }
-        ],
-        "Techniques": ["T1195.002"]
-      },
-      {
-        "Description": "Users execute the disguised malware, triggering the JavaScript loader.",
-        "Detection": "Monitor for unusual execution of JavaScript loaders.",
-        "Remediation": "Educate users on the risks of executing unverified software.",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "Gaining access to the target system.",
-            "tactic_id": "TA0001",
-            "tactic_name": "Initial Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exploiting vulnerabilities to execute code on the target.",
-            "technique_id": "T1203",
-            "technique_name": "Exploitation for Client Execution"
-          }
-        ],
-        "Techniques": ["T1203"]
-      },
-      {
-        "Description": "LofyStealer is deployed on the victim's system.",
-        "Detection": "Monitor for unauthorized installations of software.",
-        "Remediation": "Implement application whitelisting.",
-        "Stage": "Installation",
-        "Tactics": [
-          {
-            "tactic_description": "Maintaining access to the target system.",
-            "tactic_id": "TA0003",
-            "tactic_name": "Persistence"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Using JavaScript for malicious purposes.",
-            "technique_id": "T1059.007",
-            "technique_name": "Command and Scripting Interpreter: JavaScript"
-          }
-        ],
-        "Techniques": ["T1059.007"]
-      },
-      {
-        "Description": "LofyStealer communicates with a C2 server to exfiltrate data.",
-        "Detection": "Monitor network traffic for connections to known C2 IPs.",
-        "Remediation": "Block known malicious IP addresses.",
-        "Stage": "Command and Control",
-        "Tactics": [
-          {
-            "tactic_description": "Establishing communication with the target.",
-            "tactic_id": "TA0011",
-            "tactic_name": "Command and Control"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Using web protocols for C2 communication.",
-            "technique_id": "T1071.001",
-            "technique_name": "Application Layer Protocol: Web Protocols"
-          }
-        ],
-        "Techniques": ["T1071.001"]
-      },
-      {
-        "Description": "LofyStealer harvests and exfiltrates sensitive data from web browsers.",
-        "Detection": "Monitor for unusual data exfiltration activities.",
-        "Remediation": "Implement data loss prevention solutions.",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "Gathering data from the target system.",
-            "tactic_id": "TA0009",
-            "tactic_name": "Collection"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Collecting email data from the target.",
-            "technique_id": "T1114",
-            "technique_name": "Email Collection"
-          }
-        ],
-        "Techniques": ["T1114"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": ["Use of typosquatting", "Exploitation of social trust"],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": ["Typosquatting", "JavaScript loader execution"],
-      "Description": "LofyGang uses LofyStealer malware to harvest sensitive data from web browsers.",
-      "Exploits": [],
-      "Lateral_Movement_Tools": [],
-      "Malware": ["LofyStealer"],
-      "Persistence_Mechanisms": [],
-      "Tools": ["Slinky Cracked"],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": ["Unusual data transfers to external IPs"],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [
-      "Monitor for connections to 24.152.36[.]241",
-      "Detect typosquatted npm packages"
-    ],
-    "Extracted_Entities": {
-      "Assets": ["Credit card data", "User accounts"],
-      "Breach_Types": ["Data theft"],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["ZenoX"],
-      "Countries": ["Brazil"],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": ["24.152.36[.]241"],
-      "Keywords": ["LofyStealer", "Slinky", "typosquatting", "npm", "GitHub"],
-      "Malware_Families": ["LofyStealer"],
-      "Malware_Filenames": ["chromelevator.exe"],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Gaming"],
-      "Software": ["Minecraft", "Discord Nitro"],
-      "Technologies": ["JavaScript", "npm registry"],
-      "Threat_Infrastructure": ["C2 server"],
-      "Vulnerabilities": []
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": ["24.152.36[.]241"],
-      "Communication_Protocols": [],
-      "Description": "LofyGang uses a C2 server and GitHub repositories for malware distribution.",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": ["24.152.36[.]241"],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": ["Review and update security policies", "Conduct user awareness training"],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": ["24.152.36[.]241"],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["Typosquatting", "JavaScript loader execution"],
-      "Tools": ["LofyStealer"]
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": ["Network traffic analysis tools", "Malware analysis sandboxes"],
-    "Severity": "High",
-    "Threat_Actors": ["LofyGang", "DyPolarLofy"],
-    "Timestamp": "2026-04-27T18:30:00Z",
-    "Title": "LofyGang Resurfaces with LofyStealer Targeting Minecraft Players",
-    "Tools": ["Slinky Cracked", "LofyStealer", "Minecraft", "Discord Nitro"],
-    "Victim": {
-      "Access_Vectors": ["Malware disguised as Minecraft hack"],
-      "Data_Types_At_Risk": ["Cookies", "Passwords", "Tokens", "Credit card data", "IBANs"],
-      "Description": "Minecraft players targeted by LofyGang for data theft.",
-      "Geography": "Global",
-      "Impact_Severity": "High",
-      "Industry": "Gaming",
-      "Security_Posture": "Vulnerable to social engineering and malware execution",
-      "Targeted_Assets": ["Credit card data", "User accounts"]
-    },
-    "diamond_model_summary": "LofyGang, a Brazilian cybercrime group, targets Minecraft players with LofyStealer malware. The group uses typosquatting on npm registry to distribute the malware, aiming to steal credit card data and user accounts. LofyStealer is disguised as a Minecraft hack and exfiltrates data to a C2 server.",
-    "doc_summary": "LofyGang, a Brazilian cybercrime group, has resurfaced after three years, targeting Minecraft players with LofyStealer malware disguised as a Minecraft hack called 'Slinky'. The group uses typosquatted npm packages to distribute the malware, aiming to steal credit card data and user accounts linked to Discord Nitro, gaming, and streaming services. LofyGang has been active since late 2021, advertising tools on GitHub and YouTube, and leaking thousands of Disney+ and Minecraft accounts. The malware executes a JavaScript loader to deploy LofyStealer, which harvests sensitive data from web browsers and exfiltrates it to a C2 server at 24.152.36[.]241. The group has shifted to a malware-as-a-service model, using GitHub to host repositories for malware families like SmartLoader and Vidar Stealer. This campaign highlights the abuse of trusted platforms for distributing malicious payloads.",
-    "enrichment": null,
-    "id": "21b0d400642ad8bd336b04656be58074b42a9ad5bc7f37f65f0b600a1d951765",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "LofyGang conducts reconnaissance by identifying Minecraft players as targets. They weaponize by developing LofyStealer malware disguised as a Minecraft hack. Delivery occurs through typosquatted npm packages. Exploitation involves users executing the malware, leading to installation of LofyStealer. Command and control is established via a C2 server, and actions on objectives include data exfiltration.",
-    "operational_tags": ["High Priority", "Supply Chain", "C2"],
-    "priority_score": 100,
-    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes IP addresses and tools used by LofyGang. The C2 server IP 24.152.36[.]241 is a key indicator, along with the use of LofyStealer malware. These indicators can be used to detect and respond to the threat posed by LofyGang.",
-    "relevance_score": 81,
-    "sequence": 20337,
-    "source": "https://thehackernews.com/2026/04/brazilian-lofygang-resurfaces-after.html",
-    "slug": "LofyGang_Resurfaces_with_LofyStealer_Targeting_Minecraft_Players-020337",
-    "shard": 4
-  },
-  {
-    "Adversary": {
-      "Aliases": ["TeamPCP"],
-      "Associated_Groups": ["TeamPCP"],
-      "Description": "The LAPSUS$ threat group, known for data leaks and extortion, was involved in this incident.",
-      "Known_Campaigns": ["Trivy incident"],
-      "Motivation": "Financial gain through extortion",
-      "Sophistication": "High",
-      "Strategic_Objectives": "Compromise supply chain to access sensitive data",
-      "TTPs_Employed": ["Credential theft", "Supply chain attack"]
-    },
-    "Analyses": [
-      {
-        "Description": "The attackers likely gathered information on Checkmarx's GitHub environment.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [
-          {
-            "tactic_description": "Gathering information to plan future operations.",
-            "tactic_id": "TA0043",
-            "tactic_name": "Reconnaissance"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Collecting information about victim systems.",
-            "technique_id": "T1592",
-            "technique_name": "Gather Victim Host Information"
-          }
-        ],
-        "Techniques": ["T1592"]
-      },
-      {
-        "Description": "The attackers prepared malicious code for deployment.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [
-          {
-            "tactic_description": "Developing resources to support operations.",
-            "tactic_id": "TA0042",
-            "tactic_name": "Resource Development"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Developing malicious code or tools.",
-            "technique_id": "T1587.001",
-            "technique_name": "Develop Capabilities"
-          }
-        ],
-        "Techniques": ["T1587.001"]
-      },
-      {
-        "Description": "Malicious code was delivered to Checkmarx's GitHub repositories.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [
-          {
-            "tactic_description": "Executing malicious code on victim systems.",
-            "tactic_id": "TA0007",
-            "tactic_name": "Execution"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Using PowerShell to execute commands.",
-            "technique_id": "T1059.001",
-            "technique_name": "Command and Scripting Interpreter: PowerShell"
-          }
-        ],
-        "Techniques": ["T1059.001"]
-      },
-      {
-        "Description": "Exploitation of stolen credentials to access GitHub repositories.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "Obtaining credentials to access systems.",
-            "tactic_id": "TA0006",
-            "tactic_name": "Credential Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Using valid accounts to access systems.",
-            "technique_id": "T1078",
-            "technique_name": "Valid Accounts"
-          }
-        ],
-        "Techniques": ["T1078"]
-      },
-      {
-        "Description": "Installation of malicious code in GitHub repositories.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [
-          {
-            "tactic_description": "Maintaining access to systems over time.",
-            "tactic_id": "TA0003",
-            "tactic_name": "Persistence"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Creating or modifying system processes for persistence.",
-            "technique_id": "T1543.003",
-            "technique_name": "Create or Modify System Process: Windows Service"
-          }
-        ],
-        "Techniques": ["T1543.003"]
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "The attackers published stolen data and malicious code.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "Exfiltrating data from victim systems.",
-            "tactic_id": "TA0010",
-            "tactic_name": "Exfiltration"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exfiltrating data using automated tools.",
-            "technique_id": "T1020",
-            "technique_name": "Automated Exfiltration"
-          }
-        ],
-        "Techniques": ["T1020"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": ["Credential theft"],
-      "Description": "The adversary used stolen credentials to access and manipulate GitHub repositories.",
-      "Exploits": [],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": ["Trivy"],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": ["GitHub repositories"],
-      "Breach_Types": ["Supply chain attack"],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["Checkmarx"],
-      "Countries": [],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["LAPSUS$", "TeamPCP", "GitHub", "Trivy", "Docker", "VSCode", "Open VSX"],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Technology"],
-      "Software": ["GitHub", "Docker", "VSCode", "Open VSX"],
-      "Technologies": ["GitHub", "Docker", "VSCode", "Open VSX"],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": []
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "The attackers used GitHub as the primary infrastructure for the attack.",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["Credential theft", "Supply chain attack"],
-      "Tools": ["Trivy"]
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "High",
-    "Threat_Actors": ["LAPSUS$", "TeamPCP"],
-    "Timestamp": "2026-04-28T10:50:00Z",
-    "Title": "Checkmarx GitHub Repository Compromise by LAPSUS$",
-    "Tools": ["Trivy", "GitHub", "Docker", "VSCode", "Open VSX"],
-    "Victim": {
-      "Access_Vectors": ["Supply chain attack"],
-      "Data_Types_At_Risk": ["Credentials", "Keys", "Tokens", "Config files"],
-      "Description": "Checkmarx, a company in the application security industry, was targeted.",
-      "Geography": "Unknown",
-      "Impact_Severity": "High",
-      "Industry": "Technology",
-      "Security_Posture": "Compromised",
-      "Targeted_Assets": ["GitHub repositories"]
-    },
-    "diamond_model_summary": "The LAPSUS$ threat group, with possible collaboration from TeamPCP, executed a supply chain attack on Checkmarx's GitHub repository. The adversary leveraged stolen credentials to access and publish malicious code, aiming for financial gain through extortion. The attack targeted the technology sector, specifically application security, and involved sophisticated tactics such as credential theft and supply chain compromise.",
-    "doc_summary": "Checkmarx, an application security company, confirmed a data breach involving the LAPSUS$ threat group. The breach occurred on March 23, 2026, when attackers accessed Checkmarx's private GitHub repository using credentials obtained from the Trivy incident. The access vector was attributed to TeamPCP, which provided access to credentials from downstream users. The attackers published malicious code and Docker images, VSCode, and Open VSX extensions, which stole credentials, keys, tokens, and config files. The data was leaked on the dark web and clearnet portals. Checkmarx assured that customer information was not stored in the compromised repository. A forensic investigation is ongoing, and access to the affected repository has been blocked.",
-    "enrichment": null,
-    "id": "ef6810853a3e8aee7ca24f4e881602c4",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The attack began with reconnaissance activities to gather information on Checkmarx's GitHub environment. The adversary then weaponized stolen credentials to gain access and deliver malicious code. Exploitation involved using these credentials to access the repositories, followed by installation of malicious artifacts. The attackers achieved their objectives by exfiltrating and publishing sensitive data, although no significant command and control activities were detected.",
-    "operational_tags": ["High Priority"],
-    "priority_score": 78,
-    "pyramid_of_pain_summary": "The Pyramid of Pain analysis reveals a lack of specific indicators such as hashes, IP addresses, or domains. The adversary's use of stolen credentials and supply chain tactics highlights the challenge of detection and response. The absence of concrete indicators limits the ability to apply traditional detection methods, emphasizing the need for robust supply chain security measures and credential management practices.",
-    "relevance_score": 83,
-    "sequence": 20336,
-    "source": "https://www.bleepingcomputer.com/news/security/checkmarx-confirms-lapsus-hackers-leaked-its-stolen-github-data/",
-    "slug": "Checkmarx_GitHub_Repository_Compromise_by_LAPSUS_-020336",
     "shard": 4
   }
 ]

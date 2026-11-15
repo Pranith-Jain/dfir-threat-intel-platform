@@ -3,6 +3,660 @@
     "Adversary": {
       "Aliases": [],
       "Associated_Groups": [],
+      "Description": "Potential threat actors exploiting DNS queries for data exfiltration and command-and-control.",
+      "Known_Campaigns": [],
+      "Motivation": "Data exfiltration and unauthorized access to sensitive information.",
+      "Sophistication": "Moderate",
+      "Strategic_Objectives": "Bypass network isolation to access and exfiltrate sensitive data.",
+      "TTPs_Employed": ["DNS Tunneling", "Command and Control"]
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Exploitation of DNS queries in sandbox mode for data exfiltration.",
+        "Detection": "Monitor DNS query patterns for anomalies. • Check for unauthorized DNS traffic from sandbox environments.",
+        "Remediation": "Implement DNS firewalls to filter outbound DNS traffic. • Use VPC mode for complete network isolation.",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "Gaining access to the system through DNS query exploitation.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Using DNS queries to communicate with external servers.",
+            "technique_id": "T1071.004",
+            "technique_name": "Application Layer Protocol: DNS"
+          }
+        ],
+        "Techniques": ["T1071.004"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Establishing command-and-control channels using DNS queries.",
+        "Detection": "Monitor DNS traffic for unusual patterns. • Detect DNS queries to known malicious domains.",
+        "Remediation": "Implement DNS filtering and monitoring solutions. • Restrict DNS queries from sandbox environments.",
+        "Stage": "Command and Control",
+        "Tactics": [
+          {
+            "tactic_description": "Using DNS queries to maintain communication with compromised systems.",
+            "tactic_id": "TA0011",
+            "tactic_name": "Command and Control"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Using DNS queries to communicate with external servers.",
+            "technique_id": "T1071.004",
+            "technique_name": "Application Layer Protocol: DNS"
+          }
+        ],
+        "Techniques": ["T1071.004"]
+      },
+      {
+        "Description": "Exfiltration of sensitive data using DNS queries.",
+        "Detection": "Monitor for large volumes of DNS queries. • Detect DNS queries containing encoded data.",
+        "Remediation": "Audit IAM roles for least privilege. • Restrict access to sensitive data in sandbox environments.",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "Exfiltrating data using DNS queries.",
+            "tactic_id": "TA0010",
+            "tactic_name": "Exfiltration"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Using DNS queries to exfiltrate data.",
+            "technique_id": "T1048.003",
+            "technique_name": "Exfiltration Over Alternative Protocol: DNS"
+          }
+        ],
+        "Techniques": ["T1048.003"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [
+      "Establishing DNS-based command-and-control channels",
+      "Exfiltrating data using DNS queries"
+    ],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": ["Network Isolation Bypass"],
+      "Description": "Exploitation of DNS queries in sandboxed environments for data exfiltration.",
+      "Exploits": [],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": ["DNS Tunneling"],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": ["Large volumes of DNS queries", "Encoded data in DNS queries"],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": ["Monitor DNS query patterns", "Detect unauthorized DNS traffic"],
+    "Extracted_Entities": {
+      "Assets": ["AWS Resources", "S3 Buckets"],
+      "Breach_Types": ["Data Exfiltration"],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Amazon", "BeyondTrust"],
+      "Countries": ["United States"],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["DNS exfiltration", "sandbox mode", "network isolation"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": [],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Technology"],
+      "Software": ["Amazon Bedrock AgentCore Code Interpreter"],
+      "Technologies": ["DNS", "VPC", "IAM"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": []
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": ["DNS"],
+      "Description": "Use of DNS queries to establish command-and-control channels.",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": ["Implement DNS firewalls", "Use VPC mode for network isolation"],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["T1071.004", "T1048.003"],
+      "Tools": ["DNS Tunneling"]
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": ["DNS traffic analysis tools", "IAM role auditing tools"],
+    "Severity": "High",
+    "Threat_Actors": [],
+    "Timestamp": "2026-03-16T18:30:00Z",
+    "Title": "DNS Exfiltration Vulnerability in Amazon Bedrock AgentCore Code Interpreter",
+    "Tools": ["DNS Tunneling", "Amazon Bedrock AgentCore Code Interpreter"],
+    "Victim": {
+      "Access_Vectors": ["IAM Role Misconfiguration"],
+      "Data_Types_At_Risk": ["Customer Information", "Infrastructure Data"],
+      "Description": "Users of Amazon Bedrock AgentCore Code Interpreter in sandbox mode.",
+      "Geography": "Global",
+      "Impact_Severity": "High",
+      "Industry": "Technology",
+      "Security_Posture": "Vulnerable due to network isolation bypass",
+      "Targeted_Assets": ["AWS Resources", "Sensitive Data"]
+    },
+    "diamond_model_summary": "The incident involves a vulnerability in Amazon Bedrock AgentCore Code Interpreter, allowing DNS queries in sandbox mode. This can be exploited by adversaries to establish command-and-control channels and exfiltrate data. The capability involves using DNS tunneling for data exfiltration, while the infrastructure relies on DNS communication protocols. Victims are users of the affected service, primarily in the technology sector.",
+    "doc_summary": "Cybersecurity researchers from BeyondTrust disclosed a method for exfiltrating sensitive data from Amazon Bedrock AgentCore Code Interpreter using DNS queries. The vulnerability allows threat actors to bypass network isolation in sandbox mode, enabling command-and-control channels and data exfiltration. The issue, with a CVSS score of 7.5, does not have a CVE identifier. Amazon recommends using VPC mode for complete network isolation and a DNS firewall to filter outbound DNS traffic. The vulnerability highlights the risk of overprivileged IAM roles and the need for strict security measures in AI code execution environments.",
+    "enrichment": null,
+    "id": "b59e8a85177a38b8bd18a00a9e07c0b631e6729b9160a053687d4be3391c79cf",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The attack begins with exploiting DNS queries in Amazon Bedrock's sandbox mode, allowing adversaries to bypass network isolation. This leads to the establishment of command-and-control channels using DNS, followed by data exfiltration. The attack leverages DNS tunneling techniques, highlighting the need for robust DNS monitoring and IAM role auditing to prevent unauthorized access and data breaches.",
+    "operational_tags": ["High Priority", "C2"],
+    "priority_score": 84,
+    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes DNS queries as a key indicator, which can be challenging to detect and remediate. The use of DNS tunneling for command-and-control and data exfiltration requires monitoring DNS traffic patterns and implementing DNS firewalls. The absence of specific IP addresses or domain names makes detection more complex, emphasizing the need for behavioral analysis and anomaly detection.",
+    "relevance_score": 47,
+    "sequence": 19840,
+    "source": "https://thehackernews.com/2026/03/ai-flaws-in-amazon-bedrock-langsmith.html",
+    "slug": "DNS_Exfiltration_Vulnerability_in_Amazon_Bedrock_AgentCore_Code_Interpre-019840",
+    "shard": 6
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
+      "Description": "LeakNet is a ransomware group that emerged in November 2024, known for using ClickFix social engineering tactics.",
+      "Known_Campaigns": [],
+      "Motivation": "Internet freedom and transparency",
+      "Sophistication": "High",
+      "Strategic_Objectives": "Reduce dependency on third-party suppliers and broaden initial access vectors.",
+      "TTPs_Employed": ["Social engineering", "Use of legitimate websites for malware delivery", "Deno-based C2 loader"]
+    },
+    "Analyses": [
+      {
+        "Description": "LeakNet identifies and compromises legitimate websites to deliver ClickFix.",
+        "Detection": "Monitor for unusual access patterns to legitimate websites.",
+        "Remediation": "Implement web application firewalls to detect and block suspicious activities.",
+        "Stage": "Reconnaissance",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to gather information they can use to plan future operations.",
+            "tactic_id": "TA0043",
+            "tactic_name": "Reconnaissance"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may gather information about the victim's host to inform operations.",
+            "technique_id": "T1592",
+            "technique_name": "Gather Victim Host Information"
+          }
+        ],
+        "Techniques": ["T1592"]
+      },
+      {
+        "Description": "LeakNet uses ClickFix to create a social engineering lure.",
+        "Detection": "Analyze web traffic for signs of social engineering lures.",
+        "Remediation": "Educate users on recognizing social engineering tactics.",
+        "Stage": "Weaponization",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to establish resources they can use to support operations.",
+            "tactic_id": "TA0042",
+            "tactic_name": "Resource Development"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may develop, acquire, or obtain malware to support their operations.",
+            "technique_id": "T1588.006",
+            "technique_name": "Malware"
+          }
+        ],
+        "Techniques": ["T1588.006"]
+      },
+      {
+        "Description": "LeakNet delivers the ClickFix payload via compromised websites.",
+        "Detection": "Monitor for unusual command execution patterns initiated from web browsers.",
+        "Remediation": "Block known malicious domains and URLs.",
+        "Stage": "Delivery",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to get into your network.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may send spearphishing emails with a malicious link to gain access to victim systems.",
+            "technique_id": "T1566.002",
+            "technique_name": "Spearphishing Link"
+          }
+        ],
+        "Techniques": ["T1566.002"]
+      },
+      {
+        "Description": "Users are tricked into executing malicious commands via ClickFix.",
+        "Detection": "Monitor for execution of unusual command-line arguments.",
+        "Remediation": "Restrict execution of scripts and commands from untrusted sources.",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to run malicious code.",
+            "tactic_id": "TA0002",
+            "tactic_name": "Execution"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may abuse PowerShell commands and scripts for execution.",
+            "technique_id": "T1059.001",
+            "technique_name": "Command and Scripting Interpreter: PowerShell"
+          }
+        ],
+        "Techniques": ["T1059.001"]
+      },
+      {
+        "Description": "LeakNet installs a Deno-based loader to execute payloads in memory.",
+        "Detection": "Monitor for the creation of unusual scheduled tasks.",
+        "Remediation": "Limit permissions to create or modify scheduled tasks.",
+        "Stage": "Installation",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to maintain their foothold.",
+            "tactic_id": "TA0003",
+            "tactic_name": "Persistence"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may abuse task scheduling functionality to execute programs at system startup or on a scheduled basis.",
+            "technique_id": "T1053.005",
+            "technique_name": "Scheduled Task/Job: At"
+          }
+        ],
+        "Techniques": ["T1053.005"]
+      },
+      {
+        "Description": "LeakNet uses a Deno-based C2 loader for communication.",
+        "Detection": "Analyze network traffic for unusual patterns or connections to known malicious IPs.",
+        "Remediation": "Implement network segmentation to limit C2 communication.",
+        "Stage": "Command and Control",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to communicate with compromised systems to control them.",
+            "tactic_id": "TA0011",
+            "tactic_name": "Command and Control"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may communicate using application layer protocols to avoid detection/network filtering by blending in with existing traffic.",
+            "technique_id": "T1071.001",
+            "technique_name": "Application Layer Protocol: Web Protocols"
+          }
+        ],
+        "Techniques": ["T1071.001"]
+      },
+      {
+        "Description": "LeakNet performs lateral movement, data exfiltration, and encryption.",
+        "Detection": "Monitor for unusual access to admin shares and data exfiltration activities.",
+        "Remediation": "Implement strict access controls and monitor for unauthorized access.",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to move through your environment.",
+            "tactic_id": "TA0008",
+            "tactic_name": "Lateral Movement"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may use Windows Admin Shares to move laterally through a network.",
+            "technique_id": "T1077",
+            "technique_name": "Windows Admin Shares"
+          }
+        ],
+        "Techniques": ["T1077"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [
+      "Use of legitimate websites for malware delivery",
+      "Execution of commands via social engineering"
+    ],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": ["Memory-only payload execution", "Use of legitimate websites"],
+      "Description": "LeakNet employs ClickFix for initial access and uses a Deno-based loader for executing payloads in memory.",
+      "Exploits": [],
+      "Lateral_Movement_Tools": ["PsExec"],
+      "Malware": ["LeakNet ransomware"],
+      "Persistence_Mechanisms": [],
+      "Tools": ["Deno", "PsExec"],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": ["Unusual access to S3 buckets"],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [
+      "Monitor for execution of msiexec.exe with unusual parameters",
+      "Analyze network traffic for connections to known malicious IPs"
+    ],
+    "Extracted_Entities": {
+      "Assets": [],
+      "Breach_Types": [],
+      "Command_Lines_Or_Scripts": ["msiexec.exe"],
+      "Companies": ["ReliaQuest", "Dragos", "Google"],
+      "Countries": [],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": [
+        "ClickFix",
+        "ransomware",
+        "social engineering",
+        "command-and-control",
+        "Deno",
+        "DLL side-loading",
+        "PsExec",
+        "S3 buckets"
+      ],
+      "Malware_Families": ["LeakNet"],
+      "Malware_Filenames": [],
+      "Patches": [],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Industrial"],
+      "Software": ["Deno", "Microsoft Teams"],
+      "Technologies": [],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": []
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "LeakNet uses compromised websites for initial access and S3 buckets for data exfiltration.",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [
+      "Conduct a thorough review of web server logs for signs of compromise",
+      "Educate users on recognizing social engineering tactics"
+    ],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Social engineering", "Memory-only payload execution", "Use of legitimate websites"],
+      "Tools": ["Deno", "PsExec"]
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": ["Network traffic analysis tools", "Web application firewalls"],
+    "Severity": "High",
+    "Threat_Actors": ["LeakNet"],
+    "Timestamp": "2026-03-16T18:30:00Z",
+    "Title": "LeakNet Ransomware Operation Using ClickFix for Initial Access",
+    "Tools": ["Deno", "PsExec", "Microsoft Teams"],
+    "Victim": {
+      "Access_Vectors": ["Compromised websites", "Microsoft Teams phishing"],
+      "Data_Types_At_Risk": [],
+      "Description": "LeakNet targets a wide range of industries, including industrial entities.",
+      "Geography": "",
+      "Impact_Severity": "High",
+      "Industry": "Various, including Industrial",
+      "Security_Posture": "",
+      "Targeted_Assets": []
+    },
+    "diamond_model_summary": "LeakNet is a ransomware group that uses ClickFix social engineering tactics for initial access. They employ a Deno-based loader for executing payloads in memory, targeting a wide range of industries, including industrial entities. The group uses compromised websites for delivery and S3 buckets for data exfiltration.",
+    "doc_summary": "LeakNet, a ransomware operation, has adopted the ClickFix social engineering tactic for initial access, moving away from traditional methods like stolen credentials from initial access brokers. ClickFix involves tricking users into running malicious commands via compromised websites. The group uses a Deno-based command-and-control loader to execute payloads in memory, minimizing on-disk evidence. LeakNet's activities, first observed in November 2024, target industrial entities and employ DLL side-loading, PsExec for lateral movement, and S3 buckets for data exfiltration. The operation marks a strategic shift, reducing dependency on third-party suppliers and broadening initial access vectors. The use of legitimate websites for delivery complicates detection. Google identified Qilin, Akira, Cl0p, Play, SafePay, INC Ransom, Lynx, RansomHub, DragonForce, and Sinobi as top ransomware brands. Ransomware actors remain motivated despite conflicts, with a shift towards higher volume attacks against smaller organizations.",
+    "enrichment": null,
+    "id": "82118db2f7362003cc87486b0ca96156f55ddb04e453a0a842c34a1b217b70c2",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "LeakNet's attack chain begins with reconnaissance to identify legitimate websites for compromise. They use ClickFix for weaponization and delivery, tricking users into executing malicious commands. The Deno-based loader is installed for command and control, followed by lateral movement, data exfiltration, and encryption.",
+    "operational_tags": ["High Priority", "C2"],
+    "priority_score": 100,
+    "pyramid_of_pain_summary": "LeakNet's use of ClickFix and a Deno-based loader presents challenges for detection. The use of legitimate websites and memory-only payload execution complicates traditional detection methods. Monitoring for unusual command execution and network traffic patterns is crucial for identifying their activities.",
+    "relevance_score": 69,
+    "sequence": 19839,
+    "source": "https://thehackernews.com/2026/03/leaknet-ransomware-uses-clickfix-via.html",
+    "slug": "LeakNet_Ransomware_Operation_Using_ClickFix_for_Initial_Access-019839",
+    "shard": 6
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": ["Handala"],
+      "Description": "The attack was claimed by the Handala hacktivist group, believed to be linked to Iran.",
+      "Known_Campaigns": [],
+      "Motivation": "Hacktivism",
+      "Sophistication": "Moderate",
+      "Strategic_Objectives": "Disruption of corporate operations",
+      "TTPs_Employed": ["Account Compromise", "Data Wiping"]
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "The attacker compromised an administrator account.",
+        "Detection": "Monitor for unusual account activity • Check for unauthorized account creation",
+        "Remediation": "Implement multi-factor authentication • Conduct regular account audits",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to steal account names and passwords.",
+            "tactic_id": "TA0006",
+            "tactic_name": "Credential Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "The adversary may use valid accounts to maintain access to victim systems.",
+            "technique_id": "T1078",
+            "technique_name": "Valid Accounts"
+          }
+        ],
+        "Techniques": ["T1078"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "The attacker wiped data from nearly 80,000 devices.",
+        "Detection": "Monitor for mass data deletion activities • Alert on unauthorized use of administrative tools",
+        "Remediation": "Regularly back up data • Implement strict access controls",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to manipulate, interrupt, or destroy systems and data.",
+            "tactic_id": "TA0040",
+            "tactic_name": "Impact"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "The adversary is trying to destroy data.",
+            "technique_id": "T1485",
+            "technique_name": "Data Destruction"
+          }
+        ],
+        "Techniques": ["T1485"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": ["Use of compromised administrator accounts", "Mass device wiping"],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": ["Account Manipulation"],
+      "Description": "The adversary used Microsoft's cloud-based endpoint management service to wipe devices.",
+      "Exploits": [],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": ["Microsoft Intune"],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": ["Monitor for unauthorized account creation", "Alert on mass data deletion"],
+    "Extracted_Entities": {
+      "Assets": ["employee devices", "internal Microsoft environment"],
+      "Breach_Types": ["Data Wiping"],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Stryker", "Microsoft", "Palo Alto Networks"],
+      "Countries": ["Iran"],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["cyberattack", "device wipe", "hacktivist", "administrator account"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": [],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Medical Technology"],
+      "Software": ["Microsoft Intune"],
+      "Technologies": ["cloud-based endpoint management"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": []
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "The attack was limited to Stryker's internal Microsoft environment.",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": ["Implement multi-factor authentication", "Regularly back up data"],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Account Compromise", "Data Wiping"],
+      "Tools": ["Microsoft Intune"]
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": ["Microsoft DART", "Palo Alto Unit 42"],
+    "Severity": "High",
+    "Threat_Actors": ["Handala"],
+    "Timestamp": "2026-03-16T15:17:00Z",
+    "Title": "Cyberattack on Stryker's Internal Microsoft Environment",
+    "Tools": ["Microsoft Intune"],
+    "Victim": {
+      "Access_Vectors": ["Compromised Administrator Account"],
+      "Data_Types_At_Risk": ["Device Data"],
+      "Description": "Stryker, a medical technology company, was the victim of the attack.",
+      "Geography": "Global",
+      "Impact_Severity": "High",
+      "Industry": "Medical Technology",
+      "Security_Posture": "Compromised",
+      "Targeted_Assets": ["Employee Devices", "Internal Microsoft Environment"]
+    },
+    "diamond_model_summary": "The incident involved the Handala hacktivist group, targeting Stryker's internal Microsoft environment. The adversary used Microsoft's cloud-based endpoint management service to wipe devices, impacting Stryker's operations but not its medical devices. The attack was sophisticated enough to compromise an administrator account and create a new Global Administrator account, leading to the wiping of nearly 80,000 devices. The victim, Stryker, is a global medical technology company, and the attack disrupted its internal operations, requiring manual order processing.",
+    "doc_summary": "Stryker, a medical technology giant, experienced a cyberattack affecting its internal Microsoft environment. The attack, claimed by the Handala hacktivist group linked to Iran, involved remotely wiping tens of thousands of employee devices using Microsoft's cloud-based endpoint management service. The attacker compromised an administrator account, created a new Global Administrator account, and erased data from nearly 80,000 devices. Despite claims of data theft, investigators found no evidence of data exfiltration. The attack did not involve ransomware or malware deployment and did not impact Stryker's medical devices. The incident disrupted electronic ordering systems, requiring manual order placement. Restoration efforts focus on resuming shipping and transactional services. The Microsoft Detection and Response Team (DART) and Palo Alto Unit 42 are investigating the incident.",
+    "enrichment": null,
+    "id": "a11304b28bfe836b414aa489e6fb4fb7",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The attack on Stryker followed a sequence where the adversary first compromised an administrator account, then used Microsoft's cloud-based endpoint management service to wipe devices. The exploitation stage involved account compromise, followed by actions on objectives where data was wiped from nearly 80,000 devices. The attack did not involve traditional malware deployment or command and control infrastructure, focusing instead on direct impact through data destruction. The incident highlights the importance of securing administrative accounts and implementing robust access controls.",
+    "operational_tags": ["High Priority"],
+    "priority_score": 74,
+    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident is primarily focused on TTPs, as the adversary used account manipulation and data wiping techniques. No specific hashes, IP addresses, or domains were identified, limiting the ability to track the adversary through traditional indicators. The use of Microsoft's cloud-based endpoint management service as a tool for data wiping is a key aspect of the attack, emphasizing the need for monitoring and securing administrative access to such services. The incident underscores the challenge of detecting and responding to sophisticated attacks that leverage legitimate tools for malicious purposes.",
+    "relevance_score": 51,
+    "sequence": 19838,
+    "source": "https://www.bleepingcomputer.com/news/security/stryker-attack-wiped-tens-of-thousands-of-devices-no-malware-needed/",
+    "slug": "Cyberattack_on_Stryker_s_Internal_Microsoft_Environment-019838",
+    "shard": 6
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
       "Description": "LeakNet is a ransomware group active since late 2024, known for using innovative techniques like ClickFix and Deno runtime for in-memory execution.",
       "Known_Campaigns": [],
       "Motivation": "Financial gain through ransomware attacks",
@@ -103516,543 +104170,6 @@
     "sequence": 19346,
     "source": "https://thehackernews.com/2026/02/microsoft-warns-python-infostealers.html",
     "slug": "Cross-Platform_Infostealer_Campaign_Targeting_macOS_and_Windows-019346",
-    "shard": 6
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "No significant information detected",
-      "Known_Campaigns": [],
-      "Motivation": "",
-      "Sophistication": "",
-      "Strategic_Objectives": "",
-      "TTPs_Employed": []
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Exploitation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Actions on Objectives",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "No significant information detected",
-      "Exploits": [],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": [],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": [],
-      "Breach_Types": [],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["Eclipse Foundation"],
-      "Countries": [],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": [
-        "Open VSX Registry",
-        "supply chain threats",
-        "security checks",
-        "namespace impersonation",
-        "typosquatting"
-      ],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": [],
-      "Software": ["Microsoft Visual Studio Code"],
-      "Technologies": [],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": []
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "No significant information detected",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": [],
-      "Tools": []
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "Low",
-    "Threat_Actors": [],
-    "Timestamp": "2026-02-03T18:30:00Z",
-    "Title": "Eclipse Foundation Implements Pre-Publish Security Checks for Open VSX Registry",
-    "Tools": ["Microsoft Visual Studio Code"],
-    "Victim": {
-      "Access_Vectors": [],
-      "Data_Types_At_Risk": [],
-      "Description": "No significant information detected",
-      "Geography": "",
-      "Impact_Severity": "",
-      "Industry": "",
-      "Security_Posture": "",
-      "Targeted_Assets": []
-    },
-    "diamond_model_summary": "Information is not available to provide a detailed diamond model summary. Due to a lack of data, no adversary, capability, infrastructure, or victim details could be inferred. This is a fallback summary generated due to insufficient information. To meet the 300-character requirement, additional text is included here. Please note that this placeholder summary lacks substantive insight and is only used because insufficient information was available from the provided text.",
-    "doc_summary": "The Eclipse Foundation, responsible for the Open VSX Registry, is enhancing security by implementing pre-publish checks for Microsoft Visual Studio Code extensions to combat supply chain threats. This proactive approach aims to prevent malicious extensions from being published, addressing issues like namespace impersonation and typosquatting. The initiative follows incidents where compromised accounts pushed malicious updates. The new verification program will be rolled out in February 2026, with full enforcement starting the following month. The goal is to improve security, reduce false positives, and maintain a fair experience for publishers.",
-    "enrichment": { "processed_at": "2026-02-18T00:37:24.451166+00:00", "source_fields": ["title"], "version": "v1" },
-    "id": "ffae45e53b08694c2c4396887e5e3d3232e2251382a0434e467e3da3335ed12f",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "Information is not available to provide a detailed kill chain summary. No relevant tactics or techniques could be identified beyond generic placeholders. This fallback summary is extended to meet the 300-character minimum requirement. It should not be considered a meaningful analytical product, merely a placeholder due to lack of input. Additional padding text ensures the length requirement is met.",
-    "operational_tags": [],
-    "priority_score": 20,
-    "pyramid_of_pain_summary": "Information is not available to provide a meaningful pyramid of pain summary. Since no specific indicators (hashes, IPs, domains, tools, TTPs) were identified, this summary is purely a fallback. To meet the 300-char requirement, extra text is added. This placeholder does not offer substantive insight and is used due to insufficient data.",
-    "relevance_score": 39,
-    "sequence": 19345,
-    "source": "https://thehackernews.com/2026/02/eclipse-foundation-mandates-pre-publish.html",
-    "slug": "Eclipse_Foundation_Implements_Pre-Publish_Security_Checks_for_Open_VSX_R-019345",
-    "shard": 6
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "No significant information detected",
-      "Known_Campaigns": [],
-      "Motivation": "",
-      "Sophistication": "",
-      "Strategic_Objectives": "",
-      "TTPs_Employed": []
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Exploitation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Actions on Objectives",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "No significant information detected",
-      "Exploits": [],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": [],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": [],
-      "Breach_Types": [],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["X"],
-      "Countries": ["France", "United Kingdom"],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": [
-        "sexual deepfakes",
-        "Holocaust denial",
-        "fraudulent data extraction",
-        "system tampering",
-        "illegal online platform"
-      ],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": [],
-      "Software": ["Grok AI"],
-      "Technologies": [],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": []
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "No significant information detected",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": [],
-      "Tools": []
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "High",
-    "Threat_Actors": [],
-    "Timestamp": "2026-02-03T07:43:00Z",
-    "Title": "Investigation into X's Grok AI Tool for Illegal Content Generation",
-    "Tools": ["Grok AI"],
-    "Victim": {
-      "Access_Vectors": [],
-      "Data_Types_At_Risk": [],
-      "Description": "No significant information detected",
-      "Geography": "",
-      "Impact_Severity": "",
-      "Industry": "",
-      "Security_Posture": "",
-      "Targeted_Assets": []
-    },
-    "diamond_model_summary": "Information is not available to provide a detailed diamond model summary. Due to a lack of data, no adversary, capability, infrastructure, or victim details could be inferred. This is a fallback summary generated due to insufficient information. To meet the 300-character requirement, additional text is included here. Please note that this placeholder summary lacks substantive insight and is only used because insufficient information was available from the provided text.",
-    "doc_summary": "French prosecutors raided X's offices in Paris as part of a criminal investigation into the Grok AI tool, used for generating sexually explicit images. The investigation, opened in January 2025, expanded after complaints about illegal content, including sexual deepfakes and Holocaust-denial content. The National Gendarmerie's cybercrime unit conducted the search. Elon Musk and X CEO Linda Yaccarino were summoned for interviews. The investigation covers seven criminal offenses, including child pornography, sexual deepfakes, Holocaust denial, fraudulent data extraction, system tampering, and operating an illegal online platform. The European Commission is assessing X's risk management under the Digital Services Act. X is also under investigation by the UK's online safety watchdog.",
-    "enrichment": { "processed_at": "2026-02-18T00:37:24.451096+00:00", "source_fields": ["title"], "version": "v1" },
-    "id": "4ea137d9020f6702bd7441d4e05be0fc",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "Information is not available to provide a detailed kill chain summary. No relevant tactics or techniques could be identified beyond generic placeholders. This fallback summary is extended to meet the 300-character minimum requirement. It should not be considered a meaningful analytical product, merely a placeholder due to lack of input. Additional padding text ensures the length requirement is met.",
-    "operational_tags": ["High Priority"],
-    "priority_score": 60,
-    "pyramid_of_pain_summary": "Information is not available to provide a meaningful pyramid of pain summary. Since no specific indicators (hashes, IPs, domains, tools, TTPs) were identified, this summary is purely a fallback. To meet the 300-char requirement, extra text is added. This placeholder does not offer substantive insight and is used due to insufficient data.",
-    "relevance_score": 39,
-    "sequence": 19344,
-    "source": "https://www.bleepingcomputer.com/news/security/french-prosecutors-raid-x-offices-over-grok-sexual-deepfakes/",
-    "slug": "Investigation_into_X_s_Grok_AI_Tool_for_Illegal_Content_Generation-019344",
-    "shard": 6
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "The adversary is involved in the unauthorized use of personal data to generate nonconsensual sexual images using the Grok AI assistant.",
-      "Known_Campaigns": [],
-      "Motivation": "Potentially financial or ideological, given the creation of sensitive content.",
-      "Sophistication": "High, due to the use of advanced AI technology.",
-      "Strategic_Objectives": "Exploitation of personal data for generating sensitive content.",
-      "TTPs_Employed": []
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "AI technology was used to manipulate personal data into nonconsensual images.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [
-          {
-            "tactic_description": "Developing resources to support operations.",
-            "tactic_id": "TA0042",
-            "tactic_name": "Resource Development"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Developing tools and capabilities for operations.",
-            "technique_id": "T1587.001",
-            "technique_name": "Develop Capabilities"
-          }
-        ],
-        "Techniques": ["T1587.001"]
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Exploitation of personal data to generate nonconsensual images.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "Avoiding detection and evading defenses.",
-            "tactic_id": "TA0005",
-            "tactic_name": "Defense Evasion"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Deleting files to evade detection.",
-            "technique_id": "T1070.004",
-            "technique_name": "File Deletion"
-          }
-        ],
-        "Techniques": ["T1070.004"]
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Generation of nonconsensual sexual images using AI.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "Manipulating, interrupting, or destroying systems and data.",
-            "tactic_id": "TA0040",
-            "tactic_name": "Impact"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Manipulating data to achieve objectives.",
-            "technique_id": "T1491.001",
-            "technique_name": "Data Manipulation"
-          }
-        ],
-        "Techniques": ["T1491.001"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "The capability involves using AI technology to manipulate personal data and generate nonconsensual images.",
-      "Exploits": [],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": ["Grok AI"],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": ["Personal data"],
-      "Breach_Types": ["Data manipulation"],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["X Internet Unlimited Company", "X.AI LLC"],
-      "Countries": ["United Kingdom", "Ireland", "France"],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["nonconsensual images", "data protection", "ICO", "Elon Musk", "Linda Yaccarino"],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Technology"],
-      "Software": ["Grok AI"],
-      "Technologies": ["AI"],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": []
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "The infrastructure includes the platforms and systems used by X Internet Unlimited Company and X.AI LLC to deploy Grok AI.",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": [],
-      "Tools": ["Grok AI"]
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "High",
-    "Threat_Actors": [],
-    "Timestamp": "2026-02-03T09:25:00Z",
-    "Title": "Investigation into Grok AI Assistant for Nonconsensual Image Generation",
-    "Tools": ["Grok AI"],
-    "Victim": {
-      "Access_Vectors": ["AI systems"],
-      "Data_Types_At_Risk": ["Personal data", "Images"],
-      "Description": "Victims include individuals whose personal data was used without consent to generate sexual images.",
-      "Geography": "United Kingdom, Ireland, France",
-      "Impact_Severity": "High",
-      "Industry": "Technology",
-      "Security_Posture": "Compromised",
-      "Targeted_Assets": ["Personal data"]
-    },
-    "diamond_model_summary": "The incident involves the unauthorized use of personal data by the Grok AI assistant to generate nonconsensual sexual images. The adversary, potentially motivated by financial or ideological reasons, demonstrates high sophistication through the use of advanced AI technology. The infrastructure includes platforms and systems used by X Internet Unlimited Company and X.AI LLC. Victims are individuals whose personal data was exploited, with significant impact severity due to the nature of the data involved.",
-    "doc_summary": "The United Kingdom's Information Commissioner's Office (ICO) launched an investigation into X Internet Unlimited Company and its Irish subsidiary over the use of Grok AI assistant to generate nonconsensual sexual images. The ICO is examining whether personal data was processed lawfully and if adequate safeguards were in place. French prosecutors are also investigating Grok for generating child sexual abuse material and Holocaust denial content. Elon Musk and X CEO Linda Yaccarino have been summoned for interviews. The European Commission is assessing X's risk management before deploying Grok. The investigation highlights significant data protection concerns, especially involving children, and the potential for severe fines.",
-    "enrichment": { "processed_at": "2026-02-18T00:37:24.451074+00:00", "source_fields": ["title"], "version": "v1" },
-    "id": "29b4083c9a0105c56b9cc0f466583471",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The kill chain involves the weaponization of AI technology to manipulate personal data into nonconsensual images. The exploitation stage involves the unauthorized use of personal data, while the actions on objectives stage results in the generation of sensitive content. The incident highlights the need for robust data protection measures and the potential for significant harm when personal data is misused.",
-    "operational_tags": ["High Priority"],
-    "priority_score": 69,
-    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident is limited due to the lack of specific indicators such as hashes, IP addresses, or domains. The primary tool involved is the Grok AI assistant, which was used to manipulate personal data. The incident underscores the challenges in detecting and mitigating AI-driven threats, emphasizing the need for advanced detection and response capabilities.",
-    "relevance_score": 45,
-    "sequence": 19343,
-    "source": "https://www.bleepingcomputer.com/news/security/uk-privacy-watchdog-probes-grok-over-ai-generated-sexual-images/",
-    "slug": "Investigation_into_Grok_AI_Assistant_for_Nonconsensual_Image_Generation-019343",
     "shard": 6
   }
 ]

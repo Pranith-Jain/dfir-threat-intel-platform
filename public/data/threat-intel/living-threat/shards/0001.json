@@ -3,6 +3,555 @@
     "Adversary": {
       "Aliases": [],
       "Associated_Groups": [],
+      "Description": "No significant information detected",
+      "Known_Campaigns": [],
+      "Motivation": "",
+      "Sophistication": "",
+      "Strategic_Objectives": "",
+      "TTPs_Employed": []
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Exploitation occurs when an attacker controls the tenant subdomain to redirect OAuth2 credentials.",
+        "Detection": "Monitor for unusual tenant subdomain requests. • Check for unexpected OAuth2 token requests.",
+        "Remediation": "Upgrade to SAP SDK version 0.45.2 or later. • Manually verify tenant subdomains before SDK processing.",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to get into your network.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exploitation of a vulnerability in an internet-facing application.",
+            "technique_id": "T1190",
+            "technique_name": "Exploit Public-Facing Application"
+          }
+        ],
+        "Techniques": ["T1190"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Actions on Objectives",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": ["CVE-2026-89111"],
+    "Capability": {
+      "Defensive_Evasion_Tactics": [],
+      "Description": "The vulnerability allows attackers to exploit server-side request forgery (SSRF) by controlling tenant subdomains.",
+      "Exploits": ["CVE-2026-89111"],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": [],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [],
+    "Extracted_Entities": {
+      "Assets": ["OAuth2 client credentials"],
+      "Breach_Types": [],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["SAP"],
+      "Countries": [],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["OAuth2", "SSRF", "CVE-2026-89111"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": ["0.45.2"],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Technology"],
+      "Software": ["SAP Cloud SDK for Python"],
+      "Technologies": ["SAP Business Technology Platform"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": ["CVE-2026-89111"]
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "The attack infrastructure could involve attacker-controlled servers receiving OAuth2 credentials.",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["SSRF"],
+      "Tools": []
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "Critical",
+    "Threat_Actors": [],
+    "Timestamp": "2026-10-12T18:30:00Z",
+    "Title": "Critical Flaw in SAP Cloud SDK for Python Exposes OAuth2 Credentials",
+    "Tools": ["SAP Cloud SDK for Python"],
+    "Victim": {
+      "Access_Vectors": ["Network"],
+      "Data_Types_At_Risk": ["Client ID", "Client Secret"],
+      "Description": "Multi-tenant applications on SAP Business Technology Platform using the affected SDK versions.",
+      "Geography": "",
+      "Impact_Severity": "Critical",
+      "Industry": "Technology",
+      "Security_Posture": "",
+      "Targeted_Assets": ["OAuth2 client credentials"]
+    },
+    "diamond_model_summary": "The incident involves a critical vulnerability in SAP's Cloud SDK for Python, identified as CVE-2026-89111. This flaw allows attackers to exploit server-side request forgery (SSRF) by controlling tenant subdomains, potentially redirecting OAuth2 credentials to an attacker-controlled server. The vulnerability affects multi-tenant applications on SAP Business Technology Platform (BTP) using the SDK. SAP released a fix in version 0.45.2, but subsequent versions 0.53.0 to 0.55.0 omitted the necessary check, leading to potential exploitation. The flaw is classified as server-side request forgery (SSRF), with a CVSS score of 10.0, indicating critical severity. The advisory suggests upgrading to secure versions or manually verifying tenant subdomains.",
+    "doc_summary": "A critical flaw identified as CVE-2026-89111 in SAP's Cloud SDK for Python can expose OAuth2 client credentials to an attacker-controlled server. This vulnerability affects multi-tenant applications on SAP Business Technology Platform (BTP) using the SDK. The flaw allows an attacker to control the tenant subdomain, potentially redirecting requests to their server. SAP released a fix in version 0.45.2, but subsequent versions 0.53.0 to 0.55.0 omitted the necessary check, leading to potential exploitation. The flaw is classified as server-side request forgery (SSRF), with a CVSS score of 10.0, indicating critical severity. The advisory suggests upgrading to secure versions or manually verifying tenant subdomains. The vulnerability was reported by a GitHub user named SunandM, with no known attacks reported.",
+    "enrichment": null,
+    "id": "9f98c61ecb3c8b3b53b75739a2c0bf095e7742d287173b19b434ea1ea94b0a36",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The kill chain for this incident involves the exploitation of a vulnerability in SAP's Cloud SDK for Python, allowing attackers to control tenant subdomains and redirect OAuth2 credentials to an attacker-controlled server. The exploitation stage is critical, as it involves server-side request forgery (SSRF) to gain unauthorized access to sensitive credentials. The vulnerability affects multi-tenant applications on SAP Business Technology Platform (BTP) using the SDK. SAP released a fix in version 0.45.2, but subsequent versions 0.53.0 to 0.55.0 omitted the necessary check, leading to potential exploitation. The advisory suggests upgrading to secure versions or manually verifying tenant subdomains.",
+    "operational_tags": ["High Priority", "CVE-linked"],
+    "priority_score": 91,
+    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident is primarily focused on the exploitation of a vulnerability in SAP's Cloud SDK for Python, identified as CVE-2026-89111. The critical flaw allows attackers to exploit server-side request forgery (SSRF) by controlling tenant subdomains, potentially redirecting OAuth2 credentials to an attacker-controlled server. The vulnerability affects multi-tenant applications on SAP Business Technology Platform (BTP) using the SDK. SAP released a fix in version 0.45.2, but subsequent versions 0.53.0 to 0.55.0 omitted the necessary check, leading to potential exploitation. The advisory suggests upgrading to secure versions or manually verifying tenant subdomains.",
+    "relevance_score": 41,
+    "sequence": 22331,
+    "source": "https://thehackernews.com/2026/10/sap-discloses-critical-cvss-10-flaw-in.html",
+    "slug": "Critical_Flaw_in_SAP_Cloud_SDK_for_Python_Exposes_OAuth2_Credentials-022331",
+    "shard": 1
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
+      "Description": "Xandr, acting as a joint controller with Grindr, failed to obtain user consent for data sharing.",
+      "Known_Campaigns": [],
+      "Motivation": "Commercial gain through targeted advertising",
+      "Sophistication": "Medium",
+      "Strategic_Objectives": "Maximize advertising revenue through data-driven targeting",
+      "TTPs_Employed": ["Real-time bidding", "Data sharing without consent"]
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Exploitation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Xandr shared sensitive user data with advertisers without consent.",
+        "Detection": "Monitor data flows for unauthorized sharing • Audit consent management processes",
+        "Remediation": "Implement strict consent verification • Enhance data protection policies",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "Gathering sensitive user data for advertising purposes.",
+            "tactic_id": "TA0043",
+            "tactic_name": "Collection"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Using application layer protocols to share data.",
+            "technique_id": "T1071",
+            "technique_name": "Application Layer Protocol"
+          }
+        ],
+        "Techniques": ["T1071"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": [],
+      "Description": "Xandr facilitated the relay of sensitive user data for advertising purposes.",
+      "Exploits": [],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": ["Real-time bidding platforms"],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [],
+    "Extracted_Entities": {
+      "Assets": ["User data"],
+      "Breach_Types": ["Data sharing without consent"],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Xandr", "Microsoft", "AT&T"],
+      "Countries": ["Norway"],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["Data breach", "Real-time bidding", "User consent"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": [],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Technology"],
+      "Software": ["Grindr"],
+      "Technologies": ["Advertising platforms"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": []
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "Xandr's advertising infrastructure enabled data sharing across multiple companies.",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Data sharing without consent"],
+      "Tools": ["Real-time bidding platforms"]
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "High",
+    "Threat_Actors": ["Xandr"],
+    "Timestamp": "2026-10-12T18:30:00Z",
+    "Title": "Norwegian DPA Fines Xandr for Illegal Data Sharing",
+    "Tools": ["Real-time bidding platforms", "Grindr"],
+    "Victim": {
+      "Access_Vectors": ["Advertising platforms"],
+      "Data_Types_At_Risk": ["Sexual orientation", "Personal identifiers"],
+      "Description": "Grindr users in Norway had their sensitive data shared without consent.",
+      "Geography": "Norway",
+      "Impact_Severity": "High",
+      "Industry": "Technology",
+      "Security_Posture": "Compromised",
+      "Targeted_Assets": ["User data", "Personal information"]
+    },
+    "diamond_model_summary": "The incident involves Xandr, an advertising unit owned by Microsoft, which acted as a joint controller with Grindr. Xandr failed to obtain user consent for sharing sensitive data, including sexual orientation, with advertisers. The breach highlights the risks associated with real-time bidding and the importance of compliance with data protection regulations.",
+    "doc_summary": "The Norwegian Data Protection Authority fined Xandr, a Microsoft-owned advertising unit, €8.6 million for illegally sharing Grindr users' sensitive data with advertisers. The breach occurred between July 2018 and April 2020, involving the unauthorized relay of personal data, including sexual orientation, to numerous companies. Xandr, acting as a joint controller with Grindr, failed to obtain user consent, assuming Grindr had done so. The case, initiated by a complaint from the Norwegian consumer council and Austrian privacy group noyb, highlights the risks of real-time bidding in advertising. The fine, the largest issued by the Norwegian DPA, reflects the severity of the breach. Xandr, originally formed by AT&T and later acquired by Microsoft, has three weeks to appeal the decision. This incident underscores the importance of compliance with data protection regulations in the advertising sector.",
+    "enrichment": null,
+    "id": "88ba1d08c7ce7ef99a620791466e7e5d6c77e39ca6c902cbd75ffa04ffab5634",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The incident primarily involves the 'Actions on Objectives' stage, where Xandr shared sensitive user data with advertisers without obtaining proper consent. This action was facilitated through real-time bidding platforms, allowing advertisers to bid on user data for targeted advertising. The lack of consent verification and data protection measures contributed to the breach.",
+    "operational_tags": ["High Priority", "C2"],
+    "priority_score": 73,
+    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident is limited due to the lack of specific technical indicators such as hashes, IP addresses, or domains. The primary focus is on the tools and techniques used, specifically real-time bidding platforms and unauthorized data sharing. The incident underscores the challenges in detecting and preventing data privacy violations in the advertising industry.",
+    "relevance_score": 53,
+    "sequence": 22330,
+    "source": "https://thehackernews.com/2026/10/xandr-fined-record-86-million-for.html",
+    "slug": "Norwegian_DPA_Fines_Xandr_for_Illegal_Data_Sharing-022330",
+    "shard": 1
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
+      "Description": "Unknown attackers exploited vulnerabilities in Danfoss refrigeration controllers.",
+      "Known_Campaigns": [],
+      "Motivation": "Potential financial or disruptive motives.",
+      "Sophistication": "Moderate, given the exploitation of known vulnerabilities.",
+      "Strategic_Objectives": "Disruption of retail operations and financial impact.",
+      "TTPs_Employed": []
+    },
+    "Analyses": [
+      {
+        "Description": "Attackers likely identified vulnerable Danfoss controllers exposed to the internet.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [
+          {
+            "tactic_description": "Gathering information to identify vulnerabilities.",
+            "tactic_id": "TA0043",
+            "tactic_name": "Reconnaissance"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Scanning for exposed systems and vulnerabilities.",
+            "technique_id": "T1595",
+            "technique_name": "Active Scanning"
+          }
+        ],
+        "Techniques": ["T1595"]
+      },
+      {
+        "Description": "No specific weaponization activity detected.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No specific delivery activity detected.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Exploitation of vulnerabilities in Danfoss controllers to gain control.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "Gaining access to the target system.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exploiting vulnerabilities in public-facing applications.",
+            "technique_id": "T1190",
+            "technique_name": "Exploit Public-Facing Application"
+          }
+        ],
+        "Techniques": ["T1190"]
+      },
+      {
+        "Description": "No specific installation activity detected.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No specific command and control activity detected.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Attackers manipulated refrigeration settings, causing food spoilage.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "Manipulating, interrupting, or destroying systems and data.",
+            "tactic_id": "TA0040",
+            "tactic_name": "Impact"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Destroying data to impact operations.",
+            "technique_id": "T1485",
+            "technique_name": "Data Destruction"
+          }
+        ],
+        "Techniques": ["T1485"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": ["CVE-2025-41450", "CVE-2025-41451", "CVE-2025-41452"],
+    "Capability": {
+      "Defensive_Evasion_Tactics": [],
+      "Description": "Exploitation of vulnerabilities in Danfoss refrigeration controllers.",
+      "Exploits": ["CVE-2025-41450", "CVE-2025-41451", "CVE-2025-41452"],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": [],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [],
+    "Extracted_Entities": {
+      "Assets": ["fridges", "freezers"],
+      "Breach_Types": ["Remote control exploitation"],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Danfoss", "Les Mousquetaires", "Intermarché", "Coopérative U", "E.Leclerc"],
+      "Countries": ["France", "Denmark", "Spain", "Portugal", "Poland", "Germany", "Belgium"],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["cyberattack", "refrigeration", "vulnerabilities", "CERT-FR", "ANSSI"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": [],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Retail"],
+      "Software": ["Danfoss AK-SM", "Danfoss AK-SC"],
+      "Technologies": ["refrigeration controllers"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": ["CVE-2025-41450", "CVE-2025-41451", "CVE-2025-41452"]
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "Compromised Danfoss refrigeration controllers in French supermarkets.",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Exploitation of Danfoss controller vulnerabilities"],
+      "Tools": []
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "High",
+    "Threat_Actors": [],
+    "Timestamp": "2026-10-12T18:30:00Z",
+    "Title": "Cyberattack on French Supermarkets' Refrigeration Systems",
+    "Tools": ["Danfoss AK-SM", "Danfoss AK-SC"],
+    "Victim": {
+      "Access_Vectors": ["Remote access to controllers"],
+      "Data_Types_At_Risk": ["Operational data"],
+      "Description": "French supermarkets using Danfoss refrigeration controllers.",
+      "Geography": "France",
+      "Impact_Severity": "High",
+      "Industry": "Retail",
+      "Security_Posture": "Vulnerable due to outdated systems",
+      "Targeted_Assets": ["Refrigeration systems"]
+    },
+    "diamond_model_summary": "The incident involved unknown attackers exploiting vulnerabilities in Danfoss refrigeration controllers, impacting French supermarkets. The attackers' capability included exploiting known vulnerabilities in outdated systems, leading to significant operational disruption and financial losses. The infrastructure targeted was primarily in the retail sector in France, with potential exposure in other European countries.",
+    "doc_summary": "In October 2023, a cyberattack targeted refrigeration systems in French supermarkets, exploiting vulnerabilities in Danfoss controllers, specifically the AK-SM and AK-SC series. The attack led to significant food waste and financial losses. CERT-FR and ANSSI issued urgent advisories to disconnect or secure these controllers. Danfoss acknowledged the attack affected older models lacking updates, and some newer models with outdated firmware. The incident prompted a legal inquiry and international cybersecurity collaboration. No specific threat actor was identified, and no CVEs were directly linked to the attack.",
+    "enrichment": null,
+    "id": "08cfd38e9d135daec84e9c8807931ef6ee66f5018e0b160d09cd9cb74a9a3d3e",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The attack followed a typical cyber kill chain, starting with reconnaissance to identify vulnerable Danfoss controllers exposed to the internet. Exploitation of these vulnerabilities allowed attackers to gain initial access and manipulate refrigeration settings, causing food spoilage. The lack of specific weaponization, delivery, installation, and command and control activities suggests a direct exploitation approach.",
+    "operational_tags": ["High Priority", "CVE-linked"],
+    "priority_score": 75,
+    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident is limited due to the lack of specific indicators such as hashes, IP addresses, or domains. The primary focus is on the exploitation of known vulnerabilities in Danfoss controllers, which represents a significant challenge for defenders. The absence of detailed indicators makes detection and response more difficult, emphasizing the need for robust security practices.",
+    "relevance_score": 49,
+    "sequence": 22329,
+    "source": "https://thehackernews.com/2026/10/attackers-heat-french-supermarket.html",
+    "slug": "Cyberattack_on_French_Supermarkets__Refrigeration_Systems-022329",
+    "shard": 1
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
       "Description": "The adversary exploits a loophole in npm's trusted publishing system to take over packages.",
       "Known_Campaigns": ["SlugFest"],
       "Motivation": "Supply chain compromise",
@@ -102686,675 +103235,6 @@
     "sequence": 21832,
     "source": "https://www.bleepingcomputer.com/news/security/ransomware-protection-for-msps-a-6-point-checklist-for-faster-recovery/",
     "slug": "Ransomware_Protection_Strategies_for_MSPs_in_2025-021832",
-    "shard": 1
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "The adversary behind the StreamRat campaign remains unattributed, but they demonstrate technical sophistication in Android malware development.",
-      "Known_Campaigns": ["Mirax"],
-      "Motivation": "Financial gain through banking credential theft.",
-      "Sophistication": "High",
-      "Strategic_Objectives": "Compromise Android devices to steal banking credentials.",
-      "TTPs_Employed": ["Use of Accessibility features", "VPN manipulation", "Social media lures"]
-    },
-    "Analyses": [
-      {
-        "Description": "The adversary used social media platforms to identify and target Spanish-speaking users.",
-        "Detection": "Monitor social media for suspicious campaigns targeting specific demographics.",
-        "Remediation": "Educate users on recognizing phishing and social engineering tactics.",
-        "Stage": "Reconnaissance",
-        "Tactics": [
-          {
-            "tactic_description": "Gathering information to identify targets.",
-            "tactic_id": "TA0043",
-            "tactic_name": "Reconnaissance"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Collecting information about victims to tailor attacks.",
-            "technique_id": "T1592",
-            "technique_name": "Gather Victim Identity Information"
-          }
-        ],
-        "Techniques": ["T1592"]
-      },
-      {
-        "Description": "The adversary developed the StreamRat trojan and crafted a fake streaming app.",
-        "Detection": "Analyze APK files for malicious code and unusual permissions.",
-        "Remediation": "Implement application whitelisting to prevent unauthorized installations.",
-        "Stage": "Weaponization",
-        "Tactics": [
-          {
-            "tactic_description": "Developing resources to support operations.",
-            "tactic_id": "TA0042",
-            "tactic_name": "Resource Development"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Creating malware to exploit targets.",
-            "technique_id": "T1587.001",
-            "technique_name": "Develop Capabilities"
-          }
-        ],
-        "Techniques": ["T1587.001"]
-      },
-      {
-        "Description": "The trojan was delivered via a fake streaming app promoted on social media.",
-        "Detection": "Monitor for unusual app installations and permissions requests.",
-        "Remediation": "Educate users on the risks of sideloading apps from untrusted sources.",
-        "Stage": "Delivery",
-        "Tactics": [
-          {
-            "tactic_description": "Delivering malware to the target.",
-            "tactic_id": "TA0011",
-            "tactic_name": "Delivery"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Tricking users into executing a malicious file.",
-            "technique_id": "T1204.002",
-            "technique_name": "User Execution: Malicious File"
-          }
-        ],
-        "Techniques": ["T1204.002"]
-      },
-      {
-        "Description": "The malware exploited user permissions to gain control over the device.",
-        "Detection": "Monitor for unusual permission requests and app behavior.",
-        "Remediation": "Restrict app permissions and enforce security policies.",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "Gaining access to the target system.",
-            "tactic_id": "TA0001",
-            "tactic_name": "Initial Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exploiting vulnerabilities to execute code.",
-            "technique_id": "T1203",
-            "technique_name": "Exploitation for Client Execution"
-          }
-        ],
-        "Techniques": ["T1203"]
-      },
-      {
-        "Description": "The StreamRat payload was installed on the device after user approval.",
-        "Detection": "Monitor for unauthorized app installations and changes to startup settings.",
-        "Remediation": "Implement application control policies to prevent unauthorized installations.",
-        "Stage": "Installation",
-        "Tactics": [
-          {
-            "tactic_description": "Maintaining access to the target system.",
-            "tactic_id": "TA0003",
-            "tactic_name": "Persistence"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Using startup folders or registry keys for persistence.",
-            "technique_id": "T1547.001",
-            "technique_name": "Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder"
-          }
-        ],
-        "Techniques": ["T1547.001"]
-      },
-      {
-        "Description": "The malware connected to a C2 server after installation.",
-        "Detection": "Monitor network traffic for unusual connections to external servers.",
-        "Remediation": "Implement network segmentation and monitor outbound traffic.",
-        "Stage": "Command and Control",
-        "Tactics": [
-          {
-            "tactic_description": "Establishing communication with the compromised system.",
-            "tactic_id": "TA0011",
-            "tactic_name": "Command and Control"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Using web protocols for C2 communication.",
-            "technique_id": "T1071.001",
-            "technique_name": "Application Layer Protocol: Web Protocols"
-          }
-        ],
-        "Techniques": ["T1071.001"]
-      },
-      {
-        "Description": "The malware captured keystrokes and displayed credential-stealing overlays.",
-        "Detection": "Monitor for unusual app behavior and overlay displays.",
-        "Remediation": "Implement endpoint protection solutions to detect and block keyloggers.",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "Gathering information from the target system.",
-            "tactic_id": "TA0009",
-            "tactic_name": "Collection"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Capturing keystrokes to gather sensitive information.",
-            "technique_id": "T1056.001",
-            "technique_name": "Input Capture: Keylogging"
-          }
-        ],
-        "Techniques": ["T1056.001"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": ["VPN traffic manipulation", "Accessibility abuse"],
-      "Description": "StreamRat is a sophisticated Android banking trojan capable of device takeover and credential theft.",
-      "Exploits": [],
-      "Lateral_Movement_Tools": [],
-      "Malware": ["StreamRat"],
-      "Persistence_Mechanisms": ["Default Home application"],
-      "Tools": ["StreamRat"],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": ["Android devices"],
-      "Breach_Types": [],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["Meta", "TikTok", "GitHub"],
-      "Countries": ["Spain"],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["StreamRat", "banking trojan", "malware", "APK", "Accessibility"],
-      "Malware_Families": ["StreamRat"],
-      "Malware_Filenames": ["app.apk", "update_{timestamp}.apk"],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["General Public"],
-      "Software": ["Android"],
-      "Technologies": ["VPN", "MediaProjection API"],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": []
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": ["VPN"],
-      "Description": "The campaign utilized GitHub for hosting payloads and social media platforms for distribution.",
-      "Domains": [],
-      "Hosting_Providers": ["GitHub"],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["Use of Accessibility features", "VPN manipulation", "Social media lures"],
-      "Tools": ["StreamRat"]
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "High",
-    "Threat_Actors": [],
-    "Timestamp": "2026-09-01T18:30:00Z",
-    "Title": "StreamRat Android Banking Trojan Campaign Analysis",
-    "Tools": ["StreamRat", "Android"],
-    "Victim": {
-      "Access_Vectors": ["APK sideloading", "Social media lures"],
-      "Data_Types_At_Risk": ["Banking credentials"],
-      "Description": "The campaign targeted Spanish-speaking Android users in the European Union, particularly in Spain.",
-      "Geography": "Spain",
-      "Impact_Severity": "High",
-      "Industry": "General Public",
-      "Security_Posture": "Low",
-      "Targeted_Assets": ["Android devices"]
-    },
-    "diamond_model_summary": "The StreamRat campaign demonstrates a sophisticated adversary leveraging social media platforms like Meta and TikTok to distribute a banking trojan targeting Spanish-speaking users in Spain. The adversary's capability includes developing a trojan that exploits Android's Accessibility features and VPN manipulation for device control and credential theft. The infrastructure involves using GitHub for payload hosting and social media for distribution, while the victims are primarily Android users in the European Union.",
-    "doc_summary": "Cybersecurity researchers disclosed a new Android banking trojan named StreamRat, targeting Spanish-speaking users through a fake television-streaming campaign on Meta. The campaign, focused on Spain, reached approximately 570,950 Meta accounts in the European Union. The malware requires users to sideload an APK and grant extensive permissions, including Accessibility access, allowing operators to capture keystrokes, display overlays, and control devices remotely. The campaign used social media lures to direct users to a website for downloading the app.apk file. The dropper requests VPN permissions and installs the StreamRat payload, which connects to a command-and-control server. The campaign was identified in late July 2026, with findings published on September 2, 2026. The StreamRat payload was linked to a GitHub account associated with a previous Mirax campaign. The malware was also promoted through TikTok, with similar banners likely displayed on Facebook and Instagram.",
-    "enrichment": null,
-    "id": "43ff6a4cc6fb5f5857e67ec0537eb496b0314f84881379212202e376aeeed4c5",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The StreamRat campaign follows a structured kill chain, beginning with reconnaissance through social media to identify Spanish-speaking targets. Weaponization involves developing the StreamRat trojan and crafting a fake streaming app. Delivery is executed via social media lures directing users to download the malicious APK. Exploitation occurs when users grant permissions, allowing the trojan to gain control. Installation involves the trojan establishing persistence by becoming the default Home application. Command and control are achieved through VPN manipulation and C2 server connections. Finally, actions on objectives include capturing keystrokes and displaying credential-stealing overlays.",
-    "operational_tags": ["High Priority", "C2"],
-    "priority_score": 100,
-    "pyramid_of_pain_summary": "The StreamRat campaign presents several indicators of compromise, including malware filenames like app.apk and update_{timestamp}.apk, and the use of GitHub for payload hosting. The adversary's use of social media platforms for distribution and VPN manipulation for command and control adds complexity to detection and response efforts. The campaign's reliance on Android's Accessibility features for device control and credential theft highlights the need for robust detection and remediation strategies. The pyramid of pain scoring reflects the challenge of addressing these indicators, with a focus on malware filenames and network host artifacts.",
-    "relevance_score": 57,
-    "sequence": 21831,
-    "source": "https://thehackernews.com/2026/09/meta-ads-push-streamrat-android-trojan.html",
-    "slug": "StreamRat_Android_Banking_Trojan_Campaign_Analysis-021831",
-    "shard": 1
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "The adversary conducted a BGP hijack to divert traffic and deliver a malicious package.",
-      "Known_Campaigns": [],
-      "Motivation": "Potential financial gain or disruption",
-      "Sophistication": "High, due to BGP hijack and certificate misuse",
-      "Strategic_Objectives": "Compromise Virtualizor installations and gain root access",
-      "TTPs_Employed": ["BGP hijacking", "Malicious package delivery", "Certificate misuse"]
-    },
-    "Analyses": [
-      {
-        "Description": "The adversary likely gathered information on BGP routes and Virtualizor infrastructure.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary gathers information to plan future operations.",
-            "tactic_id": "TA0043",
-            "tactic_name": "Reconnaissance"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "The adversary gathers information about the victim's network.",
-            "technique_id": "T1592",
-            "technique_name": "Gather Victim Network Information"
-          }
-        ],
-        "Techniques": ["T1592"]
-      },
-      {
-        "Description": "The adversary prepared a malicious Virtualizor package for delivery.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary develops resources to support operations.",
-            "tactic_id": "TA0042",
-            "tactic_name": "Resource Development"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "The adversary develops malware for use in operations.",
-            "technique_id": "T1587.001",
-            "technique_name": "Develop Capabilities: Malware"
-          }
-        ],
-        "Techniques": ["T1587.001"]
-      },
-      {
-        "Description": "The malicious package was delivered via diverted update traffic.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary delivers malicious code to the victim.",
-            "tactic_id": "TA0011",
-            "tactic_name": "Delivery"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "The adversary uses web protocols to deliver malicious code.",
-            "technique_id": "T1071.001",
-            "technique_name": "Application Layer Protocol: Web Protocols"
-          }
-        ],
-        "Techniques": ["T1071.001"]
-      },
-      {
-        "Description": "The package exploited the lack of cryptographic verification in the update client.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary gains initial access to the victim's network.",
-            "tactic_id": "TA0001",
-            "tactic_name": "Initial Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "The adversary exploits a vulnerability in a public-facing application.",
-            "technique_id": "T1190",
-            "technique_name": "Exploit Public-Facing Application"
-          }
-        ],
-        "Techniques": ["T1190"]
-      },
-      {
-        "Description": "The malicious package was installed, adding an attacker-controlled key and persistence mechanisms.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary maintains access to the victim's network.",
-            "tactic_id": "TA0003",
-            "tactic_name": "Persistence"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "The adversary creates or modifies a systemd service for persistence.",
-            "technique_id": "T1543.002",
-            "technique_name": "Create or Modify System Process: Systemd Service"
-          }
-        ],
-        "Techniques": ["T1543.002"]
-      },
-      {
-        "Description": "The attacker established command and control through an unauthorized account.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary communicates with compromised systems.",
-            "tactic_id": "TA0011",
-            "tactic_name": "Command and Control"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "The adversary uses valid local accounts for command and control.",
-            "technique_id": "T1078.003",
-            "technique_name": "Valid Accounts: Local Accounts"
-          }
-        ],
-        "Techniques": ["T1078.003"]
-      },
-      {
-        "Description": "The attacker executed malicious commands and established persistence.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary evades detection and maintains access.",
-            "tactic_id": "TA0005",
-            "tactic_name": "Defense Evasion"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "The adversary deletes files to remove indicators of compromise.",
-            "technique_id": "T1070.004",
-            "technique_name": "Indicator Removal on Host: File Deletion"
-          }
-        ],
-        "Techniques": ["T1070.004"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": ["Use of valid SSL certificates"],
-      "Description": "The adversary demonstrated the ability to hijack BGP routes and deliver malicious packages.",
-      "Exploits": [],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": ["systemd service", "unauthorized account creation"],
-      "Tools": [],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": ["Virtualizor hypervisors"],
-      "Breach_Types": [],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["Virtualizor", "AlbaHost"],
-      "Countries": [],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": ["Let's Encrypt"],
-      "File_Hashes": [],
-      "IP_Addresses": ["193.32.127.248"],
-      "Keywords": ["BGP hijack", "malicious package", "root compromise", "Let's Encrypt", "systemd service"],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": ["Patch 9"],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Technology"],
-      "Software": ["Virtualizor"],
-      "Technologies": [],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": []
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": ["BGP"],
-      "Description": "The attack involved an attacker-controlled server and misuse of Let's Encrypt certificates.",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": ["193.32.127.248"],
-      "SSL_Certificates": ["Let's Encrypt"]
-    },
-    "Post_Incident_Recommendations": [],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": ["193.32.127.248"],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["BGP hijacking", "Malicious package delivery", "Certificate misuse"],
-      "Tools": []
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "High",
-    "Threat_Actors": [],
-    "Timestamp": "2026-09-01T18:30:00Z",
-    "Title": "BGP Hijack and Malicious Package Delivery via Virtualizor",
-    "Tools": ["Virtualizor"],
-    "Victim": {
-      "Access_Vectors": ["BGP hijack", "Malicious package delivery"],
-      "Data_Types_At_Risk": ["Root access", "API credentials"],
-      "Description": "Virtualizor operators and hosting providers using Virtualizor hypervisors.",
-      "Geography": "",
-      "Impact_Severity": "High",
-      "Industry": "Technology",
-      "Security_Posture": "Compromised",
-      "Targeted_Assets": ["Virtualizor hypervisors"]
-    },
-    "diamond_model_summary": "The incident involved a sophisticated adversary using a BGP hijack to divert traffic and deliver a malicious Virtualizor package. The adversary's capability included exploiting the lack of cryptographic verification in the update client. The infrastructure involved an attacker-controlled server and misuse of Let's Encrypt certificates. Victims were primarily Virtualizor operators and hosting providers.",
-    "doc_summary": "Virtualizor experienced a cyber incident involving a Border Gateway Protocol (BGP) hijack that diverted Softaculous traffic to an attacker-controlled server. This allowed the delivery of a malicious Virtualizor package, compromising some installations. The incident occurred between August 28 and August 30, 2023. Affected hypervisors sustained root-level compromise, with malicious commands inserted into legitimate files. The attacker used a valid Let's Encrypt certificate to avoid detection. Virtualizor released Patch 9 with a Security Analyzer on September 1, advising operators to check servers, rotate API credentials, and audit for unauthorized access. The attack established persistence through a systemd service and created an unauthorized account. No confirmed client-account or payment-data theft was reported.",
-    "enrichment": null,
-    "id": "0c1e353de769530beb65b43b6c37d4710443535dca25576edee8bd087121559a",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The attack followed a structured kill chain, starting with reconnaissance to gather network information, followed by weaponization of a malicious package. Delivery was achieved through diverted update traffic, exploiting the lack of cryptographic verification. Installation involved adding persistence mechanisms, and command and control were established through unauthorized accounts. The attack concluded with actions on objectives, including executing malicious commands.",
-    "operational_tags": ["High Priority", "C2"],
-    "priority_score": 89,
-    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes IP addresses and SSL certificates as key indicators. The adversary's use of a valid Let's Encrypt certificate and specific IP address for command and control are significant. These indicators are challenging to change, making them valuable for detection and response efforts. The incident highlights the importance of monitoring network traffic and certificate usage.",
-    "relevance_score": 53,
-    "sequence": 21830,
-    "source": "https://thehackernews.com/2026/09/bgp-hijack-delivers-malicious.html",
-    "slug": "BGP_Hijack_and_Malicious_Package_Delivery_via_Virtualizor-021830",
-    "shard": 1
-  },
-  {
-    "Adversary": {
-      "Aliases": ["UTA0533"],
-      "Associated_Groups": [],
-      "Description": "Threat actors exploiting SonicWall SMA 1000 vulnerabilities",
-      "Known_Campaigns": [],
-      "Motivation": "Unknown",
-      "Sophistication": "Advanced",
-      "Strategic_Objectives": "Arbitrary code execution on vulnerable devices",
-      "TTPs_Employed": ["Zero-day exploitation", "Arbitrary code execution"]
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Exploitation of SonicWall SMA 1000 vulnerabilities",
-        "Detection": "Monitor for unusual activity on SMA 1000 appliances",
-        "Remediation": "Apply patches 12.4.3-03526 and 12.5.0-02952",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary is trying to get into your network.",
-            "tactic_id": "TA0001",
-            "tactic_name": "Initial Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exploitation of a vulnerability in an internet-facing application.",
-            "technique_id": "T1190",
-            "technique_name": "Exploit Public-Facing Application"
-          }
-        ],
-        "Techniques": ["T1190"]
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Actions on Objectives",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": ["CVE-2026-15409", "CVE-2026-15410"],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "Exploitation of zero-day vulnerabilities in SonicWall SMA 1000 series",
-      "Exploits": ["CVE-2026-15409", "CVE-2026-15410"],
-      "Lateral_Movement_Tools": [],
-      "Malware": ["KNUCKLEBALL"],
-      "Persistence_Mechanisms": [],
-      "Tools": ["KNUCKLEBALL malware"],
-      "Zero_Days": ["SonicWall SMA 1000 vulnerabilities"]
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": ["SMA 1000 models 6210, 7210, 8200v"],
-      "Breach_Types": [],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["SonicWall"],
-      "Countries": [],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["zero-day", "vulnerabilities", "exploitation"],
-      "Malware_Families": ["KNUCKLEBALL"],
-      "Malware_Filenames": [],
-      "Patches": ["12.4.3-03526", "12.5.0-02952"],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Various"],
-      "Software": ["SonicWall SMA 1000"],
-      "Technologies": ["VPN appliances"],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": ["CVE-2026-15409", "CVE-2026-15410"]
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "SonicWall SMA 1000 series VPN appliances",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["CVE-2026-15409", "CVE-2026-15410"],
-      "Tools": ["KNUCKLEBALL"]
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "High",
-    "Threat_Actors": ["UTA0533"],
-    "Timestamp": "2026-09-01T18:30:00Z",
-    "Title": "SonicWall SMA 1000 Series Zero-Day Exploitation",
-    "Tools": ["KNUCKLEBALL malware", "KNUCKLEBALL", "SonicWall SMA 1000"],
-    "Victim": {
-      "Access_Vectors": ["VPN appliance vulnerabilities"],
-      "Data_Types_At_Risk": ["Sensitive organizational data"],
-      "Description": "Organizations using SonicWall SMA 1000 series VPN appliances",
-      "Geography": "Global",
-      "Impact_Severity": "High",
-      "Industry": "Various",
-      "Security_Posture": "Vulnerable to zero-day exploitation",
-      "Targeted_Assets": ["SMA 1000 models 6210, 7210, 8200v"]
-    },
-    "diamond_model_summary": "The incident involves the exploitation of zero-day vulnerabilities in SonicWall SMA 1000 series VPN appliances by threat actors, potentially including the group UTA0533. The adversary's capability includes the use of KNUCKLEBALL malware and exploits for CVE-2026-15409 and CVE-2026-15410. The infrastructure targeted includes SMA 1000 models 6210, 7210, and 8200v, affecting various industries globally. Victims are at risk of arbitrary code execution, with a high impact severity.",
-    "doc_summary": "SonicWall has released security updates to address two security flaws impacting its Secure Mobile Access (SMA) 1000 series VPN appliances that have been exploited in zero-day attacks. The vulnerabilities were discovered internally by SonicWall's William Perry and Adam Babis. SonicWall indicated active exploitation of the vulnerabilities, suggesting threat actors are chaining both bugs to execute arbitrary code on susceptible devices. The flaws impact SMA 1000 models 6210, 7210, and 8200v. Fixes have been released in versions 12.4.3-03526 and 12.5.0-02952. SonicWall previously addressed two other flaws in the same product, CVE-2026-15409 and CVE-2026-15410, exploited by threat actor UTA0533 to deploy KNUCKLEBALL malware.",
-    "enrichment": null,
-    "id": "8071e541fd79f3e371c05b831ac68f2c723d387e5cf5a1de02ca6dc76856301c",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The attack on SonicWall SMA 1000 series involves exploitation of zero-day vulnerabilities, allowing threat actors to gain initial access through public-facing applications. The exploitation stage is critical, with the adversary leveraging vulnerabilities CVE-2026-15409 and CVE-2026-15410. While specific details on other stages like installation or command and control are not provided, the exploitation of these vulnerabilities poses a significant threat to organizations using these appliances.",
-    "operational_tags": ["High Priority", "CVE-linked"],
-    "priority_score": 71,
-    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes vulnerabilities CVE-2026-15409 and CVE-2026-15410, which are critical TTPs. The use of KNUCKLEBALL malware represents a tool used by the adversary. No specific hash values, IP addresses, or domain names are identified, limiting the ability to apply the Pyramid of Pain effectively. The focus remains on patching the identified vulnerabilities to mitigate the threat.",
-    "relevance_score": 57,
-    "sequence": 21829,
-    "source": "https://thehackernews.com/2026/09/attackers-exploit-two-sonicwall-sma.html",
-    "slug": "SonicWall_SMA_1000_Series_Zero-Day_Exploitation-021829",
     "shard": 1
   }
 ]
