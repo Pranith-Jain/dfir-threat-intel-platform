@@ -8,6 +8,8 @@ describe('new pages in catalog', () => {
     // their ?tab= redirects, so only the surviving page is pinned here.
     ['/dfir/domain-investigator', 'domain investigator'],
     ['/dfir/sigbase', 'yara'],
+    ['/threatintel/orca', 'orca'],
+    ['/threatintel/mmd', 'mmd'],
   ])('has catalog entry for %s', (path, query) => {
     const matches = searchPages(query, { limit: 5 });
     const found = matches.some((m) => m.page.path === path);

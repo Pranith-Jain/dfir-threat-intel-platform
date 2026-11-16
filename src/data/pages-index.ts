@@ -3466,6 +3466,46 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     keywords: ['cairn', 'cisco', 'talos', 'ai malware', 'yara', 'llm', 'promptlock', 'family', 'archetype', 'scanner'],
   },
   {
+    path: '/threatintel/orca',
+    label: 'ORCA AI Incident Archive',
+    description:
+      'Open database of real-world AI agent security incidents (CC BY 4.0) - 417 records from 2024-12 to 2026-11, triaged by kind, real_harm and ai_involvement; timeline, critical view, stats, upstream commit feed, and clickable primary sources for every record.',
+    sectionLabel: 'Threat Intel · Detection',
+    group: 'threatintel',
+    keywords: [
+      'orca',
+      'ai incident',
+      'ai agent incident',
+      'incident archive',
+      'real harm',
+      'ai involvement',
+      'llm security',
+      'agentic security',
+      'prompt injection',
+      'supply chain',
+      'threat intelligence',
+    ],
+  },
+  {
+    path: '/threatintel/mmd',
+    label: 'MMD Toolkit',
+    description:
+      'MalwareMustDie (MMD) shared codes & tools collection - 228 malware-analysis files across 12 language directories (Python, Bash, Perl, radare2, slides, wiki), plus a recent upstream commit activity feed. Metadata only; every file deep-links upstream.',
+    sectionLabel: 'Threat Intel · Detection',
+    group: 'threatintel',
+    keywords: [
+      'mmd',
+      'malwaremustdie',
+      'malware analysis',
+      'toolkit',
+      'radare2',
+      'malware tools',
+      'incident response',
+      'blue team',
+      'detection tooling',
+    ],
+  },
+  {
     path: '/threatintel/nova',
     label: 'NOVA Prompt Hunting',
     description:
