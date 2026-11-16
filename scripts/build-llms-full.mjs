@@ -104,7 +104,8 @@ function main() {
   lines.push('  autonomous case-study blog.');
   lines.push('');
   lines.push('The platform is open at the edge - no signup, no API key required for browsing. Sensitive ');
-  lines.push('endpoints (admin, write operations) require an API key or admin token issued at /api/v1/admin/keys.');
+  lines.push('endpoints (admin, write operations) and the MCP server require an API key - email');
+  lines.push('hello@pranithjain.qzz.io to request one.');
   lines.push('');
 
   // DFIR catalog

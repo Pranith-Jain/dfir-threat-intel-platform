@@ -4,7 +4,7 @@
 
 ## Quick start
 
-1. Generate an API key at `/api/v1/admin/keys` (admin token required).
+1. An API key is required to test this MCP - email `hello@pranithjain.qzz.io` to request one.
 2. Drop one of the config snippets in this directory into your MCP client config:
    - **Claude Desktop**: `claude-desktop.json` -> `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows).
    - **Cursor**: `cursor.json` -> `~/.cursor/mcp.json`.

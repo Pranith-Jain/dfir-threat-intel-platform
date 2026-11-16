@@ -232,11 +232,14 @@ export default function McpCatalogPage(): JSX.Element {
           <h2 className="mb-3 text-lg font-display font-semibold text-heading">Connect in 30 seconds</h2>
           <ol className="mb-5 list-decimal space-y-2 pl-5 text-tool text-muted leading-relaxed">
             <li>
-              Generate an API key at{' '}
-              <Link to="/api/v1/admin/keys" className="text-brand-600 dark:text-brand-400 hover:underline">
-                <code>/api/v1/admin/keys</code>
-              </Link>{' '}
-              (admin token required).
+              An API key is required to test this MCP.{' '}
+              <a
+                href="mailto:hello@pranithjain.qzz.io?subject=MCP%20API%20key%20request"
+                className="text-brand-600 dark:text-brand-400 hover:underline"
+              >
+                Email hello@pranithjain.qzz.io
+              </a>{' '}
+              to request one.
             </li>
             <li>Drop one of the snippets below into the matching config file.</li>
             <li>
