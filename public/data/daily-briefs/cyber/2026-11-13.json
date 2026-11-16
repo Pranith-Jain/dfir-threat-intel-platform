@@ -1,0 +1,115 @@
+{
+  "type": "cyber",
+  "date": "2026-11-13",
+  "threatLevel": "",
+  "executiveSummary": "Serious OT-adjacent and direct OT risks emerged or intensified this period, led by multiple Siemens advisories, active exploitation of PHP \"php2shell\" vectors at the network edge, and evolving supply-chain exposure through MSP/RMM platforms. Active OT targeting: A joint NSA/CISA/FBI/DOE/EPA advisory warns of active reconnaissance and capability development against Siemens S7 PLCs using AI-generated scripts and snap7 over S7comm; immediate hardening and segmentation are required. Security Advisory Multiple Siemens product advisories tied to Node2Shell/Brotli and PHP2Shell impact grid and building automation ecosystems; some components have no immediate fixes-exposure reduction is critical. ICS Advisory ICS Advisory RMM/Managed service provider risk: N-able N-central zero-day disclosures and observed exploitation, plus new SCKit activity abusing ScreenConnect, present cascading supply-chain risk into critical infrastructure managed by MSPs. View Article View Article Perimeter exploitation with destructive impact: Actors chained PHP2Shell and a Check Point Gaia OS privilege escalation to implant a persistent backdoor (TSGA/TSProxy) and wipe ESXi systems-highlighting the risk from compromised gateways to virtualized workloads. View Article CISA bulletins flag high-impact OT/IIoT issues: Danfoss iC7 drives, Advantech EKI gateways, Eclipse Milo (OPC UA), Autel EV chargers, and additional gateway/broker flaws require accelerated patching, segmentation, and service lockdowns. Supporting Report Supporting Report Nation-state and covert networks: Multi-agency advisories describe China-nexus covert device networks and PRC-linked data theft operations, elevating enterprise ingress and potential IT-to-OT pivot risk. Security Advisory Security Advisory Executive actions: prioritize Siemens S7 PLC hardening and segmentation; remove public exposure for affected Siemens OT web components; patch/contain N-central and ScreenConnect pathways; virtual-patch PHP2Shell on perimeter portals while applying vendor fixes; and execute targeted hunts on OT gateways, OPC UA stacks, and virtualization hosts.",
+  "keyFindings": [
+    {
+      "title": "Active PLC targeting with AI-assisted scripts threatens S7-series controllers ac",
+      "summary": "Active PLC targeting with AI-assisted scripts threatens S7-series controllers across multiple CI sectors; defenders must lock down S7comm (TCP/102), enforce access control lists, disable PUT/GET where possible, and baseline controller activity. Security Advisory"
+    },
+    {
+      "title": "Siemens Industrial Edge and Energy/Building products impacted by Node2Shell/Brot",
+      "summary": "Siemens Industrial Edge and Energy/Building products impacted by Node2Shell/Brotli and PHP2Shell pathways-risking management-plane compromise and OT HMIs/monitoring takeover; some components lack fixes, requiring immediate exposure reduction. ICS Advisory ICS Advisory"
+    },
+    {
+      "title": "N-able N-central zero-day wave plus in-the-wild exploitation",
+      "summary": "rapid patching and containment are required; treat exposed servers as potentially compromised and audit downstream managed endpoints. View Article View Article"
+    },
+    {
+      "title": "Check Point gateways exploited via PHP2Shell → Gaia OS EoP → persistent TSGA bac",
+      "summary": "Check Point gateways exploited via PHP2Shell → Gaia OS EoP → persistent TSGA backdoor → ESXi wiper; segment and harden hypervisor management networks to prevent lateral destructive impact. View Article"
+    },
+    {
+      "title": "CISA weekly bulletins highlight multiple OT-critical components (Danfoss iC7, Ad",
+      "summary": "CISA weekly bulletins highlight multiple OT-critical components (Danfoss iC7, Advantech EKI, Eclipse Milo/OPC UA, Autel EVSE) with unauthenticated RCE/DoS and management bypass-demanding urgent patch cycles and ACL enforcement. Supporting Report Supporting Report"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "60+",
+        "label": "Reporting Window Events"
+      },
+      {
+        "value": "ESCALATE: 16 • MONITOR: 35+ • IGNORE: remainder",
+        "label": "Decision Breakdown"
+      },
+      {
+        "value": "12+",
+        "label": "Active Exploitation Items"
+      },
+      {
+        "value": "Siemens • Danfoss • Advantech • OPC UA",
+        "label": "Primary OT Vendors/Stacks"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Siemens (S7 PLCs, Industrial Edge, Spectrum Power, AMIS TS, Energy Engage)",
+      "Danfoss (iC7 Drives)",
+      "Advantech (EKI Gateways)",
+      "OPC UA (Eclipse Milo)",
+      "Autel (EVSE / OCPP)",
+      "Check Point (Gateways / Gaia OS)",
+      "N-able N-central (RMM)",
+      "ConnectWise ScreenConnect (RMM)",
+      "Citrix NetScaler ADC/Gateway",
+      "Apache HTTP Server (mod_http2)",
+      "PHP (php2shell CVEs)",
+      "Node.js / Brotli"
+    ],
+    "sectors": [
+      "Energy (TSO/DSO, grid operations)",
+      "Water & Wastewater",
+      "Critical Manufacturing",
+      "Transportation & Logistics",
+      "Telecommunications",
+      "Healthcare",
+      "Government/Public Administration"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "China-nexus operations: covert botnet-style infrastructure for pre-positioning and data theft across CI sectors; defenders should harden SOHO/IoT perimeters and monitor LOTL patterns. Security Advisory Security Advisory",
+        "Gunra ransomware (#StopRansomware): exploits edge VPNs (notably Fortinet), uses Impacket for lateral movement, and exfiltrates to Mega before encryption-relevant to CI operators with exposed remote access. Security Advisory",
+        "Telecom core targeting (SilentAir/Liminal Panda): signaling-layer abuse (SS7, Diameter, GTP) to intercept calls/OTPs and deploy GTPDoor, impacting communications providers that underpin CI operations. View Article",
+        "Storm-2603 fileless SharePoint intrusions leading to attempted ransomware, showing how enterprise collaboration platforms can become pivot points into OT management enclaves. View Article"
+      ]
+    }
+  ],
+  "relevance": "Threat activity this period directly touches industrial control and adjacent systems: Siemens S7 PLCs (direct), Siemens Industrial Edge/Building/Power products (OT management/HMI), industrial gateways (Advantech EKI), drives (Danfoss iC7), OPC UA stacks (Eclipse Milo), EV charging infrastructure (Autel OCPP), and service-provider supply-chains (N-able, ScreenConnect). Enterprise edge compromises (Check Point, Citrix NetScaler) and actively exploited KEV items increase the probability of IT-to-OT pivot, especially where remote access, shared identity, or weak segmentation persists.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Danfoss iC7-Automation/Marine/Hybrid (GR3): unsigned app/EEPROM/firmware upload; manipulate internal values-direct process-control risk. Supporting Report",
+        "Advantech EKI-1242 EIMS/IEIMS (V1.06.01): unauthenticated root command execution; missing auth on edgserver TCP/5058; OPC UA DoS. Supporting Report",
+        "Eclipse Milo (OPC UA): role/auth bypass, padding-oracle, diagnostics disclosure, monitored-item quota exhaustion-impacting gateways/historians. Supporting Report",
+        "Autel EVSE (MaxiCharger AC Elite Home): WebSockets/OCPP integer underflow → remote code execution; NFC/USB paths; update signature bypass-grid-adjacent risk. Supporting Report",
+        "Siemens advisories: Industrial Edge (Node2Shell/Brotli) and Building/Power (PHP2Shell) across configurators, HMIs, and monitoring stacks. ICS Advisory ICS Advisory"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Initial access: exploitation of public-facing apps (php2shell, Node2Shell/Brotli, N-central/N-able 0-days, ScreenConnect CVE-2026-84869), VPN edge device exploitation (Fortinet), SSRF/request smuggling on brokers and gateways.",
+      "Execution/persistence: webshells (IIS in-memory/VPP), RMM abuse (ScreenConnect/N-central), GPO/persistence, scheduled tasks, backdoors (TSGA/TSProxy), Velociraptor misuse.",
+      "Privilege escalation/lateral movement: Impacket (SMB/WMI/WinRM), credential theft (LSASS/ADCS abuse), vpxuser SSH to ESXi, LOTL binaries (PsExec, PowerShell).",
+      "Command & control/exfiltration: reverse tunnels (Cloudflare Tunnel, AnyDesk), RClone/FileZilla/Mega/OneDrive exfil; covert networks via SOHO/IoT proxies.",
+      "Impact: ESXi wiper, OT parameter manipulation (iC7 drives), OPC UA DoS/authorization bypass, EVSE RCE leading to service disruption."
+    ],
+    "mitreIds": []
+  },
+  "outlook72h": "Complete an exposure review for Siemens Industrial Edge/Building/Power components and remove any public access; schedule maintenance windows for urgent patches. Apply N-central Hotfix 2 and conduct compromise assessment on RMM servers and a stratified sample of managed endpoints. Harden OT perimeters: block TCP/102 from IT, restrict OPC UA endpoints, and enforce device allowlists for PLC communications. Validate hypervisor backups/restore (ESXi/Proxmox/VMware) and restrict lateral SSH from perimeter appliances to management networks. Hunt for indicators from KEV additions (SonicWall SSLVPN, GitLab, Cisco ASA/FTD) and confirm patches and post-patch compromise checks.",
+  "relatedCves": [
+    "CVE-2026-84869",
+    "CVE-2026-123039",
+    "CVE-2026-106931",
+    "CVE-2026-119618"
+  ]
+}

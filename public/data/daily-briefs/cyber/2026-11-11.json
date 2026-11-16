@@ -1,0 +1,110 @@
+{
+  "type": "cyber",
+  "date": "2026-11-11",
+  "threatLevel": "",
+  "executiveSummary": "Active OT targeting of Siemens S7 PLCs across multiple sectors, with guidance from U.S. government agencies detailing S7comm abuse and Python/snap7 tooling. Immediate hardening and TCP/102 blocking recommended. Security Advisory Trivially exploitable OpenSSH authentication bypass on musl-based systems (Alpine, embedded/IIoT) risks direct shell access to OT gateways and appliances; exploitation scanning is widespread. Patch or disable password auth now. Security Advisory Supporting Report Iran-linked sabotage of supermarket refrigeration control systems at ~700 sites demonstrates real-world OT setpoint manipulation impacts to cold-chain operations. Segment BMS/OT and remove internet exposure. View Article Industrial gateways and protocol bridges with unauthenticated command/code execution (e.g., Advantech EKI-1242/EIMS; LoRaWAN gateways; EV chargers) present near-term plant-floor disruption and pivot risks. CISA Bulletin CISA Bulletin China-nexus covert networks and FSB Center 16 router campaigns continue leveraging compromised SOHO/edge devices for pre-positioning in critical infrastructure; harden SNMP/SMI and remove internet-exposed management. Security Advisory Security Advisory Ransomware ecosystems (Gunra, SafePay) remain active with VPN/firewall exploitation and living-off-the-land techniques that can cascade from IT into OT if segmentation and identity controls are weak. CISA Advisory CISA Advisory Actively exploited VPN and webmail vulnerabilities (SonicWall SSLVPN; Zimbra XSS) elevate initial-access risk; prioritize KEV remediation and compromise assessments. CISA KEV Security Advisory",
+  "keyFindings": [
+    {
+      "title": "Siemens S7 PLCs targeted via S7comm read/write with AI-assisted tooling; immedia",
+      "summary": "Siemens S7 PLCs targeted via S7comm read/write with AI-assisted tooling; immediate network and device hardening required. Security Advisory"
+    },
+    {
+      "title": "OpenSSH CVE-2026-123158 enables password-auth bypass on musl builds (e.g., Alpin",
+      "summary": "OpenSSH CVE-2026-123158 enables password-auth bypass on musl builds (e.g., Alpine-based appliances) with trivial exploitation conditions. Security Advisory"
+    },
+    {
+      "title": "Industrial gateways (Advantech EKI-1242/EIMS) expose unauthenticated code/comman",
+      "summary": "Industrial gateways (Advantech EKI-1242/EIMS) expose unauthenticated code/command execution and unsigned firmware acceptance, risking OT process disruption. CISA Bulletin"
+    },
+    {
+      "title": "IRGC-linked operation against supermarket refrigeration control systems confirms",
+      "summary": "IRGC-linked operation against supermarket refrigeration control systems confirms real-world OT sabotage through setpoint manipulation. View Article"
+    },
+    {
+      "title": "China-nexus covert device networks and FSB Center 16 router exploitation maintai",
+      "summary": "China-nexus covert device networks and FSB Center 16 router exploitation maintain persistent access paths toward CI, emphasizing edge hygiene. Security Advisory Security Advisory"
+    },
+    {
+      "title": "Ransomware crews (Gunra/SafePay) exploit edge/VPN, AD, and cloud storage with LO",
+      "summary": "Ransomware crews (Gunra/SafePay) exploit edge/VPN, AD, and cloud storage with LOTL tooling; flat networks risk plant-floor impacts. CISA Advisory CISA Advisory"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "",
+        "label": "Current OT Threat Level",
+        "trend": "Driven by active PLC targeting, VPN KEVs, and OT gateway RCEs"
+      },
+      {
+        "value": "14",
+        "label": "Events Requiring Escalation",
+        "trend": "Multiple ICS-specific advisories and campaigns"
+      },
+      {
+        "value": "8+",
+        "label": "Actively Exploited (KEV/Confirmed)",
+        "trend": "SonicWall SSLVPN, Outlook, Zimbra, OpenSSH (musl) scanning"
+      },
+      {
+        "value": "10+",
+        "label": "New/Notable OT/ICS Issues",
+        "trend": "PLC, gateways, EVSE, OPC UA, HMI/SCADA components"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Siemens S7-200/300/400/1200/1500 Advantech EKI-1242(E)IMS Advantech OPC UA Gateways Autel EVSE (OCPP) Eclipse Milo (OPC UA) FUXA (SCADA/HMI) Frauscher FDS 102 Baylan Smart Meter Mgmt Danfoss iC7 Drives SonicWall SonicOS SSLVPN Cisco Routers / SMI / ASA/FTD Zimbra Collaboration Suite OpenSSH (musl builds) SAP (Patch Day) IBM App Connect Enterprise Microsoft Windows/Outlook"
+    ],
+    "sectors": [
+      "Water and Wastewater Systems Energy Critical Manufacturing Transportation (Rail/Aviation) Healthcare (Cold Chain) Food & Agriculture (Refrigeration) Government & DIB Telecom"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "IRGC-linked units attributed to cold-chain sabotage against supermarket refrigeration controls in France. View Article",
+        "China-nexus groups maintain covert networks of compromised SOHO/IoT to mask CI intrusions and persistence. Security Advisory",
+        "FSB Center 16 (Energetic Bear lineage) scanning/exploiting routers via SNMP defaults and Cisco SMI. Security Advisory",
+        "Ransomware ecosystems (Gunra, SafePay) exploiting edge devices, LOTL, and cloud exfil targeting critical sectors. CISA Advisory CISA Advisory"
+      ]
+    }
+  ],
+  "relevance": "- Multiple advisories directly impact control-layer assets (PLCs, industrial gateways, EVSE, OPC UA stacks) with RCE/auth-bypass risks. - Edge/VPN webmail initial-access vectors (SonicWall SSLVPN, Zimbra XSS) increase IT-to-OT pivot risk when identity and segmentation are weak. - State-nexus operations (IRGC, China) and router campaigns elevate persistent exposure around OT perimeters.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Siemens S7 protections/hardening guidance (active exploitation context). Security Advisory",
+        "OpenSSH musl auth bypass CVE-2026-123158 impacting Alpine/embedded IIoT and OT gateways. Security Advisory",
+        "Advantech industrial gateways (EKI-1242/EIMS) - unauthenticated control, unsigned firmware, OPC UA DoS. CISA Bulletin",
+        "Baylan Smart Meter Mgmt App auth bypass; Frauscher FDS 102 (rail signaling) session hijack/upload RCE; FUXA SCADA SSRF to OPC UA/ODBC; FreeRTOS, Mongoose embedded HTTP issues. CISA Bulletin",
+        "Autel EV chargers (OCPP/WebSockets RCE); Apache ActiveMQ broker/AMQP DoS/ACL bypass. CISA Bulletin",
+        "Eclipse Milo (OPC UA) auth bypass, credential recovery, and DoS conditions across ICS middleware. CISA Bulletin",
+        "Danfoss iC7 drives - exposed service/update interfaces enabling manipulation of drive parameters/firmware. CISA Bulletin"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Edge and VPN exploitation for initial access (T1190), including SonicWall SSLVPN (KEV) and Zimbra webmail XSS (email-borne execution).",
+      "Living-off-the-land (PowerShell/WMI/WinRM/Impacket) and valid accounts (T1078) for lateral movement; data staging and exfiltration (T1041) to cloud storage.",
+      "Proxy and covert network use (T1090) via SOHO routers/IoT to mask attribution and maintain persistence near CI perimeters.",
+      "ICS-specific protocol manipulation: S7comm (TCP/102) read/write; OPC UA auth and policy weaknesses; unauthenticated gateway management ports."
+    ],
+    "mitreIds": [
+      "T1190",
+      "T1078",
+      "T1041",
+      "T1090"
+    ]
+  },
+  "outlook72h": "Patch and/or mitigate OpenSSH musl systems; if uncertain, disable password authentication and restrict SSH to jump hosts only. Implement immediate ACLs and monitoring on industrial gateways (Advantech, OPC UA endpoints, EVSE OCPP), and remove internet exposure. Harden PLC perimeters: block TCP/102 from non-engineering subnets; review last 30 days of S7comm activity and logic change logs. Execute KEV-driven patch/change windows for SonicWall SSLVPN and review for pre-patch compromise. Conduct focused hunts for Zimbra Flowerbed/Catcher TTPs and revoke risky app passwords and 2FA scratch codes.",
+  "relatedCves": [
+    "CVE-2026-123158",
+    "CVE-2026-19868"
+  ]
+}

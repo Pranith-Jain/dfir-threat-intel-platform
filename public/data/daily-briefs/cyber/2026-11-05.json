@@ -1,0 +1,146 @@
+{
+  "type": "cyber",
+  "date": "2026-11-05",
+  "threatLevel": "",
+  "executiveSummary": "OT-facing risk is elevated this period due to confirmed manipulation of refrigeration control systems across Europe, including an attempted setpoint change to 110°C at France's national blood service, and concurrent active exploitation of widely deployed remote access gateways (NetScaler ADC/Gateway and Ivanti Connect Secure). Combined with ongoing DoS against Cisco ASA/FTD and mass exploitation of Oracle PeopleSoft by ShinyHunters, the likelihood of IT-to-OT pivot attempts remains high for the next 72 hours. Immediate hardening of OT remote access paths, rapid patching of perimeter appliances, and enforced segmentation are strongly advised. Cold-chain attacks: Supermarkets in multiple countries and France's EFS blood service reported malicious temperature setpoint manipulation; swift response prevented losses, but targeting confirms OT risk. View Article Supporting Report Supporting Report NetScaler ADC/Gateway unauthenticated RCE is being actively exploited; DTLS-enabled VPN vServers are at particular risk. Patch immediately and investigate for compromise. Security Advisory Ivanti Connect Secure (ICS) gateways show active exploitation of multiple vulnerabilities (RCE/policy bypass, privilege escalation, file upload). Urgent patching and compromise assessment are required. Security Advisory Cisco ASA/FTD DoS is under active attack; outages can sever IT/OT segmentation and remote operations. Validate HA and update per vendor guidance. Supporting Report Mass exploitation of Oracle PeopleSoft (CVE-2026-35273) with WAF-bypass by ShinyHunters impacted government and transportation; patch and normalize WAF inputs to defeat encoding evasions. View Article Critical PHP \"PHP2Shell\" RCE with public PoCs continues to drive initial-access attempts against public web apps; treat unpatched PHP tiers as high risk for pivots toward OT DMZs. Advisory",
+  "keyFindings": [
+    {
+      "title": "Confirmed OT manipulation in healthcare cold-chain and retail refrigeration high",
+      "summary": "Confirmed OT manipulation in healthcare cold-chain and retail refrigeration highlights real-world safety and supply-chain impacts; remove internet exposure, enforce MFA/VPN, and monitor for abnormal setpoint writes. View Article"
+    },
+    {
+      "title": "NetScaler ADC/Gateway unauth RCE actively exploited; patch to vendor-specified f",
+      "summary": "NetScaler ADC/Gateway unauth RCE actively exploited; patch to vendor-specified fixed trains and disable DTLS on Gateway vServers until updated. Security Advisory"
+    },
+    {
+      "title": "Ivanti Connect Secure exploitation confirmed; apply fixes, rotate credentials, r",
+      "summary": "Ivanti Connect Secure exploitation confirmed; apply fixes, rotate credentials, revoke tokens, and hunt for persistence on gateways. Security Advisory"
+    },
+    {
+      "title": "Cisco ASA/FTD DoS activity persists; ensure failover resiliency to prevent OT ne",
+      "summary": "Cisco ASA/FTD DoS activity persists; ensure failover resiliency to prevent OT network isolation. Supporting Report"
+    },
+    {
+      "title": "PeopleSoft CVE-2026-35273 exploited at scale with URL-encoding WAF bypass; updat",
+      "summary": "PeopleSoft CVE-2026-35273 exploited at scale with URL-encoding WAF bypass; update Oracle CPUs and normalize inputs at WAF and app layers. View Article"
+    },
+    {
+      "title": "Critical PHP RCE (CVE-2026-109618/109619) remains a high-likelihood initial-acce",
+      "summary": "Critical PHP RCE (CVE-2026-109618/109619) remains a high-likelihood initial-access vector; apply patches and hunt for web shells immediately. Advisory"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "HIGH",
+        "label": "Overall OT Threat Level"
+      },
+      {
+        "value": "7",
+        "label": "Active Exploitation Items (this brief)"
+      },
+      {
+        "value": "ESC 5 • MON 14 • IGN 3",
+        "label": "Events by Decision"
+      },
+      {
+        "value": "NetScaler • Ivanti • Cisco ASA/FTD",
+        "label": "Priority Perimeter Devices"
+      },
+      {
+        "value": "NetScaler • Ivanti • Cisco ASA/FTD",
+        "label": "Perimeter Appliances at Risk"
+      },
+      {
+        "value": "PHP • PeopleSoft • SiteGuard",
+        "label": "Active Web/App Exploits"
+      },
+      {
+        "value": "APT29 watering holes (iOS/Android)",
+        "label": "Mobile/Browser Threats"
+      },
+      {
+        "value": "Healthcare • Retail Food • Gov/Transportation",
+        "label": "Sectors Impacted"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Citrix/Cloud Software Group NetScaler",
+      "Ivanti Connect Secure",
+      "Cisco ASA/FTD",
+      "Danfoss/Copeland (refrigeration controls)",
+      "Coolworld (remote monitoring)",
+      "Oracle PeopleSoft",
+      "PHP (core)",
+      "Apple iOS/macOS/Safari",
+      "Xen • XCP-ng • Qubes",
+      "Debian/Ubuntu APT",
+      "SiteGuard Server Edition",
+      "Barracuda ESG/ADC/BMA/WAF/WCC/WSG",
+      "SonicWall GMS (EoL)",
+      "Zimbra Collaboration",
+      "boneIO (building automation)",
+      "Intelbras IP cameras",
+      "Kaspersky reports: BlackX bootkit • NetamLoader"
+    ],
+    "sectors": [
+      "Healthcare (blood/plasma cold-chain; hospitals, pharma storage) Retail Food/Grocery (supermarket refrigeration) Government, Transportation & Education (PeopleSoft exploitation) Chemical industry association and military-adjacent entities (APT29 watering holes) Enterprises operating OT/ICS with remote access dependencies (NetScaler, Ivanti, ASA/FTD)"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "ShinyHunters mass-exploited Oracle PeopleSoft (CVE-2026-35273) with WAF-bypass; sectors hit include government, healthcare, and transportation. View Article",
+        "APT29 conducted watering-hole campaigns against iOS/Android/Chrome users, harvesting cookies and Wi-Fi data; targets include chemical industry association and Ukrainian entities. View Article Supporting Report",
+        "Gorbag (RU-aligned) shifted to WinRAR CVE-2025-8088 lures for credential/document theft affecting government/logistics. View Article"
+      ]
+    }
+  ],
+  "relevance": "Direct OT impacts observed Malicious setpoint changes on refrigeration/BMS controllers (healthcare cold-chain and retail grocery) confirm adversary willingness to manipulate physical processes. View Article High-risk IT-to-OT pivots Compromise of perimeter access devices (NetScaler, Ivanti, Cisco ASA/FTD) threatens remote maintenance channels and ICS DMZs. Web RCE (PHP) and ERP exploitation (PeopleSoft) provide footholds for lateral movement toward OT networks. Reducing exposure Enforce strict zoning, jump hosts with MFA, and least-privilege RBAC on all paths from IT → OT. Remove direct internet exposure of controllers; prefer VPN with device certificates and signed configurations. Instrument OT for change monitoring (setpoints, schedules) and alarm on out-of-bounds writes.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "NetScaler ADC/Gateway: CVE-2026-88771 (all configs), CVE-2026-88772 (DTLS) - actively exploited. Advisory",
+        "Ivanti Connect Secure: CVE-2026-104935 (RCE/policy bypass), CVE-2026-111357, CVE-2026-118527 - active exploitation. Advisory",
+        "PHP core: CVE-2026-109618/109619 (RCE), CVE-2026-115560 (config-dependent) - PoCs public, exploitation attempts observed. Advisory",
+        "SiteGuard Server Edition: CVE-2026-106931 (OS command injection) - active exploitation targeting default-enabled stats. Advisory",
+        "Apple WebKit (APT29 activity tied): actively exploited; update iOS/macOS/Safari. View Article",
+        "Xen hypervisor VM-escape: CVE-2026-102703/102704 (XSA-523). View Article",
+        "Debian/Ubuntu APT supply-chain MITM: CVE-2026-109518 - root code-exec via retry swap. View Article"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Exploit Public-Facing Application; External Remote Services; Valid Accounts (perimeter gateways and web apps)",
+      "Credential Access: Session hijacking/cookie theft (APT29 watering holes), LSASS dumping (enterprise intrusions)",
+      "Command and Scripting Interpreter: PowerShell/WMI; Scheduled Tasks for persistence (enterprise ransomware tradecraft)",
+      "Defense Evasion: WAF bypass via URL-encoding (PeopleSoft), Secure Boot bypass (BlackX bootkit)",
+      "Exfiltration via Web Services/Cloud Storage (Drive/OneDrive/Yandex)",
+      "ICS domain: Unauthenticated Setpoint/Parameter Changes; Remote Services Abuse; Alarm Inhibition (refrigeration/BMS)"
+    ],
+    "mitreIds": []
+  },
+  "outlook72h": "Expect continued probing of refrigeration/BMS footprints and opportunistic re-targeting of exposed controllers; expand monitoring and remove any residual public exposure. Additional NetScaler/ICS gateway compromise discoveries likely as defenders investigate; prioritize containment, credential rotation, and clean rebuilds where indicators are present. Waves of PHP RCE exploitation and web shell deployment will persist; triage internet-facing portals and enforce emergency WAF rulesets. Higher likelihood of firewall/service degradation events (ASA/FTD DoS) that could disrupt remote operations; pre-stage out-of-band access and failover tests.",
+  "relatedCves": [
+    "CVE-2026-35273",
+    "CVE-2026-109618",
+    "CVE-2025-8088",
+    "CVE-2026-88771",
+    "CVE-2026-88772",
+    "CVE-2026-104935",
+    "CVE-2026-111357",
+    "CVE-2026-118527",
+    "CVE-2026-115560",
+    "CVE-2026-106931",
+    "CVE-2026-102703",
+    "CVE-2026-109518",
+    "CVE-2026-66911",
+    "CVE-2026-77052"
+  ]
+}
