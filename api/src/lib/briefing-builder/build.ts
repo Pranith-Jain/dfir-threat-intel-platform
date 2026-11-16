@@ -1358,13 +1358,21 @@ export async function sweepOldBriefings(
 }
 
 // sql-audit: accept-reason `${whereSql}` is assembled only from fixed string
-// literals pushed by this function (`type = ?`, the LIKE/ESCAPE clause); the
-// resulting fragment is always `''` or `' WHERE ' + <those literals>`. User
-// input (filter.q) reaches D1 exclusively through `.bind(...whereParams)`, and
-// its LIKE metacharacters are escaped for `% _ \`.
+// literals pushed by this function (`type = ?`, `date >= ?`, the LIKE/ESCAPE
+// clause); the resulting fragment is always `''` or `' WHERE ' + <those
+// literals>`. User input (filter.q) and the computed date cutoff reach D1
+// exclusively through `.bind(...whereParams)`, and q's LIKE metacharacters
+// are escaped for `% _ \`.
 export async function listBriefings(
   db: D1Database,
-  filter?: { type?: 'daily' | 'weekly' | 'landscape'; q?: string; limit?: number; offset?: number }
+  filter?: {
+    type?: 'daily' | 'weekly' | 'landscape';
+    q?: string;
+    limit?: number;
+    offset?: number;
+    /** Public listing window. Admin callers omit it to see every stored brief. */
+    recentDays?: number;
+  }
 ): Promise<{ items: Array<{ slug: string; metadata: Record<string, unknown> }>; total: number }> {
   const limit = filter?.limit ?? 50;
   const offset = filter?.offset ?? 0;
@@ -1374,6 +1382,13 @@ export async function listBriefings(
   if (filter?.type) {
     where.push('type = ?');
     whereParams.push(filter.type);
+  }
+  if (filter?.recentDays && filter.recentDays > 0) {
+    // Website keeps only a 30-day window in its listing; GitHub keeps every
+    // brief. Date is stored as YYYY-MM-DD so a lexical compare is correct.
+    const cutoff = new Date(Date.now() - filter.recentDays * 86_400_000).toISOString().slice(0, 10);
+    where.push('date >= ?');
+    whereParams.push(cutoff);
   }
   const q = filter?.q?.trim();
   if (q) {

@@ -43,11 +43,11 @@ jobs:
             echo "::warning::CLOUDFLARE_ACCOUNT_ID secret is not set — skipping briefings export."
             exit 0
           fi
-          # Wipe stale files so briefings beyond the 30-day window are removed.
-          rm -rf briefings
-          node scripts/export-briefings-to-github.mjs --days 30
-          # Empty-output guard: if the exporter wrote 0 files, abort before
-          # the commit step can record a mass deletion of 30 days of briefings.
+          # Keep every brief: never wipe briefings/. The exporter writes all
+          # D1 briefs and skips historical files already on disk.
+          node scripts/export-briefings-to-github.mjs
+          # Empty-output guard: if the exporter wrote 0 files and the folder is
+          # empty, abort before the commit step can record a mass deletion.
           if [ -z "$(ls -A briefings 2>/dev/null)" ]; then
             echo "::error::exporter produced 0 briefing files — aborting (not committing a deletion)."
             exit 1
@@ -77,5 +77,42 @@ jobs:
               sleep 10
             done
             echo "::error::Could not push after 3 attempts (main kept moving)."
+            exit 1
+          fi
+
+      # Permanent archive: mirror the exact same briefings/ folder to the
+      # daily-threat-brief repo. Its own generator is disabled there so this
+      # mirror is the single source of truth. GH_PAT needs repo write access
+      # on Pranith-Jain/daily-threat-brief.
+      - name: Mirror briefings to daily-threat-brief
+        if: steps.export.outputs.skipped != 'true'
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set -euo pipefail
+          if [ -z "$GH_PAT" ]; then
+            echo "::warning::GH_PAT is not set — skipping the daily-threat-brief mirror."
+            exit 0
+          fi
+          rm -rf /tmp/daily-threat-brief-mirror
+          git clone --quiet "https://x-access-token:${GH_PAT}@github.com/Pranith-Jain/daily-threat-brief.git" /tmp/daily-threat-brief-mirror
+          mkdir -p /tmp/daily-threat-brief-mirror/briefings
+          cp briefings/*.md /tmp/daily-threat-brief-mirror/briefings/
+          cd /tmp/daily-threat-brief-mirror
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add briefings/
+          if git diff --cached --quiet; then
+            echo "No mirror changes."
+          else
+            git commit -m "chore: mirror PANOPTICON briefings $(date -u +%Y-%m-%d)"
+            for i in 1 2 3; do
+              if git pull --no-rebase origin main && git push origin main; then
+                echo "::notice::Mirrored $(git diff --name-only HEAD~1 HEAD | wc -l) briefing files to daily-threat-brief"
+                exit 0
+              fi
+              sleep 10
+            done
+            echo "::error::Could not push the mirror after 3 attempts."
             exit 1
           fi

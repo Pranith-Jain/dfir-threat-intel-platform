@@ -2,18 +2,27 @@
 /**
  * Export threat briefings from D1 to markdown files for GitHub publishing.
  *
- * Usage: node scripts/export-briefings-to-github.mjs [--days 7]
+ * Usage: node scripts/export-briefings-to-github.mjs [--refresh-days 3]
  *
  * Reads briefings from the pranithjain-briefings D1 database via wrangler,
  * renders each as structured markdown, and writes to briefings/ in this repo.
- * The GitHub Action then commits them and pushes to main on this repo.
+ * The GitHub Action then commits them and pushes to main on this repo, and
+ * mirrors the same folder to Pranith-Jain/daily-threat-brief.
+ *
+ * Every brief is kept forever on GitHub. Files older than `--refresh-days`
+ * (default 3) that already exist on disk are skipped — that keeps the daily
+ * run cheap without ever deleting a historical brief. The website still
+ * applies a separate 30-day limit to its *listing* only.
  */
 import { execSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const OUT_DIR = join(process.cwd(), 'briefings');
-const DAYS = parseInt(process.argv.find((_, i, a) => a[i - 1] === '--days') ?? '7', 10);
+const REFRESH_DAYS = parseInt(
+  process.argv.find((_, i, a) => a[i - 1] === '--refresh-days') ?? '3',
+  10
+);
 
 function d1Query(sql) {
   let raw;
@@ -136,51 +145,60 @@ function renderBriefing(b) {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────
-console.log(`Exporting briefings from D1 (last ${DAYS} days)…`);
+console.log(`Exporting all briefings from D1 (refreshing last ${REFRESH_DAYS} days)…`);
 
-const cutoff = new Date(Date.now() - DAYS * 86400_000).toISOString().slice(0, 10);
-const slugs = d1Query(
-  `SELECT slug FROM briefings WHERE date >= '${cutoff}' ORDER BY date DESC, slug DESC LIMIT 30`
-);
+// No date cutoff and no LIMIT: GitHub is the permanent archive of every brief.
+const slugs = d1Query('SELECT slug, date FROM briefings ORDER BY date DESC, slug DESC');
 
 if (slugs.length === 0) {
   // Exit NON-zero so CI fails loudly instead of silently publishing an empty
   // briefings/ folder. An empty result almost always means the D1 query is
   // broken or the briefing cron stopped — both need a human to notice.
-  console.error(`::error::No briefings found in D1 since ${cutoff}. Aborting (the briefing cron may have stopped).`);
+  console.error('::error::No briefings found in D1. Aborting (the briefing cron may have stopped).');
   process.exit(1);
 }
 
 mkdirSync(OUT_DIR, { recursive: true });
 
+const refreshCutoff = new Date(Date.now() - REFRESH_DAYS * 86_400_000).toISOString().slice(0, 10);
 let written = 0;
-for (const { slug } of slugs) {
+let reused = 0;
+for (const { slug, date } of slugs) {
+  if (typeof slug !== 'string' || !slug) continue;
+  const filename = `${slug}.md`;
+  const path = join(OUT_DIR, filename);
+  // Historical files are immutable once exported; only regenerate the last
+  // few days so same-slug rebuilds (or a renderer fix) still land.
+  if (existsSync(path) && (typeof date !== 'string' || date < refreshCutoff)) {
+    reused++;
+    continue;
+  }
   try {
-    const rows = d1Query(`SELECT body FROM briefings WHERE slug = '${slug}' LIMIT 1`);
+    const rows = d1Query(`SELECT body FROM briefings WHERE slug = '${slug.replace(/'/g, "''")}' LIMIT 1`);
     if (!rows[0]?.body) continue;
     const b = JSON.parse(rows[0].body);
     const md = renderBriefing(b);
-    const filename = `${slug}.md`;
-    writeFileSync(join(OUT_DIR, filename), md, 'utf8');
+    writeFileSync(path, md, 'utf8');
     written++;
     console.log(`  ✓ ${filename} (${(md.length / 1024).toFixed(1)} KB)`);
   } catch (e) {
     console.error(`  ✗ ${slug}: ${e.message?.slice(0, 100)}`);
   }
 }
+console.log(`  · ${reused} historical files already on disk (kept as-is)`);
 
 // Write a README index
+const files = readdirSync(OUT_DIR).filter((f) => f.endsWith('.md') && f !== 'README.md').sort().reverse();
 const indexLines = [
   '# Daily Threat Briefings',
   '',
   'Automated CTI briefings from [PANOPTICON](https://pranithjain.qzz.io/threatintel/briefings).',
   '',
-  `> Last synced: ${new Date().toISOString().slice(0, 10)} · ${written} briefings`,
+  `> Last synced: ${new Date().toISOString().slice(0, 10)} · ${files.length} briefings archived (permanent on GitHub; website lists the last 30 days)`,
   '',
   '## Briefings',
   '',
 ];
-const files = readdirSync(OUT_DIR).filter((f) => f.endsWith('.md') && f !== 'README.md').sort().reverse();
 for (const f of files) {
   const slug = f.replace('.md', '');
   indexLines.push(`- [${slug}](./${f})`);

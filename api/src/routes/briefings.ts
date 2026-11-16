@@ -140,7 +140,15 @@ export async function listBriefingsHandler(c: Context<{ Bindings: Env }>) {
     const cached = skipCache ? null : await cache.match(key);
     if (cached) return new Response(cached.body, cached);
 
-    const { items, total } = await listBriefings(db, { type, q, limit, offset });
+    const { items, total } = await listBriefings(db, {
+      type,
+      q,
+      limit,
+      offset,
+      // Website listing shows the last 30 days. Admin sees all stored briefs;
+      // search also stays unfiltered so an operator can find an old brief.
+      recentDays: isAdminRequest(c) || q ? undefined : 30,
+    });
     const res = c.json({ items, total }, 200, {
       'cache-control': skipCache ? 'no-store' : BRIEFINGS_CC,
       'last-modified': new Date().toUTCString(),
