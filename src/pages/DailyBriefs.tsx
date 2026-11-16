@@ -2,12 +2,22 @@ import { useMemo, useState } from 'react';
 import { useDataFetch } from '../hooks/useDataFetch';
 import { DataPageLayout } from '../components/DataPageLayout';
 import { AiSummaryCard } from '../components/intel/AiSummaryCard';
-import { Shield, AlertTriangle, Cloud, Anchor, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  Shield,
+  AlertTriangle,
+  Cloud,
+  Anchor,
+  Droplets,
+  Snowflake,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 
-type Tab = 'cyber' | 'deepfake' | 'disaster' | 'maritime';
+type Tab = 'cyber' | 'deepfake' | 'disaster' | 'maritime' | 'water' | 'french';
 
 interface DbIndexSummary {
-  counts: { cyber: number; deepfake: number; disaster: number; maritime: number };
+  counts: { cyber: number; deepfake: number; disaster: number; maritime: number; water: number; french: number };
   source: string;
   license: string;
   generatedAt: string;
@@ -77,6 +87,31 @@ interface DisasterBrief {
   regionalTrends: string[];
 }
 
+interface AssessmentBrief {
+  type: 'water' | 'french';
+  date: string;
+  title: string;
+  executiveAssessment: string;
+  keyFindings: AssessmentCard[];
+  timeline: string;
+  affectedSystems: AssessmentCard[];
+  methodology: string;
+  impact: string;
+  correlation: string;
+  attribution: string;
+  recommendations: string;
+  sections: { heading: string; text: string; cards: AssessmentCard[] }[];
+  sources: { url: string; label: string }[];
+  relatedCves: string[];
+}
+
+type AssessmentCard = {
+  title: string;
+  badges: string[];
+  text: string;
+  sources: { url: string; label: string }[];
+};
+
 const SEV_STYLES: Record<string, string> = {
   red: 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800',
   escalate: 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800',
@@ -99,6 +134,8 @@ const TAB_CONFIG: { id: Tab; label: string; icon: typeof Shield; color: string }
   { id: 'deepfake', label: 'Deepfake & GenAI', icon: AlertTriangle, color: 'text-violet-600 dark:text-violet-400' },
   { id: 'disaster', label: 'Global Disaster', icon: Cloud, color: 'text-amber-600 dark:text-amber-400' },
   { id: 'maritime', label: 'Maritime Cyber', icon: Anchor, color: 'text-cyan-600 dark:text-cyan-400' },
+  { id: 'water', label: 'Water Systems', icon: Droplets, color: 'text-blue-600 dark:text-blue-400' },
+  { id: 'french', label: 'Refrigeration OT', icon: Snowflake, color: 'text-sky-600 dark:text-sky-400' },
 ];
 
 function Expandable({
@@ -133,10 +170,15 @@ function Expandable({
  * { title, body, source } items the AiSummaryCard can summarize.
  */
 function briefToSummaryItems(
-  brief: CyberBrief | DeepfakeBrief | DisasterBrief
+  brief: CyberBrief | DeepfakeBrief | DisasterBrief | AssessmentBrief
 ): Array<{ title: string; body: string; source?: string }> {
   const items: Array<{ title: string; body: string; source?: string }> = [];
-  if (brief.type === 'cyber' || brief.type === 'maritime') {
+  if (brief.type === 'water' || brief.type === 'french') {
+    const b = brief as AssessmentBrief;
+    items.push({ title: b.title || 'Investigative Assessment', body: b.executiveAssessment });
+    for (const f of b.keyFindings) items.push({ title: f.title, body: f.text, source: f.sources?.[0]?.label });
+    if (b.attribution) items.push({ title: 'Attribution', body: b.attribution });
+  } else if (brief.type === 'cyber' || brief.type === 'maritime') {
     const b = brief as CyberBrief;
     items.push({ title: `${b.threatLevel ?? 'Threat'} — Executive Summary`, body: b.executiveSummary ?? '' });
     // Maritime keyFindings are strings; cyber keyFindings are {title, summary}.
@@ -186,6 +228,8 @@ export default function DailyBriefs() {
   const deepfakeBriefs = useMemo(() => indexData?.briefs?.filter((b) => b.type === 'deepfake') ?? [], [indexData]);
   const disasterBriefs = useMemo(() => indexData?.briefs?.filter((b) => b.type === 'disaster') ?? [], [indexData]);
   const maritimeBriefs = useMemo(() => indexData?.briefs?.filter((b) => b.type === 'maritime') ?? [], [indexData]);
+  const waterBriefs = useMemo(() => indexData?.briefs?.filter((b) => b.type === 'water') ?? [], [indexData]);
+  const frenchBriefs = useMemo(() => indexData?.briefs?.filter((b) => b.type === 'french') ?? [], [indexData]);
 
   const currentList =
     tab === 'cyber'
@@ -194,7 +238,11 @@ export default function DailyBriefs() {
         ? deepfakeBriefs
         : tab === 'disaster'
           ? disasterBriefs
-          : maritimeBriefs;
+          : tab === 'maritime'
+            ? maritimeBriefs
+            : tab === 'water'
+              ? waterBriefs
+              : frenchBriefs;
 
   const currentDate = useMemo(() => {
     if (selectedDate) return selectedDate;
@@ -206,7 +254,7 @@ export default function DailyBriefs() {
     loading: briefLoading,
     error: briefError,
     refetch: refetchBrief,
-  } = useDataFetch<CyberBrief | DeepfakeBrief | DisasterBrief>({
+  } = useDataFetch<CyberBrief | DeepfakeBrief | DisasterBrief | AssessmentBrief>({
     url: currentDate ? `/api/v1/daily-briefs/${tab}/${currentDate}` : '',
   });
 
@@ -225,7 +273,7 @@ export default function DailyBriefs() {
       backLabel="Threat Intel"
       icon={<Shield size={20} />}
       title="Daily Intelligence Briefs"
-      description="AI-generated daily intelligence assessments covering OT/ICS cyber threats, deepfake/GenAI risks, and global disaster monitoring."
+      description="AI-generated daily intelligence assessments covering OT/ICS cyber threats, deepfake/GenAI risks, global disasters, maritime security, plus investigative assessments of water-system and refrigeration OT attacks."
       error={loadError}
       onRetry={retry}
     >
@@ -306,6 +354,8 @@ export default function DailyBriefs() {
         <CyberBriefView brief={brief as CyberBrief} />
       ) : tab === 'deepfake' ? (
         <DeepfakeBriefView brief={brief as DeepfakeBrief} />
+      ) : tab === 'water' || tab === 'french' ? (
+        <AssessmentBriefView brief={brief as AssessmentBrief} />
       ) : (
         <DisasterBriefView brief={brief as DisasterBrief} />
       )}
@@ -897,6 +947,131 @@ function DisasterBriefView({ brief }: { brief: DisasterBrief }) {
           <h2 className="mb-2 text-lg font-bold text-heading">Next 72-Hour Outlook</h2>
           <p className="text-sm leading-relaxed text-body">{brief.outlook72h}</p>
         </section>
+      )}
+    </div>
+  );
+}
+
+// ─── Investigative assessment (water / french) ─────────────────────────
+
+function AssessmentCards({ cards }: { cards: AssessmentCard[] }) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {cards.map((c, i) => (
+        <div key={i} className="rounded-xl border border-line-1 bg-surface-100 p-4">
+          <h4 className="text-sm font-semibold text-heading">{c.title}</h4>
+          {c.badges.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {c.badges.map((b, j) => (
+                <span key={j} className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${sevPill(b)}`}>
+                  {b}
+                </span>
+              ))}
+            </div>
+          )}
+          {c.text && <p className="mt-2 text-sm leading-relaxed text-body">{c.text}</p>}
+          {c.sources.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+              {c.sources.map((s, j) => (
+                <a
+                  key={j}
+                  href={s.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-brand-600 dark:text-brand-400 hover:underline"
+                >
+                  {s.label || s.url} <ExternalLink className="h-3 w-3" />
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AssessmentBriefView({ brief }: { brief: AssessmentBrief }) {
+  return (
+    <div className="space-y-6">
+      <section className="surface-card rounded-xl p-5">
+        <h2 className="text-lg font-bold text-heading">{brief.title || brief.type.toUpperCase()}</h2>
+        <p className="mt-1 text-xs text-muted">
+          Investigative assessment · {brief.date}
+          {brief.relatedCves.length > 0 && ` · ${brief.relatedCves.length} CVEs referenced`}
+        </p>
+        {brief.executiveAssessment && (
+          <p className="mt-3 text-sm leading-relaxed text-body">{brief.executiveAssessment}</p>
+        )}
+      </section>
+
+      <AiSummaryCard
+        surface={`Investigative Assessment — ${brief.type.toUpperCase()} (${brief.date})`}
+        dayKey={brief.date}
+        items={briefToSummaryItems(brief)}
+        requireAdmin={false}
+      />
+
+      {brief.keyFindings.length > 0 && (
+        <Expandable title="Key Findings" count={brief.keyFindings.length} defaultOpen>
+          <AssessmentCards cards={brief.keyFindings} />
+        </Expandable>
+      )}
+      {brief.affectedSystems.length > 0 && (
+        <Expandable title="Affected Systems" count={brief.affectedSystems.length}>
+          <AssessmentCards cards={brief.affectedSystems} />
+        </Expandable>
+      )}
+      {(
+        [
+          ['Timeline', brief.timeline],
+          ['Attack Methodology', brief.methodology],
+          ['Operational Impact', brief.impact],
+          ['Incident Correlation', brief.correlation],
+          ['Attribution Assessment', brief.attribution],
+          ['Recommendations', brief.recommendations],
+        ] as Array<[string, string]>
+      ).map(([title, text]) =>
+        text ? (
+          <Expandable key={title} title={title}>
+            <p className="text-sm leading-relaxed text-body">{text}</p>
+          </Expandable>
+        ) : null
+      )}
+
+      <Expandable title={`All Sections (${brief.sections.length})`}>
+        <div className="space-y-4">
+          {brief.sections.map((s, i) => (
+            <div key={i}>
+              <h3 className="text-sm font-semibold text-heading">{s.heading}</h3>
+              {s.text && <p className="mt-1 text-sm leading-relaxed text-body">{s.text}</p>}
+              {s.cards.length > 0 && (
+                <div className="mt-2">
+                  <AssessmentCards cards={s.cards} />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </Expandable>
+
+      {brief.sources.length > 0 && (
+        <Expandable title="Sources" count={brief.sources.length}>
+          <ul className="space-y-1.5">
+            {brief.sources.map((s, i) => (
+              <li key={i}>
+                <a
+                  href={s.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-sm text-brand-600 dark:text-brand-400 hover:underline break-all"
+                >
+                  {s.label || s.url} <ExternalLink className="h-3 w-3 shrink-0" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </Expandable>
       )}
     </div>
   );

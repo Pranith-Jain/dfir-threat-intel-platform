@@ -7,6 +7,8 @@
  *   - /deepfake  → DeepFake and Generative AI Intelligence
  *   - /disaster  → Global Disaster Intelligence
  *   - /maritime  → Maritime Cyber Threat Intelligence
+ *   - /water     → Minnesota Water System Attack assessment
+ *   - /french    → Refrigeration Systems Attacks assessment
  *
  * After sync, run `node scripts/build-daily-briefs.mjs` to parse
  * the HTML into structured JSON under public/data/daily-briefs/.
@@ -17,7 +19,7 @@ import { join } from 'node:path';
 const ROOT = process.cwd();
 const STAGING = join(ROOT, 'daily-briefs-staging');
 
-const BRIEF_TYPES = ['cyber', 'deepfake', 'disaster', 'maritime'];
+const BRIEF_TYPES = ['cyber', 'deepfake', 'disaster', 'maritime', 'water', 'french'];
 const BASE_URL = 'https://agentic-ai-daily-reports.netlify.app';
 
 function ensureStaging() {

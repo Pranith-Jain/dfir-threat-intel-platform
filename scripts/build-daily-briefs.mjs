@@ -9,6 +9,8 @@
  *   public/data/daily-briefs/deepfake/<date>.json
  *   public/data/daily-briefs/disaster/<date>.json
  *   public/data/daily-briefs/maritime/<date>.json
+ *   public/data/daily-briefs/water/<date>.json
+ *   public/data/daily-briefs/french/<date>.json
  *
  * Parses HTML using regex — no external dependencies.
  *
@@ -30,7 +32,7 @@ const ROOT = process.cwd();
 const STAGING = join(ROOT, 'daily-briefs-staging');
 const OUT = join(ROOT, 'public', 'data', 'daily-briefs');
 
-const BRIEF_TYPES = ['cyber', 'deepfake', 'disaster', 'maritime'];
+const BRIEF_TYPES = ['cyber', 'deepfake', 'disaster', 'maritime', 'water', 'french'];
 
 // ─── HTML helpers ────────────────────────────────────────────────────────
 
@@ -295,11 +297,25 @@ function extractBalancedTag(html, startIdx, tagName) {
  *  legacy: <div class="kpi"><div class="label">L</div><div class="value">V</div><div class="trend">T</div></div> */
 function extractKpisCyber(html) {
   const kpis = [];
-  const re = /<div class="kpi"[^>]*>/gi;
+  // current DOM (Nov 2026): <div class="kpi"><div class="kpi-label">L</div>
+  // <div class="kpi-value">V</div></div> — no h4/.value classes.
+  const reNew = /<div class="kpi"[^>]*>/gi;
   let m;
+  while ((m = reNew.exec(html)) !== null) {
+    const inner = extractBalancedDiv(html, m.index);
+    const l = inner.match(/<div class="kpi-label"[^>]*>([\s\S]*?)<\/div>/i);
+    const v = inner.match(/<div class="kpi-value"[^>]*>([\s\S]*?)<\/div>/i);
+    if (!l && !v) continue;
+    const label = l ? stripTags(l[1]).trim() : '';
+    const value = v ? stripTags(v[1]).trim() : '';
+    if (label || value) kpis.push({ value, label });
+  }
+  if (kpis.length > 0) return kpis;
+  // previous DOM: h4 label + .value + .sub
+  const re = /<div class="kpi"[^>]*>/gi;
   while ((m = re.exec(html)) !== null) {
     const inner = extractBalancedDiv(html, m.index);
-    // current DOM: h4 label + .value + .sub
+    // previous DOM: h4 label + .value + .sub
     const h4 = inner.match(/<h4[^>]*>([\s\S]*?)<\/h4>/i);
     const label = inner.match(/<div class="label"[^>]*>([\s\S]*?)<\/div>/i);
     const value = inner.match(/<div class="value"[^>]*>([\s\S]*?)<\/div>/i);
@@ -446,6 +462,24 @@ function extractCardsCyberDash(html) {
  *  NOTE: caller passes the already-extracted section (see parseCyberBrief). */
 function extractCardsCyberPriority(section) {
   const cards = [];
+  // Nov 2026 DOM: .card.event with h4 title, .decision/.severity meta, p, .linkbar
+  const reNew = /<div class="card\s+event"[^>]*>/gi;
+  let mn;
+  while ((mn = reNew.exec(section)) !== null) {
+    const inner = extractBalancedDiv(section, mn.index);
+    const h4 = inner.match(/<h4[^>]*>([\s\S]*?)<\/h4>/i);
+    if (!h4) continue;
+    const p = inner.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+    const decision = inner.match(/class="decision\s+dec-(\w+)"/i);
+    const linkbar = inner.match(/<div class="linkbar"[^>]*>([\s\S]*?)<\/div>/i);
+    cards.push({
+      title: stripTags(h4[1]).trim(),
+      action: p ? stripTags(p[1]).trim() : '',
+      sources: extractLinks(linkbar ? linkbar[1] : inner),
+      ...(decision ? { severity: decision[1].toLowerCase() } : {}),
+    });
+  }
+  if (cards.length > 0) return cards;
   // current DOM: .card with h3 title + text + .link
   const re = /<div class="card"[^>]*>/gi;
   let m;
@@ -479,6 +513,37 @@ function extractCardsCyberPriority(section) {
  *  Severity from the event class AND the group pill. Legacy band layout kept as fallback. */
 function extractEventsCyber(html) {
   const events = [];
+  // Nov 2026 DOM: <div class="card event"><h4>1) Title</h4>
+  // <div class="meta"><span class="decision dec-escalate">ESCALATE</span>
+  // <span class="severity sev-critical">CRITICAL</span></div><p>text</p>
+  // <div class="linkbar"><a class="source-link" …></a></div></div>
+  // Groups are <h3>ESCALATE|MONITOR|IGNORE</h3> under "Actively Exploited Focus…".
+  const focus = extractSection(html, 'Actively Exploited Focus') || html;
+  const groupRe = /<h3[^>]*>\s*(ESCALATE|MONITOR|IGNORE)\s*<\/h3>/gi;
+  const groups = [];
+  let gg;
+  while ((gg = groupRe.exec(focus)) !== null) groups.push({ severity: gg[1].toLowerCase(), at: gg.index });
+  const cardRe = /<div class="card\s+event"[^>]*>/gi;
+  let cm2;
+  while ((cm2 = cardRe.exec(focus)) !== null) {
+    const inner = extractBalancedDiv(focus, cm2.index);
+    const h4 = inner.match(/<h4[^>]*>([\s\S]*?)<\/h4>/i);
+    if (!h4) continue;
+    const decision = inner.match(/class="decision\s+dec-(escalate|monitor|ignore)"/i);
+    const sev = inner.match(/class="severity\s+sev-(\w+)"/i);
+    let severity = decision ? decision[1].toLowerCase() : 'monitor';
+    for (const g of groups) if (g.at < cm2.index) severity = g.severity;
+    const p = inner.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+    const linkbar = inner.match(/<div class="linkbar"[^>]*>([\s\S]*?)<\/div>/i);
+    events.push({
+      title: stripTags(h4[1]).trim(),
+      severity,
+      text: p ? stripTags(p[1]).trim() : '',
+      chips: sev ? [`severity: ${sev[1]}`] : [],
+      sources: extractLinks(linkbar ? linkbar[1] : inner),
+    });
+  }
+  if (events.length > 0) return events;
   // current DOM: .event-groups > .event-col > h3 (pill) + .event-list > .event <severity>
   const colRe = /<div class="event-col"[^>]*>/gi;
   let cm;
@@ -534,6 +599,30 @@ function extractEventsCyber(html) {
  *  Legacy used <div class="incident-card"> — both matched. */
 function extractIncidentsDeepfake(html) {
   const incidents = [];
+  // Nov 2026 DOM: <section><h2>Priority Incidents</h2><h3>Title</h3>
+  // <p>summary with <a> sources</p><h3>Next title</h3>…</section>
+  // (no .incident-card wrappers anymore)
+  const priority = extractSection(html, 'Priority Incidents');
+  if (priority) {
+    const h3Re = /<h3[^>]*>([\s\S]*?)<\/h3>/gi;
+    const heads = [...priority.matchAll(h3Re)];
+    for (let i = 0; i < heads.length; i++) {
+      const title = stripTags(heads[i][1]).trim();
+      if (!title) continue;
+      const start = heads[i].index + heads[i][0].length;
+      const end = i + 1 < heads.length ? heads[i + 1].index : priority.length;
+      const body = priority.slice(start, end);
+      const p = body.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+      incidents.push({
+        title,
+        badges: [],
+        fields: {},
+        summary: stripTags(p ? p[1] : body).trim(),
+        sources: extractLinks(body),
+      });
+    }
+  }
+  if (incidents.length > 0) return incidents;
   const re = /<(?:div|article)\s+class="incident-card"[^>]*>/gi;
   let m;
   while ((m = re.exec(html)) !== null) {
@@ -576,6 +665,30 @@ function extractIncidentsDeepfake(html) {
  *  <div class="event-card indicator escalate|monitor"> with <h4 class="event-title">. */
 function extractEventsDisaster(html) {
   const events = [];
+  // Nov 2026 DOM: <div class="event"><div class="head">
+  // <div class="title">Title</div><span class="badge b-escalate">ESCALATE</span></div>
+  // <div class="meta-row"><span class="tag">…</span></div>
+  // <div class="desc">text</div><div class="links"><a …></a></div></div>
+  const sectionNew = extractSection(html, 'Event Cards by Decision Level') || html;
+  const evReNew = /<div class="event"[^>]*>/gi;
+  let en;
+  while ((en = evReNew.exec(sectionNew)) !== null) {
+    const inner = extractBalancedDiv(sectionNew, en.index);
+    const titleM = inner.match(/<div class="title"[^>]*>([\s\S]*?)<\/div>/i);
+    if (!titleM) continue;
+    const badge = inner.match(/class="badge\s+b-(escalate|monitor|ignore)"/i);
+    const metaRow = inner.match(/<div class="meta-row"[^>]*>([\s\S]*?)<\/div>/i);
+    const desc = inner.match(/<div class="desc"[^>]*>([\s\S]*?)<\/div>/i);
+    const links = inner.match(/<div class="links"[^>]*>([\s\S]*?)<\/div>/i);
+    events.push({
+      title: stripTags(titleM[1]).trim(),
+      severity: badge ? badge[1].toLowerCase() : 'monitor',
+      text: desc ? stripTags(desc[1]).trim() : '',
+      chips: metaRow ? (metaRow[1].match(/<span class="tag"[^>]*>([\s\S]*?)<\/span>/gi) || []).map((t) => stripTags(t).trim()) : [],
+      sources: extractLinks(links ? links[1] : inner),
+    });
+  }
+  if (events.length > 0) return events;
   const section = extractSection(html, 'Event Cards by Decision Level') || html;
   // Current: walk group headers to know severity, then .card with .event-head
   const groupRe = /<h3[^>]*>\s*(ESCALATE|MONITOR|IGNORE)\s*<\/h3>/gi;
@@ -670,6 +783,43 @@ function extractPriorityMaritime(html) {
  *  suffix, or the THREAT LEVEL text. Legacy event-card layouts kept as fallback. */
 function extractEventsMaritime(html) {
   const events = [];
+  // Nov 2026 DOM: <div class="event-group"><h3><span class="badge esc">C:ESCALATE</span></h3>
+  // <div class="event-card"><div class="event-top"><span class="event-title">Title</span></div>
+  // <div class="event-meta"><span class="badge level-critical">Threat Level: CRITICAL</span>…</div>
+  // <ul class="compact"><li>Summary: …</li>…</ul></div></div>
+  const sectionNew = extractSection(html, 'Intelligence Event Cards') || html;
+  const groupReNew = /<div class="event-group"[^>]*>/gi;
+  let gn;
+  while ((gn = groupReNew.exec(sectionNew)) !== null) {
+    const group = extractBalancedDiv(sectionNew, gn.index);
+    const g = group.match(/class="badge\s+\w+"[^>]*>\s*[ABC]:(ESCALATE|MONITOR|IGNORE)/i);
+    const groupSeverity = g ? g[1].toLowerCase() : 'monitor';
+    const cardRe = /<div class="event-card"[^>]*>/gi;
+    let cn;
+    while ((cn = cardRe.exec(group)) !== null) {
+      const inner = extractBalancedDiv(group, cn.index);
+      const titleM = inner.match(/<span class="event-title"[^>]*>([\s\S]*?)<\/span>/i);
+      if (!titleM) continue;
+      const lvl = inner.match(/class="badge\s+level-(critical|high|moderate|medium|low)"/i);
+      let severity = groupSeverity;
+      if (lvl) {
+        const t = lvl[1].toLowerCase();
+        severity = ['critical', 'high', 'escalate'].includes(t) ? 'escalate' : ['medium', 'low', 'moderate'].includes(t) ? 'monitor' : severity;
+      }
+      const ul = inner.match(/<ul class="compact"[^>]*>([\s\S]*?)<\/ul>/i);
+      const items = ul ? extractListItems(ul[1]) : [];
+      const text = items.join(' ');
+      events.push({
+        title: stripTags(titleM[1]).trim(),
+        severity,
+        text,
+        chips: (inner.match(/<span class="badge[^"]*"[^>]*>([\s\S]*?)<\/span>/gi) || []).map((b) => stripTags(b).trim()).filter(Boolean),
+        sources: extractLinks(inner),
+        ...(items.length ? { items } : {}),
+      });
+    }
+  }
+  if (events.length > 0) return events;
   const section = extractSection(html, 'Intelligence Event Cards') || html;
   // current DOM: .card.event with severity class
   const re = /<div class="[^"]*card\s+event(?:\s+(escalate|monitor|ignore))?[^"]*"[^>]*>/gi;
@@ -1081,6 +1231,84 @@ function parseMaritimeBrief(html, date) {
   };
 }
 
+// ─── Investigative-assessment parser (water / french) ──────────────────
+// Unlike the four daily briefs, /water and /french are month-scoped
+// open-source investigative assessments. Their DOM: numbered h2/h3 section
+// headings with card grids (h3/h5 title, .badge fact/assessment/high/…,
+// <p> body, .src sources). Preserve every section, not just a few fields.
+
+function splitAssessmentSections(html) {
+  const re = /<h([23])[^>]*>\s*\d+\.\s*([\s\S]*?)<\/h\1>/gi;
+  const heads = [...html.matchAll(re)];
+  return heads.map((h, i) => ({
+    heading: stripTags(h[2]).replace(/^\d+\.\s*/, '').trim(),
+    body: html.slice(h.index + h[0].length, i + 1 < heads.length ? heads[i + 1].index : html.length),
+  }));
+}
+
+function assessmentCards(body) {
+  const cards = [];
+  const re = /<div class="[^"]*card[^"]*"[^>]*>/gi;
+  let m;
+  while ((m = re.exec(body)) !== null) {
+    const inner = extractBalancedDiv(body, m.index);
+    const h = inner.match(/<h[35][^>]*>([\s\S]*?)<\/h[35]>/i);
+    if (!h) continue;
+    const badges = [...inner.matchAll(/<span class="badge[^"]*"[^>]*>([\s\S]*?)<\/span>/gi)].map((b) => stripTags(b[1]).trim()).filter(Boolean);
+    const paras = [...inner.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)].map((p) => stripTags(p[1]).trim()).filter(Boolean);
+    const list = extractListItems(inner);
+    cards.push({
+      title: stripTags(h[1]).trim(),
+      badges,
+      text: paras.join(' ') || list.join(' '),
+      sources: extractLinks(inner),
+    });
+  }
+  return cards;
+}
+
+function assessmentDate(html, fallback) {
+  const labelled = html.match(/(?:Report date|Published|Generated)\s*:\s*([^<\n]{3,60})/i);
+  if (labelled) {
+    const s = stripTags(labelled[1]);
+    const long = s.match(/(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s+(\d{4})/i);
+    if (long) return `${long[3]}-${String(MONTHS[long[1].toLowerCase()] + 1).padStart(2, '0')}-${long[2].padStart(2, '0')}`;
+  }
+  // Title often ends with a month + year ("… — November 2026") — month precision.
+  const title = (html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1] ?? '';
+  const monthYear = title.match(/(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})/i);
+  if (monthYear) return `${monthYear[2]}-${String(MONTHS[monthYear[1].toLowerCase()] + 1).padStart(2, '0')}-01`;
+  return fallback;
+}
+
+function parseAssessmentBrief(html, date, type) {
+  const sections = splitAssessmentSections(html);
+  const pick = (re) => sections.filter((s) => re.test(s.heading));
+  const sectionText = (list) => list.map((s) => stripTags(s.body).trim()).filter(Boolean).join(' ');
+  const sectionCards = (list) => list.flatMap((s) => assessmentCards(s.body));
+  const title = stripTags((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i) || [])[1] ?? '').trim();
+  const allCves = [...new Set(
+    (html.match(/CVE[\-\u2011]\d{4}[\-\u2011]\d{4,}/gi) || []).map((c) => c.toUpperCase().replace(/\u2011/g, '-'))
+  )];
+  return {
+    type,
+    date: assessmentDate(html, date),
+    title,
+    executiveAssessment: sectionText(pick(/executive assessment/i)),
+    keyFindings: sectionCards(pick(/key findings/i)),
+    timeline: sectionText(pick(/timeline/i)),
+    affectedSystems: sectionCards(pick(/affected systems/i)),
+    methodology: sectionText(pick(/attack methodology/i)),
+    impact: sectionText(pick(/operational impact|impact assessment/i)),
+    correlation: sectionText(pick(/correlation/i)),
+    attribution: sectionText(pick(/attribution/i)),
+    recommendations: sectionText(pick(/recommendation|mitigation|defensive/i)),
+    sections: sections.map((s) => ({ heading: s.heading, text: stripTags(s.body).trim(), cards: assessmentCards(s.body) })),
+    sources: extractLinks(html),
+    relatedCves: allCves,
+  };
+}
+
 // ─── Main ──────────────────────────────────────────────────────────────
 
 if (!existsSync(STAGING)) {
@@ -1099,13 +1327,15 @@ if (existsSync(indexPath)) {
 }
 const existingBriefs = new Map((existingIndex.briefs ?? []).map((b) => [`${b.type}:${b.date}`, b]));
 const mergedBriefs = new Map(existingBriefs);
-const briefCounts = { cyber: 0, deepfake: 0, disaster: 0, maritime: 0 };
+const briefCounts = { cyber: 0, deepfake: 0, disaster: 0, maritime: 0, water: 0, french: 0 };
 
 const parsers = {
   cyber: parseCyberBrief,
   deepfake: parseDeepfakeBrief,
   disaster: parseDisasterBrief,
   maritime: parseMaritimeBrief,
+  water: (html, date) => parseAssessmentBrief(html, date, 'water'),
+  french: (html, date) => parseAssessmentBrief(html, date, 'french'),
 };
 
 for (const type of BRIEF_TYPES) {
@@ -1139,7 +1369,7 @@ for (const type of BRIEF_TYPES) {
 const allBriefs = [...mergedBriefs.values()]
   .filter((b) => existsSync(join(OUT, b.type, `${b.date}.json`)))
   .sort((a, b) => b.date.localeCompare(a.date));
-const counts = { cyber: 0, deepfake: 0, disaster: 0, maritime: 0 };
+const counts = { cyber: 0, deepfake: 0, disaster: 0, maritime: 0, water: 0, french: 0 };
 for (const b of allBriefs) counts[b.type] = (counts[b.type] || 0) + 1;
 const index = {
   source: 'agentic-ai-daily-reports.netlify.app',

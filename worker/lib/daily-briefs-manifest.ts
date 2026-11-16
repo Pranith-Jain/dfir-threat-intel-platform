@@ -19,7 +19,7 @@
 
 import { fetchJsonAsset, recordHit, trackHit, type BodyCache } from './manifest-cache';
 
-export type DbBriefType = 'cyber' | 'deepfake' | 'disaster' | 'maritime';
+export type DbBriefType = 'cyber' | 'deepfake' | 'disaster' | 'maritime' | 'water' | 'french';
 
 export interface DbIndexEntry {
   type: DbBriefType;
@@ -31,7 +31,7 @@ export interface DbIndex {
   source: string;
   license: string;
   generatedAt: string;
-  counts: { cyber: number; deepfake: number; disaster: number; maritime: number };
+  counts: { cyber: number; deepfake: number; disaster: number; maritime: number; water: number; french: number };
   briefs: DbIndexEntry[];
 }
 
@@ -103,7 +103,29 @@ export interface DbDisasterBrief {
   rawMarkdown?: string;
 }
 
-export type DbBriefBody = DbCyberBrief | DbDeepfakeBrief | DbDisasterBrief;
+export interface DbAssessmentBrief {
+  type: 'water' | 'french';
+  date: string;
+  title: string;
+  executiveAssessment: string;
+  keyFindings: { title: string; badges: string[]; text: string; sources: { url: string; label: string }[] }[];
+  timeline: string;
+  affectedSystems: { title: string; badges: string[]; text: string; sources: { url: string; label: string }[] }[];
+  methodology: string;
+  impact: string;
+  correlation: string;
+  attribution: string;
+  recommendations: string;
+  sections: {
+    heading: string;
+    text: string;
+    cards: { title: string; badges: string[]; text: string; sources: { url: string; label: string }[] }[];
+  }[];
+  sources: { url: string; label: string }[];
+  relatedCves: string[];
+}
+
+export type DbBriefBody = DbCyberBrief | DbDeepfakeBrief | DbDisasterBrief | DbAssessmentBrief;
 
 const DATA_PREFIX = '/data/daily-briefs';
 const MAX_BODY_CACHE = 100;

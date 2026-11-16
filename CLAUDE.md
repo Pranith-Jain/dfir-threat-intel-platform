@@ -73,6 +73,32 @@ repo's footguns so you don't rediscover them.
   next run silently reverts it. See the inventory below before hand-editing anything under
   `public/data/`.
 
+## Daily Briefs — agentic-ai-daily-reports.netlify.app (6 feeds)
+
+Replicated from [agentic-ai-daily-reports.netlify.app](https://agentic-ai-daily-reports.netlify.app)
+via `scripts/sync-daily-briefs.mjs` → staging HTML → `scripts/build-daily-briefs.mjs`
+→ `public/data/daily-briefs/`. Six types: the four daily briefs (`cyber`,
+`deepfake`, `disaster`, `maritime`) plus two open-source investigative
+assessments (`water` = Minnesota water-system attack, `french` = refrigeration
+OT attacks). Upstream has **no archive endpoint**, so only the latest page per
+type is fetchable — historical briefs are the committed JSON, and older ones
+built before a DOM redesign remain partially empty (cannot be re-fetched).
+
+The upstream site redesigns frequently; the build script carries **per-type,
+per-era DOM variants** (e.g. Nov-2026: `card event` + `kpi-label`/`kpi-value`
+for cyber, `Priority Incidents` h3s for deepfake, `.event` + `.badge b-*` for
+disaster, `.event-group`/`.event-card` for maritime). When capture drops to
+zero events, inspect the staged HTML in `daily-briefs-staging/` (REA browser
+capture also works) and add a variant rather than replacing old ones.
+`parseAssessmentBrief` handles the section/card format of water + french.
+
+Daily sync rides `daily-briefs-sync.yml` (05:30 UTC, PR + auto-merge +
+self-deploy); the Worker's `worker/lib/daily-briefs-sync.ts` mirrors the same
+type list for the 30-day KV self-heal. Extended `DbBriefType` in
+`api/src/lib/daily-briefs-manifest.ts`, `VALID_TYPES` in the edge route, the
+`/data/daily-briefs/(type)/(date).json` asset regex in `worker/index.ts`, MCP
+type enums, and the six-tab SPA at `/daily-briefs`.
+
 ## Data generators — which ones run on their own
 
 `public/data/**` is committed, not built (see the footgun above about `ci.yml` using

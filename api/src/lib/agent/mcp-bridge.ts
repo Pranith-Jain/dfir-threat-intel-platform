@@ -2208,9 +2208,14 @@ export function bridgeMcpTools(
   add({
     name: 'db_list_briefs',
     description:
-      'List available daily intelligence briefs (cyber, deepfake, disaster, maritime). Filter by type or date range.',
+      'List available daily intelligence briefs (cyber, deepfake, disaster, maritime, water, french). Filter by type or date range.',
     params: [
-      { name: 'type', type: 'string', description: 'Brief type: cyber, deepfake, disaster, maritime', required: false },
+      {
+        name: 'type',
+        type: 'string',
+        description: 'Brief type: cyber, deepfake, disaster, maritime, water, french',
+        required: false,
+      },
       { name: 'limit', type: 'number', description: 'Max briefs (default 50)', required: false },
     ],
     execute: async (args) => {

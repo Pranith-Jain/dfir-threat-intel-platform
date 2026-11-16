@@ -26,7 +26,24 @@
     }
   ],
   "dashboard": {
-    "kpis": [],
+    "kpis": [
+      {
+        "value": "12",
+        "label": "Priority (ESCALATE) events in this brief"
+      },
+      {
+        "value": "10",
+        "label": "Monitor events"
+      },
+      {
+        "value": "4",
+        "label": "Ignore (low OT/ICS relevance)"
+      },
+      {
+        "value": "6",
+        "label": "Actively exploited/KEV-linked items referenced"
+      }
+    ],
     "activelyExploited": [],
     "vendors": [
       "Siemens (S7 PLCs; Building Automation & Energy Products), Danfoss (refrigeration controllers), Advantech (EKI-1242, WISE-6610), SonicWall (SonicOS SSLVPN), Check Point (Gateways/Mobile Access/Gaia), VMware (ESXi/vCenter), OPC UA stacks (Eclipse Milo), SiteGuard Server Edition (EG Secure Solutions), Telecom core (SS7/Diameter/GTP)."
@@ -35,7 +52,58 @@
       "Energy; Water and Wastewater Systems; Critical Manufacturing; Food and Agriculture (cold-chain); Building Automation/Facilities; Government Services; Telecommunications; Transportation (rail signaling)."
     ]
   },
-  "topThreats": [],
+  "topThreats": [
+    {
+      "title": "1) Active targeting of Siemens S7 PLCs (S7comm/TCP/102)",
+      "action": "Ongoing threat campaigns abusing PLC communications and weak access controls; sectors at risk include Water/Wastewater, Energy, and Critical Manufacturing.",
+      "sources": [
+        {
+          "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa26-231a",
+          "label": "Security Advisory"
+        }
+      ]
+    },
+    {
+      "title": "2) Danfoss refrigeration controllers - pre-auth RCE with cold-chain safety impact",
+      "action": "Multiple RCEs enable full takeover/firmware tampering of supermarket/healthcare cooling controllers; disconnect from internet and restrict to trusted networks.",
+      "sources": [
+        {
+          "url": "https://www.heise.de/news/Supermarkt-Angriffe-Danfoss-Kuehlsteuerungen-blieben-trotz-Updates-angreifbar-11524376.html",
+          "label": "View Article"
+        }
+      ]
+    },
+    {
+      "title": "3) OT/ICS vulnerability roundup (CISA Weekly: SCADA/HMI, smart metering, rail, FreeRTOS)",
+      "action": "High-severity unauthenticated RCE/DoS and data exposure across multiple OT components (FUXA, Baylan BMS, Frauscher FDS102, FreeRTOS, AVTP-CAN).",
+      "sources": [
+        {
+          "url": "https://www.cisa.gov/news-events/bulletins/sb26-236",
+          "label": "CISA Bulletin"
+        }
+      ]
+    },
+    {
+      "title": "4) Check Point gateways chained PHP2Shell + Gaia root → full device compromise and ESXi pivot",
+      "action": "Active exploitation of Mobile Access portals with root escalation; observed destructive wiper against ESXi in at least one case.",
+      "sources": [
+        {
+          "url": "https://www.heise.de/news/Angreifer-verketteten-PHP2Shell-mit-Root-Luecke-auf-Check-Point-Gateways-11525531.html",
+          "label": "View Article"
+        }
+      ]
+    },
+    {
+      "title": "5) VMware ESXi/vCenter misuse for ransomware at hypervisor layer",
+      "action": "Legitimate vSphere features abused for mass VM encryption and backup destruction-relevant to virtualized OT workloads and DMZ services.",
+      "sources": [
+        {
+          "url": "https://securelist.com/esxi-ransomware/121959/",
+          "label": "Supporting Report"
+        }
+      ]
+    }
+  ],
   "threatActors": [
     {
       "category": "Activity",
@@ -50,15 +118,328 @@
   ],
   "relevance": "- Multiple items directly affect industrial devices (PLCs, drives, refrigeration controllers) and core OT services (OPC UA stacks, HMI/SCADA servers). - Edge/VPN gateway exploitation (SonicWall, Check Point) provides common ingress to enterprise networks with potential lateral movement into OT if segmentation is weak. - Hypervisor-level ransomware TTPs threaten virtualized OT-support workloads (historians, engineering jump hosts, industrial DMZ services). - Telecom signaling/GTP intrusions increase the risk of account takeover and disruption for field operations reliant on mobile networks. - The cumulative effect is elevated operational risk across Energy, Water/Wastewater, Critical Manufacturing, Food/Agriculture (cold-chain), and Building Automation.",
   "cveWatch": [],
-  "events": [],
+  "events": [
+    {
+      "title": "Active Threat to Siemens S7 PLCs (S7comm/TCP/102)",
+      "severity": "escalate",
+      "text": "AI-assisted exploitation targeting S7-200/300/400/1200/1500; remove internet exposure, enforce access protection, and monitor TCP/102.",
+      "chips": ["severity: critical"],
+      "sources": [
+        {
+          "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa26-231a",
+          "label": "Security Advisory"
+        }
+      ]
+    },
+    {
+      "title": "Danfoss Refrigeration Controllers - Pre-auth RCEs",
+      "severity": "escalate",
+      "text": "Multiple pre-authentication RCE flaws allow takeover/bricking; disconnect from internet; restrict to trusted/VPN networks; patch and prepare for remediation.",
+      "chips": ["severity: critical"],
+      "sources": [
+        {
+          "url": "https://www.heise.de/news/Supermarkt-Angriffe-Danfoss-Kuehlsteuerungen-blieben-trotz-Updates-angreifbar-11524376.html",
+          "label": "View Article"
+        }
+      ]
+    },
+    {
+      "title": "CISA Weekly (Aug 17): FUXA/FreeRTOS/Baylan/Frauscher OT Issues",
+      "severity": "escalate",
+      "text": "Multiple remotely exploitable OT flaws across SCADA/HMI, smart meter mgmt, embedded RTOS, and rail detection systems.",
+      "chips": ["severity: critical"],
+      "sources": [
+        {
+          "url": "https://www.cisa.gov/news-events/bulletins/sb26-236",
+          "label": "CISA Bulletin"
+        }
+      ]
+    },
+    {
+      "title": "Advantech EKI-1242 Gateways - Unauth Mgmt/Command Execution",
+      "severity": "escalate",
+      "text": "Critical management and update-path weaknesses on industrial gateways bridging Modbus/OPC UA; segment and block mgmt ports; apply vendor updates.",
+      "chips": ["severity: high"],
+      "sources": [
+        {
+          "url": "https://www.cisa.gov/news-events/bulletins/sb26-264",
+          "label": "CISA Bulletin"
+        }
+      ]
+    },
+    {
+      "title": "Advantech WISE-6610 LoRaWAN - Public Exploits",
+      "severity": "escalate",
+      "text": "Publicly weaponized command-injection on industrial LoRaWAN gateways; remove external exposure; restrict mgmt to OT admin VLANs.",
+      "chips": ["severity: high"],
+      "sources": [
+        {
+          "url": "https://www.cisa.gov/news-events/bulletins/sb26-257",
+          "label": "CISA Bulletin"
+        }
+      ]
+    },
+    {
+      "title": "Siemens Building Automation & Energy Products - PHP RCE",
+      "severity": "escalate",
+      "text": "Critical PHP vulnerabilities affecting EMS/SCADA web components; some require OS-level PHP updates and hardening until fixes available.",
+      "chips": ["severity: high"],
+      "sources": [
+        {
+          "url": "https://www.cisa.gov/news-events/ics-advisories/icsa-26-316-01",
+          "label": "ICS Advisory"
+        }
+      ]
+    },
+    {
+      "title": "Check Point Gateways - PHP2Shell + Root Escalation; ESXi Pivot/Wiper",
+      "severity": "escalate",
+      "text": "Active exploitation of Mobile Access portals and root escalation on Gaia OS; destructive activity observed on hypervisors in at least one incident.",
+      "chips": ["severity: high"],
+      "sources": [
+        {
+          "url": "https://www.heise.de/news/Angreifer-verketteten-PHP2Shell-mit-Root-Luecke-auf-Check-Point-Gateways-11525531.html",
+          "label": "View Article"
+        }
+      ]
+    },
+    {
+      "title": "KEV: SonicWall SonicOS SSLVPN (CVE-2026-19868)",
+      "severity": "escalate",
+      "text": "Actively exploited VPN weakness affects OT-adjacent perimeters; patch immediately, enforce MFA, and check for pre-patch compromise.",
+      "chips": ["severity: high"],
+      "sources": [
+        {
+          "url": "https://www.cisa.gov/news-events/alerts/2026/11/06/cisa-adds-one-known-exploited-vulnerability-catalog",
+          "label": "KEV Notice"
+        }
+      ]
+    },
+    {
+      "title": "Ransomware at the Hypervisor Layer (ESXi/vCenter)",
+      "severity": "escalate",
+      "text": "Legitimate vSphere features misused to enable mass encryption and backup tampering, threatening virtualized OT-support systems.",
+      "chips": ["severity: high"],
+      "sources": [
+        {
+          "url": "https://securelist.com/esxi-ransomware/121959/",
+          "label": "Supporting Report"
+        }
+      ]
+    },
+    {
+      "title": "China-Nexus Covert Networks via SOHO/IoT to Pre-Position in CNI",
+      "severity": "escalate",
+      "text": "Botnet-based covert routing and LOTL persistence across critical infrastructure; harden/replace SOHO devices and enforce strict egress controls.",
+      "chips": ["severity: high"],
+      "sources": [
+        {
+          "url": "https://www.cisa.gov/news-events/cybersecurity-advisories/aa26-113a",
+          "label": "Advisory"
+        }
+      ]
+    },
+    {
+      "title": "Carrier Signaling/GTP Intrusions (SilentAir/Liminal Panda)",
+      "severity": "escalate",
+      "text": "SS7/Diameter and GTPDoor backdoors at mobile operators enable call/SMS interception and covert C2; coordinate with carriers to mitigate.",
+      "chips": ["severity: high"],
+      "sources": [
+        {
+          "url": "https://www.infosecurity-magazine.com/news/silentair-liminal-panda-telco/",
+          "label": "Supporting Report"
+        }
+      ]
+    },
+    {
+      "title": "SiteGuard Server Edition - OS Command Injection (CVE-2026-106931)",
+      "severity": "escalate",
+      "text": "Actively exploited default-enabled statistics function leading to root/SYSTEM execution; disable, retain diagnostics, and patch.",
+      "chips": ["severity: high"],
+      "sources": [
+        {
+          "url": "https://www.jpcert.or.jp/at/2026/at260032.html",
+          "label": "JPCERT Advisory"
+        }
+      ]
+    },
+    {
+      "title": "Widespread PHP RCE Zero-Days Under Active Exploitation",
+      "severity": "monitor",
+      "text": "High web-tier impact; risk of webshells and IT→OT pivot via public portals. Patch PHP and hunt for webshells/WAF indicators.",
+      "chips": ["severity: moderate"],
+      "sources": [
+        {
+          "url": "https://krebsonsecurity.com/2026/10/widespread-php-flaw-may-cause-many-site-outages-today/",
+          "label": "View Article"
+        }
+      ]
+    },
+    {
+      "title": "Google Brotli C Decoder OOB Write (Node2Shell/HTTP2Shell)",
+      "severity": "monitor",
+      "text": "Patch Brotli libraries; check Node.js/Bun/Python packages; consider disabling Brotli decoding in exposed services.",
+      "chips": ["severity: moderate"],
+      "sources": [
+        {
+          "url": "https://www.jpcert.or.jp/at/2026/at260034.html",
+          "label": "JPCERT"
+        }
+      ]
+    },
+    {
+      "title": "Siemens RUGGEDCOM APE1808/PAN-OS and Brotli Impacts",
+      "severity": "monitor",
+      "text": "OT-deployed appliances affected by PAN-OS PHP2Shell and Brotli decoder overflow; upgrade PAN-OS and Brotli, restrict mgmt access.",
+      "chips": ["severity: high"],
+      "sources": [
+        {
+          "url": "https://www.cisa.gov/news-events/ics-advisories/icsa-26-316-05",
+          "label": "ICS Advisory"
+        },
+        {
+          "url": "https://www.cisa.gov/news-events/ics-advisories/icsa-26-316-04",
+          "label": "ICS Advisory"
+        }
+      ]
+    },
+    {
+      "title": "Siemens Desigo CC / Gridscale X - Brotli Decoder RCE Exposure",
+      "severity": "monitor",
+      "text": "Patch Siemens products and dependent Node.js; segment and monitor for malformed Brotli streams.",
+      "chips": ["severity: moderate"],
+      "sources": [
+        {
+          "url": "https://www.cisa.gov/news-events/ics-advisories/icsa-26-316-02",
+          "label": "ICS Advisory"
+        }
+      ]
+    },
+    {
+      "title": "PostgreSQL Patches (52 flaws incl. authenticated RCE)",
+      "severity": "monitor",
+      "text": "Patch DB servers and client tools; revoke excessive CREATE/ALTER; monitor for anomalous DDL and restarts.",
+      "chips": ["severity: moderate"],
+      "sources": [
+        {
+          "url": "https://thehackernews.com/2026/11/postgresql-patches-52-flaws-including.html",
+          "label": "View Article"
+        }
+      ]
+    },
+    {
+      "title": "GPUStack Auth Bypass Exploit Attempts (CVE-2026-102895)",
+      "severity": "monitor",
+      "text": "Sanitize trust headers; enforce auth regardless of source IP; upgrade to 2.2.0+.",
+      "chips": ["severity: moderate"],
+      "sources": [
+        {
+          "url": "https://isc.sans.edu/diary/rss/33514",
+          "label": "SANS ISC"
+        }
+      ]
+    },
+    {
+      "title": "Berlin Senate Rhysida Leak - Spearphishing/Downstream Targeting Risk",
+      "severity": "monitor",
+      "text": "Data exposure tied to critical infrastructure correspondence; raise phishing defenses and review remote access pathways.",
+      "chips": ["severity: moderate"],
+      "sources": [
+        {
+          "url": "https://www.heise.de/news/Berliner-Daten-GAU-Wie-man-einen-Leak-seziert-11524771.html",
+          "label": "View Article"
+        }
+      ]
+    },
+    {
+      "title": "N-able N-central Exploitation Leading to Cryptominers",
+      "severity": "monitor",
+      "text": "RMM platform intrusions can cascade to managed environments; disable legacy APIs and apply hotfixes.",
+      "chips": ["severity: moderate"],
+      "sources": [
+        {
+          "url": "https://www.heise.de/news/Warten-auf-Sicherheitspatch-Krypto-Miner-Attacken-auf-N-central-beobachtet-11525491.html",
+          "label": "View Article"
+        }
+      ]
+    },
+    {
+      "title": "Microsoft Patch Tuesday - Broad Endpoint Risk (incl. Outlook zero-day)",
+      "severity": "monitor",
+      "text": "Patch Windows/Office/Outlook across OT-adjacent hosts; enforce ASR rules and application allowlisting.",
+      "chips": ["severity: moderate"],
+      "sources": [
+        {
+          "url": "https://isc.sans.edu/diary/rss/33508",
+          "label": "SANS ISC"
+        }
+      ]
+    },
+    {
+      "title": "Widespread IoT Proxy Botnet Takedown (Residual Risk)",
+      "severity": "monitor",
+      "text": "Audit Android/IoT devices; segment/egress-filter to reduce proxy/DDoS abuse and lateral risk in enterprise healthcare/OT support networks.",
+      "chips": ["severity: moderate"],
+      "sources": [
+        {
+          "url": "https://krebsonsecurity.com/2026/11/tech-firms-dismantle-botnet-that-turned-1-3m-tv-boxes-into-proxies/",
+          "label": "KrebsOnSecurity"
+        }
+      ]
+    },
+    {
+      "title": "NCSC Active Cyber Defence - Programme Update",
+      "severity": "ignore",
+      "text": "High-level programme report; no actionable OT/ICS indicators.",
+      "chips": ["severity: low"],
+      "sources": [
+        {
+          "url": "https://www.ncsc.gov.uk/report/acd-the-sixth-year",
+          "label": "View Notice"
+        }
+      ]
+    },
+    {
+      "title": "NCSC: Commercial Cyber Proliferation Assessment",
+      "severity": "ignore",
+      "text": "Policy-level assessment; no specific TTPs/IOCs for OT response.",
+      "chips": ["severity: low"],
+      "sources": [
+        {
+          "url": "https://www.ncsc.gov.uk/report/commercial-cyber-proliferation-assessment",
+          "label": "View Report"
+        }
+      ]
+    },
+    {
+      "title": "Coles Group - Corporate Incident Update",
+      "severity": "ignore",
+      "text": "Enterprise IT incident without disclosed OT impact or indicators.",
+      "chips": ["severity: low"],
+      "sources": [
+        {
+          "url": "https://www.colesgroup.com.au/updates/",
+          "label": "Corporate Update"
+        }
+      ]
+    },
+    {
+      "title": "Lego/BrickLink - E-commerce Outage",
+      "severity": "ignore",
+      "text": "Marketplace disruption; no OT/ICS nexus.",
+      "chips": ["severity: low"],
+      "sources": [
+        {
+          "url": "https://www.infosecurity-magazine.com/news/lego-takes-bricklink-marketplace/",
+          "label": "View Article"
+        }
+      ]
+    }
+  ],
   "ttps": {
     "descriptions": [],
     "mitreIds": []
   },
   "outlook72h": "- Day 0-1: Freeze internet exposure for PLCs, Danfoss controllers, OT HMIs, and gateway admin planes. Apply SonicWall and Check Point fixes; initiate threat hunts on edges and hypervisors; snapshot and secure backups. - Day 1-2: Patch/update PHP runtimes on Siemens EMS/SCADA components per vendor guidance; deploy WAF rules for PHP2Shell patterns; tighten OPC UA policies and update Milo libraries where used. - Day 2-3: Validate segmentation with active tests; implement SOC detections for S7comm anomalies, ESXi host profile/SSH enablement, gateway webshell patterns, and OPC UA diagnostics abuse; rehearse rapid isolation of OT zones.",
-  "relatedCves": [
-    "CVE-2026-106931",
-    "CVE-2026-19868",
-    "CVE-2026-102895"
-  ]
+  "relatedCves": ["CVE-2026-106931", "CVE-2026-19868", "CVE-2026-102895"]
 }

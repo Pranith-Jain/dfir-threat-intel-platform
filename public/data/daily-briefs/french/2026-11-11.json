@@ -1,0 +1,896 @@
+{
+  "type": "french",
+  "date": "2026-11-01",
+  "title": "Refrigeration Systems Attacks Agentic AI Investigative Assessment November 2026",
+  "executiveAssessment": "Publicly available evidence establishes that a large-scale cyberattack targeted internet-accessible refrigeration controllers in France during the night of 11-12 October 2026 , affecting approximately 700 retail sites and additional food-sector victims. French government reporting states that attackers modified refrigeration defrost parameters to high temperatures, causing major merchandise losses and at least 15 fire starts . The officially identified affected controller families were Danfoss AK-SM / AK-SC and Copeland XWEB / Dixell XWEB . CERT-FR Alert CERTFR-2026-ALE-012 ; CERTFR-2026-CTI-009 Public evidence also establishes a broader European pattern. On 4 November 2026 , the European Commission, ENISA, Europol EC3, the EU CSIRTs Network, and EU-CyCLONe issued a joint statement confirming cyber incidents affecting refrigeration systems across multiple EU countries and referring to a new wave on 1-2 November 2026 . The Dutch NCSC separately confirmed that multiple attacks on refrigeration installations were occurring in Europe, including the Netherlands. European Commission / ENISA joint statement ; NCSC-NL advisory, 2 Nov 2026 The best-supported technical explanation is that attackers exploited the unsafe exposure of refrigeration management interfaces directly to the public internet, combined with weak/default credentials and, potentially, unpatched known vulnerabilities in the affected product families. However, public evidence does not conclusively establish the exact initial-access mechanism used in the French attacks . CERT-FR explicitly emphasized internet-exposed management interfaces and urgent removal from public IP space; Dutch NCSC warned of abuse of vulnerabilities and poor/default passwords; vendor and research material shows serious disclosed vulnerabilities in both Danfoss and XWEB products, but no authoritative source in the collected record directly proves a specific CVE was used in the October French intrusions. CERT-FR Alert ; NCSC-NL ; Danfoss DSA-2025-03-01 ; Copeland XWEB PRO bulletin Attribution is no longer fully unresolved. On 9 November 2026 , France's cyber crisis coordination reporting publicly imputed the French refrigeration attack to the Iranian IRGC's cyber apparatus, specifically identifying the Shahid Kaveh unit as the executing unit and citing multiple indicators including shared attack infrastructure, use of FOFA, contemporaneous activity against Schneider Electric OT, propaganda amplification, and traces of Farsi. This is an authoritative government attribution assessment , but much of the underlying forensic detail remains undisclosed publicly. Accordingly, attribution can be assessed as a French government assessment with moderate confidence , not confirmed beyond doubt in the public record. CERTFR-2026-CTI-009 ; DGSI statement Key unresolved issue: the exact compromise path into French refrigeration systems remains UNRESOLVED . Public reporting does not conclusively show whether attackers used specific CVEs, weak/default credentials, exposed remote admin portals, exposed VNC-like access, or a combination.",
+  "keyFindings": [
+    {
+      "title": "France experienced a large-scale refrigeration OT cyberattack",
+      "badges": ["CONFIRMED FACT", "HIGH CONFIDENCE"],
+      "text": "French authorities reported that about 700 large-retail sites were hit after refrigeration controllers were compromised during the night of 11-12 October 2026.",
+      "sources": [
+        {
+          "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+          "label": "CERTFR-2026-CTI-009"
+        }
+      ]
+    },
+    {
+      "title": "Process settings were deliberately manipulated",
+      "badges": ["CONFIRMED FACT", "HIGH CONFIDENCE"],
+      "text": "French reporting states defrost parameters were changed to high temperatures, causing merchandise loss and at least 15 fires.",
+      "sources": [
+        {
+          "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+          "label": "CERTFR-2026-CTI-009"
+        }
+      ]
+    },
+    {
+      "title": "Impacted product families are known",
+      "badges": ["CONFIRMED FACT", "HIGH CONFIDENCE"],
+      "text": "CERT-FR identified Danfoss AK-SM / AK-SC and Copeland / Dixell XWEB as affected systems.",
+      "sources": [
+        {
+          "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+          "label": "CERTFR-2026-ALE-012"
+        }
+      ]
+    },
+    {
+      "title": "Internet-exposed management interfaces were central risk factors",
+      "badges": ["ASSESSMENT", "HIGH CONFIDENCE"],
+      "text": "Official advisories emphasized internet exposure, urgent removal from public IPs, and use of secure VPNs instead. This strongly supports exposed remote administration as a key enabling condition.",
+      "sources": [
+        {
+          "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+          "label": "CERT-FR"
+        },
+        {
+          "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+          "label": "NCSC-NL"
+        }
+      ]
+    },
+    {
+      "title": "Similar attacks spread beyond France",
+      "badges": ["CONFIRMED FACT", "MODERATE CONFIDENCE"],
+      "text": "EU authorities confirmed incidents across multiple EU countries and a new wave on 1-2 November 2026. The Netherlands publicly acknowledged concurrent attacks.",
+      "sources": [
+        {
+          "url": "https://digital-strategy.ec.europa.eu/en/news/joint-statement-cyber-incidents-refrigeration-systems-across-eu",
+          "label": "EU joint statement"
+        },
+        {
+          "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+          "label": "NCSC-NL"
+        }
+      ]
+    },
+    {
+      "title": "Attribution is publicly advanced by France, but not fully transparent",
+      "badges": ["GOVERNMENT ASSESSMENT", "MODERATE CONFIDENCE"],
+      "text": "France publicly attributed the attack to the IRGC-linked Shahid Kaveh unit, but complete forensic substantiation is not public.",
+      "sources": [
+        {
+          "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+          "label": "CERTFR-2026-CTI-009"
+        },
+        {
+          "url": "https://www.dgsi.interieur.gouv.fr/dgsi-a-vos-cotes/cyberdefense/campagnes-de-destabilisation-et-sabotage-menees-a-lencontre-des-interets-francais-par-republique",
+          "label": "DGSI"
+        }
+      ]
+    }
+  ],
+  "timeline": "Date / Time Event Source Classification Confidence 24 Mar 2025 Danfoss published DSA-2025-03-01 for AK-SM8xxA, including CVE-2025-41450 (authentication bypass / improper authentication) affecting versions prior to 4.2. Danfoss advisory CONFIRMED FACT HIGH Feb 2026 Copeland issued XWEB PRO security update guidance and stated firmware 1.13 addressed identified vulnerabilities. Bulletin advised that all internet-exposed XWEB PRO models were impacted and recommended removing public internet exposure. Copeland bulletin CONFIRMED FACT HIGH 26 Feb 2026 Claroty Team82 public dashboard showed multiple Copeland XWEB / XWEB Pro CVEs disclosed. Claroty disclosure dashboard CONFIRMED FACT MODERATE Apr 2026 French cyber crisis reporting later stated Shahid Kaveh had been observed using Modbus/502 for mass reconnaissance against Schneider Electric ICS, including in France. CERTFR-2026-CTI-009 CONFIRMED FACT MODERATE 11-12 Oct 2026 (overnight) French refrigeration attack: controllers at approximately 700 large-retail sites compromised; defrost parameters changed to high temperatures. CERTFR-2026-CTI-009 CONFIRMED FACT HIGH 12 Oct 2026 CERT-FR published alert CERTFR-2026-ALE-012 on compromises targeting refrigeration remote controllers. CERT-FR alert CONFIRMED FACT HIGH 13 Oct 2026 CERT-FR version history added \"other targeted equipment.\" French attribution report later stated CyberbanNews relayed the refrigeration attack on this date. CERT-FR alert ; CERTFR-2026-CTI-009 CONFIRMED FACT MODERATE 16 Oct 2026 CERT-FR updated the refrigeration alert and explicitly identified Danfoss AK-SM/AK-SC, Copeland XWEB, and Dixell XWEB as affected. CERT-FR alert CONFIRMED FACT HIGH 1-2 Nov 2026 New wave of refrigeration-system cyber incidents across multiple EU countries. EU joint statement CONFIRMED FACT MODERATE 2 Nov 2026 Dutch NCSC published advisory stating multiple attacks on refrigeration installations were occurring in Europe, including the Netherlands. NCSC-NL CONFIRMED FACT HIGH 4 Nov 2026 European Commission, ENISA, Europol EC3, the EU CSIRTs Network, and EU-CyCLONe issued joint statement on refrigeration cyber incidents across the EU. EU joint statement CONFIRMED FACT HIGH 5 Nov 2026 Censys published exposure analysis showing a sharp reduction in exposed Danfoss / XWEB systems following the incidents. Censys sitrep ASSESSMENT SUPPORT MODERATE 9 Nov 2026 French cyber crisis coordination / DGSI publicly attributed the 11-12 October attack to IRGC-linked Shahid Kaveh. CERTFR-2026-CTI-009 ; DGSI GOVERNMENT ASSESSMENT MODERATE",
+  "affectedSystems": [
+    {
+      "title": "Confirmed organizations / sectors affected",
+      "badges": [],
+      "text": "Approximately 700 large-retail sites in France. CERTFR-2026-CTI-009 French large-distribution groups specifically named by French government reporting: Casino, Leclerc, Coopérative U, Metro, Carrefour, Intermarché . CERTFR-2026-CTI-009 Additional French food-sector victims: several small butcheries, one slaughterhouse, and cooperative food-processing plants. CERTFR-2026-CTI-009",
+      "sources": [
+        {
+          "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+          "label": "CERTFR-2026-CTI-009"
+        },
+        {
+          "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+          "label": "CERTFR-2026-CTI-009"
+        },
+        {
+          "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+          "label": "CERTFR-2026-CTI-009"
+        }
+      ]
+    },
+    {
+      "title": "Confirmed OT / product families",
+      "badges": [],
+      "text": "Danfoss AK-SM series refrigeration system managers / controllers. CERT-FR Danfoss AK-SC series . CERT-FR Copeland XWEB . CERT-FR Dixell XWEB . CERT-FR",
+      "sources": [
+        {
+          "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+          "label": "CERT-FR"
+        },
+        {
+          "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+          "label": "CERT-FR"
+        },
+        {
+          "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+          "label": "CERT-FR"
+        },
+        {
+          "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+          "label": "CERT-FR"
+        }
+      ]
+    },
+    {
+      "title": "Relevant architecture and OT context",
+      "badges": [],
+      "text": "Public technical material indicates that these platforms are supervisory refrigeration controllers used for centralized monitoring and management of refrigeration equipment across stores or sites. Claroty's Copeland research describes the supervisory controller role explicitly, while Danfoss documentation shows the AK-SM 800A as a system manager with web-based remote access features. Claroty Copeland research ; Danfoss StoreView Web Confirmed public evidence does not provide model-by-model disclosure for every affected French site, nor does it publicly identify specific PLCs, HMIs, engineering workstations, VPN products, or intermediate IT systems involved at individual victims.",
+      "sources": [
+        {
+          "url": "https://www.claroty.com/team82/research/chilling-discoveries-unpacking-vulnerabilities-in-copeland-xweb-pro-controllers",
+          "label": "Claroty Copeland research"
+        },
+        {
+          "url": "https://www.danfoss.com/en/products/dcs/monitoring-and-services/storeview-web/storeview-web-full-remote-access-to-your-ak-sm800a-and-ak-sm800/",
+          "label": "Danfoss StoreView Web"
+        }
+      ]
+    }
+  ],
+  "methodology": "Confirmed activity Compromise of remote refrigeration controllers. CERT-FR Modification of defrost parameters to high temperatures. French government CTI note Internet exposure of management interfaces was a critical risk condition; CERT-FR instructed removal from public IP space and restoration via secure VPN or protected network only. CERT-FR CERT-FR warned campaigns were probably still ongoing as of the alert update. CERT-FR Dutch NCSC warned that internet-connected cooling systems could be abused through vulnerabilities and poor or default passwords to remotely change temperature or defrost cycles. NCSC-NL Supported but not directly proven for the French intrusions Weak/default credentials as an access path: supported by Dutch NCSC warning and vendor guidance, but not publicly proven as the French initial access path. NCSC-NL ; Copeland bulletin Exploitation of known vulnerabilities in Danfoss or XWEB platforms: technically plausible and supported by public product advisories, but not publicly tied by authoritative evidence to the October French compromise path. Danfoss DSA-2025-03-01 ; Claroty dashboard Internet reconnaissance using FOFA : cited by French attribution reporting as part of attacker tradecraft, but not enough alone to establish exact system entry sequence. CERTFR-2026-CTI-009 Vulnerabilities and product-security evidence relevant to exposure Technology Publicly documented issue Status in this investigation Source Danfoss AK-SM8xxA CVE-2025-41450 improper authentication / authentication bypass affecting versions prior to 4.2. Relevant technical risk; not publicly verified as used in the French attack. Danfoss advisory Danfoss AK-SM 800A Version 4.3.1 and later security hardening included cryptographic validation, hardened updates, disabled SSH, input sanitization, stronger password requirements, and blocking serial-console root access. Shows prior hardening path and that older deployments may have lacked these protections. Danfoss Tech Insider Sep 2025 Copeland XWEB PRO Feb 2026 bulletin says firmware 1.13 addressed identified vulnerabilities and that all XWEB PRO models exposed to the internet were impacted. Relevant technical risk; not publicly verified as used in the French attack. Copeland bulletin Copeland XWEB family Multiple 2026 CVEs publicly listed by Claroty Team82. Corroborates exposed attack surface; does not prove operational exploitation in France. Claroty dashboard Danfoss / XWEB exposure Censys observed large numbers of internet-exposed systems and a sharp drop after the attacks. Strong circumstantial support that direct exposure was widespread and operationally relevant. Censys sitrep Initial access: UNRESOLVED . Public evidence supports exposure, weak/default credentials, and/or n-day exploitation as plausible paths, but does not conclusively identify which path was used in the French compromises.",
+  "impact": "Cyber impact Unauthorized control of refrigeration supervisory systems. Compromise of remote controllers at scale. Need to remove systems from internet exposure and reconfigure before restoration. CERT-FR Operational / physical impact Major merchandise losses in French retail and food sites. At least 15 fire starts reported by French government cyber crisis reporting. Temperature-sensitive process disruption through defrost setting manipulation. CERTFR-2026-CTI-009 Safety / supply-chain implications Potential food safety risk is strongly implied when temperatures rise in refrigeration systems. Dutch NCSC explicitly warned of spoiled goods, food-safety danger, financial loss, and business interruption. NCSC-NL Blood contamination / public health impact The user's scope highlights blood-product refrigeration and EFS. In the collected primary/authoritative sources for this investigation, no official EFS or French health-ministry statement was found confirming a refrigeration cyberattack causing blood-product loss or contamination . Therefore: UNRESOLVED INSUFFICIENT EVIDENCE Some press reporting has referenced blood-storage targeting, but without accessible primary confirmation in the collected record. This report does not treat such claims as established fact.",
+  "correlation": "French incident internal correlation The available evidence strongly supports that the French events of 11-12 October 2026 were a coordinated, multi-victim campaign rather than isolated local incidents. Indicators supporting correlation include: same time window; same target class (refrigeration controllers); same OT function (cold-chain / food refrigeration); same mode of effect (temperature / defrost manipulation); same publicly named product families; and centralized national response through CERT-FR and C4. CERT-FR ; CERTFR-2026-CTI-009 Relation to contemporaneous Schneider Electric OT targeting in France French government reporting states that C4 observed concomitant targeting of several Schneider Electric devices belonging to small hydroelectric installations in France and linked this targeting to the same attack. Because this comes from an authoritative French interagency source, it is significant; however, public forensic details are limited. CERTFR-2026-CTI-009 Assessment: POSSIBLE / GOVERNMENT-ASSESSED RELATIONSHIP MODERATE CONFIDENCE Contradictory / limiting factors Public evidence does not disclose shared malware, shared IOC sets, or a detailed common command sequence across all victims. Public evidence does not show whether Danfoss and XWEB victims were compromised through the same access mechanism. Incident / Geography What is publicly established Relationship to French attacks Confidence EU multi-country wave, 1-2 Nov 2026 European Commission / ENISA / Europol EC3 / EU CSIRTs Network / EU-CyCLONe confirmed a new wave of incidents affecting refrigeration systems across multiple EU countries. POSSIBLE TO LIKELY RELATIONSHIP - Official statement treats incidents as part of the same security problem set, but public technical evidence is not enough to prove common authorship for each case. MODERATE Netherlands, Nov 2026 Dutch NCSC confirmed ongoing attacks in Europe including the Netherlands and described similar abuse patterns involving vulnerabilities and weak/default passwords. SIMILAR ACTIVITY / POSSIBLE RELATIONSHIP MODERATE UK concern / references, Nov 2026 UK NCSC referred to disruption of refrigeration units across Europe in its annual review speech, but did not publish detailed incident linkage in the collected record. INVESTIGATIVE LEAD LOW Earlier Iranian activity against industrial equipment, incl. Unitronics and Israeli refrigeration equipment French attribution document states Shahid Kaveh had targeted industrial control equipment at scale and claimed sabotage campaigns, including Israeli refrigeration equipment in Mar-Apr 2026. RELEVANT PRECEDENT - useful context, not proof that all 2026 EU refrigeration incidents are one campaign. MODERATE United States refrigeration infrastructure No authoritative, directly analogous U.S. refrigeration attack was identified in the collected record. CISA/FBI guidance on OT disruption and HMI manipulation exists, but not a confirmed 2026 U.S. refrigeration case here. NO ESTABLISHED RELATIONSHIP INSUFFICIENT EVIDENCE Bottom line: similar refrigeration-system targeting has been publicly observed elsewhere in Europe in November 2026. A broader campaign is plausible and partly supported by official EU and Dutch statements, but public evidence is still insufficient to merge every incident into a single confirmed campaign with common authorship.",
+  "attribution": "Known facts France publicly attributed the 11-12 Oct 2026 refrigeration attack to the IRGC cyber apparatus and named Shahid Kaveh as the executing unit. CERTFR-2026-CTI-009 French reporting cites shared infrastructure, FOFA use, propaganda relay by CyberbanNews, traces of Farsi, and concurrent Schneider Electric targeting. CERTFR-2026-CTI-009 Supporting evidence Authoritative interagency French source (C4 member reporting) and DGSI publication. Reported infrastructure overlap with Schneider Electric reconnaissance / targeting. Reported tradecraft continuity with Shahid Kaveh's prior ICS-focused activity and use of FOFA. Contradictory evidence / limitations Publicly released forensic evidence is summarized, not fully disclosed. No public IOC package, malware sample set, or court-filed technical annex was located in the collected record. Some cited indicators, such as Farsi traces or propaganda relay, are weak if taken alone and cannot independently establish attribution. Alternative explanations Other actors could theoretically imitate known Iranian tradecraft or exploit the same exposed products. Shared internet-scanning tools such as FOFA are non-exclusive and common among many actors. Public claims amplification can follow an incident opportunistically. Assessment GOVERNMENT ASSESSMENT MODERATE CONFIDENCE The strongest public attribution available is the French government's assessment that the attack was conducted by the IRGC-linked Shahid Kaveh unit. This assessment is credible because it comes from responsible national authorities with incident access and cross-agency visibility. However, because the underlying technical record remains only partially public, and because several cited indicators are suggestive rather than dispositive on their own, the public-facing confidence should remain moderate , not high. Public reporting does not justify elevating the attribution to \"confirmed attribution\" in an evidentiary sense equivalent to fully disclosed forensic proof or adjudicated judicial findings. Evidence gaps Published indicators of compromise and attack infrastructure. Technical tie between the refrigeration intrusions and prior attributed Shahid Kaveh operations. Victim-side forensics on exact access path and operator actions.",
+  "recommendations": "",
+  "sections": [
+    {
+      "heading": "Executive Assessment",
+      "text": "Publicly available evidence establishes that a large-scale cyberattack targeted internet-accessible refrigeration controllers in France during the night of 11-12 October 2026 , affecting approximately 700 retail sites and additional food-sector victims. French government reporting states that attackers modified refrigeration defrost parameters to high temperatures, causing major merchandise losses and at least 15 fire starts . The officially identified affected controller families were Danfoss AK-SM / AK-SC and Copeland XWEB / Dixell XWEB . CERT-FR Alert CERTFR-2026-ALE-012 ; CERTFR-2026-CTI-009 Public evidence also establishes a broader European pattern. On 4 November 2026 , the European Commission, ENISA, Europol EC3, the EU CSIRTs Network, and EU-CyCLONe issued a joint statement confirming cyber incidents affecting refrigeration systems across multiple EU countries and referring to a new wave on 1-2 November 2026 . The Dutch NCSC separately confirmed that multiple attacks on refrigeration installations were occurring in Europe, including the Netherlands. European Commission / ENISA joint statement ; NCSC-NL advisory, 2 Nov 2026 The best-supported technical explanation is that attackers exploited the unsafe exposure of refrigeration management interfaces directly to the public internet, combined with weak/default credentials and, potentially, unpatched known vulnerabilities in the affected product families. However, public evidence does not conclusively establish the exact initial-access mechanism used in the French attacks . CERT-FR explicitly emphasized internet-exposed management interfaces and urgent removal from public IP space; Dutch NCSC warned of abuse of vulnerabilities and poor/default passwords; vendor and research material shows serious disclosed vulnerabilities in both Danfoss and XWEB products, but no authoritative source in the collected record directly proves a specific CVE was used in the October French intrusions. CERT-FR Alert ; NCSC-NL ; Danfoss DSA-2025-03-01 ; Copeland XWEB PRO bulletin Attribution is no longer fully unresolved. On 9 November 2026 , France's cyber crisis coordination reporting publicly imputed the French refrigeration attack to the Iranian IRGC's cyber apparatus, specifically identifying the Shahid Kaveh unit as the executing unit and citing multiple indicators including shared attack infrastructure, use of FOFA, contemporaneous activity against Schneider Electric OT, propaganda amplification, and traces of Farsi. This is an authoritative government attribution assessment , but much of the underlying forensic detail remains undisclosed publicly. Accordingly, attribution can be assessed as a French government assessment with moderate confidence , not confirmed beyond doubt in the public record. CERTFR-2026-CTI-009 ; DGSI statement Key unresolved issue: the exact compromise path into French refrigeration systems remains UNRESOLVED . Public reporting does not conclusively show whether attackers used specific CVEs, weak/default credentials, exposed remote admin portals, exposed VNC-like access, or a combination.",
+      "cards": []
+    },
+    {
+      "heading": "Key Findings",
+      "text": "France experienced a large-scale refrigeration OT cyberattack CONFIRMED FACT HIGH CONFIDENCE French authorities reported that about 700 large-retail sites were hit after refrigeration controllers were compromised during the night of 11-12 October 2026. Supporting evidence: CERTFR-2026-CTI-009 Process settings were deliberately manipulated CONFIRMED FACT HIGH CONFIDENCE French reporting states defrost parameters were changed to high temperatures, causing merchandise loss and at least 15 fires. Supporting evidence: CERTFR-2026-CTI-009 Impacted product families are known CONFIRMED FACT HIGH CONFIDENCE CERT-FR identified Danfoss AK-SM / AK-SC and Copeland / Dixell XWEB as affected systems. Supporting evidence: CERTFR-2026-ALE-012 Internet-exposed management interfaces were central risk factors ASSESSMENT HIGH CONFIDENCE Official advisories emphasized internet exposure, urgent removal from public IPs, and use of secure VPNs instead. This strongly supports exposed remote administration as a key enabling condition. Supporting evidence: CERT-FR ; NCSC-NL Similar attacks spread beyond France CONFIRMED FACT MODERATE CONFIDENCE EU authorities confirmed incidents across multiple EU countries and a new wave on 1-2 November 2026. The Netherlands publicly acknowledged concurrent attacks. Supporting evidence: EU joint statement ; NCSC-NL Attribution is publicly advanced by France, but not fully transparent GOVERNMENT ASSESSMENT MODERATE CONFIDENCE France publicly attributed the attack to the IRGC-linked Shahid Kaveh unit, but complete forensic substantiation is not public. Supporting evidence: CERTFR-2026-CTI-009 ; DGSI",
+      "cards": [
+        {
+          "title": "France experienced a large-scale refrigeration OT cyberattack",
+          "badges": ["CONFIRMED FACT", "HIGH CONFIDENCE"],
+          "text": "French authorities reported that about 700 large-retail sites were hit after refrigeration controllers were compromised during the night of 11-12 October 2026.",
+          "sources": [
+            {
+              "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+              "label": "CERTFR-2026-CTI-009"
+            }
+          ]
+        },
+        {
+          "title": "Process settings were deliberately manipulated",
+          "badges": ["CONFIRMED FACT", "HIGH CONFIDENCE"],
+          "text": "French reporting states defrost parameters were changed to high temperatures, causing merchandise loss and at least 15 fires.",
+          "sources": [
+            {
+              "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+              "label": "CERTFR-2026-CTI-009"
+            }
+          ]
+        },
+        {
+          "title": "Impacted product families are known",
+          "badges": ["CONFIRMED FACT", "HIGH CONFIDENCE"],
+          "text": "CERT-FR identified Danfoss AK-SM / AK-SC and Copeland / Dixell XWEB as affected systems.",
+          "sources": [
+            {
+              "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+              "label": "CERTFR-2026-ALE-012"
+            }
+          ]
+        },
+        {
+          "title": "Internet-exposed management interfaces were central risk factors",
+          "badges": ["ASSESSMENT", "HIGH CONFIDENCE"],
+          "text": "Official advisories emphasized internet exposure, urgent removal from public IPs, and use of secure VPNs instead. This strongly supports exposed remote administration as a key enabling condition.",
+          "sources": [
+            {
+              "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+              "label": "CERT-FR"
+            },
+            {
+              "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+              "label": "NCSC-NL"
+            }
+          ]
+        },
+        {
+          "title": "Similar attacks spread beyond France",
+          "badges": ["CONFIRMED FACT", "MODERATE CONFIDENCE"],
+          "text": "EU authorities confirmed incidents across multiple EU countries and a new wave on 1-2 November 2026. The Netherlands publicly acknowledged concurrent attacks.",
+          "sources": [
+            {
+              "url": "https://digital-strategy.ec.europa.eu/en/news/joint-statement-cyber-incidents-refrigeration-systems-across-eu",
+              "label": "EU joint statement"
+            },
+            {
+              "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+              "label": "NCSC-NL"
+            }
+          ]
+        },
+        {
+          "title": "Attribution is publicly advanced by France, but not fully transparent",
+          "badges": ["GOVERNMENT ASSESSMENT", "MODERATE CONFIDENCE"],
+          "text": "France publicly attributed the attack to the IRGC-linked Shahid Kaveh unit, but complete forensic substantiation is not public.",
+          "sources": [
+            {
+              "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+              "label": "CERTFR-2026-CTI-009"
+            },
+            {
+              "url": "https://www.dgsi.interieur.gouv.fr/dgsi-a-vos-cotes/cyberdefense/campagnes-de-destabilisation-et-sabotage-menees-a-lencontre-des-interets-francais-par-republique",
+              "label": "DGSI"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Incident Timeline",
+      "text": "Date / Time Event Source Classification Confidence 24 Mar 2025 Danfoss published DSA-2025-03-01 for AK-SM8xxA, including CVE-2025-41450 (authentication bypass / improper authentication) affecting versions prior to 4.2. Danfoss advisory CONFIRMED FACT HIGH Feb 2026 Copeland issued XWEB PRO security update guidance and stated firmware 1.13 addressed identified vulnerabilities. Bulletin advised that all internet-exposed XWEB PRO models were impacted and recommended removing public internet exposure. Copeland bulletin CONFIRMED FACT HIGH 26 Feb 2026 Claroty Team82 public dashboard showed multiple Copeland XWEB / XWEB Pro CVEs disclosed. Claroty disclosure dashboard CONFIRMED FACT MODERATE Apr 2026 French cyber crisis reporting later stated Shahid Kaveh had been observed using Modbus/502 for mass reconnaissance against Schneider Electric ICS, including in France. CERTFR-2026-CTI-009 CONFIRMED FACT MODERATE 11-12 Oct 2026 (overnight) French refrigeration attack: controllers at approximately 700 large-retail sites compromised; defrost parameters changed to high temperatures. CERTFR-2026-CTI-009 CONFIRMED FACT HIGH 12 Oct 2026 CERT-FR published alert CERTFR-2026-ALE-012 on compromises targeting refrigeration remote controllers. CERT-FR alert CONFIRMED FACT HIGH 13 Oct 2026 CERT-FR version history added \"other targeted equipment.\" French attribution report later stated CyberbanNews relayed the refrigeration attack on this date. CERT-FR alert ; CERTFR-2026-CTI-009 CONFIRMED FACT MODERATE 16 Oct 2026 CERT-FR updated the refrigeration alert and explicitly identified Danfoss AK-SM/AK-SC, Copeland XWEB, and Dixell XWEB as affected. CERT-FR alert CONFIRMED FACT HIGH 1-2 Nov 2026 New wave of refrigeration-system cyber incidents across multiple EU countries. EU joint statement CONFIRMED FACT MODERATE 2 Nov 2026 Dutch NCSC published advisory stating multiple attacks on refrigeration installations were occurring in Europe, including the Netherlands. NCSC-NL CONFIRMED FACT HIGH 4 Nov 2026 European Commission, ENISA, Europol EC3, the EU CSIRTs Network, and EU-CyCLONe issued joint statement on refrigeration cyber incidents across the EU. EU joint statement CONFIRMED FACT HIGH 5 Nov 2026 Censys published exposure analysis showing a sharp reduction in exposed Danfoss / XWEB systems following the incidents. Censys sitrep ASSESSMENT SUPPORT MODERATE 9 Nov 2026 French cyber crisis coordination / DGSI publicly attributed the 11-12 October attack to IRGC-linked Shahid Kaveh. CERTFR-2026-CTI-009 ; DGSI GOVERNMENT ASSESSMENT MODERATE",
+      "cards": []
+    },
+    {
+      "heading": "Affected Systems",
+      "text": "Confirmed organizations / sectors affected Approximately 700 large-retail sites in France. CERTFR-2026-CTI-009 French large-distribution groups specifically named by French government reporting: Casino, Leclerc, Coopérative U, Metro, Carrefour, Intermarché . CERTFR-2026-CTI-009 Additional French food-sector victims: several small butcheries, one slaughterhouse, and cooperative food-processing plants. CERTFR-2026-CTI-009 Confirmed OT / product families Danfoss AK-SM series refrigeration system managers / controllers. CERT-FR Danfoss AK-SC series . CERT-FR Copeland XWEB . CERT-FR Dixell XWEB . CERT-FR Relevant architecture and OT context Public technical material indicates that these platforms are supervisory refrigeration controllers used for centralized monitoring and management of refrigeration equipment across stores or sites. Claroty's Copeland research describes the supervisory controller role explicitly, while Danfoss documentation shows the AK-SM 800A as a system manager with web-based remote access features. Claroty Copeland research ; Danfoss StoreView Web Confirmed public evidence does not provide model-by-model disclosure for every affected French site, nor does it publicly identify specific PLCs, HMIs, engineering workstations, VPN products, or intermediate IT systems involved at individual victims. Publicly confirmed OT interaction: attackers changed refrigeration process settings. Publicly unconfirmed OT specifics: exact controller models per victim, field controller types, PLC/HMI command paths, and whether any separate engineering workstation or vendor remote-service stack was used.",
+      "cards": [
+        {
+          "title": "Confirmed organizations / sectors affected",
+          "badges": [],
+          "text": "Approximately 700 large-retail sites in France. CERTFR-2026-CTI-009 French large-distribution groups specifically named by French government reporting: Casino, Leclerc, Coopérative U, Metro, Carrefour, Intermarché . CERTFR-2026-CTI-009 Additional French food-sector victims: several small butcheries, one slaughterhouse, and cooperative food-processing plants. CERTFR-2026-CTI-009",
+          "sources": [
+            {
+              "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+              "label": "CERTFR-2026-CTI-009"
+            },
+            {
+              "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+              "label": "CERTFR-2026-CTI-009"
+            },
+            {
+              "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+              "label": "CERTFR-2026-CTI-009"
+            }
+          ]
+        },
+        {
+          "title": "Confirmed OT / product families",
+          "badges": [],
+          "text": "Danfoss AK-SM series refrigeration system managers / controllers. CERT-FR Danfoss AK-SC series . CERT-FR Copeland XWEB . CERT-FR Dixell XWEB . CERT-FR",
+          "sources": [
+            {
+              "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+              "label": "CERT-FR"
+            },
+            {
+              "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+              "label": "CERT-FR"
+            },
+            {
+              "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+              "label": "CERT-FR"
+            },
+            {
+              "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+              "label": "CERT-FR"
+            }
+          ]
+        },
+        {
+          "title": "Relevant architecture and OT context",
+          "badges": [],
+          "text": "Public technical material indicates that these platforms are supervisory refrigeration controllers used for centralized monitoring and management of refrigeration equipment across stores or sites. Claroty's Copeland research describes the supervisory controller role explicitly, while Danfoss documentation shows the AK-SM 800A as a system manager with web-based remote access features. Claroty Copeland research ; Danfoss StoreView Web Confirmed public evidence does not provide model-by-model disclosure for every affected French site, nor does it publicly identify specific PLCs, HMIs, engineering workstations, VPN products, or intermediate IT systems involved at individual victims.",
+          "sources": [
+            {
+              "url": "https://www.claroty.com/team82/research/chilling-discoveries-unpacking-vulnerabilities-in-copeland-xweb-pro-controllers",
+              "label": "Claroty Copeland research"
+            },
+            {
+              "url": "https://www.danfoss.com/en/products/dcs/monitoring-and-services/storeview-web/storeview-web-full-remote-access-to-your-ak-sm800a-and-ak-sm800/",
+              "label": "Danfoss StoreView Web"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Attack Methodology",
+      "text": "Confirmed activity Compromise of remote refrigeration controllers. CERT-FR Modification of defrost parameters to high temperatures. French government CTI note Internet exposure of management interfaces was a critical risk condition; CERT-FR instructed removal from public IP space and restoration via secure VPN or protected network only. CERT-FR CERT-FR warned campaigns were probably still ongoing as of the alert update. CERT-FR Dutch NCSC warned that internet-connected cooling systems could be abused through vulnerabilities and poor or default passwords to remotely change temperature or defrost cycles. NCSC-NL Supported but not directly proven for the French intrusions Weak/default credentials as an access path: supported by Dutch NCSC warning and vendor guidance, but not publicly proven as the French initial access path. NCSC-NL ; Copeland bulletin Exploitation of known vulnerabilities in Danfoss or XWEB platforms: technically plausible and supported by public product advisories, but not publicly tied by authoritative evidence to the October French compromise path. Danfoss DSA-2025-03-01 ; Claroty dashboard Internet reconnaissance using FOFA : cited by French attribution reporting as part of attacker tradecraft, but not enough alone to establish exact system entry sequence. CERTFR-2026-CTI-009 Vulnerabilities and product-security evidence relevant to exposure Technology Publicly documented issue Status in this investigation Source Danfoss AK-SM8xxA CVE-2025-41450 improper authentication / authentication bypass affecting versions prior to 4.2. Relevant technical risk; not publicly verified as used in the French attack. Danfoss advisory Danfoss AK-SM 800A Version 4.3.1 and later security hardening included cryptographic validation, hardened updates, disabled SSH, input sanitization, stronger password requirements, and blocking serial-console root access. Shows prior hardening path and that older deployments may have lacked these protections. Danfoss Tech Insider Sep 2025 Copeland XWEB PRO Feb 2026 bulletin says firmware 1.13 addressed identified vulnerabilities and that all XWEB PRO models exposed to the internet were impacted. Relevant technical risk; not publicly verified as used in the French attack. Copeland bulletin Copeland XWEB family Multiple 2026 CVEs publicly listed by Claroty Team82. Corroborates exposed attack surface; does not prove operational exploitation in France. Claroty dashboard Danfoss / XWEB exposure Censys observed large numbers of internet-exposed systems and a sharp drop after the attacks. Strong circumstantial support that direct exposure was widespread and operationally relevant. Censys sitrep Initial access: UNRESOLVED . Public evidence supports exposure, weak/default credentials, and/or n-day exploitation as plausible paths, but does not conclusively identify which path was used in the French compromises.",
+      "cards": [
+        {
+          "title": "Confirmed activity",
+          "badges": [],
+          "text": "Compromise of remote refrigeration controllers. CERT-FR Modification of defrost parameters to high temperatures. French government CTI note Internet exposure of management interfaces was a critical risk condition; CERT-FR instructed removal from public IP space and restoration via secure VPN or protected network only. CERT-FR CERT-FR warned campaigns were probably still ongoing as of the alert update. CERT-FR Dutch NCSC warned that internet-connected cooling systems could be abused through vulnerabilities and poor or default passwords to remotely change temperature or defrost cycles. NCSC-NL",
+          "sources": [
+            {
+              "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+              "label": "CERT-FR"
+            },
+            {
+              "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+              "label": "French government CTI note"
+            },
+            {
+              "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+              "label": "CERT-FR"
+            },
+            {
+              "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+              "label": "CERT-FR"
+            },
+            {
+              "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+              "label": "NCSC-NL"
+            }
+          ]
+        },
+        {
+          "title": "Supported but not directly proven for the French intrusions",
+          "badges": [],
+          "text": "Weak/default credentials as an access path: supported by Dutch NCSC warning and vendor guidance, but not publicly proven as the French initial access path. NCSC-NL ; Copeland bulletin Exploitation of known vulnerabilities in Danfoss or XWEB platforms: technically plausible and supported by public product advisories, but not publicly tied by authoritative evidence to the October French compromise path. Danfoss DSA-2025-03-01 ; Claroty dashboard Internet reconnaissance using FOFA : cited by French attribution reporting as part of attacker tradecraft, but not enough alone to establish exact system entry sequence. CERTFR-2026-CTI-009",
+          "sources": [
+            {
+              "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+              "label": "NCSC-NL"
+            },
+            {
+              "url": "https://webapps.copeland.com/dixell/Content/Pages/SystemSoftwareUpdate/XWEB-PRO/Security%20update%20%20XWEB-PRO%20-%20Product_Bulletin_February_2026.pdf",
+              "label": "Copeland bulletin"
+            },
+            {
+              "url": "https://www.danfoss.com/en/service-and-support/coordinated-vulnerability-disclosure/danfoss-security-advisories/dsa-2025-03-01",
+              "label": "Danfoss DSA-2025-03-01"
+            },
+            {
+              "url": "https://blog.claroty.com/team82/disclosure-dashboard?vulnerabilities_page=1",
+              "label": "Claroty dashboard"
+            },
+            {
+              "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+              "label": "CERTFR-2026-CTI-009"
+            }
+          ]
+        },
+        {
+          "title": "Vulnerabilities and product-security evidence relevant to exposure",
+          "badges": [],
+          "text": "",
+          "sources": [
+            {
+              "url": "https://www.danfoss.com/en/service-and-support/coordinated-vulnerability-disclosure/danfoss-security-advisories/dsa-2025-03-01",
+              "label": "Danfoss advisory"
+            },
+            {
+              "url": "https://www.danfoss.com/en/service-and-support/articles/dcs/tech-insider-september-2025/",
+              "label": "Danfoss Tech Insider Sep 2025"
+            },
+            {
+              "url": "https://webapps.copeland.com/dixell/Content/Pages/SystemSoftwareUpdate/XWEB-PRO/Security%20update%20%20XWEB-PRO%20-%20Product_Bulletin_February_2026.pdf",
+              "label": "Copeland bulletin"
+            },
+            {
+              "url": "https://blog.claroty.com/team82/disclosure-dashboard?vulnerabilities_page=1",
+              "label": "Claroty dashboard"
+            },
+            {
+              "url": "https://censys.com/blog/european-refrigeration-controller-exposure-sitrep",
+              "label": "Censys sitrep"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Operational Impact",
+      "text": "Cyber impact Unauthorized control of refrigeration supervisory systems. Compromise of remote controllers at scale. Need to remove systems from internet exposure and reconfigure before restoration. CERT-FR Operational / physical impact Major merchandise losses in French retail and food sites. At least 15 fire starts reported by French government cyber crisis reporting. Temperature-sensitive process disruption through defrost setting manipulation. CERTFR-2026-CTI-009 Safety / supply-chain implications Potential food safety risk is strongly implied when temperatures rise in refrigeration systems. Dutch NCSC explicitly warned of spoiled goods, food-safety danger, financial loss, and business interruption. NCSC-NL Blood contamination / public health impact The user's scope highlights blood-product refrigeration and EFS. In the collected primary/authoritative sources for this investigation, no official EFS or French health-ministry statement was found confirming a refrigeration cyberattack causing blood-product loss or contamination . Therefore: UNRESOLVED INSUFFICIENT EVIDENCE Some press reporting has referenced blood-storage targeting, but without accessible primary confirmation in the collected record. This report does not treat such claims as established fact.",
+      "cards": [
+        {
+          "title": "Cyber impact",
+          "badges": [],
+          "text": "Unauthorized control of refrigeration supervisory systems. Compromise of remote controllers at scale. Need to remove systems from internet exposure and reconfigure before restoration.",
+          "sources": [
+            {
+              "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+              "label": "CERT-FR"
+            }
+          ]
+        },
+        {
+          "title": "Operational / physical impact",
+          "badges": [],
+          "text": "Major merchandise losses in French retail and food sites. At least 15 fire starts reported by French government cyber crisis reporting. Temperature-sensitive process disruption through defrost setting manipulation.",
+          "sources": [
+            {
+              "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+              "label": "CERTFR-2026-CTI-009"
+            }
+          ]
+        },
+        {
+          "title": "Safety / supply-chain implications",
+          "badges": [],
+          "text": "Potential food safety risk is strongly implied when temperatures rise in refrigeration systems. Dutch NCSC explicitly warned of spoiled goods, food-safety danger, financial loss, and business interruption.",
+          "sources": [
+            {
+              "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+              "label": "NCSC-NL"
+            }
+          ]
+        },
+        {
+          "title": "Blood contamination / public health impact",
+          "badges": ["UNRESOLVED", "INSUFFICIENT EVIDENCE"],
+          "text": "The user's scope highlights blood-product refrigeration and EFS. In the collected primary/authoritative sources for this investigation, no official EFS or French health-ministry statement was found confirming a refrigeration cyberattack causing blood-product loss or contamination . Therefore: UNRESOLVED INSUFFICIENT EVIDENCE Some press reporting has referenced blood-storage targeting, but without accessible primary confirmation in the collected record. This report does not treat such claims as established fact.",
+          "sources": []
+        }
+      ]
+    },
+    {
+      "heading": "Incident Correlation",
+      "text": "French incident internal correlation The available evidence strongly supports that the French events of 11-12 October 2026 were a coordinated, multi-victim campaign rather than isolated local incidents. Indicators supporting correlation include: same time window; same target class (refrigeration controllers); same OT function (cold-chain / food refrigeration); same mode of effect (temperature / defrost manipulation); same publicly named product families; and centralized national response through CERT-FR and C4. CERT-FR ; CERTFR-2026-CTI-009 Relation to contemporaneous Schneider Electric OT targeting in France French government reporting states that C4 observed concomitant targeting of several Schneider Electric devices belonging to small hydroelectric installations in France and linked this targeting to the same attack. Because this comes from an authoritative French interagency source, it is significant; however, public forensic details are limited. CERTFR-2026-CTI-009 Assessment: POSSIBLE / GOVERNMENT-ASSESSED RELATIONSHIP MODERATE CONFIDENCE Contradictory / limiting factors Public evidence does not disclose shared malware, shared IOC sets, or a detailed common command sequence across all victims. Public evidence does not show whether Danfoss and XWEB victims were compromised through the same access mechanism.",
+      "cards": [
+        {
+          "title": "French incident internal correlation",
+          "badges": ["POSSIBLE / GOVERNMENT-ASSESSED RELATIONSHIP", "MODERATE CONFIDENCE"],
+          "text": "The available evidence strongly supports that the French events of 11-12 October 2026 were a coordinated, multi-victim campaign rather than isolated local incidents. Indicators supporting correlation include: same time window; same target class (refrigeration controllers); same OT function (cold-chain / food refrigeration); same mode of effect (temperature / defrost manipulation); same publicly named product families; and centralized national response through CERT-FR and C4. CERT-FR ; CERTFR-2026-CTI-009 French government reporting states that C4 observed concomitant targeting of several Schneider Electric devices belonging to small hydroelectric installations in France and linked this targeting to the same attack. Because this comes from an authoritative French interagency source, it is significant; however, public forensic details are limited. CERTFR-2026-CTI-009 Assessment: POSSIBLE / GOVERNMENT-ASSESSED RELATIONSHIP MODERATE CONFIDENCE",
+          "sources": [
+            {
+              "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+              "label": "CERT-FR"
+            },
+            {
+              "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+              "label": "CERTFR-2026-CTI-009"
+            },
+            {
+              "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+              "label": "CERTFR-2026-CTI-009"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "External Campaign Correlation",
+      "text": "Incident / Geography What is publicly established Relationship to French attacks Confidence EU multi-country wave, 1-2 Nov 2026 European Commission / ENISA / Europol EC3 / EU CSIRTs Network / EU-CyCLONe confirmed a new wave of incidents affecting refrigeration systems across multiple EU countries. POSSIBLE TO LIKELY RELATIONSHIP - Official statement treats incidents as part of the same security problem set, but public technical evidence is not enough to prove common authorship for each case. MODERATE Netherlands, Nov 2026 Dutch NCSC confirmed ongoing attacks in Europe including the Netherlands and described similar abuse patterns involving vulnerabilities and weak/default passwords. SIMILAR ACTIVITY / POSSIBLE RELATIONSHIP MODERATE UK concern / references, Nov 2026 UK NCSC referred to disruption of refrigeration units across Europe in its annual review speech, but did not publish detailed incident linkage in the collected record. INVESTIGATIVE LEAD LOW Earlier Iranian activity against industrial equipment, incl. Unitronics and Israeli refrigeration equipment French attribution document states Shahid Kaveh had targeted industrial control equipment at scale and claimed sabotage campaigns, including Israeli refrigeration equipment in Mar-Apr 2026. RELEVANT PRECEDENT - useful context, not proof that all 2026 EU refrigeration incidents are one campaign. MODERATE United States refrigeration infrastructure No authoritative, directly analogous U.S. refrigeration attack was identified in the collected record. CISA/FBI guidance on OT disruption and HMI manipulation exists, but not a confirmed 2026 U.S. refrigeration case here. NO ESTABLISHED RELATIONSHIP INSUFFICIENT EVIDENCE Bottom line: similar refrigeration-system targeting has been publicly observed elsewhere in Europe in November 2026. A broader campaign is plausible and partly supported by official EU and Dutch statements, but public evidence is still insufficient to merge every incident into a single confirmed campaign with common authorship.",
+      "cards": []
+    },
+    {
+      "heading": "Attribution Assessment",
+      "text": "Known facts France publicly attributed the 11-12 Oct 2026 refrigeration attack to the IRGC cyber apparatus and named Shahid Kaveh as the executing unit. CERTFR-2026-CTI-009 French reporting cites shared infrastructure, FOFA use, propaganda relay by CyberbanNews, traces of Farsi, and concurrent Schneider Electric targeting. CERTFR-2026-CTI-009 Supporting evidence Authoritative interagency French source (C4 member reporting) and DGSI publication. Reported infrastructure overlap with Schneider Electric reconnaissance / targeting. Reported tradecraft continuity with Shahid Kaveh's prior ICS-focused activity and use of FOFA. Contradictory evidence / limitations Publicly released forensic evidence is summarized, not fully disclosed. No public IOC package, malware sample set, or court-filed technical annex was located in the collected record. Some cited indicators, such as Farsi traces or propaganda relay, are weak if taken alone and cannot independently establish attribution. Alternative explanations Other actors could theoretically imitate known Iranian tradecraft or exploit the same exposed products. Shared internet-scanning tools such as FOFA are non-exclusive and common among many actors. Public claims amplification can follow an incident opportunistically. Assessment GOVERNMENT ASSESSMENT MODERATE CONFIDENCE The strongest public attribution available is the French government's assessment that the attack was conducted by the IRGC-linked Shahid Kaveh unit. This assessment is credible because it comes from responsible national authorities with incident access and cross-agency visibility. However, because the underlying technical record remains only partially public, and because several cited indicators are suggestive rather than dispositive on their own, the public-facing confidence should remain moderate , not high. Public reporting does not justify elevating the attribution to \"confirmed attribution\" in an evidentiary sense equivalent to fully disclosed forensic proof or adjudicated judicial findings. Evidence gaps Published indicators of compromise and attack infrastructure. Technical tie between the refrigeration intrusions and prior attributed Shahid Kaveh operations. Victim-side forensics on exact access path and operator actions.",
+      "cards": [
+        {
+          "title": "Known facts",
+          "badges": [],
+          "text": "France publicly attributed the 11-12 Oct 2026 refrigeration attack to the IRGC cyber apparatus and named Shahid Kaveh as the executing unit. CERTFR-2026-CTI-009 French reporting cites shared infrastructure, FOFA use, propaganda relay by CyberbanNews, traces of Farsi, and concurrent Schneider Electric targeting. CERTFR-2026-CTI-009",
+          "sources": [
+            {
+              "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+              "label": "CERTFR-2026-CTI-009"
+            },
+            {
+              "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+              "label": "CERTFR-2026-CTI-009"
+            }
+          ]
+        },
+        {
+          "title": "Supporting evidence",
+          "badges": [],
+          "text": "Authoritative interagency French source (C4 member reporting) and DGSI publication. Reported infrastructure overlap with Schneider Electric reconnaissance / targeting. Reported tradecraft continuity with Shahid Kaveh's prior ICS-focused activity and use of FOFA.",
+          "sources": []
+        },
+        {
+          "title": "Contradictory evidence / limitations",
+          "badges": [],
+          "text": "Publicly released forensic evidence is summarized, not fully disclosed. No public IOC package, malware sample set, or court-filed technical annex was located in the collected record. Some cited indicators, such as Farsi traces or propaganda relay, are weak if taken alone and cannot independently establish attribution.",
+          "sources": []
+        },
+        {
+          "title": "Alternative explanations",
+          "badges": [],
+          "text": "Other actors could theoretically imitate known Iranian tradecraft or exploit the same exposed products. Shared internet-scanning tools such as FOFA are non-exclusive and common among many actors. Public claims amplification can follow an incident opportunistically.",
+          "sources": []
+        },
+        {
+          "title": "Assessment",
+          "badges": ["GOVERNMENT ASSESSMENT", "MODERATE CONFIDENCE"],
+          "text": "GOVERNMENT ASSESSMENT MODERATE CONFIDENCE The strongest public attribution available is the French government's assessment that the attack was conducted by the IRGC-linked Shahid Kaveh unit. This assessment is credible because it comes from responsible national authorities with incident access and cross-agency visibility. However, because the underlying technical record remains only partially public, and because several cited indicators are suggestive rather than dispositive on their own, the public-facing confidence should remain moderate , not high. Public reporting does not justify elevating the attribution to \"confirmed attribution\" in an evidentiary sense equivalent to fully disclosed forensic proof or adjudicated judicial findings.",
+          "sources": []
+        }
+      ]
+    },
+    {
+      "heading": "Intelligence Gaps",
+      "text": "Exact initial-access mechanism for French victims: vulnerability exploitation, weak/default credentials, exposed web admin, exposed remote-service channel, or multiple paths. Whether the same compromise path was used against both Danfoss and XWEB deployments. Whether there was any IT-to-OT pivot or whether attacks were direct-to-OT via exposed controllers. Whether persistence mechanisms were used on affected controllers. Victim-side logs, IOC sets, IPs, domains, or protocol-level indicators. Whether blood-product refrigeration or medical cold-chain systems in France were actually affected, and if so, with what operational consequence. Whether November EU incidents were executed by the same actor set as the October French attack.",
+      "cards": []
+    },
+    {
+      "heading": "Investigative Leads",
+      "text": "Obtain any vendor incident statements or CSAF / security advisories issued after the French and EU waves for Danfoss, Copeland, and Dixell. Look for any official IOC release from CERT-FR, ANSSI, DGSI, Europol EC3, or partner national CSIRTs. Check whether insurance, regulator, or parliamentary disclosures identify exact economic losses or affected site counts by retail group. Seek direct statements from EFS or the French health ministry regarding any attempted or successful attacks on blood-product refrigeration. Correlate the French refrigeration incident with any public Schneider Electric-sector incident notices for the same timeframe. Review whether CRA reporting by manufacturers led to later public disclosures of actively exploited vulnerabilities tied to these products.",
+      "cards": []
+    },
+    {
+      "heading": "Rejected / Unverified Findings",
+      "text": "Claim Source Reason Rejected / Not Accepted as Fact Evidence Required for Validation EFS blood-product refrigeration was successfully attacked and caused contamination/loss. Unverified press references discovered indirectly; no authoritative primary confirmation collected. No official EFS, health-ministry, or French cyber authority confirmation found in collected authoritative sources. Official EFS statement, ministry statement, incident report, or regulator confirmation. A specific CVE, including CVE-2025-41450 or one of the XWEB CVEs, was the initial-access vector in the French October attack. Inference from vendor/research material and exposure reporting. Plausible but not publicly verified by authoritative incident reporting. Forensic disclosure, advisory explicitly linking exploited CVE to incident, or victim-side confirmation. All November EU refrigeration incidents were conducted by the same actor as the French October attack. EU joint statement plus country-level similarity. Similarity and timing alone do not establish common authorship. Shared IOC/infrastructure, law-enforcement statement, or multi-country technical correlation report. Attribution is fully confirmed beyond dispute. French government attribution note and media repetition. Government assessment is authoritative, but underlying evidence is only partially public. Expanded forensic publication, indictments, sanctions package technical annex, or court evidence.",
+      "cards": []
+    },
+    {
+      "heading": "Source / Evidence Matrix",
+      "text": "Claim Classification Source Source Tier Independent Corroboration Confidence French attack affected around 700 retail sites on 11-12 Oct 2026. CONFIRMED FACT CERTFR-2026-CTI-009 Tier 1 Media exists, but this source alone is sufficient due to authority/direct responsibility. HIGH Defrost parameters were modified to high temperatures, causing major loss and at least 15 fires. CONFIRMED FACT CERTFR-2026-CTI-009 Tier 1 Single authoritative source sufficient. HIGH Affected systems included Danfoss AK-SM / AK-SC, Copeland XWEB, Dixell XWEB. CONFIRMED FACT CERTFR-2026-ALE-012 Tier 1 Supported by technical exposure research. HIGH Internet exposure of management interfaces was a major enabling condition. ASSESSMENT CERT-FR ; NCSC-NL ; Censys Tier 1 + Tier 2 Yes HIGH Exact initial access remains unresolved. UNRESOLVED CERT-FR ; vendor advisories; no direct forensic disclosure found Tier 1 + Tier 2 Absence of direct proof despite multiple relevant sources. HIGH New wave of incidents occurred across multiple EU countries on 1-2 Nov 2026. CONFIRMED FACT EU joint statement Tier 1 Dutch NCSC confirms regional activity. HIGH The Netherlands experienced related refrigeration attack activity. CONFIRMED FACT NCSC-NL Tier 1 Consistent with EU statement. HIGH France attributes the October French attack to IRGC-linked Shahid Kaveh. GOVERNMENT ASSESSMENT CERTFR-2026-CTI-009 ; DGSI Tier 1 Yes, within same government attribution line. MODERATE Danfoss and XWEB families had serious known security issues before the attacks. CONFIRMED FACT Danfoss advisory ; Copeland bulletin ; Claroty dashboard Tier 1 + Tier 2 Yes HIGH Those specific vulnerabilities were exploited in France. UNRESOLVED Same as above Tier 1 + Tier 2 No authoritative tie to operational use found. INSUFFICIENT EVIDENCE EFS blood-product refrigeration was compromised. UNRESOLVED No collected authoritative source N/A No INSUFFICIENT EVIDENCE",
+      "cards": []
+    },
+    {
+      "heading": "Final Assessment",
+      "text": "What do we know? France suffered a large-scale cyberattack on refrigeration controllers during 11-12 October 2026. About 700 retail sites were affected, with additional food-sector victims. Attackers changed defrost settings to high temperatures, causing spoilage and at least 15 fires. CERT-FR identified Danfoss AK-SM / AK-SC and Copeland / Dixell XWEB as affected system families. EU authorities and the Dutch NCSC confirmed further refrigeration-system incidents in Europe in early November 2026. What do we assess? The attacks primarily exploited unsafe exposure of refrigeration management functions to the public internet. Weak/default credentials and/or unpatched vulnerabilities were likely enabling mechanisms. The October French event was a coordinated OT sabotage/disruption campaign, not random local malfunction. November EU incidents are likely part of a broader pattern of refrigeration-focused OT exploitation, though common authorship for every case is not yet publicly proven. What do we suspect? Older or unsupported systems and outdated firmware materially increased exposure. Attackers likely used internet-wide discovery or pre-identified exposure sets to find targets rapidly. Some additional sectors dependent on refrigeration or cold-chain control may have been probed beyond the publicly named victims. What don't we know? The exact initial access path for the French victims. Whether one or multiple access methods were used across Danfoss and XWEB victims. Whether any medical or blood-product cold-chain systems in France were successfully attacked. The full IOC set, infrastructure list, and detailed cross-border victim count. What evidence would change the assessment? An official forensic report tying a specific CVE, credential set, or remote protocol to the French compromises. IOC releases or victim logs showing the precise intrusion path and controller command sequence. Official multi-country law-enforcement or CSIRT correlation proving or disproving common authorship across the October and November waves. Primary-source confirmation from EFS or the French health sector regarding any cold-chain targeting or absence thereof. Overall judgment: The public record supports a strong, defensible conclusion that refrigeration OT systems in France and elsewhere in Europe were deliberately targeted via exposed remote-control surfaces, producing real operational and physical consequences. Exact exploit path remains unresolved in public evidence. Attribution to IRGC-linked Shahid Kaveh is currently best treated as a credible French government assessment with moderate confidence.",
+      "cards": [
+        {
+          "title": "What do we know?",
+          "badges": [],
+          "text": "France suffered a large-scale cyberattack on refrigeration controllers during 11-12 October 2026. About 700 retail sites were affected, with additional food-sector victims. Attackers changed defrost settings to high temperatures, causing spoilage and at least 15 fires. CERT-FR identified Danfoss AK-SM / AK-SC and Copeland / Dixell XWEB as affected system families. EU authorities and the Dutch NCSC confirmed further refrigeration-system incidents in Europe in early November 2026.",
+          "sources": []
+        },
+        {
+          "title": "What do we assess?",
+          "badges": [],
+          "text": "The attacks primarily exploited unsafe exposure of refrigeration management functions to the public internet. Weak/default credentials and/or unpatched vulnerabilities were likely enabling mechanisms. The October French event was a coordinated OT sabotage/disruption campaign, not random local malfunction. November EU incidents are likely part of a broader pattern of refrigeration-focused OT exploitation, though common authorship for every case is not yet publicly proven.",
+          "sources": []
+        },
+        {
+          "title": "What do we suspect?",
+          "badges": [],
+          "text": "Older or unsupported systems and outdated firmware materially increased exposure. Attackers likely used internet-wide discovery or pre-identified exposure sets to find targets rapidly. Some additional sectors dependent on refrigeration or cold-chain control may have been probed beyond the publicly named victims.",
+          "sources": []
+        },
+        {
+          "title": "What don't we know?",
+          "badges": [],
+          "text": "The exact initial access path for the French victims. Whether one or multiple access methods were used across Danfoss and XWEB victims. Whether any medical or blood-product cold-chain systems in France were successfully attacked. The full IOC set, infrastructure list, and detailed cross-border victim count.",
+          "sources": []
+        },
+        {
+          "title": "What evidence would change the assessment?",
+          "badges": [],
+          "text": "An official forensic report tying a specific CVE, credential set, or remote protocol to the French compromises. IOC releases or victim logs showing the precise intrusion path and controller command sequence. Official multi-country law-enforcement or CSIRT correlation proving or disproving common authorship across the October and November waves. Primary-source confirmation from EFS or the French health sector regarding any cold-chain targeting or absence thereof.",
+          "sources": []
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR Alert CERTFR-2026-ALE-012"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://digital-strategy.ec.europa.eu/en/news/joint-statement-cyber-incidents-refrigeration-systems-across-eu",
+      "label": "European Commission / ENISA joint statement"
+    },
+    {
+      "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+      "label": "NCSC-NL advisory, 2 Nov 2026"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR Alert"
+    },
+    {
+      "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+      "label": "NCSC-NL"
+    },
+    {
+      "url": "https://www.danfoss.com/en/service-and-support/coordinated-vulnerability-disclosure/danfoss-security-advisories/dsa-2025-03-01",
+      "label": "Danfoss DSA-2025-03-01"
+    },
+    {
+      "url": "https://webapps.copeland.com/dixell/Content/Pages/SystemSoftwareUpdate/XWEB-PRO/Security%20update%20%20XWEB-PRO%20-%20Product_Bulletin_February_2026.pdf",
+      "label": "Copeland XWEB PRO bulletin"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://www.dgsi.interieur.gouv.fr/dgsi-a-vos-cotes/cyberdefense/campagnes-de-destabilisation-et-sabotage-menees-a-lencontre-des-interets-francais-par-republique",
+      "label": "DGSI statement"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERTFR-2026-ALE-012"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR"
+    },
+    {
+      "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+      "label": "NCSC-NL"
+    },
+    {
+      "url": "https://digital-strategy.ec.europa.eu/en/news/joint-statement-cyber-incidents-refrigeration-systems-across-eu",
+      "label": "EU joint statement"
+    },
+    {
+      "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+      "label": "NCSC-NL"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://www.dgsi.interieur.gouv.fr/dgsi-a-vos-cotes/cyberdefense/campagnes-de-destabilisation-et-sabotage-menees-a-lencontre-des-interets-francais-par-republique",
+      "label": "DGSI"
+    },
+    {
+      "url": "https://www.danfoss.com/en/service-and-support/coordinated-vulnerability-disclosure/danfoss-security-advisories/dsa-2025-03-01",
+      "label": "Danfoss advisory"
+    },
+    {
+      "url": "https://webapps.copeland.com/dixell/Content/Pages/SystemSoftwareUpdate/XWEB-PRO/Security%20update%20%20XWEB-PRO%20-%20Product_Bulletin_February_2026.pdf",
+      "label": "Copeland bulletin"
+    },
+    {
+      "url": "https://blog.claroty.com/team82/disclosure-dashboard?vulnerabilities_page=1",
+      "label": "Claroty disclosure dashboard"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR alert"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR alert"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR alert"
+    },
+    {
+      "url": "https://digital-strategy.ec.europa.eu/en/news/joint-statement-cyber-incidents-refrigeration-systems-across-eu",
+      "label": "EU joint statement"
+    },
+    {
+      "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+      "label": "NCSC-NL"
+    },
+    {
+      "url": "https://digital-strategy.ec.europa.eu/en/news/joint-statement-cyber-incidents-refrigeration-systems-across-eu",
+      "label": "EU joint statement"
+    },
+    {
+      "url": "https://censys.com/blog/european-refrigeration-controller-exposure-sitrep",
+      "label": "Censys sitrep"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://www.dgsi.interieur.gouv.fr/dgsi-a-vos-cotes/cyberdefense/campagnes-de-destabilisation-et-sabotage-menees-a-lencontre-des-interets-francais-par-republique",
+      "label": "DGSI"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR"
+    },
+    {
+      "url": "https://www.claroty.com/team82/research/chilling-discoveries-unpacking-vulnerabilities-in-copeland-xweb-pro-controllers",
+      "label": "Claroty Copeland research"
+    },
+    {
+      "url": "https://www.danfoss.com/en/products/dcs/monitoring-and-services/storeview-web/storeview-web-full-remote-access-to-your-ak-sm800a-and-ak-sm800/",
+      "label": "Danfoss StoreView Web"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "French government CTI note"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR"
+    },
+    {
+      "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+      "label": "NCSC-NL"
+    },
+    {
+      "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+      "label": "NCSC-NL"
+    },
+    {
+      "url": "https://webapps.copeland.com/dixell/Content/Pages/SystemSoftwareUpdate/XWEB-PRO/Security%20update%20%20XWEB-PRO%20-%20Product_Bulletin_February_2026.pdf",
+      "label": "Copeland bulletin"
+    },
+    {
+      "url": "https://www.danfoss.com/en/service-and-support/coordinated-vulnerability-disclosure/danfoss-security-advisories/dsa-2025-03-01",
+      "label": "Danfoss DSA-2025-03-01"
+    },
+    {
+      "url": "https://blog.claroty.com/team82/disclosure-dashboard?vulnerabilities_page=1",
+      "label": "Claroty dashboard"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://www.danfoss.com/en/service-and-support/coordinated-vulnerability-disclosure/danfoss-security-advisories/dsa-2025-03-01",
+      "label": "Danfoss advisory"
+    },
+    {
+      "url": "https://www.danfoss.com/en/service-and-support/articles/dcs/tech-insider-september-2025/",
+      "label": "Danfoss Tech Insider Sep 2025"
+    },
+    {
+      "url": "https://webapps.copeland.com/dixell/Content/Pages/SystemSoftwareUpdate/XWEB-PRO/Security%20update%20%20XWEB-PRO%20-%20Product_Bulletin_February_2026.pdf",
+      "label": "Copeland bulletin"
+    },
+    {
+      "url": "https://blog.claroty.com/team82/disclosure-dashboard?vulnerabilities_page=1",
+      "label": "Claroty dashboard"
+    },
+    {
+      "url": "https://censys.com/blog/european-refrigeration-controller-exposure-sitrep",
+      "label": "Censys sitrep"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+      "label": "NCSC-NL"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERTFR-2026-ALE-012"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR"
+    },
+    {
+      "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+      "label": "NCSC-NL"
+    },
+    {
+      "url": "https://censys.com/blog/european-refrigeration-controller-exposure-sitrep",
+      "label": "Censys"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/alerte/CERTFR-2026-ALE-012/?mod=djemCybersecruityPro%26tpl%3Dcs",
+      "label": "CERT-FR"
+    },
+    {
+      "url": "https://digital-strategy.ec.europa.eu/en/news/joint-statement-cyber-incidents-refrigeration-systems-across-eu",
+      "label": "EU joint statement"
+    },
+    {
+      "url": "https://www.ncsc.nl/nieuws/in-het-nieuws-cyberaanvallen-op-koelinstallaties-in-europa?trk=public_post_comment-text",
+      "label": "NCSC-NL"
+    },
+    {
+      "url": "https://cert.cyber.gouv.fr/uploads/CERTFR-2026-CTI-009.pdf",
+      "label": "CERTFR-2026-CTI-009"
+    },
+    {
+      "url": "https://www.dgsi.interieur.gouv.fr/dgsi-a-vos-cotes/cyberdefense/campagnes-de-destabilisation-et-sabotage-menees-a-lencontre-des-interets-francais-par-republique",
+      "label": "DGSI"
+    },
+    {
+      "url": "https://www.danfoss.com/en/service-and-support/coordinated-vulnerability-disclosure/danfoss-security-advisories/dsa-2025-03-01",
+      "label": "Danfoss advisory"
+    },
+    {
+      "url": "https://webapps.copeland.com/dixell/Content/Pages/SystemSoftwareUpdate/XWEB-PRO/Security%20update%20%20XWEB-PRO%20-%20Product_Bulletin_February_2026.pdf",
+      "label": "Copeland bulletin"
+    },
+    {
+      "url": "https://blog.claroty.com/team82/disclosure-dashboard?vulnerabilities_page=1",
+      "label": "Claroty dashboard"
+    }
+  ],
+  "relatedCves": ["CVE-2025-41450"]
+}

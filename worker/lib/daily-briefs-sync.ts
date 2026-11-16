@@ -1,5 +1,5 @@
 import { errMessage } from './err';
-export type DbBriefType = 'cyber' | 'deepfake' | 'disaster' | 'maritime';
+export type DbBriefType = 'cyber' | 'deepfake' | 'disaster' | 'maritime' | 'water' | 'french';
 
 interface DbIndexEntry {
   type: DbBriefType;
@@ -11,11 +11,11 @@ interface DbIndex {
   source: string;
   license: string;
   generatedAt: string;
-  counts: { cyber: number; deepfake: number; disaster: number; maritime: number };
+  counts: { cyber: number; deepfake: number; disaster: number; maritime: number; water: number; french: number };
   briefs: DbIndexEntry[];
 }
 
-const BRIEF_TYPES: DbBriefType[] = ['cyber', 'deepfake', 'disaster', 'maritime'];
+const BRIEF_TYPES: DbBriefType[] = ['cyber', 'deepfake', 'disaster', 'maritime', 'water', 'french'];
 const BASE_URL = 'https://agentic-ai-daily-reports.netlify.app';
 
 const KV_PREFIX_INDEX = 'db:index';
@@ -1138,6 +1138,70 @@ interface SyncEnv {
   KV_CACHE?: KVNamespace;
 }
 
+/** Investigative assessments (/water, /french): numbered h2/h3 sections with
+ *  card grids. Kept compact here; the build script emits the full shape. */
+function parseAssessmentBrief(html: string, date: string, type: 'water' | 'french') {
+  const re = /<h([23])[^>]*>\s*\d+\.\s*([\s\S]*?)<\/h\1>/gi;
+  const heads = [...html.matchAll(re)];
+  const sections = heads.map((h, i) => ({
+    heading: stripTags(h[2] ?? '')
+      .replace(/^\d+\.\s*/, '')
+      .trim(),
+    body: html.slice(
+      h.index + (h[0] ?? '').length,
+      i + 1 < heads.length ? (heads[i + 1]?.index ?? html.length) : html.length
+    ),
+  }));
+  const pick = (pattern: RegExp) => sections.filter((s) => pattern.test(s.heading));
+  const text = (list: typeof sections) =>
+    list
+      .map((s) => stripTags(s.body).trim())
+      .filter(Boolean)
+      .join(' ');
+  const cards = (list: typeof sections) =>
+    list.flatMap((s) => {
+      const out: { title: string; badges: string[]; text: string; sources: { url: string; label: string }[] }[] = [];
+      const cardRe = /<div class="[^"]*card[^"]*"[^>]*>/gi;
+      let m: RegExpExecArray | null;
+      while ((m = cardRe.exec(s.body)) !== null) {
+        const inner = extractBalancedDiv(s.body, m.index);
+        const h = inner.match(/<h[35][^>]*>([\s\S]*?)<\/h[35]>/i);
+        if (!h) continue;
+        out.push({
+          title: stripTags(h[1] ?? '').trim(),
+          badges: [...inner.matchAll(/<span class="badge[^"]*"[^>]*>([\s\S]*?)<\/span>/gi)].map((b) =>
+            stripTags(b[1] ?? '').trim()
+          ),
+          text: stripTags(inner).trim().slice(0, 600),
+          sources: extractLinks(inner),
+        });
+      }
+      return out;
+    });
+  const title = stripTags((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i) || [])[1] ?? '').trim();
+  return {
+    type,
+    date: dateFromContent(html),
+    title,
+    executiveAssessment: text(pick(/executive assessment/i)),
+    keyFindings: cards(pick(/key findings/i)),
+    timeline: text(pick(/timeline/i)),
+    affectedSystems: cards(pick(/affected systems/i)),
+    methodology: text(pick(/attack methodology/i)),
+    impact: text(pick(/operational impact|impact assessment/i)),
+    correlation: text(pick(/correlation/i)),
+    attribution: text(pick(/attribution/i)),
+    recommendations: text(pick(/recommendation|mitigation|defensive/i)),
+    sections: sections.map((s) => ({ heading: s.heading, text: stripTags(s.body).trim() })),
+    sources: extractLinks(html),
+    relatedCves: [
+      ...new Set(
+        (html.match(/CVE[\-\u2011]\d{4}[\-\u2011]\d{4,}/gi) || []).map((c) => c.toUpperCase().replace(/\u2011/g, '-'))
+      ),
+    ],
+  };
+}
+
 export async function syncDailyBriefs(env: SyncEnv): Promise<{ types: string[]; errors: string[] }> {
   const types: string[] = [];
   const errors: string[] = [];
@@ -1151,6 +1215,8 @@ export async function syncDailyBriefs(env: SyncEnv): Promise<{ types: string[]; 
     deepfake: parseDeepfakeBrief,
     disaster: parseDisasterBrief,
     maritime: parseMaritimeBrief,
+    water: (html, date) => parseAssessmentBrief(html, date, 'water'),
+    french: (html, date) => parseAssessmentBrief(html, date, 'french'),
   };
 
   const mergedBriefs = new Map<string, { type: DbBriefType; date: string; sizeBytes: number }>();
@@ -1204,7 +1270,7 @@ export async function syncDailyBriefs(env: SyncEnv): Promise<{ types: string[]; 
 
   // Write merged index
   const allBriefs = [...mergedBriefs.values()].sort((a, b) => b.date.localeCompare(a.date));
-  const counts: Record<DbBriefType, number> = { cyber: 0, deepfake: 0, disaster: 0, maritime: 0 };
+  const counts: Record<DbBriefType, number> = { cyber: 0, deepfake: 0, disaster: 0, maritime: 0, water: 0, french: 0 };
   for (const b of allBriefs) counts[b.type] = (counts[b.type] || 0) + 1;
   const index: DbIndex = {
     source: 'agentic-ai-daily-reports.netlify.app',

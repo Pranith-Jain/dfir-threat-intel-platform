@@ -13,7 +13,7 @@ const MOCK_INDEX: DbIndex = {
   source: 'test',
   license: 'MIT',
   generatedAt: '2026-07-21',
-  counts: { cyber: 2, deepfake: 1, disaster: 1, maritime: 0 },
+  counts: { cyber: 2, deepfake: 1, disaster: 1, maritime: 0, water: 0, french: 0 },
   briefs: [
     { type: 'cyber', date: '2026-07-20', sizeBytes: 1000 },
     { type: 'cyber', date: '2026-07-19', sizeBytes: 900 },

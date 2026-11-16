@@ -1317,7 +1317,10 @@ export async function registerTiManifestsTools(h: McpToolHost): Promise<void> {
     'db_list_briefs',
     'List available daily intelligence briefs by type (cyber, deepfake, disaster). Returns dates and metadata. Use db_get_brief to retrieve the full brief body.',
     {
-      type: z.enum(['cyber', 'deepfake', 'disaster', 'maritime']).optional().describe('Filter by brief type'),
+      type: z
+        .enum(['cyber', 'deepfake', 'disaster', 'maritime', 'water', 'french'])
+        .optional()
+        .describe('Filter by brief type'),
       dateFrom: z.string().optional().describe('Start date filter (YYYY-MM-DD)'),
       dateTo: z.string().optional().describe('End date filter (YYYY-MM-DD)'),
       limit: z.number().int().min(1).max(365).optional().describe('Max briefs to return (default 50)'),
@@ -1342,7 +1345,7 @@ export async function registerTiManifestsTools(h: McpToolHost): Promise<void> {
     'db_get_brief',
     'Return the full daily intelligence brief for a given type and date. Includes executive summary, key findings, events/incidents, and structured data. Use db_list_briefs to discover available dates.',
     {
-      type: z.enum(['cyber', 'deepfake', 'disaster', 'maritime']).describe('Brief type'),
+      type: z.enum(['cyber', 'deepfake', 'disaster', 'maritime', 'water', 'french']).describe('Brief type'),
       date: z.string().describe('Brief date (YYYY-MM-DD). Get available dates from db_list_briefs.'),
     },
     async ({ type, date }) => {

@@ -22,7 +22,7 @@ import type { Env } from '../../src/env';
  * cached response rather than the code.
  */
 
-type Counts = { cyber: number; deepfake: number; disaster: number; maritime: number };
+type Counts = { cyber: number; deepfake: number; disaster: number; maritime: number; water: number; french: number };
 type Row = { type: string; date: string; sizeBytes: number };
 interface Idx {
   source: string;
@@ -36,7 +36,7 @@ const idx = (generatedAt: string, rows: Array<[string, string]>): Idx => ({
   source: 'agentic-ai-daily-reports.netlify.app',
   license: 'MIT',
   generatedAt,
-  counts: { cyber: 0, deepfake: 0, disaster: 0, maritime: 0 },
+  counts: { cyber: 0, deepfake: 0, disaster: 0, maritime: 0, water: 0, french: 0 },
   briefs: rows.map(([type, date]) => ({ type, date, sizeBytes: 100 })),
 });
 
