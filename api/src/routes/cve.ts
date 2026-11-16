@@ -25,25 +25,26 @@ export async function cveSearchHandler(c: Context<{ Bindings: Env }>) {
     try {
       data = (await res.json()) as Record<string, unknown>;
 
+      // Run the two upstream enrichments in parallel. Both swallow their own
+      // errors, so a slow VulnCheck response no longer adds its 6s timeout to
+      // HexBrain's 8s and pushes the whole lookup past the detail page's
+      // client-side deadline (which would hide even the base CVE record).
+      const enrichments = await Promise.all([
+        token ? vulncheckCve(token, id, AbortSignal.timeout(6000)) : Promise.resolve(null),
+        c.env.HEXBRAIN_API_KEY
+          ? hexbrainCveCached(c.env.KV_CACHE, (p) => c.executionCtx.waitUntil(p), c.env.HEXBRAIN_API_KEY, id)
+          : Promise.resolve(null),
+      ]);
       // VulnCheck enrichment
-      if (token) {
-        const vc = await vulncheckCve(token, id, AbortSignal.timeout(6000));
-        if ('ok' in vc) data.vulncheck = vc.ok;
-      }
+      const vc = enrichments[0];
+      if (vc && 'ok' in vc) data.vulncheck = vc.ok;
 
       // HexBrain enrichment (30-day exploitation likelihood, public PoC corpus,
       // nuclei detection check). Cache-first in KV: the free key allows 200
       // calls/day, so each unique CVE is fetched at most once per day across
       // all colos. Silently absent when the key is unset or upstream fails.
-      if (c.env.HEXBRAIN_API_KEY) {
-        const hb = await hexbrainCveCached(
-          c.env.KV_CACHE,
-          (p) => c.executionCtx.waitUntil(p),
-          c.env.HEXBRAIN_API_KEY,
-          id
-        );
-        if (hb) data.hexbrain = hb;
-      }
+      const hb = enrichments[1];
+      if (hb) data.hexbrain = hb;
 
       // SSVC-V decision engine enrichment
       const d = data as Record<string, Record<string, unknown> | boolean | string | null>;
