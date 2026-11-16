@@ -1,0 +1,521 @@
+{
+  "month": "2026-03",
+  "count": 16,
+  "source": "github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive",
+  "sourceUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive",
+  "license": "CC BY 4.0",
+  "incidents": [
+    {
+      "id": "2026-03-01-claudy-day-claude-ai",
+      "title": "Claudy Day: a three-flaw chain in claude.ai",
+      "date": "2026-03-01",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "incident",
+      "types": ["IPI", "EXFIL"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 3,
+      "datePrecision": "month",
+      "dateRaw": "2026-03",
+      "summary": "The full attack pipeline disclosed by Oasis Security, chained from three flaws: (1) invisible prompt injection on claude.ai via a **URL parameter**, (2) a data exfiltration channel through the **Anthropic Files API**, and (3) an **open redirect** on claude.ai.\nDelivery was by **buying Google ads** — the ads showed a trusted claude.com link but took users to a poisoned redirect point and then into a crafted `claude.ai/new?q=` URL that silently exfiltrated sensitive data from the user's conversation history.\n⚠️ **The most notable point: no integration, tool or MCP server is required — this hits the out-of-the-box default claude.ai session**. The prompt injection part has been fixed; the rest is being handled\n⚠️ v2 was mistakenly placed on 2026-05-27; v3 corrects it to the Oasis disclosure date",
+      "sources": [
+        {
+          "url": "https://www.oasis.security/blog/claude-ai-prompt-injection-data-exfiltration-vulnerability",
+          "label": "Oasis Security"
+        },
+        {
+          "url": "https://www.oasis.security/resources/reports/claude-ai-prompt-injection-vulnerability-technical-report",
+          "label": "technical report"
+        },
+        {
+          "url": "https://www.darkreading.com/vulnerabilities-threats/claudy-day-trio-flaws-claude-users-data-theft",
+          "label": "Dark Reading"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-01-claudy-day-claude-ai.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-01-claudy-day-claude-ai.md"
+    },
+    {
+      "id": "2026-03-01-hades-campaign-ai-coding-assistants",
+      "title": "Hades: a sustained campaign turning AI coding assistants into the attack surface",
+      "date": "2026-03-01",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "incident",
+      "types": ["SUPPLY", "CRED"],
+      "severity": "critical",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 3,
+      "datePrecision": "month",
+      "dateRaw": "from 2026-03",
+      "summary": "Running at least since 2026-03 and continuing to this day, it has stolen **294,842 secrets from 6,943 developer machines**. Tradecraft: malicious npm/PyPI packages **typosquatting MCP libraries at scale** (`langchain-core-mcp`, `instructor-mcp`, `openai-mcp`, `tiktoken-mcp`, `ray-mcp-server`), plus **rule files and configuration directories for 14 different AI agents** seeded with custom prompt instructions or hooks — **triggering `bun run bootstrap` when the victim opens or consults the workspace with an AI assistant**. Harvests `ANTHROPIC_API_KEY`, Claude Desktop/Claude Code config, `.mcp.json`, as well as `.npmrc`/`.pypirc`/SSH keys/AWS-GCP-Azure tokens/K8s secrets/GitHub PATs and Actions tokens/Docker config/`.env`/shell history. Stolen publishing credentials are used to keep infecting more packages, forming worm-like self-propagation. CSO Online's headline is \"**the malware that lies to AI security agents**\"",
+      "sources": [
+        {
+          "url": "https://orca.security/resources/blog/hades-pypi-supply-chain-attack/",
+          "label": "Orca Security"
+        },
+        {
+          "url": "https://www.morphisec.com/blog/when-your-ai-coding-assistant-becomes-the-attack-the-hades-supply-chain-campaign/",
+          "label": "Morphisec"
+        },
+        {
+          "url": "https://www.csoonline.com/article/4182707/meet-hades-the-malware-that-lies-to-ai-security-agents-2.html",
+          "label": "CSO Online"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-01-hades-campaign-ai-coding-assistants.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-01-hades-campaign-ai-coding-assistants.md"
+    },
+    {
+      "id": "2026-03-01-metr-api-key",
+      "title": "METR API key stolen, $600K of credit burned",
+      "date": "2026-03-01",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "incident",
+      "types": ["CRED"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["US"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 2,
+      "datePrecision": "month",
+      "dateRaw": "2026-03",
+      "summary": "A researcher ran an agent on a **personal EC2** instance protected by Google authentication, but the vibe-coded app **held an API key for METR's public model account**, and a **fail-open flaw** in the authentication silently disabled it for several days. The attacker **induced the agent to hand over the model provider's API key** and added an SSH key for persistence, then burned roughly **$600,000** worth of credit over three weeks (supplied free by the model vendor, so it is commercial value rather than a direct loss). Because METR itself runs large-scale evaluations and its token consumption is naturally enormous and uncapped, it went unnoticed for a long time. Disclosed 2026-08-31",
+      "sources": [
+        {
+          "url": "https://metr.org/blog/2026-08-31-security-update/",
+          "label": "METR official"
+        },
+        {
+          "url": "https://www.theregister.com/security/2026/09/01/attacker-stole-a-metr-api-key-used-600k-worth-of-credits-and-no-one-noticed-for-weeks/5293730",
+          "label": "The Register"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-01-metr-api-key.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-01-metr-api-key.md"
+    },
+    {
+      "id": "2026-03-02-amazon-yin-sheng-cheng-dai",
+      "title": "Amazon hit by back-to-back outages from AI-generated code",
+      "date": "2026-03-02",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "incident",
+      "types": ["ROGUE"],
+      "severity": "high",
+      "confidence": "B",
+      "realHarm": true,
+      "aiInvolvement": "disputed",
+      "regions": ["US"],
+      "landmark": false,
+      "disputed": true,
+      "sourceCount": 2,
+      "datePrecision": "day",
+      "dateRaw": "2026-03-02 / 03-05",
+      "summary": "On 03-02 Amazon Q gave wrong advice based on an **outdated internal wiki** → 120,000 orders lost and 1.6 million website errors; on 03-05 North America order volume collapsed 99%, with **6.3 million orders lost**. Amazon already requires engineers to spend 80% of every week using its internal AI coding assistant Kiro. Response: a 90-day \"code security reset\" for about **335 Tier-1 systems**, with AI-assisted code changes now needing two-person review plus formal documented approval. **Business Insider obtained internal documents**",
+      "sources": [
+        {
+          "url": "https://www.digitaltrends.com/computing/ai-code-wreaked-havoc-with-amazon-outage-and-now-the-company-is-making-tight-rules/",
+          "label": "Digital Trends"
+        },
+        {
+          "url": "https://securityboulevard.com/2026/03/amazon-lost-6-3-million-orders-to-vibe-coding-your-soc-is-next/",
+          "label": "Security Boulevard"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-02-amazon-yin-sheng-cheng-dai.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-02-amazon-yin-sheng-cheng-dai.md"
+    },
+    {
+      "id": "2026-03-02-trivy-sheng-tai-chi-xu",
+      "title": "Sustained supply-chain compromise across the Trivy ecosystem",
+      "date": "2026-03-02",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "incident",
+      "types": ["SUPPLY"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 3,
+      "datePrecision": "day",
+      "dateRaw": "2026-03-02",
+      "summary": "GitHub repository credentials were compromised to distribute a malicious binary (v0.69.4), container images and GitHub Actions (trivy-action, setup-trivy). **The operation against the Trivy VS Code extension on OpenVSX was an AI-assisted attack — it used the victim's local AI coding assistant to exfiltrate system data**. Also affected Checkmarx KICS, LiteLLM, Telnyx and Axios",
+      "sources": [
+        {
+          "url": "https://github.com/aquasecurity/trivy/security/advisories/GHSA-69fq-xp46-6x23",
+          "label": "Aqua advisory"
+        },
+        {
+          "url": "https://socket.dev/blog/unauthorized-ai-agent-execution-code-published-to-openvsx-in-aqua-trivy-vs-code-extension",
+          "label": "Socket"
+        },
+        {
+          "url": "https://www.trendmicro.com/ja_jp/jp-security/26/d/expertview-20260409-01.html",
+          "label": "Trend Micro"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-02-trivy-sheng-tai-chi-xu.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-02-trivy-sheng-tai-chi-xu.md"
+    },
+    {
+      "id": "2026-03-06-microsoft-as-tradecraft",
+      "title": "Microsoft, \"AI as tradecraft\"",
+      "date": "2026-03-06",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "report",
+      "types": ["WEAPON"],
+      "severity": "info",
+      "confidence": "A",
+      "realHarm": null,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-03-06",
+      "summary": "North Korea-linked **Jasper Sleet and Coral Sleet** use LLMs across the whole chain — phishing, code generation, persona fabrication and infrastructure management",
+      "sources": [
+        {
+          "url": "https://www.microsoft.com/en-us/security/blog/2026/03/06/ai-as-tradecraft-how-threat-actors-operationalize-ai/",
+          "label": "Microsoft"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-06-microsoft-as-tradecraft.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-06-microsoft-as-tradecraft.md"
+    },
+    {
+      "id": "2026-03-09-lilli-mai-ken-xi-shi",
+      "title": "McKinsey Lilli incident goes public",
+      "date": "2026-03-09",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "incident",
+      "types": ["INFRA"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["US"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-03-09",
+      "summary": "See 2026-02-28",
+      "sources": [
+        {
+          "url": "https://codewall.ai/blog/how-we-hacked-mckinseys-ai-platform",
+          "label": "CodeWall"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-09-lilli-mai-ken-xi-shi.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-09-lilli-mai-ken-xi-shi.md"
+    },
+    {
+      "id": "2026-03-10-azure-mcp-server-ssrf",
+      "title": "Azure MCP Server SSRF privilege escalation (CVE-2026-26118)",
+      "date": "2026-03-10",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "vulnerability",
+      "types": ["MCP"],
+      "severity": "medium",
+      "confidence": "A",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 2,
+      "datePrecision": "day",
+      "dateRaw": "2026-03-10",
+      "summary": "**CVSS 8.8**. Submit a **malicious URL in place of a normal Azure resource identifier** to an Azure MCP Server tool that accepts user parameters, and the MCP Server makes an outbound request to that URL, **possibly carrying its own managed identity token along with it** — a low-privilege attacker can thus capture that token and escalate privileges without administrator rights",
+      "sources": [
+        {
+          "url": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26118",
+          "label": "MSRC"
+        },
+        {
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-26118",
+          "label": "NVD"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-10-azure-mcp-server-ssrf.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-10-azure-mcp-server-ssrf.md"
+    },
+    {
+      "id": "2026-03-16-cellshock-biao-ge-gong-ju",
+      "title": "CellShock: data exfiltration through an AI spreadsheet tool",
+      "date": "2026-03-16",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "research",
+      "types": ["IPI", "EXFIL"],
+      "severity": "medium",
+      "confidence": "A",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 2,
+      "datePrecision": "day",
+      "dateRaw": "2026-03-16",
+      "summary": "PromptArmor: instructions planted in an external dataset tricked Claude for Excel / Ramp Sheets AI into generating an **`=IMAGE()` formula** that sent confidential data to an attacker's server. **It abuses a normal spreadsheet feature, so it bypasses every defense**. Anthropic and Ramp added warnings and user confirmation, but that is still not enough",
+      "sources": [
+        {
+          "url": "https://www.promptarmor.com/resources/cellshock-claude-ai-is-excel-lent-at-stealing-data",
+          "label": "PromptArmor CellShock"
+        },
+        {
+          "url": "https://www.promptarmor.com/resources/ramps-sheets-ai-exfiltrates-financials",
+          "label": "PromptArmor Ramp"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-16-cellshock-biao-ge-gong-ju.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-16-cellshock-biao-ge-gong-ju.md"
+    },
+    {
+      "id": "2026-03-18-garante-yi-li-luo-ma",
+      "title": "Rome court annuls the Garante's €15M fine against OpenAI",
+      "date": "2026-03-18",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "policy",
+      "types": ["GOV"],
+      "severity": "info",
+      "confidence": "A",
+      "realHarm": null,
+      "aiInvolvement": "confirmed",
+      "regions": ["EU"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-03-18",
+      "summary": "The order requiring OpenAI to run an AI-training media campaign was annulled along with it. **The ground was jurisdiction** — after OpenAI set up an Irish subsidiary in 2024, the Garante no longer had jurisdiction under the GDPR one-stop-shop mechanism. This was one of Europe's earliest major enforcements against a generative AI provider, and its being overturned leaves an AI enforcement gap in the EU",
+      "sources": [
+        {
+          "url": "https://www.wsgr.com/en/insights/openai-prevails-in-landmark-italian-ai-and-gdpr-enforcement-case.html",
+          "label": "Wilson Sonsini"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-18-garante-yi-li-luo-ma.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-18-garante-yi-li-luo-ma.md"
+    },
+    {
+      "id": "2026-03-18-meta-agent-nei-bu-shu",
+      "title": "Meta internal AI agent data exposure",
+      "date": "2026-03-18",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "incident",
+      "types": ["ROGUE"],
+      "severity": "high",
+      "confidence": "B",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["US"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-03-18",
+      "summary": "The agent gave unsafe configuration advice, leaving sensitive user and company data exposed internally for about 2 hours",
+      "sources": [
+        {
+          "url": "https://genai.owasp.org/2026/04/14/owasp-genai-exploit-round-up-report-q1-2026/",
+          "label": "OWASP Q1'26"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-18-meta-agent-nei-bu-shu.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-18-meta-agent-nei-bu-shu.md"
+    },
+    {
+      "id": "2026-03-24-litellm-backdoored-release",
+      "title": "Backdoored LiteLLM release",
+      "date": "2026-03-24",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "incident",
+      "types": ["SUPPLY", "CRED"],
+      "severity": "critical",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 2,
+      "datePrecision": "day",
+      "dateRaw": "2026-03-24",
+      "summary": "Attack chain: Trivy CI compromised → aqua-bot credentials stolen → trivy-action tampered with → LiteLLM's PyPI token stolen → malicious versions 1.82.7 / 1.82.8 published. **LiteLLM is the model gateway for dozens of agent frameworks including CrewAI, DSPy and Microsoft GraphRAG**. Attribution to **TeamPCP (UNC6780)**, embedding the SANDCLOCK credential stealer\n⚠️ **Conflicting download figures: 119,000 within 2.5 hours / 47,000 within 3 hours**",
+      "sources": [
+        {
+          "url": "https://cloud.google.com/blog/ja/topics/threat-intelligence/ai-vulnerability-exploitation-initial-access",
+          "label": "GTIG"
+        },
+        {
+          "url": "https://theori.io/ko/blog/2026-h1-hot-security-issue-case",
+          "label": "Theori"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-24-litellm-backdoored-release.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-24-litellm-backdoored-release.md"
+    },
+    {
+      "id": "2026-03-26-anthropic-cms-mythos",
+      "title": "Anthropic CMS misconfiguration reveals the existence of \"Mythos\"",
+      "date": "2026-03-26",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "incident",
+      "types": ["CRED"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-03-26",
+      "summary": "About 3,000 assets exposed through a CMS/data-store misconfiguration, **the first exposure of the unreleased Mythos model** and of its \"step change in capabilities\" positioning",
+      "sources": [
+        {
+          "url": "https://fortune.com/2026/03/26/anthropic-says-testing-mythos-powerful-new-ai-model-after-data-leak-reveals-its-existence-step-change-in-capabilities/",
+          "label": "Fortune"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-26-anthropic-cms-mythos.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-26-anthropic-cms-mythos.md"
+    },
+    {
+      "id": "2026-03-27-langflow-lu-jing-chuan-yue",
+      "title": "Langflow path traversal enables arbitrary file write",
+      "date": "2026-03-27",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "vulnerability",
+      "types": ["INFRA"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 2,
+      "datePrecision": "day",
+      "dateRaw": "2026-03-27",
+      "summary": "Tenable: CVE-2026-5027 (CWE-22), `POST /api/v2/files` does not validate the filename. VulnCheck notes this can lead to RCE, and Langflow **ships with unauthenticated auto-login enabled by default**, with about **7,000** publicly reachable instances and in-the-wild exploitation attempts already observed. Fixed in v1.9.0",
+      "sources": [
+        {
+          "url": "https://www.tenable.com/security/research/tra-2026-26",
+          "label": "Tenable"
+        },
+        {
+          "url": "https://www.securityweek.com/hackers-exploit-langflow-vulnerability-for-remote-code-execution/",
+          "label": "SecurityWeek"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-27-langflow-lu-jing-chuan-yue.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-27-langflow-lu-jing-chuan-yue.md"
+    },
+    {
+      "id": "2026-03-30-axios-npm-compromised",
+      "title": "Axios npm package compromised",
+      "date": "2026-03-30",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "incident",
+      "types": ["SUPPLY"],
+      "severity": "critical",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 3,
+      "datePrecision": "day",
+      "dateRaw": "2026-03-30",
+      "summary": "v1.14.1 and 0.30.4 were seeded with a malicious dependency `plain-crypto-js@4.2.1` that drops the cross-platform RAT **WAVESHAPER.V2** via postinstall (separate platform payloads in PowerShell/C++/Python). Attribution to North Korea-linked **UNC1069**. **Deepfakes were used to social-engineer the maintainer during the attack**. The malicious versions were live for about 3 hours; the package gets 100M+ weekly downloads",
+      "sources": [
+        {
+          "url": "https://cloud.google.com/blog/topics/threat-intelligence/north-korea-threat-actor-targets-axios-npm-package/?hl=en",
+          "label": "Google Cloud"
+        },
+        {
+          "url": "https://www.elastic.co/security-labs/axios-one-rat-to-rule-them-all",
+          "label": "Elastic"
+        },
+        {
+          "url": "https://github.com/axios/axios/issues/10636",
+          "label": "axios#10636"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-30-axios-npm-compromised.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-30-axios-npm-compromised.md"
+    },
+    {
+      "id": "2026-03-31-anthropic-claude-code",
+      "title": "Anthropic Claude Code source code leak",
+      "date": "2026-03-31",
+      "dateEnd": null,
+      "month": "2026-03",
+      "kind": "incident",
+      "types": ["CRED"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 3,
+      "datePrecision": "day",
+      "dateRaw": "2026-03-31",
+      "summary": "An npm package accidentally included a source map (.map), leaking about **510,000 lines of TypeScript / 1,906 files / 59.8 MB** and exposing unreleased features such as the KAIROS autonomous agent mode. AI-built clones appeared within a day, along with a \"leaked source\" version laced with the **Vidar infostealer** and the **GhostSocks proxy**",
+      "sources": [
+        {
+          "url": "https://www.theregister.com/software/2026/03/31/anthropic-accidentally-exposes-claude-code-source-code/5227940",
+          "label": "The Register"
+        },
+        {
+          "url": "https://www.cnbc.com/2026/03/31/anthropic-leak-claude-code-internal-source.html",
+          "label": "CNBC"
+        },
+        {
+          "url": "https://www.zscaler.com/blogs/security-research/anthropic-claude-code-leak",
+          "label": "Zscaler"
+        }
+      ],
+      "upstreamPath": "incidents/2026-03/2026-03-31-anthropic-claude-code.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-03/2026-03-31-anthropic-claude-code.md"
+    }
+  ]
+}

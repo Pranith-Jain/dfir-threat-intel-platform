@@ -1,12 +1,13 @@
 name: AI-security verticals sync (weekly)
 
-# Rebuilds the three AI-security verticals from their upstreams:
+# Rebuilds the AI-security verticals from their upstreams:
 #   public/data/cairn/   (Cisco-Talos CAIRN: 26 YARA rules, 27 filters,
 #                          12 archetypes, 10 family reports — MIT)
 #   public/data/nova/    (Nova-Hunting nova-rules: 69 .nov rules + taxonomy — MIT)
 #   public/data/denali/  (transilienceai denali: 9 rules, taxonomy, 38 ADRs — Apache-2.0)
 #   public/data/ai-playbook/ (aisecurity.zone: 8 divisions, 20 risk identifiers —
 #                          NO reuse licence, so STRUCTURE ONLY: no prose is replicated)
+#   public/data/orca/    (Orca-AI-Incident-Archive: 417 AI agent incidents — CC BY 4.0)
 # If the data changed, opens a PR and auto-merges it (data-only; main is
 # unprotected), then self-deploys so the live site serves the fresh
 # manifests. Per-request serving stays fully static (env.ASSETS).
@@ -69,19 +70,26 @@ jobs:
         continue-on-error: true
         run: node scripts/build-ai-playbook.mjs
 
+      - name: Build ORCA incident archive manifest
+        # Fetches dist/incidents.json (schema 2) + dist/stats.json from
+        # Continuum-AI-Corp/Orca-AI-Incident-Archive and slices into month
+        # shards. CC BY 4.0 — attribution carried in every emitted file.
+        continue-on-error: true
+        run: node scripts/build-orca-manifest.mjs
+
       - name: Show diff stat
         run: |
           echo "=== public/data changed files ==="
-          git status --short public/data/cairn/ public/data/nova/ public/data/denali/ public/data/ai-playbook/ | head -40
+          git status --short public/data/cairn/ public/data/nova/ public/data/denali/ public/data/ai-playbook/ public/data/orca/ | head -40
 
       - name: Open PR if data changed
         id: pr
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: "chore(ti): sync AI-security verticals (cairn/nova/denali)"
+          commit-message: "chore(ti): sync AI-security verticals (cairn/nova/denali/orca)"
           title: "AI-security verticals sync — ${{ github.event.schedule || 'manual' }}"
           body: |
-            Automated weekly rebuild of the three AI-security verticals.
+            Automated weekly rebuild of the AI-security verticals.
             Each build step is isolated (`continue-on-error`) so one flaky
             upstream never aborts the remaining verticals. The PR is
             auto-merged by the same run (data-only changes; main is
@@ -93,6 +101,7 @@ jobs:
             - transilienceai/denali ADRs + roadmap (Apache-2.0)
             - aisecurity.zone (NO reuse licence — structure/identifiers only,
               no prose replicated; every record deep-links upstream)
+            - Continuum-AI-Corp/Orca-AI-Incident-Archive (CC BY 4.0)
 
             Trigger: `${{ github.event_name }}`
             Run:     `${{ github.run_id }}`
@@ -103,6 +112,7 @@ jobs:
             public/data/nova/
             public/data/denali/
             public/data/ai-playbook/
+            public/data/orca/
 
       - name: Auto-merge sync PR
         # Data-only output, main unprotected — merges itself (same pattern

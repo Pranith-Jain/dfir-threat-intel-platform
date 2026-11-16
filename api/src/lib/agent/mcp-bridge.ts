@@ -118,6 +118,13 @@ import {
   novaCacheStats,
 } from '../nova-manifest';
 
+// ORCA — AI Incident Archive (Continuum-AI-Corp, CC BY 4.0): open database of
+// real-world AI agent security incidents with kind/real_harm triage fields.
+import { loadOrcaIndex, filterOrcaIncidents, getOrcaIncident, loadOrcaStats, orcaCacheStats } from '../orca-manifest';
+
+// MMD — MalwareMustDie shared codes & tools catalog (public share).
+import { loadMmdIndex, listMmdTools, getMmdCategory, loadMmdCommits, mmdCacheStats } from '../mmd-manifest';
+
 // Denali (evidence-led AI security, Apache-2.0): rules, taxonomy, stateless checks
 import {
   loadDenaliIndex,
@@ -3635,6 +3642,184 @@ export function bridgeMcpTools(
       if (!assets) throw new Error('ASSETS binding unavailable');
       const idx = await loadCairnIndex(assets);
       return { counts: idx.counts, cache: cairnCacheStats() };
+    },
+  });
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  ORCA — AI Incident Archive (orca_*)
+  //  Open database of real-world AI agent incidents (CC BY 4.0).
+  // ══════════════════════════════════════════════════════════════════════
+
+  add({
+    name: 'orca_list_incidents',
+    description:
+      'List AI agent security incidents from the ORCA AI Incident Archive (417 records, 2024-12 → 2026-11, CC BY 4.0). Filter by kind (incident/vulnerability/research/report/policy), severity, attack type (e.g. SUPPLY/WEAPON/MCP/IPI), real_harm (confirmed victim), region, month, landmark, or keyword. kind=policy/report rows are informational moves, not incidents.',
+    params: [
+      {
+        name: 'kind',
+        type: 'enum',
+        description: 'incident, vulnerability, research, report, policy',
+        required: false,
+        enum: ['incident', 'vulnerability', 'research', 'report', 'policy'],
+      },
+      {
+        name: 'severity',
+        type: 'enum',
+        description: 'critical, high, medium, low, info',
+        required: false,
+        enum: ['critical', 'high', 'medium', 'low', 'info'],
+      },
+      {
+        name: 'type',
+        type: 'string',
+        description: 'Attack type code, e.g. SUPPLY, WEAPON, MCP, IPI, CRED',
+        required: false,
+      },
+      {
+        name: 'harm',
+        type: 'string',
+        description: 'real_harm filter: true, false, or null (policy/report)',
+        required: false,
+      },
+      { name: 'region', type: 'string', description: 'e.g. GLOBAL, US, EU, CN', required: false },
+      { name: 'month', type: 'string', description: 'YYYY-MM', required: false },
+      { name: 'landmark', type: 'boolean', description: 'Only landmark entries', required: false },
+      { name: 'keyword', type: 'string', description: 'Substring match against title/types/regions', required: false },
+      { name: 'limit', type: 'number', description: 'Max rows (default 30, max 200)', required: false },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadOrcaIndex(assets);
+      const harmRaw = args.harm as string | undefined;
+      const realHarm =
+        harmRaw === undefined || harmRaw === ''
+          ? undefined
+          : harmRaw === 'null'
+            ? null
+            : harmRaw === 'true'
+              ? true
+              : harmRaw === 'false'
+                ? false
+                : undefined;
+      return {
+        total: idx.counts.records,
+        upstreamVersion: idx.upstreamVersion,
+        incidents: filterOrcaIncidents(idx.incidents, {
+          kind: args.kind as string | undefined,
+          severity: args.severity as string | undefined,
+          type: args.type as string | undefined,
+          realHarm,
+          region: args.region as string | undefined,
+          month: args.month as string | undefined,
+          landmark: args.landmark as boolean | undefined,
+          keyword: args.keyword as string | undefined,
+          limit: Math.min((args.limit as number) ?? 30, 200),
+        }),
+      };
+    },
+  });
+
+  add({
+    name: 'orca_get_incident',
+    description:
+      'Return the full ORCA incident record: summary, confirmed sources with URLs, dates, severity, real_harm, ai_involvement and a deep link to the upstream Markdown record. Use orca_list_incidents first to discover ids.',
+    params: [
+      {
+        name: 'id',
+        type: 'string',
+        description: 'Record id, e.g. 2026-07-09-openai-agents-breach-huggingface',
+        required: true,
+      },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      return getOrcaIncident(assets, args.id as string);
+    },
+  });
+
+  add({
+    name: 'orca_stats',
+    description:
+      'ORCA archive stats: counts by severity/kind/type/region/real_harm, monthly volume, source totals, cache state.',
+    params: [],
+    execute: async () => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadOrcaIndex(assets);
+      const stats = await loadOrcaStats(assets);
+      return { upstreamVersion: idx.upstreamVersion, stats: stats ?? idx.stats, cache: orcaCacheStats() };
+    },
+  });
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  MMD — MalwareMustDie shared codes & tools (mmd_*)
+  //  Open-share malware-analysis toolkit catalog (public share).
+  // ══════════════════════════════════════════════════════════════════════
+
+  add({
+    name: 'mmd_list_tools',
+    description:
+      'List tools & scripts from the MalwareMustDie (MMD) shared codes repository (228 files across Python/Bash/Perl/C/radare2/…). Filter by category (language directory), kind (script/source/doc/webtool/binary), file extension, or keyword. Every entry deep-links the upstream file.',
+    params: [
+      {
+        name: 'category',
+        type: 'string',
+        description:
+          'Language dir: Python, Bash, Perl, Clang, Autoit, batch, HTML, etc, radare2stuff, radare2test, slides, wiki',
+        required: false,
+      },
+      {
+        name: 'kind',
+        type: 'string',
+        description: 'script, source, doc, webtool, slides, archive, binary, image, resource',
+        required: false,
+      },
+      { name: 'ext', type: 'string', description: 'File extension, e.g. sh, py, pl, c', required: false },
+      { name: 'keyword', type: 'string', description: 'Substring match against path', required: false },
+      { name: 'limit', type: 'number', description: 'Max files (default 50, max 250)', required: false },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadMmdIndex(assets);
+      return {
+        total: idx.counts.files,
+        lastCommit: idx.lastCommit,
+        tools: listMmdTools(idx, {
+          category: args.category as string | undefined,
+          kind: args.kind as string | undefined,
+          ext: args.ext as string | undefined,
+          keyword: args.keyword as string | undefined,
+          limit: Math.min((args.limit as number) ?? 50, 250),
+        }),
+      };
+    },
+  });
+
+  add({
+    name: 'mmd_get_category',
+    description:
+      'Return one MMD category (language directory) with its full file listing and sizes. Use mmd_list_tools or the index to discover categories.',
+    params: [{ name: 'category', type: 'string', description: 'e.g. Python, Bash, radare2stuff', required: true }],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      return getMmdCategory(assets, args.category as string);
+    },
+  });
+
+  add({
+    name: 'mmd_recent_activity',
+    description:
+      'Recent MMD upstream commits (activity feed) plus repository counts. The manifest is rebuilt weekly by the sync workflow, so new upstream pushes surface here.',
+    params: [],
+    execute: async () => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadMmdIndex(assets);
+      const commits = await loadMmdCommits(assets);
+      return {
+        counts: idx.counts,
+        lastCommit: idx.lastCommit,
+        commits: commits?.commits ?? idx.recentCommits,
+        cache: mmdCacheStats(),
+      };
     },
   });
 

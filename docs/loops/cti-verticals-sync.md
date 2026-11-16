@@ -4,8 +4,8 @@
 
 ## Loop Description
 
-Rebuild the eight bookmark-gap data verticals from their upstreams and confirm
-each manifest is fresh and correctly shaped. Same cadence as the
+Rebuild the bookmark-gap data verticals + the MMD toolkit from their upstreams
+and confirm each manifest is fresh and correctly shaped. Same cadence as the
 `cti-verticals-sync.yml` weekly workflow — run this loop after editing any
 `scripts/build-{cti-bookmarks,lots,malapi,car,capec,hijacklibs,veris,engage}-manifest.mjs`
 script or before cutting a data PR.
@@ -40,7 +40,8 @@ capec, hijacklibs, veris, engage). Read the first failure or hollow
 output, fix the parser/fetcher at the source, and re-run.
 
 Count floors: bookmarks ≥350 entries, lots ≥150, malapi ≥300, car ≥80,
-capec ≥500, hijacklibs ≥400, veris ≥50 fields, engage ≥40 approaches.
+capec ≥500, hijacklibs ≥400, veris ≥50 fields, engage ≥40 approaches,
+mmd ≥220 files across ≥12 categories.
 
 Self-pace this loop. After each iteration, run the check command, read the
 output, and only continue if any vertical is still failing. Stop when green

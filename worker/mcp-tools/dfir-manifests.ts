@@ -73,6 +73,16 @@ import {
   novaCacheStats,
   scanNovaPrompt,
 } from '../lib/nova-manifest';
+
+// ORCA AI Incident Archive (CC BY 4.0) + MMD toolkit catalog
+import {
+  filterOrcaIncidents,
+  getOrcaIncident,
+  loadOrcaIndex,
+  loadOrcaStats,
+  orcaCacheStats,
+} from '../lib/orca-manifest';
+import { getMmdCategory, listMmdTools, loadMmdCommits, loadMmdIndex, mmdCacheStats } from '../lib/mmd-manifest';
 import { filterArtifacts, getWinRegArtifact, loadWinRegIndex, winRegCacheStats } from '../lib/winreg-manifest';
 import type { DenaliActivity } from '../lib/denali-manifest';
 export function registerDfirManifestsTools(h: McpToolHost): void {
@@ -571,6 +581,169 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
         replicatedAt: idx.replicatedAt,
         edgeNote: idx.edgeNote,
         cache: novaCacheStats(),
+      });
+    }
+  );
+
+  // ── ORCA tools ──────────────────────────────────────────────────
+  // Open database of real-world AI agent security incidents
+  // (Continuum-AI-Corp/Orca-AI-Incident-Archive, CC BY 4.0). 417 records,
+  // 2024-12 → 2026-11, every record with ≥1 clickable primary source.
+
+  h.tools(
+    'orca_list_incidents',
+    'List AI agent security incidents from the ORCA AI Incident Archive (417 records, 2024-12 → 2026-11). Filter by kind (incident/vulnerability/research/report/policy), severity, attack type (e.g. SUPPLY/WEAPON/MCP/IPI), real_harm, region, month, landmark, or keyword. kind=policy/report rows are informational moves, not incidents.',
+    {
+      kind: z
+        .enum(['incident', 'vulnerability', 'research', 'report', 'policy'])
+        .optional()
+        .describe('Filter by record kind'),
+      severity: z.enum(['critical', 'high', 'medium', 'low', 'info']).optional().describe('Filter by severity'),
+      type: z.string().optional().describe('Attack type code, e.g. SUPPLY, WEAPON, MCP, IPI, CRED'),
+      harm: z
+        .enum(['true', 'false', 'null'])
+        .optional()
+        .describe("real_harm: 'true' = confirmed victim, 'false' = research demo, 'null' = policy/report"),
+      region: z.string().optional().describe('e.g. GLOBAL, US, EU, CN'),
+      month: z
+        .string()
+        .regex(/^\d{4}-\d{2}$/)
+        .optional()
+        .describe('Month, e.g. 2026-07'),
+      landmark: z.boolean().optional().describe('Only landmark entries'),
+      keyword: z.string().optional().describe('Substring match against title, types, regions'),
+      limit: z.number().int().min(1).max(200).optional().describe('Max rows (default 30, capped at 200)'),
+    },
+    async ({ kind, severity, type, harm, region, month, landmark, keyword, limit }) => {
+      const idx = await loadOrcaIndex(ASSETS);
+      const realHarm = harm === undefined ? undefined : harm === 'null' ? null : harm === 'true' ? true : false;
+      const rows = filterOrcaIncidents(idx.incidents, {
+        kind,
+        severity,
+        type,
+        realHarm,
+        region,
+        month,
+        landmark,
+        keyword,
+        limit: limit ?? 30,
+      });
+      return untrustedToolResult({
+        total: idx.counts.records,
+        returned: rows.length,
+        upstreamVersion: idx.upstreamVersion,
+        source: idx.source,
+        license: idx.license,
+        incidents: rows,
+      });
+    }
+  );
+
+  h.tools(
+    'orca_get_incident',
+    'Return the full ORCA incident record: summary, confirmed sources with URLs, dates, severity, real_harm, ai_involvement, and a deep link to the upstream Markdown record. Use orca_list_incidents first to discover ids.',
+    {
+      id: z.string().describe('Record id, e.g. "2026-07-09-openai-agents-breach-huggingface".'),
+    },
+    async ({ id }) => {
+      const body = await getOrcaIncident(ASSETS, id);
+      if (!body) {
+        return untrustedToolResult({
+          error: 'incident_not_found',
+          id,
+          hint: 'Call orca_list_incidents to see available ids.',
+        });
+      }
+      return untrustedToolResult(body);
+    }
+  );
+
+  h.tools(
+    'orca_stats',
+    'Return ORCA archive stats: counts by severity/kind/type/region/real_harm, monthly volume, source totals, source + license, and cache state.',
+    {},
+    async () => {
+      const idx = await loadOrcaIndex(ASSETS);
+      const stats = await loadOrcaStats(ASSETS);
+      return untrustedToolResult({
+        upstreamVersion: idx.upstreamVersion,
+        source: idx.source,
+        sourceUrl: idx.sourceUrl,
+        license: idx.license,
+        stats: stats ?? idx.stats,
+        cache: orcaCacheStats(),
+      });
+    }
+  );
+
+  // ── MMD tools ───────────────────────────────────────────────────
+  // MalwareMustDie (MMD) shared codes & tools catalog
+  // (github.com/unixfreaxjp/malwaremustdie): 228 malware-analysis files
+  // across 12 language categories + recent commit activity feed.
+
+  h.tools(
+    'mmd_list_tools',
+    'List tools & scripts from the MalwareMustDie (MMD) shared codes repository (228 files across Python/Bash/Perl/C/radare2/…). Filter by category (language directory), kind (script/source/doc/webtool/binary), file extension, or keyword. Every entry deep-links the upstream file.',
+    {
+      category: z
+        .string()
+        .optional()
+        .describe(
+          'Language dir: Python, Bash, Perl, Clang, Autoit, batch, HTML, etc, radare2stuff, radare2test, slides, wiki'
+        ),
+      kind: z.string().optional().describe('script, source, doc, webtool, slides, archive, binary, image, resource'),
+      ext: z.string().optional().describe('File extension, e.g. sh, py, pl, c'),
+      keyword: z.string().optional().describe('Substring match against the repo path'),
+      limit: z.number().int().min(1).max(250).optional().describe('Max files (default 50, capped at 250)'),
+    },
+    async ({ category, kind, ext, keyword, limit }) => {
+      const idx = await loadMmdIndex(ASSETS);
+      const tools = listMmdTools(idx, { category, kind, ext, keyword, limit: limit ?? 50 });
+      return untrustedToolResult({
+        total: idx.counts.files,
+        returned: tools.length,
+        lastCommit: idx.lastCommit,
+        source: idx.source,
+        license: idx.license,
+        tools,
+      });
+    }
+  );
+
+  h.tools(
+    'mmd_get_category',
+    'Return one MMD category (language directory) with its full file listing and sizes. Use mmd_list_tools or mmd_stats to discover categories.',
+    {
+      category: z.string().describe('e.g. "Python", "Bash", "radare2stuff".'),
+    },
+    async ({ category }) => {
+      const body = await getMmdCategory(ASSETS, category);
+      if (!body) {
+        return untrustedToolResult({
+          error: 'category_not_found',
+          category,
+          hint: 'Categories: Python, Bash, Perl, Clang, Autoit, batch, HTML, etc, radare2stuff, radare2test, slides, wiki.',
+        });
+      }
+      return untrustedToolResult(body);
+    }
+  );
+
+  h.tools(
+    'mmd_recent_activity',
+    'Return recent MMD upstream commits (activity feed) plus repository counts. The manifest rebuilds weekly, so new upstream pushes surface here.',
+    {},
+    async () => {
+      const idx = await loadMmdIndex(ASSETS);
+      const commits = await loadMmdCommits(ASSETS);
+      return untrustedToolResult({
+        counts: idx.counts,
+        lastCommit: idx.lastCommit,
+        source: idx.source,
+        sourceUrl: idx.sourceUrl,
+        license: idx.license,
+        commits: commits?.commits ?? idx.recentCommits,
+        cache: mmdCacheStats(),
       });
     }
   );

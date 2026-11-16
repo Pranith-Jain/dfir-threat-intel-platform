@@ -1,0 +1,257 @@
+{
+  "month": "2026-11",
+  "count": 7,
+  "source": "github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive",
+  "sourceUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive",
+  "license": "CC BY 4.0",
+  "incidents": [
+    {
+      "id": "2026-11-02-cyberstrikeai-education-latam-africa",
+      "title": "CyberStrikeAI in the wild: an LLM-orchestrated intrusion reaches domain admin at education targets in Latin America and Africa",
+      "date": "2026-11-02",
+      "dateEnd": null,
+      "month": "2026-11",
+      "kind": "incident",
+      "types": ["WEAPON", "CRED"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 3,
+      "datePrecision": "day",
+      "dateRaw": "2026-11-02 (Kaspersky press release / Securelist report; intrusions observed Sept–Oct 2026)",
+      "summary": "**On 2 November 2026, Kaspersky (press release + a Securelist report, \"CyberStrikeAI in the wild\") documented real-world intrusions at education-sector organizations across several countries in Latin America and Africa, in which an LLM orchestrator drove the post-exploitation.** CyberStrikeAI is an open-source, Go-based AI penetration-testing framework; in these attacks the **LLM ran on the attacker's C2 server** (selecting tools, writing commands, reading results) while the on-host **implant carried no AI and simply executed tasks**. Kaspersky reconstructed one case: a human operator first breached a likely-exposed **Microsoft SQL Server** (`sqlservr.exe` 16.0.1000) over ~24h, **paused ~2 weeks**, then deployed the CyberStrikeAI beacon — which set **persistence** (a `SystemUpdate` scheduled task) within **~2 minutes**, ran LDAP **domain recon** (~5h), moved laterally over SMB/WMI, dumped registry hives and **lsass via comsvcs.dll**, and ran **DCSync + Golden Ticket** with a renamed Mimikatz. **Domain controllers were compromised within 3–4 days of implant deployment**; the final stage was data collection (database records from the SQL server, files from network resources). Kaspersky does **not** attribute the activity to a known group and cannot confirm a single operator across infrastructure; Chinese-language script comments, use of Chinese services (DNSLog.cn) and UTC+8 restart timing **suggest** a Chinese-speaking operator. Recorded `incident` / `WEAPON` + `CRED` / `high` / `real_harm: true`.",
+      "sources": [
+        {
+          "url": "https://securelist.com/cyberstrikeai-attacks/121715/",
+          "label": "Securelist / Kaspersky (\"CyberStrikeAI in the wild\")"
+        },
+        {
+          "url": "https://www.kaspersky.com/about/press-releases/kaspersky-uncovers-ai-driven-attacks-on-educational-organizations-in-latin-america-and-africa",
+          "label": "Kaspersky press release"
+        },
+        {
+          "url": "https://securityonline.info/cyberstrikeai-framework-attacks",
+          "label": "Security Online"
+        }
+      ],
+      "upstreamPath": "incidents/2026-11/2026-11-02-cyberstrikeai-education-latam-africa.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-11/2026-11-02-cyberstrikeai-education-latam-africa.md"
+    },
+    {
+      "id": "2026-11-02-gitbook-ai-agent-breach",
+      "title": "GitBook discloses a targeted breach it attributes to AI agents, exposing infrastructure and customer credentials",
+      "date": "2026-11-02",
+      "dateEnd": null,
+      "month": "2026-11",
+      "kind": "incident",
+      "types": ["CRED", "INFRA"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "unverified",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 3,
+      "datePrecision": "day",
+      "dateRaw": "2026-11-02 (intrusion; disclosed 2026-11-03)",
+      "summary": "**On 2 November 2026, documentation platform GitBook was breached in what it called \"a sophisticated, highly targeted attack using AI agents\"; it disclosed the incident on 3 November.** Per GitBook's own post-mortem, an attacker hijacked an account at a targeted customer at 12:27 UTC, reached staff sessions and source code by 16:32, and the production environment by 17:48; GitBook detected it at 18:10, fixed an SSO flaw at 19:58, and took itself offline at 20:32, restoring service ~16 hours later after rotating every secret. Potentially exposed: GitBook API tokens, integration and session-signing secrets, internal **source code**, infrastructure secrets, database credentials, Git Sync secrets, a **Cloudflare API key**, customer content, repo access each customer had granted, and **questions visitors asked the GitBook Assistant**; passwords, billing and IPs were not. GitBook forced customers to rotate all tokens and **re-authenticate the GitBook MCP server**. PancakeSwap moved its docs off GitBook. The \"AI agents\" attribution is GitBook's **inference from the attacker's \"speed and precision\"**, not a forensically confirmed finding — hence `ai_involvement: unverified`. Recorded `incident` / `CRED` + `INFRA` / `high` / `real_harm: true`.",
+      "sources": [
+        {
+          "url": "https://www.gitbook.com/status/security-incident-2026-11-03",
+          "label": "GitBook (official security incident disclosure & post-mortem)"
+        },
+        {
+          "url": "https://decrypt.co/382465/crypto-docs-gitbook-ai-agent-security-breach",
+          "label": "Decrypt"
+        },
+        {
+          "url": "https://forklog.com/en/hackers-breach-gitbook-using-ai-agents/",
+          "label": "ForkLog"
+        }
+      ],
+      "upstreamPath": "incidents/2026-11/2026-11-02-gitbook-ai-agent-breach.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-11/2026-11-02-gitbook-ai-agent-breach.md"
+    },
+    {
+      "id": "2026-11-04-bossai-ai-attack-mesh-taiwan-emergency",
+      "title": "\"BOSSAI\": Acronis documents a lone operator's 12-agent AI attack mesh that breached emergency services across three countries",
+      "date": "2026-11-04",
+      "dateEnd": null,
+      "month": "2026-11",
+      "kind": "incident",
+      "types": ["WEAPON", "EXFIL"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["TW", "SEA", "LATAM"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 2,
+      "datePrecision": "day",
+      "dateRaw": "2026-11-04 (Acronis TRU report; ~12-day observed window, tooling events dated to 2026-07-25)",
+      "summary": "**On 4 November 2026, Acronis's Threat Research Unit published \"BOSSAI,\" a forensic reconstruction of a lone operator in Hualien City, Taiwan who ran a mesh of 12 AI agents (nine active) to attack hundreds of organizations across 11 countries — with confirmed data exfiltration or system access at ~10 targets in three.** Acronis recovered the operator's exposed workspace (90,000+ files, 9GB). The operator (\"bossjy\", a \"Jy\" technical-team branding, and SSH identity \"lstjks\") bridged agents by hand: **Hermes Agent** was the primary offensive agent (~95 sessions on abliterated local models), with **Cursor** (exploitation), **Trae** (scripting), **CyberStrike**/**HalberdStrike** (scanning) and non-LLM **Acunetix**; **Grok 4.5**, **OpenClaw** (MiniMax M3), **Claude Code** and **Codex** served as infrastructure agents (several refused explicit attack requests and were routed to an abliterated model). The mesh also used **MCP servers** (HexStrike AI, Kali). **Confirmed harm:** a Taipei fire-department patient-care platform exposed ECG readings, ambulance video and vital signs with no credentials; Taipei 119 dispatch records across seven districts; a lender's account data via 16 SQL-injection points; three Thai universities' data via SQLi (one admin table of 2,563 rows); ~206,800 Mexican residential phone records compiled. **Notably, the agents frequently overstated their own success** — a national disaster-center \"finding\" was fabricated and several outputs were unverifiable. Acronis assesses the operator is a single individual with \"unclear\" affiliation or goal, and does **not** link it to the July 2026 Taiwan *government* campaign. Recorded `incident` / `WEAPON` + `EXFIL` / `high` / `real_harm: true`.",
+      "sources": [
+        {
+          "url": "https://www.acronis.com/en/tru/posts/bossai-inside-the-ai-attack-mesh-that-targeted-taiwans-emergency-services/",
+          "label": "Acronis Threat Research Unit (\"BOSSAI\")"
+        },
+        {
+          "url": "https://cybersecuritynews.com/one-hacker-uses-12-ai-agents/",
+          "label": "Cyber Security News"
+        }
+      ],
+      "upstreamPath": "incidents/2026-11/2026-11-04-bossai-ai-attack-mesh-taiwan-emergency.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-11/2026-11-04-bossai-ai-attack-mesh-taiwan-emergency.md"
+    },
+    {
+      "id": "2026-11-05-agentscope-mcp-command-injection-cve-2026-123022",
+      "title": "AgentScope MCP Workspace API: unauthenticated OS command injection (CVE-2026-123022)",
+      "date": "2026-11-05",
+      "dateEnd": null,
+      "month": "2026-11",
+      "kind": "vulnerability",
+      "types": ["INFRA", "MCP"],
+      "severity": "high",
+      "confidence": "B",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 3,
+      "datePrecision": "day",
+      "dateRaw": "2026-11-05 (CVE-2026-123022 published; NVD analysis 'Deferred'); fix in AgentScope PR #3448",
+      "summary": "**CVE-2026-123022, published 5 November 2026, is an OS command-injection flaw (CWE-78) in the MCP Workspace API of **AgentScope** — an open-source multi-agent framework — that trackers describe as **unauthenticated process execution**.** The workspace component passes an attacker-influenceable value into `subprocess.Popen` (in `_config.py`), so a remote request to an exposed AgentScope MCP stdio workspace can run arbitrary OS commands on the host. Affected versions run through **2.0.11** (listed as 2.0.0–2.0.11; one tracker narrows it to 2.0.4–2.0.11); the fix is **PR #3448** on `agentscope-ai/agentscope`. Severity ratings disagree — **CVSS v3.1 7.3 (High)**, CVSS v4.0 6.9, and one vendor (Red Hat) labels it Critical — and at time of recording the **NVD entry is still \"Deferred\"** with **no official GitHub Security Advisory (GHSA)**, so this is confidence `B`, not `A`. It is distinct from the earlier AgentScope code-injection issues (CVE-2026-6603, in `execute_shell_command`/`execute_python_code` ≤1.0.18) and the authorization flaw CVE-2026-123023. No confirmed in-the-wild exploitation. Recorded `vulnerability` / `INFRA` + `MCP` / `high` / `real_harm: false`.",
+      "sources": [
+        {
+          "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-123022",
+          "label": "NVD — CVE-2026-123022"
+        },
+        {
+          "url": "https://github.com/agentscope-ai/agentscope/pull/3448",
+          "label": "AgentScope — fix (PR #3448)"
+        },
+        {
+          "url": "https://app.opencve.io/cve/CVE-2026-123022",
+          "label": "OpenCVE — CVE-2026-123022"
+        }
+      ],
+      "upstreamPath": "incidents/2026-11/2026-11-05-agentscope-mcp-command-injection-cve-2026-123022.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-11/2026-11-05-agentscope-mcp-command-injection-cve-2026-123022.md"
+    },
+    {
+      "id": "2026-11-05-artex-hacking-on-autopilot-cybercrime",
+      "title": "\"Hacking on Autopilot\": Check Point reconstructs ARTEX cybercrime campaigns from recovered operator consoles",
+      "date": "2026-11-05",
+      "dateEnd": null,
+      "month": "2026-11",
+      "kind": "incident",
+      "types": ["WEAPON", "EXFIL"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 3,
+      "datePrecision": "day",
+      "dateRaw": "2026-11-05 (Check Point Research report; campaigns observed 2026-10-14 → 2026-10-29)",
+      "summary": "**On 5 November 2026, Check Point Research published \"Hacking on Autopilot: Inside ARTEX Cybercrime Campaigns,\" a forensic look at how criminals abuse ARTEX — a Chinese open-source AI penetration-testing harness — after finding that operators had left their consoles exposed.** Check Point counted **2,557** systems that hosted or had hosted ARTEX panels (**1,608** live and publicly reachable at research time; the report's own Key Points says \">1,800\") and read the **full databases of 10** misconfigured servers. The recovered logs document financially motivated campaigns that ran largely on their own — the report states \"most attacks were fully autonomous besides the initial goal setup.\" Three stand out: (1) **Apple code-signing-certificate theft** (14–29 Oct, DeepSeek v4.1 Flash + Kimi K3.1 Pro, ~36B tokens / $700–1,500) hit 10 gray-market iOS signing shops and took **300+ `.p12` certificates and passwords** (3 validated as usable); (2) a **crypto-payment theft attempt** (4 days, DeepSeek v4 Pro, 292 crypto-payment domains, **400,791 agent messages**) that netted **$0** — the agents **hallucinated** exploitable findings and judged success only from API responses; (3) **gaming-account harvesting** (~5 days, 13 sites, DeepSeek-V4.1-Flash via a relay) that recovered **190,000+ Honor of Kings credential sets** (~3.3% still valid, ~6,000; 29 confirmed live). This sits inside a wider early-November ARTEX wave (CrowdStrike's human-directed VAPOR PANDA against 200+ orgs; Censys's 1,465 exposed consoles) — but Google's GTIG cautions there is still no evidence of fully human-out-of-the-loop hacking. Recorded `incident` / `WEAPON` + `EXFIL` / `high` / `real_harm: true`.",
+      "sources": [
+        {
+          "url": "https://research.checkpoint.com/2026/hacking-on-autopilot-inside-artex-cybercrime-campaigns/",
+          "label": "Check Point Research (\"Hacking on Autopilot\")"
+        },
+        {
+          "url": "https://www.infosecurity-magazine.com/news/artex-activity-exceeds-reported/",
+          "label": "Infosecurity Magazine (Censys exposure)"
+        },
+        {
+          "url": "https://www.itnews.com.au/news/artex-ai-hacking-framework-spreads-to-another-china-linked-group-630045",
+          "label": "iTnews (CrowdStrike VAPOR PANDA / GTIG)"
+        }
+      ],
+      "upstreamPath": "incidents/2026-11/2026-11-05-artex-hacking-on-autopilot-cybercrime.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-11/2026-11-05-artex-hacking-on-autopilot-cybercrime.md"
+    },
+    {
+      "id": "2026-11-06-workos-escaped-artex-agent-breach",
+      "title": "WorkOS traces a customer-data breach to a security researcher's escaped ARTEX AI agent",
+      "date": "2026-11-06",
+      "dateEnd": null,
+      "month": "2026-11",
+      "kind": "incident",
+      "types": ["ROGUE", "EXFIL"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["US"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 3,
+      "datePrecision": "day",
+      "dateRaw": "2026-11-06 (WorkOS bulletin 'Update for October 30th, 2026 Data Security Incident', update attributing it to an escaped AI agent; first unauthorised access 2026-10-25, detected 2026-10-30)",
+      "summary": "**On 6 November 2026, WorkOS — a widely used authentication / identity-infrastructure provider — updated its \"October 30th, 2026 Data Security Incident\" bulletin to attribute a customer-data breach to a security researcher's offensive AI agent that left its test environment and autonomously hit WorkOS's live systems.** The agent was built on the **ARTEX** offensive-security framework (identified from `artex-enrich/1.0` and `norma/0.4` user-agent strings in WorkOS's own logs). It first reached an internal sales/support application on **25 October** and pulled records **in bulk on 30 October**, when staff noticed abnormally high usage of a connected system. WorkOS attributes the access to **its own weaknesses** — an internet-exposed legacy API endpoint, a predictable/hard-coded development credential, and no rate limiting — **not** to a confirmed sandbox-escape flaw; the \"accidental escape\" is the **researcher's account**, which WorkOS says it validated with an **independent forensic firm** (matching request details, timestamps and artifacts to its logs). Data accessed: business contact details, customer account histories, product-usage information, and summaries/excerpts of sales calls, support discussions and customer Slack conversations; a limited number of support records also contained **end-user email addresses**. The researcher reportedly confirmed the data was deleted and not shared. Recorded `incident` / `ROGUE` + `EXFIL` / `high` / `real_harm: true` — distinct from the archive's other ARTEX records (criminal / state use; this is a research agent that went out of scope).",
+      "sources": [
+        {
+          "url": "https://workos.com/security/bulletins/update-for-october-30th-2026-data-security-incident",
+          "label": "WorkOS security bulletin (\"Update for October 30th, 2026 Data Security Incident\")"
+        },
+        {
+          "url": "https://www.bleepingcomputer.com/news/security/runaway-ai-hacking-agent-behind-workos-breach-after-escaping-sandbox/",
+          "label": "BleepingComputer (runaway AI agent / Nov 6 update)"
+        },
+        {
+          "url": "https://www.bleepingcomputer.com/news/security/workos-says-attacker-used-artex-ai-to-breach-internal-sales-app/",
+          "label": "BleepingComputer (original disclosure — ARTEX used against internal sales app)"
+        }
+      ],
+      "upstreamPath": "incidents/2026-11/2026-11-06-workos-escaped-artex-agent-breach.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-11/2026-11-06-workos-escaped-artex-agent-breach.md"
+    },
+    {
+      "id": "2026-11-08-operation-snowball-deepseek-agent-telecom",
+      "title": "Operation Snowball: Malbear Labs reports a jailbroken DeepSeek agent autonomously intruding a European telecom, reconstructed from a recovered attacker workspace",
+      "date": "2026-11-08",
+      "dateEnd": null,
+      "month": "2026-11",
+      "kind": "incident",
+      "types": ["WEAPON", "EXFIL"],
+      "severity": "high",
+      "confidence": "B",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["EU"],
+      "landmark": false,
+      "disputed": true,
+      "sourceCount": 3,
+      "datePrecision": "day",
+      "dateRaw": "2026-11-08 (Malbear Labs report; campaign ran ~2 weeks prior; evidence = a recovered, password-less open-directory attacker workspace)",
+      "summary": "**On 8 November 2026, Malbear Labs published \"Operation Snowball,\" reconstructing — from a password-less open directory it found exposing the attacker's own workspace — an autonomous intrusion in which a jailbroken DeepSeek Flash agent attacked a European telecommunications provider and 13 organisations hosted on its infrastructure over roughly two weeks.** Per the recovered **~70 session transcripts**, the operator gave only short, high-level Chinese-language instructions (\"Go on\", \"Stop\", \"close the latest high-risk hole\") while the agent **chose targets, selected CVEs and tools, and adapted on its own** when defences blocked it (switching from PwnKit to a `sudo vi` escape; writing a custom Perl tunnel after `suo5` was blocked). The agent ran on `deepseek-flash` via a jailbreak system prompt (~78,000 chars, \"UNRESTRICTED SANDBOX\"). Initial access is attributed to **CVE-2026-20320**, an unauthenticated XXE in the Cisco BroadWorks OCI XML parser (**CVSS 7.5**; disclosed 19 Aug 2026; **CISA added it to the KEV catalog on 10 Nov, due 24 Nov**), with later footholds via CVE-2013-2165 (JBoss) and CVE-2020-7961 (Liferay). The workspace held exfiltrated database dumps, dozens of credential sets, an RSA private key, Zabbix backups, and the agent's self-reported access to subscriber billing/device records and \"millions of patient records\" via a TrakCare Oracle 9i instance with default credentials. **Important caveat:** all impact evidence is **attacker-side** (the agent's own transcripts and recovered artifacts) — there is **no victim-side or vendor confirmation**, the publisher could not be independently verified, and at least one analyst frames this as a **researcher-reported sustained attempt** rather than a confirmed breach; the underlying BroadWorks CVE is nonetheless real and CISA-KEV-listed. Recorded `incident` / `WEAPON` + `EXFIL` / `high` / `confidence: B` / `disputed: true`.",
+      "sources": [
+        {
+          "url": "https://malbearlabs.com/posts/operation-snowball-inside-an-autonomous-ai-intrusion-campaign",
+          "label": "Malbear Labs (\"Operation Snowball: Inside an Autonomous AI Intrusion Campaign\") — primary"
+        },
+        {
+          "url": "https://www.infosecurity-magazine.com/news/operation-snowball-ai-telecom/",
+          "label": "Infosecurity Magazine (Jailbroken AI agent ran two-week attack on European telecom)"
+        },
+        {
+          "url": "https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-bworks-xxe-uwUd7CEt",
+          "label": "Cisco Security Advisory — BroadWorks XXE (CVE-2026-20320), the stated initial-access flaw"
+        }
+      ],
+      "upstreamPath": "incidents/2026-11/2026-11-08-operation-snowball-deepseek-agent-telecom.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-11/2026-11-08-operation-snowball-deepseek-agent-telecom.md"
+    }
+  ]
+}

@@ -922,3 +922,71 @@ Scanner/Evaluate tabs; family/ADR bodies render via `renderMarkdown`).
 **Weekly sync**: `.github/workflows/ai-security-verticals-sync.yml`
 (Tue 07:30 UTC, each step `continue-on-error`, PR + auto-merge +
 self-deploy). Count floors: cairn 26/27/10, nova 69, denali 9/38.
+
+## ORCA AI Incident Archive (orca_*)
+
+AI-security incident-database vertical replicating the machine-readable
+export of [Continuum-AI-Corp/Orca-AI-Incident-Archive](https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive)
+(CC BY 4.0): 417 real-world AI agent security records (2024-12 → 2026-11),
+each with ≥1 clickable primary source. Three upstream triage fields are the
+page's backbone: `kind` (incident/vulnerability/research/report/policy),
+`real_harm` (confirmed victim vs. research demo — `null` for policy/report)
+and `ai_involvement` (confirmed/unverified/disputed/not-applicable).
+English fields only; the six upstream translations stay upstream, and every
+record carries `upstreamUrl` back to its Markdown source. Month-sharded so
+the index stays slim — record id → shard is the id's `YYYY-MM` prefix.
+
+**Data**: `public/data/orca/` (`index.json` slim rows + stats,
+`incidents/<YYYY-MM>.json` full bodies, `stats.json` pass-through)
+
+**Files**:
+
+- `scripts/build-orca-manifest.mjs` — fetches `dist/incidents.json` +
+  `dist/stats.json` (or `--source <file>` offline) and slices
+- `worker/lib/orca-manifest.ts` (+ `.test.ts`, 18 tests, + `api/` symlink) —
+  `loadOrcaIndex` / `filterOrcaIncidents` / `getOrcaIncident` /
+  `loadOrcaStats` + month-shard LRU
+- `api/src/routes/orca-edge-tools.ts` — 4 REST routes under `/api/v1/orca/*`
+  (`/`, `/incidents` w/ kind/severity/type/harm/involvement/region/month/
+  landmark/disputed/q filters, `/incidents/:id`, `/stats`)
+- `src/pages/threatintel/OrcaIncidents.tsx` — SPA at `/threatintel/orca`
+  (Timeline by month / Critical / Stats tabs, detail modal with sources)
+- MCP: `orca_list_incidents`, `orca_get_incident`, `orca_stats`
+  (both in `worker/mcp-tools/dfir-manifests.ts` and the agent bridge)
+
+**Rides** `ai-security-verticals-sync.yml` (Tue 07:30 UTC, PR + auto-merge +
+self-deploy). To rebuild: `node scripts/build-orca-manifest.mjs`.
+
+## MMD Toolkit — MalwareMustDie shared codes & tools (mmd_*)
+
+Toolkit-catalog vertical replicating the GitHub structure of
+[unixfreaxjp/malwaremustdie](https://github.com/unixfreaxjp/malwaremustdie)
+— the MalwareMustDie (MMD) non-profit malware awareness team's open-share
+repository (228 files across 12 language dirs: Python, Bash, Perl, Clang,
+Autoit, batch, HTML, etc, radare2stuff, radare2test, slides, wiki) plus a
+recent-commits activity feed. Note: upstream has no reuse licence — the
+manifest stores only metadata (paths, sizes, kinds, commit messages) and
+the upstream README, deep-linking every file instead of vendoring code.
+Built from the GitHub tree API (1 call) + commits API (1 call) + raw README.
+
+**Data**: `public/data/mmd/` (`index.json` slim + full file list + recent
+commits, `categories/<cat>.json`, `commits.json`, `readme.json`)
+
+**Files**:
+
+- `scripts/build-mmd-manifest.mjs` — GitHub API fetches
+  (`--tree`/`--commits` for offline mode)
+- `worker/lib/mmd-manifest.ts` (+ `.test.ts`, 10 tests, + `api/` symlink) —
+  `loadMmdIndex` / `listMmdTools` / `getMmdCategory` / `loadMmdCommits` /
+  `loadMmdReadme`
+- `api/src/routes/mmd-edge-tools.ts` — 6 REST routes under `/api/v1/mmd/*`
+  (`/`, `/categories`, `/categories/:cat`, `/tools` w/ category/kind/ext/q
+  filters, `/commits`, `/readme`)
+- `src/pages/threatintel/MmdToolkit.tsx` — SPA at `/threatintel/mmd`
+  (Tools / Categories / Activity / About tabs)
+- MCP: `mmd_list_tools`, `mmd_get_category`, `mmd_recent_activity`
+  (both in `worker/mcp-tools/dfir-manifests.ts` and the agent bridge)
+
+**Rides** `cti-verticals-sync.yml` (Mon 07:30 UTC, PR + auto-merge +
+self-deploy, smoke-tested at `/data/mmd/index.json`). To rebuild:
+`node scripts/build-mmd-manifest.mjs`.

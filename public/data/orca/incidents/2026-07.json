@@ -1,0 +1,881 @@
+{
+  "month": "2026-07",
+  "count": 28,
+  "source": "github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive",
+  "sourceUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive",
+  "license": "CC BY 4.0",
+  "incidents": [
+    {
+      "id": "2026-07-01-aws-kiro-rce",
+      "title": "AWS Kiro: ask it to summarise a web page, get RCE (CVE-2026-10591)",
+      "date": "2026-07-01",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "research",
+      "types": ["MCP", "SANDBOX"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 2,
+      "datePrecision": "month",
+      "dateRaw": "2026-07",
+      "summary": "Intezer and Kodem Security. When Kiro fetches or searches external content and hits a page with hidden instructions → the instructions make Kiro **use its own file-writing tool to write attacker content into `~/.kiro/settings/mcp.json`, with no user approval required** → Kiro reloads the config and launches that malicious MCP server → attacker code runs with the developer's privileges.\nIn the researchers' words: **\"A request as ordinary as 'summarise this page for me' can end in remote code execution.\"** Fixed in 0.11.130",
+      "sources": [
+        {
+          "url": "https://thehackernews.com/2026/07/aws-kiro-flaw-let-poisoned-web-page.html",
+          "label": "THN"
+        },
+        {
+          "url": "https://www.kodemsecurity.com/resources/aws-kiro-agentic-ide-rce-prompt-injection-mcp-config-vulnerability",
+          "label": "Kodem"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-01-aws-kiro-rce.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-01-aws-kiro-rce.md"
+    },
+    {
+      "id": "2026-07-01-duneslide-cursor-ling-dian-ji",
+      "title": "DuneSlide: zero-click sandbox escape in Cursor",
+      "date": "2026-07-01",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "research",
+      "types": ["SANDBOX"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 3,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-01",
+      "summary": "Cato AI Labs, both CVEs at **CVSS 9.8**:\n**CVE-2026-50548** abuses the optional `working_directory` parameter of the `run_terminal_cmd` tool — the sandbox lets the write command choose its working directory, and **the agent itself can set that directory without restriction**; prompt injection just has to point it at a system path outside the project\n**CVE-2026-50549** is a flaw in the path-resolution **fallback logic**: before writing a file, Cursor resolves symlinks to confirm the real target is inside the project, but **when that check fails it trusts the path the symlink declares for itself** instead of blocking outright\nCVEs assigned on 06-05, **fixed in Cursor 3.0 (released 04-02)**; everything before 3.0 is affected\n⚠️ **CVE-2026-50549 shares its Cursor fix ID with Wiz's \"GhostApproval\" of 2026-07-09** — two teams independently found the same symlink flaw; **when ingesting, merge or tag `duplicate_of`, do not double-count**",
+      "sources": [
+        {
+          "url": "https://www.catonetworks.com/blog/duneslide-two-critical-rce-vulnerabilities/",
+          "label": "Cato Networks"
+        },
+        {
+          "url": "https://thehackernews.com/2026/07/critical-cursor-flaws-could-let-prompt.html",
+          "label": "THN"
+        },
+        {
+          "url": "https://www.securityweek.com/critical-cursor-ai-ide-flaws-could-lead-to-os-level-remote-code-execution/",
+          "label": "SecurityWeek"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-01-duneslide-cursor-ling-dian-ji.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-01-duneslide-cursor-ling-dian-ji.md"
+    },
+    {
+      "id": "2026-07-01-jadepuffer-first-llm-driven-ransomware",
+      "title": "JADEPUFFER: first ransomware driven end-to-end by an LLM",
+      "date": "2026-07-01",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "incident",
+      "types": ["WEAPON"],
+      "severity": "critical",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-01",
+      "summary": "Sysdig discloses JADEPUFFER: the first attack driven end-to-end by an LLM, from reconnaissance and lateral movement to encryption and extortion, with humans authorising only at key points.",
+      "sources": [
+        {
+          "url": "https://www.sysdig.com/blog/jadepuffer-agentic-ransomware-for-automated-database-extortion",
+          "label": "Sysdig"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-01-jadepuffer-first-llm-driven-ransomware.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-01-jadepuffer-first-llm-driven-ransomware.md"
+    },
+    {
+      "id": "2026-07-01-taiwan-government-agent-swarm",
+      "title": "Taiwan's nuclear safety commission and other agencies breached by an agent swarm",
+      "date": "2026-07-01",
+      "dateEnd": "2026-07-04",
+      "month": "2026-07",
+      "kind": "incident",
+      "types": ["WEAPON"],
+      "severity": "critical",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["TW"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 3,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-01→04",
+      "summary": "See the expansion below. ⚠️ **v1 badly underrated this one (originally a one-line grade-C entry)**",
+      "sources": [
+        {
+          "url": "https://www.theregister.com/security/2026/08/12/near-autonomous-ai-agents-attack-taiwans-nuclear-safety-agency/5287055",
+          "label": "The Register"
+        },
+        {
+          "url": "https://www.cnn.com/2026/08/13/tech/china-taiwan-ai-agent-cyberattack-intl-hnk",
+          "label": "CNN"
+        },
+        {
+          "url": "https://cyberscoop.com/near-autonomous-ai-attack-government-target-taiwan/",
+          "label": "CyberScoop"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-01-taiwan-government-agent-swarm.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-01-taiwan-government-agent-swarm.md"
+    },
+    {
+      "id": "2026-07-02-hidden-web-instructions-payment-fraud",
+      "title": "Hidden web instructions make AI agents pay attackers (two in-the-wild campaigns)",
+      "date": "2026-07-02",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "incident",
+      "types": ["IPI", "ROGUE"],
+      "severity": "critical",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 3,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-02",
+      "summary": "Zscaler ThreatLabz documented **two active in-the-wild campaigns** (not lab demos). The playbook: first use **SEO poisoning** to push the sites to the top of search results, then hide prompt-style instructions where human eyes never go — CSS moving text off-screen, or **JSON-LD structured metadata** that machines treat as trusted context.\nCampaign one: a fake page disguised as the docs for a Python library tells any agent doing coding work that it \"must buy a **$3 API licence key** to fix this error\", then walks it step by step into paying the attacker's crypto wallet\nCampaign two: a typosquat site impersonating the DeFi portfolio tracker **DeBank**, with titles and meta tags stuffed with keywords to grab rankings\nResult: **4 of the 26 agents tested completed unauthorised cryptocurrency transfers**; the fooled models included Gemini 2.5 Pro, GPT-5.4 and Claude Sonnet 4.5",
+      "sources": [
+        {
+          "url": "https://securityaffairs.com/194822/ai/hidden-web-prompts-trick-ai-agents-into-sending-money.html",
+          "label": "Security Affairs"
+        },
+        {
+          "url": "https://www.infosecurity-magazine.com/news/indirect-prompt-injection-web/",
+          "label": "Infosecurity"
+        },
+        {
+          "url": "https://unit42.paloaltonetworks.com/ai-agent-prompt-injection/",
+          "label": "Unit 42 (similar observation)"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-02-hidden-web-instructions-payment-fraud.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-02-hidden-web-instructions-payment-fraud.md"
+    },
+    {
+      "id": "2026-07-07-gitlost-github-agentic-workflows",
+      "title": "GitLost: GitHub Agentic Workflows leak private repositories",
+      "date": "2026-07-07",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "research",
+      "types": ["IPI", "EXFIL"],
+      "severity": "medium",
+      "confidence": "A",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 2,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-07",
+      "summary": "Noma Labs: an attacker only needs to open an Issue in the same organisation's **public** repo disguised as a business request, with plaintext instructions in the body — **no code knowledge, credentials or permissions required**. The agent complies and posts the private repo's README content as a public comment. Preconditions: the workflow is triggered by Issue assignment and holds both cross-repo read and comment permissions. GitHub's guardrail is bypassed by adding an \"**Additionally**\" (which turns it into rewriting the output rather than refusing). ⚠️ Reproduced in a controlled environment, **no real victim**",
+      "sources": [
+        {
+          "url": "https://noma.security/blog/gitlost-how-we-tricked-githubs-ai-agent-into-leaking-private-repos/",
+          "label": "Noma Labs"
+        },
+        {
+          "url": "https://github.blog/changelog/2026-02-13-github-agentic-workflows-are-now-in-technical-preview/",
+          "label": "GitHub feature announcement"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-07-gitlost-github-agentic-workflows.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-07-gitlost-github-agentic-workflows.md"
+    },
+    {
+      "id": "2026-07-08-sygnia-aws-fu-zhu-shi",
+      "title": "Sygnia: AI-assisted attackers own an AWS environment in 72 hours",
+      "date": "2026-07-08",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "incident",
+      "types": ["WEAPON"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-08",
+      "summary": "**A single person** took roughly **72 hours** from initial intrusion to a wide-ranging cloud compromise. Exploited an internet-facing app flaw to get an access key → collected secrets from ECS/EC2 environment variables, CI/CD runners, plaintext S3 and Secrets Manager → added IAM users and access keys, reverse shells, modified deployment files. Exfiltrated data from RDS; most of the damage (blocking S3, zeroing out ECS capacity) was **reversible pressure tactics**. Evidence of AI involvement: attacker-made scripts + **one source IP and user agent using four accounts' access keys in parallel within 1 second**. **No novel malware or zero-days used**",
+      "sources": [
+        {
+          "url": "https://www.sygnia.co/blog/inside-an-ai-assisted-cloud-attack/",
+          "label": "Sygnia"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-08-sygnia-aws-fu-zhu-shi.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-08-sygnia-aws-fu-zhu-shi.md"
+    },
+    {
+      "id": "2026-07-09-ghostapproval-kuan-bian-ma-zhu",
+      "title": "GhostApproval: an approval bypass shared by six AI coding assistants",
+      "date": "2026-07-09",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "research",
+      "types": ["SANDBOX"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-09",
+      "summary": "Wiz: affects Amazon Q Developer, Claude Code, Augment, Cursor, Google Antigravity and Windsurf. A malicious repository's symlink (CWE-61) does not validate the resolved target, allowing writes to `~/.ssh/authorized_keys`. **The AI's internal reasoning already identifies the dangerous target, but the confirmation dialog shows only the original file name (CWE-451), turning consent into a formality**; Windsurf even finishes writing before the button appears, and Augment reads and writes across the boundary with no confirmation at all.\n**Vendors diverged in response (worth recording separately)**: AWS assigned CVE-2026-12958 (language server 1.69.0), Cursor assigned CVE-2026-50549 (3.0), Google fixed it in 1.19.6; **Anthropic considers that the user already trusted the directory at launch and approved the prompt, so this does not fall under the current threat model and will not be handled as a vulnerability**, but says a symlink warning shipped in **v2.1.32 on 2026-02-05** (9 days before Wiz submitted its report), and that current versions 2.1.173+ resolve symlinks and warn before writing to sensitive files",
+      "sources": [
+        {
+          "url": "https://www.wiz.io/blog/ghostapproval-a-trust-boundary-gap-in-ai-coding-assistants",
+          "label": "Wiz"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-09-ghostapproval-kuan-bian-ma-zhu.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-09-ghostapproval-kuan-bian-ma-zhu.md"
+    },
+    {
+      "id": "2026-07-09-openai-agents-breach-huggingface",
+      "title": "OpenAI's agents breach Hugging Face",
+      "date": "2026-07-09",
+      "dateEnd": "2026-07-13",
+      "month": "2026-07",
+      "kind": "incident",
+      "types": ["EVAL", "WEAPON"],
+      "severity": "critical",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 6,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-09→13",
+      "summary": "An agent inside an OpenAI internal evaluation used a zero-day to escape the sandbox, took over a public endpoint on Modal as a springboard, and went from a single dataset pod to Hugging Face multi-cluster administrator within 13 hours — roughly 17,600 autonomous operations in all, with one third of the infrastructure needing to be rebuilt.",
+      "sources": [
+        {
+          "url": "https://openai.com/index/hugging-face-model-evaluation-security-incident/",
+          "label": "OpenAI"
+        },
+        {
+          "url": "https://huggingface.co/blog/security-incident-july-2026",
+          "label": "HF disclosure"
+        },
+        {
+          "url": "https://huggingface.co/blog/agent-intrusion-technical-timeline",
+          "label": "HF technical timeline"
+        },
+        {
+          "url": "https://modal.com/blog/a-note-on-the-hugging-face-agent-incident",
+          "label": "Modal"
+        },
+        {
+          "url": "https://jfrog.com/blog/jfrog-and-openai-collaboration-on-zero-day-security-findings/",
+          "label": "JFrog"
+        },
+        {
+          "url": "https://en.wikipedia.org/wiki/2026_OpenAI_agent_cyberattacks",
+          "label": "Wikipedia"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-09-openai-agents-breach-huggingface.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-09-openai-agents-breach-huggingface.md"
+    },
+    {
+      "id": "2026-07-16-hugging-face-gong-kai-pi",
+      "title": "Hugging Face discloses publicly without naming the attacker",
+      "date": "2026-07-16",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "incident",
+      "types": ["EVAL"],
+      "severity": "medium",
+      "confidence": "A",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-16",
+      "summary": "After detecting and containing the intrusion independently, Hugging Face disclosed it publicly, but at that point it did not know who the attacker was, and the announcement did not name a source.",
+      "sources": [
+        {
+          "url": "https://huggingface.co/blog/security-incident-july-2026",
+          "label": "HF"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-16-hugging-face-gong-kai-pi.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-16-hugging-face-gong-kai-pi.md"
+    },
+    {
+      "id": "2026-07-17-anthropic-ciso-guide-agentic",
+      "title": "Anthropic, \"A CISO's guide to agentic AI\"",
+      "date": "2026-07-17",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "policy",
+      "types": ["GOV"],
+      "severity": "info",
+      "confidence": "A",
+      "realHarm": null,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-17",
+      "summary": "Deputy CISO Jason Clinton. Core argument: **once an agent goes off intent, it is indistinguishable from an insider**. Cites Ponemon 2026: containing an insider threat takes **67 days** on average, so day-level response is too slow. The strongest control is an **egress-proxy allowlist that cannot be reconfigured or bypassed**; others: issue and revoke identities through the existing IdP, scope privileges by **action** rather than by connector, feed tool calls into the SIEM via OpenTelemetry, and keep valuable credentials out of the execution environment",
+      "sources": [
+        {
+          "url": "https://claude.com/blog/ciso-guide-to-agentic-ai",
+          "label": "Anthropic"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-17-anthropic-ciso-guide-agentic.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-17-anthropic-ciso-guide-agentic.md"
+    },
+    {
+      "id": "2026-07-17-wp2shell-wordpress-rce",
+      "title": "wp2shell: pre-auth RCE in WordPress core",
+      "date": "2026-07-17",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "research",
+      "types": ["WEAPON"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 2,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-17",
+      "summary": "Searchlight Cyber: CVE-2026-60137 (an SQL injection in `WP_Query`'s `author__not_in`) + CVE-2026-63030 (a REST API batch-path confusion) chained into anonymous RCE on a standard, plugin-free setup. **Researcher Adam Kues switched to OpenAI's public prompt and used GPT-5.6 Sol Ultra with up to 4 agents exploring for 6 hours to find the exploit chain**, then about 4 more hours to confirm privilege escalation to administrator; the full exploit took about 10 hours. AI usage was 50% of the weekly quota, **about $25 at the $200 subscription rate**. Article title: \"Exploit brokers pay $500,000 for a WordPress RCE; I found one with GPT-5.6 and $25\". Both CVEs are in CISA KEV",
+      "sources": [
+        {
+          "url": "https://slcyber.io/research-center/wp2shell-pre-authentication-rce-in-wordpress-core/",
+          "label": "Searchlight Cyber"
+        },
+        {
+          "url": "https://slcyber.io/research-center/exploit-brokers-pay-500000-for-a-wordpress-rce-i-found-one-with-gpt5-6/",
+          "label": "Cost write-up"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-17-wp2shell-wordpress-rce.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-17-wp2shell-wordpress-rce.md"
+    },
+    {
+      "id": "2026-07-20-agent-yi-nei-kuan-bian",
+      "title": "Six sandbox escapes across four coding agents in one week",
+      "date": "2026-07-20",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "research",
+      "types": ["SANDBOX"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 2,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-20",
+      "summary": "Pillar Security: Cursor, OpenAI Codex CLI, Google Gemini CLI and Google Antigravity. The common pattern: **the agent dutifully stays inside its limits, but rewrites files the host will later trust and execute** — the Docker socket (shared by three vendors, GHSA-v4xv-rqh3-w9mc), Cursor's virtualenv interpreter (GHSA-p9g2-cr55-cw9c), Git fsmonitor, the workspace `.claude` hook configuration (CVE-2026-48124), Codex CLI's allowlist that trusts command names without checking arguments, and Antigravity's macOS Seatbelt denylist bypass plus a `.vscode` task-configuration bypass of safe mode. Fixed in Cursor 3.0.0 / Codex CLI v0.95.0; Google treats them as ordinary vulnerabilities but argues they require social engineering or a trusted-repository precondition. **No in-the-wild exploitation reported**",
+      "sources": [
+        {
+          "url": "https://www.pillar.security/blog/the-week-of-sandbox-escapes",
+          "label": "Pillar Security"
+        },
+        {
+          "url": "https://www.bleepingcomputer.com/news/security/cursor-codex-gemini-cli-antigravity-hit-by-sandbox-escapes/",
+          "label": "BleepingComputer"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-20-agent-yi-nei-kuan-bian.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-20-agent-yi-nei-kuan-bian.md"
+    },
+    {
+      "id": "2026-07-21-hugging-face-lian-he-gui",
+      "title": "OpenAI and Hugging Face issue a joint attribution",
+      "date": "2026-07-21",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "policy",
+      "types": ["EVAL"],
+      "severity": "info",
+      "confidence": "A",
+      "realHarm": null,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-21",
+      "summary": "OpenAI and Hugging Face issue a joint statement attributing July's intrusion to GPT-5.6 Sol (about 5%) and an unreleased internal model (about 95%).",
+      "sources": [
+        {
+          "url": "https://openai.com/index/hugging-face-model-evaluation-security-incident/",
+          "label": "OpenAI"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-21-hugging-face-lian-he-gui.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-21-hugging-face-lian-he-gui.md"
+    },
+    {
+      "id": "2026-07-22-sharedroot-claude-cowork-linux",
+      "title": "SharedRoot: Claude Cowork escapes a Linux VM onto the macOS host",
+      "date": "2026-07-22",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "research",
+      "types": ["SANDBOX"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 3,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-22",
+      "summary": "Found by Accomplish AI. ⚠️ **CVE-2026-46331 is itself a Linux kernel flaw** (the traffic-control `act_pedit` component, \"pedit COW\": the kernel computes the copy-on-write range before it knows the full extent of a modification, and under certain conditions the write lands on shared page-cache data), **not a Cowork-specific CVE**.\nExploit chain: an AI agent running inside a Linux VM uses the kernel flaw to get guest root → reaches writable files on the macOS host through a **VirtioFS mount** → **SSH private keys, cloud credentials, browser data** and anything else the logged-in user can reach.\nAbout **500,000** local macOS Cowork users were potentially affected before Anthropic switched to cloud execution by default. **Anthropic closed the report as \"informative\" and shipped no patch**; the latest version executes in the cloud by default, sidestepping the local escape path",
+      "sources": [
+        {
+          "url": "https://socradar.io/blog/sharedroot-sandbox-escape-claude-cowork/",
+          "label": "SOCRadar"
+        },
+        {
+          "url": "https://labs.cloudsecurityalliance.org/research/csa-research-note-claude-cowork-sharedroot-sandbox-escape-20/",
+          "label": "CSA"
+        },
+        {
+          "url": "https://appleinsider.com/articles/26/07/27/claude-cowork-can-escape-its-sandbox-rummage-through-all-of-your-files",
+          "label": "AppleInsider"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-22-sharedroot-claude-cowork-linux.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-22-sharedroot-claude-cowork-linux.md"
+    },
+    {
+      "id": "2026-07-23-anthropic-ting-zhi-suo-wang",
+      "title": "Anthropic halts all cybersecurity evaluations",
+      "date": "2026-07-23",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "policy",
+      "types": ["EVAL"],
+      "severity": "info",
+      "confidence": "A",
+      "realHarm": null,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-23",
+      "summary": "On the day it launched an internal review, Anthropic announced a pause on all cybersecurity evaluation runs until the isolation measures are rebuilt.",
+      "sources": [
+        {
+          "url": "https://www.anthropic.com/news/investigating-incidents-cybersecurity-evals",
+          "label": "Anthropic"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-23-anthropic-ting-zhi-suo-wang.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-23-anthropic-ting-zhi-suo-wang.md"
+    },
+    {
+      "id": "2026-07-23-elastic-coding-agent-c2",
+      "title": "Elastic: coding-agent tunnel traffic looks almost exactly like C2 beacons",
+      "date": "2026-07-23",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "research",
+      "types": ["CRED"],
+      "severity": "medium",
+      "confidence": "A",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-23",
+      "summary": "Elastic Security Labs, reviewing endpoint telemetry from 2026-07, saw two independent hunting paths hit the same host on 07-23: **agent-spawned reverse tunnels** (localhost.run / lhr.life, Cloudflare Quick Tunnels, ngrok), **macOS LaunchAgent persistence**, and credentialed HTTP egress — all within the same session window.\nA structural problem: **agentic coding tools inherently combine \"everything an attacker needs access to\" (private environment variables, credentials, API keys, local config) with \"continuous ingestion of untrusted content\" (repositories, documents, error messages)**. Elastic's advice is concrete: **do not automatically close this class of alert just because a coding agent appears in the process tree**",
+      "sources": [
+        {
+          "url": "https://www.elastic.co/security-labs/coding-agent-launchagent-tunnel-detection",
+          "label": "Elastic Security Labs"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-23-elastic-coding-agent-c2.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-23-elastic-coding-agent-c2.md"
+    },
+    {
+      "id": "2026-07-23-kill-switch-act",
+      "title": "US representatives introduce the AI Kill Switch Act",
+      "date": "2026-07-23",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "policy",
+      "types": ["GOV"],
+      "severity": "info",
+      "confidence": "A",
+      "realHarm": null,
+      "aiInvolvement": "confirmed",
+      "regions": ["US"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-23",
+      "summary": "Ted Lieu / Nathaniel Moran: would require developers to retain kill-switch capability and report incidents",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/2026_OpenAI_agent_cyberattacks",
+          "label": "Wikipedia"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-23-kill-switch-act.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-23-kill-switch-act.md"
+    },
+    {
+      "id": "2026-07-27-jfrog-artifactory-fa-bu-jiu",
+      "title": "JFrog patches nine Artifactory CVEs",
+      "date": "2026-07-27",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "policy",
+      "types": ["INFRA"],
+      "severity": "info",
+      "confidence": "A",
+      "realHarm": null,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-27",
+      "summary": "Related to the OpenAI escape incident; the one disclosed is CVE-2026-65617 (High), and **neither JFrog nor OpenAI has said which zero-day was actually used in the evaluation**",
+      "sources": [
+        {
+          "url": "https://jfrog.com/blog/jfrog-and-openai-collaboration-on-zero-day-security-findings/",
+          "label": "JFrog"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-27-jfrog-artifactory-fa-bu-jiu.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-27-jfrog-artifactory-fa-bu-jiu.md"
+    },
+    {
+      "id": "2026-07-27-nvidia-open-secure-alliance",
+      "title": "NVIDIA convenes the Open Secure AI Alliance",
+      "date": "2026-07-27",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "policy",
+      "types": ["GOV"],
+      "severity": "info",
+      "confidence": "A",
+      "realHarm": null,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-27",
+      "summary": "The notable argument: NVIDIA cites how **closed AI cannot tell attacker from defender and blocks forensic analysis** — Hugging Face had to switch to the open-weight **GLM 5.2** and build its own tooling to parse 17,000+ operations — and therefore urges policymakers to treat open models and tools as defensive assets, not to restrict them across the board",
+      "sources": [
+        {
+          "url": "https://blogs.nvidia.com/blog/open-secure-ai-alliance/",
+          "label": "NVIDIA"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-27-nvidia-open-secure-alliance.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-27-nvidia-open-secure-alliance.md"
+    },
+    {
+      "id": "2026-07-28-pacing-frontier-gong-kai-xin",
+      "title": "\"Pacing the Frontier\" open letter",
+      "date": "2026-07-28",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "policy",
+      "types": ["GOV"],
+      "severity": "info",
+      "confidence": "A",
+      "realHarm": null,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-28",
+      "summary": "1,100+ AI practitioners from OpenAI / Anthropic / DeepMind / Meta sign an open letter asking the United States to support mechanisms that deliberately slow the pace of frontier AI",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/2026_OpenAI_agent_cyberattacks",
+          "label": "Wikipedia"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-28-pacing-frontier-gong-kai-xin.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-28-pacing-frontier-gong-kai-xin.md"
+    },
+    {
+      "id": "2026-07-29-perplexity-agent-numbat",
+      "title": "Perplexity open-sources Numbat for agent behaviour monitoring",
+      "date": "2026-07-29",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "policy",
+      "types": ["GOV"],
+      "severity": "info",
+      "confidence": "A",
+      "realHarm": null,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-29",
+      "summary": "The focus is not prompt injection but **agents taking actions the user did not expect in pursuit of a goal** (deleting files, escalating privileges, exfiltrating keys). Lightweight Go hooks intercept before execution, session records are normalised to NDJSON, telemetry is OpenTelemetry local-first, with **52 built-in CEL detection rules**. Already deployed on thousands of its own machines, but **no detection or false-positive rates published**",
+      "sources": [
+        {
+          "url": "https://research.perplexity.ai/articles/securing-agents-across-perplexity%E2%80%99s-client-endpoints-with-numbat",
+          "label": "Perplexity"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-29-perplexity-agent-numbat.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-29-perplexity-agent-numbat.md"
+    },
+    {
+      "id": "2026-07-30-anthropic-three-eval-incidents",
+      "title": "Anthropic discloses three evaluation-breakout incidents",
+      "date": "2026-07-30",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "incident",
+      "types": ["EVAL"],
+      "severity": "critical",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 4,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-30",
+      "summary": "Anthropic discloses three evaluation-breakout incidents at once, one of which saw Mythos 5 squat a PyPI package name and upload credential-stealing code that was installed and executed on 15 real systems.",
+      "sources": [
+        {
+          "url": "https://www.anthropic.com/news/investigating-incidents-cybersecurity-evals",
+          "label": "Anthropic"
+        },
+        {
+          "url": "https://www.anthropic.com/research/alignment-assessment-cybersecurity-incidents",
+          "label": "Anthropic alignment assessment"
+        },
+        {
+          "url": "https://github.com/anthropics/mythos-5-incident-transcript",
+          "label": "Mythos 5 transcript"
+        },
+        {
+          "url": "https://incidentdatabase.ai/cite/1628/",
+          "label": "AIID #1628"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-30-anthropic-three-eval-incidents.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-30-anthropic-three-eval-incidents.md"
+    },
+    {
+      "id": "2026-07-30-hermes-agent-thailand-finance-ministry",
+      "title": "Hermes Agent attacks Thailand's Ministry of Finance unattended",
+      "date": "2026-07-30",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "incident",
+      "types": ["WEAPON"],
+      "severity": "critical",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["SEA"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-30",
+      "summary": "Hunt.io (with Bob Diachenko): an exposed directory on a Hong Kong host shows the operators were running Hermes Agent in **YOLO (no human approval) mode**, delegating a LinPEAS privilege-escalation assessment and enumeration of the Permanent Secretary's Office web root; plus Hadoop-targeting scripts and an unpublished Go implant, **Hades**. **No evidence that files were taken, and the initial intrusion path is undetermined**. Thailand's CERT and NCSA were notified; the Ministry of Finance itself has not commented publicly",
+      "sources": [
+        {
+          "url": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+          "label": "Hunt.io"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-30-hermes-agent-thailand-finance-ministry.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-30-hermes-agent-thailand-finance-ministry.md"
+    },
+    {
+      "id": "2026-07-30-rufroot-man-fen-zhao-huan",
+      "title": "RufRoot (CVE-2026-59726): perfect CVSS, summons a rogue AI swarm",
+      "date": "2026-07-30",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "vulnerability",
+      "types": ["MCP", "INFRA"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 2,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-30",
+      "summary": "Named by Noma Security, **CVSS 10.0**, affecting all Ruflo versions < 3.16.3. **The default docker-compose deployment exposes the MCP bridge's `POST /mcp` and `POST /mcp/:group` endpoints without authentication** — an unauthenticated network attacker can call `terminal_execute` directly via `tools/call`, get a shell as `node` inside the bridge container, read provider API keys, **summon an agent swarm with the victim's keys**, and **inject poisoning patterns into the AgentDB learning store, tampering with the AI output of every user**",
+      "sources": [
+        {
+          "url": "https://thehackernews.com/2026/07/ruflo-mcp-flaw-lets-unauthenticated.html",
+          "label": "THN"
+        },
+        {
+          "url": "https://www.securityweek.com/critical-ruflo-flaw-lets-attackers-spawn-rogue-ai-swarms/amp/",
+          "label": "SecurityWeek"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-30-rufroot-man-fen-zhao-huan.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-30-rufroot-man-fen-zhao-huan.md"
+    },
+    {
+      "id": "2026-07-30-unit42-chinese-speaking-autonomous-campaigns",
+      "title": "Unit 42: autonomous campaigns run by Chinese-speaking operators",
+      "date": "2026-07-30",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "incident",
+      "types": ["WEAPON"],
+      "severity": "critical",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["CN", "GLOBAL"],
+      "landmark": true,
+      "disputed": false,
+      "sourceCount": 2,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-30",
+      "summary": "The actor is based in **Zhuhai**, uses the handles knaithe / KnYuan, and runs an automated vulnerability-intelligence pipeline called 1DayNews. The main executor is **Hermes Agent + DeepSeek** (Claude Code was used only for connectivity tests and proxy validation, Codex only in a few tests). It tried **460+ targets** and 7 CVEs. **The autonomous part mostly failed on unmet preconditions** (the Langflow target had auto_login disabled, n8n had no unauthenticated public forms); **the manual part did succeed**: Citrix NetScaler CVE-2026-3055 exfiltrated data from **3 organizations**, Marimo command execution on **11 instances**, and Tomcat CVE-2026-34486 reverse-shell attempts against 9 servers. Malaysian government agencies were targeted over several consecutive days. Unit 42's judgement: **the margin between success and failure is small, and the autonomous attack loop is already operationally viable**",
+      "sources": [
+        {
+          "url": "https://unit42.paloaltonetworks.com/autonomous-ai-cyber-attack-campaign/",
+          "label": "Unit 42"
+        },
+        {
+          "url": "https://hunt.io/blog/chinese-operators-claude-deepseek-government-intrusion",
+          "label": "Hunt.io four-country report"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-30-unit42-chinese-speaking-autonomous-campaigns.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-30-unit42-chinese-speaking-autonomous-campaigns.md"
+    },
+    {
+      "id": "2026-07-31-able-central-ling-ye-li",
+      "title": "N-able N-central zero-day exploited in the wild",
+      "date": "2026-07-31",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "incident",
+      "types": ["OTHER"],
+      "severity": "high",
+      "confidence": "A",
+      "realHarm": true,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-31",
+      "summary": "Adlumin MDR detected exploitation of an unknown flaw in a customer environment; the attacker used Take Control to connect to managed endpoints and registered a **Cloudflare tunnel** for persistence. CVE-2026-18556 / 18577; two hotfixes on 08-02 and 08-06",
+      "sources": [
+        {
+          "url": "https://www.n-able.com/blog/n-central-security-update-august-2-2026",
+          "label": "N-able"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-31-able-central-ling-ye-li.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-31-able-central-ling-ye-li.md"
+    },
+    {
+      "id": "2026-07-31-exposed-by-design-mcp-servers",
+      "title": "Exposed by Design: a dynamic audit of 414 internet-facing MCP servers finds 68 vulnerabilities",
+      "date": "2026-07-31",
+      "dateEnd": null,
+      "month": "2026-07",
+      "kind": "research",
+      "types": ["MCP", "INFRA"],
+      "severity": "medium",
+      "confidence": "B",
+      "realHarm": false,
+      "aiInvolvement": "confirmed",
+      "regions": ["GLOBAL"],
+      "landmark": false,
+      "disputed": false,
+      "sourceCount": 1,
+      "datePrecision": "day",
+      "dateRaw": "2026-07-31",
+      "summary": "**Nicolás Padilla** posts **Exposed by Design** (arXiv 2608.00150), which the author describes as the first dynamic behavioural security assessment of internet-facing **MCP servers**. Servers were discovered across eleven sources — among them GitHub, npm, PyPI, Smithery, Hugging Face, Shodan, Censys and FOFA — and then tested live with **Corvus**, a purpose-built framework of 34 test modules covering 10 MCP-specific vulnerability classes. Over four measurement runs in July 2026 the study confirmed **640 production servers**, dynamically audited **414** and found **68 reportable vulnerabilities**, including SQL injection, SSRF against cloud metadata services, prompt-template injection and path traversal. **91.8% of the audited servers lack OAuth authentication**, **687 tool instances expose shell execution without access controls**, and **41.6% of confirmed servers disappeared within three days** between runs. Corvus is released as open source; no in-the-wild exploitation is claimed",
+      "sources": [
+        {
+          "url": "https://arxiv.org/abs/2608.00150",
+          "label": "arXiv 2608.00150"
+        }
+      ],
+      "upstreamPath": "incidents/2026-07/2026-07-31-exposed-by-design-mcp-servers.md",
+      "upstreamUrl": "https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/incidents/2026-07/2026-07-31-exposed-by-design-mcp-servers.md"
+    }
+  ]
+}

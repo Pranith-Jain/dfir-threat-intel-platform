@@ -101,6 +101,8 @@ const AiAdvisories = lazy(() => import('./pages/threatintel/AiAdvisories'));
 const Cairn = lazy(() => import('./pages/threatintel/Cairn'));
 const Nova = lazy(() => import('./pages/threatintel/Nova'));
 const Denali = lazy(() => import('./pages/threatintel/Denali'));
+const OrcaIncidents = lazy(() => import('./pages/threatintel/OrcaIncidents'));
+const MmdToolkit = lazy(() => import('./pages/threatintel/MmdToolkit'));
 const AiSecurityPlaybook = lazy(() => import('./pages/threatintel/AiSecurityPlaybook'));
 const Breach = lazy(() => import('./pages/dfir/Breach'));
 const ExifParse = lazy(() => import('./pages/dfir/ExifParse'));
@@ -620,6 +622,8 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/cairn', Component: Cairn },
   { path: '/threatintel/nova', Component: Nova },
   { path: '/threatintel/denali', Component: Denali },
+  { path: '/threatintel/orca', Component: OrcaIncidents },
+  { path: '/threatintel/mmd', Component: MmdToolkit },
   { path: '/threatintel/ai-playbook', Component: AiSecurityPlaybook },
   { path: '/threatintel/feeds/destroylist', Component: DestroylistFeeds },
   { path: '/threatintel/feeds/living-threat', Component: LivingThreatFeeds },

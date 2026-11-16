@@ -9,6 +9,7 @@ name: CTI verticals sync (weekly)
 #   public/data/hijacklibs/    (hijacklibs.net/api JSON)
 #   public/data/veris/         (vz-risk/VERIS enumerations)
 #   public/data/engage/        (engage.mitre.org matrix)
+#   public/data/mmd/           (MalwareMustDie shared codes & tools — GitHub tree+commits)
 # If the data changed, opens a PR and auto-merges it (data-only; main is
 # unprotected), then self-deploys so the live site serves the fresh
 # manifests. Per-request serving stays fully static (env.ASSETS).
@@ -89,16 +90,22 @@ jobs:
         continue-on-error: true
         run: node scripts/build-engage-manifest.mjs
 
+      - name: Build MMD toolkit manifest
+        # GitHub tree API (master, recursive) + commits API + raw README from
+        # unixfreaxjp/malwaremustdie (MalwareMustDie shared codes & tools).
+        continue-on-error: true
+        run: node scripts/build-mmd-manifest.mjs
+
       - name: Show diff stat
         run: |
           echo "=== public/data changed files ==="
-          git status --short public/data/cti-bookmarks/ public/data/lots/ public/data/malapi/ public/data/car/ public/data/capec/ public/data/hijacklibs/ public/data/veris/ public/data/engage/ | head -40
+          git status --short public/data/cti-bookmarks/ public/data/lots/ public/data/malapi/ public/data/car/ public/data/capec/ public/data/hijacklibs/ public/data/veris/ public/data/engage/ public/data/mmd/ | head -40
 
       - name: Open PR if data changed
         id: pr
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: 'chore(ti): sync CTI bookmark-gap verticals'
+          commit-message: 'chore(ti): sync CTI bookmark-gap verticals + MMD toolkit'
           title: "CTI verticals sync — ${{ github.event.schedule || 'manual' }}"
           body: |
             Automated weekly rebuild of the eight bookmark-gap verticals.
@@ -116,6 +123,7 @@ jobs:
             - hijacklibs.net/api (DLL hijacking catalog)
             - vz-risk/VERIS (incident taxonomy, CC BY-SA 4.0)
             - engage.mitre.org (adversary engagement matrix)
+            - unixfreaxjp/malwaremustdie (MMD shared codes & tools)
 
             Trigger: `${{ github.event_name }}`
             Run:     `${{ github.run_id }}`
@@ -130,6 +138,7 @@ jobs:
             public/data/hijacklibs/
             public/data/veris/
             public/data/engage/
+            public/data/mmd/
 
       - name: Auto-merge sync PR
         # Data-only output, main unprotected — merges itself (same pattern
@@ -195,4 +204,11 @@ jobs:
               echo "::warning::the manifest keeps returning HTTP 403 from the runner IP — Cloudflare bot mitigation (site verified reachable outside runners); not a deploy regression."
             elif [ "$code" != "200" ]; then
               echo "::error::the manifest returned HTTP $code"; exit 1
+            fi
+          code=$(curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 (compatible; smoke/1.0)" "https://pranithjain.qzz.io/data/mmd/index.json")
+          echo "mmd index -> HTTP $code"
+          if [ "$code" = "403" ]; then
+              echo "::warning::mmd index 403 from runner IP — bot mitigation; not a deploy regression."
+            elif [ "$code" != "200" ]; then
+              echo "::error::mmd index returned HTTP $code"; exit 1
             fi

@@ -1120,6 +1120,8 @@ import { verisRouter } from './routes/veris-edge-tools';
 import { engageRouter } from './routes/engage-edge-tools';
 import { cairnRouter } from './routes/cairn-edge-tools';
 import { novaRouter } from './routes/nova-edge-tools';
+import { orcaRouter } from './routes/orca-edge-tools';
+import { mmdRouter } from './routes/mmd-edge-tools';
 import { denaliRouter } from './routes/denali-edge-tools';
 import { aiPlaybookRouter } from './routes/ai-playbook-edge-tools';
 import { reportsRouter } from './routes/reports-edge-tools';
@@ -2267,6 +2269,18 @@ app.route('/api/v1', cairnRouter);
 // only; semantics/llm are fail-closed gates. Data ships in public/data/nova/
 // built by scripts/build-nova-manifest.mjs.
 app.route('/api/v1', novaRouter);
+
+// ORCA — AI Incident Archive (Continuum-AI-Corp, CC BY 4.0): 417 real-world
+// AI agent security incidents (2024-12 → 2026-11) with kind/real_harm/
+// ai_involvement triage fields and clickable primary sources. Month-sharded
+// data ships in public/data/orca/ built by scripts/build-orca-manifest.mjs.
+app.route('/api/v1', orcaRouter);
+
+// MMD — MalwareMustDie shared codes & tools catalog (github.com/unixfreaxjp/
+// malwaremustdie): 228 malware-analysis tools & scripts across 12 language
+// categories + recent commit activity feed. Data ships in public/data/mmd/
+// built by scripts/build-mmd-manifest.mjs.
+app.route('/api/v1', mmdRouter);
 
 // Denali — evidence-led AI security reference (transilienceai/denali,
 // Apache-2.0): 9 deterministic rules, domain taxonomy, 38 ADR/guide docs,

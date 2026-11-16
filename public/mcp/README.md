@@ -1,6 +1,6 @@
 # DFIR-ThreatIntel MCP - tool catalog
 
-**429 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
+**435 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
 
 ## Quick start
 
@@ -14,7 +14,7 @@
 
 ## Tools by category
 
-### other (312)
+### other (318)
 
 - `ai_advisories` - AI advisory firehose — per-package GHSA advisories, cvelistV5 CVE commits matched to known AI CVEs, tool release trains (garak, PyRIT, promptfoo, litellm, vllm, ollama, langchain, MCP SDK, MITRE ATLAS, OWASP GenAI), ExploitDB PoCs.
 - `ai_playbook_cve_refs` - CVE references cited by the AI Security Playbook, enriched against our local CISA KEV snapshot so you can see which are known-exploited. Enrichment comes from our own feed, never upstream.
@@ -182,6 +182,9 @@
 - `malapi_get` - Return the full details of a single Windows API by slug: description, library, attack categories, and Microsoft docs link. Use malapi_list first to discover slugs.
 - `malapi_list` - List Windows APIs abused by attackers (MalAPI.io catalog). Filter by attack category (Enumeration, Injection, Evasion, Spying, Internet, Anti-Debugging, Ransomware, Helper), DLL library, or keyword.
 - `malapi_stats` - Return cache + manifest stats for the MalAPI catalog: total APIs and attack categories.
+- `mmd_get_category` - Return one MMD category (language directory) with its full file listing and sizes. Use mmd_list_tools or mmd_stats to discover categories.
+- `mmd_list_tools` - List tools & scripts from the MalwareMustDie (MMD) shared codes repository (228 files across Python/Bash/Perl/C/radare2/…). Filter by category (language directory), kind (script/source/doc/webtool/binary), file extension, or keyword. Every entry deep-links the upstream file.
+- `mmd_recent_activity` - Return recent MMD upstream commits (activity feed) plus repository counts. The manifest rebuilds weekly, so new upstream pushes surface here.
 - `mozilla_tls_scan` - Scan a domain's security posture using the Mozilla Observatory (successor to the retired TLS Observatory). Returns grade (A+ through F) and test counts. No API key required.
 - `nova_get_rule` - Return the full body of a NOVA rule: keyword/regex patterns, semantic prompts + thresholds, LLM prompts + thresholds, and the condition. Use nova_list_rules first to discover names.
 - `nova_list_rules` - List NOVA prompt-hunting rules (69 total across jailbreak, injection, encoding, exfiltration, incidents). Filter by category (e.g. "prompt_manipulation/jailbreak"), severity, or keyword.
@@ -193,6 +196,9 @@
 - `opensanctions_entity` - Get detailed entity information from OpenSanctions by ID. Returns full properties, associated datasets, topics, and schema. Use after opensanctions_search to explore a specific match. Requires OPENSANCTIONS_API_KEY.
 - `opensanctions_search` - Search OpenSanctions for entities (individuals, companies, vessels) flagged in sanctions lists, PEP (politically exposed persons) databases, and crime watchlists. Requires OPENSANCTIONS_API_KEY (free for public-interest work at opensanctions.org).
 - `opensanctions_stats` - Get OpenSanctions dataset statistics: total entities, datasets, countries covered, and schema counts. Requires OPENSANCTIONS_API_KEY.
+- `orca_get_incident` - Return the full ORCA incident record: summary, confirmed sources with URLs, dates, severity, real_harm, ai_involvement, and a deep link to the upstream Markdown record. Use orca_list_incidents first to discover ids.
+- `orca_list_incidents` - List AI agent security incidents from the ORCA AI Incident Archive (417 records, 2024-12 → 2026-11). Filter by kind (incident/vulnerability/research/report/policy), severity, attack type (e.g. SUPPLY/WEAPON/MCP/IPI), real_harm, region, month, landmark, or keyword. kind=policy/report rows are informational moves, not incidents.
+- `orca_stats` - Return ORCA archive stats: counts by severity/kind/type/region/real_harm, monthly volume, source totals, source + license, and cache state.
 - `osint_get_portal` - Return the full details of a single OSINT portal entry by slug. Use osint_list_portals first to discover slugs.
 - `osint_list_portals` - List OSINT portals and resources from the curated directory. Filter by category (threat-intel, paste-monitoring, dark-web, reputation, certificate, dns, domain, ip, hash, email, username, social-media, phone, crypto, breach, whois, forensics, misc), keyword, or free/paid status.
 - `osint_stats` - Return cache + manifest stats for the OSINT Portal Directory: total portals, indexed categories, and index cache status.
