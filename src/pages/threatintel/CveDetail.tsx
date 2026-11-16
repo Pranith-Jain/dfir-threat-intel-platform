@@ -41,6 +41,7 @@ interface HexBrainIntel {
   impact?: string;
   fix?: string;
   references?: string[];
+  bounty_reports?: Array<{ id?: number; title?: string; program?: string; url?: string }>;
 }
 
 interface CveDetailData {
@@ -422,6 +423,30 @@ export default function CveDetail(): JSX.Element {
                   <span className="font-bold">Fix: </span>
                   {data.hexbrain.fix}
                 </p>
+              )}
+              {data.hexbrain.bounty_reports && data.hexbrain.bounty_reports.length > 0 && (
+                <div className="mt-3">
+                  <div className="font-mono text-[11px] tracking-widest text-muted mb-1">DISCLOSED REPORTS</div>
+                  <ul className="space-y-1">
+                    {data.hexbrain.bounty_reports.slice(0, 2).map((r) => (
+                      <li key={r.id ?? r.url} className="text-xs leading-relaxed">
+                        {r.url ? (
+                          <a
+                            href={r.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sky-600 dark:text-sky-300 hover:underline"
+                          >
+                            {r.title || r.program || r.url}
+                          </a>
+                        ) : (
+                          <span className="text-body">{r.title || r.program}</span>
+                        )}
+                        {r.program && <span className="ml-1.5 text-muted font-mono">{r.program}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
           )}

@@ -25,7 +25,8 @@ const UA = 'pranithjain.qzz.io dfir';
 const TIMEOUT = 10_000;
 /** 24h — matches the free key's 200/day budget (one fetch per CVE per day). */
 const CACHE_TTL = 86_400;
-const CACHE_PREFIX = 'hexbrain:cve:';
+/** v2: field names normalized from the live get_cve response (old v1 entries were thin). */
+const CACHE_PREFIX = 'hexbrain:cve:v2:';
 /** Bounds the cached payload; the UI shows a subset of these. */
 const MAX_EXPLOITS = 12;
 const MAX_REFERENCES = 20;
@@ -64,6 +65,8 @@ export interface HbCveIntel {
   impact?: string;
   fix?: string;
   references: string[];
+  /** Disclosed HackerOne reports that name this CVE (id/title/program/url). */
+  bounty_reports?: Array<{ id?: number; title?: string; program?: string; url?: string }>;
 }
 
 export type HbErrorInfo = {
@@ -127,21 +130,23 @@ function normalizeCve(cve: string, body: unknown): HbCveIntel {
   // Unwrap common envelopes ({data: {...}} / {cve: {...}} / {result: {...}}).
   d = asObj(pick(d, 'data', 'cve', 'result')) ?? d;
 
-  intel.title = str(pick(d, 'title', 'name', 'cve_title'));
-  intel.cwe = str(pick(d, 'cwe', 'cwe_id', 'weakness')) ?? arr(pick(d, 'cwe')).map(str).find(Boolean);
+  // Verified upstream field names (get_cve): name, severity, weakness,
+  // exploited_in_the_wild, listed_as_exploited_on, used_by_ransomware,
+  // exploit_likelihood_percent, more_likely_than_percent_of_cves, how_to_confirm,
+  // run, public_exploits.{total,github,metasploit,exploit_db}, bounty_reports.
+  intel.title = str(pick(d, 'name', 'title', 'cve_title'));
+  const weaknessRaw = pick(d, 'weakness', 'cwe', 'cwe_id');
+  intel.cwe =
+    str(weaknessRaw) ?? str(asObj(weaknessRaw)?.id) ?? arr(weaknessRaw).map(str).find(Boolean) ?? str(pick(d, 'cwe'));
   intel.severity = normalizeSeverity(pick(d, 'severity', 'sev'));
 
-  // Exploitation flags. `kev` may be a boolean or an object with its own date.
-  const kevRaw = pick(d, 'kev', 'cisa_kev', 'in_kev');
-  intel.exploited_in_wild = bool(pick(d, 'exploited_in_wild', 'exploited', 'in_the_wild', 'in_wild'));
-  intel.kev_date = str(pick(d, 'kev_date', 'kev_added', 'cisa_date', 'cisa_kev_date', 'date_added'));
-  const kevObj = asObj(kevRaw);
-  if (kevRaw === true || kevObj?.in_kev === true || kevObj?.listed === true) {
-    intel.exploited_in_wild = intel.exploited_in_wild ?? true;
-  }
+  intel.exploited_in_wild = bool(pick(d, 'exploited_in_the_wild', 'exploited_in_wild', 'exploited', 'in_the_wild'));
+  intel.kev_date = str(pick(d, 'listed_as_exploited_on', 'kev_date', 'kev_added', 'cisa_date', 'date_added'));
+  // Older/other envelopes may carry KEV as a boolean or object.
+  const kevObj = asObj(pick(d, 'kev', 'cisa_kev', 'in_kev'));
+  if (kevObj?.in_kev === true || kevObj?.listed === true) intel.exploited_in_wild = intel.exploited_in_wild ?? true;
   if (kevObj) intel.kev_date = intel.kev_date ?? str(pick(kevObj, 'date_added', 'date', 'added'));
-  // Ransomware flag may be boolean or a word like "Known".
-  const rwRaw = pick(d, 'ransomware', 'ransomware_use', 'used_by_ransomware');
+  const rwRaw = pick(d, 'used_by_ransomware', 'ransomware', 'ransomware_use');
   if (typeof rwRaw === 'boolean') intel.ransomware = rwRaw;
   else if (typeof rwRaw === 'string' && rwRaw) {
     const s = rwRaw.toLowerCase();
@@ -149,31 +154,65 @@ function normalizeCve(cve: string, body: unknown): HbCveIntel {
     else if (s === 'no' || s === 'none') intel.ransomware = false;
   }
 
-  // Likelihood is a 0..1 fraction upstream (the page meter uses 0.99999);
-  // tolerate a 0..100 number by dividing. Percentile is the reverse.
+  // Upstream gives percentages (e.g. exploit_likelihood_percent: 100);
+  // normalize to a 0..1 fraction for the UI meter. Tolerate a 0..1 input too.
   const like = num(
-    pick(d, 'likelihood_next_30d', 'likelihood_30d', 'likelihood', 'next_30d', 'exploitation_likelihood')
+    pick(
+      d,
+      'exploit_likelihood_percent',
+      'likelihood_next_30d',
+      'likelihood_30d',
+      'likelihood',
+      'exploitation_likelihood'
+    )
   );
   if (like !== undefined) intel.likelihood_30d = like > 1 ? like / 100 : like;
-  const pct = num(pick(d, 'likelihood_percentile', 'percentile', 'percent_less_likely', 'less_likely_pct'));
+  const pct = num(
+    pick(d, 'more_likely_than_percent_of_cves', 'likelihood_percentile', 'percentile', 'less_likely_pct')
+  );
   if (pct !== undefined) intel.likelihood_percentile = pct <= 1 ? pct * 100 : pct;
 
   const checkObj = asObj(pick(d, 'check', 'detection', 'detection_check', 'confirm'));
   intel.positive_when =
-    str(pick(d, 'positive_when')) ??
+    str(pick(d, 'how_to_confirm', 'positive_when')) ??
     (checkObj ? str(pick(checkObj, 'positive_when', 'positive', 'positive_result', 'match_when', 'match')) : undefined);
   const nucleiRaw =
-    str(pick(d, 'nuclei_command', 'nuclei')) ??
+    str(pick(d, 'run', 'nuclei_command', 'nuclei')) ??
     (checkObj ? str(pick(checkObj, 'nuclei_command', 'nuclei', 'command')) : undefined);
   intel.nuclei_command = nucleiRaw ?? (checkObj || intel.positive_when ? `nuclei -id ${cve} -u <target>` : undefined);
 
-  intel.exploit_count = num(pick(d, 'exploit_count', 'public_exploits', 'exploits_count', 'poc_count'));
-  for (const e of arr(pick(d, 'exploits', 'public_exploit_code', 'exploit_code', 'pocs', 'poc'))) {
-    const n = normalizeExploit(e);
-    if (n) intel.exploits.push(n);
+  // public_exploits is an object with total + typed arrays (github, metasploit,
+  // exploit_db), not a flat array.
+  const pe = asObj(pick(d, 'public_exploits')) ?? {};
+  intel.exploit_count = num(pick(pe, 'total')) ?? num(pick(d, 'exploit_count', 'exploits_count', 'poc_count'));
+  const exploitGroups: Array<[string | undefined, unknown]> = [
+    ['github', pick(pe, 'github')],
+    ['metasploit', pick(pe, 'metasploit')],
+    ['exploitdb', pick(pe, 'exploit_db')],
+    [undefined, pick(d, 'exploits', 'public_exploit_code', 'exploit_code', 'pocs', 'poc')],
+  ];
+  for (const [kind, group] of exploitGroups) {
+    for (const e of arr(group)) {
+      const n = normalizeExploit(e);
+      if (!n) continue;
+      if (kind && !n.kind) n.kind = kind;
+      intel.exploits.push(n);
+      if (intel.exploits.length >= MAX_EXPLOITS) break;
+    }
     if (intel.exploits.length >= MAX_EXPLOITS) break;
   }
   if (intel.exploit_count === undefined && intel.exploits.length > 0) intel.exploit_count = intel.exploits.length;
+
+  const reports: Array<{ id?: number; title?: string; program?: string; url?: string }> = [];
+  for (const r of arr(pick(d, 'bounty_reports'))) {
+    const o = asObj(r);
+    if (!o) continue;
+    const item = { id: num(o.id), title: str(o.title), program: str(o.program), url: str(o.url) };
+    if (!item.title && !item.url) continue;
+    reports.push(item);
+    if (reports.length >= 5) break;
+  }
+  intel.bounty_reports = reports;
 
   intel.impact = str(pick(d, 'impact', 'impact_summary'));
   intel.fix = str(pick(d, 'fix', 'remediation', 'fix_summary'));
@@ -195,7 +234,9 @@ function normalizeCve(cve: string, body: unknown): HbCveIntel {
       intel.exploited_in_wild !== undefined ||
       intel.likelihood_30d !== undefined ||
       intel.exploits.length ||
-      intel.references.length
+      intel.references.length ||
+      intel.nuclei_command ||
+      intel.impact
     ) || str(pick(d, 'description')) !== undefined;
   intel.found = hasPayload;
   return intel;
