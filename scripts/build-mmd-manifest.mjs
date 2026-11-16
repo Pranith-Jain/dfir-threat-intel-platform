@@ -114,10 +114,22 @@ async function main() {
   const blobs = (tree.tree ?? []).filter((f) => f.type === 'blob');
   if (blobs.length === 0) throw new Error('no files in GitHub tree');
 
-  // 2. Recent commits (activity feed).
-  const commitsRaw = LOCAL_COMMITS
-    ? readLocalJson(LOCAL_COMMITS)
-    : await fetchJson(`${API_BASE}/commits?per_page=30`);
+  // 2. Recent commits (activity feed). GitHub paginates with a Link header —
+  // derive the real total from rel="last" instead of hard-coding a count that
+  // goes stale on the very next upstream push.
+  let commitsRaw;
+  let commitTotal = null;
+  if (LOCAL_COMMITS) {
+    commitsRaw = readLocalJson(LOCAL_COMMITS);
+  } else {
+    const resp = await fetch(`${API_BASE}/commits?per_page=30`, {
+      headers: { accept: 'application/vnd.github+json', 'user-agent': 'mmd-manifest-builder' },
+    });
+    if (!resp.ok) throw new Error(`fetch commits: ${resp.status} ${resp.statusText}`);
+    commitsRaw = await resp.json();
+    const last = /[?&]page=(\d+)>;\s*rel="last"/.exec(resp.headers.get('link') ?? '');
+    if (last) commitTotal = (Number(last[1]) - 1) * 30 + (Array.isArray(commitsRaw) ? commitsRaw.length : 0);
+  }
   const commits = (Array.isArray(commitsRaw) ? commitsRaw : []).map((c) => ({
     sha: String(c.sha ?? '').slice(0, 7),
     date: c.commit?.author?.date ?? null,
@@ -230,7 +242,7 @@ async function main() {
           docs: files.filter((f) => f.kind === 'doc').length,
           binaries: files.filter((f) => f.kind === 'binary' || f.kind === 'archive').length,
           totalSize: files.reduce((n, f) => n + f.size, 0),
-          commitsTracked: 427,
+          commitsTracked: commitTotal ?? (LOCAL_COMMITS ? null : commits.length),
           recentCommits: commits.length,
         },
         categories: catSummary,

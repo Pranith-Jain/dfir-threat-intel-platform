@@ -24,10 +24,10 @@
  *   public/data/orca/commits.json             (recent upstream commits)
  *
  * Usage:
- *   node scripts/build-orca-manifest.mjs [--source <incidents.json>] [--commits <commits.json>]
+ *   node scripts/build-orca-manifest.mjs [--source <incidents.json>] [--stats <stats.json>] [--commits <commits.json>]
  * `--source` points at a locally downloaded dist/incidents.json (offline
- * mode); `--commits` at a saved GitHub commits API response. Otherwise data
- * is fetched from raw.githubusercontent.com + the GitHub commits API.
+ * mode); `--stats` and `--commits` at locally saved API responses. Without
+ * `--stats` in offline mode, stats are derived from the incidents file.
  *
  * Safe to run repeatedly — wipes public/data/orca/ on each run.
  */
@@ -50,11 +50,12 @@ function argValue(name) {
   return i >= 0 ? args[i + 1] : null;
 }
 const LOCAL_SOURCE = argValue('--source');
+const LOCAL_STATS = argValue('--stats');
 const LOCAL_COMMITS = argValue('--commits');
 
-async function loadJson(relPath) {
-  if (LOCAL_SOURCE) {
-    return JSON.parse(readFileSync(LOCAL_SOURCE, 'utf8'));
+async function loadJson(relPath, localPath) {
+  if (localPath) {
+    return JSON.parse(readFileSync(localPath, 'utf8'));
   }
   const resp = await fetch(`${RAW_BASE}/${relPath}`);
   if (!resp.ok) throw new Error(`fetch ${relPath}: ${resp.status} ${resp.statusText}`);
@@ -116,15 +117,19 @@ function fullBody(r) {
 async function main() {
   const builtAt = new Date().toISOString().slice(0, 10);
 
-  const dist = await loadJson('dist/incidents.json');
+  const dist = await loadJson('dist/incidents.json', LOCAL_SOURCE);
   if (!Array.isArray(dist.incidents) || dist.incidents.length === 0) {
     throw new Error('no incidents in upstream export');
   }
   let stats = null;
-  try {
-    stats = await loadJson('dist/stats.json');
-  } catch {
-    console.warn('[orca] stats.json fetch failed — deriving stats locally');
+  // In offline mode there is no stats file unless one was supplied explicitly —
+  // never re-read the incidents file as stats (that poisoned index.json).
+  if (!LOCAL_SOURCE || LOCAL_STATS) {
+    try {
+      stats = await loadJson('dist/stats.json', LOCAL_STATS);
+    } catch {
+      console.warn('[orca] stats.json fetch failed — deriving stats locally');
+    }
   }
   let commits = [];
   try {

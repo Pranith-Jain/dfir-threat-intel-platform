@@ -132,7 +132,10 @@ function harmBadge(realHarm: boolean | null): { label: string; cls: string } {
 
 function fmtDate(d: string | null): string {
   if (!d) return '';
-  const t = new Date(`${d}T00:00:00Z`);
+  // Records use date-only (`2026-07-09`); commit timestamps are full ISO
+  // (`2026-11-12T06:49:11Z`). Appending a date suffix to a timestamp produces
+  // an invalid Date, so only pad the date-only shape.
+  const t = new Date(/^\d{4}-\d{2}-\d{2}$/.test(d) ? `${d}T00:00:00Z` : d);
   return Number.isNaN(t.getTime())
     ? d
     : t.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
