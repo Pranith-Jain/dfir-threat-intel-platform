@@ -144,6 +144,11 @@ export interface Env {
    *  and the report engine's VulnCheck source. Optional — those degrade cleanly
    *  when unset. */
   VULNCHECK_API_TOKEN?: string;
+  /** HexBrain API key (`wrangler secret put HEXBRAIN_API_KEY`), free at hexbrainai.com/account.
+   *  Limits: 90/min, 200/day. Powers CVE-detail enrichment (exploitation likelihood,
+   *  public PoCs, nuclei check); responses are cached 24h per CVE in KV so the daily
+   *  budget holds. Optional — enrichment degrades cleanly when unset. */
+  HEXBRAIN_API_KEY?: string;
   /** Google Safe Browsing v4 API key (`wrangler secret put GOOGLE_SAFE_BROWSING_API_KEY`).
    *  Free tier: 10K req/day. Enriches url-rep and phishing tools with
    *  Google's threat database (malware, social engineering, unwanted software). */

@@ -6,6 +6,7 @@
 
 import { useEffect, useState, useCallback, type FormEvent } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import HexBrainLink from '../../components/HexBrainLink';
 import { errMessage } from '../../lib/log';
 import {
   Search,
@@ -445,7 +446,7 @@ function FortiBleedPanel() {
           )}
 
           {result.vulnerability && (
-            <div className="mt-3 pt-3 border-t border-line-1">
+            <div className="mt-3 pt-3 border-t border-line-1 flex items-center gap-3">
               <a
                 href={`https://nvd.nist.gov/vuln/detail/${result.vulnerability}`}
                 target="_blank"
@@ -454,6 +455,11 @@ function FortiBleedPanel() {
               >
                 View on NVD <ExternalLink size={8} />
               </a>
+              <HexBrainLink
+                cve={result.vulnerability}
+                label="View on HexBrain"
+                className="text-mini font-mono text-orange-600 dark:text-orange-300 hover:underline inline-flex items-center gap-1 transition-colors"
+              />
             </div>
           )}
         </div>

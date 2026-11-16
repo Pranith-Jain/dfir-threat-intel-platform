@@ -5,6 +5,7 @@ import { useDataFetch } from '../../hooks/useDataFetch';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { relativeAgo } from '../../lib/relativeTime';
 import { sanitizeUrl } from '../../lib/sanitize-url';
+import HexBrainLink from '../../components/HexBrainLink';
 import { SEVERITY_TONE } from '../../components/severity';
 
 /**
@@ -281,6 +282,10 @@ export default function CveTrends(): JSX.Element {
                 >
                   NVD <ExternalLink className="h-3 w-3" />
                 </a>
+                <HexBrainLink
+                  cve={c.id}
+                  className="inline-flex items-center gap-1 text-[11px] text-orange-600 dark:text-orange-300 hover:underline"
+                />
                 {c.cveUrl && (
                   <a
                     href={sanitizeUrl(c.cveUrl)}

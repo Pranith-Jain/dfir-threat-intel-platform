@@ -2,6 +2,7 @@ import { errMessage, logCatch } from '../../lib/log';
 import { useCallback, useState } from 'react';
 import { FileText, Search, Download, Copy, Check, AlertTriangle } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import HexBrainLink from '../../components/HexBrainLink';
 import { fetchJson } from '../../lib/fetch-helpers';
 import { downloadBlob } from '../../lib/download';
 
@@ -256,15 +257,21 @@ export default function StixIpExport() {
                         <div className="col-span-2">
                           <span className="text-muted">Vulns:</span>{' '}
                           {r.shodan_vulns.slice(0, 5).map((v) => (
-                            <a
-                              key={v}
-                              href={`https://nvd.nist.gov/vuln/detail/${v}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-rose-600 dark:text-rose-400 hover:underline mr-2 transition-colors"
-                            >
-                              {v}
-                            </a>
+                            <span key={v} className="inline-flex items-center gap-1 mr-2">
+                              <a
+                                href={`https://nvd.nist.gov/vuln/detail/${v}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-rose-600 dark:text-rose-400 hover:underline transition-colors"
+                              >
+                                {v}
+                              </a>
+                              <HexBrainLink
+                                cve={v}
+                                label="HB"
+                                className="text-[10px] font-mono text-orange-600 dark:text-orange-300 hover:underline"
+                              />
+                            </span>
                           ))}
                           {r.shodan_vulns.length > 5 && (
                             <span className="text-muted">+{r.shodan_vulns.length - 5} more</span>

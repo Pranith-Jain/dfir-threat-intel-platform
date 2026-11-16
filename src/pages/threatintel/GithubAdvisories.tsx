@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { DataState } from '../../components/DataState';
+import HexBrainLink from '../../components/HexBrainLink';
 import { Bug, ExternalLink, Package, RefreshCw, Search } from 'lucide-react';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { relativeAgo } from '../../lib/relativeTime';
@@ -293,6 +294,12 @@ export default function GithubAdvisories(): JSX.Element {
                         >
                           {cveId}
                         </a>
+                      )}
+                      {cveId && (
+                        <HexBrainLink
+                          cve={cveId}
+                          className="px-1.5 py-0.5 text-micro font-mono rounded border border-orange-500/30 text-orange-600 dark:text-orange-300 hover:bg-orange-500/10 transition-colors inline-flex items-center gap-1"
+                        />
                       )}
                     </div>
                     <p className="text-xs text-body leading-relaxed mb-1.5">{a.summary}</p>

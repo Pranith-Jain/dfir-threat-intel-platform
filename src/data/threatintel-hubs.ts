@@ -601,6 +601,16 @@ export const HUB_META: readonly HubMeta[] = [
         badge: 'new',
         keywords: ['ransomware', 'groups', 'leak site', 'directory', 'status', 'profile'],
       },
+      {
+        path: '/threatintel/cig-portal',
+        tabId: 'cig-portal',
+        label: 'CIG Ransomware Portal',
+        desc: 'Mirror of mbsd.jp/cig-ransomware-portal — 500+ ransomware groups with affiliates, victims, notes, and chains.',
+        compVar: 'CigPortal',
+        icon: ShieldAlert,
+        badge: 'new',
+        keywords: ['cig', 'ransomware', 'portal', 'group', 'affiliate', 'chain', 'victim', 'mbsd', 'note'],
+      },
 
       {
         path: '/threatintel/darkweb/recon',
@@ -1108,6 +1118,16 @@ export const HUB_META: readonly HubMeta[] = [
         badge: 'new',
         keywords: ['ai', 'advisory', 'release', 'exploit', 'research', 'hacktron', 'cvelist'],
       },
+      {
+        path: '/threatintel/artex',
+        tabId: 'artex',
+        label: 'ARTEX Tracker',
+        desc: 'Daily mirror of artexintel.com — AI-nexus attack and tool events with 2,700+ defanged IoCs and exposure hits.',
+        compVar: 'ArtexTracker',
+        icon: Target,
+        badge: 'new',
+        keywords: ['artex', 'threatbook', 'ai', 'nexus', 'ioc', 'exposure', 'attack', 'tool', 'tracker'],
+      },
     ],
   },
   {
@@ -1169,6 +1189,16 @@ export const HUB_META: readonly HubMeta[] = [
         desc: 'Curated directory of 40 OSINT portals and resources filtered by category.',
         compVar: 'OsintDirectory',
         badge: 'new',
+      },
+      {
+        path: '/threatintel/osint/ax-tools',
+        tabId: 'ax-tools',
+        label: 'AX Tool Directory',
+        desc: 'Mirror of tools.axi68.com — 200+ OSINT and security tools across 24 categories with free/paid filters.',
+        compVar: 'AxiTools',
+        icon: Wrench,
+        badge: 'new',
+        keywords: ['axi68', 'ax tools', 'osint', 'tool', 'directory', 'free', 'paid', 'catalog'],
       },
       {
         path: '/threatintel/cti-bookmarks',

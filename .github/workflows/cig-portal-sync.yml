@@ -1,0 +1,140 @@
+name: CIG portal sync (daily)
+
+# Daily mirror of mbsd.jp/cig-ransomware-portal (ransomware group intelligence
+# portal): ransomware-data.json (groups/flags/rebrands/first-seen years),
+# reference.json (group source links) and nodeLocation.json (affiliate chains)
+# are rebuilt into public/data/cig-portal/ by scripts/sync-cig-portal.mjs
+# (sync + build in one step). If the data changed, opens a PR and auto-merges
+# it into main so the data lands the same day (same self-deploy pattern as
+# ai-security-sync.yml: GITHUB_TOKEN merges do not trigger deploy.yml, so
+# this job builds + deploys itself).
+#
+# Staggered off the other sync slots (cig-portal is the heaviest mirror,
+# ~1.5MB of group profiles).
+
+on:
+  schedule:
+    - cron: '35 7 * * *'
+  workflow_dispatch: {}
+
+concurrency:
+  group: cig-portal-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci --no-fund || npm install --no-fund
+
+      - name: Sync + build CIG portal data
+        run: node scripts/sync-cig-portal.mjs
+
+      - name: Show diff stat
+        run: |
+          echo "=== public/data/cig-portal/ changed files ==="
+          git status --short public/data/cig-portal/ | head -20
+
+      - name: Open PR if data changed
+        id: pr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'chore(cig-portal): daily mbsd.jp sync'
+          title: "CIG portal upstream sync — ${{ github.event.schedule || 'manual' }}"
+          body: |
+            Automated daily sync of the mbsd.jp/cig-ransomware-portal mirror.
+
+            Re-runs `scripts/sync-cig-portal.mjs`: fetches the upstream
+            ransomware-data, reference and chain-location datasets and rebuilds
+            `public/data/cig-portal/` (index.json + lazy-loaded profiles.json +
+            verbatim reference.json) backing /threatintel/cig-portal. The PR is
+            auto-merged by the same run (data-only changes), and the
+            self-deploy below publishes the merge.
+
+            Source: https://mbsd.jp/cig-ransomware-portal/
+
+            Trigger: `${{ github.event_name }}`
+            Run:     `${{ github.run_id }}`
+          branch: chore/cig-portal-sync
+          delete-branch: true
+          add-paths: |
+            public/data/cig-portal/
+
+      - name: Auto-merge sync PR
+        id: automerge
+        if: steps.pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr merge "${{ steps.pr.outputs.pull-request-number }}" \
+            --merge --delete-branch
+
+      # Same guard as ai-security-sync.yml: a missing token must turn the run
+      # red, not skip the deploy silently while main races ahead.
+      - name: Require CLOUDFLARE_API_TOKEN for self-deploy
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN == ''
+        run: |
+          echo "::error title=Missing repo secret::CLOUDFLARE_API_TOKEN is not set - self-deploy steps would skip silently and the live site keeps serving stale data while main races ahead."
+          echo "Fix: create a Cloudflare API token (Account Resources: Workers Scripts - Edit; User: Memberships + Details - Read) and set the repo secret:"
+          echo "  gh secret set CLOUDFLARE_API_TOKEN --repo $GITHUB_REPOSITORY"
+          echo "The sync PR still auto-merged into main; only the deploy was blocked."
+          exit 1
+
+      # ── Self-deploy (only when the sync PR actually landed) ──────────
+      - name: Checkout merged main
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Setup Node for deploy
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install for deploy
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: |
+          npm ci --no-fund || npm install --no-fund
+          cd api && npm ci --legacy-peer-deps
+
+      - name: Build
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: npm run build
+
+      - name: Deploy to Cloudflare Workers
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: npx wrangler deploy
+
+      - name: Smoke test CIG portal data
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: |
+          sleep 8
+          code=$(curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 (compatible; smoke/1.0)" "https://pranithjain.qzz.io/data/cig-portal/index.json")
+          echo "cig-portal index -> HTTP $code"
+          if [ "$code" = "403" ]; then
+              echo "::warning::the manifest keeps returning HTTP 403 from the runner IP — Cloudflare bot mitigation (site verified reachable outside runners); not a deploy regression."
+            elif [ "$code" != "200" ]; then
+              echo "::error::the manifest returned HTTP $code"; exit 1
+            fi

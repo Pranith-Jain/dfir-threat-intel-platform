@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { DataPageLayout } from '../../components/DataPageLayout';
-import { Copy, Check, ExternalLink, AlertTriangle, Shield, Search, Download, Bug } from 'lucide-react';
+import HexBrainLink from '../../components/HexBrainLink';
+import { Copy, Check, ExternalLink, AlertTriangle, Shield, Search, Download, Bug, Brain, Star } from 'lucide-react';
 import { errMessage } from '../../lib/log';
 
 /**
@@ -18,6 +19,28 @@ interface SsvcVerdict {
   exposure: 'small' | 'controlled' | 'open' | 'none';
   missionImpact: 'degraded' | 'crippled' | 'failure';
   rationale: string;
+}
+
+/** HexBrain enrichment (`api/src/lib/hexbrain.ts`), present only when the
+ *  HEXBRAIN_API_KEY secret is configured and the lookup succeeded. */
+interface HexBrainIntel {
+  title?: string;
+  cwe?: string;
+  severity?: string;
+  exploited_in_wild?: boolean;
+  kev_date?: string;
+  ransomware?: boolean;
+  /** 0..1 predicted likelihood of exploitation in the next 30 days. */
+  likelihood_30d?: number;
+  /** 0..100, "N% of all CVEs are less likely". */
+  likelihood_percentile?: number;
+  exploit_count?: number;
+  exploits?: Array<{ kind?: string; name?: string; url?: string; stars?: number; date?: string; desc?: string }>;
+  nuclei_command?: string;
+  positive_when?: string;
+  impact?: string;
+  fix?: string;
+  references?: string[];
 }
 
 interface CveDetailData {
@@ -42,6 +65,7 @@ interface CveDetailData {
   /** CVE-ID of a related MITRE ATT&CK technique, only when NVD asserts one. */
   mitre?: Array<{ id: string; name: string; tactic?: string }>;
   iocs?: Array<{ type: string; value: string }>;
+  hexbrain?: HexBrainIntel;
 }
 
 export default function CveDetail(): JSX.Element {
@@ -95,6 +119,7 @@ export default function CveDetail(): JSX.Element {
           ssvc: raw.ssvc,
           mitre: raw.mitre,
           iocs: raw.iocs,
+          hexbrain: raw.hexbrain,
         };
         setData(mapped);
       } catch (e) {
@@ -286,6 +311,121 @@ export default function CveDetail(): JSX.Element {
             </div>
           </div>
 
+          {data.hexbrain && (
+            <div className="rounded-xl bg-surface-100 border border-line-1 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="font-mono text-[11px] tracking-widest text-orange-600 dark:text-orange-400 flex items-center gap-1.5">
+                  <Brain size={12} /> HEXBRAIN
+                </div>
+                <HexBrainLink cve={data.cve_id} label="Full report" />
+              </div>
+              {data.hexbrain.exploited_in_wild && (
+                <div className="mb-2 text-xs font-bold text-rose-600 dark:text-rose-400">
+                  Exploited in the wild
+                  {data.hexbrain.kev_date && (
+                    <span className="ml-1.5 font-mono font-normal">CISA KEV {data.hexbrain.kev_date}</span>
+                  )}
+                  {data.hexbrain.ransomware && <span className="ml-1.5 font-normal">· used by ransomware</span>}
+                </div>
+              )}
+              {data.hexbrain.likelihood_30d !== undefined && (
+                <div className="mb-2">
+                  <div className="flex items-center justify-between text-xs font-mono mb-1">
+                    <span className="text-muted">Likelihood of exploitation, next 30 days</span>
+                    <span className="font-bold text-heading">{Math.round(data.hexbrain.likelihood_30d * 100)}%</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-surface-300 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${
+                        data.hexbrain.likelihood_30d >= 0.5
+                          ? 'bg-rose-500'
+                          : data.hexbrain.likelihood_30d >= 0.2
+                            ? 'bg-amber-500'
+                            : 'bg-emerald-500'
+                      }`}
+                      style={{ width: `${Math.max(2, Math.round(data.hexbrain.likelihood_30d * 100))}%` }}
+                    />
+                  </div>
+                  {data.hexbrain.likelihood_percentile !== undefined && (
+                    <div className="mt-1 text-xs font-mono text-muted">
+                      {Math.round(data.hexbrain.likelihood_percentile)}% of all tracked CVEs are less likely
+                    </div>
+                  )}
+                </div>
+              )}
+              {data.hexbrain.exploit_count !== undefined && (
+                <div className="text-xs font-mono text-amber-700 dark:text-amber-300">
+                  {data.hexbrain.exploit_count} public exploit
+                  {data.hexbrain.exploit_count === 1 ? '' : 's'} known
+                </div>
+              )}
+              {data.hexbrain.exploits && data.hexbrain.exploits.length > 0 && (
+                <ul className="mt-2 space-y-1">
+                  {data.hexbrain.exploits.slice(0, 3).map((ex, i) => (
+                    <li key={`${ex.url ?? ex.name ?? i}`} className="text-xs leading-relaxed">
+                      {ex.url ? (
+                        <a
+                          href={ex.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sky-600 dark:text-sky-300 hover:underline break-all"
+                        >
+                          {ex.name || ex.url}
+                        </a>
+                      ) : (
+                        <span className="text-body">{ex.name || ex.desc}</span>
+                      )}
+                      {ex.stars !== undefined && (
+                        <span className="ml-1.5 text-muted inline-flex items-center gap-0.5">
+                          <Star size={10} /> {ex.stars.toLocaleString()}
+                        </span>
+                      )}
+                      {ex.date && <span className="ml-1.5 text-muted font-mono">{ex.date.slice(0, 10)}</span>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {data.hexbrain.nuclei_command && (
+                <div className="mt-3">
+                  <div className="font-mono text-[11px] tracking-widest text-muted mb-1">DETECTION CHECK</div>
+                  <div className="flex items-center gap-2 rounded bg-surface-200 border border-line-1 px-2 py-1.5">
+                    <code className="text-xs font-mono text-heading break-all flex-1">
+                      {data.hexbrain.nuclei_command}
+                    </code>
+                    <button
+                      onClick={() => copy(data.hexbrain!.nuclei_command!)}
+                      className="p-1 rounded hover:bg-surface-300 dark:hover:bg-surface-200 shrink-0"
+                      aria-label="Copy nuclei command"
+                    >
+                      {copied === data.hexbrain.nuclei_command ? (
+                        <Check size={12} className="text-emerald-500" />
+                      ) : (
+                        <Copy size={12} className="text-muted" />
+                      )}
+                    </button>
+                  </div>
+                  {data.hexbrain.positive_when && (
+                    <p className="mt-1 text-xs font-mono text-muted break-words">
+                      Positive when: {data.hexbrain.positive_when.replace(/^Positive when:\s*/i, '')}
+                    </p>
+                  )}
+                </div>
+              )}
+              {data.hexbrain.impact && (
+                <p className="mt-2 text-xs leading-relaxed text-body">
+                  <span className="font-bold">Impact: </span>
+                  {data.hexbrain.impact}
+                </p>
+              )}
+              {data.hexbrain.fix && (
+                <p className="mt-1 text-xs leading-relaxed text-body">
+                  <span className="font-bold">Fix: </span>
+                  {data.hexbrain.fix}
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="rounded-xl bg-surface-100 border border-line-1 p-4">
             <div className="font-mono text-[11px] tracking-widest text-muted mb-2">AFFECTED PRODUCTS</div>
             <div className="flex flex-wrap gap-1.5">
@@ -451,7 +591,7 @@ export default function CveDetail(): JSX.Element {
 
           <div className="pt-3 border-t border-line-1">
             <div className="font-mono text-xs tracking-widest text-muted mb-2">QUICK ACTIONS</div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <Link
                 to={`/dfir/cve?cve=${encodeURIComponent(data.cve_id)}`}
                 className="h-9 rounded-lg bg-surface-100 text-white dark:text-heading text-xs font-mono grid place-items-center"
@@ -465,6 +605,14 @@ export default function CveDetail(): JSX.Element {
                 className="h-9 rounded-lg border border-line-1 bg-surface-100 text-xs font-mono text-muted grid place-items-center"
               >
                 NVD <ExternalLink size={12} className="ml-1" />
+              </a>
+              <a
+                href={`https://hexbrainai.com/cve/${data.cve_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-9 rounded-lg border border-orange-500/30 bg-orange-500/10 text-xs font-mono text-orange-600 dark:text-orange-300 grid place-items-center"
+              >
+                HexBrain <ExternalLink size={12} className="ml-1" />
               </a>
             </div>
           </div>

@@ -9,6 +9,7 @@ import { SeverityBadge } from '../../components/SeverityBadge';
 import { normalizeSeverity } from '../../components/severity';
 import { downloadBlob } from '../../lib/download';
 import { errMessage } from '../../lib/log';
+import HexBrainLink from '../../components/HexBrainLink';
 
 interface KevEntry {
   cve_id: string;
@@ -332,14 +333,21 @@ export default function CisaKevCatalog({ bare = false }: { bare?: boolean } = {}
                 header: 'CVE ID',
                 sortValue: (v: (typeof pageEntries)[number]) => v.cve_id,
                 render: (v) => (
-                  <a
-                    href={`https://nvd.nist.gov/vuln/detail/${v.cve_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-rose-600 dark:text-rose-400 hover:underline font-mono text-xs transition-colors"
-                  >
-                    {v.cve_id}
-                  </a>
+                  <span className="inline-flex items-center gap-2 whitespace-nowrap">
+                    <a
+                      href={`https://nvd.nist.gov/vuln/detail/${v.cve_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-rose-600 dark:text-rose-400 hover:underline font-mono text-xs transition-colors"
+                    >
+                      {v.cve_id}
+                    </a>
+                    <HexBrainLink
+                      cve={v.cve_id}
+                      label="HB"
+                      className="text-[10px] font-mono text-orange-600 dark:text-orange-300 hover:underline"
+                    />
+                  </span>
                 ),
               },
               {

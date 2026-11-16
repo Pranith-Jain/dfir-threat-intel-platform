@@ -14,6 +14,7 @@ import {
 } from '@xyflow/react';
 import dagre from 'dagre';
 import '@xyflow/react/dist/style.css';
+import HexBrainLink from '../../components/HexBrainLink';
 import {
   Link2,
   RefreshCw,
@@ -812,6 +813,10 @@ function CvesTab({
               >
                 {c.id} <ExternalLink className="h-3 w-3" />
               </a>
+              <HexBrainLink
+                cve={c.id}
+                className="text-[11px] font-mono text-orange-600 dark:text-orange-300 hover:underline inline-flex items-center gap-1 transition-colors"
+              />
               {c.cvss_severity && (
                 <span
                   className={`text-micro font-mono uppercase tracking-wider rounded border px-1.5 py-0.5 ${severityColor(c.cvss_severity)}`}

@@ -8,6 +8,7 @@ import { IocChip } from '../../components/dfir/IocChip';
 import { IntelCard } from '../../components/intel/IntelCard';
 import { adminAuthHeaders } from '../../lib/admin-token';
 import { BackLink } from '../../components/BackLink';
+import HexBrainLink from '../../components/HexBrainLink';
 import type { IntelBundleResponse, IntelView } from '../../hooks/useIntelBundle';
 import { downloadBlob } from '../../lib/download';
 
@@ -560,11 +561,18 @@ function BuilderIntelCard({ view, bundle }: { view: IntelView; bundle: IntelBund
         <Section title="CVEs">
           <div className="flex flex-wrap gap-2">
             {view.cves.map((c) => (
-              <a key={c.id} href={`https://nvd.nist.gov/vuln/detail/${c.id}`} target="_blank" rel="noopener noreferrer">
-                <Badge tone="brand" size="sm">
-                  {c.id}
-                </Badge>
-              </a>
+              <span key={c.id} className="inline-flex items-center gap-1">
+                <a href={`https://nvd.nist.gov/vuln/detail/${c.id}`} target="_blank" rel="noopener noreferrer">
+                  <Badge tone="brand" size="sm">
+                    {c.id}
+                  </Badge>
+                </a>
+                <HexBrainLink
+                  cve={c.id}
+                  label="HB"
+                  className="text-[10px] font-mono text-orange-600 dark:text-orange-300 hover:underline"
+                />
+              </span>
             ))}
           </div>
         </Section>

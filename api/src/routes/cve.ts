@@ -4,6 +4,7 @@ import { logError } from '../lib/logger';
 import { createCveController } from '../controllers';
 import { createKvCveRepository } from '../infrastructure/persistence/kv-cve-repository';
 import { vulncheckCve } from '../lib/vulncheck';
+import { hexbrainCveCached } from '../lib/hexbrain';
 import { computeSsvcV } from '../lib/ssvc-v';
 import { normaliseCveId } from '../lib/cve-id';
 
@@ -28,6 +29,20 @@ export async function cveSearchHandler(c: Context<{ Bindings: Env }>) {
       if (token) {
         const vc = await vulncheckCve(token, id, AbortSignal.timeout(6000));
         if ('ok' in vc) data.vulncheck = vc.ok;
+      }
+
+      // HexBrain enrichment (30-day exploitation likelihood, public PoC corpus,
+      // nuclei detection check). Cache-first in KV: the free key allows 200
+      // calls/day, so each unique CVE is fetched at most once per day across
+      // all colos. Silently absent when the key is unset or upstream fails.
+      if (c.env.HEXBRAIN_API_KEY) {
+        const hb = await hexbrainCveCached(
+          c.env.KV_CACHE,
+          (p) => c.executionCtx.waitUntil(p),
+          c.env.HEXBRAIN_API_KEY,
+          id
+        );
+        if (hb) data.hexbrain = hb;
       }
 
       // SSVC-V decision engine enrichment

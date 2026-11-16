@@ -560,6 +560,15 @@ export default function CveList({ bare }: CveListProps): JSX.Element {
               className="text-rose-600 dark:text-rose-400 hover:underline transition-colors"
             >
               nvd.nist.gov/vuln/search
+            </a>{' '}
+            or HexBrain for{' '}
+            <a
+              href="https://hexbrainai.com/cves"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-orange-600 dark:text-orange-300 hover:underline transition-colors"
+            >
+              exploitation likelihood and PoC checks
             </a>
             . Entries flagged KEV are known to be exploited in the wild, so prioritise those. Click a CVE id to drill
             into{' '}

@@ -14,6 +14,7 @@ import {
 import type { Actor } from '../types';
 import { NATION_PALETTE } from '../data/countries';
 import { cn } from '../lib';
+import HexBrainLink from '../../../components/HexBrainLink';
 
 interface Props {
   actor: Actor | null;
@@ -168,19 +169,28 @@ export function Dossier({ actor, onClose }: Props) {
             <SectionHeader Icon={Shield}>Exploited CVEs ({actor.cves.length})</SectionHeader>
             <div className="grid grid-cols-1 gap-1">
               {actor.cves.map((c) => (
-                <a
+                <div
                   key={c.id}
-                  href={`https://nvd.nist.gov/vuln/detail/${c.id}`}
-                  target="_blank"
-                  rel="noreferrer"
                   className="flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-surface-200 dark:hover:bg-surface-300 group transition-colors"
                 >
-                  <span className="font-mono text-meta text-amber-600 dark:text-amber-400">{c.id}</span>
-                  <span className="text-[12.5px] text-heading flex-1">{c.product}</span>
+                  <a
+                    href={`https://nvd.nist.gov/vuln/detail/${c.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 flex-1 min-w-0"
+                  >
+                    <span className="font-mono text-meta text-amber-600 dark:text-amber-400">{c.id}</span>
+                    <span className="text-[12.5px] text-heading flex-1">{c.product}</span>
+                  </a>
                   <span className={cn('chip', c.cvss >= 9 ? 'chip-red' : c.cvss >= 7 ? 'chip-gold' : '')}>
                     CVSS {c.cvss}
                   </span>
-                </a>
+                  <HexBrainLink
+                    cve={c.id}
+                    label="HB"
+                    className="text-[10px] font-mono text-orange-600 dark:text-orange-300 hover:underline shrink-0"
+                  />
+                </div>
               ))}
             </div>
           </section>

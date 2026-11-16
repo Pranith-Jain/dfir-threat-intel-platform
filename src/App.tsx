@@ -98,6 +98,9 @@ const AiIncidents = lazy(() => import('./pages/threatintel/AiIncidents'));
 const AiSecurityMatrix = lazy(() => import('./pages/threatintel/AiSecurityMatrix'));
 const AiVulns = lazy(() => import('./pages/threatintel/AiVulns'));
 const AiAdvisories = lazy(() => import('./pages/threatintel/AiAdvisories'));
+const ArtexTracker = lazy(() => import('./pages/threatintel/ArtexTracker'));
+const CigPortal = lazy(() => import('./pages/threatintel/CigPortal'));
+const AxiTools = lazy(() => import('./pages/threatintel/AxiTools'));
 const Cairn = lazy(() => import('./pages/threatintel/Cairn'));
 const Nova = lazy(() => import('./pages/threatintel/Nova'));
 const Denali = lazy(() => import('./pages/threatintel/Denali'));
@@ -581,12 +584,14 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/ransomware-hub', Component: RansomwareHub },
   { path: '/threatintel/exposure', Component: ExposureCheck },
   { path: '/threatintel/ransomware-groups', Component: RansomwareGroups },
+  { path: '/threatintel/cig-portal', Component: CigPortal },
   { path: '/threatintel/ai-escape', Component: AiEscape },
   { path: '/threatintel/ai-security', Component: AiSecurityHub },
   { path: '/threatintel/ai-incidents', Component: AiIncidents },
   { path: '/threatintel/ai-security-matrix', Component: AiSecurityMatrix },
   { path: '/threatintel/ai-vulns', Component: AiVulns },
   { path: '/threatintel/ai-advisories', Component: AiAdvisories },
+  { path: '/threatintel/artex', Component: ArtexTracker },
   { path: '/threatintel/glasswing', Component: Glasswing },
   { path: '/threatintel/darkweb/recon', Component: DarkWebRecon },
   { path: '/threatintel/darkweb/playbook', Component: DarkWebPlaybook },
@@ -668,6 +673,7 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/osint/secops', Component: SecopsCatalog },
   { path: '/threatintel/osint/threat-actor-monitor', Component: ThreatActorMonitor },
   { path: '/threatintel/osint/directory', Component: OsintDirectory },
+  { path: '/threatintel/osint/ax-tools', Component: AxiTools },
   { path: '/threatintel/cti-bookmarks', Component: CtiBookmarks },
   { path: '/threatintel/research-hub/redhunt-labs', Component: RedHuntLabsResearch },
   { path: '/threatintel/research-hub/reports', Component: Reports },

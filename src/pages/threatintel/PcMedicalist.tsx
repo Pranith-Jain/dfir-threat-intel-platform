@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { DigestAnalysisPanel } from '../../components/DigestAnalysisPanel';
+import HexBrainLink from '../../components/HexBrainLink';
 import { ShieldAlert, ExternalLink, Layers, Search, Loader2, Calendar, FileText } from 'lucide-react';
 
 interface PcmIndexEntry {
@@ -350,15 +351,21 @@ function ItemRow({ item }: { item: PcmItem }) {
         {item.published && <span>{item.published.slice(0, 10)}</span>}
         {item.cves.length > 0 &&
           item.cves.slice(0, 3).map((c) => (
-            <a
-              key={c}
-              href={`https://nvd.nist.gov/vuln/detail/${c}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded bg-red-50 px-1.5 py-0.5 font-mono text-micro text-red-600 hover:underline dark:bg-red-900/30 dark:text-red-300 transition-colors"
-            >
-              {c}
-            </a>
+            <span key={c} className="inline-flex items-center gap-1">
+              <a
+                href={`https://nvd.nist.gov/vuln/detail/${c}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded bg-red-50 px-1.5 py-0.5 font-mono text-micro text-red-600 hover:underline dark:bg-red-900/30 dark:text-red-300 transition-colors"
+              >
+                {c}
+              </a>
+              <HexBrainLink
+                cve={c}
+                label="HB"
+                className="text-[10px] font-mono text-orange-600 dark:text-orange-300 hover:underline"
+              />
+            </span>
           ))}
         {item.technologies.length > 0 && (
           <span className="text-muted">tech: {item.technologies.slice(0, 3).join(', ')}</span>
