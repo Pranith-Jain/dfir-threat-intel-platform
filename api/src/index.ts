@@ -460,7 +460,8 @@ import {
   alertLogHandler,
 } from './routes/watches';
 import { rateLimit } from './lib/ratelimit';
-import { TURNSTILE_PREFIXES, turnstileGuard } from './lib/turnstile';
+import { TURNSTILE_PREFIXES, TURNSTILE_EXACT_PATHS, TURNSTILE_READ_PREFIXES, turnstileGuard } from './lib/turnstile';
+import { visitorIdentity } from './lib/visitor';
 import { burstLimitActorProfile } from './lib/actor-profile-burst';
 import { apiKeyRateLimit } from './lib/api-key-ratelimit';
 import { loadAttackIdIndex } from './lib/attack-id-lazy';
@@ -973,6 +974,22 @@ for (const base of TURNSTILE_PREFIXES) {
   app.use(base, turnstileGuard());
   app.use(`${base}/*`, turnstileGuard());
 }
+// Costly AI/scanner endpoints: exact paths so cheap subpaths (cancel, history,
+// results) stay widget-free. `exactPath` neutralises Hono's prefix matching.
+for (const path of TURNSTILE_EXACT_PATHS) {
+  app.use(path, turnstileGuard({ exactPath: path }));
+}
+// Reads that perform caller-triggered outbound/LLM work still need a challenge.
+for (const base of TURNSTILE_READ_PREFIXES) {
+  app.use(base, turnstileGuard({ read: true }));
+  app.use(`${base}/*`, turnstileGuard({ read: true }));
+}
+
+// Anonymous chat sessions are owned by a per-browser visitor cookie rather
+// than the shared `owner_hash IS NULL` pool. Mounted after `authenticate()` so
+// API-key identity is available, and before the copilot/vera routes.
+app.use('/api/v1/copilot/*', visitorIdentity());
+app.use('/api/v1/agents/*', visitorIdentity());
 
 import {
   iocCheckSchema,

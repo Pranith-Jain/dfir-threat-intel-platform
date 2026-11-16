@@ -39,8 +39,11 @@ import { ALLOWED_INTERNAL_CALLERS, validateInternalToken } from './internal-toke
  *
  * ## Exemptions
  *
- * - **Reads (GET/HEAD/OPTIONS)** are never gated, so every browse/read surface
- *   keeps working and the read-path cache budget is untouched.
+ * - **Reads (GET/HEAD/OPTIONS)** are not gated by default, so every browse/read
+ *   surface keeps working and the read-path cache budget is untouched. The
+ *   narrow exception is `TURNSTILE_READ_PREFIXES`: a GET that triggers a
+ *   caller-supplied outbound probe (`web-scan`) is as costly as a write and
+ *   gets the same proof-of-human.
  * - **Callers with a valid API key** are exempt: `authenticate()` has already
  *   proven identity for them, and MCP clients can't run a browser widget. Same
  *   reasoning as `requireAdminRole`, which exempts non-key callers because
@@ -91,6 +94,31 @@ export const TURNSTILE_PREFIXES = [
   // use must carry a key or a token.
   '/api/v1/fortibleed',
 ] as const;
+
+/**
+ * Exact paths whose keyless *costly* requests must clear the challenge.
+ *
+ * These are exact, not prefixes, on purpose: `/api/v1/copilot/chat` is the
+ * paid AI fan-out, while `/api/v1/copilot/chat/:id/cancel` is a cheap
+ * cancellation that should not need a widget. Same for `/agents/chat` vs its
+ * session history/cancel/delete subpaths and `/radar/scan` vs its results
+ * subpath.
+ */
+export const TURNSTILE_EXACT_PATHS = [
+  '/api/v1/copilot/chat',
+  '/api/v1/copilot/investigate',
+  '/api/v1/agents/chat',
+  '/api/v1/radar/scan',
+  '/api/v1/webamon/scan',
+] as const;
+
+/**
+ * Read paths that still need a challenge because the GET itself performs
+ * costly, caller-triggered work (`web-scan` probes an arbitrary URL from our
+ * egress; `copilot/investigate` runs the same LLM/RAG/source fan-out as its
+ * POST sibling). This is the deliberate exception to "reads are never gated".
+ */
+export const TURNSTILE_READ_PREFIXES = ['/api/v1/web-scan', '/api/v1/copilot/investigate'] as const;
 
 type TurnstileEnv = Pick<Env, 'TURNSTILE_SECRET' | 'TURNSTILE_SITE_KEY' | 'TURNSTILE_HOSTNAMES'>;
 
@@ -179,12 +207,17 @@ export async function verifyTurnstileToken(
   return { ok: true };
 }
 
-/** True when `pathname` is one of the gated prefixes (or a sub-path of one). */
+/** True when `pathname` is one of the gated prefixes/paths (or a sub-path of a prefix). */
 export function isTurnstileGated(pathname: string): boolean {
-  return TURNSTILE_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  if ((TURNSTILE_EXACT_PATHS as readonly string[]).includes(pathname)) return true;
+  return (
+    (TURNSTILE_PREFIXES as readonly string[]).some((p) => pathname === p || pathname.startsWith(`${p}/`)) ||
+    (TURNSTILE_READ_PREFIXES as readonly string[]).some((p) => pathname === p || pathname.startsWith(`${p}/`))
+  );
 }
 
 const MUTATING = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+const READS = new Set(['GET', 'HEAD']);
 
 /**
  * Middleware form. Mount it once, before the routes it covers:
@@ -197,11 +230,19 @@ const MUTATING = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
  * The caller context is narrowed to what the gate actually needs; anything
  * richer would couple this file to the auth layer's internals.
  */
-export function turnstileGuard(): MiddlewareHandler<{ Bindings: Env }> {
+export function turnstileGuard(
+  opts: { read?: boolean; exactPath?: string } = {}
+): MiddlewareHandler<{ Bindings: Env }> {
   return async (c: Context<{ Bindings: Env }>, next: Next) => {
+    // Hono's `app.use(path)` also matches sub-paths. `exactPath` keeps the
+    // challenge on the costly route itself (e.g. POST /copilot/chat) while
+    // leaving cheap siblings alone (e.g. POST /copilot/chat/:id/cancel).
+    if (opts.exactPath && c.req.path !== opts.exactPath) return next();
+
     const config = turnstileConfig(c.env as Partial<TurnstileEnv>);
     if (!config.enabled) return next();
-    if (!MUTATING.has(c.req.method)) return next();
+    const gatedMethods = opts.read ? READS : MUTATING;
+    if (!gatedMethods.has(c.req.method)) return next();
 
     // Already-authenticated callers (valid API key) skip: they proved identity
     // upstream in the auth chain and cannot run a browser widget.

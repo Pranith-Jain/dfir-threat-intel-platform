@@ -2,7 +2,7 @@ import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';
 import { badRequest, internalError, notFound, serviceUnavailable } from '../lib/api-error';
-import { callerOwnerId, ownerVisibilityFilter, ownerCheck } from '../lib/ownership';
+import { visitorOwnerId, visitorVisibilityFilter, visitorOwns } from '../lib/visitor';
 import type { AgentState } from '../lib/agent/types';
 import { detectType } from '../lib/report/subject-resolver';
 
@@ -91,7 +91,7 @@ async function loadSession(c: Context<{ Bindings: Env }>, db: D1Database, id: st
       owner_hash: string | null;
     }>();
   if (!row) return null;
-  if (ownerCheck(c, row.owner_hash) === 'hidden') return null;
+  if (!visitorOwns(c, row.owner_hash)) return null;
   return {
     id: row.id,
     title: row.title,
@@ -114,7 +114,7 @@ async function saveSession(c: Context<{ Bindings: Env }>, db: D1Database, sessio
       JSON.stringify(session.messages),
       session.created_at,
       new Date().toISOString(),
-      callerOwnerId(c)
+      visitorOwnerId(c)
     )
     .run();
 }
@@ -123,7 +123,7 @@ export async function copilotChatListHandler(c: Context<{ Bindings: Env }>): Pro
   try {
     const db = c.env.BRIEFINGS_DB as D1Database | undefined;
     if (!db) return internalError(c, new Error('BRIEFINGS_DB not bound'));
-    const vis = ownerVisibilityFilter(c);
+    const vis = visitorVisibilityFilter(c);
     const rows = await db
       .prepare(
         `SELECT id, title, messages_json, created_at, updated_at FROM copilot_sessions WHERE ${vis.clause} ORDER BY updated_at DESC LIMIT 50`

@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { BackLink } from '../../components/BackLink';
 import { adminAuthHeaders } from '../../lib/admin-token';
+import { turnstileHeaders } from '../../lib/turnstile';
 import { buildReport, pollReport, type Report, type Progress } from '../../lib/threatintel/report-client';
 import { exportReportPdf } from '../../lib/threatintel/report-pdf';
 import { ReportView } from '../../components/threatintel/ReportView';
@@ -527,7 +528,11 @@ export default function VeraChat(): JSX.Element {
         const res = await fetch('/api/v1/agents/chat', {
           method: 'POST',
           signal: AbortSignal.timeout(30_000),
-          headers: { ...adminAuthHeaders(), 'content-type': 'application/json' },
+          headers: {
+            ...adminAuthHeaders(),
+            'content-type': 'application/json',
+            ...(await turnstileHeaders('agents-chat')),
+          },
           body: JSON.stringify({ sessionId, mode: veraMode, role, query: q.trim() }),
         });
         if (!res.ok) {

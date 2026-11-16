@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Hono } from 'hono';
 import {
   TURNSTILE_PREFIXES,
+  TURNSTILE_EXACT_PATHS,
+  TURNSTILE_READ_PREFIXES,
   isTurnstileGated,
   turnstileConfig,
   turnstileGuard,
@@ -80,6 +82,23 @@ describe('isTurnstileGated', () => {
     // intel-bundle is deliberately excluded: its POST fires on card render, not
     // on a deliberate write, so a challenge there would be friction.
     expect(isTurnstileGated('/api/v1/intel-bundle')).toBe(false);
+  });
+
+  it('gates the exact costly AI/scanner paths without gating their cheap subpaths', () => {
+    for (const path of TURNSTILE_EXACT_PATHS) {
+      expect(isTurnstileGated(path), path).toBe(true);
+    }
+    expect(isTurnstileGated('/api/v1/copilot/chat/abc/cancel')).toBe(false);
+    expect(isTurnstileGated('/api/v1/copilot/chat/sessions')).toBe(false);
+    expect(isTurnstileGated('/api/v1/agents/chat/sessions')).toBe(false);
+    expect(isTurnstileGated('/api/v1/radar/scan/abc')).toBe(false);
+  });
+
+  it('gates the deliberately-chosen read paths', () => {
+    for (const prefix of TURNSTILE_READ_PREFIXES) {
+      expect(isTurnstileGated(prefix), prefix).toBe(true);
+      expect(isTurnstileGated(`${prefix}/anything`), `${prefix}/anything`).toBe(true);
+    }
   });
 });
 
@@ -238,6 +257,33 @@ describe('turnstileGuard', () => {
     const res = await app(env()).request('/api/v1/estate/alerts', {}, env());
     expect(res.status).toBe(200);
     expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('challenges a read only when the read gate is explicitly enabled', async () => {
+    const h = new Hono<{ Bindings: Env }>();
+    h.use('/api/v1/web-scan', turnstileGuard({ read: true }));
+    h.get('/api/v1/web-scan', (c) => c.json({ ok: true }));
+
+    const missing = await h.request('/api/v1/web-scan', {}, env());
+    expect(missing.status).toBe(403);
+    expect(((await missing.json()) as { reason: string }).reason).toBe('missing_token');
+
+    const verified = await h.request('/api/v1/web-scan', { headers: { 'cf-turnstile-response': 'good' } }, env());
+    expect(verified.status).toBe(200);
+  });
+
+  it('leaves subpaths alone when exactPath is set', async () => {
+    const h = new Hono<{ Bindings: Env }>();
+    h.use('/api/v1/copilot/chat', turnstileGuard({ exactPath: '/api/v1/copilot/chat' }));
+    h.post('/api/v1/copilot/chat', (c) => c.json({ ok: true }));
+    h.post('/api/v1/copilot/chat/:id/cancel', (c) => c.json({ cancelled: true }));
+
+    const gated = await h.request('/api/v1/copilot/chat', { method: 'POST' }, env());
+    expect(gated.status).toBe(403);
+
+    const cheap = await h.request('/api/v1/copilot/chat/abc/cancel', { method: 'POST' }, env());
+    expect(cheap.status).toBe(200);
+    expect(((await cheap.json()) as { cancelled: boolean }).cancelled).toBe(true);
   });
 
   it('exempts callers the auth chain already identified (API key holders)', async () => {

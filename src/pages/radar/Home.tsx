@@ -8,6 +8,7 @@ import { PageMeta } from '../../components/PageMeta';
 import { Input } from '../../components/ui/Input';
 import { RADAR_FAQ } from '../../data/radar-faq';
 import { errMessage } from '../../lib/log';
+import { turnstileHeaders } from '../../lib/turnstile';
 
 export default function RadarHome() {
   const [url, setUrl] = useState('');
@@ -28,7 +29,11 @@ export default function RadarHome() {
     try {
       const res = await fetch('/api/v1/radar/scan', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', accept: 'application/json' },
+        headers: {
+          'content-type': 'application/json',
+          accept: 'application/json',
+          ...(await turnstileHeaders('radar-scan')),
+        },
         body: JSON.stringify({ url: target }),
         signal: AbortSignal.any([ctrl.signal, AbortSignal.timeout(60000)]),
       });

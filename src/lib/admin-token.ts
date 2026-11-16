@@ -66,8 +66,9 @@ export function adminAuthHeaders(): Record<string, string> {
  * The browser will store the cookie and send it automatically on all
  * subsequent API requests - no JS involvement needed.
  *
- * Call this after the user enters their admin token. The token is also
- * saved to localStorage as a fallback (see readAdminToken).
+ * Call this after the user enters their admin token. Only a boolean UI hint is
+ * stored in localStorage; the token itself is never persisted in
+ * JavaScript-readable storage.
  */
 export async function createAdminSession(token: string, baseUrl = ''): Promise<boolean> {
   try {

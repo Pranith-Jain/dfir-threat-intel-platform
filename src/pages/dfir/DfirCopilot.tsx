@@ -21,6 +21,7 @@ import { sanitizeAiHtml } from '../../lib/sanitize-html';
 // copy of the same renderer (minus the fenced-code handling), which meant two
 // subtly different renderers for identical input.
 import { renderMarkdown } from '../../components/threatintel/ChatShared';
+import { turnstileHeaders } from '../../lib/turnstile';
 
 interface Source {
   name: string;
@@ -167,7 +168,7 @@ export default function DfirCopilot(): JSX.Element {
       const res = await fetch('/api/v1/copilot/investigate', {
         method: 'POST',
         signal: AbortSignal.timeout(30_000),
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...(await turnstileHeaders('copilot-investigate')) },
         body: JSON.stringify({ query: q.trim() }),
       });
       if (!res.ok) {

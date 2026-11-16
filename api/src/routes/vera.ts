@@ -22,7 +22,7 @@ import type { Context } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';
 import { badRequest, internalError, notFound, serviceUnavailable } from '../lib/api-error';
-import { callerOwnerId, ownerVisibilityFilter, ownerCheck } from '../lib/ownership';
+import { visitorOwnerId, visitorVisibilityFilter, visitorOwns } from '../lib/visitor';
 import { detectType } from '../lib/report/subject-resolver';
 import { trackEvent, visitorCountry } from '../lib/analytics';
 import { VERA_MODES, getVeraMode, type VeraMode } from '../lib/agent/vera-prompts';
@@ -106,7 +106,7 @@ async function loadSession(c: Context<{ Bindings: Env }>, db: D1Database, id: st
       owner_hash: string | null;
     }>();
   if (!row) return null;
-  if (ownerCheck(c, row.owner_hash) === 'hidden') return null;
+  if (!visitorOwns(c, row.owner_hash)) return null;
   return {
     id: row.id,
     messages: JSON.parse(row.messages_json) as VeraMessage[],
@@ -134,7 +134,7 @@ async function saveSession(c: Context<{ Bindings: Env }>, db: D1Database, sessio
       session.created_at,
       new Date().toISOString(),
       session.role ?? null,
-      callerOwnerId(c)
+      visitorOwnerId(c)
     )
     .run();
 }
@@ -483,7 +483,7 @@ export async function veraSessionsListHandler(c: Context<{ Bindings: Env }>): Pr
     const limitRaw = Number(c.req.query('limit') ?? 20);
     const limit = Math.min(Number.isFinite(limitRaw) ? limitRaw : 20, 100);
 
-    const vis = ownerVisibilityFilter(c);
+    const vis = visitorVisibilityFilter(c);
     const res = await db
       .prepare(
         `SELECT id, mode, messages_json, created_at, updated_at, role

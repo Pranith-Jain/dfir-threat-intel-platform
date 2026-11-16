@@ -19,6 +19,10 @@ type OwnerCtx = Context<{ Bindings: Env }>;
  * Hidden rows 404 (never 403) so ids can't be probed for existence —
  * this matters for INTEGER-id tables (ioc_watchlist) where ids are
  * enumerable.
+ *
+ * NOTE: Copilot/Vera chat sessions no longer use this module. They use
+ * `lib/visitor.ts`, which gives keyless browsers a per-visitor identity and
+ * hides legacy `owner_hash IS NULL` rows instead of sharing them.
  */
 
 export function callerOwnerId(c: OwnerCtx): string | null {

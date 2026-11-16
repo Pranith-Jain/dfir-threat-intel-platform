@@ -86,6 +86,11 @@ export function resetTurnstileFeatures(): void {
 
 let scriptPromise: Promise<TurnstileApi> | null = null;
 
+/** Reset the cached script loader. Exposed for tests and explicit retries. */
+export function resetTurnstileClient(): void {
+  scriptPromise = null;
+}
+
 /**
  * Load `api.js?render=explicit` once and resolve when the global is usable.
  *
@@ -174,16 +179,23 @@ export async function getTurnstileToken(action: string): Promise<string> {
 }
 
 /**
- * Headers to merge into a gated mutation. Returns `{}` when the deployment has
+ * Headers to merge into a gated request. Returns `{}` when the deployment has
  * no challenge configured or the request is a read, so callers can spread it
  * unconditionally.
  *
  * Pass the same `action` on both sides: the server can pin it to a surface, and
  * a shared constant keeps the two from drifting.
+ *
+ * `force` is for the narrow set of GETs that are themselves costly (the
+ * server's `TURNSTILE_READ_PREFIXES`). Normal reads stay challenge-free.
  */
-export async function turnstileHeaders(action: string, method = 'POST'): Promise<Record<string, string>> {
+export async function turnstileHeaders(
+  action: string,
+  method = 'POST',
+  opts: { force?: boolean } = {}
+): Promise<Record<string, string>> {
   const upper = method.toUpperCase();
-  if (upper === 'GET' || upper === 'HEAD' || upper === 'OPTIONS') return {};
+  if (!opts.force && (upper === 'GET' || upper === 'HEAD' || upper === 'OPTIONS')) return {};
   const features = await turnstileFeatures();
   if (!features.required) return {};
   return { 'cf-turnstile-response': await getTurnstileToken(action) };

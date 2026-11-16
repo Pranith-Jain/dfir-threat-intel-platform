@@ -2,6 +2,7 @@ import { useReducer, useState, useRef, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { SEVERITY_BAR, normalizeSeverity } from '../../components/severity';
 import { errMessage } from '../../lib/log';
+import { turnstileHeaders } from '../../lib/turnstile';
 import {
   Search,
   Shield,
@@ -85,8 +86,8 @@ function reducer(state: State, action: Action): State {
 
 const DOMAIN_RE = /^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
 
-function fetchTool(url: string, signal?: AbortSignal): Promise<unknown> {
-  return fetch(url, { signal }).then(async (r) => {
+function fetchTool(url: string, signal?: AbortSignal, headers?: Record<string, string>): Promise<unknown> {
+  return fetch(url, { signal, headers }).then(async (r) => {
     if (!r.ok) {
       const body = await r.text().catch(() => '');
       let msg = `HTTP ${r.status}`;
@@ -468,9 +469,11 @@ export default function FullSpectrum(): JSX.Element {
     dispatch({ type: 'SET_DOMAIN', domain });
     TOOL_CONFIG.forEach((t) => dispatch({ type: 'SET_LOADING', tool: t.key }));
 
+    const webScanHeaders = await turnstileHeaders('web-scan', 'GET', { force: true }).catch(() => ({}));
+
     const results = await Promise.allSettled(
       TOOL_CONFIG.map((t) =>
-        fetchTool(t.buildUrl(domain), ac.signal).then(
+        fetchTool(t.buildUrl(domain), ac.signal, t.key === 'web_scan' ? webScanHeaders : undefined).then(
           (data) => ({ key: t.key, data }) as const,
           (err: unknown) => {
             if ((err as Error).name === 'AbortError') return { key: t.key, error: true } as const;

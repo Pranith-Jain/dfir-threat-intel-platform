@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { turnstileHeaders, turnstileFeatures, resetTurnstileFeatures } from '../turnstile';
+import { turnstileHeaders, turnstileFeatures, resetTurnstileFeatures, resetTurnstileClient } from '../turnstile';
 
 /**
  * Client half of the bot gate.
@@ -19,6 +19,7 @@ function stubFeatures(payload: unknown, ok = true) {
 
 beforeEach(() => {
   resetTurnstileFeatures();
+  resetTurnstileClient();
   vi.restoreAllMocks();
   document.head.innerHTML = '';
   document.body.innerHTML = '';
@@ -71,6 +72,20 @@ describe('turnstileHeaders', () => {
     const spy = stubFeatures({ turnstile_required: true, turnstile_site_key: 'site-key' });
     expect(await turnstileHeaders('save-report', 'GET')).toEqual({});
     expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('can be forced to challenge a costly read', async () => {
+    stubFeatures({ turnstile_required: true, turnstile_site_key: 'site-key' });
+    (window as { turnstile?: unknown }).turnstile = {
+      render: (_el: HTMLElement, opts: { callback: (token: string) => void }) => {
+        opts.callback('read-token');
+        return 'widget-read';
+      },
+      execute: () => {},
+    };
+    expect(await turnstileHeaders('web-scan', 'GET', { force: true })).toEqual({
+      'cf-turnstile-response': 'read-token',
+    });
   });
 
   it('returns no headers and loads no script when the gate is unconfigured', async () => {

@@ -16,16 +16,19 @@ import {
   type ResourceTag,
 } from '../../data/threatintel/external-resources';
 import { sanitizeUrl } from '../../lib/sanitize-url';
+import { createAdminSession, clearAdminSession, readAdminToken } from '../../lib/admin-token';
 
 const ALL_KINDS = Object.keys(KIND_LABELS) as ResourceKind[];
 const ALL_TAGS = Object.keys(TAG_LABELS) as ResourceTag[];
 
 /**
- * Runtime-editable layer on top of the static catalog. The auth token lives
- * in localStorage; once pasted, all subsequent fetches send it as a Bearer.
- * If the server rejects (401/403), we clear the token and prompt again.
+ * Runtime-editable layer on top of the static catalog.
+ *
+ * The admin token is exchanged for an HttpOnly session cookie by
+ * `createAdminSession()`. The token itself never touches localStorage or any
+ * other JavaScript-readable storage; the cookie is sent automatically on API
+ * requests, and `clearAdminSession()` revokes it on sign-out.
  */
-const TOKEN_KEY = 'adminToken';
 
 interface DynamicEntry extends ExternalResource {
   added_at?: string;
@@ -52,12 +55,13 @@ export default function ExternalResources(): JSX.Element {
 
   // Dynamic entries fetched from /api/v1/external-resources.
   const [dynamicEntries, setDynamicEntries] = useState<DynamicEntry[]>([]);
-  // Auth token (localStorage). null when not signed in.
-  const [token, setToken] = useState<string | null>(() =>
-    typeof window === 'undefined' ? null : window.localStorage.getItem(TOKEN_KEY)
-  );
+  // Admin session state. The HttpOnly cookie is the credential; this is only
+  // a UI hint so the editor controls appear while the session is active.
+  const [signedIn, setSignedIn] = useState<boolean>(() => readAdminToken() !== null);
   const [signInOpen, setSignInOpen] = useState(false);
   const [tokenDraft, setTokenDraft] = useState('');
+  const [signingIn, setSigningIn] = useState(false);
+  const [signInError, setSignInError] = useState<string | null>(null);
 
   // Fetch dynamic entries on mount + after a successful add/delete. The
   // refreshKey bump triggers the effect; we also optimistically update local
@@ -201,18 +205,26 @@ export default function ExternalResources(): JSX.Element {
 
   const featuredCount = merged.filter((r) => 'featured' in r).length;
 
-  const submitToken = () => {
+  const submitToken = async () => {
     const trimmed = tokenDraft.trim();
     if (!trimmed) return;
-    window.localStorage.setItem(TOKEN_KEY, trimmed);
-    setToken(trimmed);
+    setSigningIn(true);
+    setSignInError(null);
+    const ok = await createAdminSession(trimmed);
+    setSigningIn(false);
+    if (!ok) {
+      setSignInError('Token rejected. Check the value and try again.');
+      return;
+    }
+    setSignedIn(true);
     setTokenDraft('');
     setSignInOpen(false);
+    setRefreshKey((k) => k + 1);
   };
 
-  const signOut = () => {
-    window.localStorage.removeItem(TOKEN_KEY);
-    setToken(null);
+  const signOut = async () => {
+    await clearAdminSession();
+    setSignedIn(false);
   };
 
   return (
@@ -234,9 +246,8 @@ export default function ExternalResources(): JSX.Element {
       }
     >
       {/* Auth + Add row (compact when signed out) */}
-      {token && (
+      {signedIn && (
         <AddResourceCard
-          token={token}
           onAdded={(entry) => {
             // Optimistic: prepend immediately so the UI feels instant; the
             // server is the source of truth on the next refresh.
@@ -447,11 +458,10 @@ export default function ExternalResources(): JSX.Element {
                 >
                   {KIND_LABELS[r.kind]}
                 </button>
-                {token && r.dynamic && (
+                {signedIn && r.dynamic && (
                   <DeleteButton
                     id={r.id}
                     name={r.name}
-                    token={token}
                     onDeleted={() => {
                       setDynamicEntries((prev) => prev.filter((it) => it.id !== r.id));
                       setRefreshKey((k) => k + 1);
@@ -498,12 +508,12 @@ export default function ExternalResources(): JSX.Element {
 
       {/* Footer auth control - minimal so unauth visitors don't see admin UI */}
       <div className="mt-12 text-right">
-        {token ? (
+        {signedIn ? (
           <button
             type="button"
             onClick={signOut}
             className="inline-flex items-center gap-1.5 text-mini font-mono text-muted hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
-            title="Forget admin token"
+            title="Sign out of the editor session"
           >
             <LogOut size={11} /> sign out
           </button>
@@ -528,31 +538,43 @@ export default function ExternalResources(): JSX.Element {
           className="space-y-3"
         >
           <p className="text-tool text-muted">
-            Paste your admin token to enable runtime editing. It is stored locally in this browser only.
+            Paste your admin token. It is exchanged for an HttpOnly session cookie and is never stored in
+            JavaScript-readable storage.
           </p>
           <input
             type="password"
             autoFocus
             value={tokenDraft}
-            onChange={(e) => setTokenDraft(e.target.value)}
+            onChange={(e) => {
+              setTokenDraft(e.target.value);
+              setSignInError(null);
+            }}
             placeholder="admin token"
             aria-label="Admin token"
             className="w-full px-3 py-2 rounded border border-line-1 bg-surface-100 text-sm font-mono focus:outline-none focus:border-rose-500"
           />
+          {signInError && (
+            <p role="alert" className="text-xs font-mono text-rose-700 dark:text-rose-300">
+              {signInError}
+            </p>
+          )}
           <div className="flex justify-end gap-2">
             <button
               type="button"
-              onClick={() => setSignInOpen(false)}
+              onClick={() => {
+                setSignInOpen(false);
+                setSignInError(null);
+              }}
               className="px-3 py-1.5 text-tool text-muted hover:text-body dark:hover:text-inverted"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={!tokenDraft.trim()}
+              disabled={!tokenDraft.trim() || signingIn}
               className="px-3 py-1.5 rounded bg-rose-600 text-on-fill text-tool font-semibold hover:bg-rose-500 disabled:opacity-40 transition-colors"
             >
-              Sign in
+              {signingIn ? 'Signing in…' : 'Sign in'}
             </button>
           </div>
         </form>
@@ -563,14 +585,12 @@ export default function ExternalResources(): JSX.Element {
 
 /**
  * Inline form to POST a new dynamic resource. Auth-gated by the parent
- * (only rendered when a token exists). Minimal schema: name + URL + kind.
+ * (only rendered while an admin session is active). Minimal schema: name + URL + kind.
  */
 function AddResourceCard({
-  token,
   onAdded,
   onAuthExpired,
 }: {
-  token: string;
   onAdded: (entry: DynamicEntry) => void;
   onAuthExpired: () => void;
 }): JSX.Element {
@@ -598,9 +618,9 @@ function AddResourceCard({
     try {
       const res = await fetch('/api/v1/external-resources', {
         method: 'POST',
+        credentials: 'same-origin',
         headers: {
           'content-type': 'application/json',
-          authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           name: name.trim(),
@@ -734,13 +754,11 @@ function AddResourceCard({
 function DeleteButton({
   id,
   name,
-  token,
   onDeleted,
   onAuthExpired,
 }: {
   id: string;
   name: string;
-  token: string;
   onDeleted: () => void;
   onAuthExpired: () => void;
 }): JSX.Element {
@@ -752,7 +770,7 @@ function DeleteButton({
     try {
       const res = await fetch(`/api/v1/external-resources/${encodeURIComponent(id)}`, {
         method: 'DELETE',
-        headers: { authorization: `Bearer ${token}` },
+        credentials: 'same-origin',
       });
       if (res.status === 401 || res.status === 403) {
         onAuthExpired();

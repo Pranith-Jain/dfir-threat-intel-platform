@@ -11,6 +11,7 @@ import { Input } from '../../components/ui/Input';
 import { prioritise, TIER_LABELS, TIER_STYLES, TIER_BARS } from '../../lib/dfir/cve-priority';
 import { RelatedWikiArticles } from '../../components/dfir/RelatedWikiArticles';
 import { SEVERITY_TONE, type Severity } from '../../components/severity';
+import { turnstileHeaders } from '../../lib/turnstile';
 
 const CVE_RE = /^CVE-\d{4}-\d{4,7}$/i;
 
@@ -107,7 +108,7 @@ export default function CveLookup(): JSX.Element {
       const res = await fetch('/api/v1/copilot/investigate', {
         method: 'POST',
         signal: AbortSignal.timeout(30_000),
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...(await turnstileHeaders('copilot-investigate')) },
         body: JSON.stringify({ query: result.cve_id }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

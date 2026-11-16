@@ -1,4 +1,5 @@
 import { errMessage, logCatch } from '../../lib/log';
+import { turnstileHeaders } from '../../lib/turnstile';
 import { useState, useCallback, useEffect, useRef, type FormEvent } from 'react';
 import { BackLink } from '../../components/BackLink';
 import { DataTable, type DataTableColumn } from '../../components/ui/DataTable';
@@ -679,7 +680,7 @@ function SandboxTab() {
     try {
       const res = await fetch('/api/v1/webamon/scan', {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
+        headers: { 'content-type': 'application/json', ...(await turnstileHeaders('webamon-scan')) },
         body: JSON.stringify({ submission_url: url.trim() }),
       });
       const data = (await res.json()) as ScanResult;
