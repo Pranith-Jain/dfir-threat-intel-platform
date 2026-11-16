@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Activity, Bot, Check, Copy, ExternalLink, Globe, Radar, Server, ShieldAlert, Skull, Tag } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { errMessage } from '../../lib/log';
 
 /**
@@ -293,6 +294,16 @@ export default function ArtexTracker(): JSX.Element {
       error={error}
       loading={!data && !error}
     >
+      <AiSummaryCard
+        surface="ARTEX AI-Nexus Tracker"
+        items={sortedEvents.slice(0, 15).map((ev) => ({
+          title: ev.title,
+          body: `${ev.disclosed} · ${ev.cat} · ${ev.actor || ev.region || 'unknown actor'} · ${ev.confidence} · ${ev.summary}`,
+          source: ev.url || ev.sources?.[0]?.url,
+        }))}
+        requireAdmin={false}
+      />
+
       {/* Tab bar */}
       <div className="flex flex-wrap gap-1.5 mb-5">
         {TABS.map((t) => (

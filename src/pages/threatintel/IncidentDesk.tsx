@@ -1,4 +1,5 @@
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { relativeAgo } from '../../lib/relativeTime';
 import { ExternalLink, Siren } from 'lucide-react';
@@ -75,6 +76,16 @@ export default function IncidentDesk(): JSX.Element {
           </div>
         ))}
       </div>
+
+      <AiSummaryCard
+        surface="Incident Desk"
+        items={(data?.briefs ?? []).slice(0, 15).map((b) => ({
+          title: b.title ?? 'Untitled briefing',
+          body: `${b.published?.slice(0, 10) ?? ''} ${b.description ?? ''}`.trim(),
+          source: b.link ?? b.guid ?? undefined,
+        }))}
+        requireAdmin={false}
+      />
 
       {/* Briefs */}
       <ul className="space-y-4">

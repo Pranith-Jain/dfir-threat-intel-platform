@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { DigestAnalysisPanel } from '../../components/DigestAnalysisPanel';
+import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import HexBrainLink from '../../components/HexBrainLink';
 import { ShieldAlert, ExternalLink, Layers, Search, Loader2, Calendar, FileText } from 'lucide-react';
 
@@ -112,6 +113,19 @@ export default function PcMedicalist() {
       title="PCMedicalist Intelligence Feed"
       description="Daily security-intel digest from the PCMedicalist Intelligence Network — 38+ feeds deduplicated into a 11-layer taxonomy with trust scoring, CVE tracking, and AI-security coverage."
     >
+      <AiSummaryCard
+        surface="PCMedicalist Intel Digest"
+        items={(digest?.layers ?? [])
+          .flatMap((l) => l.top ?? [])
+          .slice(0, 15)
+          .map((it) => ({
+            title: it.title,
+            body: `${it.source ?? 'unknown source'} · ${it.category ?? 'uncategorized'} · ${it.published?.slice(0, 10) ?? ''} · ${it.summary ?? ''}`,
+            source: it.url ?? undefined,
+          }))}
+        requireAdmin={false}
+      />
+
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-heading">PCMedicalist Security Intelligence Feed</h1>

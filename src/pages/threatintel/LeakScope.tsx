@@ -26,6 +26,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { Card } from '../../components/ui/Card';
 import { StatCards } from '../../components/ui/StatCards';
 import { useApiData } from '../../hooks/useApiData';
@@ -120,6 +121,16 @@ export default function LeakScope(): JSX.Element {
       maxWidthClass="max-w-7xl"
     >
       <div className="space-y-5">
+        <AiSummaryCard
+          surface="LeakScope"
+          items={(data?.entries ?? []).slice(0, 15).map((e) => ({
+            title: e.title,
+            body: `${e.source} · ${e.author} · ${e.published_at?.slice(0, 10) ?? ''} · ${e.views} views · ${e.replies} replies`,
+            source: e.source,
+          }))}
+          requireAdmin={false}
+        />
+
         <Card padding="md" radius="panel" tone="rose">
           <p className="mb-3 flex items-start gap-2 rounded border border-line-1 bg-surface-100 px-3 py-2 text-micro text-muted">
             <AlertTriangle size={13} className="mt-0.5 flex-shrink-0" />

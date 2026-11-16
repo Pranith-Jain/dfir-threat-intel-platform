@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { Modal } from '../../components/ui/Modal';
 import { useDataFetch } from '../../hooks/useDataFetch';
@@ -253,6 +254,18 @@ export default function OrcaIncidents(): JSX.Element {
           </button>
         ))}
       </div>
+
+      <AiSummaryCard
+        surface={`ORCA AI Incidents — ${tabs.find((t) => t.id === tab)?.label ?? tab}`}
+        items={rows.slice(0, 15).map((r) => ({
+          title: r.title,
+          body: `${r.date} · ${r.kind} · ${r.severity} · ${
+            r.realHarm ? 'confirmed harm' : r.realHarm === false ? 'no confirmed harm' : 'harm n/a'
+          } · ${r.aiInvolvement}`,
+          source: r.id,
+        }))}
+        requireAdmin={false}
+      />
 
       {tab !== 'stats' && (
         <div className="flex flex-col sm:flex-row flex-wrap gap-2 mb-4">

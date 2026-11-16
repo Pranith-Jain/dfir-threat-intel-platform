@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { DataState } from '../../components/DataState';
+import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
 import HexBrainLink from '../../components/HexBrainLink';
 import { Bug, ExternalLink, Package, RefreshCw, Search } from 'lucide-react';
 import { useDataFetch } from '../../hooks/useDataFetch';
@@ -154,6 +155,19 @@ export default function GithubAdvisories(): JSX.Element {
           </div>
         ))}
       </div>
+
+      <AiSummaryCard
+        surface="GitHub Advisories"
+        items={(data?.advisories ?? []).slice(0, 15).map((a) => ({
+          title: a.summary ?? a.ghsa_id,
+          body: `${a.ghsa_id} · ${a.severity} · ${a.published_at?.slice(0, 10) ?? ''} · ${(a.vulnerabilities ?? [])
+            .map((v) => `${v.package.ecosystem}/${v.package.name}`)
+            .slice(0, 3)
+            .join(', ')}`,
+          source: a.references?.[0],
+        }))}
+        requireAdmin={false}
+      />
 
       {/* Severity filter pills */}
       <div className="flex flex-wrap items-center gap-1.5 mb-4">

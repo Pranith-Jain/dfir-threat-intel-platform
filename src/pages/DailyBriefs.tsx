@@ -176,7 +176,7 @@ function briefToSummaryItems(
   if (brief.type === 'water' || brief.type === 'french') {
     const b = brief as AssessmentBrief;
     items.push({ title: b.title || 'Investigative Assessment', body: b.executiveAssessment });
-    for (const f of b.keyFindings) items.push({ title: f.title, body: f.text, source: f.sources?.[0]?.label });
+    for (const f of b.keyFindings ?? []) items.push({ title: f.title, body: f.text, source: f.sources?.[0]?.label });
     if (b.attribution) items.push({ title: 'Attribution', body: b.attribution });
   } else if (brief.type === 'cyber' || brief.type === 'maritime') {
     const b = brief as CyberBrief;
@@ -261,6 +261,11 @@ export default function DailyBriefs() {
   const availableDates = useMemo(() => currentList.map((b) => b.date), [currentList]);
 
   const isLoading = indexLoading || briefLoading;
+  // useDataFetch serves the previous tab's payload while the new URL loads.
+  // Never render that stale brief with the new tab's view: e.g. a cyber brief
+  // rendered as an assessment has no `affectedSystems` and used to crash on
+  // `.length`. Treat the mismatch as still loading.
+  const briefMatchesTab = !brief || !brief.type || brief.type === tab;
   // Surface fetch failures as errors (with retry), not as the "no data yet"
   // empty state — an ops message like "run the sync pipeline" is misleading
   // when the request itself failed.
@@ -340,7 +345,7 @@ export default function DailyBriefs() {
       )}
 
       {/* Content */}
-      {briefLoading || isLoading ? (
+      {briefLoading || isLoading || !briefMatchesTab ? (
         <div className="flex items-center justify-center py-20 text-muted">Loading brief...</div>
       ) : !brief ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted">
@@ -513,9 +518,9 @@ function CyberBriefView({ brief }: { brief: CyberBrief }) {
           <h2 className="mb-3 text-lg font-bold text-heading">Vulnerability &amp; CVE Watch</h2>
           <div className="space-y-3">
             {brief.cveWatch.map((cat, i) => (
-              <Expandable key={i} title={cat.category} count={cat.items.length} defaultOpen={i === 0}>
+              <Expandable key={i} title={cat.category} count={(cat.items ?? []).length} defaultOpen={i === 0}>
                 <ul className="space-y-1.5">
-                  {cat.items.map((item, j) => (
+                  {(cat.items ?? []).map((item, j) => (
                     <li key={j} className="flex items-start gap-2 text-xs text-muted">
                       <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400 dark:bg-slate-500" />
                       {item}
@@ -954,15 +959,16 @@ function DisasterBriefView({ brief }: { brief: DisasterBrief }) {
 
 // ─── Investigative assessment (water / french) ─────────────────────────
 
-function AssessmentCards({ cards }: { cards: AssessmentCard[] }) {
+function AssessmentCards({ cards }: { cards?: AssessmentCard[] }) {
+  const list = cards ?? [];
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {cards.map((c, i) => (
+      {list.map((c, i) => (
         <div key={i} className="rounded-xl border border-line-1 bg-surface-100 p-4">
           <h4 className="text-sm font-semibold text-heading">{c.title}</h4>
-          {c.badges.length > 0 && (
+          {(c.badges ?? []).length > 0 && (
             <div className="mt-1.5 flex flex-wrap gap-1">
-              {c.badges.map((b, j) => (
+              {(c.badges ?? []).map((b, j) => (
                 <span key={j} className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${sevPill(b)}`}>
                   {b}
                 </span>
@@ -970,9 +976,9 @@ function AssessmentCards({ cards }: { cards: AssessmentCard[] }) {
             </div>
           )}
           {c.text && <p className="mt-2 text-sm leading-relaxed text-body">{c.text}</p>}
-          {c.sources.length > 0 && (
+          {(c.sources ?? []).length > 0 && (
             <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-              {c.sources.map((s, j) => (
+              {(c.sources ?? []).map((s, j) => (
                 <a
                   key={j}
                   href={s.url}
@@ -992,13 +998,21 @@ function AssessmentCards({ cards }: { cards: AssessmentCard[] }) {
 }
 
 function AssessmentBriefView({ brief }: { brief: AssessmentBrief }) {
+  // A tab switch can briefly render the previous tab's payload (useDataFetch
+  // serves stale data). Normalize every array so that can never throw on
+  // `.length` — the view gate in the parent handles the wrong-type case too.
+  const relatedCves = brief.relatedCves ?? [];
+  const keyFindings = brief.keyFindings ?? [];
+  const affectedSystems = brief.affectedSystems ?? [];
+  const sections = brief.sections ?? [];
+  const sources = brief.sources ?? [];
   return (
     <div className="space-y-6">
       <section className="surface-card rounded-xl p-5">
-        <h2 className="text-lg font-bold text-heading">{brief.title || brief.type.toUpperCase()}</h2>
+        <h2 className="text-lg font-bold text-heading">{brief.title || (brief.type ?? 'assessment').toUpperCase()}</h2>
         <p className="mt-1 text-xs text-muted">
           Investigative assessment · {brief.date}
-          {brief.relatedCves.length > 0 && ` · ${brief.relatedCves.length} CVEs referenced`}
+          {relatedCves.length > 0 && ` · ${relatedCves.length} CVEs referenced`}
         </p>
         {brief.executiveAssessment && (
           <p className="mt-3 text-sm leading-relaxed text-body">{brief.executiveAssessment}</p>
@@ -1006,20 +1020,20 @@ function AssessmentBriefView({ brief }: { brief: AssessmentBrief }) {
       </section>
 
       <AiSummaryCard
-        surface={`Investigative Assessment — ${brief.type.toUpperCase()} (${brief.date})`}
+        surface={`Investigative Assessment — ${(brief.type ?? 'assessment').toUpperCase()} (${brief.date})`}
         dayKey={brief.date}
         items={briefToSummaryItems(brief)}
         requireAdmin={false}
       />
 
-      {brief.keyFindings.length > 0 && (
-        <Expandable title="Key Findings" count={brief.keyFindings.length} defaultOpen>
-          <AssessmentCards cards={brief.keyFindings} />
+      {keyFindings.length > 0 && (
+        <Expandable title="Key Findings" count={keyFindings.length} defaultOpen>
+          <AssessmentCards cards={keyFindings} />
         </Expandable>
       )}
-      {brief.affectedSystems.length > 0 && (
-        <Expandable title="Affected Systems" count={brief.affectedSystems.length}>
-          <AssessmentCards cards={brief.affectedSystems} />
+      {affectedSystems.length > 0 && (
+        <Expandable title="Affected Systems" count={affectedSystems.length}>
+          <AssessmentCards cards={affectedSystems} />
         </Expandable>
       )}
       {(
@@ -1039,13 +1053,13 @@ function AssessmentBriefView({ brief }: { brief: AssessmentBrief }) {
         ) : null
       )}
 
-      <Expandable title={`All Sections (${brief.sections.length})`}>
+      <Expandable title={`All Sections (${sections.length})`}>
         <div className="space-y-4">
-          {brief.sections.map((s, i) => (
+          {sections.map((s, i) => (
             <div key={i}>
               <h3 className="text-sm font-semibold text-heading">{s.heading}</h3>
               {s.text && <p className="mt-1 text-sm leading-relaxed text-body">{s.text}</p>}
-              {s.cards.length > 0 && (
+              {(s.cards ?? []).length > 0 && (
                 <div className="mt-2">
                   <AssessmentCards cards={s.cards} />
                 </div>
@@ -1055,10 +1069,10 @@ function AssessmentBriefView({ brief }: { brief: AssessmentBrief }) {
         </div>
       </Expandable>
 
-      {brief.sources.length > 0 && (
-        <Expandable title="Sources" count={brief.sources.length}>
+      {sources.length > 0 && (
+        <Expandable title="Sources" count={sources.length}>
           <ul className="space-y-1.5">
-            {brief.sources.map((s, i) => (
+            {sources.map((s, i) => (
               <li key={i}>
                 <a
                   href={s.url}
