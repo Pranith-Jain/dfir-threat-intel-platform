@@ -21,6 +21,7 @@ import {
   Eye,
   FileWarning,
   MessageSquare,
+  RefreshCw,
   Search,
   ShieldAlert,
 } from 'lucide-react';
@@ -127,6 +128,24 @@ export default function LeakScope(): JSX.Element {
               no download URLs were collected.
             </span>
           </p>
+
+          {data?.synced_at && (
+            <p className="mb-3 flex items-start gap-2 rounded border border-line-1 bg-surface-100 px-3 py-2 text-micro text-muted">
+              <RefreshCw size={13} className="mt-0.5 flex-shrink-0" />
+              <span>
+                <strong className="text-body">Synced daily</strong> — last run {fmtDate(data.synced_at)},{' '}
+                {data.entries.length
+                  ? `${data.entries.length} rows on this page`
+                  : `${counts.total ?? 0} rows in the index`}
+                . Upstream publishes a static CSV snapshot, not a live feed, so syncing daily refreshes the index but
+                new rows only appear when the{' '}
+                <a href={data.source_url} target="_blank" rel="noreferrer" className="underline decoration-dotted">
+                  upstream repo
+                </a>{' '}
+                republishes. Sort by “Newest” to see the latest available record date.
+              </span>
+            </p>
+          )}
 
           <div className="flex flex-wrap items-end gap-3">
             <div className="min-w-[14rem] flex-1">

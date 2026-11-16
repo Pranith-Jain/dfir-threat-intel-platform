@@ -9,6 +9,7 @@ import {
   CalendarDays,
   ExternalLink,
   FileWarning,
+  GitCommitHorizontal,
   Landmark,
   Loader2,
   Scale,
@@ -75,6 +76,10 @@ interface OrcaIndex {
   };
   months: string[];
   incidents: IncidentSlim[];
+  lastCommit: string | null;
+  lastCommitSha: string | null;
+  recentCommits: Array<{ sha: string; date: string | null; author: string | null; message: string }>;
+  webPages: { repo: string; commits: string; offlineViewer: string; primarySources: string };
 }
 
 interface OrcaStats {
@@ -125,18 +130,22 @@ function harmBadge(realHarm: boolean | null): { label: string; cls: string } {
   };
 }
 
-function fmtDate(d: string): string {
+function fmtDate(d: string | null): string {
+  if (!d) return '';
   const t = new Date(`${d}T00:00:00Z`);
   return Number.isNaN(t.getTime())
     ? d
     : t.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
-type Tab = 'timeline' | 'critical' | 'stats';
+type Tab = 'timeline' | 'critical' | 'stats' | 'activity';
 
 export default function OrcaIncidents(): JSX.Element {
   const { data, loading, error, refetch } = useDataFetch<OrcaIndex>({ url: '/api/v1/orca/', ttl: 300_000 });
   const { data: statsData } = useDataFetch<{ stats: OrcaStats }>({ url: '/api/v1/orca/stats', ttl: 300_000 });
+  const { data: commitsData } = useDataFetch<{
+    commits: Array<{ sha: string; date: string | null; author: string | null; message: string }>;
+  }>({ url: '/api/v1/orca/commits', ttl: 300_000 });
   const [tab, setTab] = useState<Tab>('timeline');
   const [kind, setKind] = useState('');
   const [severity, setSeverity] = useState('');
@@ -196,6 +205,7 @@ export default function OrcaIncidents(): JSX.Element {
     { id: 'timeline', label: `Timeline (${data?.counts.records ?? '…'})` },
     { id: 'critical', label: `Critical (${data?.counts.critical ?? '…'})` },
     { id: 'stats', label: 'Stats' },
+    { id: 'activity', label: 'Activity' },
   ];
 
   return (
@@ -349,6 +359,84 @@ export default function OrcaIncidents(): JSX.Element {
             rows={Object.entries(stats.ai_involvement)}
             foot={`${stats.sources.links} source links · ${stats.sources.unique_urls} unique URLs · every record has ≥1 clickable primary source`}
           />
+        </div>
+      )}
+
+      {tab === 'activity' && (
+        <div className="grid gap-3">
+          <div className="surface-card p-4">
+            <h3 className="text-sm font-semibold text-heading mb-2">Upstream web pages</h3>
+            <ul className="space-y-1.5 text-sm">
+              <li>
+                <a
+                  href={data?.webPages?.repo ?? data?.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1.5"
+                >
+                  GitHub repository <ExternalLink size={12} />
+                </a>
+              </li>
+              <li>
+                <a
+                  href={data?.webPages?.commits ?? `${data?.sourceUrl ?? ''}/commits/main`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1.5"
+                >
+                  Commit history (all record sweeps) <ExternalLink size={12} />
+                </a>
+              </li>
+              <li>
+                <a
+                  href={data?.webPages?.offlineViewer ?? `${data?.sourceUrl ?? ''}/blob/main/index.html`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1.5"
+                >
+                  Offline interactive viewer (single-file index.html, 7 languages) <ExternalLink size={12} />
+                </a>
+              </li>
+              <li>
+                <a
+                  href={data?.webPages?.primarySources ?? `${data?.sourceUrl ?? ''}/blob/main/dist/README.md`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1.5"
+                >
+                  Machine-readable export docs (dist/) <ExternalLink size={12} />
+                </a>
+              </li>
+            </ul>
+            <p className="text-xs text-muted mt-3">
+              Upstream version stamp: {data?.upstreamVersion ?? '…'} · last commit {fmtDate(data?.lastCommit ?? null)}
+              {data?.lastCommitSha ? ` (${data.lastCommitSha})` : ''} · CC BY 4.0 — attribution required. No hosted
+              GitHub Pages site exists; the repository's index.html is the canonical viewer.
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <p className="text-xs text-muted">
+              Recent upstream commits — the weekly sync rebuilds this manifest, so new record sweeps and corrections
+              surface here automatically.
+            </p>
+            {(commitsData?.commits ?? data?.recentCommits ?? []).map((c) => (
+              <a
+                key={c.sha}
+                href={`${data?.sourceUrl ?? 'https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive'}/commit/${c.sha}`}
+                target="_blank"
+                rel="noreferrer"
+                className="surface-card p-3 hover:border-brand-400 transition-colors"
+              >
+                <div className="flex items-center gap-2 flex-wrap">
+                  <GitCommitHorizontal size={14} className="text-brand-500" />
+                  <span className="font-mono text-xs text-heading">{c.sha}</span>
+                  <span className="text-xs text-muted">{fmtDate(c.date)}</span>
+                  <span className="text-xs text-muted ml-auto">{c.author}</span>
+                </div>
+                <p className="text-sm text-body mt-1">{c.message}</p>
+              </a>
+            ))}
+          </div>
         </div>
       )}
 

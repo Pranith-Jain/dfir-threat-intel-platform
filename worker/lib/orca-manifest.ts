@@ -67,6 +67,23 @@ export interface OrcaStats {
   sources: { links: number; unique_urls: number };
 }
 
+export interface OrcaCommit {
+  sha: string;
+  date: string | null;
+  author: string | null;
+  message: string;
+}
+
+export interface OrcaCommitsBody {
+  source: string;
+  sourceUrl: string;
+  commitsUrl: string;
+  license: string;
+  builtAt: string;
+  count: number;
+  commits: OrcaCommit[];
+}
+
 export interface OrcaIndex {
   source: string;
   sourceUrl: string;
@@ -88,6 +105,10 @@ export interface OrcaIndex {
   stats: OrcaStats;
   months: string[];
   incidents: OrcaIncidentSlim[];
+  lastCommit: string | null;
+  lastCommitSha: string | null;
+  recentCommits: OrcaCommit[];
+  webPages: { repo: string; commits: string; offlineViewer: string; primarySources: string };
 }
 
 const DATA_PREFIX = '/data/orca';
@@ -95,6 +116,7 @@ const DATA_PREFIX = '/data/orca';
 let cachedIndex: OrcaIndex | null = null;
 let cachedIndexAt: number | null = null;
 const shardCache = new Map<string, OrcaIncidentBody[]>();
+const bodyCache = new Map<string, OrcaCommitsBody>();
 let bodyHits = 0;
 let bodyMisses = 0;
 const SHARD_CACHE_MAX = 30;
@@ -217,10 +239,28 @@ export async function loadOrcaStats(assets: Fetcher): Promise<OrcaStats | null> 
   return data?.stats ?? null;
 }
 
+export async function loadOrcaCommits(assets: Fetcher): Promise<OrcaCommitsBody | null> {
+  const cached = bodyCache.get('commits');
+  if (cached) {
+    bodyHits++;
+    return cached;
+  }
+  bodyMisses++;
+  const body = await fetchJson<OrcaCommitsBody>(assets, `${DATA_PREFIX}/commits.json`);
+  if (!body) return null;
+  if (bodyCache.size >= 5) {
+    const oldest = bodyCache.keys().next();
+    if (!oldest.done) bodyCache.delete(oldest.value);
+  }
+  bodyCache.set('commits', body);
+  return body;
+}
+
 export function orcaCacheStats(): {
   indexLoaded: boolean;
   indexAgeMs: number | null;
   shards: number;
+  bodies: number;
   shardHits: number;
   shardMisses: number;
 } {
@@ -228,6 +268,7 @@ export function orcaCacheStats(): {
     indexLoaded: cachedIndex !== null,
     indexAgeMs: cachedIndexAt ? Date.now() - cachedIndexAt : null,
     shards: shardCache.size,
+    bodies: bodyCache.size,
     shardHits: bodyHits,
     shardMisses: bodyMisses,
   };
@@ -237,6 +278,7 @@ export function _resetOrcaCacheForTests(): void {
   cachedIndex = null;
   cachedIndexAt = null;
   shardCache.clear();
+  bodyCache.clear();
   bodyHits = 0;
   bodyMisses = 0;
 }

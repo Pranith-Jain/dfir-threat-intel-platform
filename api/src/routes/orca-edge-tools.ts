@@ -7,6 +7,7 @@
  *   GET  /orca/incidents      — filtered slim list (kind/severity/type/harm/region/month/q)
  *   GET  /orca/incidents/:id  — full record (summary, sources, upstream link)
  *   GET  /orca/stats          — upstream stats pass-through
+ *   GET  /orca/commits        — recent upstream commits (activity feed)
  *
  * Data source: github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive (CC BY 4.0).
  * Read-only, served from env.ASSETS; upstream `kind: policy`/`report` rows are
@@ -20,7 +21,13 @@ import { Hono } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';
 import { internalError, notFound } from '../lib/api-error';
-import { loadOrcaIndex, filterOrcaIncidents, getOrcaIncident, loadOrcaStats } from '../lib/orca-manifest';
+import {
+  loadOrcaIndex,
+  filterOrcaIncidents,
+  getOrcaIncident,
+  loadOrcaStats,
+  loadOrcaCommits,
+} from '../lib/orca-manifest';
 
 export const orcaRouter = new Hono<{ Bindings: Env }>();
 
@@ -86,6 +93,22 @@ orcaRouter.get('/orca/incidents/:id', async (c) => {
   } catch (e) {
     logError('orca incident failed', e);
     return internalError(c, `orca_incident_failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+});
+
+orcaRouter.get('/orca/commits', async (c) => {
+  try {
+    const idx = await loadOrcaIndex(c.env.ASSETS);
+    const body = await loadOrcaCommits(c.env.ASSETS);
+    return c.json({
+      source: idx.source,
+      commitsUrl: idx.webPages?.commits ?? `${idx.sourceUrl}/commits/main`,
+      lastCommit: idx.lastCommit,
+      commits: body?.commits ?? idx.recentCommits ?? [],
+    });
+  } catch (e) {
+    logError('orca commits failed', e);
+    return internalError(c, `orca_commits_failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 });
 

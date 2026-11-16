@@ -4,6 +4,7 @@ import {
   filterOrcaIncidents,
   getOrcaIncident,
   loadOrcaStats,
+  loadOrcaCommits,
   monthForId,
   orcaCacheStats,
   _resetOrcaCacheForTests,
@@ -138,6 +139,22 @@ const FAKE_INDEX: OrcaIndex = {
   },
   months: ['2026-02', '2026-05', '2026-06', '2026-07', '2026-11'],
   incidents: FAKE_ROWS,
+  lastCommit: '2026-11-12T06:49:11Z',
+  lastCommitSha: 'a0d118c',
+  recentCommits: [
+    {
+      sha: 'a0d118c',
+      date: '2026-11-12T06:49:11Z',
+      author: 'Xizhuo',
+      message: 'Merge pull request #23 from Continuum-AI-Corp/records/2026-11-12-sweep',
+    },
+  ],
+  webPages: {
+    repo: 'https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive',
+    commits: 'https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/commits/main',
+    offlineViewer: 'https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/index.html',
+    primarySources: 'https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/blob/main/dist/README.md',
+  },
 };
 
 const SHARD_2026_07 = {
@@ -284,5 +301,30 @@ describe('orca-manifest', () => {
     await getOrcaIncident(assets, '2026-07-09-openai-agents-breach-huggingface');
     expect(orcaCacheStats().shardHits).toBe(1);
     expect(orcaCacheStats().shardMisses).toBe(1);
+  });
+
+  it('exposes the web page links from the index', async () => {
+    const idx = await loadOrcaIndex(mockAssets({ '/data/orca/index.json': FAKE_INDEX }));
+    expect(idx.webPages.offlineViewer).toContain('blob/main/index.html');
+    expect(idx.lastCommitSha).toBe('a0d118c');
+  });
+
+  it('loads the recent commit activity feed', async () => {
+    const assets = mockAssets({
+      '/data/orca/commits.json': {
+        source: 'github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive',
+        sourceUrl: 'https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive',
+        commitsUrl: 'https://github.com/Continuum-AI-Corp/Orca-AI-Incident-Archive/commits/main',
+        license: 'CC BY 4.0',
+        builtAt: '2026-11-16',
+        count: 1,
+        commits: FAKE_INDEX.recentCommits,
+      },
+    });
+    const body = await loadOrcaCommits(assets);
+    expect(body?.commits[0]?.sha).toBe('a0d118c');
+    expect(body?.commitsUrl).toContain('/commits/main');
+    await loadOrcaCommits(assets);
+    expect(orcaCacheStats().bodies).toBe(1);
   });
 });

@@ -120,7 +120,14 @@ import {
 
 // ORCA — AI Incident Archive (Continuum-AI-Corp, CC BY 4.0): open database of
 // real-world AI agent security incidents with kind/real_harm triage fields.
-import { loadOrcaIndex, filterOrcaIncidents, getOrcaIncident, loadOrcaStats, orcaCacheStats } from '../orca-manifest';
+import {
+  loadOrcaIndex,
+  filterOrcaIncidents,
+  getOrcaIncident,
+  loadOrcaStats,
+  loadOrcaCommits,
+  orcaCacheStats,
+} from '../orca-manifest';
 
 // MMD — MalwareMustDie shared codes & tools catalog (public share).
 import { loadMmdIndex, listMmdTools, getMmdCategory, loadMmdCommits, mmdCacheStats } from '../mmd-manifest';
@@ -3747,6 +3754,23 @@ export function bridgeMcpTools(
       const idx = await loadOrcaIndex(assets);
       const stats = await loadOrcaStats(assets);
       return { upstreamVersion: idx.upstreamVersion, stats: stats ?? idx.stats, cache: orcaCacheStats() };
+    },
+  });
+
+  add({
+    name: 'orca_recent_activity',
+    description:
+      'Recent upstream ORCA commits (record sweeps, corrections) plus last commit date and the upstream web page URLs. The manifest rebuilds weekly, so new pushes surface here.',
+    params: [],
+    execute: async () => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadOrcaIndex(assets);
+      const commits = await loadOrcaCommits(assets);
+      return {
+        lastCommit: idx.lastCommit,
+        webPages: idx.webPages,
+        commits: commits?.commits ?? idx.recentCommits ?? [],
+      };
     },
   });
 

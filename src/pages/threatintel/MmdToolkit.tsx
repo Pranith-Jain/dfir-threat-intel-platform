@@ -317,10 +317,35 @@ export default function MmdToolkit(): JSX.Element {
 
       {tab === 'activity' && (
         <div className="grid gap-2">
-          <p className="text-xs text-muted mb-1">
-            Last upstream commit: {fmtDate(data?.lastCommit ?? null)} · the manifest rebuilds weekly, so new pushes
-            surface automatically.
-          </p>
+          <div className="surface-card p-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+            <span className="text-muted">
+              Last upstream commit: {fmtDate(data?.lastCommit ?? null)} · weekly sync rebuilds automatically.
+            </span>
+            <a
+              href="https://github.com/unixfreaxjp/malwaremustdie/commits/master"
+              target="_blank"
+              rel="noreferrer"
+              className="text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
+            >
+              Commit history <ExternalLink size={11} />
+            </a>
+            <a
+              href="https://unixfreaxjp.github.io/malwaremustdie/"
+              target="_blank"
+              rel="noreferrer"
+              className="text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
+            >
+              MMD web page (GitHub Pages) <ExternalLink size={11} />
+            </a>
+            <a
+              href="https://blog.malwaremustdie.org"
+              target="_blank"
+              rel="noreferrer"
+              className="text-brand-600 dark:text-brand-400 hover:underline inline-flex items-center gap-1"
+            >
+              MMD blog <ExternalLink size={11} />
+            </a>
+          </div>
           {(data?.recentCommits ?? []).map((c) => (
             <a
               key={c.sha}

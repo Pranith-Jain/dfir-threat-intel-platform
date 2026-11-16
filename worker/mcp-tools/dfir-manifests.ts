@@ -80,6 +80,7 @@ import {
   getOrcaIncident,
   loadOrcaIndex,
   loadOrcaStats,
+  loadOrcaCommits,
   orcaCacheStats,
 } from '../lib/orca-manifest';
 import { getMmdCategory, listMmdTools, loadMmdCommits, loadMmdIndex, mmdCacheStats } from '../lib/mmd-manifest';
@@ -672,6 +673,22 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
         license: idx.license,
         stats: stats ?? idx.stats,
         cache: orcaCacheStats(),
+      });
+    }
+  );
+
+  h.tools(
+    'orca_recent_activity',
+    'Return recent upstream ORCA commits (record sweeps, corrections), last commit date, and the upstream web page URLs. The manifest rebuilds weekly, so new pushes surface here.',
+    {},
+    async () => {
+      const idx = await loadOrcaIndex(ASSETS);
+      const commits = await loadOrcaCommits(ASSETS);
+      return untrustedToolResult({
+        lastCommit: idx.lastCommit,
+        source: idx.source,
+        webPages: idx.webPages,
+        commits: commits?.commits ?? idx.recentCommits ?? [],
       });
     }
   );

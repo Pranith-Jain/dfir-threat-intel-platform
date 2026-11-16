@@ -1,6 +1,6 @@
 # DFIR-ThreatIntel MCP - tool catalog
 
-**435 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
+**436 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
 
 ## Quick start
 
@@ -14,7 +14,7 @@
 
 ## Tools by category
 
-### other (318)
+### other (319)
 
 - `ai_advisories` - AI advisory firehose — per-package GHSA advisories, cvelistV5 CVE commits matched to known AI CVEs, tool release trains (garak, PyRIT, promptfoo, litellm, vllm, ollama, langchain, MCP SDK, MITRE ATLAS, OWASP GenAI), ExploitDB PoCs.
 - `ai_playbook_cve_refs` - CVE references cited by the AI Security Playbook, enriched against our local CISA KEV snapshot so you can see which are known-exploited. Enrichment comes from our own feed, never upstream.
@@ -198,6 +198,7 @@
 - `opensanctions_stats` - Get OpenSanctions dataset statistics: total entities, datasets, countries covered, and schema counts. Requires OPENSANCTIONS_API_KEY.
 - `orca_get_incident` - Return the full ORCA incident record: summary, confirmed sources with URLs, dates, severity, real_harm, ai_involvement, and a deep link to the upstream Markdown record. Use orca_list_incidents first to discover ids.
 - `orca_list_incidents` - List AI agent security incidents from the ORCA AI Incident Archive (417 records, 2024-12 → 2026-11). Filter by kind (incident/vulnerability/research/report/policy), severity, attack type (e.g. SUPPLY/WEAPON/MCP/IPI), real_harm, region, month, landmark, or keyword. kind=policy/report rows are informational moves, not incidents.
+- `orca_recent_activity` - Return recent upstream ORCA commits (record sweeps, corrections), last commit date, and the upstream web page URLs. The manifest rebuilds weekly, so new pushes surface here.
 - `orca_stats` - Return ORCA archive stats: counts by severity/kind/type/region/real_harm, monthly volume, source totals, source + license, and cache state.
 - `osint_get_portal` - Return the full details of a single OSINT portal entry by slug. Use osint_list_portals first to discover slugs.
 - `osint_list_portals` - List OSINT portals and resources from the curated directory. Filter by category (threat-intel, paste-monitoring, dark-web, reputation, certificate, dns, domain, ip, hash, email, username, social-media, phone, crypto, breach, whois, forensics, misc), keyword, or free/paid status.

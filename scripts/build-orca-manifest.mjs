@@ -18,14 +18,16 @@
  * source file for the full translated text.
  *
  * Emits:
- *   public/data/orca/index.json               (slim — stats + months + slim rows)
+ *   public/data/orca/index.json               (slim — stats + months + slim rows + recent commits)
  *   public/data/orca/incidents/<YYYY-MM>.json (month shards, full English records)
  *   public/data/orca/stats.json               (upstream stats pass-through)
+ *   public/data/orca/commits.json             (recent upstream commits)
  *
  * Usage:
- *   node scripts/build-orca-manifest.mjs [--source <incidents.json>]
+ *   node scripts/build-orca-manifest.mjs [--source <incidents.json>] [--commits <commits.json>]
  * `--source` points at a locally downloaded dist/incidents.json (offline
- * mode); otherwise it is fetched from raw.githubusercontent.com.
+ * mode); `--commits` at a saved GitHub commits API response. Otherwise data
+ * is fetched from raw.githubusercontent.com + the GitHub commits API.
  *
  * Safe to run repeatedly — wipes public/data/orca/ on each run.
  */
@@ -43,8 +45,40 @@ const LICENSE = 'CC BY 4.0';
 const UPSTREAM_BLOB = `${SOURCE_URL}/blob/main`;
 
 const args = process.argv.slice(2);
-const sourceIdx = args.indexOf('--source');
-const LOCAL_SOURCE = sourceIdx >= 0 ? args[sourceIdx + 1] : null;
+function argValue(name) {
+  const i = args.indexOf(name);
+  return i >= 0 ? args[i + 1] : null;
+}
+const LOCAL_SOURCE = argValue('--source');
+const LOCAL_COMMITS = argValue('--commits');
+
+async function loadJson(relPath) {
+  if (LOCAL_SOURCE) {
+    return JSON.parse(readFileSync(LOCAL_SOURCE, 'utf8'));
+  }
+  const resp = await fetch(`${RAW_BASE}/${relPath}`);
+  if (!resp.ok) throw new Error(`fetch ${relPath}: ${resp.status} ${resp.statusText}`);
+  return await resp.json();
+}
+
+async function loadCommits() {
+  let raw;
+  if (LOCAL_COMMITS) {
+    raw = JSON.parse(readFileSync(LOCAL_COMMITS, 'utf8'));
+  } else {
+    const resp = await fetch('https://api.github.com/repos/Continuum-AI-Corp/Orca-AI-Incident-Archive/commits?per_page=30', {
+      headers: { accept: 'application/vnd.github+json', 'user-agent': 'orca-manifest-builder' },
+    });
+    if (!resp.ok) throw new Error(`fetch commits: ${resp.status} ${resp.statusText}`);
+    raw = await resp.json();
+  }
+  return (Array.isArray(raw) ? raw : []).map((c) => ({
+    sha: String(c.sha ?? '').slice(0, 7),
+    date: c.commit?.author?.date ?? null,
+    author: c.commit?.author?.name ?? c.author?.login ?? null,
+    message: (c.commit?.message ?? '').split('\n')[0].slice(0, 160),
+  }));
+}
 
 /** Upstream field (snake_case) → manifest field (camelCase). */
 function slimRow(r) {
@@ -79,15 +113,6 @@ function fullBody(r) {
   };
 }
 
-async function loadJson(relPath) {
-  if (LOCAL_SOURCE) {
-    return JSON.parse(readFileSync(LOCAL_SOURCE, 'utf8'));
-  }
-  const resp = await fetch(`${RAW_BASE}/${relPath}`);
-  if (!resp.ok) throw new Error(`fetch ${relPath}: ${resp.status} ${resp.statusText}`);
-  return await resp.json();
-}
-
 async function main() {
   const builtAt = new Date().toISOString().slice(0, 10);
 
@@ -100,6 +125,12 @@ async function main() {
     stats = await loadJson('dist/stats.json');
   } catch {
     console.warn('[orca] stats.json fetch failed — deriving stats locally');
+  }
+  let commits = [];
+  try {
+    commits = await loadCommits();
+  } catch (e) {
+    console.warn(`[orca] commits fetch failed (${e.message}) — skipping activity feed`);
   }
 
   if (existsSync(OUT)) rmSync(OUT, { recursive: true });
@@ -159,7 +190,25 @@ async function main() {
     JSON.stringify({ source: SOURCE, sourceUrl: SOURCE_URL, license: LICENSE, builtAt, stats: stats ?? localStats }, null, 2) + '\n',
   );
 
-  // ─── 3. Slim index ─────────────────────────────────────────────────────
+  // ─── 3. Commit activity feed ──────────────────────────────────────────
+  writeFileSync(
+    join(OUT, 'commits.json'),
+    JSON.stringify(
+      {
+        source: SOURCE,
+        sourceUrl: SOURCE_URL,
+        commitsUrl: `${SOURCE_URL}/commits/main`,
+        license: LICENSE,
+        builtAt,
+        count: commits.length,
+        commits,
+      },
+      null,
+      2,
+    ) + '\n',
+  );
+
+  // ─── 4. Slim index ─────────────────────────────────────────────────────
   const slim = dist.incidents.map(slimRow);
   // Newest first (date desc) — the archive reads chronologically.
   slim.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.id < b.id ? 1 : -1));
@@ -187,6 +236,15 @@ async function main() {
         stats: stats ?? localStats,
         months,
         incidents: slim,
+        lastCommit: commits[0]?.date ?? null,
+        lastCommitSha: commits[0]?.sha ?? null,
+        recentCommits: commits.slice(0, 15),
+        webPages: {
+          repo: SOURCE_URL,
+          commits: `${SOURCE_URL}/commits/main`,
+          offlineViewer: `${SOURCE_URL}/blob/main/index.html`,
+          primarySources: `${SOURCE_URL}/blob/main/dist/README.md`,
+        },
       },
       null,
       2,
