@@ -84,6 +84,7 @@ import { getSiteUrl } from '../lib/site-config';
 import type { D1Database } from '@cloudflare/workers-types';
 import type { Candidate, Post } from './types';
 import { logError } from '../lib/logger';
+import { hexbrainCveCached } from '../lib/hexbrain';
 
 /** The subset of bindings the case-study pipeline needs. */
 export interface CaseStudyEnv {
@@ -101,6 +102,9 @@ export interface CaseStudyEnv {
   INFRON_API_KEY?: string;
   /** Free VulnCheck Community token. Absent = VulnCheck KEV runner is a no-op. */
   VULNCHECK_API_TOKEN?: string;
+  /** HexBrain key (free, hexbrainai.com/account). Absent = HexBrain exploit
+   *  signal is skipped in the `exploit` content runner. */
+  HEXBRAIN_API_KEY?: string;
   SITE_URL?: string;
   /**
    * When set to the literal "true" (string from `wrangler secret` or
@@ -247,6 +251,7 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
   const asRows = (v: unknown): Array<Record<string, unknown>> =>
     Array.isArray(v) ? v.filter((x): x is Record<string, unknown> => !!x && typeof x === 'object') : [];
 
+  const hexbrainKey = env.HEXBRAIN_API_KEY;
   const allRunners: Record<string, () => Promise<Candidate[]>> = {
     vulncheck: () =>
       discoverVulnCheckKev({ fetch: globalThis.fetch, now, getDedup: memGet, token: env.VULNCHECK_API_TOKEN ?? '' }),
@@ -270,6 +275,10 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
           const data = await selfFetchJson<Record<string, unknown>>(env.SELF, `/api/v1/cve-recent?limit=${limit}`, env);
           return asRows(data?.cves);
         },
+        // HexBrain replaces dbu.gs exploit flags as this runner's signal.
+        // Cache-first (24h KV) so repeated discovery runs stay inside the
+        // free key's 200/day limit. No key = no candidates, no dbu.gs fallback.
+        fetchHexbrain: hexbrainKey ? (id) => hexbrainCveCached(env.KV_CACHE, undefined, hexbrainKey, id) : undefined,
       }),
     supplychain: () => discoverSupplyChain({ fetch: globalThis.fetch, now, getDedup: memGet }),
     infostealers: () => discoverInfostealers({ fetch: globalThis.fetch, now, getDedup: memGet }),
