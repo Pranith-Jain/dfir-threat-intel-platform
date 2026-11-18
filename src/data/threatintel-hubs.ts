@@ -223,7 +223,7 @@ export const HUB_META: readonly HubMeta[] = [
         path: '/threatintel/cves/cves',
         tabId: 'cves',
         label: 'CVE Intel',
-        desc: 'Unified CVE intelligence - NVD + KEV + EPSS + exploit availability.',
+        desc: 'RDIntel + cves.io mirror: corpus stats, attention ranking, top threats, NVD + KEV + EPSS + exploit availability.',
         compVar: 'CveIntel',
       },
       {

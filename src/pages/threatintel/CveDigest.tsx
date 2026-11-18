@@ -334,6 +334,24 @@ export default function CveDigest({ bare }: { bare?: boolean }): JSX.Element {
               >
                 Ref <ExternalLink className="w-2.5 h-2.5" />
               </a>
+              <a
+                href={`https://rdintel.com/cve/${e.cve_id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-0.5 text-rose-600 hover:underline dark:text-rose-400"
+                title={`Open ${e.cve_id} on RD Intelligence`}
+              >
+                RDIntel <ExternalLink className="w-2.5 h-2.5" />
+              </a>
+              <a
+                href={`https://hexbrainai.com/cve/${e.cve_id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-0.5 text-orange-600 hover:underline dark:text-orange-300"
+                title={`Open ${e.cve_id} on HexBrain`}
+              >
+                HexBrain <ExternalLink className="w-2.5 h-2.5" />
+              </a>
               {e.priority_score !== null && <span title="ctiwatch priority score">prio {e.priority_score}</span>}
             </div>
           </article>

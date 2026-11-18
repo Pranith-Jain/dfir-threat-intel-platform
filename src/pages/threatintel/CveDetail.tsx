@@ -616,7 +616,7 @@ export default function CveDetail(): JSX.Element {
 
           <div className="pt-3 border-t border-line-1">
             <div className="font-mono text-xs tracking-widest text-muted mb-2">QUICK ACTIONS</div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <Link
                 to={`/dfir/cve?cve=${encodeURIComponent(data.cve_id)}`}
                 className="h-9 rounded-lg bg-surface-100 text-white dark:text-heading text-xs font-mono grid place-items-center"
@@ -630,6 +630,15 @@ export default function CveDetail(): JSX.Element {
                 className="h-9 rounded-lg border border-line-1 bg-surface-100 text-xs font-mono text-muted grid place-items-center"
               >
                 NVD <ExternalLink size={12} className="ml-1" />
+              </a>
+              <a
+                href={`https://rdintel.com/cve/${data.cve_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-9 rounded-lg border border-rose-500/30 bg-rose-500/10 text-xs font-mono text-rose-600 dark:text-rose-300 grid place-items-center"
+                title={`Open ${data.cve_id} on RD Intelligence: threat score, exploit signals, affected products`}
+              >
+                RDIntel <ExternalLink size={12} className="ml-1" />
               </a>
               <a
                 href={`https://hexbrainai.com/cve/${data.cve_id}`}

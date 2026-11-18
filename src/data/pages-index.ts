@@ -4112,9 +4112,10 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
   {
     path: '/threatintel/cves/cves',
     label: 'CVE Intel',
-    description: 'Unified CVE intelligence hub.',
+    description: 'RDIntel mirror: corpus stats, cves.io attention ranking, top threats, recent CVEs.',
     sectionLabel: 'Threat Intel · CVEs',
     group: 'threatintel',
+    keywords: ['cve', 'vulnerability', 'rdintel', 'cves.io', 'cvss', 'epss', 'kev', 'exploit', 'poc'],
   },
   {
     path: '/threatintel/cves/advisories',

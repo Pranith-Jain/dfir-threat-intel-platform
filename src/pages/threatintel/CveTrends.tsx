@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Flame, ExternalLink, RefreshCw, Search, TrendingUp, ShieldAlert } from 'lucide-react';
+import { Flame, ExternalLink, RefreshCw, Search, TrendingUp, ShieldAlert, Activity } from 'lucide-react';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { relativeAgo } from '../../lib/relativeTime';
@@ -54,6 +54,32 @@ interface TrendsResponse {
 
 type Filter = 'all' | 'before-kev' | 'kev' | 'poc';
 
+/** Subset of /data/cve-intel/index.json used by the cves.io pulse panel. */
+interface CvesIoPulse {
+  generatedAt: string;
+  trending: Array<{
+    id: string;
+    title: string;
+    severity: string;
+    cvss: number | null;
+    kev: boolean;
+    signals24h: number;
+    recent: number;
+    baseline: number;
+    trend: number;
+    isNew: boolean;
+    url: string;
+  }>;
+}
+
+function momentumLabel(trend: number): string {
+  if (trend <= -2) return 'cooling fast';
+  if (trend === -1) return 'cooling';
+  if (trend === 1) return 'rising';
+  if (trend >= 2) return 'surging';
+  return 'steady';
+}
+
 const FILTERS: Array<{ id: Filter; label: string }> = [
   { id: 'all', label: 'All trending' },
   { id: 'before-kev', label: 'Trending, not yet KEV' },
@@ -84,6 +110,13 @@ function toneFor(severity?: string): string {
 export default function CveTrends(): JSX.Element {
   const { data, loading, error } = useDataFetch<TrendsResponse>({
     url: '/api/v1/cve-trends?enrich=1&limit=40',
+    ttl: 10 * 60_000,
+  });
+  // Same corpus, different question: cvemon counts discussion, cves.io counts
+  // attention signals across news, forums and repos. Watching both is how you
+  // see a CVE that is technically severe but nobody has picked up yet.
+  const { data: cvesIo } = useDataFetch<CvesIoPulse>({
+    url: '/data/cve-intel/pulse.json',
     ttl: 10 * 60_000,
   });
   const [query, setQuery] = useState('');
@@ -148,6 +181,83 @@ export default function CveTrends(): JSX.Element {
           <p className="rounded border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
             Showing cached data — cvemon.intruder.io did not respond on the last fetch.
           </p>
+        )}
+
+        {/* cves.io pulse — RD Intelligence's own attention ranking for the
+            same corpus. Distinct from cvemon above: signals across news,
+            forums and repos rather than raw social posts. */}
+        {cvesIo && cvesIo.trending.length > 0 && (
+          <section className="surface-card rounded-lg border border-line-1 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="flex items-center gap-1.5 text-sm font-semibold text-heading">
+                <Activity className="h-4 w-4 text-rose-500" />
+                cves.io pulse
+                <span className="rounded border border-line-1 bg-surface-100 px-1.5 py-0.5 text-[10px] font-mono font-normal text-muted">
+                  RD Intelligence
+                </span>
+              </h2>
+              <Link
+                to="/threatintel/cves/cves?tab=rdintel"
+                className="text-[11px] text-muted underline hover:text-accent"
+              >
+                full CVE mirror
+              </Link>
+            </div>
+            <p className="mt-1 text-[11px] text-muted">
+              Attention, not severity: signals counted across news, forums and code hosts, ranked independently of CVSS.
+              Momentum compares the last 6h with the previous 42h.
+            </p>
+            <ol className="mt-2 grid gap-1.5 sm:grid-cols-2">
+              {cvesIo.trending.slice(0, 10).map((c, i) => (
+                <li
+                  key={c.id}
+                  className="flex items-center gap-2 rounded border border-line-1 bg-surface-100 px-2 py-1.5"
+                >
+                  <span className="w-4 shrink-0 font-mono text-[10px] text-muted">{i + 1}</span>
+                  <a
+                    href={c.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 font-mono text-xs font-semibold text-rose-600 hover:underline dark:text-rose-400"
+                  >
+                    {c.id}
+                  </a>
+                  {c.severity !== 'UNKNOWN' && (
+                    <span className={`shrink-0 rounded border px-1 py-0.5 text-[9px] font-mono ${toneFor(c.severity)}`}>
+                      {c.severity.slice(0, 4)}
+                    </span>
+                  )}
+                  {c.kev && (
+                    <span className="shrink-0 font-mono text-[9px] font-semibold text-rose-600 dark:text-rose-400">
+                      KEV
+                    </span>
+                  )}
+                  <span className="min-w-0 flex-1 truncate text-[11px] text-body" title={c.title}>
+                    {c.title}
+                  </span>
+                  <span
+                    className={`shrink-0 font-mono text-[10px] ${
+                      c.trend > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-muted'
+                    }`}
+                    title={`${c.signals24h} signals in 24h · ${c.recent} in 6h · ${c.baseline} in 42h before`}
+                  >
+                    {momentumLabel(c.trend)} · {c.signals24h}
+                  </span>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-2 text-[10px] text-muted">
+              Snapshot {relativeAgo(cvesIo.generatedAt)} · source{' '}
+              <a
+                href="https://cves.io/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-accent"
+              >
+                cves.io
+              </a>
+            </p>
+          </section>
         )}
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -281,6 +391,15 @@ export default function CveTrends(): JSX.Element {
                   className="inline-flex items-center gap-1 hover:text-accent"
                 >
                   NVD <ExternalLink className="h-3 w-3" />
+                </a>
+                <a
+                  href={`https://rdintel.com/cve/${c.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-rose-600 hover:underline dark:text-rose-400"
+                  title={`Open ${c.id} on RD Intelligence`}
+                >
+                  RDIntel <ExternalLink className="h-3 w-3" />
                 </a>
                 <HexBrainLink
                   cve={c.id}

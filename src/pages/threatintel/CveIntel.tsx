@@ -5,6 +5,7 @@ import { DataPageLayout } from '../../components/DataPageLayout';
 import { Bug } from 'lucide-react';
 
 const CveList = lazy(() => import('./CveList'));
+const RdintelCve = lazy(() => import('./RdintelCve'));
 const CveTrends = lazy(() => import('./CveTrends'));
 const CveExploits = lazy(() => import('./CveExploits'));
 const CveDigest = lazy(() => import('./CveDigest'));
@@ -17,9 +18,25 @@ const CyberNewsFeed = lazy(() => import('./CyberNewsFeed'));
 const CveHealthCheck = lazy(() => import('./CveHealthCheck'));
 
 type TabId =
-  'all' | 'trending' | 'exploits' | 'digest' | 'exploitable' | 'kev' | 'k8s' | 'cert-in' | 'poc' | 'news' | 'health';
+  | 'rdintel'
+  | 'all'
+  | 'trending'
+  | 'exploits'
+  | 'digest'
+  | 'exploitable'
+  | 'kev'
+  | 'k8s'
+  | 'cert-in'
+  | 'poc'
+  | 'news'
+  | 'health';
 
 const TABS: Array<{ id: TabId; label: string; desc: string }> = [
+  {
+    id: 'rdintel',
+    label: 'RDIntel CVE',
+    desc: 'Mirror of rdintel.com/cve: corpus counters, cves.io attention ranking, all-time top threats, and recent CVEs enriched with CVSS, EPSS, KEV and PoC counts',
+  },
   { id: 'all', label: 'All Recent', desc: 'NVD + KEV + MyThreatIntel + cvefeed.io + CVE Telegram channels + EPSS' },
   {
     id: 'trending',
@@ -63,7 +80,7 @@ export default function CveIntel(): JSX.Element {
   // so back/forward, redirects that append ?tab=, and manual URL edits all
   // land on the right tab; clicks write ?tab= back so refresh/share keep it.
   const urlTab = params.get('tab');
-  const activeTab: TabId = urlTab && TABS.some((t) => t.id === urlTab) ? (urlTab as TabId) : 'all';
+  const activeTab: TabId = urlTab && TABS.some((t) => t.id === urlTab) ? (urlTab as TabId) : 'rdintel';
 
   const selectTab = (id: TabId) => {
     setParams(
@@ -81,7 +98,13 @@ export default function CveIntel(): JSX.Element {
       backTo="/threatintel"
       icon={<Bug size={28} />}
       title="CVE Intelligence"
-      description="Unified CVE intelligence - recent vulnerabilities, exploitable CVEs, CISA KEV catalog, and Kubernetes-specific advisories. All feeds updated regularly."
+      description={
+        <>
+          Unified CVE intelligence: <strong>RD Intelligence corpus stats</strong>,{' '}
+          <strong>cves.io attention ranking</strong>, NVD + KEV + EPSS enrichment, exploit availability, and Kubernetes
+          advisories. Scores are upstream values, refreshed every 6 hours.
+        </>
+      }
     >
       <nav className="flex flex-wrap gap-1 border-b border-line-1 mb-6" aria-label="CVE intelligence" role="tablist">
         {TABS.map((t) => (
@@ -108,6 +131,7 @@ export default function CveIntel(): JSX.Element {
 
       <div role="tabpanel" id={`tabpanel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
         <Suspense fallback={<TabLoader />}>
+          {activeTab === 'rdintel' && <RdintelCve bare />}
           {activeTab === 'all' && <CveList bare />}
           {activeTab === 'trending' && <CveTrends />}
           {activeTab === 'exploits' && <CveExploits />}

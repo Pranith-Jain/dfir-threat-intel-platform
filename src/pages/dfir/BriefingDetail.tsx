@@ -220,16 +220,35 @@ function FindingCard({ finding }: { finding: BriefingFinding }) {
         (finding.tags.cves.length > 0 || finding.tags.actors.length > 0 || finding.tags.sectors.length > 0) && (
           <div className="flex flex-wrap gap-1.5 mb-3">
             {finding.tags.cves.map((cve) => (
-              <a
-                key={`cve-${cve}`}
-                href={`https://nvd.nist.gov/vuln/detail/${cve}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-micro font-mono px-1.5 py-0.5 rounded border border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:underline transition-colors"
-                title={`Look up ${cve} on NVD`}
-              >
-                {cve}
-              </a>
+              <span key={`cve-${cve}`} className="inline-flex items-center gap-1">
+                <a
+                  href={`https://nvd.nist.gov/vuln/detail/${cve}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-micro font-mono px-1.5 py-0.5 rounded border border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:underline transition-colors"
+                  title={`Look up ${cve} on NVD`}
+                >
+                  {cve}
+                </a>
+                <a
+                  href={`https://rdintel.com/cve/${cve}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] font-mono text-muted hover:text-rose-600 dark:hover:text-rose-400"
+                  title={`${cve} on RD Intelligence: threat score, exploit signals, affected products`}
+                >
+                  RDI
+                </a>
+                <a
+                  href={`https://hexbrainai.com/cve/${cve}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] font-mono text-muted hover:text-orange-600 dark:hover:text-orange-300"
+                  title={`${cve} on HexBrain: exploitation likelihood, public PoCs, detection check`}
+                >
+                  HB
+                </a>
+              </span>
             ))}
             {finding.tags.actors.map((a) => (
               <span

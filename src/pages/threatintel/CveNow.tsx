@@ -393,8 +393,26 @@ export default function CveNow(): JSX.Element {
                 >
                   {e.id}: {e.title ?? '—'}
                 </a>
-                <div className="text-micro text-muted mt-0.5">
-                  published {e.publishedAt ? relativeAgo(e.publishedAt) : '—'}
+                <div className="text-micro text-muted mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                  <span>published {e.publishedAt ? relativeAgo(e.publishedAt) : '—'}</span>
+                  <a
+                    href={`https://rdintel.com/cve/${e.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 font-mono text-muted hover:text-rose-600 dark:hover:text-rose-400"
+                    title={`Open ${e.id} on RD Intelligence`}
+                  >
+                    RDIntel <ExternalLink size={9} />
+                  </a>
+                  <a
+                    href={`https://hexbrainai.com/cve/${e.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 font-mono text-muted hover:text-orange-600 dark:hover:text-orange-300"
+                    title={`Open ${e.id} on HexBrain`}
+                  >
+                    HexBrain <ExternalLink size={9} />
+                  </a>
                 </div>
               </li>
             ))}

@@ -507,6 +507,24 @@ export default function CveList({ bare }: CveListProps): JSX.Element {
                     primary reference <ExternalLink size={9} />
                   </a>
                 )}
+                <a
+                  href={`https://rdintel.com/cve/${c.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-mini font-mono text-muted hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+                  title={`Open ${c.id} on RD Intelligence`}
+                >
+                  RDIntel <ExternalLink size={9} />
+                </a>
+                <a
+                  href={`https://hexbrainai.com/cve/${c.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-mini font-mono text-muted hover:text-orange-600 dark:hover:text-orange-300 transition-colors"
+                  title={`Open ${c.id} on HexBrain`}
+                >
+                  HexBrain <ExternalLink size={9} />
+                </a>
               </div>
             </li>
           );

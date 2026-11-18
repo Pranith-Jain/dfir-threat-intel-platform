@@ -107,13 +107,19 @@ function renderBriefing(b) {
       lines.push('');
     }
     if (section.findings?.length > 0) {
-      lines.push('| Severity | Finding | MITRE | Description |');
-      lines.push('|----------|---------|-------|-------------|');
+      lines.push('| Severity | Finding | MITRE | Description | Enrichment |');
+      lines.push('|----------|---------|-------|-------------|------------|');
       for (const f of section.findings.slice(0, 50)) {
         const techs = f.mitre_techniques?.length > 0 ? f.mitre_techniques.map((t) => `\`${t}\``).join(', ') : '—';
-        lines.push(`| ${sevEmoji(f.severity)} ${f.severity} | ${esc(f.title)} | ${techs} | ${esc((f.description ?? '').slice(0, 120))} |`);
+        const cveId = /^CVE-\d{4}-\d+$/i.test(f.id ?? '') ? f.id.toUpperCase() : null;
+        const enrich = cveId
+          ? `[RDI](https://rdintel.com/cve/${cveId}) · [HB](https://hexbrainai.com/cve/${cveId})`
+          : '—';
+        lines.push(
+          `| ${sevEmoji(f.severity)} ${f.severity} | ${esc(f.title)} | ${techs} | ${esc((f.description ?? '').slice(0, 120))} | ${enrich} |`
+        );
       }
-      if (section.findings.length > 50) lines.push(`| | _+${section.findings.length - 50} more…_ | | |`);
+      if (section.findings.length > 50) lines.push(`| | _+${section.findings.length - 50} more…_ | | | |`);
       lines.push('');
     }
   }
