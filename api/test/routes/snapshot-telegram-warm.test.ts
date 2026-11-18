@@ -25,16 +25,30 @@ const feed: TelegramFeedResponse = {
   warnings: [],
 };
 
-// Mock KV: `.get(key, 'json')` returns the parsed object (or null) like Workers KV.
+// Minimal KV: like Workers KV, a bare `get(key)` returns the stored TEXT and
+// `get(key, 'json')` parses it. The batched form is included because
+// readWarmSlices falls back to one `get(keys[], 'json')`.
 function kvWith(map: Record<string, unknown>): KVNamespace {
   return {
-    get: async (key: string) => (key in map ? (map[key] as never) : null),
+    get: async (key: string | string[], type?: 'json' | 'text') => {
+      if (Array.isArray(key)) {
+        const out = new Map<string, unknown>();
+        for (const k of key) {
+          const v = map[k];
+          if (v !== undefined) out.set(k, type === 'json' ? v : JSON.stringify(v));
+        }
+        return out;
+      }
+      if (!(key in map)) return null;
+      const v = map[key];
+      return type === 'json' ? v : typeof v === 'string' ? v : JSON.stringify(v);
+    },
   } as unknown as KVNamespace;
 }
 
 describe('readWarmTelegram', () => {
-  // readWarmTelegram now shadows its KV read in caches.default (per-colo L1
-  // so the snapshot aggregator doesn't burn a KV read on every request).
+  // readWarmTelegram now shadows its store read in caches.default (per-colo L1
+  // so the snapshot aggregator doesn't burn a store read on every request).
   // Clear the shadow between cases so tests don't leak state.
   beforeEach(async () => {
     try {
@@ -45,20 +59,22 @@ describe('readWarmTelegram', () => {
       /* miniflare caches.default may be unavailable in some envs */
     }
   });
-  it('reads the per-feed gp:warm:telegram slice (the key the warmer actually writes)', async () => {
-    const r = await readWarmTelegram(kvWith({ 'gp:warm:telegram': feed }));
+  it('reads the per-feed warm slice (the key the warmer actually writes)', async () => {
+    const r = await readWarmTelegram({ KV_CACHE: kvWith({ 'gp:warm:telegram': feed }) });
     expect(r?.items.length).toBe(1);
     expect(r?.channels.length).toBe(1);
   });
 
   it('does NOT read the dead legacy gp:warm blob (this was the bug)', async () => {
     // Legacy single-blob shape with telegram nested — must be ignored now.
-    const r = await readWarmTelegram(kvWith({ 'gp:warm': { telegram: feed } }));
+    const r = await readWarmTelegram({ KV_CACHE: kvWith({ 'gp:warm': { telegram: feed } }) });
     expect(r).toBeNull();
   });
 
-  it('returns null when the slice is empty or KV is unavailable', async () => {
-    expect(await readWarmTelegram(kvWith({ 'gp:warm:telegram': { items: [], channels: [] } }))).toBeNull();
-    expect(await readWarmTelegram(undefined)).toBeNull();
+  it('returns null when the slice is empty or the store is unavailable', async () => {
+    expect(
+      await readWarmTelegram({ KV_CACHE: kvWith({ 'gp:warm:telegram': { items: [], channels: [] } }) })
+    ).toBeNull();
+    expect(await readWarmTelegram({})).toBeNull();
   });
 });

@@ -11,10 +11,16 @@ const ActorUsernameSearch = lazy(() => import('./ActorUsernameSearch'));
 const ActorProfiles = lazy(() => import('./ActorProfiles'));
 const ThreatActorCatalog = lazy(() => import('./ThreatActorCatalog'));
 const RelationshipGraph = lazy(() => import('./RelationshipGraph'));
+const RdintelActors = lazy(() => import('./RdintelActors'));
 
-type TabId = 'directory' | 'timeline' | 'dna' | 'usernames' | 'profiles' | 'catalog' | 'graph';
+type TabId = 'rdintel' | 'directory' | 'timeline' | 'dna' | 'usernames' | 'profiles' | 'catalog' | 'graph';
 
 const TABS: Array<{ id: TabId; label: string; desc: string }> = [
+  {
+    id: 'rdintel',
+    label: 'RDIntel Actors',
+    desc: 'Mirror of rdintel.com/cve/actors - tracked APT groups and cybercriminal organizations with country attribution and aliases',
+  },
   { id: 'directory', label: 'Directory', desc: 'Unified actor browser - MITRE ATT&CK, MISP Galaxy, and platform DB' },
   { id: 'timeline', label: 'Timeline', desc: 'Posting activity and operational tempo per actor' },
   { id: 'dna', label: 'DNA', desc: 'TTP signatures and infrastructure fingerprints' },
@@ -29,7 +35,7 @@ export default function ActorHub(): JSX.Element {
   const [activeTab, setActiveTab] = useState<TabId>(() => {
     const tab = params.get('tab');
     if (tab && TABS.some((t) => t.id === tab)) return tab as TabId;
-    return 'directory';
+    return 'rdintel';
   });
 
   useEffect(() => {
@@ -42,7 +48,7 @@ export default function ActorHub(): JSX.Element {
       backTo="/threatintel"
       icon={<Users size={28} />}
       title="Actor Hub"
-      description="Threat actor intelligence - directory, timelines, DNA, usernames, profiles, and relationship graphs."
+      description="Threat actor intelligence - RDIntel actor roster, directory, timelines, DNA, usernames, profiles, and relationship graphs."
     >
       <nav className="flex flex-wrap gap-1 border-b border-line-1 mb-6" aria-label="Actor Hub">
         {TABS.map((t) => (
@@ -67,6 +73,7 @@ export default function ActorHub(): JSX.Element {
 
       <div role="tabpanel">
         <Suspense fallback={<TabLoader />}>
+          {activeTab === 'rdintel' && <RdintelActors bare />}
           {activeTab === 'directory' && <ActorDirectory />}
           {activeTab === 'timeline' && <ActorTimeline />}
           {activeTab === 'dna' && <ActorDNA />}

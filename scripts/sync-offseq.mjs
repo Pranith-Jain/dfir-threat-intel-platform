@@ -89,6 +89,34 @@ export async function fetchThreats({ days = DAYS } = {}) {
   return { threats: deduped, total: total || deduped.length };
 }
 
+export async function fetchFeedsCatalog() {
+  // Same endpoint the upstream /feeds page uses: counts only (no threat
+  // bodies) plus the full source catalog.
+  const body = await fetchJson('https://radar.offseq.com/api/threats?fields=counts&includeFeeds=1');
+  return {
+    feeds: Array.isArray(body.feeds) ? body.feeds : [],
+    bySource: body.stats?.bySource ?? {},
+    latestBySource: body.stats?.latestBySource ?? {},
+    total: body.pagination?.total ?? null,
+    distinctCves: body.pagination?.distinctCves ?? null,
+    filters: body.filters ?? null,
+  };
+}
+
+export async function fetchCountryMap() {
+  // /map is seeded with the detailed 30-day map, not the all-time /countries/map.
+  const [detailed, recent] = await Promise.all([
+    fetchJson('https://radar.offseq.com/api/threats/countries/detailed-map'),
+    fetchJson(
+      'https://radar.offseq.com/api/threats?limit=5&sort=-publishedDate&hasCountries=targeted&days=30'
+    ),
+  ]);
+  return {
+    countries: detailed && typeof detailed === 'object' ? detailed : {},
+    recentThreats: Array.isArray(recent?.threats) ? recent.threats : [],
+  };
+}
+
 function readStaging() {
   const p = join(OUT, 'offseq.json');
   if (!existsSync(p)) return null;
@@ -133,6 +161,23 @@ export async function main() {
     console.warn(`  ⚠ overview fetch failed: ${err instanceof Error ? err.message : err}`);
   }
 
+  // Catalog + map feed the new OffSeq tabs on the CVE page. Keep the last
+  // good snapshot for either call so one flaky endpoint cannot blank a tab.
+  let feedsMeta = prev?.feedsMeta ?? null;
+  try {
+    feedsMeta = await fetchFeedsCatalog();
+    console.log(`    ✔ ${feedsMeta.feeds.length} sources in catalog`);
+  } catch (err) {
+    console.warn(`  ⚠ feeds catalog fetch failed: ${err instanceof Error ? err.message : err}`);
+  }
+  let countryMap = prev?.countryMap ?? null;
+  try {
+    countryMap = await fetchCountryMap();
+    console.log(`    ✔ ${Object.keys(countryMap.countries).length} countries in 30-day map`);
+  } catch (err) {
+    console.warn(`  ⚠ country map fetch failed: ${err instanceof Error ? err.message : err}`);
+  }
+
   const nowIso = new Date().toISOString();
   const staged = {
     source: OFFSEQ.source,
@@ -145,6 +190,8 @@ export async function main() {
     rawFetched: threats.length,
     overview,
     tags,
+    feedsMeta,
+    countryMap,
     threats,
   };
   writeFileSync(join(OUT, 'offseq.json'), JSON.stringify(staged, null, 2));

@@ -7,7 +7,7 @@ import { aggregateFeeds } from './feeds-aggregate';
 import { listBriefings } from '../lib/briefing-builder';
 import { safeNullLog } from '../lib/safe-catch';
 import { shouldWriteLastGood } from '../lib/lastgood-debounce';
-import { gpWarmKey } from './global-pulse/config';
+import { readWarmSlice, writeWarmSlice, type WarmSliceEnv } from '../lib/warm-slices';
 
 /**
  * Unified live-snapshot endpoint. Replaces six client-side fetches that the
@@ -165,22 +165,22 @@ function budgeted<T>(fn: () => Promise<T>, ms: number = SOURCE_BUDGET_MS): Promi
 }
 
 /**
- * Read the hourly-warmed Telegram feed from its per-feed KV slice
- * `gp:warm:telegram` — written by the queue consumer (worker/queue-consumer.ts
- * via gpWarmKey('telegram')) and identical in every colo. Returns null when the
- * slice is missing/empty so callers fall back to a live rebuild.
+ * Read the hourly-warmed Telegram feed from its warm slice (`gp:warm:telegram`,
+ * D1 first with a KV fallback) — written by the queue consumer
+ * (worker/queue-consumer.ts via writeWarmSlice) and identical in every colo.
+ * Returns null when the slice is missing/empty so callers fall back to a live
+ * rebuild.
  *
  * MUST stay in sync with the warmer's key. Warming migrated from a single
- * `gp:warm` blob to per-feed `gp:warm:<key>` slices; this snapshot read was left
- * on the dead legacy `gp:warm` blob (expecting a nested `.telegram`), so it
- * silently returned nothing — the "Cybersec Telegram firehose · 0 posts · 0
- * channels live" bug, even though the slice held ~487 items.
+ * `gp:warm` blob to per-feed slices; this snapshot read was left on the dead
+ * legacy `gp:warm` blob (expecting a nested `.telegram`), so it silently
+ * returned nothing — the "Cybersec Telegram firehose · 0 posts · 0 channels
+ * live" bug, even though the slice held ~487 items.
  */
-export async function readWarmTelegram(kv: KVNamespace | undefined): Promise<TelegramFeedResponse | null> {
-  if (!kv) return null;
+export async function readWarmTelegram(env: WarmSliceEnv): Promise<TelegramFeedResponse | null> {
   // L1: per-colo Cache-API shadow. The warm slice is the primary path for the
   // telegram source in the snapshot aggregator, so shadowing collapses repeated
-  // snapshot reads to ~1 KV read per colo per window. The warmer
+  // snapshot reads to ~1 store read per colo per window. The warmer
   // (warmTelegramCaches) write-throughs this shadow so it stays coherent.
   const cache = (caches as unknown as { default: Cache }).default;
   const shadowReq = new Request('https://gp-warm-telegram-shadow.internal/v1');
@@ -191,14 +191,14 @@ export async function readWarmTelegram(kv: KVNamespace | undefined): Promise<Tel
       if (warm?.items?.length || warm?.channels?.length) return warm;
     }
   } catch {
-    /* fall through to KV */
+    /* fall through to the warm slice */
   }
   const warm = (await safeNullLog(
     'kv-get-warm-telegram',
-    kv.get('gp:warm:telegram', 'json')
+    readWarmSlice<TelegramFeedResponse>(env, 'telegram')
   )) as TelegramFeedResponse | null;
   if (warm?.items?.length || warm?.channels?.length) {
-    // Write-through so the next snapshot read in this colo skips KV.
+    // Write-through so the next snapshot read in this colo skips the store.
     try {
       await cache.put(
         shadowReq,
@@ -215,7 +215,7 @@ export async function readWarmTelegram(kv: KVNamespace | undefined): Promise<Tel
 }
 
 /** Write a fetched telegram body to both the per-colo edge cache and the
- *  global KV warm slice so subsequent requests skip the t.me fan-out. */
+ *  global warm slice so subsequent requests skip the t.me fan-out. */
 async function warmTelegramCaches(c: Context<{ Bindings: Env }>, body: TelegramFeedResponse): Promise<void> {
   try {
     const cache = (caches as unknown as { default: Cache }).default;
@@ -227,9 +227,8 @@ async function warmTelegramCaches(c: Context<{ Bindings: Env }>, body: TelegramF
     );
     // Debounced: the queue consumer already warms this same slice hourly, so
     // snapshot's copy only needs to fill gaps, not rewrite on every miss.
-    const kv = c.env.KV_CACHE;
-    if (kv && (await shouldWriteLastGood('snapshot:telegram-warm'))) {
-      await kv.put(gpWarmKey('telegram'), JSON.stringify(body), { expirationTtl: 28800 });
+    if (await shouldWriteLastGood('snapshot:telegram-warm')) {
+      await writeWarmSlice(c.env, 'telegram', JSON.stringify(body), 28800);
     }
     // Write-through the L1 shadow so readWarmTelegram stays coherent.
     try {
@@ -280,7 +279,7 @@ export async function snapshotHandler(c: Context<{ Bindings: Env }>): Promise<Re
                 throw new Error('upstream error');
               }),
               safe(async () => {
-                const warm = await readWarmTelegram(c.env.KV_CACHE);
+                const warm = await readWarmTelegram(c.env);
                 if (warm) return warm;
                 const body = await fetchTelegramFeed(c.env.KV_CACHE, c.env);
                 c.executionCtx.waitUntil(warmTelegramCaches(c, body));
@@ -360,7 +359,7 @@ export async function snapshotHandler(c: Context<{ Bindings: Env }>): Promise<Re
     // doesn't complete within the budget window we serve empty + warm
     // caches in background so the NEXT request finds data.
     (async (): Promise<SourcePayload<unknown>> => {
-      const warm = await readWarmTelegram(c.env.KV_CACHE);
+      const warm = await readWarmTelegram(c.env);
       if (warm) return { ok: true, data: warm };
       const cached = await cache.match(TELEGRAM_FEED_CACHE_KEY);
       if (cached) {

@@ -96,8 +96,11 @@ export async function warmPromptintelCache(env?: Env): Promise<{ ok: boolean; ta
       await putCache(TAX_CACHE_KEY, taxonomy, TAX_TTL_SECONDS, 'cron-warm');
       // force: true — the cron runs on a fixed cadence and must always
       // refresh the global copy (mirrors ransomware-recent warm).
+      // skipIfUnchanged keeps the hourly tick from spending a KV write (the
+      // scarce free-plan quota) on a taxonomy that has not moved.
       await writeLastGood(env as Pick<Env, 'KV_CACHE'>, TAX_KV_KEY, taxonomy, {
         force: true,
+        skipIfUnchanged: true,
         ttlSeconds: TAX_KV_TTL_SECONDS,
         keyPrefix: '',
       });

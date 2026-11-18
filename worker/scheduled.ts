@@ -62,6 +62,7 @@ import { autoRunFeedJobs } from '../api/src/routes/feed-scheduler';
 import { sweepDomainWatches } from '../api/src/lib/domain-watch-sweep';
 import { enqueueAllFeeds, shouldSkipEnqueueCycle, markEnqueueCycle } from '../api/src/routes/live-iocs';
 import { enqueueGpFeeds, shouldSkipGpEnqueue, markGpEnqueue } from '../api/src/routes/global-pulse';
+import { readWarmSlice, readWarmSlices } from '../api/src/lib/warm-slices';
 import { signInternalToken } from '../api/src/lib/internal-token';
 import { scanForPhishingDomains, type PassiveDnsEnv } from '../api/src/lib/passive-dns';
 import { runCyberPulseIngestion } from '../api/src/routes/cyberpulse-ingest';
@@ -444,12 +445,10 @@ export async function executeCronJob(
                 }
               }
               if (!telegramFeed) {
-                // Fallback to gp:warm KV slice (written by queue consumer)
-                const kvWarm = await env.KV_CACHE?.get('gp:warm:telegram', 'json')
-                  .then((b) => b as TelegramFeedResponse | null)
-                  .catch(() => null);
-                if (kvWarm?.items?.length) {
-                  telegramFeed = kvWarm;
+                // Fallback to the warm slice (D1 first, KV legacy fallback)
+                const warmTg = await readWarmSlice<TelegramFeedResponse>(env, 'telegram').catch(() => null);
+                if (warmTg?.items?.length) {
+                  telegramFeed = warmTg;
                 }
               }
               if (!telegramFeed) {
@@ -590,19 +589,18 @@ export async function executeCronJob(
               let xAccountPosts: unknown[] | undefined;
               let socialItems: unknown[] | undefined;
               let redditItems: unknown[] | undefined;
-              if (env.KV_CACHE) {
-                // One bulk read for all three warm slices (was 3 separate gets).
-                // Fail open: a missing/stale slice leaves its value undefined and
-                // runCyberPulseIngestion falls back to its own GraphQL fetches.
-                let warm = new Map<string, unknown>();
-                try {
-                  warm = await env.KV_CACHE.get(['cp:warm:x_accounts', 'gp:warm:x', 'gp:warm:reddit'], 'json');
-                } catch {
-                  /* fail open — CyberPulse falls back to direct GraphQL */
-                }
-                const xa = warm.get('cp:warm:x_accounts');
+              if (env.KV_CACHE || env.BRIEFINGS_DB) {
+                // Batched read: the two GP warm slices come from the shared
+                // warm-slice store (one query), the CyberPulse slice from KV.
+                // Fail open: a missing/stale slice leaves its value undefined
+                // and runCyberPulseIngestion falls back to its own GraphQL
+                // fetches.
+                const warm = await readWarmSlices<unknown>(env, ['x', 'reddit']).catch(
+                  () => new Map<string, unknown>()
+                );
+                const xa = await env.KV_CACHE?.get('cp:warm:x_accounts', 'json').catch(() => null);
                 if (Array.isArray(xa) && xa.length > 0) xAccountPosts = xa as unknown[];
-                const gx = warm.get('gp:warm:x');
+                const gx = warm.get('x');
                 if (gx && typeof gx === 'object' && 'items' in (gx as Record<string, unknown>)) {
                   socialItems = (gx as { items: unknown[] }).items;
                 }
@@ -614,7 +612,7 @@ export async function executeCronJob(
                     /* fail open */
                   }
                 }
-                const gr = warm.get('gp:warm:reddit');
+                const gr = warm.get('reddit');
                 if (gr && typeof gr === 'object' && 'items' in (gr as Record<string, unknown>)) {
                   redditItems = (gr as { items: unknown[] }).items;
                 }
@@ -1644,27 +1642,31 @@ export async function executeCronJob(
           let redditItems: unknown[] | undefined;
           let telegramItems: unknown[] | undefined;
 
-          // KV-only reads — no direct fetches (preserves subrequest budget).
-          // Queue consumer (gp:warm / cp:warm) writes these keys before the
-          // cron reads them; if a key is cold it's skipped with a warning.
-          // One bulk read for all four warm slices (was 4 separate gets).
+          // Warm-slice reads — no direct fetches (preserves subrequest budget).
+          // Queue consumer (gp:warm / cp:warm) writes these before the cron
+          // reads them; if a key is cold it's skipped with a warning. The GP
+          // slices come from the shared warm-slice store in ONE query; the
+          // CyberPulse slice stays on KV.
           let warm = new Map<string, unknown>();
           try {
-            warm = await env.KV_CACHE.get(
-              ['cp:warm:x_accounts', 'gp:warm:x', 'gp:warm:reddit', 'gp:warm:telegram'],
-              'json'
-            );
+            warm = await readWarmSlices<unknown>(env, ['x', 'reddit', 'telegram']);
+          } catch {
+            /* fail open */
+          }
+          let cpXAccountPosts: unknown = null;
+          try {
+            cpXAccountPosts = await env.KV_CACHE?.get('cp:warm:x_accounts', 'json');
           } catch {
             /* fail open */
           }
           try {
-            const raw = warm.get('cp:warm:x_accounts');
+            const raw = cpXAccountPosts;
             if (Array.isArray(raw) && raw.length > 0) xAccountPosts = raw as unknown[];
           } catch {
             /* fail open */
           }
           try {
-            const raw = warm.get('gp:warm:x');
+            const raw = warm.get('x');
             if (raw && typeof raw === 'object' && 'items' in (raw as Record<string, unknown>)) {
               const items = (raw as { items: unknown[] }).items;
               if (items.length > 0) {
@@ -1679,7 +1681,7 @@ export async function executeCronJob(
             /* fail open */
           }
           try {
-            const raw = warm.get('gp:warm:reddit');
+            const raw = warm.get('reddit');
             if (raw && typeof raw === 'object' && 'items' in (raw as Record<string, unknown>)) {
               const items = (raw as { items: unknown[] }).items;
               if (items.length > 0) {
@@ -1694,7 +1696,7 @@ export async function executeCronJob(
             /* fail open */
           }
           try {
-            const kvTg = warm.get('gp:warm:telegram') as TelegramFeedResponse | null;
+            const kvTg = warm.get('telegram') as TelegramFeedResponse | null;
             if (kvTg?.items?.length) {
               telegramItems = kvTg.items;
               console.log(JSON.stringify({ job: 'cp-30-telegram', status: 'kv_hit', count: telegramItems.length }));

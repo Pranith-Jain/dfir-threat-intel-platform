@@ -105,6 +105,87 @@ function toBody(t, slug) {
   return body;
 }
 
+function buildFeedsManifest(staged) {
+  const meta = staged.feedsMeta ?? {};
+  const feeds = (Array.isArray(meta.feeds) ? meta.feeds : [])
+    .map((f) => ({
+      name: f.name ?? null,
+      url: f.url ?? null,
+      type: f.type ?? null,
+      format: f.format ?? null,
+      enabled: f.enabled !== false,
+      archived: f.archived === true,
+      itemCount: typeof f.itemCount === 'number' ? f.itemCount : 0,
+      lastUpdated: f.lastUpdated ?? null,
+      lastFetchStatus: f.lastFetchStatus ?? null,
+      updateInterval: f.updateInterval ?? null,
+      description: typeof f.description === 'string' ? f.description.slice(0, 500) : null,
+    }))
+    .filter((f) => f.name)
+    .sort((a, b) => b.itemCount - a.itemCount || String(a.name).localeCompare(String(b.name)));
+  const bySource = Object.entries(meta.bySource ?? {})
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, count]) => ({ name, count }));
+  return {
+    source: staged.source,
+    sourceUrl: 'https://radar.offseq.com/feeds',
+    description: 'Public source catalog backing radar.offseq.com/feeds',
+    license: staged.license,
+    syncedAt: staged.syncedAt,
+    total: meta.total ?? null,
+    distinctCves: meta.distinctCves ?? null,
+    counts: {
+      sources: feeds.length,
+      enabled: feeds.filter((f) => f.enabled).length,
+      archived: feeds.filter((f) => f.archived).length,
+    },
+    bySource,
+    latestBySource: meta.latestBySource ?? {},
+    feeds,
+  };
+}
+
+function buildCountriesManifest(staged) {
+  const raw = staged.countryMap?.countries ?? {};
+  const countries = Object.entries(raw)
+    .map(([name, v]) => ({
+      name,
+      count: Number(v?.count) || 0,
+      severityBreakdown: v?.severityBreakdown ?? {},
+      typeBreakdown: v?.typeBreakdown ?? {},
+      latestThreat: v?.latestThreat ?? null,
+    }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  const recentThreats = (Array.isArray(staged.countryMap?.recentThreats) ? staged.countryMap.recentThreats : [])
+    .slice(0, 5)
+    .map((t) => ({
+      title: t.title ?? null,
+      slug: t.slug ?? null,
+      source: t.source ?? null,
+      severity: typeof t.severity === 'string' ? t.severity.toLowerCase() : null,
+      cvssScore: typeof t.cvssScore === 'number' ? t.cvssScore : null,
+      publishedDate: t.publishedDate ?? null,
+      cveId: t.cveId ?? null,
+      countries: Array.isArray(t.affectedCountries) ? t.affectedCountries.slice(0, 8) : [],
+      url: t.slug ? `https://radar.offseq.com/threats/${t.slug}` : null,
+    }));
+  return {
+    source: staged.source,
+    sourceUrl: 'https://radar.offseq.com/map',
+    description:
+      'Countries named in threat reports added in the last 30 days, shaded by how often they appear. Reports listing more than 10 target countries are left out.',
+    license: staged.license,
+    syncedAt: staged.syncedAt,
+    windowDays: staged.days ?? 30,
+    counts: {
+      countries: countries.length,
+      mentions: countries.reduce((sum, c) => sum + c.count, 0),
+    },
+    countries,
+    recentThreats,
+  };
+}
+
 function readStaging() {
   const p = join(STAGING, 'offseq.json');
   if (!existsSync(p)) {
@@ -172,8 +253,13 @@ function main() {
     threats: slim,
   };
   writeFileSync(join(OUT, 'index.json'), JSON.stringify(index));
+  const feeds = buildFeedsManifest(staged);
+  const countries = buildCountriesManifest(staged);
+  writeFileSync(join(OUT, 'feeds.json'), JSON.stringify(feeds));
+  writeFileSync(join(OUT, 'countries.json'), JSON.stringify(countries));
 
   console.log(`    ✔ index.json (${threats.length} threats, ${exploited} exploited)`);
+  console.log(`    ✔ feeds.json (${feeds.counts.sources} sources), countries.json (${countries.counts.countries} countries)`);
   for (const [ty, n] of Object.entries(byType).sort((a, b) => b[1] - a[1])) {
     console.log(`      ${ty.padEnd(16)} ${String(n).padStart(3)}`);
   }

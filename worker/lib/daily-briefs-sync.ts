@@ -1222,8 +1222,9 @@ export async function syncDailyBriefs(env: SyncEnv): Promise<{ types: string[]; 
   const mergedBriefs = new Map<string, { type: DbBriefType; date: string; sizeBytes: number }>();
 
   // Load existing index from KV to merge with new data
+  let existingIndex: DbIndex | null = null;
   try {
-    const existingIndex: DbIndex | null = await env.KV_CACHE.get(KV_PREFIX_INDEX, 'json');
+    existingIndex = await env.KV_CACHE.get(KV_PREFIX_INDEX, 'json');
     if (existingIndex?.briefs) {
       const today = new Date().toISOString().slice(0, 10);
       for (const b of existingIndex.briefs) {
@@ -1236,6 +1237,11 @@ export async function syncDailyBriefs(env: SyncEnv): Promise<{ types: string[]; 
   } catch {
     // No existing data — start fresh
   }
+
+  // Only the index write below matters for the KV quota when nothing changed:
+  // this sync runs every 6h and used to rewrite the index unconditionally,
+  // even on a cycle where every brief was byte-identical.
+  let bodiesWritten = 0;
 
   for (const type of BRIEF_TYPES) {
     try {
@@ -1261,6 +1267,7 @@ export async function syncDailyBriefs(env: SyncEnv): Promise<{ types: string[]; 
 
       // Write body to KV (with TTL — static manifest is the long-term archive)
       await env.KV_CACHE.put(`${KV_PREFIX_BODY}:${type}:${date}`, bodyStr, { expirationTtl: BODY_TTL_S });
+      bodiesWritten += 1;
       mergedBriefs.set(`${type}:${date}`, { type: type as DbBriefType, date, sizeBytes });
       types.push(type);
     } catch (err) {
@@ -1279,7 +1286,17 @@ export async function syncDailyBriefs(env: SyncEnv): Promise<{ types: string[]; 
     counts,
     briefs: allBriefs,
   };
-  await env.KV_CACHE.put(KV_PREFIX_INDEX, JSON.stringify(index), { expirationTtl: INDEX_TTL_S });
+  // Write-on-change: no new/changed body AND no entries added or removed means
+  // the index is already correct. Rewriting it every 6h spent ~4 KV writes/day
+  // (the scarce free-plan quota) to change only `generatedAt`.
+  const indexChanged =
+    bodiesWritten > 0 ||
+    !existingIndex ||
+    !Array.isArray(existingIndex.briefs) ||
+    existingIndex.briefs.length !== allBriefs.length;
+  if (indexChanged) {
+    await env.KV_CACHE.put(KV_PREFIX_INDEX, JSON.stringify(index), { expirationTtl: INDEX_TTL_S });
+  }
 
   return { types, errors };
 }

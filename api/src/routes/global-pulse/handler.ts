@@ -12,7 +12,6 @@ import type {
 import {
   GP_FEEDS,
   GP_FEED_CACHE_KEYS,
-  gpWarmKey,
   GLOBAL_PULSE_CACHE,
   CACHE_TTL,
   GP_RESPONSE_KEY,
@@ -21,8 +20,8 @@ import {
   GP_LAST_GOOD_TTL,
 } from './config';
 import { routeCacheGet, routeCachePut } from '../../lib/route-cache';
+import { readWarmSlices } from '../../lib/warm-slices';
 import { listBriefings } from '../../lib/briefing-builder';
-import { readKvJson } from './shared';
 import { signInternalToken } from '../../lib/internal-token';
 import {
   iocFromThreatMap,
@@ -149,12 +148,14 @@ export async function buildGlobalPulseSync(
   //     dropped. That is why tm (13), secretleaks (17), malpkg (18), exploit
   //     (19), ghsa (20) and honeypot (25) rendered 0 for hours at a time while
   //     their slices sat fully populated in KV — they were last in line, not
-  //     missing. They are now read sequentially (see below).
+  //     missing. They are now read in ONE batched query (see below), which
+  //     costs a single subrequest instead of 28.
   //
   // Worst case after the fix:
   //   5 live + 9 external fetchers + 1 D1 briefings + 1 cyberpulse self-fetch
-  //   + 27 warm slices = 43, under the 44 cap with the ~7 post-build writes
-  //   still fitting inside 50.
+  //   + 1 batched warm-slice query = 17, under the 44 cap with the ~7
+  //   post-build writes still fitting inside 50. The warm slices used to be
+  //   27 sequential KV reads here; see readWarmSlices().
   const BUDGET_MAX = 44;
   const budget = { used: 0 };
   const consume = (n = 1): boolean => {
@@ -246,26 +247,26 @@ export async function buildGlobalPulseSync(
     }
   }
 
-  // ── Warm KV slices (cross-colo) — the completeness guarantee ──────────
+  // ── Warm slices (cross-colo) — the completeness guarantee ─────────────
   // `gp:warm:<key>`, written hourly by the queue consumer one feed per
   // invocation, is the source that makes a layer appear AT ALL. Route caches
   // are per-colo and usually cold for anything but the top-traffic feeds, so
   // this is the read that actually populates the map — it is not a "fallback",
   // it is the floor.
   //
-  // Read SEQUENTIALLY, not in a `Promise.all`: the sequential loop is what
-  // makes `consume()` meaningful. Fired in parallel, all 28 callbacks run
-  // their `consume()` check before any read resolves, so the budget is
-  // allocated by array position and the tail of the list is deterministically
-  // dropped. Sequentially, a slow early read cannot cause a later feed to be
-  // skipped for budget reasons — the only thing that can skip one is a feed
-  // that genuinely has no slice.
+  // One batched read (D1 `warm_slices`, KV fallback) instead of 28 sequential
+  // KV gets. That is the single biggest budget win in this build: the old loop
+  // spent one subrequest per feed and had to stop when the 44-subrequest
+  // budget ran out, deterministically dropping the tail (tm, secretleaks,
+  // malpkg, exploit, ghsa, honeypot rendered 0 while their slices were
+  // populated). A single indexed query returns the same data for ONE
+  // subrequest, so every feed gets its layer back.
   const warm: Record<string, unknown> = {};
-  if (kv) {
+  if ((env.BRIEFINGS_DB || kv) && consume()) {
+    const wanted = GP_FEEDS.filter((f) => live[f.key] == null).map((f) => f.key);
+    const slices = await readWarmSlices<unknown>(env, wanted);
     for (const f of GP_FEEDS) {
-      if (live[f.key] != null) continue; // live route cache already won
-      if (!consume()) break; // budget gone: keep what we have, don't abort
-      const val = await readKvJson(kv, gpWarmKey(f.key));
+      const val = slices.get(f.key);
       if (val != null) warm[f.key] = val;
     }
   }
@@ -516,8 +517,9 @@ export async function globalPulseHandler(c: Context<{ Bindings: Env }>): Promise
   //      CISA KEV, URLhaus) + D1 briefings — the layers that used to be
   //      background-build-only and rendered 0 when the CPU-killed background
   //      build didn't finish
-  //   3. Per-feed warm KV slices (gp:warm:<key>) as the cross-colo fallback
-  //      for route caches that are cold in this colo
+  //   3. Per-feed warm slices (`gp:warm:<key>`, D1 first with a KV fallback)
+  //      as the cross-colo floor for route caches that are cold in this colo.
+  //      Read in ONE batched query, not 28 sequential gets.
   //
   // This is the ONLY build (the duplicate `?force=1` one is gone — see the
   // note at the end of this function for why it was starving this one).
@@ -625,12 +627,25 @@ export async function globalPulseHandler(c: Context<{ Bindings: Env }>): Promise
         // the subrequest cap after the sync build consumes most of the 50,
         // and a fresh last-good keeps the stale-if-error guard + DO fallback
         // from serving an hours-old map. Same poisoning guard: never clobber
-        // a fuller map already persisted.
-        const lgExisting = await readKvJson<GlobalPulseResponse>(kv, GP_LAST_GOOD_KEY);
+        // a fuller map already persisted. ONE raw read serves both the layer
+        // comparison and the write-on-change check; a build that produces the
+        // same bytes must not spend a KV write (this path runs on every
+        // request-path rebuild, not just the cron).
+        const lgRaw = await kv.get(GP_LAST_GOOD_KEY).catch(() => null);
+        let lgExisting: GlobalPulseResponse | null = null;
+        if (lgRaw) {
+          try {
+            lgExisting = JSON.parse(lgRaw) as GlobalPulseResponse;
+          } catch {
+            /* unparseable — treat as absent */
+          }
+        }
         const lgExistingNonZero = lgExisting?.layers ? nonZeroLayers(lgExisting.layers) : 0;
         if (newNonZero >= lgExistingNonZero) {
           await routeCachePut(GP_LAST_GOOD_KEY, payload, GP_LAST_GOOD_TTL);
-          await kv.put(GP_LAST_GOOD_KEY, json, { expirationTtl: GP_LAST_GOOD_TTL });
+          if (lgRaw !== json) {
+            await kv.put(GP_LAST_GOOD_KEY, json, { expirationTtl: GP_LAST_GOOD_TTL });
+          }
         }
       }
     })()

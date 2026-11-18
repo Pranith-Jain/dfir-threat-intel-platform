@@ -359,7 +359,13 @@ const COLD_FETCH_TIMEOUT_MS = 12_000;
 export async function refreshVictimReleaksCache(env: Env): Promise<VictimReleaksResponse> {
   const body = await fetchVictimReleaks(env);
   if (body.releaks.length > 0) {
-    await writeLastGood(env, LASTGOOD_KEY, body, { ttlSeconds: LASTGOOD_TTL_SECONDS, force: true });
+    // skipIfUnchanged: the 6h refresh usually rebuilds the same list; do not
+    // spend a KV write (the scarce free-plan quota) on byte-identical bytes.
+    await writeLastGood(env, LASTGOOD_KEY, body, {
+      ttlSeconds: LASTGOOD_TTL_SECONDS,
+      force: true,
+      skipIfUnchanged: true,
+    });
   }
   return body;
 }

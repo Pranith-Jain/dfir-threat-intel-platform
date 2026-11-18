@@ -7,6 +7,9 @@ import { Bug } from 'lucide-react';
 const CveList = lazy(() => import('./CveList'));
 const RdintelCve = lazy(() => import('./RdintelCve'));
 const CveTrends = lazy(() => import('./CveTrends'));
+const OffseqThreats = lazy(() => import('./Offseq'));
+const OffseqFeeds = lazy(() => import('./OffseqFeeds'));
+const OffseqMap = lazy(() => import('./OffseqMap'));
 const CveExploits = lazy(() => import('./CveExploits'));
 const CveDigest = lazy(() => import('./CveDigest'));
 const ExploitableCves = lazy(() => import('./ExploitableCves'));
@@ -21,6 +24,9 @@ type TabId =
   | 'rdintel'
   | 'all'
   | 'trending'
+  | 'offseq'
+  | 'offseq-feeds'
+  | 'offseq-map'
   | 'exploits'
   | 'digest'
   | 'exploitable'
@@ -42,6 +48,21 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
     id: 'trending',
     label: 'Trending',
     desc: 'CVEs trending on social media (cvemon) with CVSS, KEV, EPSS and exploit status — discussion ahead of confirmation',
+  },
+  {
+    id: 'offseq',
+    label: 'OffSeq Threats',
+    desc: 'OffSeq Threat Radar threat database — aggregated vulnerability, malware and campaign reports with severity, CVSS and exploit signals',
+  },
+  {
+    id: 'offseq-feeds',
+    label: 'OffSeq Feeds',
+    desc: 'Source catalog from radar.offseq.com/feeds — 39 upstream feeds with type, item counts and freshness',
+  },
+  {
+    id: 'offseq-map',
+    label: 'OffSeq Map',
+    desc: 'Countries named in OffSeq threat reports over the last 30 days, shaded by how often they appear',
   },
   {
     id: 'exploits',
@@ -101,8 +122,9 @@ export default function CveIntel(): JSX.Element {
       description={
         <>
           Unified CVE intelligence: <strong>RD Intelligence corpus stats</strong>,{' '}
-          <strong>cves.io attention ranking</strong>, NVD + KEV + EPSS enrichment, exploit availability, and Kubernetes
-          advisories. Scores are upstream values, refreshed every 6 hours.
+          <strong>cves.io attention ranking</strong>, NVD + KEV + EPSS enrichment, OffSeq threat radar (threats, feeds,
+          map), exploit availability, and Kubernetes advisories. Scores are upstream values, refreshed on their own
+          schedules.
         </>
       }
     >
@@ -134,6 +156,9 @@ export default function CveIntel(): JSX.Element {
           {activeTab === 'rdintel' && <RdintelCve bare />}
           {activeTab === 'all' && <CveList bare />}
           {activeTab === 'trending' && <CveTrends />}
+          {activeTab === 'offseq' && <OffseqThreats bare />}
+          {activeTab === 'offseq-feeds' && <OffseqFeeds />}
+          {activeTab === 'offseq-map' && <OffseqMap />}
           {activeTab === 'exploits' && <CveExploits />}
           {activeTab === 'digest' && <CveDigest bare />}
           {activeTab === 'exploitable' && <ExploitableCves bare />}

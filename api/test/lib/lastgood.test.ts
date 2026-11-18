@@ -193,6 +193,31 @@ describe('writeLastGood', () => {
     const env = makeEnv(kv);
     expect(await writeLastGood(env, 'kev', { ok: true }, { force: true })).toBe(false);
   });
+
+  it('skipIfUnchanged: skips the put when the stored bytes are identical', async () => {
+    const kv = makeKV();
+    const env = makeEnv(kv);
+    const body = { generated_at: '2026-11-18T00:00:00Z', items: [1, 2, 3] };
+    expect(await writeLastGood(env, 'unchanged', body, { force: true })).toBe(true);
+    const putSpy = vi.spyOn(kv, 'put');
+    expect(await writeLastGood(env, 'unchanged', body, { force: true, skipIfUnchanged: true })).toBe(false);
+    expect(putSpy).not.toHaveBeenCalled();
+  });
+
+  it('skipIfUnchanged: still writes when the body changed', async () => {
+    const kv = makeKV();
+    const env = makeEnv(kv);
+    await writeLastGood(env, 'changed', { v: 1 }, { force: true });
+    expect(await writeLastGood(env, 'changed', { v: 2 }, { force: true, skipIfUnchanged: true })).toBe(true);
+    expect(JSON.parse(kv.store.get('lastgood:v1:changed')!.value)).toEqual({ v: 2 });
+  });
+
+  it('skipIfUnchanged: writes when no previous value exists', async () => {
+    const kv = makeKV();
+    const env = makeEnv(kv);
+    expect(await writeLastGood(env, 'fresh', { v: 1 }, { force: true, skipIfUnchanged: true })).toBe(true);
+    expect(kv.store.has('lastgood:v1:fresh')).toBe(true);
+  });
 });
 
 describe('lastgood + withLastGood integration', () => {

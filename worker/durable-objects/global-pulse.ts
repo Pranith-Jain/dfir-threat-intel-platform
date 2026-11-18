@@ -49,10 +49,13 @@ const POLL_INTERVAL_MS = 120_000;
 // Rebuild cadence.
 //
 // These were 5m (stale) / 4m (throttle). A rebuild is NOT cheap: the in-process
-// `?force=1` build reads one `gp:warm:<key>` per entry in GP_FEEDS — 29 KV
-// reads — and KV reads are billed per key on the free plan (100k/day). At a
-// 4-minute throttle that is up to 360 rebuilds/day ≈ 10.4k billed reads, all
-// re-fetching the SAME 29 keys.
+// `?force=1` build used to read one `gp:warm:<key>` per entry in GP_FEEDS — 29
+// KV reads billed per key on the free plan (100k/day). At a 4-minute throttle
+// that was up to 360 rebuilds/day ≈ 10.4k billed reads, all re-fetching the
+// SAME 29 keys. Those slices now live in D1 and are read in ONE batched query,
+// so the read cost is a single indexed scan per rebuild; the cadence below is
+// kept because the SOURCE data only changes hourly, not because reads are
+// scarce.
 //
 // Those keys are only rewritten hourly, by the queue consumer that warms one
 // feed per invocation (`global-pulse/config.ts` GP_FEEDS + enqueueGpFeeds).

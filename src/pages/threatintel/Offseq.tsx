@@ -211,7 +211,7 @@ function Detail({ label, value, mono = false }: { label: string; value: string; 
     </div>
   );
 }
-export default function Offseq(): JSX.Element {
+export default function Offseq({ bare = false }: { bare?: boolean }): JSX.Element {
   const [data, setData] = useState<OffseqIndex | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -252,10 +252,14 @@ export default function Offseq(): JSX.Element {
   }, [data, type, severity, exploitedOnly, query]);
   return (
     <DataPageLayout
-      backTo="/threatintel/feeds"
+      backTo={bare ? '/threatintel/cves/cves' : '/threatintel/feeds'}
       backLabel="Threat Feeds"
       icon={<AlertTriangle size={28} />}
       title="OffSeq Threat Radar"
+      hideHeader={bare}
+      hideBack={bare}
+      skipMeta={bare}
+      maxWidthClass={bare ? 'max-w-none' : 'max-w-5xl'}
       description={
         <>
           <a

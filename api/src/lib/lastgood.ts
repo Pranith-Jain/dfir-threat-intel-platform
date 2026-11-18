@@ -108,6 +108,13 @@ export async function readLastGood<T>(
  * like a cron precompute that runs on a fixed cadence and should always refresh
  * the global copy (the debounce only exists to throttle request-path writes).
  *
+ * Pass `skipIfUnchanged: true` for a cron warm that rebuilds the same payload
+ * every hour: it adds one cheap read and skips the KV put when the stored text
+ * is byte-identical. Writes are the scarce free-plan quota (1k/day vs 100k
+ * reads), so this is the difference between a warm cycle that costs 24 writes
+ * per key per day and one that costs a write only when the data actually
+ * moved. The per-colo shadow is still refreshed.
+ *
  * `keyPrefix` defaults to `'lastgood:v1:'`. Pass `''` to use the key verbatim
  * for legacy lastgood slots (see `readLastGood`).
  *
@@ -118,13 +125,28 @@ export async function writeLastGood<T>(
   env: Pick<Env, 'KV_CACHE'>,
   key: string,
   value: T,
-  opts: { ttlSeconds?: number; debounceTtlSeconds?: number; force?: boolean; keyPrefix?: string } = {}
+  opts: {
+    ttlSeconds?: number;
+    debounceTtlSeconds?: number;
+    force?: boolean;
+    skipIfUnchanged?: boolean;
+    keyPrefix?: string;
+  } = {}
 ): Promise<boolean> {
   if (!env.KV_CACHE) return false;
   const fullKey = `${opts.keyPrefix ?? KEY_PREFIX}${key}`;
   try {
     if (!opts.force && !(await shouldWriteLastGood(`lastgood:${key}`, opts.debounceTtlSeconds))) return false;
-    await env.KV_CACHE.put(fullKey, JSON.stringify(value), {
+    const body = JSON.stringify(value);
+    if (opts.skipIfUnchanged) {
+      const previous = await env.KV_CACHE.get(fullKey).catch(() => null);
+      if (previous === body) {
+        const cache = cacheApi();
+        if (cache) await writeShadow(cache, key, value);
+        return false;
+      }
+    }
+    await env.KV_CACHE.put(fullKey, body, {
       expirationTtl: opts.ttlSeconds ?? DEFAULT_TTL_SECONDS,
     });
     // Write-through the per-colo shadow so reads stay coherent with KV (a fresh

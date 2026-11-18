@@ -17,7 +17,7 @@ import { runFeedSourceById, feedBatchId, type FeedDeps, type FeedResult } from '
 import { writeBatchSlice, recentWarmJob, type FeedQueueMessage } from '../api/src/lib/live-iocs-slices';
 import { buildAiLlmIntel } from '../api/src/lib/ai-llm-intel';
 import { writeAiLlmSlice } from '../api/src/routes/ai-llm-intel';
-import { gpWarmKey } from '../api/src/routes/global-pulse';
+import { readWarmSliceRaw, writeWarmSlice } from '../api/src/lib/warm-slices';
 import { warmCveDigestCache } from '../api/src/routes/cve-digest';
 import { warmCveRecentCache } from '../api/src/routes/cve-recent';
 import { warmRansomwareRecentCache } from '../api/src/routes/ransomware-recent';
@@ -29,6 +29,13 @@ import { errMessage } from './lib/err';
 // `gp:warm:<key>` slice TTL — 180 min. Covers the 60m enqueue gate + one
 // missed hourly cycle + queue drain; worst-case slice age ~2h, still within
 // TTL so layers don't go dark at 2h → fallback to last-good (which looked like "8h old").
+//
+// Storage moved from KV to D1 (`api/src/lib/warm-slices.ts`): the free plan
+// allows 1,000 KV writes/day and the hourly warm fan-out (28 feeds + each
+// route's own L2 write) kept the account at ~99% of that quota. D1 has 100k
+// rows written/day, and the batched read also removes 28 sequential KV reads
+// from every Global Pulse map build. KV still serves as the fallback read/write
+// leg while the legacy keys age out.
 const GP_WARM_TTL_SECONDS = 180 * 60;
 
 /**
@@ -128,12 +135,14 @@ export async function handleQueue(
           if (res.ok) {
             const body = await res.text();
             // Write-on-change: most feeds return byte-identical JSON hour over
-            // hour, and KV writes are the scarce free-plan quota (1k/day vs
-            // 100k reads). One cheap read per warm saves the write whenever
-            // the feed hasn't moved.
-            const key = gpWarmKey(gp.key);
-            if ((await kv.get(key)) !== body || (await shouldRefreshWarmKey(key, GP_WARM_TTL_SECONDS))) {
-              await kv.put(key, body, { expirationTtl: GP_WARM_TTL_SECONDS });
+            // hour, and writes are the scarce free-plan quota. One cheap read
+            // saves the write whenever the feed hasn't moved. The read/write
+            // pair is D1-first with a KV fallback (see warm-slices.ts).
+            if (
+              (await readWarmSliceRaw(env, gp.key)) !== body ||
+              (await shouldRefreshWarmKey(gp.key, GP_WARM_TTL_SECONDS))
+            ) {
+              await writeWarmSlice(env, gp.key, body, GP_WARM_TTL_SECONDS);
             }
           } else {
             // Transient upstream failure (5xx/429) → retry with backoff

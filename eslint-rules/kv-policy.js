@@ -16,6 +16,8 @@ export const KV_ALLOW_FILES = [
   'api/src/lib/cache.ts',
   'api/src/lib/blog-kv.ts',
   'worker/lib/blog-kv.ts',
+  'api/src/lib/kv-write.ts', // write-on-change guard (reads + conditional put)
+  'api/src/lib/warm-slices.ts', // D1-first warm slice store with KV fallback
   // ── cross-colo correctness state (must stay on KV) ──
   'api/src/routes/telegram-feed.ts',
   'api/src/routes/telegram-archive.ts',

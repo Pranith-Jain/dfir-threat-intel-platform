@@ -47,15 +47,17 @@ export const GP_FEEDS: ReadonlyArray<{ key: string; path: string }> = [
   { key: 'ukmto', path: '/api/v1/ukmto-incidents' },
 ];
 
-// Per-feed warm-slice KV key for a global-pulse feed.
+// Per-feed warm-slice key. The canonical store is now the D1 `warm_slices`
+// table (api/src/lib/warm-slices.ts); this KV key survives as the read/write
+// fallback while the cutover ages out, and as the key the tests pin.
 //
-// Why KV, not the Cache API (which live-iocs slices use, see live-iocs-slices.ts):
-// global-pulse is served from any colo to a global audience, and the read path
-// must see whatever the (single-colo) cron+consumer warmed. KV is global; the
-// Cache API is per-colo, so a Cache-API slice warmed in one colo would be cold
-// for readers in every other colo. The cost is the KV write quota — 28 feeds/hour
-// ≈ 672 writes/day, under the 1000/day free tier — the deliberate tradeoff for
-// cross-colo consistency.
+// Why the move: global-pulse is served from any colo, so the read path must see
+// whatever the (single-colo) cron+consumer warmed. KV is global, but its free
+// plan allows only 1,000 WRITES/day and the hourly warm fan-out (28 feeds plus
+// each route's own L2 write) kept the account at ~99% of that quota, with
+// several days over it. D1 is also global (single primary), has 100k rows
+// written/day, and the batched read collapses 28 sequential KV gets into one
+// query — so it is cheaper on both quotas AND on build latency.
 export const gpWarmKey = (key: string): string => `gp:warm:${key}`;
 
 // Per-feed per-route Cache-API key (the LIVE feed response the route serves,
@@ -134,10 +136,11 @@ export async function markGpEnqueue(kv: KVNamespace | undefined): Promise<void> 
 // never has a feed dark waiting for its window to come around (a 7-per-hour
 // rotation left ~2/3 of feeds stale for up to 3h). This is only affordable
 // because each feed is its OWN consumer invocation (max_batch_size:1), so
-// warming 28 feeds costs 28 cheap invocations, not one over-budget one. KV cost:
-// ≤28 writes/hour ≈ 672/day, under the 1000/day free tier. GP_STAGGER_SECONDS
-// just spaces the sends so a burst doesn't hammer a throttling upstream (t.me);
-// the budget guarantee comes from max_batch_size:1, not the stagger.
+// warming 28 feeds costs 28 cheap invocations, not one over-budget one. Warm
+// slices now live in D1 (api/src/lib/warm-slices.ts), so the fan-out costs
+// D1 rows, not the scarce KV write quota. GP_STAGGER_SECONDS just spaces the
+// sends so a burst doesn't hammer a throttling upstream (t.me); the budget
+// guarantee comes from max_batch_size:1, not the stagger.
 const GP_STAGGER_SECONDS = 4;
 
 /**

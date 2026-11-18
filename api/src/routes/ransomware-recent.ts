@@ -879,12 +879,14 @@ export async function warmRansomwareRecentCache(env?: Env): Promise<{ count: num
   await cache.put(new Request(CACHE_KEY), response);
   if (env?.KV_CACHE && upstreamOk && body.victims.length > 0) {
     // Cron-controlled refresh — force:true skips the request-path debounce so
-    // the global copy always advances on each warm. keyPrefix '' keeps the
-    // legacy verbatim KV key.
+    // the global copy always advances on each warm. skipIfUnchanged keeps the
+    // 24x/day warm from spending a KV write (the scarce free-plan quota) on a
+    // byte-identical payload; keyPrefix '' keeps the legacy verbatim KV key.
     await writeLastGood(env, RANSOMWARE_LASTGOOD_KV_KEY, body, {
       keyPrefix: '',
       ttlSeconds: LASTGOOD_TTL_SECONDS,
       force: true,
+      skipIfUnchanged: true,
     });
   }
   return { count: body.victims.length, ok: upstreamOk };
