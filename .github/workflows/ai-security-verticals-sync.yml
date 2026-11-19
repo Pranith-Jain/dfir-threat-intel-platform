@@ -11,6 +11,7 @@ name: AI-security verticals sync (weekly)
 #   public/data/hi/      (hackingincidents.ai: 286 graded AI-assisted attacks — no licence, links only)
 #   public/data/oh/      (offsecharnesses.ai: 154 offensive-AI harnesses — no licence, links only)
 #   public/data/kp/      (kitploit.com/en: public HTML + RSS only — /api/ disallowed by robots.txt)
+#   public/data/cheyenne-tool/ (MJCruickshank/cheyenne: catalog + CelesTrak TLE snapshot for the working board)
 # If the data changed, opens a PR and auto-merges it (data-only; main is
 # unprotected), then self-deploys so the live site serves the fresh
 # manifests. Per-request serving stays fully static (env.ASSETS).
@@ -92,6 +93,12 @@ jobs:
         continue-on-error: true
         run: node scripts/build-oh-manifest.mjs
 
+      - name: Build Cheyenne tool snapshot
+        # Upstream fleet catalog + CelesTrak active TLEs, filtered to the 23
+        # catalogue fleets. No upstream code or prose is vendored.
+        continue-on-error: true
+        run: node scripts/build-cheyenne-tool.mjs
+
       - name: Build Kitploit directory manifest
         # Crawls /en, /en/tools and the three public RSS feeds. robots.txt
         # disallows /api/, so the builder never calls the upstream JSON API.
@@ -101,13 +108,13 @@ jobs:
       - name: Show diff stat
         run: |
           echo "=== public/data changed files ==="
-          git status --short public/data/cairn/ public/data/nova/ public/data/denali/ public/data/ai-playbook/ public/data/orca/ public/data/hi/ public/data/oh/ public/data/kp/ | head -60
+          git status --short public/data/cairn/ public/data/nova/ public/data/denali/ public/data/ai-playbook/ public/data/orca/ public/data/hi/ public/data/oh/ public/data/kp/ public/data/cheyenne-tool/ | head -60
 
       - name: Open PR if data changed
         id: pr
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: "chore(ti): sync AI-security verticals (cairn/nova/denali/orca/hi/oh/kp)"
+          commit-message: "chore(ti): sync AI-security verticals (cairn/nova/denali/orca/hi/oh/kp/cheyenne-tool)"
           title: "AI-security verticals sync — ${{ github.event.schedule || 'manual' }}"
           body: |
             Automated weekly rebuild of the AI-security verticals.
@@ -126,6 +133,7 @@ jobs:
             - hackingincidents.ai (NO reuse licence — structured metadata and links only)
             - offsecharnesses.ai (NO reuse licence — structured metadata and links only)
             - kitploit.com/en (robots.txt disallows /api/ — public HTML and RSS only)
+            - MJCruickshank/cheyenne (no licence — re-implemented in-site; catalog + CelesTrak TLEs only)
 
             Trigger: `${{ github.event_name }}`
             Run:     `${{ github.run_id }}`
@@ -140,6 +148,7 @@ jobs:
             public/data/hi/
             public/data/oh/
             public/data/kp/
+            public/data/cheyenne-tool/
 
       - name: Auto-merge sync PR
         # Data-only output, main unprotected — merges itself (same pattern

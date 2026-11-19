@@ -3973,7 +3973,8 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
   {
     path: '/threatintel/osint/cheyenne',
     label: 'Cheyenne EO Board',
-    description: 'Mirror of Cheyenne: 23 satellite fleets, imagery sources, AIS feeds and OSINT board documentation.',
+    description:
+      'Working in-site replica of MJCruickshank/cheyenne: 244 tracked imaging satellites across 23 fleets, live SGP4 positions, ground tracks, sensor swaths, a time machine and 24-hour pass prediction over any place.',
     sectionLabel: 'Threat Intel · OSINT',
     group: 'threatintel',
     keywords: ['cheyenne', 'satellite', 'earth observation', 'imagery', 'osint', 'ais', 'firms'],

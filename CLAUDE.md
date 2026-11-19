@@ -1035,6 +1035,31 @@ Externally sourced results are wrapped with `untrustedToolResult` on the Worker.
 07:30 UTC, isolated `continue-on-error` steps, PR + auto-merge + self-deploy).
 To rebuild locally: `node scripts/build-hi-manifest.mjs && node scripts/build-oh-manifest.mjs && node scripts/build-kp-manifest.mjs`.
 
+## Cheyenne EO Board — working-tool replication
+
+`/threatintel/osint/cheyenne` is a **working in-site replica** of
+[MJCruickshank/cheyenne](https://github.com/MJCruickshank/cheyenne), not a
+documentation mirror. Upstream publishes no reuse licence, so no upstream code
+or prose is vendored: the board is re-implemented in TypeScript and stores only
+factual machine inputs.
+
+- **Data**: `scripts/build-cheyenne-tool.mjs` fetches the upstream `web/catalog.json`
+  (23 fleets / 6 groups) and the CelesTrak active GP TLE set, filters it with
+  the upstream name patterns, and writes `public/data/cheyenne-tool/index.json`
+  - `tle.json` (244 catalogued satellites). `--catalog` / `--tle` enable offline
+    rebuilds. Rides `ai-security-verticals-sync.yml`.
+- **Client**: `src/lib/cheyenne/orbit.ts` ports the orbital method (SGP4 via the
+  `satellite.js` dependency, sub-satellite points, antimeridian-safe ground
+  tracks, solar elevation, swath ribbons, geometric pass prediction). No
+  backend, keys or runtime network hop after the two static JSON loads.
+- **UI**: `src/pages/threatintel/Cheyenne.tsx` — globe.gl board with fleet
+  selector, satellite points, tracks, sensor footprints, click-to-set target,
+  a clock with play/speed/scrub, and a 24 h pass-prediction list. Features that
+  need a backend, keys or live third-party APIs (imagery tiles, ESA tasking,
+  FIRMS, AIS, weather, Telegram intel) are listed as live-only and deep-linked.
+- **Tests**: `src/lib/cheyenne/orbit.test.ts` (vitest, 5 tests) and
+  `scripts/build-cheyenne-tool.test.mjs` (node:test, 2 tests).
+
 ## MMD Toolkit — MalwareMustDie shared codes & tools (mmd_*)
 
 Toolkit-catalog vertical replicating the GitHub structure of

@@ -1,26 +1,43 @@
-import { useMemo, useState, type ReactNode } from 'react';
-import { ExternalLink, Github, Satellite, ShieldAlert, Star } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState, type JSX } from 'react';
+import Globe, { type GlobeInstance } from 'globe.gl';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { useDataFetch } from '../../hooks/useDataFetch';
-import { relativeAgo } from '../../lib/relativeTime';
-import { sanitizeUrl } from '../../lib/sanitize-url';
+import {
+  buildFleet,
+  groundTrack,
+  locate,
+  predictPasses,
+  type CheyennePass,
+  type GroundPoint,
+  type SensorGeom,
+  type TleSat,
+  type TrackedSat,
+} from '../../lib/cheyenne/orbit';
+import {
+  CalendarClock,
+  Crosshair,
+  ExternalLink,
+  Github,
+  Loader2,
+  Pause,
+  Play,
+  RotateCcw,
+  Satellite,
+} from 'lucide-react';
 
 /**
- * Cheyenne — earth-observation tracking board, mirrored from
- * github.com/MJCruickshank/cheyenne (documentation mirror, not the app).
+ * Cheyenne — working-tool replication of github.com/MJCruickshank/cheyenne.
  *
- * The upstream tool is a local Python server + browser globe; this page
- * replicates its public documentation: feature set, 23 satellite fleets,
- * data sources, AIS feeds, limitations and credits. Snapshot built by
- * scripts/sync-cheyenne.mjs. Upstream text and fleet metadata are verbatim.
+ * The upstream tool is a local Python server driving a WebGL board. This page
+ * re-implements its core in the browser from the upstream fleet catalog and a
+ * CelesTrak TLE snapshot (scripts/build-cheyenne-tool.mjs): live satellite
+ * positions, ground tracks, sensor swaths, a time machine, and geometric pass
+ * prediction over a chosen place. Features that need a backend, keys or live
+ * third-party APIs (imagery tiles, ESA tasking, FIRMS, AIS, weather, Telegram)
+ * are listed as live-only and deep-linked rather than faked.
  */
 
-interface Screenshot {
-  alt: string;
-  url: string;
-}
-
-interface Fleet {
+interface FleetMeta {
   id: string;
   name: string;
   group: string;
@@ -30,367 +47,549 @@ interface Fleet {
   gsd: string;
   revisit: string;
   color: string;
-  access: string;
   defaultVisible: boolean;
+  access: string | null;
+  geom: SensorGeom;
+  links: Array<{ label: string; url: string }>;
+  trackedSats: number;
 }
 
-interface CheyenneDataset {
-  generatedAt: string;
-  source: {
-    name: string;
-    fullName: string;
-    url: string;
-    description: string;
-    stars: number;
-    forks: number;
-    pushedAt: string | null;
-    license: string | null;
-    readmeUrl: string;
-    catalogUrl: string;
-  };
-  overview: string;
-  features: Array<{ title: string; body: string }>;
-  screenshots: Screenshot[];
+interface ToolIndex {
+  source: string;
+  sourceUrl: string;
+  license: string;
+  builtAt: string;
   groups: Array<{ id: string; label: string; note: string }>;
-  fleets: Fleet[];
-  dataSources: Array<{ data: string; source: string; url: string | null }>;
-  aisFeeds: Array<{ feed: string; url: string | null; area: string; key: string; usage: string }>;
-  footprints: Array<{ label: string; source: string; reliability: string }>;
-  limitations: string[];
-  credits: Array<{ component: string; url: string | null; licence: string }>;
-  creditsNote: string;
-  install: { requirements: string[]; commands: string };
+  constellations: FleetMeta[];
+  counts: { groups: number; fleets: number; trackedSats: number };
+  liveOnly: string[];
 }
 
-function OutLink({
-  href,
-  children,
-  className,
-}: {
-  href: string | null | undefined;
-  children: ReactNode;
-  className?: string;
-}) {
-  const safe = sanitizeUrl(href ?? '');
-  if (!safe) return <>{children}</>;
-  return (
-    <a href={safe} target="_blank" rel="noopener noreferrer" className={className}>
-      {children} <ExternalLink size={10} className="inline" />
-    </a>
-  );
+interface TleIndex {
+  fetchedAt?: string;
+  count: number;
+  sats: TleSat[];
 }
+
+interface SatPoint {
+  lat: number;
+  lng: number;
+  sat: TrackedSat;
+  point: GroundPoint;
+}
+
+interface TrackLine {
+  coords: number[][];
+  color: string;
+}
+
+interface SwathPoly {
+  geometry: { type: 'Polygon'; coordinates: number[][][] };
+  color: string;
+}
+
+type Tab = 'board' | 'fleets' | 'about';
+const HOUR = 3_600_000;
+
+function esc(s: string): string {
+  return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);
+}
+
+function fmtUtc(ms: number): string {
+  return new Date(ms).toISOString().replace('T', ' ').slice(0, 16) + 'Z';
+}
+
+const inputCls =
+  'w-full px-2.5 py-1.5 bg-white dark:bg-surface-200 border border-line-1 rounded-lg text-xs text-heading';
 
 export default function Cheyenne(): JSX.Element {
-  const { data, loading, error, refetch } = useDataFetch<CheyenneDataset>({
-    url: '/data/cheyenne/index.json',
-    ttl: 15 * 60_000,
-  });
-  const [group, setGroup] = useState('all');
+  const {
+    data: index,
+    loading,
+    error,
+    refetch,
+  } = useDataFetch<ToolIndex>({ url: '/data/cheyenne-tool/index.json', ttl: 600_000 });
+  const { data: tle } = useDataFetch<TleIndex>({ url: '/data/cheyenne-tool/tle.json', ttl: 600_000 });
 
-  const fleets = useMemo(() => (data?.fleets ?? []).filter((f) => group === 'all' || f.group === group), [data, group]);
+  const [tab, setTab] = useState<Tab>('board');
+  const [fleetId, setFleetId] = useState('sentinel-2');
+  const [simMs, setSimMs] = useState(() => Date.now());
+  const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState(60);
+  const [target, setTarget] = useState<{ lat: number; lng: number }>({ lat: 15.5, lng: 32.5 });
+  const [targetInput, setTargetInput] = useState('15.5, 32.5');
+  const [showTracks, setShowTracks] = useState(true);
+  const [showSwaths, setShowSwaths] = useState(true);
+  const [selectedSat, setSelectedSat] = useState<TrackedSat | null>(null);
+  const [passes, setPasses] = useState<CheyennePass[]>([]);
+  const [passesLoading, setPassesLoading] = useState(false);
+  const [globeError, setGlobeError] = useState<string | null>(null);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const globeRef = useRef<GlobeInstance | null>(null);
+  const simRef = useRef(simMs);
+  simRef.current = simMs;
+
+  const fleet = useMemo(() => {
+    if (!tle?.sats?.length) return [];
+    return buildFleet(tle.sats, simMs);
+    // Fleet records are stable for the TLE snapshot; rebuild only on new data.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tle]);
+
+  const meta = useMemo(() => index?.constellations.find((c) => c.id === fleetId) ?? null, [index, fleetId]);
+  const fleetSats = useMemo(() => fleet.filter((s) => s.cid === fleetId), [fleet, fleetId]);
+  const color = meta?.color ?? '#4fd8c4';
+
+  // Clock
+  useEffect(() => {
+    if (!playing) return;
+    const timer = window.setInterval(() => setSimMs((t) => t + speed * 1000), 1000);
+    return () => window.clearInterval(timer);
+  }, [playing, speed]);
+
+  // Globe initialisation (mirrors the repo's CtiGlobe pattern)
+  useEffect(() => {
+    if (!containerRef.current || globeRef.current || tab !== 'board') return;
+    try {
+      const el = containerRef.current;
+      const globe = new Globe(el, { animateIn: true })
+        .width(el.clientWidth)
+        .height(el.clientHeight)
+        .globeImageUrl('/textures/earth-night.jpg')
+        .bumpImageUrl('/textures/earth-topology.png')
+        .backgroundImageUrl('')
+        .backgroundColor('rgba(0,0,0,0)')
+        .showAtmosphere(true)
+        .atmosphereColor('#4f8fff')
+        .atmosphereAltitude(0.18)
+        .onGlobeClick((coords) => {
+          setTarget({ lat: coords.lat, lng: coords.lng });
+          setTargetInput(`${coords.lat.toFixed(2)}, ${coords.lng.toFixed(2)}`);
+        })
+        .pointLabel((p: object) => {
+          const d = p as SatPoint;
+          return `<div style="font:12px monospace;background:#06090e;padding:6px 8px;border:1px solid #334">${esc(d.sat.name)}<br/>${d.point.lat.toFixed(2)}°, ${d.point.lon.toFixed(2)}° · ${Math.round(d.point.alt)} km</div>`;
+        })
+        .onPointClick((p: object) => setSelectedSat((p as SatPoint).sat));
+      globeRef.current = globe;
+      globe.pointOfView({ lat: target.lat, lng: target.lng, altitude: 2.1 }, 0);
+      const onResize = () => {
+        if (!containerRef.current || !globeRef.current) return;
+        globeRef.current.width(containerRef.current.clientWidth).height(containerRef.current.clientHeight);
+      };
+      window.addEventListener('resize', onResize);
+      return () => {
+        window.removeEventListener('resize', onResize);
+        globe._destructor?.();
+        globeRef.current = null;
+      };
+    } catch (err) {
+      setGlobeError(err instanceof Error ? err.message : String(err));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
+  // Points, tracks, swaths, target marker
+  const points = useMemo<SatPoint[]>(
+    () =>
+      fleetSats.slice(0, 60).flatMap((sat) => {
+        const p = locate(sat, simMs);
+        return p ? [{ lat: p.lat, lng: p.lon, sat, point: p }] : [];
+      }),
+    [fleetSats, simMs]
+  );
+
+  const tracks = useMemo<TrackLine[]>(() => {
+    if (!showTracks) return [];
+    const t0 = simMs - 45 * 60_000;
+    const t1 = simMs + 45 * 60_000;
+    return fleetSats
+      .slice(0, 8)
+      .flatMap((sat) => groundTrack(sat, t0, t1, 25_000).map((coords) => ({ coords, color })));
+  }, [fleetSats, simMs, showTracks, color]);
+
+  const swaths = useMemo<SwathPoly[]>(() => {
+    if (!showSwaths || !meta) return [];
+    const near = meta.geom.mode === 'side' ? (meta.geom.farKm ?? 0) : (meta.geom.swathKm ?? 0) / 2;
+    return points.slice(0, 8).flatMap(({ sat }) => {
+      const hdg = locate(sat, simMs + 2000);
+      if (!hdg) return [];
+      const here = locate(sat, simMs);
+      if (!here) return [];
+      const brg = (Math.atan2(Math.sin((hgLng(hdg.lon) - here.lon) * (Math.PI / 180)), 1) * 180) / Math.PI;
+      const ring: number[][] = [];
+      for (let step = 0; step < 24; step++) {
+        const ang = (brg + (step / 24) * 360) * (Math.PI / 180);
+        ring.push([
+          here.lon + ((near / 111) * Math.sin(ang)) / Math.max(0.2, Math.cos((here.lat * Math.PI) / 180)),
+          here.lat + (near / 111) * Math.cos(ang),
+        ]);
+      }
+      return [{ geometry: { type: 'Polygon', coordinates: [ring] }, color }];
+    });
+  }, [points, showSwaths, meta, color, simMs]);
+
+  useEffect(() => {
+    const g = globeRef.current;
+    if (!g || tab !== 'board') return;
+    try {
+      g.pointsData(points)
+        .pointLat((p: object) => (p as SatPoint).lat)
+        .pointLng((p: object) => (p as SatPoint).lng)
+        .pointColor(() => color)
+        .pointAltitude(() => 0.012)
+        .pointRadius(() => 0.42)
+        .ringsData([{ lat: target.lat, lng: target.lng, size: 2.2, color: '#ff4b36' }])
+        .ringLat((r: object) => (r as { lat: number }).lat)
+        .ringLng((r: object) => (r as { lng: number }).lng)
+        .ringColor(() => '#ff4b36')
+        .ringMaxRadius(() => 3)
+        .ringPropagationSpeed(() => 1.5)
+        .ringRepeatPeriod(() => 900)
+        .pathsData(tracks)
+        .pathPoints((d: object) => (d as TrackLine).coords)
+        .pathColor((d: object) => (d as TrackLine).color)
+        .pathStroke(() => 0.7)
+        .polygonsData(swaths)
+        .polygonGeoJsonGeometry((d: object) => (d as SwathPoly).geometry as never)
+        .polygonCapColor((d: object) => (d as SwathPoly).color)
+        .polygonAltitude(() => 0.003)
+        .polygonStrokeColor(() => null);
+    } catch {
+      /* layer APIs differ between globe.gl releases — keep the board usable */
+    }
+  }, [points, tracks, swaths, target, color, tab]);
+
+  const runPrediction = useCallback(() => {
+    if (!meta || !fleetSats.length) return;
+    setPassesLoading(true);
+    window.setTimeout(() => {
+      try {
+        setPasses(predictPasses(fleetSats, meta.geom, [target.lng, target.lat], simMs, simMs + 24 * HOUR));
+      } finally {
+        setPassesLoading(false);
+      }
+    }, 20);
+  }, [meta, fleetSats, target, simMs]);
+
+  const tabs: Array<{ id: Tab; label: string }> = [
+    { id: 'board', label: 'Board' },
+    { id: 'fleets', label: `Fleets (${index?.counts.fleets ?? '…'})` },
+    { id: 'about', label: 'About' },
+  ];
+
+  const applyTarget = () => {
+    const m = targetInput.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
+    if (!m) return;
+    const lat = Math.max(-85, Math.min(85, Number(m[1])));
+    const lng = Math.max(-180, Math.min(180, Number(m[2])));
+    setTarget({ lat, lng });
+    globeRef.current?.pointOfView({ lat, lng, altitude: 1.6 }, 800);
+  };
 
   return (
     <DataPageLayout
-      backTo="/threatintel/catalog?cat=osint"
+      backTo="/threatintel"
       icon={<Satellite size={28} />}
-      title="Cheyenne · Earth-Observation Board"
+      title="Cheyenne EO Board"
       description={
-        <span className="inline-flex flex-wrap items-center gap-2">
-          <span className="rounded border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 font-mono text-xs text-emerald-700 dark:text-emerald-300">
-            Mirror of github.com/MJCruickshank/cheyenne
-          </span>
-          {data && (
-            <>
-              <span className="inline-flex items-center gap-1 rounded border border-line-1 bg-surface-300 px-2 py-1 font-mono text-xs text-muted">
-                <Star size={10} /> {data.source.stars} stars
-              </span>
-              <span className="rounded border border-line-1 bg-surface-300 px-2 py-1 font-mono text-xs text-muted">
-                {data.fleets.length} satellite fleets
-              </span>
-              <span className="rounded border border-line-1 bg-surface-300 px-2 py-1 font-mono text-xs text-muted">
-                synced {relativeAgo(data.generatedAt)}
-              </span>
-            </>
-          )}
-        </span>
+        <>
+          A working in-site replica of{' '}
+          <a
+            href={index?.sourceUrl ?? 'https://github.com/MJCruickshank/cheyenne'}
+            target="_blank"
+            rel="noreferrer"
+            className="underline decoration-dotted"
+          >
+            MJCruickshank/cheyenne
+          </a>
+          : {index?.counts.trackedSats ?? '…'} imaging satellites across {index?.counts.fleets ?? '…'} fleets, tracked
+          from a CelesTrak orbital snapshot. Move the clock, pick a fleet, click the globe to set a place and predict
+          when its sensors can see it.
+        </>
       }
-      maxWidthClass="max-w-6xl"
-      loading={loading && !data}
+      onRetry={refetch}
+      loading={loading && !index}
       error={error}
-      onRetry={() => void refetch()}
+      maxWidthClass="max-w-7xl"
     >
-      {data && (
-        <div className="space-y-8">
-          {/* Overview + gallery */}
-          <section className="space-y-4">
-            <p className="max-w-4xl text-sm leading-relaxed text-body">{data.overview}</p>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {data.screenshots.slice(0, 4).map((shot) => (
-                <figure key={shot.url} className="overflow-hidden rounded-lg border border-line-1 bg-surface-100">
-                  <img
-                    src={shot.url}
-                    alt={shot.alt}
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                    className="h-32 w-full object-cover object-top"
-                  />
-                  <figcaption className="line-clamp-2 p-2 text-[10px] leading-snug text-muted">{shot.alt}</figcaption>
-                </figure>
-              ))}
-            </div>
-            <p className="text-[11px] text-muted">
-              Screenshots are loaded from the upstream repository ·{' '}
-              <OutLink href={data.source.readmeUrl} className="underline hover:text-accent">
-                source README
-              </OutLink>
-            </p>
-          </section>
+      <div className="flex flex-wrap gap-2 mb-4">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+              tab === t.id
+                ? 'bg-brand-500/15 text-brand-600 dark:text-brand-300 border-brand-400/40'
+                : 'text-muted hover:text-heading border-line-1'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-          {/* Features */}
-          <section aria-labelledby="cheyenne-features">
-            <h2 id="cheyenne-features" className="mb-3 flex items-center gap-2 text-lg font-bold text-heading">
-              <Satellite size={18} /> Features
-            </h2>
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {data.features.map((f, i) => (
-                <article key={f.title || i} className="surface-card rounded-xl border border-line-1 p-4">
-                  <h3 className="text-sm font-bold text-heading">{f.title || `Feature ${i + 1}`}</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-body">{f.body}</p>
-                </article>
-              ))}
+      {tab === 'board' && (
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4">
+          <div className="surface-card relative overflow-hidden" style={{ height: 620 }}>
+            <div ref={containerRef} className="absolute inset-0" />
+            {globeError && (
+              <div className="absolute inset-0 grid place-items-center text-sm text-rose-500">
+                Globe failed: {globeError}
+              </div>
+            )}
+            {!tle && (
+              <div className="absolute inset-0 grid place-items-center text-muted">
+                <Loader2 size={20} className="animate-spin" /> Loading orbital data…
+              </div>
+            )}
+            <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 max-w-[70%]">
+              <span className="text-[10px] font-mono px-2 py-1 rounded bg-black/60 text-emerald-300 border border-line-2">
+                {fmtUtc(simMs)}
+              </span>
+              {selectedSat && (
+                <span className="text-[10px] font-mono px-2 py-1 rounded bg-black/60 text-heading border border-line-2">
+                  {selectedSat.name} · {selectedSat.short} · {Math.round(selectedSat.periodMin)} min orbit
+                </span>
+              )}
             </div>
-          </section>
-
-          {/* Fleet catalog */}
-          <section aria-labelledby="cheyenne-fleets">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <h2 id="cheyenne-fleets" className="text-lg font-bold text-heading">
-                Satellite fleets{' '}
-                <span className="font-mono text-xs font-normal text-muted">({data.fleets.length})</span>
-              </h2>
-              <OutLink href={data.source.catalogUrl} className="font-mono text-[11px] text-muted hover:text-accent">
-                web/catalog.json
-              </OutLink>
-            </div>
-            <div className="mb-3 flex flex-wrap gap-1.5">
+            <div className="absolute bottom-3 left-3 right-3 flex flex-wrap items-center gap-2 text-[10px] text-muted bg-black/50 rounded-lg px-3 py-2">
               <button
-                type="button"
-                onClick={() => setGroup('all')}
-                aria-pressed={group === 'all'}
-                className={`rounded border px-2 py-1 font-mono text-[11px] ${
-                  group === 'all'
-                    ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-                    : 'border-line-1 text-muted hover:text-heading'
-                }`}
+                onClick={() => setPlaying((p) => !p)}
+                className="inline-flex items-center gap-1 text-brand-300 hover:text-heading"
               >
-                All
+                {playing ? <Pause size={11} /> : <Play size={11} />} {playing ? 'Pause' : 'Play'}
               </button>
-              {data.groups.map((g) => (
-                <button
-                  key={g.id}
-                  type="button"
-                  onClick={() => setGroup(g.id)}
-                  aria-pressed={group === g.id}
-                  title={g.note}
-                  className={`rounded border px-2 py-1 font-mono text-[11px] ${
-                    group === g.id
-                      ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-                      : 'border-line-1 text-muted hover:text-heading'
-                  }`}
-                >
-                  {g.label}
-                </button>
-              ))}
+              <button
+                onClick={() => setSimMs(Date.now())}
+                className="inline-flex items-center gap-1 text-brand-300 hover:text-heading"
+              >
+                <RotateCcw size={11} /> Now
+              </button>
+              <select
+                value={speed}
+                onChange={(e) => setSpeed(Number(e.target.value))}
+                className="bg-black/60 border border-line-2 rounded px-1.5 py-0.5 text-heading"
+              >
+                {[1, 10, 60, 600, 3600].map((s) => (
+                  <option key={s} value={s}>
+                    {s}×
+                  </option>
+                ))}
+              </select>
+              <input
+                type="range"
+                min={-12 * HOUR}
+                max={12 * HOUR}
+                step={60_000}
+                value={Math.max(-12 * HOUR, Math.min(12 * HOUR, simMs - Date.now()))}
+                onChange={(e) => setSimMs(Date.now() + Number(e.target.value))}
+                className="flex-1 min-w-[120px] accent-brand-400"
+              />
+              <label className="flex items-center gap-1">
+                <input type="checkbox" checked={showTracks} onChange={(e) => setShowTracks(e.target.checked)} /> tracks
+              </label>
+              <label className="flex items-center gap-1">
+                <input type="checkbox" checked={showSwaths} onChange={(e) => setShowSwaths(e.target.checked)} /> swaths
+              </label>
             </div>
-            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-              {fleets.map((f) => (
-                <article key={f.id} className="surface-card rounded-lg border border-line-1 p-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="h-2.5 w-2.5 shrink-0 rounded-full"
-                        style={{ background: f.color || '#94a3b8' }}
-                      />
-                      <h3 className="font-mono text-xs font-bold text-heading">{f.name}</h3>
-                    </div>
-                    <span className="rounded border border-line-1 px-1.5 py-0.5 font-mono text-[10px] uppercase text-muted">
-                      {f.sensor}
-                    </span>
+          </div>
+
+          <div className="space-y-3">
+            <div className="surface-card p-3 space-y-2">
+              <label className="text-xs font-semibold text-heading flex items-center gap-1">
+                <Satellite size={13} /> Fleet
+              </label>
+              <select
+                className={inputCls}
+                value={fleetId}
+                onChange={(e) => {
+                  setFleetId(e.target.value);
+                  setPasses([]);
+                }}
+              >
+                {(index?.groups ?? []).map((g) => (
+                  <optgroup key={g.id} label={g.label}>
+                    {(index?.constellations ?? [])
+                      .filter((c) => c.group === g.id)
+                      .map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} ({c.trackedSats})
+                        </option>
+                      ))}
+                  </optgroup>
+                ))}
+              </select>
+              {meta && (
+                <div className="text-[11px] text-muted space-y-1 pt-1">
+                  <div>
+                    <b className="text-heading">{meta.operator}</b> · {meta.instrument}
                   </div>
-                  <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[10px]">
-                    <dt className="font-mono uppercase tracking-wide text-muted">Operator</dt>
-                    <dd className="text-body">{f.operator || '—'}</dd>
-                    <dt className="font-mono uppercase tracking-wide text-muted">Instrument</dt>
-                    <dd className="text-body">{f.instrument || '—'}</dd>
-                    <dt className="font-mono uppercase tracking-wide text-muted">Resolution</dt>
-                    <dd className="font-mono text-body">{f.gsd || '—'}</dd>
-                    <dt className="font-mono uppercase tracking-wide text-muted">Revisit</dt>
-                    <dd className="font-mono text-body">{f.revisit || '—'}</dd>
-                  </dl>
-                  {f.access && (
-                    <p className="mt-2 border-t border-line-1 pt-2 text-[10px] leading-snug text-muted">{f.access}</p>
-                  )}
-                </article>
-              ))}
-            </div>
-          </section>
-
-          {/* Data sources */}
-          <section aria-labelledby="cheyenne-sources">
-            <h2 id="cheyenne-sources" className="mb-3 text-lg font-bold text-heading">
-              Data sources
-            </h2>
-            <div className="overflow-x-auto rounded-xl border border-line-1">
-              <table className="w-full min-w-[620px] text-left text-xs">
-                <thead className="border-b border-line-1 bg-surface-100 text-[10px] uppercase tracking-wider text-muted">
-                  <tr>
-                    <th className="px-3 py-2">Data</th>
-                    <th className="px-3 py-2">Source</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line-1">
-                  {data.dataSources.map((row) => (
-                    <tr key={row.data}>
-                      <td className="px-3 py-2 font-semibold text-heading">{row.data}</td>
-                      <td className="px-3 py-2 text-body">
-                        {row.url ? (
-                          <OutLink href={row.url} className="hover:text-accent">
-                            {row.source}
-                          </OutLink>
-                        ) : (
-                          row.source
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          {/* AIS + future passes */}
-          <section className="grid gap-4 lg:grid-cols-2">
-            <div aria-labelledby="cheyenne-ais">
-              <h2 id="cheyenne-ais" className="mb-2 text-lg font-bold text-heading">
-                AIS ship tracking
-              </h2>
-              <div className="space-y-2">
-                {data.aisFeeds.map((f) => (
-                  <article key={f.feed} className="surface-card rounded-lg border border-line-1 p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <OutLink
-                        href={f.url}
-                        className="font-mono text-xs font-bold text-heading hover:text-emerald-700 dark:hover:text-emerald-300"
+                  <div>
+                    GSD {meta.gsd} · revisit {meta.revisit} · {meta.sensor}
+                  </div>
+                  <div className="flex flex-wrap gap-1 pt-1">
+                    {meta.links.map((l) => (
+                      <a
+                        key={l.url}
+                        href={l.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-0.5 text-brand-500 hover:underline"
                       >
-                        {f.feed}
-                      </OutLink>
-                      <span className="font-mono text-[10px] text-muted">{f.key || 'no key'}</span>
-                    </div>
-                    <p className="mt-1 text-[11px] text-body">{f.area}</p>
-                    <p className="mt-1 text-[10px] text-muted">{f.usage}</p>
-                  </article>
-                ))}
-              </div>
+                        {l.label} <ExternalLink size={9} />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            <div aria-labelledby="cheyenne-passes">
-              <h2 id="cheyenne-passes" className="mb-2 text-lg font-bold text-heading">
-                What future footprints mean
-              </h2>
-              <div className="space-y-2">
-                {data.footprints.map((f) => (
-                  <article key={f.label} className="surface-card rounded-lg border border-line-1 p-3">
-                    <h3 className="font-mono text-[11px] font-bold text-heading">{f.label}</h3>
-                    <p className="mt-1 text-[11px] text-body">{f.source}</p>
-                    <p className="mt-1 text-[10px] text-muted">{f.reliability}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </section>
 
-          {/* Install + limits */}
-          <section className="grid gap-4 lg:grid-cols-2">
-            <div aria-labelledby="cheyenne-install">
-              <h2 id="cheyenne-install" className="mb-2 text-lg font-bold text-heading">
-                Quick start
-              </h2>
-              <ul className="mb-3 list-disc space-y-1 pl-5 text-xs text-body">
-                {data.install.requirements.map((r) => (
-                  <li key={r}>{r}</li>
-                ))}
-              </ul>
-              <pre className="overflow-x-auto rounded-lg border border-line-1 bg-surface-100 p-3 font-mono text-[11px] leading-relaxed text-body">
-                {data.install.commands}
-              </pre>
+            <div className="surface-card p-3 space-y-2">
+              <label className="text-xs font-semibold text-heading flex items-center gap-1">
+                <Crosshair size={13} /> Focus point
+              </label>
+              <div className="flex gap-1.5">
+                <input
+                  className={inputCls}
+                  value={targetInput}
+                  onChange={(e) => setTargetInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && applyTarget()}
+                  placeholder="lat, lon"
+                />
+                <button
+                  onClick={applyTarget}
+                  className="px-2 rounded-lg border border-line-1 text-xs text-muted hover:text-heading"
+                >
+                  Set
+                </button>
+              </div>
+              <p className="text-[10px] text-muted">
+                Click anywhere on the globe to set the target directly. Default: Khartoum.
+              </p>
+              <button
+                onClick={runPrediction}
+                disabled={passesLoading || !fleetSats.length}
+                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-brand-500/15 border border-brand-400/40 text-brand-600 dark:text-brand-300 text-xs font-medium disabled:opacity-50"
+              >
+                {passesLoading ? <Loader2 size={12} className="animate-spin" /> : <CalendarClock size={12} />} Predict
+                24 h passes
+              </button>
             </div>
-            <div aria-labelledby="cheyenne-limits">
-              <h2 id="cheyenne-limits" className="mb-2 flex items-center gap-2 text-lg font-bold text-heading">
-                <ShieldAlert size={17} className="text-amber-500" /> Limitations
-              </h2>
-              <ul className="space-y-2">
-                {data.limitations.map((l) => (
-                  <li
-                    key={l}
-                    className="rounded-lg border border-line-1 bg-surface-100 px-3 py-2 text-[11px] leading-relaxed text-body"
+
+            <div className="surface-card p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold text-heading">Upcoming passes</span>
+                <span className="text-[10px] text-muted">{passes.length} found</span>
+              </div>
+              <div className="space-y-1.5 max-h-72 overflow-y-auto">
+                {passes.slice(0, 40).map((p, i) => (
+                  <button
+                    key={`${p.sat.id}-${p.time}-${i}`}
+                    onClick={() => {
+                      setSimMs(p.time);
+                      setSelectedSat(p.sat);
+                      globeRef.current?.pointOfView(
+                        { lat: p.geometry[0]?.[1] ?? target.lat, lng: p.geometry[0]?.[0] ?? target.lng, altitude: 1.2 },
+                        800
+                      );
+                    }}
+                    className="w-full text-left px-2 py-1.5 rounded-lg hover:bg-surface-100 border border-line-1 text-[11px]"
                   >
-                    {l}
-                  </li>
+                    <div className="flex justify-between gap-2">
+                      <span className="font-medium text-heading">{p.sat.short}</span>
+                      <span className="font-mono text-muted">{new Date(p.time).toISOString().slice(11, 16)}Z</span>
+                    </div>
+                    <div className="text-muted">
+                      {Math.round(p.crossKm)} km cross-track · {Math.round(p.offNadir)}° off-nadir ·{' '}
+                      {p.ascending ? 'asc' : 'desc'}
+                      {p.sunEl > 3 ? ' · day' : ''}
+                    </div>
+                  </button>
                 ))}
-              </ul>
+                {!passes.length && (
+                  <p className="text-[11px] text-muted">Pick a fleet and a place, then run a prediction.</p>
+                )}
+              </div>
             </div>
-          </section>
+          </div>
+        </div>
+      )}
 
-          {/* Credits */}
-          <section aria-labelledby="cheyenne-credits">
-            <h2 id="cheyenne-credits" className="mb-2 text-lg font-bold text-heading">
-              Credits & licences
-            </h2>
-            <div className="overflow-x-auto rounded-xl border border-line-1">
-              <table className="w-full min-w-[520px] text-left text-xs">
-                <thead className="border-b border-line-1 bg-surface-100 text-[10px] uppercase tracking-wider text-muted">
-                  <tr>
-                    <th className="px-3 py-2">Component</th>
-                    <th className="px-3 py-2">Licence</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line-1">
-                  {data.credits.map((c) => (
-                    <tr key={c.component}>
-                      <td className="px-3 py-2 text-body">
-                        {c.url ? (
-                          <OutLink href={c.url} className="hover:text-accent">
-                            {c.component}
-                          </OutLink>
-                        ) : (
-                          c.component
-                        )}
-                      </td>
-                      <td className="px-3 py-2 font-mono text-[11px] text-muted">{c.licence}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {tab === 'fleets' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {(index?.constellations ?? []).map((c) => (
+            <div key={c.id} className="surface-card p-3">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full" style={{ background: c.color }} />
+                <span className="font-semibold text-heading text-sm">{c.name}</span>
+                <span className="text-[10px] text-muted ml-auto">{c.trackedSats} sats</span>
+              </div>
+              <p className="text-xs text-muted mt-1.5">{c.instrument}</p>
+              <div className="text-[11px] text-muted mt-1">
+                GSD {c.gsd} · {c.revisit} · {c.sensor}
+              </div>
+              <div className="text-[10px] text-muted mt-1 line-clamp-2">{c.access}</div>
+              <button
+                onClick={() => {
+                  setFleetId(c.id);
+                  setTab('board');
+                }}
+                className="mt-2 text-[11px] text-brand-500 hover:underline"
+              >
+                Track this fleet →
+              </button>
             </div>
-            <p className="mt-2 text-[11px] leading-relaxed text-muted">{data.creditsNote}</p>
-          </section>
+          ))}
+        </div>
+      )}
 
-          <section className="surface-card rounded-xl border border-line-1 p-4 text-[11px] leading-relaxed text-muted">
-            <p className="mb-1 flex items-center gap-1.5 font-semibold text-heading">
-              <Github size={13} /> Provenance
-            </p>
-            <p>
-              Documentation mirror of{' '}
-              <OutLink href={data.source.url} className="underline hover:text-accent">
-                {data.source.fullName}
-              </OutLink>{' '}
-              (last upstream push {data.source.pushedAt ? relativeAgo(data.source.pushedAt) : 'unknown'}). Feature text,
-              tables and screenshots are from the upstream README; fleet metadata is from its `web/catalog.json`.
-              Cheyenne is not affiliated with or endorsed by the data providers it lists. Snapshot synced{' '}
-              {relativeAgo(data.generatedAt)}.
-            </p>
-          </section>
+      {tab === 'about' && (
+        <div className="surface-card p-5 text-sm text-muted space-y-4">
+          <p>
+            This is a re-implementation of the <b className="text-heading">working tool</b>, not a documentation mirror.
+            The browser computes satellite positions (SGP4 via satellite.js), ground tracks, sensor footprints and
+            geometric access windows from the same public inputs the upstream tool uses: its fleet catalog and a
+            CelesTrak GP orbital snapshot. Move the clock to see where a fleet was or will be; click the globe to set a
+            place and predict when its sensors can reach it.
+          </p>
+          <p>
+            Predicted passes show when a sensor <i>could</i> see a place, not whether an image will be taken — the same
+            limitation the upstream tool documents. Orbit elements are a snapshot, so accuracy decays over days; the
+            weekly sync refreshes them.
+          </p>
+          <div>
+            <div className="text-xs font-semibold text-heading mb-2">
+              Live-only upstream features (deep-linked, not mirrored)
+            </div>
+            <ul className="list-disc list-inside space-y-1 text-xs">
+              {(index?.liveOnly ?? []).map((x) => (
+                <li key={x}>{x}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex flex-wrap gap-3 pt-1">
+            <a
+              href={index?.sourceUrl ?? 'https://github.com/MJCruickshank/cheyenne'}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-brand-500 hover:underline text-sm"
+            >
+              <Github size={13} /> Upstream repository <ExternalLink size={12} />
+            </a>
+            <span className="text-xs">
+              Orbit snapshot: {tle?.count ?? '…'} catalogued satellites · built{' '}
+              {index?.builtAt ? new Date(index.builtAt).toISOString().slice(0, 10) : '…'}
+            </span>
+          </div>
         </div>
       )}
     </DataPageLayout>
   );
+}
+
+/** Small helper to keep the swath bearing calculation readable. */
+function hgLng(lng: number): number {
+  return ((lng + 540) % 360) - 180;
 }

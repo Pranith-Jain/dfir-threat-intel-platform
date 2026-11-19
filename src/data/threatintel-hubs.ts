@@ -1280,7 +1280,7 @@ export const HUB_META: readonly HubMeta[] = [
         path: '/threatintel/osint/cheyenne',
         tabId: 'cheyenne',
         label: 'Cheyenne EO Board',
-        desc: 'Mirror of MJCruickshank/cheyenne - earth-observation board docs: 23 satellite fleets, data sources, AIS feeds, limitations and credits.',
+        desc: 'Working replica of MJCruickshank/cheyenne - 244 satellites, 23 fleets, SGP4 positions, ground tracks, swaths, clock controls and pass prediction.',
         compVar: 'Cheyenne',
         icon: Satellite,
         badge: 'new',
