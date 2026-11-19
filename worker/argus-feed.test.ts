@@ -112,7 +112,7 @@ describe('handleArgusRss', () => {
   it.each([
     'https://www.welivesecurity.com/en/rss/feed/',
     'https://www.sophos.com/en-us/blog/feed',
-    'https://www.theregister.com/security/headlines.atom',
+    'https://www.bing.com/news/search?q=site%3Adarkreading.com&format=RSS&mkt=en-US',
   ])('serves the replacement feed %s', async (target) => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('<rss>ok</rss>', { status: 200 }));
     const { request, url } = reqFor(target);

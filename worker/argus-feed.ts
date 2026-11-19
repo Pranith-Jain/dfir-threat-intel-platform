@@ -30,9 +30,10 @@ const ALLOWED_RSS = new Set([
   // BleepingComputer 403s datacenter egress (Cloudflare bot challenge) —
   // serve its Bing News mirror instead (news.google.com 503s Worker egress).
   'https://www.bing.com/news/search?q=site%3Ableepingcomputer.com&format=RSS&mkt=en-US',
-  // Dark Reading 403s every datacenter egress; The Register carries the same
-  // security-news role without the bot challenge.
-  'https://www.theregister.com/security/headlines.atom',
+  // Dark Reading 403s every datacenter egress (and The Register 502s from
+  // Worker egress), so use its Bing News mirror. bing.com is already proven
+  // to work from the Worker by the BleepingComputer mirror above.
+  'https://www.bing.com/news/search?q=site%3Adarkreading.com&format=RSS&mkt=en-US',
   'https://krebsonsecurity.com/feed/',
   'https://feeds.feedburner.com/TheHackersNews',
   'https://therecord.media/feed',

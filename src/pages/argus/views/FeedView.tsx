@@ -89,8 +89,8 @@ const RSS_SOURCES = [
     category: 'news' as const,
   },
   {
-    url: 'https://www.theregister.com/security/headlines.atom',
-    name: 'The Register',
+    url: 'https://www.bing.com/news/search?q=site%3Adarkreading.com&format=RSS&mkt=en-US',
+    name: 'Dark Reading (via Bing News)',
     category: 'news' as const,
   },
   { url: 'https://krebsonsecurity.com/feed/', name: 'Krebs on Security', category: 'news' as const },
