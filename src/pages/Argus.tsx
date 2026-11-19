@@ -9,12 +9,30 @@ import { FEED_ITEMS } from './argus/data/feed';
 import { NATION_PALETTE } from './argus/data/countries';
 import type { Actor, GroupType, ViewKey } from './argus/types';
 
-const GlobeView = lazy(() => import('./argus/views/GlobeView').then((m) => ({ default: m.GlobeView })));
-const ClusterView = lazy(() => import('./argus/views/ClusterView').then((m) => ({ default: m.ClusterView })));
-const DiamondView = lazy(() => import('./argus/views/DiamondView').then((m) => ({ default: m.DiamondView })));
-const LandscapeView = lazy(() => import('./argus/views/LandscapeView').then((m) => ({ default: m.LandscapeView })));
-const FeedView = lazy(() => import('./argus/views/FeedView').then((m) => ({ default: m.FeedView })));
-const HuntView = lazy(() => import('./argus/views/HuntView').then((m) => ({ default: m.HuntView })));
+// Each view is a separate chunk. Keeping the import in a named loader lets the
+// tab bar warm the chunk on hover/focus, so switching views feels immediate.
+const loadGlobe = () => import('./argus/views/GlobeView').then((m) => ({ default: m.GlobeView }));
+const loadCluster = () => import('./argus/views/ClusterView').then((m) => ({ default: m.ClusterView }));
+const loadDiamond = () => import('./argus/views/DiamondView').then((m) => ({ default: m.DiamondView }));
+const loadLandscape = () => import('./argus/views/LandscapeView').then((m) => ({ default: m.LandscapeView }));
+const loadFeed = () => import('./argus/views/FeedView').then((m) => ({ default: m.FeedView }));
+const loadHunt = () => import('./argus/views/HuntView').then((m) => ({ default: m.HuntView }));
+
+const VIEW_LOADERS: Record<ViewKey, () => Promise<unknown>> = {
+  globe: loadGlobe,
+  cluster: loadCluster,
+  diamond: loadDiamond,
+  landscape: loadLandscape,
+  feed: loadFeed,
+  hunt: loadHunt,
+};
+
+const GlobeView = lazy(loadGlobe);
+const ClusterView = lazy(loadCluster);
+const DiamondView = lazy(loadDiamond);
+const LandscapeView = lazy(loadLandscape);
+const FeedView = lazy(loadFeed);
+const HuntView = lazy(loadHunt);
 
 const VIEW_TABS: { id: ViewKey; label: string }[] = [
   { id: 'globe', label: 'Globe' },
@@ -34,7 +52,29 @@ const GROUP_TYPES: { value: GroupType; label: string }[] = [
 ];
 
 const selectCls =
-  'h-9 px-2.5 rounded-lg border border-line-1 bg-white dark:bg-surface-200 text-mini font-mono uppercase tracking-wider text-muted outline-none hover:border-slate-300 dark:hover:border-line-2 focus:border-brand-500 dark:focus:border-brand-400 cursor-pointer transition-colors';
+  'h-9 px-2.5 rounded-control border border-line-input bg-surface-100 text-mini font-mono uppercase tracking-wider outline-none hover:border-line-3 focus:border-rose-400 cursor-pointer transition-colors';
+
+/** A single lowercased haystack per actor, built once instead of per keystroke. */
+function searchText(a: Actor): string {
+  return [
+    a.name,
+    a.apt ?? '',
+    a.mitre_id ?? '',
+    a.agency,
+    a.description,
+    a.aka.join(' '),
+    a.sectors.join(' '),
+    a.targets.join(' '),
+    a.ttps.map((t) => `${t.id} ${t.name} ${t.tactic}`).join(' '),
+    a.malware.map((m) => `${m.name} ${m.type} ${m.platform}`).join(' '),
+    a.cves.map((c) => `${c.id} ${c.product}`).join(' '),
+    a.campaigns.map((c) => `${c.name} ${c.summary}`).join(' '),
+    a.detections.map((d) => d.title).join(' '),
+    a.infra_patterns.join(' '),
+  ]
+    .join(' ')
+    .toLowerCase();
+}
 
 export default function ArgusPage() {
   const [view, setView] = useState<ViewKey>('globe');
@@ -51,6 +91,8 @@ export default function ArgusPage() {
     ACTORS.forEach((a) => a.sectors.forEach((sec) => s.add(sec)));
     return [...s].sort();
   }, []);
+
+  const searchIndex = useMemo(() => new Map(ACTORS.map((a) => [a.id, searchText(a)])), []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -71,6 +113,11 @@ export default function ArgusPage() {
   const openActor = useCallback((a: Actor) => setActiveActor(a), []);
   const closeActor = useCallback(() => setActiveActor(null), []);
 
+  const prefetchView = useCallback((id: string) => {
+    const load = VIEW_LOADERS[id as ViewKey];
+    if (load) void Promise.resolve(load()).catch(() => {});
+  }, []);
+
   const onSpotlightSelect = (actorId: string) => {
     const a = ACTORS.find((x) => x.id === actorId);
     if (a) {
@@ -84,86 +131,80 @@ export default function ArgusPage() {
     if (motivationFilter && a.motivation !== motivationFilter) return false;
     if (groupTypeFilter && a.group_type !== groupTypeFilter) return false;
     if (sectorFilter && !a.sectors.includes(sectorFilter)) return false;
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      const hay = [a.name, a.apt ?? '', a.aka.join(' '), a.agency, a.sectors.join(' '), a.targets.join(' ')]
-        .join(' ')
-        .toLowerCase();
-      if (!hay.includes(q)) return false;
-    }
+    if (searchQuery && !searchIndex.get(a.id)?.includes(searchQuery.toLowerCase())) return false;
     return true;
   });
+
+  const hasFilters = Boolean(regionFilter || motivationFilter || groupTypeFilter || sectorFilter || searchQuery);
+  const clearFilters = useCallback(() => {
+    setSearchQuery('');
+    setRegionFilter(null);
+    setMotivationFilter(null);
+    setGroupTypeFilter(null);
+    setSectorFilter(null);
+  }, []);
 
   const nationCount = new Set(ACTORS.map((a) => a.country)).size;
   const totalTtps = ACTORS.reduce((s, a) => s + a.ttps.length, 0);
 
   return (
-    <div className="w-full py-6 sm:py-8 space-y-6">
-      {/* ── Hero ─────────────────────────────────────────────────── */}
-      <section className="surface-elevated relative p-6 sm:p-10 lg:p-12">
-        <div aria-hidden className="pointer-events-none absolute top-0 left-0 h-px w-12 bg-rose-500/60" />
-
-        <div className="flex items-center gap-3 font-mono text-mini uppercase tracking-[0.16em] text-muted mb-4">
-          <span className="inline-flex items-center gap-1.5">
-            <span className="relative inline-flex h-1.5 w-1.5">
-              <span className="absolute inset-0 rounded-full bg-rose-500 live-pulse" aria-hidden="true" />
-              <span className="relative inline-block h-1.5 w-1.5 rounded-full bg-rose-500" />
-            </span>
-            <span className="text-rose-600 dark:text-rose-400 font-semibold">Live</span>
-          </span>
-          <span className="text-inverted">/</span>
-          <span>Nation-state CTI</span>
-          <span className="text-inverted hidden sm:inline">/</span>
-          <span className="hidden sm:inline">Curated APT data</span>
+    <div className="w-full py-6 sm:py-8 space-y-5">
+      {/* ── Header ────────────────────────────────────────────────────
+          Quiet by design: the counts read as one line of meta data instead
+          of a four-tile hero-metric grid competing with the working views. */}
+      <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4 border-b border-line-1 pb-5">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 font-mono text-micro uppercase tracking-[0.16em] text-muted">
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-500" aria-hidden="true" />
+            <span>Live</span>
+            <span className="text-inverted">/</span>
+            <span>Nation-state CTI</span>
+          </div>
+          <h1 className="mt-2.5 font-display text-3xl sm:text-4xl font-semibold leading-tight tracking-tight text-heading">
+            Argus <span className="text-rose-600 dark:text-rose-400">Threat Nexus</span>
+          </h1>
+          <p className="mt-2 max-w-2xl text-tool leading-relaxed text-muted">
+            Track {ACTORS.length} APT groups across {nationCount} nations, with {totalTtps} mapped MITRE TTPs,
+            relationship graphs and a live intel feed.
+          </p>
         </div>
-
-        <h1 className="font-display text-4xl sm:text-6xl font-bold leading-[0.95] tracking-[-0.04em] text-heading">
-          ARGUS
-          <span className="block text-rose-600 dark:text-rose-400">Threat Nexus</span>
-        </h1>
-
-        <p className="mt-4 max-w-2xl text-tool sm:text-[15px] leading-relaxed text-muted">
-          Nation-state threat intelligence on {ACTORS.length} tracked APT groups across {nationCount} nations —{' '}
-          {totalTtps} mapped MITRE TTPs, relationship graphs, diamond-model analysis, and a live intel feed.
+        <p className="max-w-full font-mono text-micro uppercase tracking-[0.08em] text-muted tabular-nums sm:text-right">
+          {ACTORS.length} groups <span className="text-inverted">·</span> {nationCount} nations{' '}
+          <span className="text-inverted">·</span> {totalTtps} TTPs <span className="text-inverted">·</span>{' '}
+          {FEED_ITEMS.length} items
         </p>
+      </header>
 
-        <dl className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-px overflow-hidden rounded-panel border border-line-1 bg-line-1">
-          {[
-            { label: 'APT groups', value: ACTORS.length },
-            { label: 'Nations', value: nationCount },
-            { label: 'MITRE TTPs', value: totalTtps },
-            { label: 'Intel items', value: FEED_ITEMS.length },
-          ].map((s) => (
-            <div key={s.label} className="bg-surface-100 px-4 py-3.5">
-              <dd className="font-display text-2xl sm:text-3xl font-bold leading-none tabular-nums text-heading">
-                {s.value.toLocaleString()}
-              </dd>
-              <dt className="mt-1.5 font-mono text-micro uppercase tracking-[0.16em] text-muted">{s.label}</dt>
-            </div>
-          ))}
-        </dl>
-      </section>
+      {/* ── View tabs ─────────────────────────────────────────────── */}
+      <TabBar
+        tabs={VIEW_TABS}
+        active={view}
+        onChange={(id) => setView(id as ViewKey)}
+        label="ARGUS views"
+        variant="underline"
+        onPrefetch={prefetchView}
+        className="mb-0"
+      />
 
-      {/* ── View tabs ────────────────────────────────────────────── */}
-      <TabBar tabs={VIEW_TABS} active={view} onChange={(id) => setView(id as ViewKey)} className="mb-0" />
-
-      {/* ── Filter toolbar ───────────────────────────────────────── */}
-      <div className="surface-card p-3.5 flex items-center gap-2.5 flex-wrap">
+      {/* ── Filter toolbar ────────────────────────────────────────── */}
+      <div className="surface-card p-3 flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" aria-hidden="true" />
           <input
-            type="text"
+            type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search actors, CVEs, TTPs, malware…"
-            className="w-full h-9 pl-9 pr-3 rounded-lg bg-surface-200 border border-line-1 text-tool text-heading placeholder:text-muted dark:placeholder:text-muted outline-none focus:border-rose-500/50 dark:focus:border-rose-400/50 transition-colors"
+            aria-label="Search actors, CVEs, TTPs and malware"
+            className="w-full h-9 pl-9 pr-3 rounded-control bg-input-200 border border-line-input text-tool text-heading placeholder:text-muted outline-none focus:border-rose-400 transition-colors"
           />
         </div>
 
         <select
+          aria-label="Filter by nation"
           value={regionFilter ?? ''}
           onChange={(e) => setRegionFilter(e.target.value || null)}
-          className={selectCls}
+          className={`${selectCls} ${regionFilter ? 'text-heading' : 'text-muted'}`}
         >
           <option value="">All nations</option>
           {Object.entries(NATIONS).map(([code, name]) => (
@@ -174,9 +215,10 @@ export default function ArgusPage() {
         </select>
 
         <select
+          aria-label="Filter by motivation"
           value={motivationFilter ?? ''}
           onChange={(e) => setMotivationFilter(e.target.value || null)}
-          className={selectCls}
+          className={`${selectCls} ${motivationFilter ? 'text-heading' : 'text-muted'}`}
         >
           <option value="">Any motive</option>
           <option value="espionage">Espionage</option>
@@ -187,9 +229,10 @@ export default function ArgusPage() {
         </select>
 
         <select
+          aria-label="Filter by group type"
           value={groupTypeFilter ?? ''}
           onChange={(e) => setGroupTypeFilter((e.target.value as GroupType) || null)}
-          className={`${selectCls} hidden sm:block`}
+          className={`${selectCls} ${groupTypeFilter ? 'text-heading' : 'text-muted'}`}
         >
           <option value="">All groups</option>
           {GROUP_TYPES.map((gt) => (
@@ -200,9 +243,10 @@ export default function ArgusPage() {
         </select>
 
         <select
+          aria-label="Filter by sector"
           value={sectorFilter ?? ''}
           onChange={(e) => setSectorFilter(e.target.value || null)}
-          className={`${selectCls} hidden md:block`}
+          className={`${selectCls} ${sectorFilter ? 'text-heading' : 'text-muted'}`}
         >
           <option value="">All sectors</option>
           {allSectors.map((s) => (
@@ -212,14 +256,24 @@ export default function ArgusPage() {
           ))}
         </select>
 
+        {hasFilters && (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="h-9 px-2.5 rounded-control border border-line-input text-mini font-mono uppercase tracking-wider text-muted hover:text-heading hover:bg-surface-300 transition-colors"
+          >
+            Clear
+          </button>
+        )}
+
         <span className="ml-auto font-mono text-micro uppercase tracking-wider text-muted tabular-nums">
           {visible.length}/{ACTORS.length} actors
         </span>
       </div>
 
-      {/* ── Active view ──────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-panel border border-line-1 bg-surface-100 min-h-[560px]">
-        <div className="relative h-[62vh] min-h-[520px] max-h-[760px]">
+      {/* ── Active view ───────────────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-panel border border-line-1 bg-surface-100 min-h-[520px]">
+        <div className="relative h-[60vh] min-h-[480px] max-h-[760px]">
           <Suspense
             fallback={
               <div className="absolute inset-0 grid place-items-center">

@@ -15,16 +15,24 @@ import type { Env } from './env';
 const ALLOWED_RSS = new Set([
   'https://research.checkpoint.com/feed/',
   'https://blog.checkpoint.com/feed/',
-  'https://www.crowdstrike.com/blog/feed/',
+  // CrowdStrike's blog feed 403s Cloudflare Worker egress; Sophos is a
+  // Cloudflare-fronted vendor feed that serves the same research role.
+  'https://www.sophos.com/en-us/blog/feed',
   'https://unit42.paloaltonetworks.com/feed/',
+  // ESET moved its feed to /en/rss/feed/. The old /feed/ URL 301s there, so
+  // both are allowlisted: the canonical form avoids an extra hop, the legacy
+  // form keeps already-cached callers working.
   'https://www.welivesecurity.com/feed/',
+  'https://www.welivesecurity.com/en/rss/feed/',
   'https://www.sentinelone.com/blog/feed/',
   'https://www.microsoft.com/en-us/security/blog/feed/',
   'https://securelist.com/feed/',
   // BleepingComputer 403s datacenter egress (Cloudflare bot challenge) —
   // serve its Bing News mirror instead (news.google.com 503s Worker egress).
   'https://www.bing.com/news/search?q=site%3Ableepingcomputer.com&format=RSS&mkt=en-US',
-  'https://www.darkreading.com/feeds/rss.xml',
+  // Dark Reading 403s every datacenter egress; The Register carries the same
+  // security-news role without the bot challenge.
+  'https://www.theregister.com/security/headlines.atom',
   'https://krebsonsecurity.com/feed/',
   'https://feeds.feedburner.com/TheHackersNews',
   'https://therecord.media/feed',

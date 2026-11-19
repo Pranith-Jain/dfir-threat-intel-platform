@@ -63,9 +63,13 @@ const RSS_SOURCES = [
   // ── Vendor Research ──
   { url: 'https://research.checkpoint.com/feed/', name: 'Check Point Research', category: 'vendor' as const },
   { url: 'https://blog.checkpoint.com/feed/', name: 'Check Point Blog', category: 'vendor' as const },
-  { url: 'https://www.crowdstrike.com/blog/feed/', name: 'CrowdStrike Blog', category: 'vendor' as const },
+  { url: 'https://www.sophos.com/en-us/blog/feed', name: 'Sophos Blog', category: 'vendor' as const },
   { url: 'https://unit42.paloaltonetworks.com/feed/', name: 'Unit 42 (Palo Alto)', category: 'vendor' as const },
-  { url: 'https://www.welivesecurity.com/feed/', name: 'WeLiveSecurity (ESET)', category: 'vendor' as const },
+  {
+    url: 'https://www.welivesecurity.com/en/rss/feed/',
+    name: 'WeLiveSecurity (ESET)',
+    category: 'vendor' as const,
+  },
   { url: 'https://www.sentinelone.com/blog/feed/', name: 'SentinelOne Labs', category: 'vendor' as const },
   {
     url: 'https://www.microsoft.com/en-us/security/blog/feed/',
@@ -84,7 +88,11 @@ const RSS_SOURCES = [
     name: 'BleepingComputer',
     category: 'news' as const,
   },
-  { url: 'https://www.darkreading.com/feeds/rss.xml', name: 'Dark Reading', category: 'news' as const },
+  {
+    url: 'https://www.theregister.com/security/headlines.atom',
+    name: 'The Register',
+    category: 'news' as const,
+  },
   { url: 'https://krebsonsecurity.com/feed/', name: 'Krebs on Security', category: 'news' as const },
   { url: 'https://feeds.feedburner.com/TheHackersNews', name: 'The Hacker News', category: 'news' as const },
   { url: 'https://therecord.media/feed', name: 'The Record', category: 'news' as const },
@@ -182,38 +190,62 @@ export function FeedView({ feed, actors }: Props) {
   const [liveFeed, setLiveFeed] = useState<FeedItem[]>([]);
   const [liveStatus, setLiveStatus] = useState<'idle' | 'loading' | 'live' | 'error'>('idle');
   const [lastFetch, setLastFetch] = useState<Date | null>(null);
+  const [failedSources, setFailedSources] = useState<string[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const fetchGeneration = useRef(0);
 
   const fetchLiveFeeds = useCallback(async () => {
+    // A refresh may start while an earlier one is still in flight. Only the
+    // newest generation is allowed to publish, so old responses cannot
+    // overwrite fresh results.
+    const generation = ++fetchGeneration.current;
+    const PROXY = '/api/v1/argus/rss?url=';
+    const collected: FeedItem[] = [];
+    const failed: string[] = [];
+    let succeeded = 0;
+    let settled = 0;
+
     setLiveStatus('loading');
-    try {
-      const PROXY = '/api/v1/argus/rss?url=';
-      const results: FeedItem[] = [];
-      const fetches = RSS_SOURCES.map(async (source) => {
-        try {
-          const res = await fetch(`${PROXY}${encodeURIComponent(source.url)}`, { signal: AbortSignal.timeout(10000) });
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          return parseRSS(await res.text(), source.name, source.category);
-        } catch {
-          return [];
-        }
-      });
-      const all = await Promise.allSettled(fetches);
-      for (const r of all) {
-        if (r.status === 'fulfilled') results.push(...r.value);
-      }
+    setFailedSources([]);
+
+    const publish = () => {
       const seen = new Set<string>();
-      const deduped = results.filter((item) => {
-        const k = item.title.toLowerCase().trim();
-        return seen.has(k) ? false : (seen.add(k), true);
-      });
-      deduped.sort((a, b) => b.published.localeCompare(a.published));
+      const deduped = collected
+        .filter((item) => {
+          const k = item.title.toLowerCase().trim();
+          return seen.has(k) ? false : (seen.add(k), true);
+        })
+        .sort((a, b) => b.published.localeCompare(a.published));
       setLiveFeed(deduped);
-      setLiveStatus('live');
       setLastFetch(new Date());
-    } catch {
-      setLiveStatus('error');
-    }
+      setLiveStatus('live');
+    };
+
+    await Promise.all(
+      RSS_SOURCES.map(async (source) => {
+        try {
+          const res = await fetch(`${PROXY}${encodeURIComponent(source.url)}`, {
+            signal: AbortSignal.timeout(8000),
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          if (generation !== fetchGeneration.current) return;
+          collected.push(...parseRSS(await res.text(), source.name, source.category));
+          succeeded += 1;
+        } catch {
+          if (generation === fetchGeneration.current) failed.push(source.name);
+        } finally {
+          if (generation !== fetchGeneration.current) return;
+          settled += 1;
+          // Show the first source's items as soon as it lands instead of
+          // holding the whole board in a spinner until the slowest feed.
+          if (succeeded > 0) publish();
+          if (settled === RSS_SOURCES.length) {
+            setFailedSources(failed);
+            if (succeeded === 0) setLiveStatus('error');
+          }
+        }
+      })
+    );
   }, []);
 
   useEffect(() => {
@@ -283,8 +315,17 @@ export function FeedView({ feed, actors }: Props) {
                   <RefreshCw size={10} className="animate-spin" /> Fetching…
                 </span>
               )}
+              {liveStatus === 'error' && <span className="text-micro font-mono text-rose-500">Feeds unavailable</span>}
             </div>
             <div className="flex items-center gap-3">
+              {failedSources.length > 0 && (
+                <span
+                  className="text-micro font-mono text-amber-600 dark:text-amber-400"
+                  title={`Unavailable: ${failedSources.join(', ')}`}
+                >
+                  {failedSources.length} feed{failedSources.length === 1 ? '' : 's'} unavailable
+                </span>
+              )}
               {lastFetch && (
                 <span className="text-micro font-mono text-muted flex items-center gap-1">
                   <Clock size={10} /> {lastFetch.toLocaleTimeString()}

@@ -106,4 +106,30 @@ describe('handleArgusRss', () => {
     const res = await handleArgusRss(request, env, url);
     expect(res?.status).toBe(502);
   });
+
+  // Regression: these three feeds used to return 502 (a 301 to an
+  // un-allowlisted ESET path, and 403s from CrowdStrike / Dark Reading).
+  it.each([
+    'https://www.welivesecurity.com/en/rss/feed/',
+    'https://www.sophos.com/en-us/blog/feed',
+    'https://www.theregister.com/security/headlines.atom',
+  ])('serves the replacement feed %s', async (target) => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('<rss>ok</rss>', { status: 200 }));
+    const { request, url } = reqFor(target);
+    const res = await handleArgusRss(request, env, url);
+    expect(res?.status).toBe(200);
+    expect(await res?.text()).toBe('<rss>ok</rss>');
+  });
+
+  it('follows the legacy ESET redirect now that the canonical path is allowlisted', async () => {
+    const legacy = 'https://www.welivesecurity.com/feed/';
+    const canonical = 'https://www.welivesecurity.com/en/rss/feed/';
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    fetchSpy.mockResolvedValueOnce(new Response(null, { status: 301, headers: { location: canonical } }));
+    fetchSpy.mockResolvedValueOnce(new Response('<rss>eset</rss>', { status: 200 }));
+    const { request, url } = reqFor(legacy);
+    const res = await handleArgusRss(request, env, url);
+    expect(res?.status).toBe(200);
+    expect(await res?.text()).toBe('<rss>eset</rss>');
+  });
 });
