@@ -3980,6 +3980,33 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     keywords: ['cheyenne', 'satellite', 'earth observation', 'imagery', 'osint', 'ais', 'firms'],
   },
   {
+    path: '/threatintel/artex',
+    label: 'ARTEX Tracker',
+    description:
+      'Daily mirror of artexintel.com — AI-nexus attack and tool events with 2,700+ defanged IoCs, exposure hits and an event timeline.',
+    sectionLabel: 'Threat Intel · Detection',
+    group: 'threatintel',
+    keywords: ['artex', 'ai threats', 'nexus', 'ioc', 'exposure', 'attack events', 'tracker'],
+  },
+  {
+    path: '/threatintel/cig-portal',
+    label: 'CIG Ransomware Portal',
+    description:
+      'Mirror of the CIG ransomware portal — 500+ groups with affiliates, victims, notes and ransomware chains.',
+    sectionLabel: 'Threat Intel · Detection',
+    group: 'threatintel',
+    keywords: ['cig', 'ransomware', 'portal', 'affiliates', 'victims', 'chains', 'mbsd'],
+  },
+  {
+    path: '/threatintel/osint/ax-tools',
+    label: 'AX Tool Directory',
+    description:
+      'Mirror of tools.axi68.com — 200+ OSINT and security tools across 24 categories with free/paid filters.',
+    sectionLabel: 'Threat Intel · OSINT',
+    group: 'threatintel',
+    keywords: ['axi68', 'ax tools', 'osint', 'tool directory', 'free', 'paid', 'catalog'],
+  },
+  {
     path: '/threatintel/cti-bookmarks',
     label: 'CTI Bookmarks',
     description:
