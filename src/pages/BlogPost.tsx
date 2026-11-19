@@ -439,15 +439,22 @@ export default function BlogPost() {
               </div>
             )}
 
-            <img
-              loading="eager"
-              fetchPriority="high"
-              className="mb-6 w-full h-auto rounded-xl border border-line-1"
-              alt={`Hero visual for ${post.title}`}
-              width={1200}
-              height={630}
-              src={post.heroImageUrl ?? `data:image/svg+xml;utf8,${encodeURIComponent(post.hero)}`}
-            />
+            {(() => {
+              const heroSrc =
+                post.heroImageUrl || (post.hero ? `data:image/svg+xml;utf8,${encodeURIComponent(post.hero)}` : '');
+              if (!heroSrc) return null;
+              return (
+                <img
+                  loading="eager"
+                  fetchPriority="high"
+                  className="mb-6 w-full h-auto rounded-xl border border-line-1"
+                  alt={`Hero visual for ${post.title}`}
+                  width={1200}
+                  height={630}
+                  src={heroSrc}
+                />
+              );
+            })()}
 
             <header className="mb-8">
               <Link

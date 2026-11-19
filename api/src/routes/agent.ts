@@ -14,8 +14,6 @@ import { badRequest, notFound, internalError, serviceUnavailable } from '../lib/
 import type { AgentState } from '../lib/agent/types';
 import { trackEvent, visitorCountry } from '../lib/analytics';
 
-const AGENT_CACHE_TTL = 60;
-
 /** Maximum investigations per user per hour. Each runs up to 10 LLM steps. */
 const AGENT_RATE_LIMIT = 5;
 const AGENT_RATE_WINDOW_SEC = 3600; // 1 hour
@@ -128,7 +126,10 @@ export async function agentStateHandler(c: Context<{ Bindings: Env }>): Promise<
   if (!doRes.ok) return notFound(c);
 
   const state = (await doRes.json()) as AgentState;
-  return c.json(state, 200, { 'Cache-Control': `public, max-age=${AGENT_CACHE_TTL}` });
+  // Live investigation state is polled every 2s by the UI. A public CDN
+  // cache here serves minute-old snapshots and makes the progress bar jump;
+  // the DO is the source of truth, so never cache this response.
+  return c.json(state, 200, { 'Cache-Control': 'no-store' });
 }
 
 export async function agentStreamHandler(c: Context<{ Bindings: Env }>): Promise<Response> {

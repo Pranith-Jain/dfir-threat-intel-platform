@@ -1015,7 +1015,10 @@ export function resolveRoutingQueryType(query: string, queryType: string): strin
 }
 
 export function getToolsForSpecialist(role: SpecialistRole, allTools: AgentTool[]): AgentTool[] {
-  const allowed = new Set(SPECIALIST_TOOLS[role]);
+  // Keep the union in sync with filterToolsForQueryType: the planner may
+  // select an always-available tool (e.g. the new HI/OH/KP sources) and the
+  // executor must accept it too.
+  const allowed = new Set<string>([...ALWAYS_AVAILABLE_TOOLS, ...SPECIALIST_TOOLS[role]]);
   return allTools.filter((t) => allowed.has(t.name));
 }
 
@@ -1063,6 +1066,18 @@ const ALWAYS_AVAILABLE_TOOLS = new Set([
   'ti_list_darknet',
   'ti_stats',
   'briefings_related',
+  // New 2026-11 source families (hacking incidents, offsec harnesses,
+  // kitploit feeds). Without these the planner cannot see the new sources.
+  'hi_list_incidents',
+  'hi_get_incident',
+  'hi_stats',
+  'oh_list_harnesses',
+  'oh_get_harness',
+  'oh_sources',
+  'kp_list_tools',
+  'kp_list_exploits',
+  'kp_get_feed',
+  'kp_stats',
 ]);
 
 /**

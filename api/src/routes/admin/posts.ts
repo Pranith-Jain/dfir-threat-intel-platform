@@ -4,6 +4,8 @@ import { logError } from '../../lib/logger';
 import { badRequest, conflict } from '../../lib/api-error';
 import { safeJsonBody } from '../../lib/safe-body';
 import { putPost, listPostIndex, removePost } from '../../case-study/storage/posts';
+import { upsertCsPostD1, deleteCsPostD1 } from '../../case-study/storage/cs-posts-d1';
+import { renderHeroSvg } from '../../case-study/generation/hero-svg';
 import { getSchedule, setSchedule } from '../../case-study/storage/schedule';
 import { generateSocialForPost, type CaseStudyEnv } from '../../case-study/run';
 import { buildVoiceProfileFromIndex } from '../../case-study/generation/voice-profile';
@@ -23,6 +25,15 @@ postsRouter.post('/posts/:slug/unpublish', async (c) => {
   const slug = c.req.param('slug');
   if (!validSlug(slug)) return badRequest(c, 'invalid slug');
   await removePost(c.env.CASE_STUDIES, slug);
+  // KV is the source of truth for the blog, but D1 mirrors published posts
+  // for unified search. Without this the search index keeps a ghost result.
+  if (c.env.BRIEFINGS_DB) {
+    try {
+      await deleteCsPostD1(c.env.BRIEFINGS_DB, slug);
+    } catch (err) {
+      logError('deleteCsPostD1 failed', err);
+    }
+  }
   // Clean up schedule slots referencing this slug
   const schedule = await getSchedule(c.env.CASE_STUDIES);
   const updated = schedule.map((s) =>
@@ -99,13 +110,24 @@ postsRouter.post('/posts/manual', async (c) => {
     publishedAt: now,
     candidateId: `manual-${slug}`,
     body,
-    hero: '',
+    // Manual posts have no AI illustration; use the same typographic SVG
+    // the generation pipeline emits so the blog hero is never an empty src.
+    hero: renderHeroSvg({ title, type }),
     iocs: iocs ?? [],
     tags: tags ?? [type],
     sources: sources ?? [],
   };
 
   const postIndex = await putPost(c.env.CASE_STUDIES, post);
+
+  // Keep D1/unified search in step with KV for manually published posts too.
+  if (c.env.BRIEFINGS_DB) {
+    try {
+      await upsertCsPostD1(c.env.BRIEFINGS_DB, post);
+    } catch (err) {
+      logError('upsertCsPostD1 failed', err);
+    }
+  }
 
   // RSS only needs index-level fields; reuse the index putPost just wrote
   // instead of re-reading posts:index from KV.

@@ -134,6 +134,24 @@ jobs:
             fi
           done
           exit $failed
+      # A fully shell-only deploy still returns 200 on every route above, so
+      # assert the Worker is actually serving the prerendered HTML tree.
+      - name: Smoke — prerendered HTML is served
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        run: |
+          failed=0
+          for path in /dfir /threatintel /about; do
+            code=$(curl -s -D /tmp/ssr-headers -o /dev/null -w "%{http_code}" --max-time 25 -A "Mozilla/5.0 (compatible; smoke/1.0)" "https://pranithjain.qzz.io$path")
+            src=$(awk -F': ' 'tolower($1)=="x-ssr-source" {gsub(/\r/, "", $2); print $2}' /tmp/ssr-headers)
+            echo "$path -> HTTP $code, x-ssr-source: ${src:-none}"
+            if [ "$code" = "403" ]; then
+              echo "::warning::$path returned 403 from the runner IP — Cloudflare bot mitigation, not a deploy regression."
+            elif [ "$code" != "200" ] || [ "$src" != "prerendered" ]; then
+              echo "::error::$path did not serve prerendered HTML after deploy (HTTP $code, source ${src:-none})"
+              failed=1
+            fi
+          done
+          exit $failed
       # End-to-end OG check: with a Twitterbot UA the worker must rewrite
       # /about's og:image to the SHA-versioned card URL AND that card must
       # actually serve from KV as image/png — the exact X-crawler failure

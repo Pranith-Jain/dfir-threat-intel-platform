@@ -39,7 +39,13 @@ interface DraftPreview {
     tags: string[];
     iocs: Array<{ type: string; value: string }>;
     sources: Array<{ name: string; url: string }>;
-    quality?: { total: number };
+    audit?: {
+      words: number;
+      sections: number;
+      references: number;
+      iocs: number;
+      warnings: string[];
+    };
     linkVerification?: {
       checked: number;
       verified: number;
@@ -162,7 +168,7 @@ export default function DraftsTab() {
         body: string;
         bodyHtml: string;
         iocs: DraftPreview['post']['iocs'];
-        qa?: DraftPreview['post']['quality'];
+        audit?: DraftPreview['post']['audit'];
         changed: boolean;
         mode: 'fix' | 'rewrite';
         error?: string;
@@ -174,7 +180,7 @@ export default function DraftsTab() {
       }
       setActionMsg(
         r.changed
-          ? `${verb} done: ${r.slug} (body updated, ${r.qa ? `QA ${r.qa.total}` : 'no QA'})`
+          ? `${verb} done: ${r.slug} (body updated, ${r.audit ? `${r.audit.words} words` : 'no audit'})`
           : `${verb} done: no changes needed`
       );
       // If the regen produced a different slug (LLM rewrite can rename),
@@ -192,9 +198,9 @@ export default function DraftsTab() {
               title: r.title,
               body: r.body,
               iocs: r.iocs,
-              // Include fresh QA score so DraftPreviewPanel doesn't show the
-              // pre-regen total after a successful regenerate.
-              quality: r.qa ?? preview.post.quality,
+              // Include the fresh audit so the preview does not keep the
+              // pre-regeneration word/reference counts.
+              audit: r.audit ?? preview.post.audit,
             },
             bodyHtml: r.bodyHtml,
           });
@@ -403,7 +409,7 @@ function DraftPreviewPanel({
         slug: string;
         body: string;
         bodyHtml: string;
-        qa?: { total: number };
+        audit?: DraftPreview['post']['audit'];
       }>(`/drafts/${encodeURIComponent(post.slug)}/edit`, { title: editTitle, body: editBody });
       if (r.ok) {
         setEditing(false);
@@ -427,7 +433,13 @@ function DraftPreviewPanel({
           <h3 className="text-sm font-semibold uppercase tracking-wider text-body">Preview</h3>
           <p className="text-xs text-muted mt-0.5">
             <span className="font-mono">{post.slug}</span> · type <span className="uppercase">{post.type}</span>
-            {post.quality?.total !== undefined && <> · quality {post.quality.total}</>}
+            {post.audit && (
+              <>
+                {' · '}
+                {post.audit.words} words · {post.audit.references} refs
+                {post.audit.warnings.length > 0 && ` · ${post.audit.warnings.length} warnings`}
+              </>
+            )}
             {post.iocs.length > 0 && <> · {post.iocs.length} IOCs</>}
             {post.sources.length > 0 && <> · {post.sources.length} sources</>}
           </p>

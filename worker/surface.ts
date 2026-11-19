@@ -1,5 +1,5 @@
 import type { Env } from './env';
-import { toolHostList, toolHostForPath } from '../api/src/lib/surface-hosts';
+import { parseToolHosts, toolHostList, toolHostForPath } from '../api/src/lib/surface-hosts';
 
 /**
  * Presentation surface — which front door a request is for.
@@ -35,6 +35,18 @@ export function surfaceForHostname(hostname: string, env: Env): Surface {
   if (hosts.length === 0) return 'portfolio';
   const host = (hostname ?? '').trim().toLowerCase().split(':')[0] ?? '';
   return hosts.includes(host) ? 'tools' : 'portfolio';
+}
+
+/** Path prefix a tool host's root should redirect to (null for the apex). */
+export function rootRedirectForHost(
+  pathname: string,
+  hostname: string,
+  surface: Surface,
+  rawToolsHosts?: string | null
+): string | null {
+  if (pathname !== '/' || surface !== 'tools') return null;
+  const host = (hostname ?? '').toLowerCase();
+  return parseToolHosts(rawToolsHosts).find((entry) => entry.host === host)?.prefix ?? null;
 }
 
 /**

@@ -446,9 +446,9 @@ export default function AgentInvestigator(): JSX.Element {
       }
       headerExtra={
         <p className="text-xs text-muted font-mono flex items-center gap-2">
-          <span>2-6 step CTI investigation</span>
+          <span>up to 10-step CTI investigation</span>
           <span>·</span>
-          <span>30+ intel tools</span>
+          <span>320+ intel tools</span>
           <span>·</span>
           <span>STIX 2.1 export</span>
           <span>·</span>

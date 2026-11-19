@@ -186,8 +186,8 @@ export default function Writeups(): JSX.Element {
         <>
           The broad ecosystem cut: vendor blogs, news outlets, Medium tag feeds, the long tail. For the curated
           analyst-must-read set, see{' '}
-          <Link to="/threatintel/detections/signal" className="text-rose-600 dark:text-rose-400 hover:underline">
-            /threatintel/signal
+          <Link to="/threatintel/research-hub/signal" className="text-rose-600 dark:text-rose-400 hover:underline">
+            /threatintel/research-hub/signal
           </Link>{' '}
           (no overlap between the two pages).
         </>
@@ -227,7 +227,7 @@ export default function Writeups(): JSX.Element {
         {data && (
           <div className="flex flex-wrap items-center gap-1.5 mt-3">
             <span className="text-mini font-mono text-muted mr-1">platform:</span>
-            {(['rss', 'medium', 'devto', 'hashnode', 'manual'] as const).map((k) => {
+            {(['rss', 'medium', 'devto', 'hashnode', 'jsonfeed', 'manual'] as const).map((k) => {
               const count = kindCounts[k];
               if (count === 0) return null;
               const active = kindFilter.has(k);

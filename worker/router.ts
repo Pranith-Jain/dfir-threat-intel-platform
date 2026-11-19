@@ -1,5 +1,6 @@
 import { injectScriptNonce } from './csp';
 import { getOrInjectOg, injectOgMeta } from './og-rewriter';
+import { rootRedirectForHost } from './surface';
 // The prerendered-route map lives in worker/prerender-routes.ts (an
 // import-free leaf module) so worker/og-rewriter.ts can consume the same
 // list without creating an import cycle back through this file.
@@ -126,6 +127,18 @@ export async function fetchPrerenderedOrShell(
   nonce: string,
   surface: Surface = 'portfolio'
 ): Promise<Response> {
+  // Every tool host owns a path prefix (TOOLS_HOSTS). Its root should open
+  // that app, not the portfolio home that the generic '/' prerender maps to.
+  if (surface === 'tools') {
+    const owned = rootRedirectForHost(url.pathname, url.hostname, surface, env.TOOLS_HOSTS);
+    if (owned) {
+      return new Response(null, {
+        status: 302,
+        headers: { location: owned, 'cache-control': 'no-store' },
+      });
+    }
+  }
+
   // Try exact match first; fall back to a dynamic-route parent if the
   // exact path isn't a prerendered page.
   const prerenderedPath = PRERENDERED_ROUTES.get(url.pathname) ?? resolveDynamicRoute(url.pathname);
@@ -197,7 +210,12 @@ export async function fetchPrerenderedOrShell(
     const r = await getOrInjectOg(request, env, ctx, url);
     const ct = r.headers.get('content-type') ?? '';
     if (!ct.toLowerCase().includes('text/html')) return r;
-    const body = injectScriptNonce(await r.text(), nonce);
+    let body = injectScriptNonce(await r.text(), nonce);
+    // The SPA shell has no data-surface attribute; without it the first
+    // paint uses portfolio anchor offsets even on a tool host.
+    if (!body.includes('data-surface=')) {
+      body = body.replace('<html ', `<html data-surface="${surface}" `);
+    }
     const h = new Headers(r.headers);
     h.set('x-ssr-source', 'shell-fallback-404');
     // no-cache forces revalidation (fresh shell on every load) without

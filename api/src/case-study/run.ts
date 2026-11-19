@@ -586,7 +586,14 @@ async function recordPostSideEffects(
   if (opts.published) {
     try {
       const { notifyPublished } = await import('./notifications');
-      await notifyPublished(env as unknown as WebhookEnv, slug, slug, 'published');
+      // notifyPublished's 3rd argument is the human-readable title. Passing
+      // the slug here made every webhook/email show the URL fragment instead.
+      let title = opts.post?.title;
+      if (!title) {
+        const { getPost } = await import('./storage/posts');
+        title = (await getPost(env.CASE_STUDIES, slug))?.title ?? slug;
+      }
+      await notifyPublished(env as unknown as WebhookEnv, slug, title, 'published');
     } catch (err) {
       logError('notifyPublished failed', err);
     }

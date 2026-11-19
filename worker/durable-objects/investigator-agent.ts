@@ -54,7 +54,7 @@ import {
   recordCompletion,
   type InvestigationCost,
 } from '../../api/src/lib/agent/cost-tracker';
-import { checkDuplicate, registerInvestigation } from '../../api/src/lib/agent/request-dedup';
+import { checkDuplicate, registerInvestigation, unregisterInvestigation } from '../../api/src/lib/agent/request-dedup';
 import { extractGraphFromSteps } from '../../api/src/lib/agent/ioc-graph';
 import { truncateData } from '../lib/truncate-data';
 import { createVersionedReport, addVersion, getVersionDiff } from '../../api/src/lib/agent/report-versioning';
@@ -177,8 +177,25 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
         tiMindmapApiKey?: string;
       };
       const existingId = await checkDuplicate(body.query);
-      if (existingId) {
-        return Response.json({ id: existingId, status: 'running', duplicate: true });
+      if (existingId && existingId !== body.id) {
+        // A finished investigation must not be returned as "running": the
+        // dedup cache can outlive the job by minutes. Ask the owning DO for
+        // the real state and clear the stale key when it is no longer live.
+        let stillRunning = false;
+        try {
+          const existingStub = this.env.INVESTIGATOR_AGENT.get(this.env.INVESTIGATOR_AGENT.idFromName(existingId));
+          const existingRes = await existingStub.fetch(`https://agent/state?id=${encodeURIComponent(existingId)}`);
+          if (existingRes.ok) {
+            const existing = (await existingRes.json()) as { status?: string };
+            stillRunning = existing.status === 'running';
+          }
+        } catch {
+          // Unreachable DO => treat the cached id as stale.
+        }
+        if (stillRunning) {
+          return Response.json({ id: existingId, status: 'running', duplicate: true });
+        }
+        await unregisterInvestigation(body.query);
       }
 
       const state: AgentState = {
@@ -1427,6 +1444,9 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
       state.currentStep = qaStepNum;
       state.status = 'done';
       state.completedAt = new Date().toISOString();
+      // Free the dedup key as soon as the job is terminal — otherwise an
+      // identical query would be served this finished id for another 5 min.
+      await unregisterInvestigation(state.query);
       state.cost = {
         usd: Math.round(synthTracker.totalCostUsd * 10000) / 10000,
         tokens: synthTracker.totalInputTokens + synthTracker.totalOutputTokens,
@@ -1615,6 +1635,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
       state.status = 'error';
       state.error = `Synthesis failed: ${errMessage(err)}`;
       state.completedAt = new Date().toISOString();
+      await unregisterInvestigation(state.query);
     }
 
     return state;
@@ -1652,7 +1673,10 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
         JSON.stringify(trimmedSteps),
         state.report ?? null,
         state.modelUsed ?? null,
-        state.currentStep,
+        // Persist the real step count; currentStep is the last index reached
+        // and synthesis/QA append steps after it, so using it understated
+        // every completed report by two in the sessions list and metrics.
+        trimmedSteps.length,
         state.startedAt,
         new Date().toISOString()
       )

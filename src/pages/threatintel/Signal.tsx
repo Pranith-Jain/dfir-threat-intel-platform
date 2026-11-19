@@ -32,7 +32,7 @@ interface Writeup {
   description?: string;
   tags?: string[];
   author?: string;
-  kind: 'medium' | 'devto' | 'hashnode' | 'rss' | 'manual';
+  kind: 'medium' | 'devto' | 'hashnode' | 'rss' | 'jsonfeed' | 'manual';
 }
 
 interface SignalResponse {

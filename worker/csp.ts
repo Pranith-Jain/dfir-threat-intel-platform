@@ -21,11 +21,34 @@
 // scripts, so disallowing them means an injected inline <script> cannot execute
 // even if an output-escaping gap is reintroduced (defence-in-depth for CSP-1).
 const CSP_REPORT_URI = 'https://pranithjain.qzz.io/api/v1/csp-report';
-const CSP_API = `default-src 'self';script-src 'self' 'wasm-unsafe-eval' https://static.cloudflareinsights.com;style-src 'self' 'unsafe-inline';img-src 'self' data: https:;connect-src 'self' https://api.cloudflare.com https://cloudflare-dns.com https://cloudflareinsights.com https://*.cloudflareinsights.com wss://pranithjain.qzz.io;frame-src 'none';font-src 'self' data:;frame-ancestors 'none';base-uri 'self';form-action 'self';object-src 'none';report-uri ${CSP_REPORT_URI}`;
+const WS_PRIMARY = 'wss://pranithjain.qzz.io';
+
+/**
+ * The investigator DO opens `wss://<current host>` for live step streaming.
+ * Tool hosts (agent., copilot., …) are separate origins from the apex, so the
+ * allowed WebSocket source has to be derived from the response origin —
+ * otherwise CSP silently drops the socket on every tool subdomain.
+ */
+function wsSources(origin?: string): string {
+  if (!origin) return WS_PRIMARY;
+  try {
+    const host = new URL(origin).host;
+    if (!host) return WS_PRIMARY;
+    const ws = `wss://${host}`;
+    return ws === WS_PRIMARY ? WS_PRIMARY : `${WS_PRIMARY} ${ws}`;
+  } catch {
+    return WS_PRIMARY;
+  }
+}
+
+function apiCsp(s: string, ws: string): string {
+  return `default-src ${s};script-src ${s} 'wasm-unsafe-eval' https://static.cloudflareinsights.com;style-src ${s} 'unsafe-inline';img-src ${s} data: https:;connect-src ${s} https://api.cloudflare.com https://cloudflare-dns.com https://cloudflareinsights.com https://*.cloudflareinsights.com ${ws};frame-src 'none';font-src ${s} data:;frame-ancestors 'none';base-uri ${s};form-action ${s};object-src 'none';report-uri ${CSP_REPORT_URI}`;
+}
 
 export function cspHeader(nonce?: string, origin?: string): string {
   const s = origin ?? "'self'";
-  if (!nonce) return CSP_API.replace(/'self'/g, s);
+  const ws = wsSources(origin);
+  if (!nonce) return apiCsp(s, ws);
   return [
     `default-src ${s}`,
     // Nonce-based script-src: only the theme-flash preventer (matching nonce)
@@ -36,7 +59,7 @@ export function cspHeader(nonce?: string, origin?: string): string {
     `script-src ${s} 'nonce-${nonce}' 'wasm-unsafe-eval' https://static.cloudflareinsights.com`,
     `style-src ${s} 'unsafe-inline'`,
     `img-src ${s} data: https:`,
-    `connect-src ${s} https://api.cloudflare.com https://cloudflare-dns.com https://cloudflareinsights.com https://*.cloudflareinsights.com https://unpkg.com https://mr-akuma.github.io https://nominatim.openstreetmap.org https://goxdr.fyi https://mr-r3b00t.github.io wss://pranithjain.qzz.io`,
+    `connect-src ${s} https://api.cloudflare.com https://cloudflare-dns.com https://cloudflareinsights.com https://*.cloudflareinsights.com https://unpkg.com https://mr-akuma.github.io https://nominatim.openstreetmap.org https://goxdr.fyi https://mr-r3b00t.github.io ${ws}`,
     `font-src ${s} data:`,
     "frame-ancestors 'none'",
     `base-uri ${s}`,
