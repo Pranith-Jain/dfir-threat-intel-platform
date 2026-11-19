@@ -204,7 +204,7 @@ export async function agentStreamHandler(c: Context<{ Bindings: Env }>): Promise
 
       setTimeout(() => {
         if (!closed) {
-          send(JSON.stringify({ type: 'error', error: 'Investigation timed out (5m)' }));
+          send(JSON.stringify({ type: 'error', error: 'Investigation timed out (15m)' }));
           clearInterval(interval);
           closed = true;
           try {
@@ -214,7 +214,7 @@ export async function agentStreamHandler(c: Context<{ Bindings: Env }>): Promise
             /* already closed */
           }
         }
-      }, 300_000);
+      }, 900_000);
     },
   });
 

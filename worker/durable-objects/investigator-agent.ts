@@ -17,7 +17,7 @@ import { observeStep } from '../../api/src/lib/agent/observer';
 import { synthesizeReport, splitSynthOutput } from '../../api/src/lib/agent/synthesizer';
 import { verifyReport } from '../../api/src/lib/agent/qa-verifier';
 import { selfEvaluateReport } from '../../api/src/lib/agent/self-eval';
-import { extractToolFailures } from '../../api/src/lib/agent/introspection';
+import { extractToolFailures, type ToolFailure } from '../../api/src/lib/agent/introspection';
 import { signInternalToken } from '../../api/src/lib/internal-token';
 import {
   buildOrchestratorPlan,
@@ -464,6 +464,12 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
           }
         } catch (_pivotErr) {
           console.error('pivot chain failed:', errMessage(_pivotErr));
+          this.recordDataGap(
+            state,
+            'pivot-chain',
+            _pivotErr,
+            'Infrastructure pivot graph (subdomains, C2, contacted IPs)'
+          );
         }
       }
 
@@ -491,6 +497,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
           }
         } catch (_skillErr) {
           console.error('cti skill load failed:', errMessage(_skillErr));
+          this.recordDataGap(state, 'cti-skill', _skillErr, 'Query-matched CTI methodology playbook');
         }
       }
 
@@ -804,6 +811,29 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
     return state;
   }
 
+  /** Record a best-effort subsystem failure for the report's Data Gaps panel.
+   *  These used to be console-only, so a failed pivot/skill/burst silently
+   *  narrowed an investigation without the analyst ever seeing why. */
+  private recordDataGap(state: AgentState, tool: string, err: unknown, missed: string): void {
+    const message = errMessage(err);
+    const cause: ToolFailure['cause'] = /rate.?limit|429/i.test(message)
+      ? 'rate-limit'
+      : /timeout|timed out/i.test(message)
+        ? 'timeout'
+        : 'unknown';
+    state.dataGaps = [
+      ...(state.dataGaps ?? []).slice(-11),
+      {
+        tool,
+        error: message.slice(0, 300),
+        step: state.currentStep,
+        cause,
+        diagnosis: message.slice(0, 300),
+        missedCapability: missed,
+      },
+    ];
+  }
+
   private async tryParallelBurst(
     state: AgentState,
     ai: ApiEnv['AI'],
@@ -864,6 +894,12 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
       return state;
     } catch (err) {
       console.error('parallel burst failed, falling back to sequential:', errMessage(err));
+      this.recordDataGap(
+        state,
+        'parallel-burst',
+        err,
+        'Parallel specialist coverage across multiple intelligence roles'
+      );
       return null;
     }
   }

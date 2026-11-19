@@ -9,8 +9,9 @@ const AgentInvestigator = lazy(() => import('./AgentInvestigator'));
 const TieEnrich = lazy(() => import('./TieEnrich'));
 const AgentMap = lazy(() => import('./AgentMap'));
 const AgentMetrics = lazy(() => import('./AgentMetrics'));
+const AgentReports = lazy(() => import('./AgentReports'));
 
-type TabId = 'investigator' | 'enrich' | 'map' | 'metrics';
+type TabId = 'investigator' | 'enrich' | 'map' | 'metrics' | 'reports';
 
 const TABS: Array<{ id: TabId; label: string; desc: string }> = [
   { id: 'investigator', label: 'INVESTIGATOR', desc: 'Autonomous investigation agent for threat triage' },
@@ -20,6 +21,11 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
     id: 'metrics',
     label: 'METRICS',
     desc: 'Agent observability — quality, per-tool latency/success, feature telemetry',
+  },
+  {
+    id: 'reports',
+    label: 'REPORTS',
+    desc: 'Archive of completed investigations — read, audit and download reports',
   },
 ];
 
@@ -48,6 +54,7 @@ export default function AgentSuite(): JSX.Element {
               {active === 'enrich' && <TieEnrich />}
               {active === 'map' && <AgentMap />}
               {active === 'metrics' && <AgentMetrics />}
+              {active === 'reports' && <AgentReports />}
             </Suspense>
           </>
         )}
