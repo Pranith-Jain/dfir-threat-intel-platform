@@ -2,21 +2,17 @@ import { errMessage, logCatch } from '../../lib/log';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type JSX } from 'react';
 import { sanitizeUrl } from '../../lib/sanitize-url';
 import {
-  Activity,
   Globe,
   Zap,
   Bug,
   Skull,
-  AlertTriangle,
   Box,
   Crosshair,
   RefreshCw,
   Map,
   ExternalLink,
-  Layers,
   Filter,
   X,
-  Clock,
   Play,
   Pause,
   Brain,
@@ -25,7 +21,6 @@ import {
 } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { ShareBar } from '../../components/intel/ShareBar';
-import { CountUp } from '../../components/ui/CountUp';
 import { Sparkline } from '../../components/threatintel/Sparkline';
 import { SeverityPill } from '../../components/Badge';
 import type { CtiArc, CtiPoint } from '../../components/threatintel/cti/geo';
@@ -49,6 +44,7 @@ export default function GlobalPulse(): JSX.Element {
   const [activeLayers, setActiveLayers] = useState<Set<PulseKind>>(
     new Set([
       'ransomware',
+      'ai_incident',
       'cve',
       'ioc_activity',
       'cyber_attack',
@@ -494,7 +490,19 @@ export default function GlobalPulse(): JSX.Element {
   const lastTrend = trend[trend.length - 1];
   const prevTrend = trend[trend.length - 2];
   const totalDelta = lastTrend && prevTrend ? lastTrend.total - prevTrend.total : 0;
-  const criticalDelta = lastTrend && prevTrend ? lastTrend.critical - prevTrend.critical : 0;
+
+  const toggleSeverityChip = useCallback((sev: string) => {
+    setSeverityFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(sev)) {
+        if (next.size === 1) return new Set(['critical', 'high', 'medium', 'low']);
+        next.delete(sev);
+      } else {
+        next.add(sev);
+      }
+      return next;
+    });
+  }, []);
 
   return (
     <DataPageLayout
@@ -510,133 +518,114 @@ export default function GlobalPulse(): JSX.Element {
     >
       {data && (
         <div className="space-y-5">
-          {/* ─── Top Stats Bar ─── */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {/* Total events */}
-            <div className="relative rounded-2xl border border-line-1/60 dark:border-white/[0.06] bg-surface-100 dark:bg-surface-100/[0.02] p-4 shadow-sm">
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <span className="flex items-center gap-1.5 text-mini font-semibold uppercase tracking-wider text-muted">
-                  <Activity size={13} className="text-muted" /> Total Events
+          {/* ─── Signal rail ─────────────────────────────────────────────
+              One instrument strip instead of four hero-metric cards. The
+              severity segment is interactive, so the most common triage
+              action (isolate critical/high) never needs the Filters panel. */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 rounded-xl border border-line-1 bg-surface-100 divide-x divide-line-1 overflow-hidden">
+            <div className="px-4 py-3 min-w-0">
+              <div className="text-micro font-mono uppercase tracking-wider text-muted">Events</div>
+              <div className="flex items-end justify-between gap-2 mt-1">
+                <span className="text-xl font-mono font-semibold text-heading tabular-nums leading-none">
+                  {filteredEvents.length}
                 </span>
+                {trend.length > 1 && (
+                  <Sparkline values={trend.map((t) => t.total)} className="text-brand-500/70 mb-0.5" />
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 mt-1.5 text-micro font-mono text-muted">
                 {totalDelta !== 0 && (
-                  <span
-                    className={`inline-flex items-center text-micro font-mono px-1.5 py-0.5 rounded-full ${
-                      totalDelta > 0
-                        ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
-                        : 'text-slate-500 bg-slate-500/10'
-                    }`}
-                  >
+                  <span className={totalDelta > 0 ? 'text-accent-text' : ''}>
                     {totalDelta > 0 ? '+' : ''}
                     {totalDelta}
                   </span>
                 )}
+                <span>{geoPoints.length} geo-located</span>
               </div>
-              <div className="flex items-end justify-between gap-2">
-                <CountUp
-                  to={filteredEvents.length}
-                  className="text-3xl font-display font-bold text-heading tabular-nums leading-none"
-                />
-                {trend.length > 1 && (
-                  <Sparkline
-                    values={trend.map((t) => t.total)}
-                    className="text-rose-500/60 dark:text-rose-400/60 mb-0.5"
-                  />
-                )}
-              </div>
-              <div className="text-mini font-mono text-muted mt-2">{geoPoints.length} geo-located</div>
             </div>
 
-            {/* Critical - the hero metric */}
-            <div className="relative rounded-2xl border border-rose-500/20 dark:border-rose-500/10 bg-gradient-to-br from-rose-500/[0.04] to-transparent p-4 shadow-sm">
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <span className="flex items-center gap-1.5 text-mini font-semibold uppercase tracking-wider text-rose-500 dark:text-rose-400">
-                  <AlertTriangle size={13} /> Critical
-                </span>
-                {criticalDelta !== 0 && (
-                  <span
-                    className={`inline-flex items-center text-micro font-mono px-1.5 py-0.5 rounded-full ${
-                      criticalDelta > 0
-                        ? 'text-rose-600 dark:text-rose-400 bg-rose-500/15'
-                        : 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
+            <div className="px-4 py-3 min-w-0">
+              <div className="text-micro font-mono uppercase tracking-wider text-muted">Severity mix</div>
+              <div className="mt-2 flex h-1.5 gap-px overflow-hidden rounded-full bg-track">
+                {(['critical', 'high', 'medium', 'low'] as const).map((sev) => {
+                  const n = stats?.bySeverity[sev] ?? 0;
+                  const tot = Math.max(1, filteredEvents.length);
+                  return (
+                    <div key={sev} className={SEVERITY_CONFIG[sev].dot} style={{ width: `${(n / tot) * 100}%` }} />
+                  );
+                })}
+              </div>
+              <div className="flex flex-wrap gap-1 mt-2">
+                {(['critical', 'high', 'medium', 'low'] as const).map((sev) => (
+                  <button
+                    key={sev}
+                    type="button"
+                    aria-pressed={severityFilter.has(sev)}
+                    onClick={() => toggleSeverityChip(sev)}
+                    title={`Toggle ${sev} severity`}
+                    className={`inline-flex items-center gap-1 text-micro font-mono px-1.5 py-0.5 rounded-control border transition-colors ${
+                      severityFilter.has(sev)
+                        ? `${SEVERITY_CONFIG[sev].bg} ${SEVERITY_CONFIG[sev].text} border-current`
+                        : 'border-line-1 text-muted opacity-60 hover:opacity-100'
                     }`}
                   >
-                    {criticalDelta > 0 ? '+' : ''}
-                    {criticalDelta}
-                  </span>
-                )}
-              </div>
-              <CountUp
-                to={filteredCritical}
-                className="block text-3xl font-display font-bold text-rose-600 dark:text-rose-400 tabular-nums leading-none"
-              />
-              {(() => {
-                const bs = stats?.bySeverity ?? { critical: 0, high: 0, medium: 0, low: 0 };
-                const tot = bs.critical + bs.high + bs.medium + bs.low || 1;
-                return (
-                  <div className="mt-3 flex h-1.5 gap-px overflow-hidden rounded-full bg-track/60 dark:bg-surface-100/[0.06]">
-                    <div className="bg-rose-500" style={{ width: `${(bs.critical / tot) * 100}%` }} />
-                    <div className="bg-orange-500" style={{ width: `${(bs.high / tot) * 100}%` }} />
-                    <div className="bg-amber-500" style={{ width: `${(bs.medium / tot) * 100}%` }} />
-                    <div className="bg-emerald-500" style={{ width: `${(bs.low / tot) * 100}%` }} />
-                  </div>
-                );
-              })()}
-              <div className="text-mini font-mono text-rose-400/70 dark:text-rose-400/60 mt-2">
-                {stats?.bySeverity.high ?? 0} high severity
+                    <span className={`w-1.5 h-1.5 rounded-full ${SEVERITY_CONFIG[sev].dot}`} />
+                    {stats?.bySeverity[sev] ?? 0}
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Active layers */}
-            <div className="relative rounded-2xl border border-line-1/60 dark:border-white/[0.06] bg-surface-100 dark:bg-surface-100/[0.02] p-4 shadow-sm">
-              <div className="flex items-center gap-1.5 text-mini font-semibold uppercase tracking-wider text-muted mb-3">
-                <Layers size={13} className="text-muted" /> Active Layers
+            <div className="px-4 py-3 min-w-0">
+              <div className="text-micro font-mono uppercase tracking-wider text-muted">Coverage</div>
+              <div className="flex items-center gap-2 mt-2">
+                <div className="flex-1 h-1.5 rounded-full bg-track overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-brand-500"
+                    style={{
+                      width: `${Math.min(100, Math.round((geoPoints.length / Math.max(1, filteredEvents.length)) * 100))}%`,
+                    }}
+                  />
+                </div>
+                <span className="text-micro font-mono text-muted tabular-nums">
+                  {Math.round((geoPoints.length / Math.max(1, filteredEvents.length)) * 100)}%
+                </span>
               </div>
-              <CountUp
-                to={activeLayers.size}
-                className="block text-3xl font-display font-bold text-heading tabular-nums leading-none"
-              />
-              <div className="text-mini font-mono text-muted mt-2">{ALL_KINDS.length - activeLayers.size} hidden</div>
+              <div className="text-micro font-mono text-muted mt-1.5 truncate">
+                {stats?.topSources.length
+                  ? stats.topSources
+                      .slice(0, 2)
+                      .map(([name, n]) => `${name} ${n}`)
+                      .join(' · ')
+                  : 'No sources'}
+              </div>
             </div>
 
-            {/* Live status */}
-            <div className="relative rounded-2xl border border-line-1/60 dark:border-white/[0.06] bg-surface-100 dark:bg-surface-100/[0.02] p-4 shadow-sm">
-              <div className="flex items-center gap-1.5 text-mini font-semibold uppercase tracking-wider text-muted mb-3">
-                <Clock size={13} className="text-muted" /> Last Update
-              </div>
-              <div className="text-2xl font-display font-bold text-heading tabular-nums leading-none">
+            <div className="px-4 py-3 min-w-0">
+              <div className="text-micro font-mono uppercase tracking-wider text-muted">Stream</div>
+              <div className="text-base font-mono font-semibold text-heading tabular-nums leading-none mt-2">
                 {lastUpdated ? formatTime(lastUpdated) : data ? formatTime(data.generated_at) : '-'}
               </div>
-              <div className="mt-2.5">
+              <div className="mt-1.5 flex items-center gap-1.5 text-micro font-mono uppercase tracking-wider">
                 {loading && data ? (
-                  <span className="inline-flex items-center gap-1.5" aria-label="Syncing latest data">
-                    <RefreshCw size={11} className="animate-spin text-rose-500" />
-                    <span className="text-mini font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400">
-                      SYNCING
-                    </span>
-                  </span>
-                ) : wsConnected ? (
-                  <span className="inline-flex items-center gap-1.5" aria-label="Connected via WebSocket - real-time">
+                  <>
+                    <RefreshCw size={11} className="animate-spin text-brand-500" />
+                    <span className="text-accent-text">Syncing</span>
+                  </>
+                ) : wsConnected || autoRefresh ? (
+                  <>
                     <Wifi size={11} className="text-emerald-500" />
-                    <span className="text-mini font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                      REAL-TIME
-                    </span>
-                  </span>
-                ) : autoRefresh ? (
-                  <span className="inline-flex items-center gap-1.5" aria-label="Live - polling">
-                    <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                    </span>
-                    <span className="text-mini font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                      LIVE
-                    </span>
-                  </span>
+                    <span className="text-emerald-600 dark:text-emerald-400">{wsConnected ? 'Real-time' : 'Live'}</span>
+                  </>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5" aria-label="Paused">
+                  <>
                     <WifiOff size={11} className="text-muted" />
-                    <span className="text-mini font-semibold uppercase tracking-wider text-muted">PAUSED</span>
-                  </span>
+                    <span className="text-muted">Paused</span>
+                  </>
                 )}
+                <span className="ml-auto text-muted normal-case tracking-normal">
+                  {activeLayers.size}/{ALL_KINDS.length} layers
+                </span>
               </div>
             </div>
           </div>
@@ -691,6 +680,7 @@ export default function GlobalPulse(): JSX.Element {
                 <button
                   key={t.hours}
                   type="button"
+                  aria-pressed={timeRange === t.hours}
                   onClick={() => setTimeRange(t.hours)}
                   className={`text-micro font-mono px-2.5 py-2 transition-colors ${
                     timeRange === t.hours
@@ -708,6 +698,7 @@ export default function GlobalPulse(): JSX.Element {
               <button
                 type="button"
                 onClick={() => setMapMode('3d')}
+                aria-pressed={mapMode === '3d'}
                 className={`inline-flex items-center gap-1.5 text-xs font-mono px-3 py-2 transition-colors ${
                   mapMode === '3d'
                     ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
@@ -719,6 +710,7 @@ export default function GlobalPulse(): JSX.Element {
               <button
                 type="button"
                 onClick={() => setMapMode('2d')}
+                aria-pressed={mapMode === '2d'}
                 className={`inline-flex items-center gap-1.5 text-xs font-mono px-3 py-2 transition-colors ${
                   mapMode === '2d'
                     ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
@@ -734,6 +726,7 @@ export default function GlobalPulse(): JSX.Element {
               <button
                 type="button"
                 onClick={() => setAutoPan((p) => !p)}
+                aria-pressed={autoPan}
                 className={`inline-flex items-center gap-1.5 text-xs font-mono px-3 py-2 rounded-xl border transition-colors ${
                   autoPan
                     ? 'border-indigo-500/40 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
@@ -750,6 +743,7 @@ export default function GlobalPulse(): JSX.Element {
             <button
               type="button"
               onClick={() => setShowFilters(!showFilters)}
+              aria-expanded={showFilters}
               className={`inline-flex items-center gap-1.5 text-xs font-mono px-3 py-2 rounded-xl border transition-colors ${
                 showFilters
                   ? 'border-rose-500/40 bg-rose-500/10 text-rose-600 dark:text-rose-400'
@@ -872,6 +866,7 @@ export default function GlobalPulse(): JSX.Element {
                       <button
                         key={sev}
                         type="button"
+                        aria-pressed={active}
                         onClick={() => {
                           setSeverityFilter((prev) => {
                             const next = new Set(prev);
@@ -931,6 +926,7 @@ export default function GlobalPulse(): JSX.Element {
                         <button
                           key={kind}
                           type="button"
+                          aria-pressed={active}
                           onClick={() => toggleLayer(kind)}
                           className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-micro font-mono rounded-xl border transition-all ${
                             active
@@ -960,6 +956,7 @@ export default function GlobalPulse(): JSX.Element {
                     setActiveLayers(
                       new Set([
                         'ransomware',
+                        'ai_incident',
                         'cve',
                         'ioc_activity',
                         'cyber_attack',
@@ -1164,6 +1161,7 @@ export default function GlobalPulse(): JSX.Element {
                   <button
                     key={pill.key}
                     type="button"
+                    aria-pressed={ctiFilter === pill.key}
                     onClick={() => setCtiFilter(pill.key)}
                     className={`inline-flex items-center gap-1 px-2 py-1 text-micro font-mono rounded-md transition-colors ${
                       ctiFilter === pill.key
@@ -1246,42 +1244,36 @@ export default function GlobalPulse(): JSX.Element {
                       const isSelected = selectedEvent?.id === ev.id;
                       const hasGeo = ev.lat !== 0 || ev.lng !== 0;
                       const isCti = ctiPriority(ev.cti) > 0;
-                      const ctiBorder =
-                        ev.cti === 'ransomware'
-                          ? 'border-l-rose-500'
-                          : ev.cti === 'cve'
-                            ? 'border-l-amber-500'
-                            : ev.cti === 'ioc'
-                              ? 'border-l-sky-500'
-                              : 'border-l-transparent';
-
                       return (
                         <button
                           key={ev.id}
                           type="button"
+                          aria-pressed={isSelected}
                           onClick={() => {
                             setSelectedEvent(isSelected ? null : ev);
                             if (hasGeo) setFocus({ lat: ev.lat, lng: ev.lng });
                           }}
-                          className={`w-full text-left px-4 py-3 border-l-2 transition-all ${
-                            isSelected
-                              ? 'bg-rose-500/5 border-l-rose-500'
-                              : `hover:bg-surface-200/80 dark:hover:bg-surface-100/[0.02] ${ctiBorder}`
+                          className={`w-full text-left px-4 py-3 transition-colors ${
+                            isSelected ? 'bg-wash ring-1 ring-inset ring-brand-500/30' : 'hover:bg-surface-200'
                           }`}
                         >
                           <div className="flex items-start gap-2.5">
-                            {/* Severity dot */}
-                            <div className="shrink-0 mt-1 relative">
-                              <span className={`w-2 h-2 rounded-full block ${sevConfig.dot}`} />
-                              {sevConfig.pulse && (
-                                <span className="absolute inset-0 w-2 h-2 rounded-full bg-rose-500 animate-ping opacity-40" />
-                              )}
+                            {/* Kind tile: encodes source family without a coloured side stripe. */}
+                            <div
+                              className={`shrink-0 w-6 h-6 grid place-items-center rounded-control border ${
+                                def?.bgColor ?? 'border-line-1 bg-surface-200'
+                              } ${def?.color ?? 'text-muted'}`}
+                            >
+                              {def?.icon ?? <Crosshair size={12} />}
                             </div>
 
                             {/* Content */}
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5 mb-0.5">
-                                <span className={def?.color ?? 'text-muted'}>{def?.icon}</span>
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${sevConfig.dot}`}
+                                  title={`${ev.severity} severity`}
+                                />
                                 <span className="text-micro font-mono uppercase tracking-wider text-muted">
                                   {def?.shortLabel}
                                 </span>

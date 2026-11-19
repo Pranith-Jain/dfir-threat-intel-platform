@@ -35,6 +35,7 @@ export type PulseKind =
   | 'honeypot'
   | 'ai_llm_campaign'
   | 'ai_llm_research'
+  | 'ai_incident'
   | 'firm'
   | 'maritime'
   | 'cyberpulse'

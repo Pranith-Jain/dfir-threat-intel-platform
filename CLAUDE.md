@@ -1035,6 +1035,13 @@ Externally sourced results are wrapped with `untrustedToolResult` on the Worker.
 07:30 UTC, isolated `continue-on-error` steps, PR + auto-merge + self-deploy).
 To rebuild locally: `node scripts/build-hi-manifest.mjs && node scripts/build-oh-manifest.mjs && node scripts/build-kp-manifest.mjs`.
 
+## Global Pulse — live board upgrade
+
+`/threatintel/predictive/global-pulse` received an end-to-end (frontend + data-source) upgrade:
+
+- **Frontend**: the four hero-metric KPI cards became one compact, segmented signal rail. Its severity segment is clickable (isolate a grade without opening Filters), and it now uses the previously computed-but-unused top-source rollup. The 2D `PulseMap` SVG fills the panel height instead of leaving a dead band. Feed rows dropped their coloured side stripes in favour of kind icon tiles; toggles carry `aria-pressed` / `aria-expanded`.
+- **New source**: `ai_incident` layer from the replicated hackingincidents.ai ledger. `GP_FEEDS` warms `/api/v1/hi/incidents?limit=120`; `fromHackingIncidents()` maps evidence grade + autonomy to severity, country enrichment to map coordinates, and each row to its upstream incident page. It is on by default, tagged `threat` in CTI, and documented in the layer defs. Converter tests cover mapping and malformed slices.
+
 ## Cheyenne EO Board — working-tool replication
 
 `/threatintel/osint/cheyenne` is a **working in-site replica** of

@@ -31,9 +31,9 @@ import { errMessage } from './lib/err';
 // TTL so layers don't go dark at 2h → fallback to last-good (which looked like "8h old").
 //
 // Storage moved from KV to D1 (`api/src/lib/warm-slices.ts`): the free plan
-// allows 1,000 KV writes/day and the hourly warm fan-out (28 feeds + each
+// allows 1,000 KV writes/day and the hourly warm fan-out (29 feeds + each
 // route's own L2 write) kept the account at ~99% of that quota. D1 has 100k
-// rows written/day, and the batched read also removes 28 sequential KV reads
+// rows written/day, and the batched read also removes 29 sequential KV reads
 // from every Global Pulse map build. KV still serves as the fallback read/write
 // leg while the legacy keys age out.
 const GP_WARM_TTL_SECONDS = 180 * 60;

@@ -9,6 +9,7 @@ import {
   fromFirms,
   fromUkmto,
   fromCveDigest,
+  fromHackingIncidents,
   signalClass,
   dedupeCveEvents,
   markTrendingEvents,
@@ -361,5 +362,54 @@ describe('comparePulseEvents — the "no more C2 on top" guarantee', () => {
     const a = evt({ id: 'a', kind: 'cve', title: 'CVE-2026-1' });
     const b = evt({ id: 'b', kind: 'cve', title: 'CVE-2026-2', trending: true });
     expect([a, b].sort(comparePulseEvents)[0]?.id).toBe('b');
+  });
+});
+
+describe('fromHackingIncidents', () => {
+  it('maps evidence grade, autonomy and country enrichment into mappable events', () => {
+    const events = fromHackingIncidents({
+      incidents: [
+        {
+          id: 'artex-github-oauth-secrets-2026',
+          title: 'ARTEX agents search GitHub for OAuth secrets',
+          date: '2026-11',
+          actor: 'ARTEX operator',
+          targets: 'GitHub OAuth apps',
+          aiRole: ['recon'],
+          models: ['Claude'],
+          autonomy: 'semi-autonomous',
+          confidence: 'CONFIRMED',
+          countries: ['US'],
+          harnessUsed: true,
+        },
+        {
+          id: 'autonomous-run',
+          title: 'Agent ran an intrusion on its own',
+          date: '2026-10-15',
+          confidence: 'confirmed',
+          autonomy: 'autonomous',
+        },
+        { id: 'thin', title: 'A suspected case', date: '2025-07', confidence: 'suspected' },
+      ],
+    });
+    expect(events).toHaveLength(3);
+    const [first, second, third] = events;
+    expect(first!.kind).toBe('ai_incident');
+    expect(first!.severity).toBe('high');
+    expect(first!.lat).toBeCloseTo(37.09);
+    expect(first!.lng).toBeCloseTo(-95.71);
+    expect(first!.country).toBe('US');
+    expect(first!.url).toBe('https://hackingincidents.ai/incident/artex-github-oauth-secrets-2026/');
+    expect(first!.cti).toBe('threat');
+    expect(first!.description).toContain('ARTEX operator');
+    expect(first!.timestamp).toBe('2026-11-01T00:00:00Z');
+    expect(second!.severity).toBe('critical');
+    expect(third!.severity).toBe('low');
+    expect(third!.lat).toBe(0);
+  });
+
+  it('tolerates a missing or malformed slice', () => {
+    expect(fromHackingIncidents(null)).toEqual([]);
+    expect(fromHackingIncidents({ incidents: [{ id: '', title: '', date: '', confidence: '' }] })).toEqual([]);
   });
 });

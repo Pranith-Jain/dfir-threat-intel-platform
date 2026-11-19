@@ -51,6 +51,7 @@ export type PulseKind =
   | 'honeypot'
   | 'ai_llm_campaign'
   | 'ai_llm_research'
+  | 'ai_incident'
   | 'firm'
   | 'maritime';
 
@@ -367,6 +368,17 @@ export const LAYER_DEFS: Record<PulseKind, LayerDef> = {
     icon: <Flame size={14} />,
     color: 'text-orange-600 dark:text-orange-400',
     bgColor: 'bg-orange-500/10 border-orange-500/20',
+    group: 'intel',
+  },
+  // AI-assisted attacks from the replicated hackingincidents.ai ledger.
+  // Brand-toned so it reads as a distinct evidence series, not another
+  // red severity alert.
+  ai_incident: {
+    label: 'AI Hacking Incidents',
+    shortLabel: 'AIINC',
+    icon: <BrainCircuit size={14} />,
+    color: 'text-brand-600 dark:text-brand-400',
+    bgColor: 'bg-brand-500/10 border-brand-500/20',
     group: 'intel',
   },
   maritime: {

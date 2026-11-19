@@ -391,6 +391,72 @@ export function fromCveDigest(data: { entries?: CveDigestEntry[] }): PulseEvent[
 const CVE_ID_RE = /CVE-\d{4}-\d{4,7}/i;
 
 /** Extract a CVE ID from an event id or title, for cross-layer dedupe. */
+/**
+ * AI-assisted cyberattacks from the replicated hackingincidents.ai ledger.
+ *
+ * The upstream grade is an evidence grade, not an impact score, so severity is
+ * a deliberately conservative proxy: an autonomous, confirmed AI-run attack is
+ * critical, confirmed is high, strong is medium and suspected is low. Country
+ * enrichment supplies map coordinates; events without a known country stay in
+ * the feed at (0,0) like other non-geolocated layers.
+ */
+export interface HiIncidentLike {
+  id: string;
+  title: string;
+  date: string;
+  actor?: string | null;
+  targets?: string | null;
+  aiRole?: string[];
+  models?: string[];
+  autonomy?: string | null;
+  confidence: string;
+  harnessUsed?: boolean;
+  countries?: string[];
+  sectors?: string[];
+}
+
+export function fromHackingIncidents(data: { incidents?: HiIncidentLike[] } | null | undefined): PulseEvent[] {
+  const out: PulseEvent[] = [];
+  for (const r of data?.incidents ?? []) {
+    if (!r?.id || !r.title) continue;
+    const cc = (r.countries ?? []).find((c) => COUNTRY_COORDS[c]);
+    const coords = cc ? COUNTRY_COORDS[cc] : undefined;
+    const grade = String(r.confidence ?? '').toLowerCase();
+    const severity: PulseEvent['severity'] =
+      r.autonomy === 'autonomous' && grade === 'confirmed'
+        ? 'critical'
+        : grade === 'confirmed'
+          ? 'high'
+          : grade === 'strong'
+            ? 'medium'
+            : 'low';
+    const detail = [
+      r.actor ? `Actor: ${r.actor}` : null,
+      r.targets ? `Target: ${r.targets}` : null,
+      r.aiRole?.length ? `AI role: ${r.aiRole.join(', ')}` : null,
+      r.models?.length ? `Model: ${r.models.join(', ')}` : null,
+      r.harnessUsed ? 'Offensive harness used' : null,
+    ]
+      .filter(Boolean)
+      .join(' · ');
+    out.push({
+      id: `hi:${r.id}`,
+      kind: 'ai_incident',
+      title: r.title,
+      description: detail || 'AI use stated or credibly suspected in a published report.',
+      lat: coords?.[0] ?? 0,
+      lng: coords?.[1] ?? 0,
+      country: cc,
+      timestamp: /^\d{4}-\d{2}$/.test(r.date) ? `${r.date}-01T00:00:00Z` : `${r.date}T00:00:00Z`,
+      severity,
+      source: 'hackingincidents.ai',
+      url: `https://hackingincidents.ai/incident/${r.id}/`,
+      cti: 'threat',
+    });
+  }
+  return out;
+}
+
 export function eventCveId(e: Pick<PulseEvent, 'id' | 'title'>): string | null {
   return CVE_ID_RE.exec(`${e.id} ${e.title}`)?.[0]?.toUpperCase() ?? null;
 }

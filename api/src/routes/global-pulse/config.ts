@@ -45,6 +45,9 @@ export const GP_FEEDS: ReadonlyArray<{ key: string; path: string }> = [
   { key: 'aillm', path: '/api/v1/ai-llm-intel' },
   { key: 'firms', path: '/api/v1/firms-fires' },
   { key: 'ukmto', path: '/api/v1/ukmto-incidents' },
+  // AI-assisted cyberattacks from the replicated hackingincidents.ai ledger
+  // (public/data/hi/). Evidence grade + country enrichment make these mappable.
+  { key: 'hi', path: '/api/v1/hi/incidents?limit=120' },
 ];
 
 // Per-feed warm-slice key. The canonical store is now the D1 `warm_slices`
@@ -53,10 +56,10 @@ export const GP_FEEDS: ReadonlyArray<{ key: string; path: string }> = [
 //
 // Why the move: global-pulse is served from any colo, so the read path must see
 // whatever the (single-colo) cron+consumer warmed. KV is global, but its free
-// plan allows only 1,000 WRITES/day and the hourly warm fan-out (28 feeds plus
+// plan allows only 1,000 WRITES/day and the hourly warm fan-out (29 feeds plus
 // each route's own L2 write) kept the account at ~99% of that quota, with
 // several days over it. D1 is also global (single primary), has 100k rows
-// written/day, and the batched read collapses 28 sequential KV gets into one
+// written/day, and the batched read collapses 29 sequential KV gets into one
 // query — so it is cheaper on both quotas AND on build latency.
 export const gpWarmKey = (key: string): string => `gp:warm:${key}`;
 
@@ -136,7 +139,7 @@ export async function markGpEnqueue(kv: KVNamespace | undefined): Promise<void> 
 // never has a feed dark waiting for its window to come around (a 7-per-hour
 // rotation left ~2/3 of feeds stale for up to 3h). This is only affordable
 // because each feed is its OWN consumer invocation (max_batch_size:1), so
-// warming 28 feeds costs 28 cheap invocations, not one over-budget one. Warm
+// warming 29 feeds costs 29 cheap invocations, not one over-budget one. Warm
 // slices now live in D1 (api/src/lib/warm-slices.ts), so the fan-out costs
 // D1 rows, not the scarce KV write quota. GP_STAGGER_SECONDS just spaces the
 // sends so a burst doesn't hammer a throttling upstream (t.me); the budget

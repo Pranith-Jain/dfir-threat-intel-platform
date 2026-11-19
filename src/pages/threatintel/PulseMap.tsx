@@ -165,7 +165,11 @@ export default function PulseMap({ markers, onMarkerClick, terminatorPolygon, fo
         }}
         width={900}
         height={460}
-        style={{ width: '100%', height: 'auto' }}
+        // The panel owns the height. Let the viewBox scale to fill it instead
+        // of leaving a dead band under the map when the panel is taller than
+        // the SVG's intrinsic 900x460 ratio.
+        preserveAspectRatio="xMidYMid meet"
+        style={{ width: '100%', height: '100%' }}
       >
         <Geographies geography={TOPO_URL}>
           {({ geographies }) =>

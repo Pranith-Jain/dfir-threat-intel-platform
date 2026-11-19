@@ -55,6 +55,7 @@ import {
   fromFirms,
   fromUkmto,
   fromCveDigest,
+  fromHackingIncidents,
   dedupeCveEvents,
   markTrendingEvents,
   comparePulseEvents,
@@ -254,7 +255,7 @@ export async function buildGlobalPulseSync(
   // this is the read that actually populates the map — it is not a "fallback",
   // it is the floor.
   //
-  // One batched read (D1 `warm_slices`, KV fallback) instead of 28 sequential
+  // One batched read (D1 `warm_slices`, KV fallback) instead of 29 sequential
   // KV gets. That is the single biggest budget win in this build: the old loop
   // spent one subrequest per feed and had to stop when the 44-subrequest
   // budget ran out, deterministically dropping the tail (tm, secretleaks,
@@ -311,6 +312,7 @@ export async function buildGlobalPulseSync(
     // Warmed hourly via the cvedigest queue slice; shares the digest route's
     // own cache key as the live leg.
     ...safe(() => (merged.cvedigest ? fromCveDigest(merged.cvedigest as Parameters<typeof fromCveDigest>[0]) : [])),
+    ...safe(() => (merged.hi ? fromHackingIncidents(merged.hi as Parameters<typeof fromHackingIncidents>[0]) : [])),
     ...safe(() => (merged.ransom ? fromRansomware(merged.ransom as Parameters<typeof fromRansomware>[0]) : [])),
     ...safe(() =>
       (merged.firms ?? merged.ukmto) ? fromFirms((merged.firms ?? merged.ukmto) as Parameters<typeof fromFirms>[0]) : []
@@ -334,6 +336,7 @@ export async function buildGlobalPulseSync(
       case 'blocklist':
       case 'honeypot':
         return 'ioc';
+      case 'ai_incident':
       case 'malware':
       case 'phishing':
       case 'infostealer':
@@ -423,6 +426,7 @@ export async function buildGlobalPulseSync(
     honeypot: 0,
     ai_llm_campaign: 0,
     ai_llm_research: 0,
+    ai_incident: 0,
   });
 
   const layers: Record<PulseKind, number> = zeroLayers();
@@ -519,7 +523,7 @@ export async function globalPulseHandler(c: Context<{ Bindings: Env }>): Promise
   //      build didn't finish
   //   3. Per-feed warm slices (`gp:warm:<key>`, D1 first with a KV fallback)
   //      as the cross-colo floor for route caches that are cold in this colo.
-  //      Read in ONE batched query, not 28 sequential gets.
+  //      Read in ONE batched query, not 29 sequential gets.
   //
   // This is the ONLY build (the duplicate `?force=1` one is gone — see the
   // note at the end of this function for why it was starving this one).
