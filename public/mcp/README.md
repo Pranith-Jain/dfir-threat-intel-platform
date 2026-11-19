@@ -1,6 +1,6 @@
 # DFIR-ThreatIntel MCP - tool catalog
 
-**436 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
+**446 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
 
 ## Quick start
 
@@ -14,7 +14,7 @@
 
 ## Tools by category
 
-### other (319)
+### other (329)
 
 - `ai_advisories` - AI advisory firehose — per-package GHSA advisories, cvelistV5 CVE commits matched to known AI CVEs, tool release trains (garak, PyRIT, promptfoo, litellm, vllm, ollama, langchain, MCP SDK, MITRE ATLAS, OWASP GenAI), ExploitDB PoCs.
 - `ai_playbook_cve_refs` - CVE references cited by the AI Security Playbook, enriched against our local CISA KEV snapshot so you can see which are known-exploited. Enrichment comes from our own feed, never upstream.
@@ -167,6 +167,9 @@
 - `get_threat_pulse` - Get a global threat overview — top active threat actors, trending malware families, most exploited CVEs, and geopolitical cyber events from the past week.
 - `get_trending_iocs` - Get the most active IOCs in the last 24 hours. Returns indicators with highest observation counts and scores, useful for identifying emerging threats.
 - `heatwave_lookup` - Check a SENDING domain against the Validity Heatwave cold-email blocklist (keyless). Returns listed status (warming/active/pre-warming), stage, relative score band, observation ages, DNS answer, and related listed domains. Warming ≠ phishing; not-listed ≠ clean. Never apply to URL/content/DKIM verdicts.
+- `hi_get_incident` - Return a full hackingincidents.ai record: summary, grade rationale, outcome, enrichment (models/harness/countries/sectors) and its primary sources with URLs. Use hi_list_incidents first to find ids.
+- `hi_list_incidents` - List AI-assisted cyberattacks from hackingincidents.ai (286 graded reports, Jan 2023 → Nov 2026). Filter by evidence grade (confirmed/strong/suspected), autonomy, AI role, year, or keyword. Counts are published reports, not all attacks.
+- `hi_stats` - Return hackingincidents.ai ledger stats: counts by grade, year, autonomy, role, sector and country, source totals and cache state.
 - `hijacklibs_get` - Return the full details of a single HijackLibs DLL by slug: vulnerable executables, expected locations, CVE. Use hijacklibs_list first to discover slugs.
 - `hijacklibs_list` - List HijackLibs DLL hijacking candidates: DLLs abusable for sideloading/phantom/search-order/environment-variable hijacking (T1574.001). Filter by hijack type, vendor, CVE presence, or keyword.
 - `hijacklibs_stats` - Return cache + manifest stats for the HijackLibs directory: totals by hijack type and CVE count.
@@ -174,6 +177,10 @@
 - `intelx_search` - Search IntelligenceX for leaked data, paste sites, breach archives, and dark-web content. Supports emails, domains, URLs, BTC addresses, IBANs, credit cards, phone numbers. Requires INTELX_API_KEY (paid).
 - `interpol_notice_detail` - Get details of a specific INTERPOL Red Notice by entity ID. Returns full charge info, arrest warrant details, and physical description. No API key required.
 - `interpol_search` - Search INTERPOL Red Notices for wanted persons by name, forename, or nationality. Returns entity IDs, charges, and issuing countries. No API key required.
+- `kp_get_feed` - Return a full Kitploit RSS feed mirrored locally: updates (50 items), exploits (100 items) or blog (recent posts). Each item carries title, URL, description, publication date and image URL.
+- `kp_list_exploits` - List newest CVE exploit evidence cards mirrored from kitploit.com/en with CVSS, EPSS and exploit counts. These are metadata cards only — no exploit code is stored. Filter by severity or keyword.
+- `kp_list_tools` - List newest security tools from kitploit.com/en (crawled HTML only — upstream robots.txt disallows /api/). Filter by category, provider (GitHub/GitLab) or keyword.
+- `kp_stats` - Return Kitploit mirror stats: listed tools/exploits, feed item counts, provider/category/severity breakdowns, robots policy and cache state.
 - `lookup_cisa_kev` - Search the CISA Known Exploited Vulnerabilities (KEV) catalog. Filter by CVE ID, vendor, product, keyword, recency (days), or ransomware-only. Returns matching KEV entries with date_added, due_date, and ransomware status. The full catalog has 1,200+ actively-exploited vulnerabilities.
 - `lookup_mitre` - Look up a MITRE ATT&CK technique by ID. Returns technique name, description, tactics, mitigations, and detection guidance.
 - `lots_get` - Return the full details of a single LOTS site by slug, including abuse description. Use lots_list first to discover slugs.
@@ -191,6 +198,9 @@
 - `nova_scan_prompt` - Scan a prompt against NOVA rules on the edge (keyword/regex stage with Unicode normalization). Rules gated on semantics/LLM evaluation return needs-semantics/needs-llm instead of a false negative. Never sends the prompt anywhere.
 - `nova_stats` - Return NOVA manifest stats: rule/pattern counts, severity mix, keyword-only coverage, source + license, and edge cache ratios.
 - `nova_taxonomy` - Return the NOVA threat taxonomy: 4 categories (prompt manipulation, abusing legitimate functions, suspicious prompt patterns, abnormal outputs) with 38 threat types and examples.
+- `oh_get_harness` - Return a full offsecharnesses.ai harness record: tier, actors, what it did, key figure, every use tag with its source quote, linked incidents and deep links. Use oh_list_harnesses first to find slugs.
+- `oh_list_harnesses` - List open-source offensive-AI agent harnesses from offsecharnesses.ai (154 tracked, 14 in real attacks). Filter by table (evidence/field), tier (confirmed/observed/no attack on record), use tag, named actor or keyword. Outlined use tags are README claims, not tested results.
+- `oh_sources` - Return the primary reports behind the Offsec Harness Index: publishers, dates, titles and URLs for every source in the index.
 - `onion_lookup` - Look up metadata for a .onion address via the CIRCL AIL Project. Returns first/last seen dates, status, tags, PGP keys, certificates, open ports, page title, and associated Bitcoin addresses. No API key required.
 - `opencve_get_cve` - Get an enriched CVE record from OpenCVE Cloud: summary, CVSS v3.1/v4.0, severity, KEV flag, EPSS, vendors/products, CWE weaknesses, and references. Requires OPENCVE_API_TOKEN (free org token at app.opencve.io).
 - `opensanctions_entity` - Get detailed entity information from OpenSanctions by ID. Returns full properties, associated datasets, topics, and schema. Use after opensanctions_search to explore a specific match. Requires OPENSANCTIONS_API_KEY.

@@ -236,7 +236,7 @@ checkout never needs the folder until someone rebuilds locally.
 
 **Weekly sync**: `.github/workflows/si-upstream-sync.yml` re-runs sync + build every Monday 06:00 UTC; opens a PR if `public/data/si/` changed.
 
-**MCP tool inventory**: 429 tools total across the `DFIR_MCP` Durable Object — DFIR/threat-intel tools (`check_ioc`, `lookup_cve`, `enrich_actor`, `lookup_domain`, etc.) + SI tools (`si_*`) + threat-intel vertical (`ti_*`) + NHI scanner (`nhi_*`) + depx (`depx_*`) + winreg (`winreg_*`) + HudsonRock (`hr_*`) + Telegram (`tg_*`) + workspace/notebook (`ws_*`, `notebook_*`) + passive DNS + IOC watchlist + report analysis + more. Regenerate `public/mcp-manifest.json` + `public/mcp/README.md` + `public/llms-full.txt` with `node scripts/build-mcp-manifest.mjs && node scripts/build-llms-full.mjs`.
+**MCP tool inventory**: 446 tools total across the `DFIR_MCP` Durable Object — DFIR/threat-intel tools (`check_ioc`, `lookup_cve`, `enrich_actor`, `lookup_domain`, etc.) + SI tools (`si_*`) + threat-intel vertical (`ti_*`) + NHI scanner (`nhi_*`) + depx (`depx_*`) + winreg (`winreg_*`) + HudsonRock (`hr_*`) + Telegram (`tg_*`) + workspace/notebook (`ws_*`, `notebook_*`) + passive DNS + IOC watchlist + report analysis + more. Regenerate `public/mcp-manifest.json` + `public/mcp/README.md` + `public/llms-full.txt` with `node scripts/build-mcp-manifest.mjs && node scripts/build-llms-full.mjs`.
 
 ## Threat Intel vertical — CVE/KEV/IOC/sector brief (v1)
 
@@ -550,7 +550,7 @@ Two replicated verticals added 2026-10-17, plus live integrations:
 for the digest) reused; `offseq-radar` RSS entry already in `src/data/rssFeeds.ts`.
 
 **Both verticals ride** `.github/workflows/threat-intel-sync.yml` (sync + build
-steps added) and regenerate `public/mcp-manifest.json` (now 429 tools).
+steps added) and regenerate `public/mcp-manifest.json` (now 446 tools).
 
 ## Content-generation system (/admin)
 
@@ -982,6 +982,58 @@ the index stays slim — record id → shard is the id's `YYYY-MM` prefix.
 
 **Rides** `ai-security-verticals-sync.yml` (Tue 07:30 UTC, PR + auto-merge +
 self-deploy). To rebuild: `node scripts/build-orca-manifest.mjs`.
+
+## Public-site replications — HI / OH / KP
+
+Three data verticals replicating public cybersecurity sites, built with REA
+browser captures (rendered DOM + network endpoint discovery) and crawled only
+through surfaces their `robots.txt` allows. All three publish **no reuse
+licence**, so the manifests hold structured metadata and short factual
+descriptions only, and every record deep-links upstream. No images, feeds or
+prose bodies are vendored.
+
+| Vertical | Upstream                                            | Surface used                                                                                | Data                                                                       |
+| -------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `hi_*`   | [hackingincidents.ai](https://hackingincidents.ai/) | `/incidents.json` (`Allow: /`) — 286 graded AI-assisted cyberattacks, Jan 2023 → Nov 2026   | `public/data/hi/` slim index + 37 month shards + stats                     |
+| `oh_*`   | [offsecharnesses.ai](https://offsecharnesses.ai/)   | `/data.json` + `/status.json` (`Allow: /`) — 154 offensive-AI harnesses, 14 seen in attacks | `public/data/oh/` slim index + 154 per-harness shards + sources/references |
+| `kp_*`   | [kitploit.com/en](https://kitploit.com/en)          | HTML listing pages + 3 RSS feeds (`Disallow: /api/` — **never calls the JSON API**)         | `public/data/kp/` index + 3 feed shards                                    |
+
+The `hi` backbone is evidence grade (`confirmed` / `strong` / `suspected`),
+autonomy (`assist` / `semi-autonomous` / `autonomous`) and the enrichment block
+(models, harness, countries, sectors). The `oh` backbone is `table`
+(evidence / field) and `tier` (confirmed / observed / no attack on record),
+with each use tag backed by a quoted primary source. `kp` is a snapshot of the
+newest public cards (18 tools, 3 CVEs) plus 50 update / 100 exploit / 2 blog
+feed items.
+
+**Build scripts**: `scripts/build-hi-manifest.mjs` (`--source <incidents.json>`),
+`scripts/build-oh-manifest.mjs` (`--source`/`--status`),
+`scripts/build-kp-manifest.mjs` (`--offline <dir>`). All are offline-capable
+and idempotent (wipe + rebuild their output dir).
+
+**Loaders** (+ `api/src/lib/` symlinks, vitest tests, cache-reset helpers):
+`worker/lib/hi-manifest.ts`, `worker/lib/oh-manifest.ts`, `worker/lib/kp-manifest.ts`.
+
+**REST**: `api/src/routes/{hi,oh,kp}-edge-tools.ts` mounted under
+`/api/v1/{hi,oh,kp}/*` (index, filtered list, detail/feed, stats, plus OH
+sources/references).
+
+**SPA**: `/threatintel/hacking-incidents`, `/threatintel/offsec-harnesses`,
+`/threatintel/kitploit` (lazy in `src/App.tsx`, indexed in `pages-index.ts` and
+`threatintel-hubs.ts`).
+
+**MCP**: 10 tools (`hi_list_incidents`, `hi_get_incident`, `hi_stats`,
+`oh_list_harnesses`, `oh_get_harness`, `oh_sources`, `kp_list_tools`,
+`kp_list_exploits`, `kp_get_feed`, `kp_stats`) registered in both
+`worker/mcp-tools/dfir-manifests.ts` and `api/src/lib/agent/mcp-bridge.ts`.
+Externally sourced results are wrapped with `untrustedToolResult` on the Worker.
+
+**Tests**: `npx vitest run worker/lib/hi-manifest.test.ts worker/lib/oh-manifest.test.ts worker/lib/kp-manifest.test.ts`
+(14 loader tests) and `node --test scripts/build-replications.test.mjs` (5 parser/invariant tests).
+
+**Sync**: added to `.github/workflows/ai-security-verticals-sync.yml` (Tue
+07:30 UTC, isolated `continue-on-error` steps, PR + auto-merge + self-deploy).
+To rebuild locally: `node scripts/build-hi-manifest.mjs && node scripts/build-oh-manifest.mjs && node scripts/build-kp-manifest.mjs`.
 
 ## MMD Toolkit — MalwareMustDie shared codes & tools (mmd_*)
 

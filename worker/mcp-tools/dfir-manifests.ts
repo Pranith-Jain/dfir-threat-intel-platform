@@ -83,6 +83,17 @@ import {
   loadOrcaCommits,
   orcaCacheStats,
 } from '../lib/orca-manifest';
+// HI / OH / KP — three public-source replication verticals (metadata + links only).
+import { filterHiIncidents, getHiIncident, hiCacheStats, loadHiIndex, loadHiStats } from '../lib/hi-manifest';
+import {
+  filterOhHarnesses,
+  getOhHarness,
+  loadOhIndex,
+  loadOhSideFile,
+  ohCacheStats,
+  type OhSource,
+} from '../lib/oh-manifest';
+import { filterKpExploits, filterKpTools, getKpFeed, kpCacheStats, loadKpIndex } from '../lib/kp-manifest';
 import { getMmdCategory, listMmdTools, loadMmdCommits, loadMmdIndex, mmdCacheStats } from '../lib/mmd-manifest';
 import { filterArtifacts, getWinRegArtifact, loadWinRegIndex, winRegCacheStats } from '../lib/winreg-manifest';
 import type { DenaliActivity } from '../lib/denali-manifest';
@@ -689,6 +700,193 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
         source: idx.source,
         webPages: idx.webPages,
         commits: commits?.commits ?? idx.recentCommits ?? [],
+      });
+    }
+  );
+
+  // ── HI / OH / KP tools ──────────────────────────────────────────
+  // Three replications of public sites: hackingincidents.ai (graded
+  // AI-assisted attacks), offsecharnesses.ai (offensive-AI harnesses) and
+  // kitploit.com/en (tools/CVEs/feeds — /api/ disallowed by robots.txt).
+  // All data is untrusted external metadata; results are marked as such.
+
+  h.tools(
+    'hi_list_incidents',
+    'List AI-assisted cyberattacks from hackingincidents.ai (286 graded reports, Jan 2023 → Nov 2026). Filter by evidence grade (confirmed/strong/suspected), autonomy, AI role, year, or keyword. Counts are published reports, not all attacks.',
+    {
+      confidence: z.enum(['confirmed', 'strong', 'suspected']).optional().describe('Evidence grade'),
+      autonomy: z.enum(['assist', 'semi-autonomous', 'autonomous']).optional().describe('How much the AI ran'),
+      role: z.string().optional().describe('AI role, e.g. recon, deepfake, malware-dev'),
+      year: z.string().optional().describe('Year, e.g. 2026'),
+      keyword: z.string().optional().describe('Substring match on title, actor, target, roles'),
+      limit: z.number().int().min(1).max(200).optional().describe('Max rows (default 30)'),
+    },
+    async ({ confidence, autonomy, role, year, keyword, limit }) => {
+      const idx = await loadHiIndex(ASSETS);
+      const rows = filterHiIncidents(idx.incidents, { confidence, autonomy, role, year, keyword, limit: limit ?? 30 });
+      return untrustedToolResult({
+        total: idx.counts.records,
+        returned: rows.length,
+        source: idx.source,
+        license: idx.license,
+        incidents: rows,
+      });
+    }
+  );
+
+  h.tools(
+    'hi_get_incident',
+    'Return a full hackingincidents.ai record: summary, grade rationale, outcome, enrichment (models/harness/countries/sectors) and its primary sources with URLs. Use hi_list_incidents first to find ids.',
+    { id: z.string().describe('Incident id, e.g. "artex-github-oauth-secrets-2026"') },
+    async ({ id }) => {
+      const body = await getHiIncident(ASSETS, id);
+      if (!body)
+        return untrustedToolResult({ error: 'incident_not_found', id, hint: 'Call hi_list_incidents for ids.' });
+      return untrustedToolResult(body);
+    }
+  );
+
+  h.tools(
+    'hi_stats',
+    'Return hackingincidents.ai ledger stats: counts by grade, year, autonomy, role, sector and country, source totals and cache state.',
+    {},
+    async () => {
+      const idx = await loadHiIndex(ASSETS);
+      const stats = await loadHiStats(ASSETS);
+      return untrustedToolResult({
+        source: idx.source,
+        sourceUrl: idx.sourceUrl,
+        license: idx.license,
+        upstreamUpdated: idx.upstreamUpdated,
+        counts: idx.counts,
+        stats: stats ?? idx.stats,
+        cache: hiCacheStats(),
+      });
+    }
+  );
+
+  h.tools(
+    'oh_list_harnesses',
+    'List open-source offensive-AI agent harnesses from offsecharnesses.ai (154 tracked, 14 in real attacks). Filter by table (evidence/field), tier (confirmed/observed/no attack on record), use tag, named actor or keyword. Outlined use tags are README claims, not tested results.',
+    {
+      table: z.enum(['evidence', 'field']).optional().describe('Evidence rows or field-only rows'),
+      tier: z.enum(['confirmed', 'observed', 'no attack on record']).optional().describe('Evidence tier'),
+      useTag: z.string().optional().describe('recon, scan, vuln, exploit, exploitdev, postex, research'),
+      actor: z.string().optional().describe('Named attacker group or operator'),
+      keyword: z.string().optional().describe('Substring match on name, description, actors'),
+      limit: z.number().int().min(1).max(200).optional().describe('Max rows (default 30)'),
+    },
+    async ({ table, tier, useTag, actor, keyword, limit }) => {
+      const idx = await loadOhIndex(ASSETS);
+      const rows = filterOhHarnesses(idx.harnesses, { table, tier, useTag, actor, keyword, limit: limit ?? 30 });
+      return untrustedToolResult({
+        total: idx.counts.tracked,
+        returned: rows.length,
+        source: idx.source,
+        license: idx.license,
+        harnesses: rows,
+      });
+    }
+  );
+
+  h.tools(
+    'oh_get_harness',
+    'Return a full offsecharnesses.ai harness record: tier, actors, what it did, key figure, every use tag with its source quote, linked incidents and deep links. Use oh_list_harnesses first to find slugs.',
+    { slug: z.string().describe('Harness slug, e.g. "artex", "cairn", "pentestgpt"') },
+    async ({ slug }) => {
+      const body = await getOhHarness(ASSETS, slug);
+      if (!body)
+        return untrustedToolResult({ error: 'harness_not_found', slug, hint: 'Call oh_list_harnesses for slugs.' });
+      return untrustedToolResult(body);
+    }
+  );
+
+  h.tools(
+    'oh_sources',
+    'Return the primary reports behind the Offsec Harness Index: publishers, dates, titles and URLs for every source in the index.',
+    {},
+    async () => {
+      const idx = await loadOhIndex(ASSETS);
+      const body = await loadOhSideFile<{ sources: OhSource[] }>(ASSETS, 'sources');
+      return untrustedToolResult({
+        source: idx.source,
+        count: body?.sources.length ?? 0,
+        sources: body?.sources ?? [],
+        cache: ohCacheStats(),
+      });
+    }
+  );
+
+  h.tools(
+    'kp_list_tools',
+    'List newest security tools from kitploit.com/en (crawled HTML only — upstream robots.txt disallows /api/). Filter by category, provider (GitHub/GitLab) or keyword.',
+    {
+      category: z.string().optional().describe('Category label, e.g. "osint"'),
+      provider: z.string().optional().describe('GitHub or GitLab'),
+      keyword: z.string().optional().describe('Substring match on title, description, repo path'),
+      limit: z.number().int().min(1).max(100).optional().describe('Max rows (default 30)'),
+    },
+    async ({ category, provider, keyword, limit }) => {
+      const idx = await loadKpIndex(ASSETS);
+      const rows = filterKpTools(idx.tools, { category, provider, keyword, limit: limit ?? 30 });
+      return untrustedToolResult({
+        total: idx.counts.tools,
+        returned: rows.length,
+        source: idx.source,
+        license: idx.license,
+        robots: idx.robots,
+        tools: rows,
+      });
+    }
+  );
+
+  h.tools(
+    'kp_list_exploits',
+    'List newest CVE exploit evidence cards mirrored from kitploit.com/en with CVSS, EPSS and exploit counts. These are metadata cards only — no exploit code is stored. Filter by severity or keyword.',
+    {
+      severity: z.string().optional().describe('CVSS severity, e.g. critical, high'),
+      keyword: z.string().optional().describe('CVE id or title substring'),
+      limit: z.number().int().min(1).max(100).optional().describe('Max rows (default 30)'),
+    },
+    async ({ severity, keyword, limit }) => {
+      const idx = await loadKpIndex(ASSETS);
+      const rows = filterKpExploits(idx.exploits, { severity, keyword, limit: limit ?? 30 });
+      return untrustedToolResult({
+        total: idx.counts.exploits,
+        returned: rows.length,
+        source: idx.source,
+        exploits: rows,
+      });
+    }
+  );
+
+  h.tools(
+    'kp_get_feed',
+    'Return a full Kitploit RSS feed mirrored locally: updates (50 items), exploits (100 items) or blog (recent posts). Each item carries title, URL, description, publication date and image URL.',
+    {
+      feed: z.enum(['updates', 'exploits', 'blog']).describe('Feed name'),
+    },
+    async ({ feed }) => {
+      const items = await getKpFeed(ASSETS, feed);
+      if (!items) return untrustedToolResult({ error: 'feed_not_found', feed, hint: 'Use updates, exploits or blog.' });
+      return untrustedToolResult({ source: 'kitploit.com', feed, count: items.length, items });
+    }
+  );
+
+  h.tools(
+    'kp_stats',
+    'Return Kitploit mirror stats: listed tools/exploits, feed item counts, provider/category/severity breakdowns, robots policy and cache state.',
+    {},
+    async () => {
+      const idx = await loadKpIndex(ASSETS);
+      return untrustedToolResult({
+        source: idx.source,
+        sourceUrl: idx.sourceUrl,
+        license: idx.license,
+        robots: idx.robots,
+        counts: idx.counts,
+        stats: idx.stats,
+        cache: kpCacheStats(),
       });
     }
   );

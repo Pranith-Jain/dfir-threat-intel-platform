@@ -1,0 +1,1 @@
+../../../worker/lib/oh-manifest.ts

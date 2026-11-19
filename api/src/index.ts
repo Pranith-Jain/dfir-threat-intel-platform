@@ -1138,6 +1138,9 @@ import { engageRouter } from './routes/engage-edge-tools';
 import { cairnRouter } from './routes/cairn-edge-tools';
 import { novaRouter } from './routes/nova-edge-tools';
 import { orcaRouter } from './routes/orca-edge-tools';
+import { hiRouter } from './routes/hi-edge-tools';
+import { ohRouter } from './routes/oh-edge-tools';
+import { kpRouter } from './routes/kp-edge-tools';
 import { mmdRouter } from './routes/mmd-edge-tools';
 import { denaliRouter } from './routes/denali-edge-tools';
 import { aiPlaybookRouter } from './routes/ai-playbook-edge-tools';
@@ -2292,6 +2295,16 @@ app.route('/api/v1', novaRouter);
 // ai_involvement triage fields and clickable primary sources. Month-sharded
 // data ships in public/data/orca/ built by scripts/build-orca-manifest.mjs.
 app.route('/api/v1', orcaRouter);
+
+// HI / OH / KP — three public-source replication verticals:
+//   hackingincidents.ai (286 graded AI-assisted cyberattacks),
+//   offsecharnesses.ai (154 offensive-AI harnesses, 14 seen in attacks) and
+//   kitploit.com/en (tools, CVE evidence and RSS feeds — /api/ disallowed,
+//   so only crawlable HTML + feeds are mirrored).
+// Data ships in public/data/{hi,oh,kp}/ built by scripts/build-*-manifest.mjs.
+app.route('/api/v1', hiRouter);
+app.route('/api/v1', ohRouter);
+app.route('/api/v1', kpRouter);
 
 // MMD — MalwareMustDie shared codes & tools catalog (github.com/unixfreaxjp/
 // malwaremustdie): 228 malware-analysis tools & scripts across 12 language

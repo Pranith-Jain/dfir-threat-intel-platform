@@ -129,6 +129,11 @@ import {
   orcaCacheStats,
 } from '../orca-manifest';
 
+// HI / OH / KP — public-site replications (metadata + deep links only).
+import { filterHiIncidents, getHiIncident, hiCacheStats, loadHiIndex, loadHiStats } from '../hi-manifest';
+import { filterOhHarnesses, getOhHarness, loadOhIndex, loadOhSideFile, ohCacheStats } from '../oh-manifest';
+import { filterKpExploits, filterKpTools, getKpFeed, kpCacheStats, loadKpIndex } from '../kp-manifest';
+
 // MMD — MalwareMustDie shared codes & tools catalog (public share).
 import { loadMmdIndex, listMmdTools, getMmdCategory, loadMmdCommits, mmdCacheStats } from '../mmd-manifest';
 
@@ -3775,6 +3780,211 @@ export function bridgeMcpTools(
         lastCommit: idx.lastCommit,
         webPages: idx.webPages,
         commits: commits?.commits ?? idx.recentCommits ?? [],
+      };
+    },
+  });
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  HI / OH / KP — replicated public-site data (metadata + links only)
+  //  hackingincidents.ai, offsecharnesses.ai, kitploit.com/en
+  // ══════════════════════════════════════════════════════════════════════
+
+  add({
+    name: 'hi_list_incidents',
+    description:
+      'List AI-assisted cyberattacks from hackingincidents.ai (286 graded reports, Jan 2023 → Nov 2026). Filter by grade (confirmed/strong/suspected), autonomy, AI role, year or keyword. Counts are published reports, not all attacks.',
+    params: [
+      { name: 'confidence', type: 'string', description: 'confirmed, strong or suspected', required: false },
+      { name: 'autonomy', type: 'string', description: 'assist, semi-autonomous, autonomous', required: false },
+      { name: 'role', type: 'string', description: 'AI role, e.g. recon or deepfake', required: false },
+      { name: 'year', type: 'string', description: 'Year, e.g. 2026', required: false },
+      { name: 'keyword', type: 'string', description: 'Title/actor/target/role substring', required: false },
+      { name: 'limit', type: 'number', description: 'Max rows (default 30)', required: false },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadHiIndex(assets);
+      return {
+        total: idx.counts.records,
+        source: idx.source,
+        incidents: filterHiIncidents(idx.incidents, {
+          confidence: args.confidence as string | undefined,
+          autonomy: args.autonomy as string | undefined,
+          role: args.role as string | undefined,
+          year: args.year as string | undefined,
+          keyword: args.keyword as string | undefined,
+          limit: Math.min((args.limit as number) ?? 30, 200),
+        }),
+      };
+    },
+  });
+
+  add({
+    name: 'hi_get_incident',
+    description:
+      'Return a full hackingincidents.ai record: summary, grade rationale, outcome, enrichment and primary sources with URLs. Use hi_list_incidents first to find ids.',
+    params: [{ name: 'id', type: 'string', description: 'Incident id', required: true }],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const body = await getHiIncident(assets, String(args.id ?? ''));
+      return body ?? { error: 'incident_not_found', id: args.id };
+    },
+  });
+
+  add({
+    name: 'hi_stats',
+    description:
+      'hackingincidents.ai ledger stats: grade/year/autonomy/role/sector/country counts, source totals and cache state.',
+    params: [],
+    execute: async () => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadHiIndex(assets);
+      const stats = await loadHiStats(assets);
+      return {
+        source: idx.source,
+        sourceUrl: idx.sourceUrl,
+        counts: idx.counts,
+        stats: stats ?? idx.stats,
+        cache: hiCacheStats(),
+      };
+    },
+  });
+
+  add({
+    name: 'oh_list_harnesses',
+    description:
+      'List open-source offensive-AI harnesses from offsecharnesses.ai (154 tracked, 14 in real attacks). Filter by table, tier, use tag, actor or keyword.',
+    params: [
+      { name: 'table', type: 'string', description: 'evidence or field', required: false },
+      { name: 'tier', type: 'string', description: 'confirmed, observed, no attack on record', required: false },
+      {
+        name: 'useTag',
+        type: 'string',
+        description: 'recon, scan, vuln, exploit, exploitdev, postex, research',
+        required: false,
+      },
+      { name: 'actor', type: 'string', description: 'Named actor', required: false },
+      { name: 'keyword', type: 'string', description: 'Name/description/actor substring', required: false },
+      { name: 'limit', type: 'number', description: 'Max rows (default 30)', required: false },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadOhIndex(assets);
+      return {
+        total: idx.counts.tracked,
+        harnesses: filterOhHarnesses(idx.harnesses, {
+          table: args.table as string | undefined,
+          tier: args.tier as string | undefined,
+          useTag: args.useTag as string | undefined,
+          actor: args.actor as string | undefined,
+          keyword: args.keyword as string | undefined,
+          limit: Math.min((args.limit as number) ?? 30, 200),
+        }),
+      };
+    },
+  });
+
+  add({
+    name: 'oh_get_harness',
+    description:
+      'Return a full offsecharnesses.ai harness record: tier, actors, what it did, key figure, every use tag with its source quote, linked incidents and deep links.',
+    params: [{ name: 'slug', type: 'string', description: 'Harness slug, e.g. artex or cairn', required: true }],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const body = await getOhHarness(assets, String(args.slug ?? ''));
+      return body ?? { error: 'harness_not_found', slug: args.slug };
+    },
+  });
+
+  add({
+    name: 'oh_sources',
+    description: 'Primary reports behind the Offsec Harness Index: publishers, dates, titles and URLs.',
+    params: [],
+    execute: async () => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const body = await loadOhSideFile<{ sources: unknown[] }>(assets, 'sources');
+      return { count: body?.sources.length ?? 0, sources: body?.sources ?? [], cache: ohCacheStats() };
+    },
+  });
+
+  add({
+    name: 'kp_list_tools',
+    description:
+      'List newest security tools from kitploit.com/en, mirrored from HTML only (upstream /api/ is disallowed by robots.txt). Filter by category, provider or keyword.',
+    params: [
+      { name: 'category', type: 'string', description: 'Category label', required: false },
+      { name: 'provider', type: 'string', description: 'GitHub or GitLab', required: false },
+      { name: 'keyword', type: 'string', description: 'Title/description/repo substring', required: false },
+      { name: 'limit', type: 'number', description: 'Max rows (default 30)', required: false },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadKpIndex(assets);
+      return {
+        total: idx.counts.tools,
+        robots: idx.robots,
+        tools: filterKpTools(idx.tools, {
+          category: args.category as string | undefined,
+          provider: args.provider as string | undefined,
+          keyword: args.keyword as string | undefined,
+          limit: Math.min((args.limit as number) ?? 30, 100),
+        }),
+      };
+    },
+  });
+
+  add({
+    name: 'kp_list_exploits',
+    description:
+      'List newest CVE exploit evidence cards from kitploit.com/en with CVSS, EPSS and exploit counts. Metadata only — no exploit code is stored.',
+    params: [
+      { name: 'severity', type: 'string', description: 'CVSS severity, e.g. critical', required: false },
+      { name: 'keyword', type: 'string', description: 'CVE id or title substring', required: false },
+      { name: 'limit', type: 'number', description: 'Max rows (default 30)', required: false },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadKpIndex(assets);
+      return {
+        total: idx.counts.exploits,
+        exploits: filterKpExploits(idx.exploits, {
+          severity: args.severity as string | undefined,
+          keyword: args.keyword as string | undefined,
+          limit: Math.min((args.limit as number) ?? 30, 100),
+        }),
+      };
+    },
+  });
+
+  add({
+    name: 'kp_get_feed',
+    description: 'Return a full Kitploit RSS feed mirrored locally: updates (50), exploits (100) or blog.',
+    params: [{ name: 'feed', type: 'string', description: 'updates, exploits or blog', required: true }],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const name = String(args.feed ?? '');
+      const items = await getKpFeed(assets, name);
+      return items
+        ? { source: 'kitploit.com', feed: name, count: items.length, items }
+        : { error: 'feed_not_found', feed: name };
+    },
+  });
+
+  add({
+    name: 'kp_stats',
+    description:
+      'Kitploit mirror stats: listed tools/exploits, feed counts, provider/category/severity breakdowns and cache state.',
+    params: [],
+    execute: async () => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadKpIndex(assets);
+      return {
+        source: idx.source,
+        sourceUrl: idx.sourceUrl,
+        robots: idx.robots,
+        counts: idx.counts,
+        stats: idx.stats,
+        cache: kpCacheStats(),
       };
     },
   });

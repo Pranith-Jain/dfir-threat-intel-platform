@@ -105,6 +105,9 @@ const Cairn = lazy(() => import('./pages/threatintel/Cairn'));
 const Nova = lazy(() => import('./pages/threatintel/Nova'));
 const Denali = lazy(() => import('./pages/threatintel/Denali'));
 const OrcaIncidents = lazy(() => import('./pages/threatintel/OrcaIncidents'));
+const HackingIncidents = lazy(() => import('./pages/threatintel/HackingIncidents'));
+const OffsecHarnesses = lazy(() => import('./pages/threatintel/OffsecHarnesses'));
+const Kitploit = lazy(() => import('./pages/threatintel/Kitploit'));
 const MmdToolkit = lazy(() => import('./pages/threatintel/MmdToolkit'));
 const AiSecurityPlaybook = lazy(() => import('./pages/threatintel/AiSecurityPlaybook'));
 const Breach = lazy(() => import('./pages/dfir/Breach'));
@@ -630,6 +633,9 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/nova', Component: Nova },
   { path: '/threatintel/denali', Component: Denali },
   { path: '/threatintel/orca', Component: OrcaIncidents },
+  { path: '/threatintel/hacking-incidents', Component: HackingIncidents },
+  { path: '/threatintel/offsec-harnesses', Component: OffsecHarnesses },
+  { path: '/threatintel/kitploit', Component: Kitploit },
   { path: '/threatintel/mmd', Component: MmdToolkit },
   { path: '/threatintel/ai-playbook', Component: AiSecurityPlaybook },
   { path: '/threatintel/feeds/destroylist', Component: DestroylistFeeds },
