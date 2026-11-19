@@ -9,6 +9,7 @@
  *
  * Data source priority: KV (populated by cron) > ASSETS (static fallback).
  */
+import { upstashConfigured, upstashGet } from '../lib/upstash-cache';
 import { Hono } from 'hono';
 import type { Env } from '../env';
 import { logError } from '../lib/logger';
@@ -102,7 +103,11 @@ function cacheApi(): Cache | null {
   return c?.default ?? null;
 }
 
-async function loadIndex(kv?: KVNamespace, assets?: Fetcher): Promise<DbIndex | null> {
+async function loadIndex(
+  kv?: KVNamespace,
+  assets?: Fetcher,
+  env?: { UPSTASH_REDIS_REST_URL?: string; UPSTASH_REDIS_REST_TOKEN?: string }
+): Promise<DbIndex | null> {
   // L1: per-colo Cache-API shadow (free, no KV quota). The index only
   // changes on the daily cron, so a 10-min shadow is safe.
   const cache = cacheApi();
@@ -122,7 +127,8 @@ async function loadIndex(kv?: KVNamespace, assets?: Fetcher): Promise<DbIndex | 
   // holds the union rather than whichever source happened to be warm.
   let fromKv: DbIndex | null = null;
   try {
-    const raw = await kv?.get(KV_INDEX_KEY, 'json');
+    const rawText = env && upstashConfigured(env) ? await upstashGet(env, KV_INDEX_KEY) : await kv?.get(KV_INDEX_KEY);
+    const raw = rawText ? (JSON.parse(rawText) as DbIndex) : null;
     if (raw && typeof raw === 'object' && 'briefs' in (raw as DbIndex)) {
       const idx = raw as DbIndex;
       if (idx.briefs && idx.briefs.length > 0) fromKv = idx;
@@ -166,9 +172,10 @@ async function loadBriefBody(
   kv?: KVNamespace,
   assets?: Fetcher,
   type?: string,
-  date?: string
+  date?: string,
+  env?: { UPSTASH_REDIS_REST_URL?: string; UPSTASH_REDIS_REST_TOKEN?: string }
 ): Promise<DbBriefBody | null> {
-  if (kv && type && date) {
+  if ((kv || (env && upstashConfigured(env))) && type && date) {
     // L1: per-colo Cache-API shadow. Bodies are immutable per (type,date),
     // so a 1h shadow is safe and collapses repeated reads.
     const cache = cacheApi();
@@ -180,7 +187,9 @@ async function loadBriefBody(
       /* fall through to KV */
     }
     try {
-      const raw = await kv.get(`${KV_BODY_PREFIX}:${type}:${date}`, 'json');
+      const key = `${KV_BODY_PREFIX}:${type}:${date}`;
+      const rawText = env && upstashConfigured(env) ? await upstashGet(env, key) : await kv?.get(key);
+      const raw = rawText ? JSON.parse(rawText) : null;
       if (raw) {
         try {
           await cache?.put(
@@ -214,7 +223,7 @@ export const dailyBriefsRouter = new Hono<{ Bindings: Env }>();
 // ─── Slim index ────────────────────────────────────────────────────────
 dailyBriefsRouter.get('/daily-briefs/', async (c) => {
   try {
-    const idx = await loadIndex(c.env.KV_CACHE, c.env.ASSETS);
+    const idx = await loadIndex(c.env.KV_CACHE, c.env.ASSETS, c.env);
     if (!idx) return internalError(c, 'db_index_failed: no data source available');
     return c.json({
       source: idx.source,
@@ -236,7 +245,7 @@ dailyBriefsRouter.get('/daily-briefs/', async (c) => {
 // "invalid_type: stats" instead of the stats payload.
 dailyBriefsRouter.get('/daily-briefs/stats', async (c) => {
   try {
-    const idx = await loadIndex(c.env.KV_CACHE, c.env.ASSETS);
+    const idx = await loadIndex(c.env.KV_CACHE, c.env.ASSETS, c.env);
     if (!idx) return internalError(c, 'db_stats_failed: no data source available');
     return c.json({
       counts: idx.counts,
@@ -257,7 +266,7 @@ dailyBriefsRouter.get('/daily-briefs/:type', async (c) => {
     return badRequest(c, `invalid_type: ${type} — must be cyber, deepfake, or disaster`);
   }
   try {
-    const idx = await loadIndex(c.env.KV_CACHE, c.env.ASSETS);
+    const idx = await loadIndex(c.env.KV_CACHE, c.env.ASSETS, c.env);
     if (!idx) return internalError(c, 'db_list_failed: no data source available');
     const briefs = (idx.briefs ?? []).filter((b) => b.type === type);
     return c.json({ type, total: idx.counts[type as keyof typeof idx.counts], returned: briefs.length, briefs });
@@ -278,7 +287,7 @@ dailyBriefsRouter.get('/daily-briefs/:type/:date', async (c) => {
     return badRequest(c, `invalid_date: ${date} — must be YYYY-MM-DD`);
   }
   try {
-    const body = await loadBriefBody(c.env.KV_CACHE, c.env.ASSETS, type, date);
+    const body = await loadBriefBody(c.env.KV_CACHE, c.env.ASSETS, type, date, c.env);
     if (!body) return notFound(c, `brief_not_found: ${type}/${date}`);
     return c.json(body);
   } catch (e) {

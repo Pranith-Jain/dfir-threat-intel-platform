@@ -17,8 +17,8 @@
  * converge on.
  */
 
-import type { Env } from '../env';
 import { shouldWriteLastGood } from './lastgood-debounce';
+import { resolveStore, upstashConfigured, upstashGet, upstashSet, type StoreArg } from './upstash-cache';
 
 /** 48h default — long enough to ride out a multi-hour upstream outage. */
 const DEFAULT_TTL_SECONDS = 48 * 60 * 60;
@@ -72,11 +72,12 @@ async function writeShadow<T>(cache: Cache, key: string, value: T): Promise<void
  * namespacing (e.g. `cybercrime/af-datamarkets-lastgood/v1`).
  */
 export async function readLastGood<T>(
-  env: Pick<Env, 'KV_CACHE'>,
+  env: StoreArg,
   key: string,
   opts: { keyPrefix?: string } = {}
 ): Promise<T | null> {
-  if (!env.KV_CACHE) return null;
+  const { kv, env: storeEnv } = resolveStore(env);
+  if (!kv && !upstashConfigured(storeEnv)) return null;
   const cache = cacheApi();
   if (cache) {
     try {
@@ -88,7 +89,12 @@ export async function readLastGood<T>(
   }
   const fullKey = `${opts.keyPrefix ?? KEY_PREFIX}${key}`;
   try {
-    const value = (await env.KV_CACHE.get(fullKey, 'json')) as T | null;
+    let value: T | null = null;
+    if (upstashConfigured(storeEnv)) {
+      const raw = await upstashGet(storeEnv, fullKey);
+      if (raw) value = JSON.parse(raw) as T;
+    }
+    if (value === null && kv) value = (await kv.get(fullKey, 'json')) as T | null;
     // Populate the shadow so the next read (this colo) is a cache hit, not a KV
     // read. Only cache real values — a null means "no fallback yet", and caching
     // that would mask a value written by another colo for up to the TTL.
@@ -122,7 +128,7 @@ export async function readLastGood<T>(
  * was skipped or KV is unavailable — useful for logging/tests.
  */
 export async function writeLastGood<T>(
-  env: Pick<Env, 'KV_CACHE'>,
+  env: StoreArg,
   key: string,
   value: T,
   opts: {
@@ -133,22 +139,26 @@ export async function writeLastGood<T>(
     keyPrefix?: string;
   } = {}
 ): Promise<boolean> {
-  if (!env.KV_CACHE) return false;
+  const { kv, env: storeEnv } = resolveStore(env);
+  if (!kv && !upstashConfigured(storeEnv)) return false;
   const fullKey = `${opts.keyPrefix ?? KEY_PREFIX}${key}`;
   try {
     if (!opts.force && !(await shouldWriteLastGood(`lastgood:${key}`, opts.debounceTtlSeconds))) return false;
     const body = JSON.stringify(value);
     if (opts.skipIfUnchanged) {
-      const previous = await env.KV_CACHE.get(fullKey).catch(() => null);
+      const previous = upstashConfigured(storeEnv)
+        ? await upstashGet(storeEnv, fullKey)
+        : await kv?.get(fullKey).catch(() => null);
       if (previous === body) {
         const cache = cacheApi();
         if (cache) await writeShadow(cache, key, value);
         return false;
       }
     }
-    await env.KV_CACHE.put(fullKey, body, {
-      expirationTtl: opts.ttlSeconds ?? DEFAULT_TTL_SECONDS,
-    });
+    const ttl = opts.ttlSeconds ?? DEFAULT_TTL_SECONDS;
+    if (!(upstashConfigured(storeEnv) && (await upstashSet(storeEnv, fullKey, body, ttl)))) {
+      await kv?.put(fullKey, body, { expirationTtl: ttl });
+    }
     // Write-through the per-colo shadow so reads stay coherent with KV (a fresh
     // value isn't masked by a stale cached one after an upstream recovers).
     const cache = cacheApi();

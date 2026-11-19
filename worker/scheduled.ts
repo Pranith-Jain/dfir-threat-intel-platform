@@ -598,7 +598,7 @@ export async function executeCronJob(
                 const warm = await readWarmSlices<unknown>(env, ['x', 'reddit']).catch(
                   () => new Map<string, unknown>()
                 );
-                const xa = await env.KV_CACHE?.get('cp:warm:x_accounts', 'json').catch(() => null);
+                const xa = await readWarmSlice<unknown[]>(env, 'cp:warm:x_accounts').catch(() => null);
                 if (Array.isArray(xa) && xa.length > 0) xAccountPosts = xa as unknown[];
                 const gx = warm.get('x');
                 if (gx && typeof gx === 'object' && 'items' in (gx as Record<string, unknown>)) {
@@ -1655,7 +1655,7 @@ export async function executeCronJob(
           }
           let cpXAccountPosts: unknown = null;
           try {
-            cpXAccountPosts = await env.KV_CACHE?.get('cp:warm:x_accounts', 'json');
+            cpXAccountPosts = await readWarmSlice<unknown[]>(env, 'cp:warm:x_accounts');
           } catch {
             /* fail open */
           }

@@ -34,6 +34,10 @@ const DIR = join(root, '.og-cache', 'pages');
 const MANIFEST = join(root, '.og-cache', 'uploaded.json');
 const CONCURRENCY = 6;
 const FORCE = process.argv.includes('--force');
+const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
+const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const UPSTASH_TTL = 30 * 24 * 3600;
+if (UPSTASH_URL && UPSTASH_TOKEN) console.log('  external cache: Upstash REST (KV fallback only)');
 
 let files;
 try {
@@ -83,11 +87,23 @@ async function upload(file) {
   const key = `ogpage:v1:${file}`;
   const path = join(DIR, file);
   try {
-    execSync(`npx wrangler kv key put ${JSON.stringify(key)} --path ${JSON.stringify(path)} --binding KV_CACHE --remote`, {
-      cwd: root,
-      stdio: ['ignore', 'ignore', 'ignore'],
-      timeout: 60_000,
-    });
+    if (UPSTASH_URL && UPSTASH_TOKEN) {
+      const res = await fetch(UPSTASH_URL, {
+        method: 'POST',
+        headers: { authorization: `Bearer ${UPSTASH_TOKEN}`, 'content-type': 'application/json' },
+        body: JSON.stringify(['SET', key, readFileSync(path).toString('base64'), 'EX', UPSTASH_TTL]),
+        signal: AbortSignal.timeout(30_000),
+      });
+      if (!res.ok) throw new Error(`Upstash ${res.status}`);
+      const body = await res.json();
+      if (body.error) throw new Error(body.error);
+    } else {
+      execSync(`npx wrangler kv key put ${JSON.stringify(key)} --path ${JSON.stringify(path)} --binding KV_CACHE --remote`, {
+        cwd: root,
+        stdio: ['ignore', 'ignore', 'ignore'],
+        timeout: 60_000,
+      });
+    }
     // Record ONLY after success so quota-exhausted runs retry next time.
     uploaded[file] = md5(path);
     done += 1;

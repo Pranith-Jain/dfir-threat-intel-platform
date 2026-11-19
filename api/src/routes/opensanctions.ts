@@ -38,7 +38,8 @@ opensanctionsRouter.get('/opensanctions/search', async (c) => {
     const data = await res.json();
     const body = { query: q, results: data, generated_at: new Date().toISOString(), cached: false };
 
-    if (c.env.KV_CACHE) c.executionCtx.waitUntil(kvBackedPut(c.env.KV_CACHE, cacheKey, body, CACHE_TTL));
+    if (c.env.KV_CACHE || c.env.UPSTASH_REDIS_REST_URL)
+      c.executionCtx.waitUntil(kvBackedPut(c.env, cacheKey, body, CACHE_TTL));
     return c.json(body);
   } catch (e) {
     logError('handler failed', e);
@@ -96,7 +97,7 @@ opensanctionsRouter.get('/opensanctions/stats', async (c) => {
     const body = { statistics: data, generated_at: new Date().toISOString(), cached: false };
 
     if (c.env.KV_CACHE) {
-      c.executionCtx.waitUntil(kvBackedPut(c.env.KV_CACHE, cacheKey, body, 3600));
+      c.executionCtx.waitUntil(kvBackedPut(c.env, cacheKey, body, 3600));
     }
     return c.json(body);
   } catch (e) {

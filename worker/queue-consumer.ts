@@ -280,10 +280,9 @@ export async function handleQueue(
             }
             const key = `cp:warm:${cp.type}`;
             const raw = JSON.stringify(posts);
-            if ((await kv.get(key)) !== raw || (await shouldRefreshWarmKey(key, CP_WARM_TTL_SECONDS))) {
-              await kv.put(key, raw, {
-                expirationTtl: CP_WARM_TTL_SECONDS,
-              });
+            const previous = await readWarmSliceRaw(env, key);
+            if (previous !== raw || (await shouldRefreshWarmKey(key, CP_WARM_TTL_SECONDS))) {
+              await writeWarmSlice(env, key, raw, CP_WARM_TTL_SECONDS);
             }
           } catch (e) {
             console.error(

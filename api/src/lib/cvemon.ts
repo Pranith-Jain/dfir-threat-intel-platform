@@ -233,7 +233,7 @@ export async function fetchCveTrends(env: FetchCveTrendsEnv = {}): Promise<CveTr
     }
     // Cross-colo last-good via the shared helper: it debounces writes, keeps a
     // Cache-API shadow in sync, and stays inside the repo's raw-KV rule.
-    await writeLastGood({ KV_CACHE: env.KV_CACHE }, LASTGOOD_KEY, parsed as unknown as Record<string, unknown>);
+    await writeLastGood(env, LASTGOOD_KEY, parsed as unknown as Record<string, unknown>);
     return fallback(parsed, false, true);
   }
 

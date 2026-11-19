@@ -1,3 +1,4 @@
+import { upstashConfigured, upstashGet, upstashSet } from '../../api/src/lib/upstash-cache';
 import { errMessage } from './err';
 export type DbBriefType = 'cyber' | 'deepfake' | 'disaster' | 'maritime' | 'water' | 'french';
 
@@ -1136,6 +1137,8 @@ function parseMaritimeBrief(html: string, date: string) {
 
 interface SyncEnv {
   KV_CACHE?: KVNamespace;
+  UPSTASH_REDIS_REST_URL?: string;
+  UPSTASH_REDIS_REST_TOKEN?: string;
 }
 
 /** Investigative assessments (/water, /french): numbered h2/h3 sections with
@@ -1206,8 +1209,9 @@ export async function syncDailyBriefs(env: SyncEnv): Promise<{ types: string[]; 
   const types: string[] = [];
   const errors: string[] = [];
 
-  if (!env.KV_CACHE) {
-    return { types: [], errors: ['KV_CACHE not bound'] };
+  const external = upstashConfigured(env);
+  if (!env.KV_CACHE && !external) {
+    return { types: [], errors: ['no cache store bound'] };
   }
 
   const parsers: Record<DbBriefType, (html: string, date: string) => unknown> = {
@@ -1224,7 +1228,8 @@ export async function syncDailyBriefs(env: SyncEnv): Promise<{ types: string[]; 
   // Load existing index from KV to merge with new data
   let existingIndex: DbIndex | null = null;
   try {
-    existingIndex = await env.KV_CACHE.get(KV_PREFIX_INDEX, 'json');
+    const rawIndex = external ? await upstashGet(env, KV_PREFIX_INDEX) : await env.KV_CACHE?.get(KV_PREFIX_INDEX);
+    existingIndex = rawIndex ? (JSON.parse(rawIndex) as DbIndex) : null;
     if (existingIndex?.briefs) {
       const today = new Date().toISOString().slice(0, 10);
       for (const b of existingIndex.briefs) {
@@ -1266,7 +1271,9 @@ export async function syncDailyBriefs(env: SyncEnv): Promise<{ types: string[]; 
       }
 
       // Write body to KV (with TTL — static manifest is the long-term archive)
-      await env.KV_CACHE.put(`${KV_PREFIX_BODY}:${type}:${date}`, bodyStr, { expirationTtl: BODY_TTL_S });
+      if (!(external && (await upstashSet(env, `${KV_PREFIX_BODY}:${type}:${date}`, bodyStr, BODY_TTL_S)))) {
+        await env.KV_CACHE?.put(`${KV_PREFIX_BODY}:${type}:${date}`, bodyStr, { expirationTtl: BODY_TTL_S });
+      }
       bodiesWritten += 1;
       mergedBriefs.set(`${type}:${date}`, { type: type as DbBriefType, date, sizeBytes });
       types.push(type);
@@ -1295,7 +1302,9 @@ export async function syncDailyBriefs(env: SyncEnv): Promise<{ types: string[]; 
     !Array.isArray(existingIndex.briefs) ||
     existingIndex.briefs.length !== allBriefs.length;
   if (indexChanged) {
-    await env.KV_CACHE.put(KV_PREFIX_INDEX, JSON.stringify(index), { expirationTtl: INDEX_TTL_S });
+    if (!(external && (await upstashSet(env, KV_PREFIX_INDEX, JSON.stringify(index), INDEX_TTL_S)))) {
+      await env.KV_CACHE?.put(KV_PREFIX_INDEX, JSON.stringify(index), { expirationTtl: INDEX_TTL_S });
+    }
   }
 
   return { types, errors };

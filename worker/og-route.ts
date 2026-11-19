@@ -8,6 +8,7 @@
  * Any failure falls back to the matching static card so the crawler's image
  * fetch never 500s or returns nothing.
  */
+import { upstashConfigured, upstashGet } from '../api/src/lib/upstash-cache';
 import type { Env } from './env';
 import { generateOgSvg } from './og-image';
 import { loadOgData } from './og-data';
@@ -97,10 +98,22 @@ export async function handleOgImage(request: Request, env: Env, url: URL, ctx: E
   // Serving one is a single KV read — no resvg CPU at request time, which
   // is what kept failing X's crawler on cold colos. Page cards only; the
   // entity cards (blog/briefing) are data-driven and stay dynamic.
-  if (env.KV_CACHE && type === 'page') {
+  if ((env.KV_CACHE || upstashConfigured(env)) && type === 'page') {
     try {
       const dotId = slug.replace(/^\//, '').replace(/\//g, '.');
-      const pre = await env.KV_CACHE.get(`ogpage:v1:${dotId}.png`, 'arrayBuffer');
+      const key = `ogpage:v1:${dotId}.png`;
+      let pre: ArrayBuffer | null = null;
+      // External store first when configured; PNGs are stored as base64 text.
+      if (upstashConfigured(env)) {
+        const b64 = await upstashGet(env, key);
+        if (b64) {
+          const bin = atob(b64);
+          const bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          pre = bytes.buffer;
+        }
+      }
+      if (!pre && env.KV_CACHE) pre = await env.KV_CACHE.get(key, 'arrayBuffer');
       if (pre && pre.byteLength > 0) {
         const res = new Response(pre, {
           headers: {

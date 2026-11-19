@@ -1,6 +1,7 @@
 import type { KVNamespace } from '@cloudflare/workers-types';
 import type { Context } from 'hono';
 import type { Env } from '../env';
+import { resolveStore, upstashConfigured, upstashGet, upstashSet, type StoreArg } from './upstash-cache';
 
 const CACHE_BASE = 'https://route-cache.internal/v1';
 
@@ -72,7 +73,7 @@ export function routeCachePut(key: string, data: unknown, ttlSeconds: number): P
  * `null` (caller falls through to its upstream fetch).
  */
 export async function kvBackedGet<T>(
-  kv: KVNamespace | undefined | null,
+  store: StoreArg,
   key: string,
   ttlSeconds: number
 ): Promise<{ value: T | null; source: 'l1' | 'kv' | 'miss' }> {
@@ -84,9 +85,15 @@ export async function kvBackedGet<T>(
   } catch {
     /* fall through to KV */
   }
-  if (!kv) return { value: null, source: 'miss' };
+  const { kv, env } = resolveStore(store);
+  if (!kv && !upstashConfigured(env)) return { value: null, source: 'miss' };
   try {
-    const value = (await kv.get(key, 'json')) as T | null;
+    let value: T | null = null;
+    if (upstashConfigured(env)) {
+      const raw = await upstashGet(env, key);
+      if (raw) value = JSON.parse(raw) as T;
+    }
+    if (value === null && kv) value = (await kv.get(key, 'json')) as T | null;
     if (value !== null) {
       // Write-through to L1 so the next read in this colo skips KV.
       try {
@@ -116,7 +123,7 @@ export async function kvBackedGet<T>(
  * write is awaited so an immediate same-colo re-read is a hit.
  */
 export function kvBackedPut(
-  kv: KVNamespace | undefined | null,
+  store: StoreArg,
   key: string,
   data: unknown,
   ttlSeconds: number,
@@ -124,9 +131,14 @@ export function kvBackedPut(
 ): Promise<void> {
   // L1 write — started first so a same-colo re-read is a hit.
   const l1 = routeCachePut(key, data, ttlSeconds);
+  const { kv, env } = resolveStore(store);
   // L2 write — fire-and-forget if a waitUntil ctx is available, else awaited.
-  if (kv) {
-    const l2 = kv.put(key, JSON.stringify(data), { expirationTtl: ttlSeconds }).catch(() => {});
+  // Upstash owns the cross-colo copy when configured; KV is skipped entirely.
+  if (upstashConfigured(env) || kv) {
+    const l2 = (async () => {
+      if (upstashConfigured(env) && (await upstashSet(env, key, JSON.stringify(data), ttlSeconds))) return;
+      await kv?.put(key, JSON.stringify(data), { expirationTtl: ttlSeconds });
+    })().catch(() => {});
     if (waitUntil) {
       // Hono's `c.executionCtx` THROWS when a context has no ExecutionContext
       // (cron, subrequest, and unit tests that mount a bare Hono app), and

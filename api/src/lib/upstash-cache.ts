@@ -14,6 +14,8 @@
  * Secrets: UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
  */
 
+import type { KVNamespace } from '@cloudflare/workers-types';
+
 export interface UpstashEnv {
   UPSTASH_REDIS_REST_URL?: string;
   UPSTASH_REDIS_REST_TOKEN?: string;
@@ -76,4 +78,26 @@ export async function upstashMGet(env: UpstashEnv | undefined, keys: readonly st
     if (typeof value === 'string') out.set(key, value);
   });
   return out;
+}
+
+/* ─── Store resolution ─────────────────────────────────────────────────── */
+
+export interface StoreEnv extends UpstashEnv {
+  KV_CACHE?: KVNamespace;
+}
+
+/** Callers historically pass either `env`, `{ KV_CACHE }` or a bare namespace. */
+export type StoreArg = StoreEnv | KVNamespace | null | undefined;
+
+/**
+ * Resolve a legacy KV argument into its KV namespace and the Upstash env.
+ * A bare KVNamespace has a `get` method; an Env-like object has `KV_CACHE`
+ * and/or the Upstash secrets. This keeps hundreds of existing call sites
+ * untouched while letting wrapper modules prefer Redis when configured.
+ */
+export function resolveStore(store: StoreArg): { kv?: KVNamespace; env: UpstashEnv } {
+  if (!store) return { env: {} };
+  if (typeof (store as KVNamespace).get === 'function') return { kv: store as KVNamespace, env: {} };
+  const env = store as StoreEnv;
+  return { kv: env.KV_CACHE, env };
 }

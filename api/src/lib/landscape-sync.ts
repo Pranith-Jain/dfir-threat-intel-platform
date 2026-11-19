@@ -296,7 +296,7 @@ export async function syncOwaspAiLandscape(
       // in KV -- the OWASP upstream updates ~once/day, but the hourly cron
       // re-fetches it. Without this guard we burn a free-tier write every
       // tick (1 read + 1 write = 1 wasted write 23 hours out of 24).
-      await kvPutIfChanged(env.KV_CACHE, OWASP_AI_LANDSCAPE_KV_KEY, JSON.stringify(payload), {
+      await kvPutIfChanged(env, OWASP_AI_LANDSCAPE_KV_KEY, JSON.stringify(payload), {
         expirationTtl: DATA_TTL_S,
       });
       const meta: OwaspMeta = { source: OWASP_RAW_URL, fetchedAt: payload.fetchedAt, ok: true, counts };
@@ -872,7 +872,7 @@ export async function syncCuratedMirror(
     if (env.KV_CACHE) {
       // Same no-op guard as OWASP above. The startme page is updated
       // ~weekly; the hourly jina fetch should not cost a write on every run.
-      await kvPutIfChanged(env.KV_CACHE, config.kvKey, JSON.stringify(payload), { expirationTtl: DATA_TTL_S });
+      await kvPutIfChanged(env, config.kvKey, JSON.stringify(payload), { expirationTtl: DATA_TTL_S });
       const meta: CuratedMeta = {
         source: 'jina',
         sourceUrl: config.startmeUrl,

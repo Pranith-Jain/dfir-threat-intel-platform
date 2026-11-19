@@ -1035,6 +1035,33 @@ Externally sourced results are wrapped with `untrustedToolResult` on the Worker.
 07:30 UTC, isolated `continue-on-error` steps, PR + auto-merge + self-deploy).
 To rebuild locally: `node scripts/build-hi-manifest.mjs && node scripts/build-oh-manifest.mjs && node scripts/build-kp-manifest.mjs`.
 
+## Redis-first KV wrappers (with KV fallback)
+
+The Upstash adapter is now used by shared cache wrappers, so most KV-backed
+cache reads/writes go to Redis first and skip Cloudflare KV when the secrets are
+set. KV remains a read fallback and the store for stateful/config data.
+
+- `api/src/lib/lastgood.ts` — ~21 route callers, ~116 writes/day moved off KV.
+- `api/src/lib/route-cache.ts` — `kvBackedGet/Put` L2; callers with `env` pass it
+  through (opensanctions, opencve), bare-namespace callers keep the KV path.
+- `api/src/lib/safe-catch.ts` — `kvGetSafe`, `kvBulkGetText` (MGET + KV misses),
+  `kvPutSafe`, `kvPutIfChanged`.
+- `api/src/lib/kv-write.ts` — write-on-change guard for cron sync blobs.
+- `api/src/lib/ai-item-summary.ts` — 301 content-hash summary keys.
+- CyberPulse warm slice (`cp:warm:*`) in `worker/queue-consumer.ts` /
+  `worker/scheduled.ts` now uses the shared warm-slice store.
+- Daily briefs index/bodies and OG page cards read/write Redis first
+  (`worker/lib/daily-briefs-sync.ts`, `api/src/routes/daily-briefs-edge-tools.ts`,
+  `worker/og-route.ts`, `scripts/upload-page-og.mjs` stores PNGs as base64).
+
+`resolveStore()` in `upstash-cache.ts` accepts either `env`, `{ KV_CACHE }` or a
+bare `KVNamespace`, so legacy call sites keep working unchanged. Tests:
+`api/test/lib/redis-cache-wrappers.test.ts`.
+
+Deliberately NOT migrated: Telegram offsets/dedupe, idempotency markers,
+feedback/workspace CRUD, admin X cookies/tokens, and `CASE_STUDIES` canonical
+content. Those need atomicity or are source-of-truth, not cache.
+
 ## Global Pulse — external cache/warm (Upstash)
 
 Global Pulse cache/warm state no longer has to live in Cloudflare KV. With

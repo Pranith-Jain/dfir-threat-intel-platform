@@ -20,6 +20,7 @@ import { runCompletion } from '../case-study/generation/ai-client';
 import { fenceUntrusted, neutralizeUntrusted, UNTRUSTED_DATA_SYSTEM_NOTE } from './prompt-fence';
 import { NO_EM_DASH_RULE, stripConnectorEmDashes } from './prose-style';
 import { routeCacheGet, routeCachePut } from './route-cache';
+import { upstashConfigured, upstashGet, upstashSet } from './upstash-cache';
 
 export interface ItemInput {
   /** Stable client-side id (used to map the summary back to the post). */
@@ -78,8 +79,9 @@ export async function generateItemSummary(
   if (!item.title || item.title.trim().length === 0) return null;
 
   const kv = env.KV_CACHE;
+  const external = upstashConfigured(env);
   let key: string | null = null;
-  if (kv) {
+  if (kv || external) {
     try {
       key = CACHE_PREFIX + (await contentHash(item));
       // L1-first read: content-hash keys are write-once (same input → same
@@ -90,7 +92,7 @@ export async function generateItemSummary(
       // string rather than a JSON envelope.
       const l1 = await routeCacheGet<string>(key);
       if (l1) return { summary: l1, model: 'cache' };
-      const raw = await kv.get(key);
+      const raw = external ? await upstashGet(env, key) : await kv?.get(key);
       if (raw) {
         void routeCachePut(key, raw, CACHE_TTL_S);
         return { summary: raw, model: 'cache' };
@@ -126,11 +128,13 @@ export async function generateItemSummary(
     if (text.length > MAX_SUMMARY_CHARS) text = text.slice(0, MAX_SUMMARY_CHARS).replace(/\s+\S*$/, '') + '…';
     if (text.length < 10) return null;
 
-    if (kv && key) {
+    if ((kv || external) && key) {
       try {
         // Write-through: KV stays the cross-colo store; the per-colo Cache-API
         // shadow (fire-and-forget) makes same-colo re-reads free.
-        await kv.put(key, text, { expirationTtl: CACHE_TTL_S });
+        if (!(external && (await upstashSet(env, key, text, CACHE_TTL_S)))) {
+          await kv?.put(key, text, { expirationTtl: CACHE_TTL_S });
+        }
         void routeCachePut(key, text, CACHE_TTL_S);
       } catch {
         /* best-effort cache write */

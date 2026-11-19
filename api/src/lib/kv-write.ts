@@ -21,8 +21,8 @@
  * Never throws: a read error degrades to "changed" (write), which is the
  * pre-guard behaviour, and a write error is the caller's to handle.
  */
-import type { KVNamespace } from '@cloudflare/workers-types';
 import { shouldWriteLastGood } from './lastgood-debounce';
+import { resolveStore, upstashConfigured, upstashGet, upstashSet, type StoreArg } from './upstash-cache';
 
 export interface KvPutIfChangedOptions {
   expirationTtl?: number;
@@ -35,16 +35,17 @@ export interface KvPutIfChangedOptions {
  * is unavailable.
  */
 export async function kvPutIfChanged(
-  kv: KVNamespace | undefined | null,
+  store: StoreArg,
   key: string,
   body: string,
   opts: KvPutIfChangedOptions = {}
 ): Promise<boolean> {
-  if (!kv) return false;
+  const { kv, env } = resolveStore(store);
+  if (!kv && !upstashConfigured(env)) return false;
 
   let previous: string | null = null;
   try {
-    previous = await kv.get(key);
+    previous = upstashConfigured(env) ? await upstashGet(env, key) : ((await kv?.get(key)) ?? null);
   } catch {
     /* unreadable — treat as absent and write */
   }
@@ -55,6 +56,8 @@ export async function kvPutIfChanged(
     }
   }
 
-  await kv.put(key, body, opts.expirationTtl ? { expirationTtl: opts.expirationTtl } : undefined);
+  if (upstashConfigured(env) && opts.expirationTtl && (await upstashSet(env, key, body, opts.expirationTtl)))
+    return true;
+  await kv?.put(key, body, opts.expirationTtl ? { expirationTtl: opts.expirationTtl } : undefined);
   return true;
 }

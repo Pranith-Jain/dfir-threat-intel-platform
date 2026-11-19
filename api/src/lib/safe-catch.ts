@@ -1,3 +1,4 @@
+import { resolveStore, upstashConfigured, upstashGet, upstashMGet, upstashSet, type StoreArg } from './upstash-cache';
 /**
  * Shared error-handling utilities for the API worker.
  *
@@ -27,12 +28,18 @@ export async function safeNullLog<T>(label: string, promise: Promise<T>): Promis
 
 /** Wrap a KV.get + .catch(() => null) pattern into a single call. */
 export async function kvGetSafe<T>(
-  ns: KVNamespace,
+  store: StoreArg,
   key: string,
   type?: 'text' | 'json' | 'arrayBuffer' | 'stream'
 ): Promise<T | null> {
+  const { kv, env } = resolveStore(store);
   try {
-    return (await ns.get(key, type as never)) as T | null;
+    if (upstashConfigured(env) && (type === undefined || type === 'text' || type === 'json')) {
+      const raw = await upstashGet(env, key);
+      if (raw !== null) return (type === 'json' ? JSON.parse(raw) : raw) as T;
+    }
+    if (!kv) return null;
+    return (await kv.get(key, type as never)) as T | null;
   } catch {
     return null;
   }
@@ -53,12 +60,21 @@ const KV_BULK_CHUNK = 100;
  * subrequests; missing keys map to null. A failed chunk fails soft (its keys
  * become null) rather than aborting the whole read, matching `kvGetSafe`.
  */
-export async function kvBulkGetText(ns: KVNamespace, keys: string[]): Promise<Map<string, string | null>> {
+export async function kvBulkGetText(store: StoreArg, keys: string[]): Promise<Map<string, string | null>> {
   const out = new Map<string, string | null>();
+  const { kv, env } = resolveStore(store);
+  if (upstashConfigured(env)) {
+    const external = await upstashMGet(env, keys);
+    for (const k of keys) out.set(k, external.get(k) ?? null);
+    const missing = keys.filter((k) => !external.has(k));
+    if (missing.length === 0 || !kv) return out;
+    keys = missing;
+  }
+  if (!kv) return out;
   for (let i = 0; i < keys.length; i += KV_BULK_CHUNK) {
     const chunk = keys.slice(i, i + KV_BULK_CHUNK);
     try {
-      const res = await ns.get(chunk, 'text');
+      const res = await kv.get(chunk, 'text');
       for (const [k, v] of res) out.set(k, v);
     } catch {
       for (const k of chunk) if (!out.has(k)) out.set(k, null);
@@ -69,16 +85,20 @@ export async function kvBulkGetText(ns: KVNamespace, keys: string[]): Promise<Ma
 
 /** Wrap a KV.put + .catch(() => {}) pattern with optional error logging. */
 export async function kvPutSafe(
-  ns: KVNamespace,
+  store: StoreArg,
   key: string,
   value: string | ReadableStream | ArrayBuffer | FormData | URLSearchParams,
   options?: { expirationTtl?: number; metadata?: unknown }
 ): Promise<boolean> {
+  const { kv, env } = resolveStore(store);
   try {
+    if (typeof value === 'string' && upstashConfigured(env) && options?.expirationTtl) {
+      if (await upstashSet(env, key, value, options.expirationTtl)) return true;
+    }
     // KV.put accepts the wider union that includes URLSearchParams / FormData
     // even though the DOM `BodyInit` type narrows it. Cast to `any` here
     // so call-sites stay typed; the runtime accepts all four shapes.
-    await ns.put(key, value as unknown as string, options as never);
+    await kv?.put(key, value as unknown as string, options as never);
     return true;
   } catch {
     return false;
@@ -102,19 +122,22 @@ export async function kvPutSafe(
  * when the value matched.
  */
 export async function kvPutIfChanged(
-  ns: KVNamespace,
+  store: StoreArg,
   key: string,
   value: string,
   options?: { expirationTtl?: number; metadata?: unknown }
 ): Promise<boolean> {
+  const { kv, env } = resolveStore(store);
   try {
-    const existing = await ns.get(key, 'text');
+    const existing = upstashConfigured(env) ? await upstashGet(env, key) : await kv?.get(key, 'text');
     if (existing === value) return false;
     // KV.put accepts the wider union that includes URLSearchParams / FormData
     // even though the DOM `BodyInit` type narrows it. Cast at the call site
     // to the runtime signature (which is broader) so callers stay typed
     // for the union they actually use.
-    await (ns.put as (k: string, v: typeof value, o?: typeof options) => Promise<unknown>)(key, value, options);
+    if (upstashConfigured(env) && options?.expirationTtl && (await upstashSet(env, key, value, options.expirationTtl)))
+      return true;
+    await (kv!.put as (k: string, v: typeof value, o?: typeof options) => Promise<unknown>)(key, value, options);
     return true;
   } catch {
     // On any error, fail OPEN (write through) -- losing a write opportunity
@@ -124,7 +147,13 @@ export async function kvPutIfChanged(
       // even though the DOM `BodyInit` type narrows it. Cast at the call site
       // to the runtime signature (which is broader) so callers stay typed
       // for the union they actually use.
-      await (ns.put as (k: string, v: typeof value, o?: typeof options) => Promise<unknown>)(key, value, options);
+      if (
+        upstashConfigured(env) &&
+        options?.expirationTtl &&
+        (await upstashSet(env, key, value, options.expirationTtl))
+      )
+        return true;
+      await (kv!.put as (k: string, v: typeof value, o?: typeof options) => Promise<unknown>)(key, value, options);
       return true;
     } catch {
       return false;
