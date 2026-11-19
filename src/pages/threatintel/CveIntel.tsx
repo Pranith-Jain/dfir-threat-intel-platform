@@ -6,6 +6,7 @@ import { Bug } from 'lucide-react';
 
 const CveList = lazy(() => import('./CveList'));
 const RdintelCve = lazy(() => import('./RdintelCve'));
+const VessScore = lazy(() => import('./VessScore'));
 const CveTrends = lazy(() => import('./CveTrends'));
 const OffseqThreats = lazy(() => import('./Offseq'));
 const OffseqFeeds = lazy(() => import('./OffseqFeeds'));
@@ -22,6 +23,7 @@ const CveHealthCheck = lazy(() => import('./CveHealthCheck'));
 
 type TabId =
   | 'rdintel'
+  | 'vess'
   | 'all'
   | 'trending'
   | 'offseq'
@@ -42,6 +44,11 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
     id: 'rdintel',
     label: 'RDIntel CVE',
     desc: 'Mirror of rdintel.com/cve: corpus counters, cves.io attention ranking, all-time top threats, and recent CVEs enriched with CVSS, EPSS, KEV and PoC counts',
+  },
+  {
+    id: 'vess',
+    label: 'VESS Score',
+    desc: 'VESS exploitability calculator (isitwormable.com): score the restrictions on exploitation — difficulty, not severity — with category caps, extreme escalators and feasibility checks',
   },
   { id: 'all', label: 'All Recent', desc: 'NVD + KEV + MyThreatIntel + cvefeed.io + CVE Telegram channels + EPSS' },
   {
@@ -154,6 +161,7 @@ export default function CveIntel(): JSX.Element {
       <div role="tabpanel" id={`tabpanel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
         <Suspense fallback={<TabLoader />}>
           {activeTab === 'rdintel' && <RdintelCve bare />}
+          {activeTab === 'vess' && <VessScore />}
           {activeTab === 'all' && <CveList bare />}
           {activeTab === 'trending' && <CveTrends />}
           {activeTab === 'offseq' && <OffseqThreats bare />}
