@@ -1956,13 +1956,6 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     group: 'threatintel',
   },
   {
-    path: '/threatintel/predictive/threat-pulse',
-    label: 'Threat Pulse',
-    description: 'Live intel pulse - minute-by-minute indicator deltas and trending clusters.',
-    sectionLabel: 'Threat Intel · Live',
-    group: 'threatintel',
-  },
-  {
     path: '/threatintel/mythreatintel',
     label: 'My Threat Intel (alias)',
     description: 'Alias for the Social hub.',
@@ -3251,7 +3244,7 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
   {
     path: '/threatintel/predictive/threat-pulse',
     label: 'Threat Pulse',
-    description: 'Threat pulse tracking.',
+    description: 'Live intel pulse - minute-by-minute indicator deltas and trending clusters.',
     sectionLabel: 'Threat Intel · Predictive',
     group: 'threatintel',
   },
@@ -4206,13 +4199,6 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     path: '/threatintel/tools/socradar-tools',
     label: 'Tactical Radar Tools',
     description: 'DDoS intelligence, FortiGate breach check, healthcare breach tracking.',
-    sectionLabel: 'Threat Intel · Tools',
-    group: 'threatintel',
-  },
-  {
-    path: '/threatintel/tools/unified-search',
-    label: 'Unified Search',
-    description: 'Cross-source search.',
     sectionLabel: 'Threat Intel · Tools',
     group: 'threatintel',
   },
