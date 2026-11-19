@@ -52,6 +52,7 @@ export type PulseKind =
   | 'ai_llm_campaign'
   | 'ai_llm_research'
   | 'ai_incident'
+  | 'offsec_harness'
   | 'firm'
   | 'maritime';
 
@@ -368,6 +369,16 @@ export const LAYER_DEFS: Record<PulseKind, LayerDef> = {
     icon: <Flame size={14} />,
     color: 'text-orange-600 dark:text-orange-400',
     bgColor: 'bg-orange-500/10 border-orange-500/20',
+    group: 'intel',
+  },
+  // Offensive-AI harnesses seen in real operations, from the replicated
+  // offsecharnesses.ai evidence table.
+  offsec_harness: {
+    label: 'Offsec Harness Sightings',
+    shortLabel: 'HARNESS',
+    icon: <ShieldAlert size={14} />,
+    color: 'text-brand-600 dark:text-brand-400',
+    bgColor: 'bg-brand-500/10 border-brand-500/20',
     group: 'intel',
   },
   // AI-assisted attacks from the replicated hackingincidents.ai ledger.

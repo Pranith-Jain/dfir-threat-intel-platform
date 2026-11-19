@@ -43,6 +43,11 @@ export interface Env {
   VELO_API_TOKEN?: string;
   VELO_USERNAME?: string;
   VELO_PASSWORD?: string;
+  /** Optional external cache/warm store (Upstash Redis REST). When both are
+   *  set, Global Pulse writes warm slices, response payloads and markers here
+   *  instead of Cloudflare KV; the KV path remains a read fallback. */
+  UPSTASH_REDIS_REST_URL?: string;
+  UPSTASH_REDIS_REST_TOKEN?: string;
   CASE_STUDIES: KVNamespace;
   AI: Ai;
   VECTORIZE?: VectorizeIndex;

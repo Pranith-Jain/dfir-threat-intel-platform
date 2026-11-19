@@ -10,6 +10,8 @@ import {
   fromUkmto,
   fromCveDigest,
   fromHackingIncidents,
+  fromOffsecHarnesses,
+  fromKitploitExploits,
   signalClass,
   dedupeCveEvents,
   markTrendingEvents,
@@ -411,5 +413,53 @@ describe('fromHackingIncidents', () => {
   it('tolerates a missing or malformed slice', () => {
     expect(fromHackingIncidents(null)).toEqual([]);
     expect(fromHackingIncidents({ incidents: [{ id: '', title: '', date: '', confidence: '' }] })).toEqual([]);
+  });
+});
+
+describe('fromOffsecHarnesses / fromKitploitExploits', () => {
+  it('maps harness sightings into threat events with actor detail', () => {
+    const events = fromOffsecHarnesses({
+      harnesses: [
+        {
+          name: 'ARTEX',
+          tier: 'confirmed',
+          whatItDid: 'One controller hit 200+ organizations',
+          keyFigure: '200+ orgs',
+          actors: [{ name: 'VAPOR PANDA' }],
+          repo: 'https://github.com/example/artex',
+          breach: 'Yes',
+        },
+        { name: 'HalberdStrike', tier: 'observed' },
+      ],
+    });
+    expect(events).toHaveLength(2);
+    expect(events[0]!.kind).toBe('offsec_harness');
+    expect(events[0]!.severity).toBe('high');
+    expect(events[0]!.description).toContain('VAPOR PANDA');
+    expect(events[1]!.severity).toBe('medium');
+    expect(events[0]!.lat).toBe(0);
+  });
+
+  it('maps Kitploit CVE cards to exploit events with CVSS magnitude', () => {
+    const events = fromKitploitExploits({
+      exploits: [
+        {
+          id: 'cve-2026-1306',
+          cve: 'CVE-2026-1306',
+          title: 'midi-Synth arbitrary file upload',
+          url: 'https://kitploit.com/en/exploits/cve-2026-1306',
+          cvssScore: 9.8,
+          cvssSeverity: 'High',
+          exploitCount: 2,
+        },
+        { id: 'cve-2026-1405', title: 'Low severity issue', cvssScore: 3.1 },
+      ],
+    });
+    expect(events).toHaveLength(2);
+    expect(events[0]!.kind).toBe('exploit');
+    expect(events[0]!.severity).toBe('critical');
+    expect(events[0]!.magnitude).toBe(9.8);
+    expect(events[0]!.cti).toBe('cve');
+    expect(events[1]!.severity).toBe('low');
   });
 });

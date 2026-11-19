@@ -28,10 +28,13 @@
  * cutover deploy cannot serve an empty map while the legacy keys age out.
  */
 import type { D1Database, KVNamespace } from '@cloudflare/workers-types';
+import { upstashConfigured, upstashGet, upstashMGet, upstashSet } from './upstash-cache';
 
 export interface WarmSliceEnv {
   KV_CACHE?: KVNamespace;
   BRIEFINGS_DB?: D1Database;
+  UPSTASH_REDIS_REST_URL?: string;
+  UPSTASH_REDIS_REST_TOKEN?: string;
 }
 
 /** Legacy KV key prefix. Kept for fallback reads + old tests. */
@@ -52,6 +55,12 @@ export function warmSliceKvKey(key: string): string {
  * Never throws — a miss is `null`.
  */
 export async function readWarmSliceRaw(env: WarmSliceEnv, key: string): Promise<string | null> {
+  // External store is first when configured: it is the authoritative warm
+  // cache, and D1/KV remain readable for a cutover window.
+  if (upstashConfigured(env)) {
+    const external = await upstashGet(env, key);
+    if (external) return external;
+  }
   if (env.BRIEFINGS_DB) {
     try {
       const row = await env.BRIEFINGS_DB.prepare('SELECT body FROM warm_slices WHERE key = ?1 AND expires_at > ?2')
@@ -92,6 +101,17 @@ export async function readWarmSlice<T>(env: WarmSliceEnv, key: string): Promise<
 export async function readWarmSlices<T>(env: WarmSliceEnv, keys: readonly string[]): Promise<Map<string, T>> {
   const out = new Map<string, T>();
   if (keys.length === 0) return out;
+
+  if (upstashConfigured(env)) {
+    const external = await upstashMGet(env, keys);
+    for (const [key, body] of external) {
+      try {
+        out.set(key, JSON.parse(body) as T);
+      } catch {
+        /* skip an unparseable row; lower-priority stores may still be good */
+      }
+    }
+  }
 
   if (env.BRIEFINGS_DB) {
     const now = Date.now();
@@ -144,6 +164,10 @@ export async function readWarmSlices<T>(env: WarmSliceEnv, keys: readonly string
  * write-on-change guard (the body is compared byte-for-byte before this).
  */
 export async function writeWarmSlice(env: WarmSliceEnv, key: string, body: string, ttlSeconds: number): Promise<void> {
+  // When the external store is configured it owns the warm slice entirely.
+  // Skipping D1/KV here is the point of the migration: it removes the CF KV
+  // writes that were exceeding the free tier, without losing a read fallback.
+  if (upstashConfigured(env) && (await upstashSet(env, key, body, ttlSeconds))) return;
   if (env.BRIEFINGS_DB && body.length <= MAX_D1_BODY_CHARS) {
     const now = Date.now();
     try {

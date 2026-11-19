@@ -36,6 +36,7 @@ export type PulseKind =
   | 'ai_llm_campaign'
   | 'ai_llm_research'
   | 'ai_incident'
+  | 'offsec_harness'
   | 'firm'
   | 'maritime'
   | 'cyberpulse'

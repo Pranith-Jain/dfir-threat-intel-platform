@@ -20,6 +20,7 @@ import {
   GP_LAST_GOOD_TTL,
 } from './config';
 import { routeCacheGet, routeCachePut } from '../../lib/route-cache';
+import { upstashConfigured, upstashGet, upstashSet, type UpstashEnv } from '../../lib/upstash-cache';
 import { readWarmSlices } from '../../lib/warm-slices';
 import { listBriefings } from '../../lib/briefing-builder';
 import { signInternalToken } from '../../lib/internal-token';
@@ -56,6 +57,8 @@ import {
   fromUkmto,
   fromCveDigest,
   fromHackingIncidents,
+  fromOffsecHarnesses,
+  fromKitploitExploits,
   dedupeCveEvents,
   markTrendingEvents,
   comparePulseEvents,
@@ -73,6 +76,27 @@ import {
 /* ─── Signed self-fetch helper ──────────────────────────────────────────── */
 // Retry fallbacks need to call SELF.fetch() with an internal token so the
 // auth middleware lets them through. Signs once per handler invocation.
+/** Global (cross-colo) payload read: external store first, KV fallback. */
+async function readGlobalPayload(env: UpstashEnv, key: string, kv: KVNamespace | undefined): Promise<string | null> {
+  if (upstashConfigured(env)) {
+    const external = await upstashGet(env, key);
+    if (external) return external;
+  }
+  return (await kv?.get(key).catch(() => null)) ?? null;
+}
+
+/** Global payload write: external store only when configured, KV otherwise. */
+async function writeGlobalPayload(
+  env: UpstashEnv,
+  key: string,
+  value: string,
+  ttlSeconds: number,
+  kv: KVNamespace | undefined
+): Promise<void> {
+  if (upstashConfigured(env) && (await upstashSet(env, key, value, ttlSeconds))) return;
+  await kv?.put(key, value, { expirationTtl: ttlSeconds }).catch(() => {});
+}
+
 async function signedSelfFetch(
   self: { fetch: (req: RequestInfo, init?: RequestInit) => Promise<Response> } | undefined,
   path: string,
@@ -312,6 +336,8 @@ export async function buildGlobalPulseSync(
     // Warmed hourly via the cvedigest queue slice; shares the digest route's
     // own cache key as the live leg.
     ...safe(() => (merged.cvedigest ? fromCveDigest(merged.cvedigest as Parameters<typeof fromCveDigest>[0]) : [])),
+    ...safe(() => (merged.oh ? fromOffsecHarnesses(merged.oh as Parameters<typeof fromOffsecHarnesses>[0]) : [])),
+    ...safe(() => (merged.kp ? fromKitploitExploits(merged.kp as Parameters<typeof fromKitploitExploits>[0]) : [])),
     ...safe(() => (merged.hi ? fromHackingIncidents(merged.hi as Parameters<typeof fromHackingIncidents>[0]) : [])),
     ...safe(() => (merged.ransom ? fromRansomware(merged.ransom as Parameters<typeof fromRansomware>[0]) : [])),
     ...safe(() =>
@@ -337,6 +363,7 @@ export async function buildGlobalPulseSync(
       case 'honeypot':
         return 'ioc';
       case 'ai_incident':
+      case 'offsec_harness':
       case 'malware':
       case 'phishing':
       case 'infostealer':
@@ -427,6 +454,7 @@ export async function buildGlobalPulseSync(
     ai_llm_campaign: 0,
     ai_llm_research: 0,
     ai_incident: 0,
+    offsec_harness: 0,
   });
 
   const layers: Record<PulseKind, number> = zeroLayers();
@@ -560,7 +588,17 @@ export async function globalPulseHandler(c: Context<{ Bindings: Env }>): Promise
       ? Object.values(l as Record<string, unknown>).filter((n) => typeof n === 'number' && n > 0).length
       : 0;
   let payload: GlobalPulseResponse = syncResult;
-  const lastGood = await routeCacheGet<GlobalPulseResponse>(GP_LAST_GOOD_KEY);
+  let lastGood = await routeCacheGet<GlobalPulseResponse>(GP_LAST_GOOD_KEY);
+  if (!lastGood) {
+    const rawLastGood = await readGlobalPayload(c.env, GP_LAST_GOOD_KEY, kv);
+    if (rawLastGood) {
+      try {
+        lastGood = JSON.parse(rawLastGood) as GlobalPulseResponse;
+      } catch {
+        /* ignore a corrupt global copy */
+      }
+    }
+  }
   if (
     lastGood &&
     Array.isArray(lastGood.events) &&
@@ -610,7 +648,7 @@ export async function globalPulseHandler(c: Context<{ Bindings: Env }>): Promise
         // literal byte comparison (re-serializing the parsed object could
         // reorder keys and trigger a spurious put, and writes are just as
         // scarce at 1k/day).
-        const existingRaw = await kv.get(GP_RESPONSE_KEY).catch(() => null);
+        const existingRaw = await readGlobalPayload(c.env, GP_RESPONSE_KEY, kv);
         let existing: GlobalPulseResponse | null = null;
         if (existingRaw) {
           try {
@@ -623,7 +661,7 @@ export async function globalPulseHandler(c: Context<{ Bindings: Env }>): Promise
         if (existingNonZero > newNonZero) {
           // keep the fuller map — skip the put
         } else if (existingRaw !== json) {
-          await kv.put(GP_RESPONSE_KEY, json, { expirationTtl: GP_RESPONSE_TTL });
+          await writeGlobalPayload(c.env, GP_RESPONSE_KEY, json, GP_RESPONSE_TTL, kv);
         }
         // Last-good: the sync build is now a complete map (route caches +
         // external fetchers + D1), so also refresh the long-lived last-good
@@ -635,7 +673,7 @@ export async function globalPulseHandler(c: Context<{ Bindings: Env }>): Promise
         // comparison and the write-on-change check; a build that produces the
         // same bytes must not spend a KV write (this path runs on every
         // request-path rebuild, not just the cron).
-        const lgRaw = await kv.get(GP_LAST_GOOD_KEY).catch(() => null);
+        const lgRaw = await readGlobalPayload(c.env, GP_LAST_GOOD_KEY, kv);
         let lgExisting: GlobalPulseResponse | null = null;
         if (lgRaw) {
           try {
@@ -648,7 +686,7 @@ export async function globalPulseHandler(c: Context<{ Bindings: Env }>): Promise
         if (newNonZero >= lgExistingNonZero) {
           await routeCachePut(GP_LAST_GOOD_KEY, payload, GP_LAST_GOOD_TTL);
           if (lgRaw !== json) {
-            await kv.put(GP_LAST_GOOD_KEY, json, { expirationTtl: GP_LAST_GOOD_TTL });
+            await writeGlobalPayload(c.env, GP_LAST_GOOD_KEY, json, GP_LAST_GOOD_TTL, kv);
           }
         }
       }

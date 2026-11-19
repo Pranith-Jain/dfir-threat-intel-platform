@@ -2,6 +2,7 @@ import type { FeedQueueMessage } from '../../lib/live-iocs-slices';
 import { CVE_DIGEST_CACHE_KEY } from '../cve-digest';
 import { AI_LLM_SLICE_KEY } from '../ai-llm-intel';
 import { LIVE_IOCS_CACHE_KEY } from '../live-iocs';
+import { upstashConfigured, upstashGet, upstashSet, type UpstashEnv } from '../../lib/upstash-cache';
 
 /* ─── Global-pulse feed registry + queue warmer ─────────────────────────── */
 // Each feed is warmed into `gp:warm:<key>` by the queue consumer — ONE feed per
@@ -48,6 +49,10 @@ export const GP_FEEDS: ReadonlyArray<{ key: string; path: string }> = [
   // AI-assisted cyberattacks from the replicated hackingincidents.ai ledger
   // (public/data/hi/). Evidence grade + country enrichment make these mappable.
   { key: 'hi', path: '/api/v1/hi/incidents?limit=120' },
+  // Open-source offensive-AI harnesses seen in real operations.
+  { key: 'oh', path: '/api/v1/oh/harnesses?table=evidence&limit=40' },
+  // CVE evidence cards from the Kitploit public HTML/RSS mirror.
+  { key: 'kp', path: '/api/v1/kp/exploits' },
 ];
 
 // Per-feed warm-slice key. The canonical store is now the D1 `warm_slices`
@@ -56,10 +61,10 @@ export const GP_FEEDS: ReadonlyArray<{ key: string; path: string }> = [
 //
 // Why the move: global-pulse is served from any colo, so the read path must see
 // whatever the (single-colo) cron+consumer warmed. KV is global, but its free
-// plan allows only 1,000 WRITES/day and the hourly warm fan-out (29 feeds plus
+// plan allows only 1,000 WRITES/day and the hourly warm fan-out (31 feeds plus
 // each route's own L2 write) kept the account at ~99% of that quota, with
 // several days over it. D1 is also global (single primary), has 100k rows
-// written/day, and the batched read collapses 29 sequential KV gets into one
+// written/day, and the batched read collapses 31 sequential KV gets into one
 // query — so it is cheaper on both quotas AND on build latency.
 export const gpWarmKey = (key: string): string => `gp:warm:${key}`;
 
@@ -120,26 +125,39 @@ export const GP_ENQUEUE_CYCLE_KEY = 'gp:enqueue-cycle';
 export const GP_ENQUEUE_CYCLE_TTL_SECONDS = 60 * 60;
 
 /** True when the last gp-warm enqueue cycle is still fresh → the hourly gp enqueue can be skipped. */
-export async function shouldSkipGpEnqueue(kv: KVNamespace | undefined): Promise<boolean> {
-  if (!kv) return false;
+export interface GpStateEnv extends UpstashEnv {
+  KV_CACHE?: KVNamespace;
+}
+
+export async function shouldSkipGpEnqueue(env: GpStateEnv | undefined): Promise<boolean> {
+  // External first when configured. The KV read stays as a legacy fallback so
+  // a marker written before the switchover does not trigger a duplicate
+  // enqueue on the first hour after deploy.
+  if (upstashConfigured(env) && (await upstashGet(env, GP_ENQUEUE_CYCLE_KEY))) return true;
   try {
-    return (await kv.get(GP_ENQUEUE_CYCLE_KEY)) !== null;
+    return (await env?.KV_CACHE?.get(GP_ENQUEUE_CYCLE_KEY)) != null;
   } catch {
     return false;
   }
 }
 
 /** Record that a gp-warm enqueue completed so the next hourly cron skips its redundant re-enqueue. */
-export async function markGpEnqueue(kv: KVNamespace | undefined): Promise<void> {
-  if (!kv) return;
-  await kv.put(GP_ENQUEUE_CYCLE_KEY, new Date().toISOString(), { expirationTtl: GP_ENQUEUE_CYCLE_TTL_SECONDS });
+export async function markGpEnqueue(env: GpStateEnv | undefined): Promise<void> {
+  const value = new Date().toISOString();
+  if (upstashConfigured(env) && (await upstashSet(env, GP_ENQUEUE_CYCLE_KEY, value, GP_ENQUEUE_CYCLE_TTL_SECONDS)))
+    return;
+  try {
+    await env?.KV_CACHE?.put(GP_ENQUEUE_CYCLE_KEY, value, { expirationTtl: GP_ENQUEUE_CYCLE_TTL_SECONDS });
+  } catch {
+    /* best-effort marker */
+  }
 }
 
 // ALL feeds are warmed every hourly tick — not a rotating subset — so the page
 // never has a feed dark waiting for its window to come around (a 7-per-hour
 // rotation left ~2/3 of feeds stale for up to 3h). This is only affordable
 // because each feed is its OWN consumer invocation (max_batch_size:1), so
-// warming 29 feeds costs 29 cheap invocations, not one over-budget one. Warm
+// warming 31 feeds costs 31 cheap invocations, not one over-budget one. Warm
 // slices now live in D1 (api/src/lib/warm-slices.ts), so the fan-out costs
 // D1 rows, not the scarce KV write quota. GP_STAGGER_SECONDS just spaces the
 // sends so a burst doesn't hammer a throttling upstream (t.me); the budget

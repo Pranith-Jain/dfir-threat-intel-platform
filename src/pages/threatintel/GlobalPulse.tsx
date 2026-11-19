@@ -45,6 +45,7 @@ export default function GlobalPulse(): JSX.Element {
     new Set([
       'ransomware',
       'ai_incident',
+      'offsec_harness',
       'cve',
       'ioc_activity',
       'cyber_attack',
@@ -957,6 +958,7 @@ export default function GlobalPulse(): JSX.Element {
                       new Set([
                         'ransomware',
                         'ai_incident',
+                        'offsec_harness',
                         'cve',
                         'ioc_activity',
                         'cyber_attack',

@@ -14,6 +14,7 @@ import {
 } from '../../api/src/routes/global-pulse/config';
 import apiApp from '../../api/src/index';
 import { signInternalToken } from '../../api/src/lib/internal-token';
+import { upstashConfigured, upstashGet } from '../../api/src/lib/upstash-cache';
 import type { GlobalPulseResponse } from '../../api/src/routes/global-pulse/types';
 import { errMessage } from '../lib/err';
 
@@ -253,10 +254,14 @@ export class GlobalPulseDO extends DurableObject<Env> {
       if (cached) {
         bodyText = await cached.text();
       } else {
-        // KV fallback — global, so any colo can read the last successful build.
-        const kv = this.env.KV_CACHE;
-        if (kv) {
-          bodyText = await kv.get(GP_KV_KEY, 'text');
+        // Global fallback for a cold cache: external store first, then KV.
+        // Both are readable from any colo, so the WS feed never goes quiet
+        // just because the per-colo Cache API entry expired.
+        if (upstashConfigured(this.env)) {
+          bodyText = await upstashGet(this.env, GP_KV_KEY);
+        }
+        if (!bodyText) {
+          bodyText = (await this.env.KV_CACHE?.get(GP_KV_KEY, 'text')) ?? null;
         }
       }
 

@@ -58,7 +58,7 @@ A live CTI surface that updates itself: ransomware leak-site + negotiation track
 | C2 Hunting Playbooks                    | MANTIS catalog port — 1,029 hunting queries across 9 engines, favicon MMH3 + JARM fingerprints                     |
 | Malware IOCs                            | Gen Threat Labs manifest (gendigitalinc/ioc) — 61 families, 11k hashes, 3.3k network IoCs, YARA + README context   |
 | Threat Pulse                            | Entities ranked by cross-source mentions over 24h                                                                  |
-| Global Pulse                            | 3D interactive threat globe — 700+ geo-coded events across 34 layers                                               |
+| Global Pulse                            | 3D interactive threat globe — 700+ geo-coded events across 35 layers                                               |
 | Threat Intel Metrics                    | 16 hand-rolled SVG panels with live deltas                                                                         |
 | Dark Web Watch                          | Aggregated leak-site/breach/research RSS, keyword watchlist                                                        |
 | Telegram / Reddit / Social              | Curated public Telegram channels, infosec subreddits, Bluesky+Mastodon                                             |
@@ -125,7 +125,7 @@ A 446-tool MCP (Model Context Protocol) server runs on the same Worker, exposing
 | Storage         | KV (briefings, dedup, rate-limit), Cache API (provider/feed results), D1 (briefings DB), Vectorize (semantic search) |
 | Durable Objects | 8 — MCP server, cron lock, live feed, report builder, investigator agent, radar crawler, global pulse                |
 | AI              | Groq (primary) → Workers AI (fallback) for case-study engine; Gemini for agent QA                                    |
-| Tests           | Vitest — 6,700+ tests across 552 test files                                                                          |
+| Tests           | Vitest — 6,700+ tests across 553 test files                                                                          |
 | Quality         | ESLint + Prettier + husky/lint-staged; `tsc --noEmit` gate                                                           |
 | CI              | GitHub Actions: lint + typecheck + vitest, per-ref concurrency cancel                                                |
 | Deploy          | `wrangler deploy`                                                                                                    |

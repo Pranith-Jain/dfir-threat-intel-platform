@@ -1035,6 +1035,28 @@ Externally sourced results are wrapped with `untrustedToolResult` on the Worker.
 07:30 UTC, isolated `continue-on-error` steps, PR + auto-merge + self-deploy).
 To rebuild locally: `node scripts/build-hi-manifest.mjs && node scripts/build-oh-manifest.mjs && node scripts/build-kp-manifest.mjs`.
 
+## Global Pulse — external cache/warm (Upstash)
+
+Global Pulse cache/warm state no longer has to live in Cloudflare KV. With
+`UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` set (Worker secrets, see
+`.env.example`), `api/src/lib/upstash-cache.ts` becomes the first stop for:
+
+- per-feed warm slices (`api/src/lib/warm-slices.ts`, single `MGET` per build),
+- the cross-colo response / last-good payloads (`global-pulse/handler.ts`),
+- the hourly enqueue marker (`global-pulse/config.ts`) and the DO's cold-cache
+  fallback (`worker/durable-objects/global-pulse.ts`).
+
+Writes skip Cloudflare KV whenever Upstash accepts them; reads still fall back
+to Cache API, D1 and KV, so the cutover is a secrets-only change. Upstash's
+permanent free tier is 250 MB / 500k commands per month, which comfortably
+covers ~31 hourly warm writes plus per-build reads. If the secrets are unset,
+behaviour is unchanged. Adapter tests: `api/test/lib/upstash-cache.test.ts`.
+
+Two further sources were added to `GP_FEEDS`: Kitploit CVE evidence cards and
+the Offsec Harness Index evidence table (both mapped by pure converters in
+`global-pulse/converters.ts`). Together with the AI-incident layer these bring
+the replicated datasets into the live map without adding new scrapers.
+
 ## Global Pulse — live board upgrade
 
 `/threatintel/predictive/global-pulse` received an end-to-end (frontend + data-source) upgrade:

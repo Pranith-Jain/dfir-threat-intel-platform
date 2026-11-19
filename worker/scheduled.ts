@@ -280,7 +280,7 @@ export async function executeCronJob(
             // unconditionally by the */30 cron). The two pipelines are
             // independent — gate them independently.
             const [gpFresh, iocFresh] = await Promise.all([
-              shouldSkipGpEnqueue(env.KV_CACHE),
+              shouldSkipGpEnqueue(env),
               shouldSkipEnqueueCycle(env.KV_CACHE),
             ]);
             if (gpFresh && iocFresh) {
@@ -288,7 +288,7 @@ export async function executeCronJob(
             } else {
               if (!gpFresh) {
                 await enqueueGpFeeds(env.FEEDS_QUEUE, csNow.getUTCHours()).catch(logCronFail('gp-warm-enqueue'));
-                await markGpEnqueue(env.KV_CACHE).catch(logCronFail('gp-enqueue-cycle-mark'));
+                await markGpEnqueue(env).catch(logCronFail('gp-enqueue-cycle-mark'));
               }
               // Live-IOC feed slices — same reasoning. The queue consumer warms each
               // source in its own invocation (own budget). Without this the compose-

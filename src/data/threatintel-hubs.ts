@@ -1470,7 +1470,7 @@ export const HUB_META: readonly HubMeta[] = [
         path: '/threatintel/predictive/global-pulse',
         tabId: 'global-pulse',
         label: 'Global Pulse',
-        desc: 'Live 3D globe - 700+ events across 34 layers.',
+        desc: 'Live 3D globe - 700+ events across 35 layers.',
         compVar: 'GlobalPulse',
         badge: 'live',
       },

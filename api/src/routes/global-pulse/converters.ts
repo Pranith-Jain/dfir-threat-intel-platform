@@ -8,7 +8,7 @@ import type {
   IocCorrelationResponse,
 } from './types';
 import { COUNTRY_COORDS, countryNameToCode } from './geo';
-import { asSev } from './shared';
+import { asSev, hoursAgo } from './shared';
 import type { CveDigestEntry } from '../cve-digest';
 
 /* ─── Converters ────────────────────────────────────────────────────────── */
@@ -452,6 +452,85 @@ export function fromHackingIncidents(data: { incidents?: HiIncidentLike[] } | nu
       source: 'hackingincidents.ai',
       url: `https://hackingincidents.ai/incident/${r.id}/`,
       cti: 'threat',
+    });
+  }
+  return out;
+}
+
+/** Open-source offensive-AI harnesses observed in real operations. */
+export interface OhHarnessLike {
+  name: string;
+  description?: string | null;
+  tier?: string | null;
+  repo?: string | null;
+  stars?: number | null;
+  actors?: Array<{ name: string; note?: string | null }>;
+  keyFigure?: string | null;
+  whatItDid?: string | null;
+  breach?: string | null;
+}
+
+export function fromOffsecHarnesses(data: { harnesses?: OhHarnessLike[] } | null | undefined): PulseEvent[] {
+  const out: PulseEvent[] = [];
+  for (const h of data?.harnesses ?? []) {
+    if (!h?.name) continue;
+    const actors = (h.actors ?? [])
+      .map((a) => a.name)
+      .filter(Boolean)
+      .join(', ');
+    const detail = [h.whatItDid || h.description, h.keyFigure, actors ? `Actors: ${actors}` : null]
+      .filter(Boolean)
+      .join(' · ');
+    out.push({
+      id: `oh:${h.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+      kind: 'offsec_harness',
+      title: `${h.name} seen in attacker operations`,
+      description: detail || 'Open-source offensive-AI harness observed in primary reporting.',
+      lat: 0,
+      lng: 0,
+      timestamp: hoursAgo(24),
+      severity: h.tier === 'confirmed' ? 'high' : 'medium',
+      source: 'offsecharnesses.ai',
+      url: 'https://offsecharnesses.ai/',
+      cti: 'threat',
+    });
+  }
+  return out;
+}
+
+/** CVE evidence cards mirrored from Kitploit's public HTML/RSS surface. */
+export interface KpExploitLike {
+  id: string;
+  cve?: string | null;
+  title: string;
+  url?: string | null;
+  cvssScore?: number | null;
+  cvssSeverity?: string | null;
+  epss?: string | null;
+  exploitCount?: number | null;
+  evidence?: string | null;
+}
+
+export function fromKitploitExploits(data: { exploits?: KpExploitLike[] } | null | undefined): PulseEvent[] {
+  const out: PulseEvent[] = [];
+  for (const e of data?.exploits ?? []) {
+    if (!e?.id || !e.title) continue;
+    const score = e.cvssScore ?? 0;
+    out.push({
+      id: `kp:${e.id}`,
+      kind: 'exploit',
+      title: e.title,
+      description: [e.cve, e.evidence, e.exploitCount ? `${e.exploitCount} exploit references` : null]
+        .filter(Boolean)
+        .join(' · '),
+      lat: 0,
+      lng: 0,
+      magnitude: score || undefined,
+      timestamp: hoursAgo(24),
+      severity: score >= 9 ? 'critical' : score >= 7 ? 'high' : score >= 4 ? 'medium' : 'low',
+      source: 'kitploit.com',
+      url: e.url ?? undefined,
+      cti: 'cve',
     });
   }
   return out;
