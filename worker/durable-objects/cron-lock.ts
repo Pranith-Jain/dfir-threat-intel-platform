@@ -189,7 +189,10 @@ export async function heartbeatCronLease(env: Env, cron: string, token: string, 
     // same cron is NOW running in another isolate: double-running the hourly
     // fan-out burns the free-plan budget twice. Surface it loudly instead of
     // silently continuing to believe we still hold the lease.
-    if (!res.ok) {
+    // A lost lease is returned as HTTP 200 with `{ok:false}` by the DO, so
+    // checking res.ok alone never fires and the duplicate run goes unseen.
+    const body = (await res.json().catch(() => ({}))) as { ok?: boolean };
+    if (!res.ok || body.ok === false) {
       console.error(JSON.stringify({ job: 'cron-lease-heartbeat', status: 'lease-lost', cron }));
     }
   } catch (_catchErr) {

@@ -8,6 +8,7 @@ import {
   type Severity,
   type StixBundleEntry,
 } from '../../data/threatintel/stix-bundles';
+import { Link } from 'react-router-dom';
 import { sanitizeUrl } from '../../lib/sanitize-url';
 
 const SEVERITIES: Severity[] = ['critical', 'high', 'medium', 'low'];
@@ -175,12 +176,12 @@ function BundleCard({ bundle }: { bundle: StixBundleEntry }): JSX.Element {
           >
             <Download size={11} /> JSON
           </a>
-          <a
-            href={sanitizeUrl(bundle.viewerPath)}
+          <Link
+            to={bundle.viewerPath}
             className="inline-flex items-center gap-1.5 text-mini font-mono px-3 py-1.5 rounded-xl border border-line-1 text-muted hover:border-rose-500/50 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
           >
             <Eye size={11} /> View
-          </a>
+          </Link>
         </div>
       </div>
     </div>

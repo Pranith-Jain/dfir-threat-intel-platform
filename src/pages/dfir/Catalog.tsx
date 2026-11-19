@@ -32,6 +32,14 @@ export default function DfirCatalogPage(): JSX.Element {
     setSearchParams(next, { replace: true });
   }, [query, activeCat, setSearchParams]);
 
+  // Same-route deep links (?cat=, ?q=, browser Back) don't remount this
+  // page. Without this, the write effect above clobbers the incoming param
+  // with the previously selected filter.
+  useEffect(() => {
+    setQuery(searchParams.get('q') ?? '');
+    setActiveCat(searchParams.get('cat') ?? searchParams.get('tag') ?? 'all');
+  }, [searchParams]);
+
   const totalEntries = CATALOG.reduce((sum, h) => sum + h.pages.length, 0);
 
   const searchResults = useMemo(() => {

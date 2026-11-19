@@ -949,7 +949,7 @@ const REDIRECTS: ReadonlyArray<{ path: string; to: string; preserveQuery?: boole
   { path: '/threatintel/ransomware-map', to: '/threatintel/darkweb/ransom-map' },
   { path: '/threatintel/ransomware-activity', to: '/threatintel/ransomware-hub?tab=activity' },
   { path: '/threatintel/ransom-report', to: '/threatintel/darkweb/ransom-report' },
-  { path: '/threatintel/negotiations', to: '/threatintel/darkweb/ransom-activity?tab=negotiations' },
+  { path: '/threatintel/negotiations', to: '/threatintel/ransomware-hub?tab=activity' },
   { path: '/threatintel/ransomwhere', to: '/threatintel/darkweb/ransomwhere' },
   { path: '/threatintel/breach-forums', to: '/threatintel/breach-hub' },
   { path: '/threatintel/darkweb-tools', to: '/threatintel/darkweb/watch' },

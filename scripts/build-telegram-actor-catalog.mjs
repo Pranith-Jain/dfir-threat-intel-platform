@@ -233,6 +233,11 @@ for (const obj of rawObjects) {
 // Strings are kept in single quotes to avoid escaping the catalog content
 // (em-dashes, emoji, etc.). Values are otherwise JSON-compatible so we
 // reuse JSON.stringify as the formatter.
+// Format drift must never silently wipe the committed correlation catalog.
+if (actors.length === 0) {
+  console.error('build-telegram-actor-catalog: parsed 0 actors — refusing to overwrite the generated catalog');
+  process.exit(1);
+}
 const json = JSON.stringify(actors, null, 2);
 const tsBody = json
   .replace(/"([a-zA-Z_][a-zA-Z0-9_]*)":/g, '$1:') // unquote object keys

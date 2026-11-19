@@ -1081,10 +1081,13 @@ export async function feedStatusHandler(c: Context<{ Bindings: Env }>): Promise<
         cold: 0,
         reliability_distribution: { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0, ungraded: 0 },
         degraded_sources: [],
+        error: 'feed_status_unavailable',
       }),
       {
         status: 200,
-        headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=30' },
+        // Explicit no-store also stops the global GET cache middleware from
+        // re-caching this empty degraded snapshot at the edge.
+        headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
       }
     );
   }

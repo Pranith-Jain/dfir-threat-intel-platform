@@ -125,8 +125,8 @@ export const TOOL_TOPICS: ToolTopic[] = [
   { term: 'reverse image search', href: '/dfir/image-intel', blurb: 'Multi-engine reverse-image search dispatcher' },
 
   // Crypto
-  { term: 'OFAC', href: '/dfir/crypto-trace', blurb: 'Sanctions-check any BTC/EVM/Solana address' },
-  { term: 'wallet drainer', href: '/dfir/crypto-trace', blurb: 'ScamSniffer-flagged drainer addresses surface here' },
+  { term: 'OFAC', href: '/dfir/crypto-tracer', blurb: 'Sanctions-check any BTC/EVM/Solana address' },
+  { term: 'wallet drainer', href: '/dfir/crypto-tracer', blurb: 'ScamSniffer-flagged drainer addresses surface here' },
 
   // Breach + exposure
   { term: 'HIBP', href: '/dfir/breach', blurb: 'Check breach exposure for an email or password hash' },

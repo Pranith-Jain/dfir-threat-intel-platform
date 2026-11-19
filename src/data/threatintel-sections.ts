@@ -56,7 +56,7 @@ export const SECTIONS: Section[] = [
         badge: 'new',
       },
       {
-        to: '/threatintel/predictive',
+        to: '/threatintel/predictive/dashboard',
         label: 'Threat Landscape',
         desc: 'Key stats, trending actors, top malware, emerging threats, and attack vector distribution.',
         icon: LayoutDashboard,
@@ -169,7 +169,7 @@ export const SECTIONS: Section[] = [
         icon: AlertTriangle,
       },
       {
-        to: '/threatintel/malware',
+        to: '/threatintel/catalog?cat=malware',
         label: 'Malware Hub',
         desc: 'Malware IOC browser (50+ families), Malpedia, and Maltrail APT trails.',
         icon: Bug,
@@ -182,7 +182,7 @@ export const SECTIONS: Section[] = [
         badge: 'new',
       },
       {
-        to: '/threatintel/phishing',
+        to: '/threatintel/catalog?cat=phishing',
         label: 'Phishing Defense',
         desc: 'Phishing hunting wordlists, phish feed, email defense analysis, and domain impersonation monitoring.',
         icon: ShieldAlert,
@@ -196,7 +196,7 @@ export const SECTIONS: Section[] = [
     blurb: 'OSINT frameworks, AI copilot, data search, and investigative utilities.',
     tools: [
       {
-        to: '/threatintel/osint',
+        to: '/threatintel/catalog?cat=osint',
         label: 'OSINT Hub',
         desc: 'Username search (291k handles), OSINT framework (70+ tools), OSINT country map, and tool directories.',
         icon: Search,
@@ -250,7 +250,7 @@ export const SECTIONS: Section[] = [
         icon: BookOpen,
       },
       {
-        to: '/threatintel/external',
+        to: '/threatintel/catalog?cat=external',
         label: 'External Resources',
         desc: 'Off-site cross-references - dashboards, OSINT directories, training labs, malware samples, research portfolios.',
         icon: Globe,
@@ -276,7 +276,7 @@ export const SECTIONS: Section[] = [
         icon: BarChart3,
       },
       {
-        to: '/threatintel/predictive',
+        to: '/threatintel/predictive/predictions',
         label: 'Predictive Intelligence',
         desc: 'AI-driven threat forecasting based on current intelligence trends and historical data.',
         icon: TrendingUp,

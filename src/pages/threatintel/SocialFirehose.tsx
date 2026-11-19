@@ -1,5 +1,5 @@
-import { Suspense, lazy, useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
+import { useHubTab } from '../../hooks/useHubTab';
 import { TabLoader } from '../../components/ui/TabLoader';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { Radio } from 'lucide-react';
@@ -24,23 +24,8 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
   { id: 'bluesky', label: 'Bluesky & Mastodon', desc: '36 researchers across Bluesky and Mastodon' },
 ];
 
-const VALID_TABS = new Set<TabId>(['telegram', 'reddit', 'x-live', 'x-watch', 'bluesky']);
-
 export default function SocialFirehose(): JSX.Element {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab') as TabId | null;
-  const [activeTab, setActiveTab] = useState<TabId>(tabParam && VALID_TABS.has(tabParam) ? tabParam : 'telegram');
-
-  // Sync tab changes to the URL so deep-links and back/forward work.
-  useEffect(() => {
-    const current = searchParams.get('tab') ?? 'telegram';
-    if (current !== activeTab) {
-      const next = new URLSearchParams(searchParams);
-      if (activeTab === 'telegram') next.delete('tab');
-      else next.set('tab', activeTab);
-      setSearchParams(next, { replace: true });
-    }
-  }, [activeTab, searchParams, setSearchParams]);
+  const [activeTab, setActiveTab] = useHubTab(TABS, 'telegram');
 
   return (
     <DataPageLayout

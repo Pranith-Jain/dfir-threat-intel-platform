@@ -764,6 +764,11 @@ app.use('/api/v1/*', looseValidation());
 app.use('/api/v1/*', async (c, next) => {
   await next();
   if (c.req.method !== 'GET' || c.res.status !== 200) return;
+  // Handlers that serve mutable state (feedback, annotations) or a degraded
+  // fallback set their own Cache-Control. Never overwrite it with the broad
+  // route-tier default — that served user submissions from the edge and kept
+  // an empty feed-status snapshot alive for an hour via stale-if-error.
+  if (c.res.headers.has('cache-control')) return;
   const path = new URL(c.req.url).pathname;
   let maxAge = 0;
   let staleWhileRevalidate = 0;

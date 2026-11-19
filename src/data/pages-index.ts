@@ -857,7 +857,7 @@ const DFIR_PAGES: readonly PageEntry[] = [
     group: 'dfir',
   },
   {
-    path: '/dfir/crypto-trace',
+    path: '/dfir/crypto-tracer',
     label: 'Crypto Trace (alias)',
     description: 'Alias for the Crypto Tracer.',
     sectionLabel: 'DFIR · Investigate',
@@ -1159,7 +1159,7 @@ const DFIR_PAGES: readonly PageEntry[] = [
     group: 'dfir',
   },
   {
-    path: '/dfir/sandbox-integration',
+    path: '/dfir/malware-sandbox',
     label: 'Sandbox Integration',
     description: 'Integrate external sandboxes (ANY.RUN, Hybrid-Analysis, Cuckoo) for detonation.',
     sectionLabel: 'DFIR · Forensics',
@@ -1956,7 +1956,7 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     group: 'threatintel',
   },
   {
-    path: '/threatintel/threat-pulse',
+    path: '/threatintel/predictive/threat-pulse',
     label: 'Threat Pulse',
     description: 'Live intel pulse - minute-by-minute indicator deltas and trending clusters.',
     sectionLabel: 'Threat Intel · Live',
@@ -2514,7 +2514,7 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     group: 'threatintel',
   },
   {
-    path: '/threatintel/unified-search',
+    path: '/threatintel/tools/unified-search',
     label: 'Unified Search',
     description: 'Cross-source omnibox - search the platform, query IOC pivots, and trigger an AI summary.',
     sectionLabel: 'Threat Intel · Tools',

@@ -192,6 +192,16 @@ async function main() {
     note('timeline', err);
   }
 
+  // 2b. Fail before touching the committed deliverable if any critical
+  // upstream document is missing. Previously a successful /timeline fetch
+  // with the three JSON files missing overwrote public/data/artex/index.json
+  // with empty IOCs, trend and keywords and still exited 0.
+  if (!site || !iocs || !exposure || events.length === 0) {
+    console.error('[artex] critical upstream data missing — refusing to rebuild committed data');
+    process.exitCode = 1;
+    return;
+  }
+
   // 3. Per-event detail pages (bounded, sequential; one failure never
   // drops the event from the list - it only drops the detail block).
   const details = {};
