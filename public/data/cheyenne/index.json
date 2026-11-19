@@ -1,0 +1,585 @@
+{
+  "generatedAt": "2026-11-19T06:28:09.815Z",
+  "source": {
+    "name": "cheyenne",
+    "fullName": "MJCruickshank/cheyenne",
+    "url": "https://github.com/MJCruickshank/cheyenne",
+    "description": "OSINT dashboard for satellite imagery acquisition and social media intel geolocation",
+    "stars": 45,
+    "forks": 2,
+    "pushedAt": "2026-11-17T16:43:22Z",
+    "license": null,
+    "readmeUrl": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/README.md",
+    "catalogUrl": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/web/catalog.json"
+  },
+  "overview": "An earth-observation tracking board for open-source investigators of conflict, humanitarian crises and natural disasters. An interactive globe shows where imaging satellites are right now, what they have already imaged over a place, and what they are scheduled to image next. Free imagery can be drawn on the globe or saved to disk, and live fire detections, ship positions, weather imagery and Telegram reports can be laid over the same map. It runs on your own machine: a small Python server and a browser tab. There is nothing to build, and the core features need no accounts or API keys.",
+  "features": [
+    {
+      "title": "Live satellite tracking",
+      "body": "Real-time positions, ground tracks and sensor swaths for 23 fleets of imaging satellites: open missions (Sentinel-1, Sentinel-2, Landsat), daily global sensors (VIIRS, MODIS), commercial optical and radar operators, and state-run systems. The clock can be jumped or accelerated to see where satellites will be."
+    },
+    {
+      "title": "Archive search",
+      "body": "For Sentinel-2, Sentinel-1 and Landsat 8/9, footprints of every scene taken over a place in a chosen period, on the globe and on a timeline."
+    },
+    {
+      "title": "Future passes",
+      "body": "ESA's published acquisition plans for Sentinel-1 and Sentinel-2, and predicted passes for every other fleet, computed from current orbits and sensor geometry."
+    },
+    {
+      "title": "Imagery on the globe",
+      "body": "Any open scene can be rendered in place. Only small tiles inside the scene are fetched, so the board stays responsive."
+    },
+    {
+      "title": "Visualisations by sensor type",
+      "body": "Optical: true colour, false-colour infrared, shortwave infrared, burn ratio, vegetation, water and moisture indices. Radar: backscatter, dual-polarisation composite, water and flood, strong reflectors. Landsat adds thermal."
+    },
+    {
+      "title": "Downloads",
+      "body": "Individual bands as cloud-optimised GeoTIFF, or the current rendering as a PNG."
+    },
+    {
+      "title": "Fire detections",
+      "body": "NASA FIRMS near-real-time thermal detections for the last 24 hours, 48 hours or 7 days."
+    },
+    {
+      "title": "Ship tracking",
+      "body": "Live AIS positions merged from four free feeds (aisstream.io, Fintraffic, Open Waters and Pelyr), coloured by ship type, with each ship's details and recent track, and a map of where free AIS coverage actually exists."
+    },
+    {
+      "title": "Live weather view",
+      "body": "The newest full-disc imagery from the geostationary weather satellites, draped on the globe and refreshed every five minutes."
+    },
+    {
+      "title": "Basemaps",
+      "body": "A vector board, or the Esri World Imagery satellite mosaic."
+    },
+    {
+      "title": "Intel",
+      "body": "Follows public Telegram channels, places each post on the map with an icon for the kind of event, and raises an alert when a new located report arrives."
+    },
+    {
+      "title": "Shareable views",
+      "body": "The address bar records the view, fleet, focus point and time window."
+    }
+  ],
+  "screenshots": [
+    {
+      "alt": "The board with Sentinel-2 selected: ground tracks, sensor swaths and the week's planned acquisitions",
+      "url": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/docs/screenshots/overview.png"
+    },
+    {
+      "alt": "Sentinel-2 scene of Khartoum in false-colour infrared with the download list",
+      "url": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/docs/screenshots/optical.png"
+    },
+    {
+      "alt": "Sentinel-1 radar scene of ships at anchor off Suez",
+      "url": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/docs/screenshots/sar.png"
+    },
+    {
+      "alt": "FIRMS thermal detections across central Africa",
+      "url": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/docs/screenshots/firms.png"
+    },
+    {
+      "alt": "Geostationary weather imagery on the globe",
+      "url": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/docs/screenshots/live.png"
+    },
+    {
+      "alt": "Live AIS positions off the Netherlands with one ship's details open",
+      "url": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/docs/screenshots/ais.png"
+    },
+    {
+      "alt": "Free AIS coverage recorded over 26 minutes: dense along Europe's coasts, almost none in the Black Sea, Red Sea or Persian Gulf",
+      "url": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/docs/screenshots/ais-coverage.png"
+    },
+    {
+      "alt": "The Intel tab: located reports over Ukraine with one report card open",
+      "url": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/docs/screenshots/intel.png"
+    }
+  ],
+  "groups": [
+    {
+      "id": "open",
+      "label": "OPEN ARCHIVE",
+      "note": "Free imagery: search footprints, render, download"
+    },
+    {
+      "id": "daily",
+      "label": "DAILY GLOBAL",
+      "note": "Free wide-swath daily mosaics"
+    },
+    {
+      "id": "opentrack",
+      "label": "OPEN DATA / TRACK ONLY",
+      "note": "Free data held in external catalogues"
+    },
+    {
+      "id": "vhr",
+      "label": "COMMERCIAL OPTICAL",
+      "note": "Tasked very-high-resolution imagers"
+    },
+    {
+      "id": "sar",
+      "label": "COMMERCIAL SAR",
+      "note": "Tasked radar imagers, day/night all-weather"
+    },
+    {
+      "id": "state",
+      "label": "STATE OPERATED",
+      "note": "Government imaging fleets"
+    }
+  ],
+  "fleets": [
+    {
+      "id": "sentinel-2",
+      "name": "SENTINEL-2",
+      "group": "open",
+      "operator": "ESA / COPERNICUS",
+      "sensor": "optical",
+      "instrument": "MSI 13-BAND MULTISPECTRAL",
+      "gsd": "10 M",
+      "revisit": "5 D (2-3 D MID-LAT)",
+      "color": "#ffc247",
+      "access": "OPEN. LEVEL-2A SURFACE REFLECTANCE VIA MICROSOFT PLANETARY COMPUTER",
+      "defaultVisible": true
+    },
+    {
+      "id": "sentinel-1",
+      "name": "SENTINEL-1",
+      "group": "open",
+      "operator": "ESA / COPERNICUS",
+      "sensor": "sar",
+      "instrument": "C-BAND SAR (IW/EW/SM)",
+      "gsd": "10 M (IW GRD)",
+      "revisit": "6-12 D",
+      "color": "#ff5fa8",
+      "access": "OPEN. GROUND RANGE DETECTED (GRD) VIA MICROSOFT PLANETARY COMPUTER",
+      "defaultVisible": true
+    },
+    {
+      "id": "landsat",
+      "name": "LANDSAT 8/9",
+      "group": "open",
+      "operator": "USGS / NASA",
+      "sensor": "optical",
+      "instrument": "OLI MULTISPECTRAL + TIRS THERMAL",
+      "gsd": "30 M (100 M THERMAL)",
+      "revisit": "8 D COMBINED",
+      "color": "#6fb6ff",
+      "access": "OPEN. COLLECTION 2 LEVEL-2 VIA MICROSOFT PLANETARY COMPUTER",
+      "defaultVisible": true
+    },
+    {
+      "id": "viirs",
+      "name": "VIIRS (JPSS)",
+      "group": "daily",
+      "operator": "NOAA / NASA",
+      "sensor": "optical",
+      "instrument": "VIIRS IMAGING RADIOMETER + DAY/NIGHT BAND",
+      "gsd": "375-750 M",
+      "revisit": "2X DAILY PER SAT",
+      "color": "#c9a0ff",
+      "access": "OPEN. DAILY GLOBAL MOSAICS VIA NASA GIBS",
+      "defaultVisible": true
+    },
+    {
+      "id": "modis",
+      "name": "MODIS (TERRA/AQUA)",
+      "group": "daily",
+      "operator": "NASA",
+      "sensor": "optical",
+      "instrument": "MODIS 36-BAND RADIOMETER",
+      "gsd": "250-1000 M",
+      "revisit": "DAILY PER SAT",
+      "color": "#ff8a3d",
+      "access": "OPEN. DAILY GLOBAL MOSAICS VIA NASA GIBS",
+      "defaultVisible": true
+    },
+    {
+      "id": "sentinel-3",
+      "name": "SENTINEL-3",
+      "group": "opentrack",
+      "operator": "ESA / EUMETSAT",
+      "sensor": "optical",
+      "instrument": "OLCI OCEAN/LAND COLOUR + SLSTR THERMAL",
+      "gsd": "300 M",
+      "revisit": "< 2 D",
+      "color": "#8fe3c0",
+      "access": "OPEN VIA COPERNICUS DATA SPACE (NOT INDEXED HERE)",
+      "defaultVisible": true
+    },
+    {
+      "id": "nisar",
+      "name": "NISAR",
+      "group": "opentrack",
+      "operator": "NASA / ISRO",
+      "sensor": "sar",
+      "instrument": "L-BAND + S-BAND SAR",
+      "gsd": "3-10 M",
+      "revisit": "12 D",
+      "color": "#ff9ec4",
+      "access": "OPEN VIA ALASKA SATELLITE FACILITY (EARTHDATA LOGIN)",
+      "defaultVisible": true
+    },
+    {
+      "id": "maxar",
+      "name": "MAXAR WORLDVIEW / LEGION",
+      "group": "vhr",
+      "operator": "VANTOR (MAXAR)",
+      "sensor": "optical",
+      "instrument": "PAN + MULTISPECTRAL VHR",
+      "gsd": "0.3-0.5 M",
+      "revisit": "INTRADAY (TASKED)",
+      "color": "#f4f1de",
+      "access": "COMMERCIAL. FREE RELEASES FOR MAJOR DISASTERS VIA OPEN DATA PROGRAM",
+      "defaultVisible": true
+    },
+    {
+      "id": "airbus",
+      "name": "AIRBUS PLEIADES / SPOT",
+      "group": "vhr",
+      "operator": "AIRBUS DEFENCE & SPACE",
+      "sensor": "optical",
+      "instrument": "PAN + MULTISPECTRAL VHR",
+      "gsd": "0.3-1.5 M",
+      "revisit": "DAILY (TASKED)",
+      "color": "#e0d3ff",
+      "access": "COMMERCIAL. DISASTER RELEASES VIA INTERNATIONAL CHARTER / COPERNICUS EMS",
+      "defaultVisible": true
+    },
+    {
+      "id": "planet",
+      "name": "PLANET SKYSAT / PELICAN",
+      "group": "vhr",
+      "operator": "PLANET LABS",
+      "sensor": "optical",
+      "instrument": "FRAME VHR + VIDEO",
+      "gsd": "0.3-0.5 M",
+      "revisit": "INTRADAY (TASKED)",
+      "color": "#9fe8ff",
+      "access": "COMMERCIAL. SELECTED DISASTER DATA RELEASED TO RESPONDERS",
+      "defaultVisible": false
+    },
+    {
+      "id": "blacksky",
+      "name": "BLACKSKY GLOBAL",
+      "group": "vhr",
+      "operator": "BLACKSKY",
+      "sensor": "optical",
+      "instrument": "FRAME VHR",
+      "gsd": "0.35-1 M",
+      "revisit": "HOURLY-CLASS (TASKED)",
+      "color": "#ffe9a8",
+      "access": "COMMERCIAL",
+      "defaultVisible": false
+    },
+    {
+      "id": "iceye",
+      "name": "ICEYE",
+      "group": "sar",
+      "operator": "ICEYE",
+      "sensor": "sar",
+      "instrument": "X-BAND SAR",
+      "gsd": "0.25-3 M",
+      "revisit": "INTRADAY (TASKED)",
+      "color": "#ff7ad9",
+      "access": "COMMERCIAL. FLOOD / DISASTER BRIEFINGS PUBLISHED AD HOC",
+      "defaultVisible": false
+    },
+    {
+      "id": "capella",
+      "name": "CAPELLA",
+      "group": "sar",
+      "operator": "CAPELLA SPACE",
+      "sensor": "sar",
+      "instrument": "X-BAND SAR",
+      "gsd": "0.25-1.2 M",
+      "revisit": "INTRADAY (TASKED)",
+      "color": "#ffa3e6",
+      "access": "COMMERCIAL. FREE OPEN DATA CATALOGUE (STAC) AVAILABLE",
+      "defaultVisible": true
+    },
+    {
+      "id": "umbra",
+      "name": "UMBRA",
+      "group": "sar",
+      "operator": "UMBRA",
+      "sensor": "sar",
+      "instrument": "X-BAND SAR",
+      "gsd": "0.16-1 M",
+      "revisit": "INTRADAY (TASKED)",
+      "color": "#d9a3ff",
+      "access": "COMMERCIAL. FREE OPEN DATA PROGRAM (AWS)",
+      "defaultVisible": true
+    },
+    {
+      "id": "cosmo",
+      "name": "COSMO-SKYMED",
+      "group": "sar",
+      "operator": "ASI / E-GEOS",
+      "sensor": "sar",
+      "instrument": "X-BAND SAR",
+      "gsd": "1-3 M",
+      "revisit": "< 12 H (CONSTELLATION)",
+      "color": "#ff8f8f",
+      "access": "COMMERCIAL / DUAL-USE",
+      "defaultVisible": true
+    },
+    {
+      "id": "tsx",
+      "name": "TERRASAR-X / PAZ",
+      "group": "sar",
+      "operator": "DLR / AIRBUS / HISDESAT",
+      "sensor": "sar",
+      "instrument": "X-BAND SAR",
+      "gsd": "0.25-3 M",
+      "revisit": "2.5 D",
+      "color": "#ffb38a",
+      "access": "COMMERCIAL / SCIENCE PROPOSALS",
+      "defaultVisible": true
+    },
+    {
+      "id": "radarsat",
+      "name": "RADARSAT-2 / RCM",
+      "group": "sar",
+      "operator": "MDA / CSA",
+      "sensor": "sar",
+      "instrument": "C-BAND SAR",
+      "gsd": "1-100 M",
+      "revisit": "DAILY (RCM)",
+      "color": "#ffd0a8",
+      "access": "COMMERCIAL / GOVERNMENT. CHARTER RELEASES",
+      "defaultVisible": true
+    },
+    {
+      "id": "jpsar",
+      "name": "SYNSPECTIVE / IQPS",
+      "group": "sar",
+      "operator": "SYNSPECTIVE / IQPS (JAPAN)",
+      "sensor": "sar",
+      "instrument": "X-BAND SAR",
+      "gsd": "0.5-3 M",
+      "revisit": "TASKED",
+      "color": "#ffc2f0",
+      "access": "COMMERCIAL",
+      "defaultVisible": false
+    },
+    {
+      "id": "alos",
+      "name": "ALOS-2 / ALOS-4",
+      "group": "state",
+      "operator": "JAXA",
+      "sensor": "sar",
+      "instrument": "L-BAND SAR (PALSAR)",
+      "gsd": "3-10 M",
+      "revisit": "14 D",
+      "color": "#b8d4ff",
+      "access": "RESTRICTED / CHARTER. SELECTED PRODUCTS OPEN",
+      "defaultVisible": true
+    },
+    {
+      "id": "kompsat",
+      "name": "KOMPSAT",
+      "group": "state",
+      "operator": "KARI (ROK)",
+      "sensor": "multi",
+      "instrument": "VHR OPTICAL / X-BAND SAR",
+      "gsd": "0.3-1 M",
+      "revisit": "TASKED",
+      "color": "#a8ffd0",
+      "access": "COMMERCIAL / GOVERNMENT",
+      "defaultVisible": false
+    },
+    {
+      "id": "gaofen",
+      "name": "GAOFEN",
+      "group": "state",
+      "operator": "CNSA (PRC)",
+      "sensor": "multi",
+      "instrument": "OPTICAL / SAR / HYPERSPECTRAL (MIXED)",
+      "gsd": "0.1-16 M",
+      "revisit": "FLEET DEPENDENT",
+      "color": "#ff6b5e",
+      "access": "CLOSED",
+      "defaultVisible": false
+    },
+    {
+      "id": "jilin",
+      "name": "JILIN-1",
+      "group": "state",
+      "operator": "CHANG GUANG (PRC)",
+      "sensor": "optical",
+      "instrument": "VHR OPTICAL + VIDEO",
+      "gsd": "0.5-1 M",
+      "revisit": "INTRADAY (FLEET)",
+      "color": "#ff9a6b",
+      "access": "COMMERCIAL (PRC)",
+      "defaultVisible": false
+    },
+    {
+      "id": "roscosmos",
+      "name": "RESURS / KANOPUS / KONDOR",
+      "group": "state",
+      "operator": "ROSCOSMOS (RF)",
+      "sensor": "multi",
+      "instrument": "OPTICAL / S-BAND SAR (MIXED)",
+      "gsd": "1-3 M",
+      "revisit": "FLEET DEPENDENT",
+      "color": "#ff4d4d",
+      "access": "CLOSED",
+      "defaultVisible": false
+    }
+  ],
+  "dataSources": [
+    {
+      "data": "Orbital elements",
+      "source": "CelesTrak GP data, cached on disk for 3 hours",
+      "url": null
+    },
+    {
+      "data": "Acquired scenes, tiles, downloads",
+      "source": "Microsoft Planetary Computer (Sentinel-2 L2A, Sentinel-1 GRD, Landsat C2 L2)",
+      "url": null
+    },
+    {
+      "data": "Tasking plans",
+      "source": "ESA Sentinel acquisition plan KML files",
+      "url": null
+    },
+    {
+      "data": "Daily global mosaics",
+      "source": "NASA GIBS (MODIS, VIIRS)",
+      "url": null
+    },
+    {
+      "data": "Fire detections",
+      "source": "NASA FIRMS near-real-time files (VIIRS on NOAA-20/21, MODIS on Terra/Aqua), cached for 20 minutes",
+      "url": null
+    },
+    {
+      "data": "Live view",
+      "source": "GOES-East/West GeoColor via NASA GIBS; Meteosat and geostationary-ring mosaics via EUMETSAT EUMETView",
+      "url": null
+    },
+    {
+      "data": "Vector basemap",
+      "source": "OpenFreeMap (OpenMapTiles schema, OpenStreetMap data)",
+      "url": null
+    },
+    {
+      "data": "Imagery basemap",
+      "source": "Esri World Imagery",
+      "url": null
+    },
+    {
+      "data": "Place search",
+      "source": "OpenStreetMap Nominatim",
+      "url": null
+    },
+    {
+      "data": "Ship positions",
+      "source": "aisstream.io (free key); Fintraffic Digitraffic (CC BY 4.0, no key); Open Waters AIS, including BarentsWatch and the Norwegian Coastal Administration (NLOD 2.0) and AISHub (no key); Pelyr (free key, Pelyr Data Licence 2.0)",
+      "url": null
+    },
+    {
+      "data": "Intel posts",
+      "source": "Public Telegram channel previews (t.me/s/)",
+      "url": null
+    },
+    {
+      "data": "Intel place names",
+      "source": "GeoNames (CC BY 4.0): every place in 20 countries around the two conflicts, towns over 500 people elsewhere",
+      "url": null
+    },
+    {
+      "data": "Intel place extraction",
+      "source": "Anthropic API, claude-haiku-5-5 (optional; needs a login or API key)",
+      "url": null
+    }
+  ],
+  "aisFeeds": [
+    {
+      "feed": "aisstream.io",
+      "url": "https://aisstream.io",
+      "area": "Whole globe, volunteer shore receivers",
+      "key": "AISSTREAM_API_KEY",
+      "usage": "One live connection for the whole globe, about 90 messages a second"
+    },
+    {
+      "feed": "Fintraffic Digitraffic",
+      "url": "https://www.digitraffic.fi/en/marine-traffic/",
+      "area": "Finnish waters: Gulf of Finland, Archipelago Sea, Gulf of Bothnia",
+      "key": "None",
+      "usage": "Polled once a minute, plus ship details every 10 minutes"
+    },
+    {
+      "feed": "Open Waters AIS",
+      "url": "https://openwaters.io/ais/",
+      "area": "Strongest in Norway (the official BarentsWatch feed) and the Nordics; also relays Fintraffic, AISHub, aisstream and volunteer stations",
+      "key": "None (OPENWATERS_TOKEN optional)",
+      "usage": "Follows the board's view, because it cannot take the whole globe"
+    },
+    {
+      "feed": "Pelyr",
+      "url": "https://pelyr.com",
+      "area": "Community stations and third-party feeds; no coverage table published",
+      "key": "PELYR_API_KEY",
+      "usage": "Follows the board's view, like Open Waters"
+    }
+  ],
+  "footprints": [
+    {
+      "label": "PLANNED",
+      "source": "ESA acquisition plans for Sentinel-1 and Sentinel-2",
+      "reliability": "The operator's published schedule. Revised without notice."
+    },
+    {
+      "label": "PREDICTED (Landsat and other fixed-swath sensors)",
+      "source": "Computed from current orbital elements and swath width",
+      "reliability": "Good for about a week; Landsat images all daylit land."
+    },
+    {
+      "label": "PREDICTED (commercial, steerable sensors)",
+      "source": "Same computation, using the sensor's pointing range",
+      "reliability": "Opportunity only. Whether the operator is tasking the area is not public."
+    }
+  ],
+  "limitations": [
+    "Predicted passes for commercial satellites show when a satellite could image a place, not whether it will.",
+    "Live view. GEOCOLOUR has colour imagery over the Americas, Atlantic, Europe and Africa; Asia and the western Pacific show infrared. The whole-globe mosaics update every 3 hours.",
+    "The 7-day FIRMS window downloads about 60 MB on first use and shows the 150,000 strongest detections in view; zoom in to see them all.",
+    "Downloads are large. A Sentinel-1 polarisation is roughly 600 MB to 1 GB.",
+    "Local use. The server has no user accounts or access control. It binds to 127.0.0.1 by default; do not expose it to the internet."
+  ],
+  "credits": [
+    {
+      "component": "MapLibre GL JS 5.24.1",
+      "url": "https://github.com/maplibre/maplibre-gl-js",
+      "licence": "BSD 3-Clause"
+    },
+    {
+      "component": "satellite.js 5.0.0",
+      "url": "https://github.com/shashwatak/satellite-js",
+      "licence": "MIT"
+    },
+    {
+      "component": "IBM Plex Mono",
+      "url": null,
+      "licence": "SIL Open Font License 1.1"
+    },
+    {
+      "component": "Share Tech Mono",
+      "url": null,
+      "licence": "SIL Open Font License 1.1"
+    }
+  ],
+  "creditsNote": "Cheyenne bundles these third-party components; their licence texts are in web/vendor/licenses/: Data is provided by CelesTrak, ESA and the Copernicus programme, USGS, the Microsoft Planetary Computer, NASA (GIBS and FIRMS), NOAA, EUMETSAT, OpenFreeMap and OpenStreetMap contributors, Esri, GeoNames, aisstream.io, Fintraffic, Open Waters, BarentsWatch and the Norwegian Coastal Administration (Kystverket), and Pelyr. Each provider's own terms apply to its data; the board shows the credits each AIS feed requires while that feed is in use. Cheyenne is not affiliated with or endorsed by any of these providers, or by Telegram or Anthropic.",
+  "install": {
+    "requirements": [
+      "Python 3.9 or newer (3.10 or newer for the optional extras)",
+      "A current desktop browser with WebGL (Chrome, Edge, Firefox or Safari)",
+      "An internet connection, for orbital elements, map tiles and imagery"
+    ],
+    "commands": "git clone https://github.com/MJCruickshank/cheyenne.git\ncd cheyenne\n./run.sh"
+  }
+}

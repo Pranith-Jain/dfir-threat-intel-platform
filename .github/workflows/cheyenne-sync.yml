@@ -1,0 +1,126 @@
+name: Cheyenne docs sync (weekly)
+
+# Weekly documentation mirror of github.com/MJCruickshank/cheyenne.
+# scripts/sync-cheyenne.mjs pulls the public README, web/catalog.json and
+# repo metadata into public/data/cheyenne/ for /threatintel/osint/cheyenne.
+# Same PR + automerge + self-deploy pattern as the other mirrors.
+
+on:
+  schedule:
+    - cron: '50 3 * * 1'
+  workflow_dispatch: {}
+
+concurrency:
+  group: cheyenne-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci --no-fund || npm install --no-fund
+
+      - name: Sync Cheyenne documentation
+        run: node scripts/sync-cheyenne.mjs
+
+      - name: Parser tests
+        run: node --test scripts/sync-cheyenne.test.mjs
+
+      - name: Show diff stat
+        run: git status --short public/data/cheyenne/
+
+      - name: Open PR if data changed
+        id: pr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'chore(cheyenne): weekly upstream docs sync'
+          title: "Cheyenne docs sync — ${{ github.event.schedule || 'manual' }}"
+          body: |
+            Automated weekly sync of the Cheyenne documentation mirror.
+
+            Re-runs `scripts/sync-cheyenne.mjs`: fetches the upstream README,
+            `web/catalog.json` and GitHub repo metadata, then writes
+            `public/data/cheyenne/index.json`. All descriptions, tables and
+            fleet metadata are verbatim upstream; images link to the upstream
+            repository. Backing page: `/threatintel/osint/cheyenne`.
+
+            Trigger: `${{ github.event_name }}`
+            Run:     `${{ github.run_id }}`
+          branch: chore/cheyenne-sync
+          delete-branch: true
+          add-paths: |
+            public/data/cheyenne/
+
+      - name: Auto-merge sync PR
+        id: automerge
+        if: steps.pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr merge "${{ steps.pr.outputs.pull-request-number }}" \
+            --merge --delete-branch
+
+      - name: Require CLOUDFLARE_API_TOKEN for self-deploy
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN == ''
+        run: |
+          echo "::error title=Missing repo secret::CLOUDFLARE_API_TOKEN is not set - self-deploy steps would skip silently and the live site keeps serving stale data while main races ahead."
+          echo "  gh secret set CLOUDFLARE_API_TOKEN --repo $GITHUB_REPOSITORY"
+          exit 1
+
+      - name: Checkout merged main
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Setup Node for deploy
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install for deploy
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: |
+          npm ci --no-fund || npm install --no-fund
+          cd api && npm ci --legacy-peer-deps
+
+      - name: Build
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: npm run build
+
+      - name: Deploy to Cloudflare Workers
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: npx wrangler deploy
+
+      - name: Smoke test Cheyenne data
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: |
+          sleep 8
+          code=$(curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 (compatible; smoke/1.0)" "https://pranithjain.qzz.io/data/cheyenne/index.json")
+          echo "cheyenne index -> HTTP $code"
+          if [ "$code" = "403" ]; then
+            echo "::warning::runner IP returned 403 from Cloudflare bot mitigation (site verified reachable outside runners); not a deploy regression."
+          elif [ "$code" != "200" ]; then
+            echo "::error::the manifest returned HTTP $code"; exit 1
+          fi

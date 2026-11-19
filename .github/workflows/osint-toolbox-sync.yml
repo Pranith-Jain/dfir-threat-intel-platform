@@ -1,0 +1,133 @@
+name: OSINT Toolbox sync (daily)
+
+# Daily mirror of github.com/The-Osint-Toolbox (CQCore): all public repos plus
+# every external tool link in their READMEs, built by
+# scripts/sync-osint-toolbox.mjs into public/data/osint-toolbox/.
+#
+# Uses the public GitHub API (two calls) + raw READMEs; no token required.
+# Same PR + automerge + self-deploy pattern as artex-sync.yml: GITHUB_TOKEN
+# merges do not trigger deploy.yml, so this job publishes its own merge.
+
+on:
+  schedule:
+    - cron: '35 3 * * *'
+  workflow_dispatch: {}
+
+concurrency:
+  group: osint-toolbox-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci --no-fund || npm install --no-fund
+
+      - name: Sync OSINT Toolbox directory
+        run: node scripts/sync-osint-toolbox.mjs
+
+      - name: Parser tests
+        run: node --test scripts/sync-osint-toolbox.test.mjs
+
+      - name: Show diff stat
+        run: |
+          echo "=== public/data/osint-toolbox/ changed files ==="
+          git status --short public/data/osint-toolbox/
+
+      - name: Open PR if data changed
+        id: pr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'chore(osint-toolbox): daily The-Osint-Toolbox sync'
+          title: "OSINT Toolbox sync — ${{ github.event.schedule || 'manual' }}"
+          body: |
+            Automated daily sync of The OSINT Toolbox directory.
+
+            Re-runs `scripts/sync-osint-toolbox.mjs`: public GitHub API metadata
+            for all repos in github.com/The-Osint-Toolbox plus external tool
+            links extracted from each README, written to
+            `public/data/osint-toolbox/index.json` backing
+            `/threatintel/osint/github-repos`. Upstream category labels and
+            link text/URLs are preserved; inclusion is a mirror, not an
+            endorsement.
+
+            Trigger: `${{ github.event_name }}`
+            Run:     `${{ github.run_id }}`
+          branch: chore/osint-toolbox-sync
+          delete-branch: true
+          add-paths: |
+            public/data/osint-toolbox/
+
+      - name: Auto-merge sync PR
+        id: automerge
+        if: steps.pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr merge "${{ steps.pr.outputs.pull-request-number }}" \
+            --merge --delete-branch
+
+      - name: Require CLOUDFLARE_API_TOKEN for self-deploy
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN == ''
+        run: |
+          echo "::error title=Missing repo secret::CLOUDFLARE_API_TOKEN is not set - self-deploy steps would skip silently and the live site keeps serving stale data while main races ahead."
+          echo "  gh secret set CLOUDFLARE_API_TOKEN --repo $GITHUB_REPOSITORY"
+          exit 1
+
+      - name: Checkout merged main
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Setup Node for deploy
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install for deploy
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: |
+          npm ci --no-fund || npm install --no-fund
+          cd api && npm ci --legacy-peer-deps
+
+      - name: Build
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: npm run build
+
+      - name: Deploy to Cloudflare Workers
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: npx wrangler deploy
+
+      - name: Smoke test OSINT Toolbox data
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN != ''
+        run: |
+          sleep 8
+          code=$(curl -s -o /dev/null -w "%{http_code}" -A "Mozilla/5.0 (compatible; smoke/1.0)" "https://pranithjain.qzz.io/data/osint-toolbox/index.json")
+          echo "osint-toolbox index -> HTTP $code"
+          if [ "$code" = "403" ]; then
+            echo "::warning::runner IP returned 403 from Cloudflare bot mitigation (site verified reachable outside runners); not a deploy regression."
+          elif [ "$code" != "200" ]; then
+            echo "::error::the manifest returned HTTP $code"; exit 1
+          fi

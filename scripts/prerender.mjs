@@ -111,6 +111,8 @@ const ROUTES = [
   '/threatintel/osint/map',
   '/threatintel/osint/secops',
   '/threatintel/osint/directory',
+  '/threatintel/osint/github-repos',
+  '/threatintel/osint/cheyenne',
   '/threatintel/cti-bookmarks',
   '/threatintel/osint/certs',
   '/threatintel/osint/toolbox',

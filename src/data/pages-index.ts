@@ -3905,6 +3905,22 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     group: 'threatintel',
   },
   {
+    path: '/threatintel/osint/github-repos',
+    label: 'The OSINT Toolbox',
+    description: 'All 35 The-Osint-Toolbox GitHub repos + 2,000 tool links in one searchable directory.',
+    sectionLabel: 'Threat Intel · OSINT',
+    group: 'threatintel',
+    keywords: ['osint', 'github', 'toolbox', 'cqcore', 'tool', 'directory', 'repositories', 'links'],
+  },
+  {
+    path: '/threatintel/osint/cheyenne',
+    label: 'Cheyenne EO Board',
+    description: 'Mirror of Cheyenne: 23 satellite fleets, imagery sources, AIS feeds and OSINT board documentation.',
+    sectionLabel: 'Threat Intel · OSINT',
+    group: 'threatintel',
+    keywords: ['cheyenne', 'satellite', 'earth observation', 'imagery', 'osint', 'ais', 'firms'],
+  },
+  {
     path: '/threatintel/cti-bookmarks',
     label: 'CTI Bookmarks',
     description:

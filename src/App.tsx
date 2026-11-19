@@ -220,6 +220,8 @@ const CuratedToolbox = lazy(() => import('./pages/threatintel/CuratedToolbox'));
 const CuratedCerts = lazy(() => import('./pages/threatintel/CuratedCerts'));
 const ToolsDirectory = lazy(() => import('./pages/threatintel/ToolsDirectory'));
 const OsintDirectory = lazy(() => import('./pages/threatintel/OsintDirectory'));
+const OsintGithubRepos = lazy(() => import('./pages/threatintel/OsintGithubRepos'));
+const Cheyenne = lazy(() => import('./pages/threatintel/Cheyenne'));
 const CtiBookmarks = lazy(() => import('./pages/threatintel/CtiBookmarks'));
 const CveIntel = lazy(() => import('./pages/threatintel/CveIntel'));
 const CveTriage = lazy(() => import('./pages/threatintel/CveTriage'));
@@ -673,6 +675,8 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/osint/secops', Component: SecopsCatalog },
   { path: '/threatintel/osint/threat-actor-monitor', Component: ThreatActorMonitor },
   { path: '/threatintel/osint/directory', Component: OsintDirectory },
+  { path: '/threatintel/osint/github-repos', Component: OsintGithubRepos },
+  { path: '/threatintel/osint/cheyenne', Component: Cheyenne },
   { path: '/threatintel/osint/ax-tools', Component: AxiTools },
   { path: '/threatintel/cti-bookmarks', Component: CtiBookmarks },
   { path: '/threatintel/research-hub/redhunt-labs', Component: RedHuntLabsResearch },
