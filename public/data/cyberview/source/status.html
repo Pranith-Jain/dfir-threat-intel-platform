@@ -39,12 +39,38 @@
     <p id="effNote" class="note">Loading the efficiency report.</p>
   </section>
 
+  <section class="panel" id="secFlow" aria-labelledby="hFlow">
+    <h2 id="hFlow">How the data flows</h2>
+    <p class="note flowlead">Each stage's count for the last 24 hours (7 days in smaller text) and what it passes on. Only the reading is done by AI; collecting, rules and publishing are scripts. <a href="#dHow" data-open="dHow">How it works</a></p>
+    <ol class="flow" id="flow"><li class="muted">Loading</li></ol>
+    <p class="note"><span id="flowSpeed"></span> <span id="flowNote"></span> Reports that are not checked yet appear only in the labelled "Reported, being checked" list on the map page; they are never drawn on the globe or counted as events.</p>
+  </section>
+
+  <section class="panel" id="secFrom" aria-labelledby="hFrom">
+    <h2 id="hFrom">Where the data comes from</h2>
+    <p class="note" id="fromNote"></p>
+    <div class="from" id="from"></div>
+    <p class="note">Bars count events first seen in the last 7 days, one colour. Tier is the highest of the leads that carried an event, collector the one that found it first; "no lead" means an agent's own search or a feed sync found it; "before lead files" means it predates the lead files. Publishers count each event once per site it cites.</p>
+  </section>
+
   <section class="panel" id="secAttention" aria-labelledby="hAttention">
     <h2 id="hAttention">What needs attention?</h2>
     <ul class="plain attn" id="attention"><li class="muted">Checking</li></ul>
   </section>
 
   <h2 class="dhead">Details</h2>
+
+  <details class="panel dpanel" id="dHow">
+    <summary><span class="dt">How it works</span><span class="ds">collectors, rules, AI researchers, second review, publishing</span></summary>
+    <ol class="how">
+      <li>Collectors, which are scripts with no AI model, check hundreds of government, vendor and news feeds, news searches in many languages and public databases every 30 minutes, and file each new item as a lead.</li>
+      <li>Leads about the same thing are grouped into one story. Fixed rules, also with no AI model, close routine bulletins, commentary, bare database rows and repeats of what is already on file.</li>
+      <li>AI researchers, CyberView AI (a Claude model), read the original pages behind every remaining story and write up only what those pages say.</li>
+      <li>A different AI agent gives every new or changed event a second review, and corrects or flags what it finds.</li>
+      <li>Scripts then check every record against the rules and publish the site. The whole loop runs every few minutes.</li>
+      <li>Nothing unchecked is drawn on the globe: reports still being checked appear only in a labelled list.</li>
+    </ol>
+  </details>
 
   <details class="panel dpanel" id="dRoutines">
     <summary><span class="dt">Routines</span><span class="ds" id="routinesSum"></span></summary>
