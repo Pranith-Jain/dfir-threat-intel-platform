@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Check, ExternalLink, Rss, Search, ShieldAlert, Sparkles, X } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
+import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { relativeAgo } from '../../lib/relativeTime';
 import { sanitizeUrl } from '../../lib/sanitize-url';
@@ -135,6 +137,43 @@ export default function Tldrcve({ bare = false }: { bare?: boolean }): JSX.Eleme
         : String(b.disclosed ?? '').localeCompare(String(a.disclosed ?? ''))
     );
   }, [index.data, filter, query, sort]);
+
+  // Mirrors the "Latest updates" feed filters so the AI summary covers the
+  // exact rows the user currently sees (not the unfiltered upstream feed).
+  const latestItems = useMemo(() => {
+    const data = feed.data;
+    if (!data) return [];
+    return data.items.filter(
+      (i) =>
+        (filter === 'all' || i.urgency?.level === filter) &&
+        (!query ||
+          `${i.name ?? ''} ${(i.cves ?? []).join(' ')} ${i.description ?? ''}`
+            .toLowerCase()
+            .includes(query.toLowerCase()))
+    );
+  }, [feed.data, filter, query]);
+
+  const summaryItems = useMemo<Array<{ title: string; body?: string; source?: string }>>(() => {
+    if (view === 'latest') {
+      return latestItems.slice(0, 20).map((i) => ({
+        title: i.name || i.cves?.[0] || i.guid || 'CVE',
+        body: i.description ?? '',
+        source: feed.data?.upstream?.site || 'tldrcve.com',
+      }));
+    }
+    if (view === 'all') {
+      return rows.slice(0, 20).map((c) => ({
+        title: c.name || c.slug || 'CVE',
+        body: c.line || c.meta || '',
+        source: index.data?.upstream?.site || 'tldrcve.com',
+      }));
+    }
+    return [];
+  }, [view, latestItems, rows, feed.data, index.data]);
+
+  const summaryDayKey =
+    (view === 'all' ? index.data?.generatedAt : feed.data?.generatedAt)?.slice(0, 10) ??
+    new Date().toISOString().slice(0, 10);
 
   const versions = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -273,6 +312,14 @@ export default function Tldrcve({ bare = false }: { bare?: boolean }): JSX.Eleme
                     </Link>
                   ))}
                 </div>
+                <div className="mt-2">
+                  <PostAnalysisButton
+                    compact
+                    title={item.name || item.cves?.[0] || item.guid || 'CVE'}
+                    description={item.description ?? ''}
+                    source={data.upstream?.site || 'tldrcve.com'}
+                  />
+                </div>
               </li>
             ))}
         </ol>
@@ -329,28 +376,39 @@ export default function Tldrcve({ bare = false }: { bare?: boolean }): JSX.Eleme
             <span>Released</span>
           </div>
           {rows.map((c) => (
-            <button
-              key={c.slug}
-              type="button"
-              onClick={() => {
-                setSelected(c.slug);
-                setView('detail');
-              }}
-              className="grid w-full gap-1 border-b border-line-1 px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-surface-200 sm:grid-cols-[90px_1fr_1.4fr_130px_90px] sm:items-center sm:gap-3"
-            >
-              <span
-                className={`justify-self-start rounded border px-1.5 py-0.5 font-mono text-[10px] ${TONE[VERDICT_LEVEL[c.verdict] ?? 'shrug'] ?? ''}`}
+            // The row itself stays a button for keyboard navigation; the
+            // analysis control is a sibling so we never nest two buttons.
+            <div key={c.slug} className="flex items-center border-b border-line-1 last:border-b-0 hover:bg-surface-200">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelected(c.slug);
+                  setView('detail');
+                }}
+                className="grid w-full flex-1 gap-1 px-4 py-3 text-left transition-colors sm:grid-cols-[90px_1fr_1.4fr_130px_90px] sm:items-center sm:gap-3"
               >
-                {c.meterLabel}
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold text-heading">{c.name}</span>
-                <span className="block truncate font-mono text-[10px] text-muted">{c.meta}</span>
-              </span>
-              <span className="line-clamp-2 text-xs text-muted">{c.line}</span>
-              <span className="font-mono text-[11px] text-body">{c.verdict}</span>
-              <span className="font-mono text-[10px] text-muted">{c.disclosed?.slice(0, 10) ?? ''}</span>
-            </button>
+                <span
+                  className={`justify-self-start rounded border px-1.5 py-0.5 font-mono text-[10px] ${TONE[VERDICT_LEVEL[c.verdict] ?? 'shrug'] ?? ''}`}
+                >
+                  {c.meterLabel}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-semibold text-heading">{c.name}</span>
+                  <span className="block truncate font-mono text-[10px] text-muted">{c.meta}</span>
+                </span>
+                <span className="line-clamp-2 text-xs text-muted">{c.line}</span>
+                <span className="font-mono text-[11px] text-body">{c.verdict}</span>
+                <span className="font-mono text-[10px] text-muted">{c.disclosed?.slice(0, 10) ?? ''}</span>
+              </button>
+              <div className="pr-3">
+                <PostAnalysisButton
+                  compact
+                  title={c.name || c.slug || 'CVE'}
+                  description={[c.line, c.meta].filter(Boolean).join(' — ')}
+                  source={data.upstream?.site || 'tldrcve.com'}
+                />
+              </div>
+            </div>
           ))}
           {rows.length === 0 && <p className="px-4 py-10 text-center text-xs text-muted">No CVEs match this filter.</p>}
         </div>
@@ -529,6 +587,16 @@ export default function Tldrcve({ bare = false }: { bare?: boolean }): JSX.Eleme
         <p className="font-mono text-xs text-rose-500">error: {feed.error ?? index.error}</p>
       )}
       {(feed.data || index.data) && subnav}
+      {summaryItems.length > 0 && (
+        <AiSummaryCard
+          surface="tl;drCVE"
+          items={summaryItems}
+          dayKey={summaryDayKey}
+          requireAdmin={false}
+          autoFetch={false}
+          className="mb-4"
+        />
+      )}
       {content}
     </>
   );

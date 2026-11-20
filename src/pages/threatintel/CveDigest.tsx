@@ -14,6 +14,8 @@ import {
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { useToast } from '../../components/ui/Toast';
 import { SEVERITY_TONE } from '../../components/severity';
+import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
+import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
 
 interface DigestEntry {
   cve_id: string;
@@ -135,6 +137,20 @@ export default function CveDigest({ bare }: { bare?: boolean }): JSX.Element {
     });
   }, [data, query, sevFilter, kevOnly, exploitOnly]);
 
+  // Top 20 of the currently filtered rows, so the generated summary matches
+  // the entries actually on screen.
+  const summaryItems = useMemo<Array<{ title: string; body?: string; source?: string }>>(
+    () =>
+      filtered.slice(0, 20).map((e) => ({
+        title: e.cve_id || 'CVE',
+        body: e.description ?? '',
+        source: 'ctiwatch',
+      })),
+    [filtered]
+  );
+
+  const summaryDayKey = data?.generated_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10);
+
   const toggleSev = (s: DigestEntry['severity']) => {
     setSevFilter((prev) => {
       const next = new Set(prev);
@@ -255,6 +271,17 @@ export default function CveDigest({ bare }: { bare?: boolean }): JSX.Element {
         </p>
       )}
 
+      {summaryItems.length > 0 && (
+        <AiSummaryCard
+          surface="24h CVE Digest"
+          items={summaryItems}
+          dayKey={summaryDayKey}
+          requireAdmin={false}
+          autoFetch={false}
+          className="mb-4"
+        />
+      )}
+
       {loading && <p className="text-sm text-muted font-mono">Loading the last-24h digest…</p>}
       {error && (
         <p className="text-sm text-rose-600 dark:text-rose-400 font-mono">
@@ -320,6 +347,12 @@ export default function CveDigest({ bare }: { bare?: boolean }): JSX.Element {
             </div>
             {e.description && <p className="text-xs text-body leading-relaxed mb-1">{e.description}</p>}
             <div className="flex items-center gap-2 text-mini text-muted flex-wrap font-mono">
+              <PostAnalysisButton
+                compact
+                title={e.cve_id || 'CVE'}
+                description={e.description ?? ''}
+                source="ctiwatch"
+              />
               {e.cwe_id && <span>{e.cwe_id}</span>}
               {e.cvss_vector && (
                 <span className="truncate max-w-full" title={e.cvss_vector}>

@@ -5,6 +5,7 @@ import { useDataFetch } from '../../../hooks/useDataFetch';
 import { sanitizeUrl } from '../../../lib/sanitize-url';
 import { asArray, matches, text } from './shared-utils';
 import { Badge, CyberViewPage, Empty, OutLink } from './shared-ui';
+import { AiSummaryCard } from '../../../components/intel/AiSummaryCard';
 
 // prettier-ignore
 const mod = (() => {
@@ -313,6 +314,17 @@ const mod = (() => {
 
     const recentExpanded = recentAll || filters.recent;
     const visible = filtered.slice(0, shown);
+    // Top of the currently visible (filtered) list, mapped to the AI summary
+    // card's item shape using the normalized row + defensive text helpers.
+    const summaryItems = visible.slice(0, 20).map((r) => {
+      const full = fullById[r.id];
+      return {
+        title: text(r.title),
+        body: text(full?.plain) || text(full?.summary),
+        source: text(r.org) || 'CyberView',
+      };
+    });
+    const summaryDay = index.data?.built_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10);
     const allLoaded = monthKeys.every((m) => Boolean(months[m]));
     const loading = index.loading || search.loading || kev.loading;
     const error = index.error ?? search.error ?? kev.error;
@@ -355,6 +367,14 @@ const mod = (() => {
           </section>}
 
           <FilterBar filters={filters} months={monthKeys} patch={patch} />
+
+          {summaryItems.length > 0 && <AiSummaryCard
+            surface="CyberView archive"
+            items={summaryItems}
+            dayKey={summaryDay}
+            requireAdmin={false}
+            autoFetch={false}
+          />}
 
           <section aria-label="Event list" className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">

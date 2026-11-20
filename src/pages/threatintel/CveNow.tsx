@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
+import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { relativeAgo } from '../../lib/relativeTime';
 import { ExternalLink, Cpu, Flame, Loader2, Search, ShieldAlert, ShieldCheck } from 'lucide-react';
@@ -159,6 +161,19 @@ export default function CveNow(): JSX.Element {
   /** Filtered when a filter is applied, else the default replicated window. */
   const shownResult = hasFilter ? filtered : listData;
 
+  // Top 20 of the wire rows currently on screen (filtered or default).
+  const summaryItems = useMemo<Array<{ title: string; body?: string; source?: string }>>(
+    () =>
+      (shownResult?.entries ?? []).slice(0, 20).map((e) => ({
+        title: e.id || e.title || 'CVE',
+        body: e.title ?? e.product ?? '',
+        source: data?.source || 'cve.now',
+      })),
+    [shownResult, data]
+  );
+
+  const summaryDayKey = data?.syncedAt?.slice(0, 10) ?? new Date().toISOString().slice(0, 10);
+
   const resultNote =
     hasFilter && filtered ? (
       <p className="mt-2 text-micro text-muted">
@@ -290,6 +305,17 @@ export default function CveNow(): JSX.Element {
         </section>
       )}
 
+      {summaryItems.length > 0 && (
+        <AiSummaryCard
+          surface="CVE.now Wire"
+          items={summaryItems}
+          dayKey={summaryDayKey}
+          requireAdmin={false}
+          autoFetch={false}
+          className="mb-6"
+        />
+      )}
+
       {/* Filter + list */}
       <section className="surface-card p-5 mb-6">
         <h2 className="text-lg font-bold text-heading mb-3">Browse the wire</h2>
@@ -395,6 +421,12 @@ export default function CveNow(): JSX.Element {
                 </a>
                 <div className="text-micro text-muted mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5">
                   <span>published {e.publishedAt ? relativeAgo(e.publishedAt) : '—'}</span>
+                  <PostAnalysisButton
+                    compact
+                    title={e.id || e.title || 'CVE'}
+                    description={e.title ?? ''}
+                    source={data?.source || 'cve.now'}
+                  />
                   <a
                     href={`https://rdintel.com/cve/${e.id}`}
                     target="_blank"

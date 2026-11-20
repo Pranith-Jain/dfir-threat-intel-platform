@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, Minus, TrendingUp } from 'lucide-react';
 import { useDataFetch } from '../../../hooks/useDataFetch';
 import { Badge, CyberViewPage, OutLink } from './shared-ui';
 import { asArray, fmtDay, fmtNum } from './shared-utils';
+import { AiSummaryCard } from '../../../components/intel/AiSummaryCard';
 
 /** Replication of CyberView's "Trends" page: one week of collected cyber
  * events (per day, and by category / sector / country / actor / product / tag)
@@ -160,6 +161,25 @@ export default function CyberViewTrends({ bare = false }: { bare?: boolean }): J
   const shownCH = topRegions.reduce((sum, r) => sum + r.customer_hours, 0);
   const pinnedGrid = pinnedRegion !== null ? topRegions[pinnedRegion] : undefined;
 
+  // One summary item per dimension row, capped at 20 across all dimensions.
+  const summaryItems = useMemo<Array<{ title: string; body: string }>>(() => {
+    if (!data) return [];
+    const out: Array<{ title: string; body: string }> = [];
+    for (const dim of DIMS) {
+      for (const row of data.dims[dim.key] ?? []) {
+        if (out.length >= 20) break;
+        const label = dim.link === 'cat' ? (CATEGORY_LABELS[row.k] ?? row.k) : row.k;
+        const delta = row.cur - row.prev;
+        out.push({
+          title: `${dim.title}: ${label}`,
+          body: `this week ${row.cur}, week before ${row.prev}, change ${delta}`,
+        });
+      }
+      if (out.length >= 20) break;
+    }
+    return out;
+  }, [data]);
+
   return (
     // prettier-ignore
     <CyberViewPage
@@ -179,6 +199,14 @@ export default function CyberViewTrends({ bare = false }: { bare?: boolean }): J
               read this week&apos;s counts as a ranking, not the changes as real trends.
             </p>
           </header>
+
+          {summaryItems.length > 0 && <AiSummaryCard
+            surface="CyberView weekly trends"
+            items={summaryItems}
+            dayKey={data?.built_at?.slice(0, 10)}
+            requireAdmin={false}
+            autoFetch={false}
+          />}
 
           <section className="surface-card rounded-xl border border-line-1 p-4 sm:p-5">
             <h2 className="text-base font-bold text-heading">How many events were recorded each day?</h2>
