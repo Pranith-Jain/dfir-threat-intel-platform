@@ -1113,6 +1113,25 @@ action steps/WAF coverage, `_cve` severity/score) carry the structured detail.
 tab on `/threatintel/cves/cves` with Briefings and CVEs views. Runs in
 `cve-intel-sync.yml` (6h). Tests: `scripts/sync-zero-wire.test.mjs`.
 
+## AI summary + analysis on replicated feeds
+
+The new surfaces follow the same two-tier AI pattern as the established
+threat-intel feeds:
+
+- `<AiSummaryCard surface=... requireAdmin={false} autoFetch={false}>`
+  posts the visible rows to `/api/v1/ai-summary` (cached per surface+date on
+  the server, 1h). It is opt-in so page loads never spend LLM calls. `dayKey`
+  is derived from the mirror's build/publish date, which keeps the cache key
+  stable for every visitor.
+- `<PostAnalysisButton>` (per-row) or `<ThreatAnalysisPanel>` (selected item)
+  post to `/api/v1/threat-analysis` and render structured threat/impact/action
+  analysis only after an explicit click.
+
+These are on the CyberView pages, Zero Wire, the exploit finder and the newer
+CVE-intel feeds. The already-established feeds (news, CyberPulse, social,
+Telegram, etc.) already had both; no dead "Analyze" buttons were found — the
+existing Brain buttons are wired to the analysis endpoint.
+
 ## Exploit finder — three sources
 
 The Exploits tab (`/threatintel/cves/cves?tab=exploits`, component

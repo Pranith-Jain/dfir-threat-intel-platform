@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import {
   Activity,
   ArrowUpDown,
+  Brain,
   Globe2,
   Home,
   Keyboard,
@@ -21,6 +22,8 @@ import {
 import { useDataFetch } from '../../../hooks/useDataFetch';
 import { relativeAgo } from '../../../lib/relativeTime';
 import { ThreatGlobe3D, type GlobeMarker } from '../../../components/ThreatGlobe3D';
+import { AiSummaryCard } from '../../../components/intel/AiSummaryCard';
+import { ThreatAnalysisPanel } from '../../../components/threatintel/ThreatAnalysisPanel';
 import { asArray, fmtDay, matches, text, topCounts } from './shared-utils';
 import { Badge, CyberViewPage, Empty, OutLink } from './shared-ui';
 
@@ -418,6 +421,7 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
   const [query, setQuery] = useState('');
   const [dayFilter, setDayFilter] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showAiAnalysis, setShowAiAnalysis] = useState(false);
   const [tab, setTab] = useState<PanelTab>('feed');
   const [sort, setSort] = useState<'priority' | 'recent'>('priority');
   const [zoom, setZoom] = useState(1);
@@ -441,6 +445,11 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
+  // Analysis belongs to one selected event. Switching events (or clearing the
+  // selection) closes it so the panel can never show another event's result.
+  useEffect(() => {
+    setShowAiAnalysis(false);
+  }, [selectedId]);
   const all = events.data ?? EMPTY;
   const maxDate = useMemo(() => all.reduce((m, e) => Math.max(m, dayMs(e.date)), 0), [all]);
   const builtAt = useMemo(
@@ -526,6 +535,25 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
     [filtered]
   );
   const selected = selectedId ? (all.find((e) => e.id === selectedId) ?? null) : null;
+  /* Feed the top 20 of the currently filtered/sorted events to the AI summary
+     card. All accessors are defensive – upstream rows can omit any field. */
+  const aiSummaryItems = useMemo(
+    () =>
+      sorted.slice(0, 20).map((e) => {
+        const src = asArray(e.sources)[0];
+        return {
+          title: text(e.title),
+          body: text(e.plain) || text(e.summary),
+          source: text(src?.name) || text(src?.url) || 'CyberView',
+        };
+      }),
+    [sorted]
+  );
+  /* Day key derived from the mirror's newest updated_at, falling back to today. */
+  const aiSummaryDayKey = useMemo(() => {
+    const t = Date.parse(builtAt);
+    return Number.isFinite(t) ? new Date(t).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
+  }, [builtAt]);
   const exploited = useMemo(() => filtered.filter((e) => asArray(e.cves).length > 0 || e.severity === 3), [filtered]);
   const panelRows = useMemo(
     () => sortEvents(tab === 'exploited' ? exploited : filtered, sort),
@@ -593,6 +621,16 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
   const gap = wall ? 'gap-2' : 'gap-4';
   const zoomTransform = `translate(${MAP_W / 2} ${MAP_H / 2}) scale(${zoom}) translate(${-MAP_W / 2} ${-MAP_H / 2})`;
   const markerR = 3.2 / zoom;
+  const aiSummary =
+    aiSummaryItems.length > 0 ? (
+      <AiSummaryCard
+        surface="CyberView events"
+        items={aiSummaryItems}
+        dayKey={aiSummaryDayKey}
+        requireAdmin={false}
+        autoFetch={false}
+      />
+    ) : null;
   const stage = (
     <section
       className={`surface-card overflow-hidden rounded-xl border border-line-1 bg-surface-100 ${wall ? 'p-2' : 'p-3'}`}
@@ -811,7 +849,10 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
         <p className="font-mono text-[10px] uppercase tracking-wide text-accent-text">Selected event</p>
         <button
           type="button"
-          onClick={() => setSelectedId(null)}
+          onClick={() => {
+            setSelectedId(null);
+            setShowAiAnalysis(false);
+          }}
           aria-label="Close selected event"
           className="text-muted hover:text-heading"
         >
@@ -839,6 +880,21 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
           ))}
         </p>
       )}
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setShowAiAnalysis((v) => !v)}
+          aria-pressed={showAiAnalysis}
+          className={`inline-flex items-center gap-1.5 rounded-control border px-2 py-1 font-mono text-[11px] transition-colors ${
+            showAiAnalysis
+              ? 'border-accent-text/50 bg-wash text-accent-text'
+              : 'border-line-1 text-muted hover:bg-wash hover:text-heading'
+          }`}
+        >
+          <Brain size={12} aria-hidden="true" />
+          {showAiAnalysis ? 'Hide AI Analysis' : 'AI Analysis'}
+        </button>
+      </div>
     </div>
   );
   const searchBox = (
@@ -1151,6 +1207,7 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
           </header>
           <div className={`grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(340px,400px)] ${gap}`}>
             <div className="min-w-0 space-y-3">
+              {aiSummary}
               {view === 'globe' ? stage : view === 'timeline' ? timeline : grid}
               {filterRow}
               {dayStrip}
@@ -1167,6 +1224,18 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
                 className={`space-y-3 ${wall ? 'pt-2' : 'pt-3'}`}
               >
                 {selectedDetail}
+                {selected && showAiAnalysis && (
+                  <ThreatAnalysisPanel
+                    type="event"
+                    title={text(selected.title)}
+                    description={text(selected.plain) || text(selected.summary)}
+                    country={text(selected.country)}
+                    severity={SEVERITY_LABEL[selected.severity] ?? undefined}
+                    kind={CATEGORY_LABEL[selected.category] ?? text(selected.category)}
+                    source="CyberView"
+                    onClose={() => setShowAiAnalysis(false)}
+                  />
+                )}
                 {panelBody}
               </div>
             </aside>

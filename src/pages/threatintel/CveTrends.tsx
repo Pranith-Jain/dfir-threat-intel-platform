@@ -7,6 +7,8 @@ import { relativeAgo } from '../../lib/relativeTime';
 import { sanitizeUrl } from '../../lib/sanitize-url';
 import HexBrainLink from '../../components/HexBrainLink';
 import { SEVERITY_TONE } from '../../components/severity';
+import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
+import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
 
 /**
  * Trending CVEs.
@@ -138,6 +140,19 @@ export default function CveTrends(): JSX.Element {
     });
   }, [data, query, filter]);
 
+  // Summarize the filtered trending rows the user is actually looking at.
+  const summaryItems = useMemo<Array<{ title: string; body?: string; source?: string }>>(
+    () =>
+      rows.slice(0, 20).map((c) => ({
+        title: c.id || `CVE #${c.rank}`,
+        body: c.description ?? '',
+        source: data?.source?.id || 'cvemon.intruder.io',
+      })),
+    [rows, data]
+  );
+
+  const summaryDayKey = data?.generated_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10);
+
   const beforeKev = (data?.cves ?? []).filter((c) => c.trending_before_kev).length;
   const kevCount = (data?.cves ?? []).filter((c) => c.kev).length;
   const pocCount = (data?.cves ?? []).filter((c) => c.poc_count).length;
@@ -163,6 +178,16 @@ export default function CveTrends(): JSX.Element {
             source: cvemon.intruder.io
           </a>
         </div>
+
+        {summaryItems.length > 0 && (
+          <AiSummaryCard
+            surface="Trending CVEs"
+            items={summaryItems}
+            dayKey={summaryDayKey}
+            requireAdmin={false}
+            autoFetch={false}
+          />
+        )}
 
         {/* The disagreement between attention and severity is the headline. */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -384,6 +409,12 @@ export default function CveTrends(): JSX.Element {
               </div>
 
               <div className="mt-2 flex items-center gap-3 text-[11px] text-muted">
+                <PostAnalysisButton
+                  compact
+                  title={c.id || `CVE #${c.rank}`}
+                  description={c.description ?? ''}
+                  source={data?.source?.id || 'cvemon.intruder.io'}
+                />
                 <a
                   href={sanitizeUrl(`https://nvd.nist.gov/vuln/detail/${c.id}`)}
                   target="_blank"

@@ -1,6 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { ChevronDown, Rss, Search, ShieldAlert, Wifi } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
+import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { relativeAgo } from '../../lib/relativeTime';
 import { Badge, Empty, OutLink, Section } from './cyberview/shared-ui';
@@ -105,7 +107,15 @@ function BriefingCard({ item }: { item: ZeroItem }): JSX.Element {
             <OutLink href={item.url} className="hover:text-accent-text hover:underline">{item.title}</OutLink>
           </h3>
         </div>
-        <Toggle open={open} onClick={() => setOpen((v) => !v)} label="Details" />
+        <div className="flex shrink-0 items-center gap-2">
+          <PostAnalysisButton
+            compact
+            title={item.title}
+            description={item.summary || item.contentText || ''}
+            source="Cloudflare Radar Zero Wire"
+          />
+          <Toggle open={open} onClick={() => setOpen((v) => !v)} label="Details" />
+        </div>
       </div>
       <p className="mt-2 text-sm leading-relaxed text-body">{text(ext.summary || item.summary)}</p>
       {!!ext.cves?.length && (
@@ -205,7 +215,15 @@ function CveRow({ item }: { item: ZeroItem }): JSX.Element {
           {item.title !== item.cveId && <p className="mt-1 text-sm text-heading">{item.title}</p>}
           <p className="mt-1 line-clamp-3 text-sm text-body">{item.summary}</p>
         </div>
-        <Toggle open={open} onClick={() => setOpen((v) => !v)} label="More" />
+        <div className="flex shrink-0 items-center gap-2">
+          <PostAnalysisButton
+            compact
+            title={item.title || item.cveId || ''}
+            description={item.summary || item.contentText || ''}
+            source="Cloudflare Radar Zero Wire"
+          />
+          <Toggle open={open} onClick={() => setOpen((v) => !v)} label="More" />
+        </div>
       </div>
       {open && <ContentText text={item.contentText} />}
     </article>
@@ -269,6 +287,22 @@ export default function ZeroWire({ bare = false }: { bare?: boolean }): JSX.Elem
           <Rss size={13} aria-hidden="true" /> RSS feed
         </OutLink>
       </div>
+
+      {visible.length > 0 && (
+        <div className="mb-4">
+          <AiSummaryCard
+            surface="Zero Wire"
+            dayKey={index?.generatedAt?.slice(0, 10)}
+            requireAdmin={false}
+            autoFetch={false}
+            items={visible.slice(0, 20).map((item) => ({
+              title: item.title || item.cveId || '',
+              body: item.summary || item.contentText || '',
+              source: 'Cloudflare Radar',
+            }))}
+          />
+        </div>
+      )}
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <label className="relative flex-1 min-w-[220px]">

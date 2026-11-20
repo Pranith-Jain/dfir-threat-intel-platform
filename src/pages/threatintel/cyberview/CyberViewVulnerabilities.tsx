@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   AlertTriangle,
+  Brain,
   CalendarDays,
   Check,
   ChevronDown,
@@ -12,6 +13,8 @@ import {
   Target,
 } from 'lucide-react';
 import { useDataFetch } from '../../../hooks/useDataFetch';
+import { AiSummaryCard } from '../../../components/intel/AiSummaryCard';
+import { ThreatAnalysisPanel } from '../../../components/threatintel/ThreatAnalysisPanel';
 import { asArray, matches, text } from './shared-utils';
 import { Badge, CyberViewPage, Empty, OutLink, Pager, Section } from './shared-ui';
 
@@ -602,6 +605,7 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
   const [query, setQuery] = useState('');
   const [show, setShow] = useState<ShowFilter>('everything');
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [analysisCve, setAnalysisCve] = useState<string | null>(null);
   const [cveQuery, setCveQuery] = useState('');
   const [lookupMsg, setLookupMsg] = useState('');
   const [lookup, setLookup] = useState<CveLite | null>(null);
@@ -665,6 +669,22 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
       })
       .sort((a, b) => b.score - a.score || a.row.cve.localeCompare(b.row.cve));
   }, [scored, query, show, inventory, builtAt, data]);
+
+  // Top visible ranked rows feed the AI summary card. The card itself owns
+  // the only network call (opt-in, on "Generate"), so this stays a local map
+  // of the same defensive row data the queue already renders.
+  const summaryItems = useMemo(
+    () =>
+      filtered.slice(0, 20).map(({ row }) => ({
+        title: `${row.cve} — ${row.name}`,
+        body: row.desc || row.required || '',
+        source: row.kev ? 'CISA KEV' : 'CyberView',
+      })),
+    [filtered]
+  );
+  // Only analyze a CVE that is still in the visible ranked queue — if the
+  // search or filters change while a panel is open, the panel simply hides.
+  const analysisRow = analysisCve ? (filtered.find(({ row }) => row.cve === analysisCve)?.row ?? null) : null;
 
   const huntCards = useMemo<HuntCard[]>(() => {
     if (!data) return [];
@@ -800,6 +820,12 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
     return (
       <div className="space-y-3 border-t border-line-1 px-4 py-4">
         <p className="text-meta leading-relaxed text-body">{row.desc}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" className={BTN} onClick={() => setAnalysisCve(row.cve)}>
+            <Brain size={12} aria-hidden="true" /> AI Analysis
+          </button>
+          <span className="font-mono text-mini text-muted">AI-written threat analysis for this CVE.</span>
+        </div>
         {row.required && <ActionNote label="Required action" value={row.required} />}
         {!row.kev && row.action && <ActionNote label="Suggested action" value={row.action} />}
         {guide?.advisory && (
@@ -1018,6 +1044,15 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
             <p className="font-mono text-meta text-muted">
               Highest priority first. The number is the local priority approximation.
             </p>
+            {summaryItems.length > 0 && (
+              <AiSummaryCard
+                surface="CyberView patch queue"
+                requireAdmin={false}
+                autoFetch={false}
+                dayKey={data?.built_at ? data.built_at.slice(0, 10) : undefined}
+                items={summaryItems}
+              />
+            )}
             <ol className="space-y-1.5">
               {filtered.map((entry) => (
                 <QueueRow
@@ -1219,6 +1254,18 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
               )}
             </ul>
           </section>
+        )}
+
+        {analysisCve && analysisRow && (
+          <ThreatAnalysisPanel
+            type="event"
+            title={`${analysisRow.cve} — ${analysisRow.name}`}
+            description={analysisRow.desc}
+            severity={analysisRow.ransomware ? 'critical' : 'high'}
+            kind="known-exploited"
+            source="CISA KEV"
+            onClose={() => setAnalysisCve(null)}
+          />
         )}
 
         <footer className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line-1 pt-4 font-mono text-mini text-muted">
