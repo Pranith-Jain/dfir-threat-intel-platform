@@ -1,139 +1,184 @@
 #!/usr/bin/env node
 /**
- * Mirror the public data files behind https://xanderhutch.github.io/CyberView/
- * into site data. Five upstream pages are replicated as separate routes in
- * the app (home/globe, vulnerabilities, archive, trends and tabletop); each is
- * a static page whose content is loaded from these JSON files at runtime.
+ * Mirror CyberView from its SOURCE REPO (https://github.com/xanderhutch/CyberView)
+ * into public/data/cyberview/.
  *
- * REA browser scenarios captured all five rendered pages (DOM + accessibility)
- * and showed the only network reads are these same static data files — there
- * is no private API, key or login. Everything mirrored here is public and
- * rebuilt on the upstream site's own schedule.
+ * REA captured the five rendered upstream pages; the repo README explains the
+ * split: code lives on `main`, facts live on the `data` branch mounted at
+ * ./data, and `node scripts/build.mjs --quarantine` rebuilds site/data/*.json.
+ * We clone both branches shallowly, run that exact upstream build, and copy its
+ * output. Branch SHAs are recorded in manifest.json so the scheduled workflow
+ * can skip the clone entirely when nothing changed upstream.
  *
- * Output: public/data/cyberview/**  (+ manifest.json)
- * Run:    node scripts/sync-cyberview.mjs
+ * The NVD "All CVEs" files (site/data/cve/*) are produced by a separate hourly
+ * upstream workflow and are not part of this repo build, so those two files
+ * are still taken from the published Pages site.
+ *
+ * Output: public/data/cyberview/** (+ manifest.json)
+ * Run:    node scripts/sync-cyberview.mjs [--force]
  */
-import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync, cpSync, mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const OUT = join(ROOT, 'public', 'data', 'cyberview');
-const BASE = 'https://xanderhutch.github.io/CyberView';
+const REPO = 'xanderhutch/CyberView';
+const API = `https://api.github.com/repos/${REPO}`;
+const PAGES = 'https://xanderhutch.github.io/CyberView';
 const UA = 'Mozilla/5.0 (compatible; pranithjain-sync/1.0; +https://pranithjain.qzz.io)';
+const FORCE = process.argv.includes('--force');
 
-/** Static files each replicated page reads. Kept exact so upstream paths stay recognisable. */
-const FILES = [
-  'data/feed.json',            // home globe: checked events, high-priority subset
-  'data/workbench.json',       // vulnerabilities: KEV queue, guides, analyses, hunt pack
-  'data/archive/index.json',   // archive: months + totals
-  'data/archive/search.json',  // archive: compact search rows
-  'data/archive/kev.json',     // archive: KEV table
-  'data/trends.json',          // trends: weekly dims, daily counts, grid signals
-  'data/tabletop.json',        // tabletop: full exercise script
-  'data/cve/index.json',       // vulnerabilities: "All CVEs" lookup metadata
-  'data/cve/recent.json',      // vulnerabilities: "All CVEs" last-two-weeks pool
-  'data/health.json',          // status strip on the upstream pages
+const BUILT_FILES = [
+  'data/feed.json',
+  'data/feed.xml',
+  'data/bundle.json',        // map events + kev + docs (globe upgrade reads this)
+  'data/trends.json',
+  'data/tabletop.json',
+  'data/workbench.json',
+  'data/health.json',
+  'data/chat.json',
+  'data/ops.json',
+  'data/archive/index.json',
+  'data/archive/search.json',
+  'data/archive/kev.json',
+  'data/archive/events.jsonl',
+];
+const PAGES_FILES = [
+  'data/cve/index.json',     // separate hourly upstream CVE workflow
+  'data/cve/recent.json',
 ];
 
-async function fetchText(rel, attempts = 2) {
-  const url = `${BASE}/${rel}`;
+function git(args, cwd, timeout = 300_000) {
+  return execFileSync('git', args, { cwd, encoding: 'utf8', timeout, stdio: ['ignore', 'pipe', 'pipe'] });
+}
+async function fetchText(url, attempts = 2) {
   let last;
   for (let i = 0; i < attempts; i++) {
     try {
       const res = await fetch(url, {
-        headers: { 'user-agent': UA, accept: 'application/json,*/*' },
+        headers: { 'user-agent': UA, accept: 'application/json,*/*', ...(process.env.GITHUB_TOKEN ? { authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}) },
         signal: AbortSignal.timeout(45_000),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.text();
-    } catch (e) {
-      last = e;
-    }
+    } catch (e) { last = e; }
   }
-  throw new Error(`${rel}: ${last?.message ?? 'fetch failed'}`);
+  throw new Error(`${url}: ${last?.message ?? 'fetch failed'}`);
 }
-
-function existing(rel) {
-  const p = join(OUT, rel);
-  return existsSync(p) ? readFileSync(p, 'utf8') : null;
+async function branchSha(branch) {
+  try {
+    const data = JSON.parse(await fetchText(`${API}/branches/${branch}`));
+    return String(data.commit?.sha ?? '');
+  } catch (e) {
+    console.log(`  ! could not read upstream ${branch} SHA (${e.message})`);
+    return '';
+  }
+}
+function previous() {
+  try { return JSON.parse(readFileSync(join(OUT, 'manifest.json'), 'utf8')); } catch { return {}; }
 }
 
 async function main() {
-  console.log(`  fetching ${FILES.length} CyberView data files`);
+  const [mainSha, dataSha] = await Promise.all([branchSha('main'), branchSha('data')]);
+  const prev = previous();
+  if (!FORCE && mainSha && dataSha && prev?.upstream?.mainSha === mainSha && prev?.upstream?.dataSha === dataSha && existsSync(join(OUT, 'data', 'bundle.json'))) {
+    console.log(`  ✓ upstream unchanged (main ${mainSha.slice(0, 7)}, data ${dataSha.slice(0, 7)}) — skipping sync\n`);
+    return;
+  }
+
+  const tmp = mkdtempSync(join(tmpdir(), 'cyberview-sync-'));
   const written = [];
-  for (const rel of FILES) {
-    let body;
-    try {
-      body = await fetchText(rel);
-      JSON.parse(body); // fail fast on HTML error pages
-    } catch (e) {
-      const cached = existing(rel);
-      if (!cached) throw e;
-      console.log(`  ! ${rel} unavailable (${e.message}); keeping previous copy`);
-      continue;
-    }
-    const dest = join(OUT, rel);
-    mkdirSync(dirname(dest), { recursive: true });
-    writeFileSync(dest, `${body.trimEnd()}\n`);
-    written.push(rel);
-    console.log(`  ✓ ${rel} (${(body.length / 1024).toFixed(0)} KB)`);
-  }
-
-  // Monthly archive files are listed by the upstream index; mirror them too.
-  const indexPath = join(OUT, 'data', 'archive', 'index.json');
-  let months = [];
-  if (existsSync(indexPath)) {
-    const index = JSON.parse(readFileSync(indexPath, 'utf8'));
-    months = (index.months ?? []).map((m) => m.month).filter((m) => /^\d{4}-\d{2}$/.test(m));
-  }
-  for (const month of months) {
-    const rel = `data/archive/${month}.json`;
-    let body;
-    try {
-      body = await fetchText(rel);
-      JSON.parse(body);
-    } catch (e) {
-      if (existing(rel)) { console.log(`  ! ${rel} unavailable; keeping previous copy`); continue; }
-      console.log(`  ! ${rel} skipped (${e.message})`);
-      continue;
-    }
-    writeFileSync(join(OUT, 'data', 'archive', `${month}.json`), `${body.trimEnd()}\n`);
-    written.push(rel);
-    console.log(`  ✓ ${rel}`);
-  }
-
-  // JSON Lines history -> a JSON array so the home page can plot every event
-  // (lat/lng lives here, not in the compact search file) with a plain fetch.
+  let builtAt = '';
   try {
-    const lines = (await fetchText('data/archive/events.jsonl')).split('\n').filter(Boolean).map((line) => JSON.parse(line));
-    if (lines.length) {
-      const dest = join(OUT, 'data', 'events.json');
-      mkdirSync(dirname(dest), { recursive: true });
-      writeFileSync(dest, `${JSON.stringify(lines)}\n`);
-      written.push('data/events.json');
-      console.log(`  ✓ data/events.json (${lines.length} events from JSON Lines)`);
+    if (mainSha && dataSha) {
+      console.log('  cloning upstream (shallow) and running its data build');
+      git(['clone', '--depth', '1', '--branch', 'main', `https://github.com/${REPO}.git`, 'repo'], tmp);
+      const repo = join(tmp, 'repo');
+      git(['fetch', '--depth', '1', 'origin', 'data'], repo);
+      execFileSync(process.execPath, ['scripts/data-branch.mjs', 'ensure'], { cwd: repo, encoding: 'utf8', timeout: 120_000 });
+      execFileSync(process.execPath, ['scripts/build.mjs', '--quarantine'], { cwd: repo, encoding: 'utf8', timeout: 300_000, stdio: ['ignore', 'pipe', 'pipe'] });
+      mkdirSync(OUT, { recursive: true });
+      for (const rel of BUILT_FILES) {
+        const src = join(repo, 'site', rel);
+        if (!existsSync(src)) continue;
+        const dest = join(OUT, rel);
+        mkdirSync(dirname(dest), { recursive: true });
+        cpSync(src, dest);
+        written.push(rel);
+      }
+      try { builtAt = String(JSON.parse(readFileSync(join(repo, 'site', 'data', 'manifest.json'), 'utf8')).built_at ?? ''); } catch { /* optional */ }
+    } else {
+      console.log('  ! SHA lookup unavailable — falling back to published Pages files');
     }
   } catch (e) {
-    if (!existing('data/events.json')) console.log(`  ! events.jsonl skipped (${e.message})`);
+    console.log(`  ! repo build failed (${e.message}) — keeping previous mirror where available`);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
   }
+
+  // Files produced by the separate upstream hourly CVE workflow.
+  for (const rel of PAGES_FILES) {
+    try {
+      const body = await fetchText(`${PAGES}/${rel}`);
+      JSON.parse(body);
+      const dest = join(OUT, rel);
+      mkdirSync(dirname(dest), { recursive: true });
+      writeFileSync(dest, `${body.trimEnd()}\n`);
+      if (!written.includes(rel)) written.push(rel);
+    } catch (e) {
+      console.log(`  ! ${rel} unavailable (${e.message})${existsSync(join(OUT, rel)) ? ' — keeping previous copy' : ''}`);
+    }
+  }
+
+  // JSON Lines -> JSON array (the home page plots every event without a map lib).
+  const jsonl = join(OUT, 'data', 'archive', 'events.jsonl');
+  if (existsSync(jsonl)) {
+    const events = readFileSync(jsonl, 'utf8').split('\n').filter(Boolean).map((line) => JSON.parse(line));
+    if (events.length) {
+      writeFileSync(join(OUT, 'data', 'events.json'), `${JSON.stringify(events)}\n`);
+      written.push('data/events.json');
+    }
+  }
+
+  // Mirror monthly files listed by the upstream index.
+  try {
+    const index = JSON.parse(readFileSync(join(OUT, 'data', 'archive', 'index.json'), 'utf8'));
+    for (const m of (index.months ?? []).map((x) => x.month).filter((m) => /^\d{4}-\d{2}$/.test(m))) {
+      const rel = `data/archive/${m}.json`;
+      if (!existsSync(join(OUT, rel))) {
+        try {
+          const body = await fetchText(`${PAGES}/${rel}`);
+          JSON.parse(body);
+          writeFileSync(join(OUT, rel), `${body.trimEnd()}\n`);
+          written.push(rel);
+        } catch { /* month already present in repo build or unavailable */ }
+      }
+    }
+  } catch { /* index optional */ }
 
   let stats = {};
   try {
-    const feed = JSON.parse(readFileSync(join(OUT, 'data', 'feed.json'), 'utf8'));
-    const index = JSON.parse(readFileSync(indexPath, 'utf8'));
-    stats = { events: feed.items?.length ?? 0, archiveTotal: index.total ?? 0, kevTotal: index.kev_total ?? 0, months: months.length };
-  } catch { /* stats are best-effort */ }
+    const bundle = JSON.parse(readFileSync(join(OUT, 'data', 'bundle.json'), 'utf8'));
+    const index = JSON.parse(readFileSync(join(OUT, 'data', 'archive', 'index.json'), 'utf8'));
+    stats = {
+      events: bundle.events?.length ?? 0,
+      kev: bundle.kev?.length ?? 0,
+      archiveTotal: index.total ?? 0,
+      docs: Object.keys(bundle.docs ?? {}),
+    };
+  } catch { /* best effort */ }
 
   const manifest = {
     generatedAt: new Date().toISOString(),
-    upstream: { site: `${BASE}/`, pages: ['', 'vulnerabilities.html', 'archive.html', 'trends.html', 'tabletop.html'] },
-    files: written,
+    upstream: { repo: `https://github.com/${REPO}`, site: PAGES, mainSha, dataSha, builtAt },
+    files: [...new Set(written)],
     stats,
   };
-  mkdirSync(OUT, { recursive: true });
   writeFileSync(join(OUT, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-  console.log(`  ✓ mirrored ${written.length} files → ${OUT}\n`);
+  console.log(`  ✓ mirrored ${manifest.files.length} files · ${stats.events ?? 0} map events · SHA ${mainSha.slice(0, 7)}/${dataSha.slice(0, 7)}\n`);
 }
 
 const invoked = process.argv[1] && pathToFileURL(process.argv[1]).href === pathToFileURL(fileURLToPath(import.meta.url)).href;

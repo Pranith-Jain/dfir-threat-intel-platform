@@ -1,0 +1,72 @@
+name: CyberView upstream sync (change-detected)
+
+# Watches https://github.com/xanderhutch/CyberView for new code/data commits.
+# scripts/sync-cyberview.mjs compares the upstream `main` + `data` branch SHAs
+# with the ones recorded in public/data/cyberview/manifest.json and exits
+# immediately when nothing changed. When a commit lands, it clones both branches
+# shallowly, runs the upstream's own Node-stdlib data build, and replaces our
+# mirror. No PR (and no deploy) on quiet hours.
+
+on:
+  schedule:
+    - cron: '25 * * * *'
+  workflow_dispatch: {}
+
+concurrency:
+  group: cyberview-upstream-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Sync from upstream repo (skips when SHAs unchanged)
+        run: node scripts/sync-cyberview.mjs
+
+      - name: Show mirror changes
+        run: git status --short public/data/cyberview/ | head -25
+
+      - name: Open PR if the mirror changed
+        id: pr
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: 'chore(cyberview): sync upstream repo changes'
+          title: "CyberView upstream sync — ${{ github.event.schedule || 'manual' }}"
+          body: |
+            Upstream `main`/`data` branch SHAs changed on
+            xanderhutch/CyberView. Rebuilt the mirror with the upstream's own
+            `scripts/build.mjs --quarantine` and copied the published data plus
+            the separate hourly CVE files. Quiet hours produce no diff and no PR.
+          branch: chore/cyberview-upstream-sync
+          delete-branch: true
+          add-paths: |
+            public/data/cyberview/
+
+      - name: Auto-merge sync PR
+        if: steps.pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge "${{ steps.pr.outputs.pull-request-number }}" --merge --delete-branch
+
+      - name: Require deploy credentials for self-deploy
+        if: steps.pr.outputs.pull-request-number != '' && env.CLOUDFLARE_API_TOKEN == ''
+        run: |
+          echo "::error title=Missing repo secret::CLOUDFLARE_API_TOKEN is not set - the merged data would not be deployed."
+          exit 1

@@ -1151,11 +1151,22 @@ with a shared `CyberViewNav`:
 | `/threatintel/cyberview/trends`          | `trends.html`             | `data/trends.json`                            |
 | `/threatintel/cyberview/tabletop`        | `tabletop.html`           | `data/tabletop.json`                          |
 
+The mirror is now **repo-driven**: `scripts/sync-cyberview.mjs` reads the
+`main` and `data` branch SHAs of `github.com/xanderhutch/CyberView` via the
+GitHub API, skips the clone when nothing changed, otherwise clones both
+branches shallowly, mounts `data/` via the upstream's own `data-branch.mjs`,
+and runs its `scripts/build.mjs --quarantine` (Node stdlib only). The built
+`site/data/*` files are copied into the mirror; the separate hourly upstream
+CVE files (`data/cve/*`) still come from the published Pages site. SHAs are
+recorded in `public/data/cyberview/manifest.json`.
+`.github/workflows/cyberview-upstream-sync.yml` polls hourly and auto-merges a
+data-only PR only when upstream SHAs changed, so quiet hours produce no deploy.
+The script also runs in `cve-intel-sync.yml` (6h) as a backstop.
+
 The upstream JSON Lines history is converted to `data/events.json` (a JSON
 array) so the globe page can plot every event without a map library. The routes
 are in `HUB_META` (hub `cyberview`), `pages-index.ts`, `App.tsx`,
-`scripts/prerender.mjs` and `worker/prerender-routes.ts`. Runs in
-`cve-intel-sync.yml` (6h).
+`scripts/prerender.mjs` and `worker/prerender-routes.ts`.
 
 ## CVE checker — consolidated verdict (tldrcve + RD Intel + exploits)
 
