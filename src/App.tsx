@@ -227,6 +227,12 @@ const OsintGithubRepos = lazy(() => import('./pages/threatintel/OsintGithubRepos
 const Cheyenne = lazy(() => import('./pages/threatintel/Cheyenne'));
 const CtiBookmarks = lazy(() => import('./pages/threatintel/CtiBookmarks'));
 const CveIntel = lazy(() => import('./pages/threatintel/CveIntel'));
+// CyberView replication (https://xanderhutch.github.io/CyberView/) — five separate routes.
+const CyberViewHome = lazy(() => import('./pages/threatintel/cyberview/CyberViewHome'));
+const CyberViewVulnerabilities = lazy(() => import('./pages/threatintel/cyberview/CyberViewVulnerabilities'));
+const CyberViewArchive = lazy(() => import('./pages/threatintel/cyberview/CyberViewArchive'));
+const CyberViewTrends = lazy(() => import('./pages/threatintel/cyberview/CyberViewTrends'));
+const CyberViewTabletop = lazy(() => import('./pages/threatintel/cyberview/CyberViewTabletop'));
 const CveTriage = lazy(() => import('./pages/threatintel/CveTriage'));
 const LeakScope = lazy(() => import('./pages/threatintel/LeakScope'));
 const DarkforumsMap = lazy(() => import('./pages/threatintel/DarkforumsMap'));
@@ -714,6 +720,11 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/tools/unified-search', Component: UnifiedSearch },
   { path: '/threatintel/tools/stix-bundles', Component: ThreatLandscapeStix },
   { path: '/threatintel/cves/cves', Component: CveIntel },
+  { path: '/threatintel/cyberview', Component: CyberViewHome },
+  { path: '/threatintel/cyberview/vulnerabilities', Component: CyberViewVulnerabilities },
+  { path: '/threatintel/cyberview/archive', Component: CyberViewArchive },
+  { path: '/threatintel/cyberview/trends', Component: CyberViewTrends },
+  { path: '/threatintel/cyberview/tabletop', Component: CyberViewTabletop },
   { path: '/threatintel/cves/advisories', Component: GithubAdvisories },
   { path: '/threatintel/cves/resources', Component: CveResourcesCatalog },
   { path: '/dfir/blocklists', Component: Blocklists },

@@ -1574,6 +1574,56 @@ export const HUB_META: readonly HubMeta[] = [
       },
     ],
   },
+  {
+    id: 'cyberview',
+    label: 'CyberView',
+    blurb:
+      'Replication of CyberView: verified cyber events on a globe, a patch workbench, archive, trends and a tabletop exercise.',
+    icon: Globe,
+    tone: 'text-sky-700 dark:text-sky-300 border-sky-500/30 bg-sky-500/10',
+    pages: [
+      {
+        path: '/threatintel/cyberview',
+        tabId: 'cyberview-home',
+        label: 'Event Map',
+        desc: 'Seven-day globe of checked cyber events with a live wire, type/severity filters and an events feed.',
+        compVar: 'CyberViewHome',
+        badge: 'new',
+      },
+      {
+        path: '/threatintel/cyberview/vulnerabilities',
+        tabId: 'cyberview-vulnerabilities',
+        label: 'Vulnerabilities',
+        desc: 'Exploited flaws ranked by federal deadline and EPSS, with check/fix steps, a hunt pack and a CVE browser.',
+        compVar: 'CyberViewVulnerabilities',
+        badge: 'new',
+      },
+      {
+        path: '/threatintel/cyberview/archive',
+        tabId: 'cyberview-archive',
+        label: 'Archive',
+        desc: 'Every checked cyber event, with month, category and severity filters and full event detail.',
+        compVar: 'CyberViewArchive',
+        badge: 'new',
+      },
+      {
+        path: '/threatintel/cyberview/trends',
+        tabId: 'cyberview-trends',
+        label: 'Trends',
+        desc: 'Weekly changes in event volume by type, sector, country, product and power-grid context.',
+        compVar: 'CyberViewTrends',
+        badge: 'new',
+      },
+      {
+        path: '/threatintel/cyberview/tabletop',
+        tabId: 'cyberview-tabletop',
+        label: 'Tabletop Exercise',
+        desc: 'A real event adapted into a timed incident-response exercise with injects and a facilitator clock.',
+        compVar: 'CyberViewTabletop',
+        badge: 'new',
+      },
+    ],
+  },
 ];
 
 /* ------------------------------------------------------------------ */

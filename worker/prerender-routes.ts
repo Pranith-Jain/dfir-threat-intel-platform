@@ -130,6 +130,12 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/threatintel/cves/cves', '/__prerendered/threatintel__cves__cves'],
   ['/threatintel/cves/advisories', '/__prerendered/threatintel__cves__advisories'],
   ['/threatintel/cves/resources', '/__prerendered/threatintel__cves__resources'],
+  // ── CyberView replication (5 separate pages) ──────────────────
+  ['/threatintel/cyberview', '/__prerendered/threatintel__cyberview'],
+  ['/threatintel/cyberview/vulnerabilities', '/__prerendered/threatintel__cyberview__vulnerabilities'],
+  ['/threatintel/cyberview/archive', '/__prerendered/threatintel__cyberview__archive'],
+  ['/threatintel/cyberview/trends', '/__prerendered/threatintel__cyberview__trends'],
+  ['/threatintel/cyberview/tabletop', '/__prerendered/threatintel__cyberview__tabletop'],
   // ── ThreatIntel: external-tool integrations (2026-10-21) ──────
   // CVE triage, the breach/dark-forum leak index, the forum IP map, the
   // newly-registered domain monitor and the forum actor directory.
