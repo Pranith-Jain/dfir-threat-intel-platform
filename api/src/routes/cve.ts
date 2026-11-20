@@ -7,6 +7,7 @@ import { vulncheckCve } from '../lib/vulncheck';
 import { hexbrainCveCached } from '../lib/hexbrain';
 import { computeSsvcV } from '../lib/ssvc-v';
 import { normaliseCveId } from '../lib/cve-id';
+import { composeCveVerdict } from '../lib/cve-verdict';
 
 export async function cveSearchHandler(c: Context<{ Bindings: Env }>) {
   const repo = createKvCveRepository(c.env.KV_CACHE);
@@ -45,6 +46,13 @@ export async function cveSearchHandler(c: Context<{ Bindings: Env }>) {
       // all colos. Silently absent when the key is unset or upstream fails.
       const hb = enrichments[1];
       if (hb) data.hexbrain = hb;
+
+      // Consolidated verdict: plain-English tldrcve guidance + RD Intel /
+      // cves.io signals + public exploit evidence + live enrichments.
+      data.verdict = await composeCveVerdict(c.env.ASSETS, id, {
+        hexbrain: hb as NonNullable<Parameters<typeof composeCveVerdict>[2]>['hexbrain'],
+        vulncheck: vc as NonNullable<Parameters<typeof composeCveVerdict>[2]>['vulncheck'],
+      });
 
       // SSVC-V decision engine enrichment
       const d = data as Record<string, Record<string, unknown> | boolean | string | null>;

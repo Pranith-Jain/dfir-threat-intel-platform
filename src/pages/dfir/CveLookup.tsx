@@ -5,7 +5,18 @@ import { DataPageLayout } from '../../components/DataPageLayout';
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import { sanitizeAiHtml } from '../../lib/sanitize-html';
 import { sanitizeUrl } from '../../lib/sanitize-url';
-import { BookText, Bug, ExternalLink, FileCode, Gauge, Loader2, Copy, Check, ChevronDown } from 'lucide-react';
+import {
+  BookText,
+  Bug,
+  ExternalLink,
+  FileCode,
+  Gauge,
+  Loader2,
+  Copy,
+  Check,
+  ChevronDown,
+  Sparkles,
+} from 'lucide-react';
 import { CopyButton } from '../../components/dfir/CopyButton';
 import { Input } from '../../components/ui/Input';
 import { prioritise, TIER_LABELS, TIER_STYLES, TIER_BARS } from '../../lib/dfir/cve-priority';
@@ -44,6 +55,32 @@ interface ActorLink {
   sources: string[];
 }
 
+interface VerdictSource {
+  id: string;
+  label: string;
+  detail: string;
+  url: string;
+}
+
+interface CveVerdict {
+  urgency: { level: 'shrug' | 'keep-an-eye' | 'check-today' | 'drop-everything'; label: string };
+  headline: string;
+  summary: string;
+  verdict: string | null;
+  recommendation: string;
+  sources: VerdictSource[];
+  signals: {
+    cvss: number | null;
+    severity: string | null;
+    kev: boolean;
+    poc: number;
+    threatScore: number | null;
+    signals24h: number | null;
+    trend: number | null;
+  };
+  derived: boolean;
+}
+
 interface CveLookupResult {
   cve_id: string;
   published?: string;
@@ -58,6 +95,8 @@ interface CveLookupResult {
   actors?: string[];
   actor_links?: ActorLink[];
   vulncheck?: { cve: string; exploited: boolean; records: number; reported: string[] };
+  hexbrain?: unknown;
+  verdict?: CveVerdict | null;
 }
 
 const ACTOR_LINK_SOURCE_LABEL: Record<string, string> = {
@@ -309,6 +348,83 @@ export default function CveLookup(): JSX.Element {
               )}
             </div>
           </section>
+
+          {/* Consolidated verdict from tldrcve + RD Intel/cves.io + exploit sources */}
+          {result.verdict && (
+            <section className="surface-card p-6" aria-labelledby="cve-verdict-heading">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <h3
+                  id="cve-verdict-heading"
+                  className="font-display font-semibold text-lg inline-flex items-center gap-2"
+                >
+                  <Sparkles size={18} className="text-brand-600 dark:text-brand-400" /> Verdict
+                </h3>
+                <span
+                  className={`text-xs font-mono uppercase tracking-wider px-2.5 py-1 rounded border ${
+                    result.verdict.urgency.level === 'drop-everything'
+                      ? 'border-rose-500/50 bg-rose-500/15 text-rose-700 dark:text-rose-300'
+                      : result.verdict.urgency.level === 'check-today'
+                        ? 'border-orange-500/40 bg-orange-500/10 text-orange-700 dark:text-orange-300'
+                        : 'border-line-2 text-muted'
+                  }`}
+                >
+                  {result.verdict.urgency.label}
+                  {result.verdict.derived ? ' · derived' : ''}
+                </span>
+              </div>
+
+              <p className="text-sm font-semibold text-heading mb-1">{result.verdict.headline}</p>
+              <p className="text-sm leading-relaxed text-muted mb-3">{result.verdict.summary}</p>
+              <p className="text-sm font-mono text-body mb-4">{result.verdict.recommendation}</p>
+
+              <div className="flex flex-wrap gap-2 mb-4">
+                {result.verdict.signals.cvss != null && (
+                  <span className="rounded border border-line-1 px-2 py-0.5 font-mono text-[11px] text-muted">
+                    CVSS {result.verdict.signals.cvss}
+                  </span>
+                )}
+                {result.verdict.signals.kev && (
+                  <span className="rounded border border-rose-500/40 px-2 py-0.5 font-mono text-[11px] text-rose-600 dark:text-rose-400">
+                    CISA KEV
+                  </span>
+                )}
+                {result.verdict.signals.poc > 0 && (
+                  <span className="rounded border border-line-1 px-2 py-0.5 font-mono text-[11px] text-muted">
+                    {result.verdict.signals.poc} PoC
+                  </span>
+                )}
+                {result.verdict.signals.signals24h != null && (
+                  <span className="rounded border border-line-1 px-2 py-0.5 font-mono text-[11px] text-muted">
+                    {result.verdict.signals.signals24h} signals/24h · trend {result.verdict.signals.trend ?? 0}
+                  </span>
+                )}
+                {result.verdict.signals.threatScore != null && (
+                  <span className="rounded border border-line-1 px-2 py-0.5 font-mono text-[11px] text-muted">
+                    threat score {result.verdict.signals.threatScore}
+                  </span>
+                )}
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                {result.verdict.sources.map((src) => (
+                  <a
+                    key={src.id}
+                    href={sanitizeUrl(src.url) ?? '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-lg border border-line-1 px-3 py-2 hover:border-brand-400 transition-colors"
+                  >
+                    <div className="flex items-center gap-1 text-[11px] font-bold text-heading">
+                      {src.label} <ExternalLink size={10} />
+                    </div>
+                    <div className="text-[11px] font-mono text-muted truncate" title={src.detail}>
+                      {src.detail}
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Patch priority - combined CVSS + EPSS + KEV */}
           {(() => {

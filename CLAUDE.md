@@ -1062,6 +1062,26 @@ Deliberately NOT migrated: Telegram offsets/dedupe, idempotency markers,
 feedback/workspace CRUD, admin X cookies/tokens, and `CASE_STUDIES` canonical
 content. Those need atomicity or are source-of-truth, not cache.
 
+## CVE checker — consolidated verdict (tldrcve + RD Intel + exploits)
+
+`scripts/sync-cve-intel.mjs` now also mirrors https://tldrcve.com/feed.xml
+(plain-English CVE verdicts and the four-step scare-o-meter) into
+`public/data/cve-intel/tldrcve.json`, and builds a slim per-CVE cross-source
+`lookup.json` from RD Intel rows, cves.io attention signals, Kitploit exploit
+cards and tldrcve verdicts. Robots allows the feed; only factual metadata and
+short summaries are stored, with links to upstream.
+
+`api/src/lib/cve-verdict.ts` composes one `verdict` block for
+`/api/v1/cve/search?id=…`: plain-English headline/summary/verdict, derived
+urgency when tldrcve has no entry (KEV, VulnCheck, public exploit evidence),
+signals, and a source list. `src/pages/dfir/CveLookup.tsx` renders it as one
+consolidated panel above the patch-priority section. HexBrain and VulnCheck
+enrichments already fetched by the route feed the same panel, so Exploit-DB
+links appear there too.
+
+Tests: `scripts/sync-cve-intel.test.mjs` (feed/verdict parsers) and
+`api/test/lib/cve-verdict.test.ts` (composer).
+
 ## Global Pulse — external cache/warm (Upstash)
 
 Global Pulse cache/warm state no longer has to live in Cloudflare KV. With
