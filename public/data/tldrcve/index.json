@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-20T06:20:33.972Z",
+  "generatedAt": "2026-11-20T15:38:24.568Z",
   "upstream": {
     "site": "https://tldrcve.com",
     "list": "https://tldrcve.com/cves/",
@@ -8,12 +8,13 @@
     "scale": "https://tldrcve.com/how-we-rate/"
   },
   "stats": {
-    "cves": 22,
-    "details": 22,
-    "versions": 27,
+    "cves": 26,
+    "details": 26,
+    "versions": 32,
     "byVerdict": {
       "Patch now": 11,
-      "Patch now if…": 10,
+      "Patch now if…": 13,
+      "Watching": 1,
       "Next cycle": 1
     }
   },
@@ -1988,7 +1989,7 @@
     {
       "slug": "sglang",
       "name": "SGLang RCE",
-      "meta": "SGLang · CVE-2026-15969, CVE-2026-15971, CVE-2026-15974, CVE-2026-15976, CVE-2026-15977, CVE-2026-15978",
+      "meta": "SGLang · 6 CVEs",
       "line": "Exploited, no fix yet. Risky if the port is reachable.",
       "verdict": "Patch now if…",
       "scareLevel": 2.8,
@@ -1997,7 +1998,7 @@
       "url": "https://tldrcve.com/sglang/",
       "detail": {
         "slug": "sglang",
-        "kicker": "SGLang · CVE-2026-15969 · CVE-2026-15971 · CVE-2026-15974 · CVE-2026-15976 · CVE-2026-15977 · CVE-2026-15978",
+        "kicker": "SGLang · Release roundup · 6 CVEs",
         "name": "SGLang RCE",
         "verdict": "Patch now if…",
         "verdictHint": "Exploited, no fix yet. Risky if the port is reachable.",
@@ -3527,6 +3528,595 @@
       }
     },
     {
+      "slug": "spring-2026-11-19",
+      "name": "Spring Nov release",
+      "meta": "Spring · 90 CVEs",
+      "line": "90 advisories, 5 critical. Free fixes only on Boot 4.",
+      "verdict": "Patch now if…",
+      "scareLevel": 1.8,
+      "meterLabel": "Keep an eye on it",
+      "disclosed": "2026-11-19",
+      "url": "https://tldrcve.com/spring-2026-11-19/",
+      "detail": {
+        "slug": "spring-2026-11-19",
+        "kicker": "Spring · Release roundup · 90 CVEs",
+        "name": "Spring Nov release",
+        "verdict": "Patch now if…",
+        "verdictHint": "90 advisories, 5 critical. Free fixes only on Boot 4.",
+        "summary": "Spring published 90 security advisories on 19 Nov across Boot, Framework, Security, Spring AI, Integration, Web Services, Cloud and more: 5 critical, 24 high, 49 medium and 12 low. None has a public exploit or reported attacks, and most need an opt-in feature. The catch is who gets fixes for free: only the newest lines, such as Spring Boot 4.0.10 and 4.1.3. Boot 3.5 and older get fixes only through Spring's paid Enterprise support.",
+        "meterLabel": "Keep an eye on it",
+        "meterHint": "Patch on schedule. Watch for news.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 6,7,8"
+          },
+          {
+            "yes": false,
+            "text": "No public exploit 1,9"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 1,9"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 5"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Spring Boot 4.1.2 or older",
+            "hint": "command",
+            "body": "Almost every advisory affects Spring Boot 4.1.2, 4.0.9 and older, or the Spring libraries those versions bring in (Framework, Security, Data, Integration, Web Services, LDAP). Spring AI and Spring Cloud have their own version numbers: see each bug. Spring Boot 4.2.0 came out the same day; the advisories don't list it either way. Check what your build actually resolves; with Gradle, run ./gradlew dependencies --configuration runtimeClasspath instead. 1,2,3,4 mvn dependency:list | grep org.springframework",
+            "code": ["mvn dependency:list | grep org.springframework"]
+          },
+          {
+            "num": "2",
+            "title": "You use an affected feature",
+            "hint": null,
+            "body": "Each bug needs a specific feature or setup, listed under The bugs above. Most are opt-in: Spring AI vector stores and caches, Integration adapters, Cloud Gateway caching, RSocket. The widest reach: Spring Web Services endpoints (every one is exposed to oversized messages), Spring Boot apps with Actuator on Cloud Foundry, and Framework data binding with field exclusion rules. 1,8,10,12",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "On Boot 4: go to 4.1.3 or 4.0.10",
+            "hint": null,
+            "body": "These bring in the fixed Spring Security (7.1.3 / 7.0.9), Framework (7.0.11), Data, Integration (7.1.3 / 7.0.8) and Web Services (5.0.4) versions. Spring AI and Spring Cloud aren't managed by Boot: move to Spring AI 2.0.3, Cloud Gateway 5.0.5, Cloud Config 5.0.7 and Cloud Netflix 5.0.4 separately. 2,3,1 Latest safe versions checked 20 Nov Spring Boot → 4.1 4.1.3 4.0 4.0.10",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "On Boot 3 or older: no free fix",
+            "hint": null,
+            "body": "Spring's fixes for Boot 3.5, 3.4 and 2.7 (3.5.18, 3.4.19, 2.7.36), Framework 6.x and 5.x, Security 6.x and 5.x, and Spring AI 1.x are only available with Enterprise support. Your options: move to Boot 4, buy Enterprise support, or use the workarounds for the bugs that affect you. 1,6,12,7",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Check the critical ones first",
+            "hint": null,
+            "body": "Spring Boot configured paths ending in / and Spring Security ELRequestMatcher each have a full page with checks. Spring Boot on Cloud Foundry: define your own security configuration. Spring AI Redis semantic cache: don't share the cache advisor across users. The LDAP one only affects test servers. 6,7,8,11",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Workarounds if you can't upgrade",
+            "hint": null,
+            "body": "Spring Web Services: cap the request body size at your proxy or servlet container. Data Elasticsearch: reject query arguments containing #{ . Cloud Config: take credentials out of the Git or SVN URL. Integration Redis queues: switch to a String or JSON serializer. Other bugs list theirs under The bugs above. 10,13,14,15",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://spring.io/security",
+            "title": "Spring: security advisories (90 published 19 Nov, with free and Enterprise-only fixes)",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/spring-projects/spring-boot/releases/tag/v4.1.3",
+            "title": "Spring Boot 4.1.3 release: upgrades to Security 7.1.3, Integration 7.1.3, WS 5.0.4",
+            "date": null
+          },
+          {
+            "url": "https://github.com/spring-projects/spring-boot/releases/tag/v4.0.10",
+            "title": "Spring Boot 4.0.10 release: upgrades to Security 7.0.9, Framework 7.0.11, WS 5.0.4",
+            "date": null
+          },
+          {
+            "url": "https://github.com/spring-projects/spring-boot/releases/tag/v4.2.0",
+            "title": "Spring Boot 4.2.0 release",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: none listed",
+            "date": null
+          },
+          {
+            "url": "https://spring.io/security/cve-2026-59414",
+            "title": "Spring: CVE-2026-59414, configured paths and security rules",
+            "date": null
+          },
+          {
+            "url": "https://spring.io/security/cve-2026-59273",
+            "title": "Spring: CVE-2026-59273, ELRequestMatcher",
+            "date": null
+          },
+          {
+            "url": "https://spring.io/security/cve-2026-59411",
+            "title": "Spring: CVE-2026-59411, Cloud Foundry default security",
+            "date": null
+          },
+          {
+            "url": "https://github.com/afernandesvigo/PoC-CVE-2026-59273",
+            "title": "GitHub: the only CVE-2026-59273 'PoC' repo is an empty README",
+            "date": null
+          },
+          {
+            "url": "https://spring.io/security/cve-2026-59349",
+            "title": "Spring: CVE-2026-59349, Web Services message size",
+            "date": null
+          },
+          {
+            "url": "https://spring.io/security/cve-2026-59417",
+            "title": "Spring: CVE-2026-59417, Spring AI Redis semantic cache",
+            "date": null
+          },
+          {
+            "url": "https://spring.io/security/cve-2026-59374",
+            "title": "Spring: CVE-2026-59374, Framework data binding",
+            "date": null
+          },
+          {
+            "url": "https://spring.io/security/cve-2026-123886",
+            "title": "Spring: CVE-2026-123886, Data Elasticsearch @Query",
+            "date": null
+          },
+          {
+            "url": "https://spring.io/security/cve-2026-59435",
+            "title": "Spring: CVE-2026-59435, Cloud Config credentials",
+            "date": null
+          },
+          {
+            "url": "https://spring.io/security/cve-2026-59444",
+            "title": "Spring: CVE-2026-59444, Integration Redis queue deserialization",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/spring-2026-11-19/"
+      }
+    },
+    {
+      "slug": "spring-security-el",
+      "name": "Spring Security EL",
+      "meta": "Spring Security · CVE-2026-59273",
+      "line": "Runs code, but only if apps bind input to a matcher.",
+      "verdict": "Patch now if…",
+      "scareLevel": 1.6,
+      "meterLabel": "Keep an eye on it",
+      "disclosed": "2026-11-19",
+      "url": "https://tldrcve.com/spring-security-el/",
+      "detail": {
+        "slug": "spring-security-el",
+        "kicker": "Spring Security · CVE-2026-59273",
+        "name": "Spring Security EL",
+        "verdict": "Patch now if…",
+        "verdictHint": "Runs code, but only if apps bind input to a matcher.",
+        "summary": "Spring rates this Spring Security bug Critical: ELRequestMatcher evaluates its expression with full SpEL, so whoever controls that expression can run code on the server. It's only reachable if an app lets outside input be bound onto a RequestMatcher property, a string conversion meant for XML bean definitions. There's no working public exploit, and free fixes exist only for Spring Security 7.0 and 7.1.",
+        "meterLabel": "Keep an eye on it",
+        "meterHint": "Patch on schedule. Watch for news.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1"
+          },
+          {
+            "yes": false,
+            "text": "No public exploit 5"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 7"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 6"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Spring Security 7.1.2 or older",
+            "hint": "command",
+            "body": "Affected: 7.1.0 to 7.1.2, 7.0.0 to 7.0.8, 6.5.0 to 6.5.12, 6.4.0 to 6.4.19, 5.8.0 to 5.8.28, and 5.7.26 and older. Spring Boot 4.1.3 and 4.0.10 bring in the fixed 7.1.3 and 7.0.9. 1,8,9 mvn dependency:list | grep spring-security",
+            "code": ["mvn dependency:list | grep spring-security"]
+          },
+          {
+            "num": "2",
+            "title": "Outside input reaches a RequestMatcher property",
+            "hint": null,
+            "body": "The app has to bind external input to a bean property of this matcher type. Spring's data binding then turns the string into an ELRequestMatcher and evaluates it. The conversion exists so a string can be used \"in a BeanDefinition\", like the hasIpAddress(...) map keys of an XML-configured DelegatingAuthenticationEntryPoint , where the expression comes from your own config. Spring's advisory doesn't give a concrete vulnerable app pattern. 1,2,3",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade to 7.1.3 or 7.0.9",
+            "hint": null,
+            "body": "On Spring Boot 4, upgrading Boot to 4.1.3 or 4.0.10 does this for you. The fix makes ELRequestMatcher use a restricted SpEL context that can't call arbitrary code. 1,4,8,9 Latest safe versions checked 20 Nov Spring Security → 7.1 7.1.3 7.0 7.0.9",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "On 6.x or 5.x: no free fix",
+            "hint": "command",
+            "body": "Spring's fixes for 6.5, 6.4, 5.8 and 5.7 (6.5.13, 6.4.20, 5.8.29, 5.7.27) are only for Enterprise support customers, and the advisory lists no workaround. Until you can move to 7.x, check that no request data, form field or external config value is bound onto a RequestMatcher property. 1 grep -rn \"RequestMatcher\" --include=*.java --include=*.xml src/",
+            "code": ["grep -rn \"RequestMatcher\" --include=*.java --include=*.xml src/"]
+          },
+          {
+            "num": "3",
+            "title": "Ignore the \"PoC\" repos",
+            "hint": null,
+            "body": "The one GitHub repo calling itself a proof of concept contained only a short README and no code on 20 Nov. 5",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://spring.io/security/cve-2026-59273",
+            "title": "Spring: CVE-2026-59273 advisory",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/spring-projects/spring-security/blob/main/web/src/main/java/org/springframework/security/web/util/matcher/ELRequestMatcher.java",
+            "title": "Spring Security source: ELRequestMatcher",
+            "date": null
+          },
+          {
+            "url": "https://github.com/spring-projects/spring-security/blob/main/web/src/main/java/org/springframework/security/web/util/matcher/RequestMatcherEditor.java",
+            "title": "Spring Security source: RequestMatcherEditor (\"in a BeanDefinition\")",
+            "date": null
+          },
+          {
+            "url": "https://github.com/spring-projects/spring-security/commit/5d28474a5c",
+            "title": "Spring Security: fix commit, restricted SpEL context",
+            "date": null
+          },
+          {
+            "url": "https://github.com/afernandesvigo/PoC-CVE-2026-59273",
+            "title": "GitHub: the only 'PoC' repo is a README",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          },
+          {
+            "url": "https://securityonline.info/spring-security-vulnerabilities-november-2026/",
+            "title": "SecurityOnline: no confirmed exploitation",
+            "date": null
+          },
+          {
+            "url": "https://github.com/spring-projects/spring-boot/releases/tag/v4.1.3",
+            "title": "Spring Boot 4.1.3 release: Spring Security 7.1.3",
+            "date": null
+          },
+          {
+            "url": "https://github.com/spring-projects/spring-boot/releases/tag/v4.0.10",
+            "title": "Spring Boot 4.0.10 release: Spring Security 7.0.9",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/spring-security-el/"
+      }
+    },
+    {
+      "slug": "spring-boot-slash",
+      "name": "Spring Boot slash",
+      "meta": "Spring Boot · CVE-2026-59414",
+      "line": "Only bites if a configured path ends in /. No exploit.",
+      "verdict": "Patch now if…",
+      "scareLevel": 1.3,
+      "meterLabel": "Keep an eye on it",
+      "disclosed": "2026-11-19",
+      "url": "https://tldrcve.com/spring-boot-slash/",
+      "detail": {
+        "slug": "spring-boot-slash",
+        "kicker": "Spring Boot · CVE-2026-59414",
+        "name": "Spring Boot slash",
+        "verdict": "Patch now if…",
+        "verdictHint": "Only bites if a configured path ends in /. No exploit.",
+        "summary": "Spring rates this Spring Boot bug Critical. Spring Boot builds security rules for Actuator endpoints and the H2 console from paths in your configuration; if such a path ends in a slash, the rule comes out wrong and doesn't match the real endpoint, which can then be left unsecured. The fix only strips that slash, so paths without one behave the same before and after. Free fixes exist only for Spring Boot 4.0 and 4.1.",
+        "meterLabel": "Keep an eye on it",
+        "meterHint": "Patch on schedule. Watch for news.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1"
+          },
+          {
+            "yes": false,
+            "text": "No public exploit 1"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 1"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 5"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Spring Boot 4.1.2 or older",
+            "hint": "command",
+            "body": "Affected: 4.1.0 to 4.1.2, 4.0.0 to 4.0.9, 3.5.0 to 3.5.17, 3.0.0 to 3.4.18, and 2.7.35 and older. 1 mvn dependency:list | grep spring-boot",
+            "code": ["mvn dependency:list | grep spring-boot"]
+          },
+          {
+            "num": "2",
+            "title": "Rules use EndpointRequest or the H2 console matcher",
+            "hint": null,
+            "body": "Your Spring Security config builds rules with EndpointRequest (Actuator, servlet or reactive) or PathRequest.toH2Console() . The fix didn't change the static-resource matchers. 1,2",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "A configured path ends in /",
+            "hint": "command",
+            "body": "For example management.endpoints.web.path-mapping.health=status/ or spring.h2.console.path=/custom/ , which produce a rule for /actuator/status//** that never matches /actuator/status . The fix also covers health group additional paths and / as the Actuator base path. Look for those properties and check whether a value ends in a slash. 2 grep -rnE \"path-mapping|console.path|base-path|additional-path\" src/main/resources/",
+            "code": ["grep -rnE \"path-mapping|console.path|base-path|additional-path\" src/main/resources/"]
+          },
+          {
+            "num": "4",
+            "title": "A later rule is looser",
+            "hint": null,
+            "body": "Spring Security checks rules in order and uses the first that matches. When the broken rule doesn't match, the request falls through to your next rule, so the endpoint is only left open if that rule is looser, for example anyRequest().permitAll() . 4,1",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade to 4.1.3 or 4.0.10",
+            "hint": null,
+            "body": "Spring Boot 4.2.0, released the same day, also contains the fix. 1,3 Latest safe versions checked 20 Nov Spring Boot → 4.1 4.1.3 4.0 4.0.10",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Or drop the trailing slash",
+            "hint": null,
+            "body": "The fix strips trailing slashes from configured paths. Removing them from your configuration yourself should have the same effect; Spring's advisory doesn't list a workaround. 2,1",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "On Boot 3.x or older: no free fix",
+            "hint": null,
+            "body": "Spring's fixes for 3.5, 3.4 and 2.7 (3.5.18, 3.4.19, 2.7.36) are only for Enterprise support customers, so the configuration check above is your option. 1",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://spring.io/security/cve-2026-59414",
+            "title": "Spring: CVE-2026-59414 advisory",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/spring-projects/spring-boot/commit/a540dafae61eeb1312d7b9baa985be6cbc6914ff",
+            "title": "Spring Boot: fix commit and tests, \"Normalize paths when creating request matchers\" (4.1.x)",
+            "date": null
+          },
+          {
+            "url": "https://github.com/spring-projects/spring-boot/commit/74952c605486210bc6b030ca8772675b3efccdde",
+            "title": "Spring Boot: same fix on main, included in v4.2.0",
+            "date": null
+          },
+          {
+            "url": "https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html",
+            "title": "Spring Security docs: request rules are checked in order",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/spring-boot-slash/"
+      }
+    },
+    {
+      "slug": "mysql-client",
+      "name": "MySQL client flaw",
+      "meta": "MySQL Server · CVE-2026-114952",
+      "line": "Rated 9.1, but no details or fix yet. Nothing to do.",
+      "verdict": "Watching",
+      "scareLevel": 1.2,
+      "meterLabel": "Keep an eye on it",
+      "disclosed": "2026-11-17",
+      "url": "https://tldrcve.com/mysql-client/",
+      "detail": {
+        "slug": "mysql-client",
+        "kicker": "MySQL Server · CVE-2026-114952",
+        "name": "MySQL client flaw",
+        "verdict": "Watching",
+        "verdictHint": "Rated 9.1, but no details or fix yet. Nothing to do.",
+        "summary": "Oracle fixed a MySQL bug on 17 Nov in the part it calls \"Client programs\" and rated it Critical 9.1, but it hasn't said how the attack works or whether servers or the client tools are at risk. The free MySQL releases don't have the fix yet. The two GitHub \"exploits\" going around are a version checker and an unverified guess written without seeing Oracle's fix, and no attacks have been reported.",
+        "meterLabel": "Keep an eye on it",
+        "meterHint": "Patch on schedule. Watch for news.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1"
+          },
+          {
+            "yes": false,
+            "text": "No public exploit 2,11,12"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 7,2"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 14"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "MySQL 8.4, 9.7 or 26.10",
+            "hint": "command",
+            "body": "Oracle lists MySQL Server 8.4.0 to 8.4.13, 9.7.0 to 9.7.4 and 26.10, and MySQL Cluster 8.0.0 to 8.0.50, 8.4.0 to 8.4.13, 9.7.0 to 9.7.4 and 26.10. Server 8.0 isn't listed because Oracle no longer supports it, not because it was checked, so TuxCare treats it as possibly affected. Oracle files the bug under \"Client programs\", so machines with only the mysql command-line tools count too. MariaDB and Percona haven't said whether they're affected; Red Hat lists its hardened MariaDB 10.11 and 11.8 images as affected. 1,7,8 mysql --version",
+            "code": ["mysql --version"]
+          },
+          {
+            "num": "2",
+            "title": "An attacker reaches the MySQL traffic",
+            "hint": null,
+            "body": "Oracle says the attack goes over the MySQL network protocol, with no login and no user action. It hasn't said whether the server or a client program connecting to a server is the side at risk. \"A client connecting to a malicious server\" is analysts' guess, not something Oracle has confirmed. The sources also disagree on the kind of bug: CISA's data says improper authentication (CWE-287), Red Hat says missing authentication (CWE-306). 1,7,15,2,8",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Nothing urgent yet",
+            "hint": null,
+            "body": "There's no confirmed exploit and no reported attack, it isn't on CISA's exploited list, and CISA's own assessment says exploitation \"none\". The 19 Nov GitHub code is a fake MySQL server that captures passwords from clients connecting without encryption; its author says Oracle's fix isn't public, so nothing ties it to this bug. We'll change the verdict if Oracle, the researcher or a distro explains the bug, if real exploit code or attacks appear, or if it lands on CISA's list. 2,14,12,11,13,7",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Update when the fix ships",
+            "hint": null,
+            "body": "The fixed builds 8.4.13.1, 9.7.4.1 and 26.10.0.1 are listed as not yet released, with no date. Until then the fix is only available to Oracle support customers through My Oracle Support. Oracle's next scheduled updates are on 15 Dec 2026 and 19 Jan 2027; nobody has said the public fix ships in either. Distros disagree on severity: Red Hat rates it Critical, Ubuntu Medium. Debian, Red Hat and Ubuntu have no fixed packages yet. 4,5,6,7,8,9,10",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Optional: general hardening",
+            "hint": null,
+            "body": "TuxCare suggests limiting ports 3306 (and 33060 if the X Protocol is on) to the hosts that need them, having clients check the server's certificate with --ssl-mode=VERIFY_IDENTITY , and turning off local file loading with --local-infile=0 where nobody uses it. It notes these are general hardening steps, not confirmed fixes for this bug. 7",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.oracle.com/security-alerts/cspunov2026.html",
+            "title": "Oracle: Critical Security Patch Update, November 2026 (MySQL risk matrix)",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-114952",
+            "title": "CVE record: Oracle score, CISA assessment (exploitation none), CWE-287",
+            "date": null
+          },
+          {
+            "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-114952",
+            "title": "NVD: CVE-2026-114952 (not yet analysed)",
+            "date": null
+          },
+          {
+            "url": "https://dev.mysql.com/doc/relnotes/mysql/8.4/en/",
+            "title": "MySQL: 8.4 release notes (8.4.13.1 not yet released)",
+            "date": null
+          },
+          {
+            "url": "https://dev.mysql.com/doc/relnotes/mysql/9.7/en/",
+            "title": "MySQL: 9.7 release notes (9.7.4.1 not yet released)",
+            "date": null
+          },
+          {
+            "url": "https://dev.mysql.com/doc/relnotes/mysql/26.10/en/",
+            "title": "MySQL: 26.10 release notes (26.10.0.1 not yet released)",
+            "date": null
+          },
+          {
+            "url": "https://tuxcare.com/blog/mysql-cve-2026-114952/",
+            "title": "TuxCare: fix only via My Oracle Support, 8.0 status, hardening steps",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://access.redhat.com/security/cve/CVE-2026-114952",
+            "title": "Red Hat: rated Critical, CWE-306, affected packages and images",
+            "date": null
+          },
+          {
+            "url": "https://ubuntu.com/security/CVE-2026-114952",
+            "title": "Ubuntu: Medium priority, needs triage",
+            "date": null
+          },
+          {
+            "url": "https://security-tracker.debian.org/tracker/CVE-2026-114952",
+            "title": "Debian: mysql-9.7 vulnerable, no fix",
+            "date": null
+          },
+          {
+            "url": "https://github.com/Quaerendir/cve-2026-114952-mysql-audit",
+            "title": "GitHub: the first 'PoC' is a read-only version check",
+            "date": null
+          },
+          {
+            "url": "https://github.com/1dayexploit/1day-archive/tree/main/analyses/cve-2026-114952-mysql-client-auth-bypass",
+            "title": "GitHub: 1dayexploit rogue-server code, written without Oracle's fix",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://cve.now/CVE-2026-114952",
+            "title": "cve.now: CVE-2026-114952 (PoC claim)",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          },
+          {
+            "url": "https://gist.github.com/cyberheartmi9/65d179276c50e7e20f59549d0bbc8960",
+            "title": "Independent analysis: root cause unknown, client-side guess",
+            "date": "18 Nov"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/mysql-client/"
+      }
+    },
+    {
       "slug": "openssl-encodeblock",
       "name": "OpenSSL base64",
       "meta": "OpenSSL · CVE-2026-121481",
@@ -4001,6 +4591,14 @@
       "url": "https://tldrcve.com/versions/microsoft-365-apps/"
     },
     {
+      "slug": "mysql",
+      "name": "MySQL",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": true,
+      "chips": [],
+      "url": "https://tldrcve.com/versions/mysql/"
+    },
+    {
       "slug": "n-central",
       "name": "N-able N-central",
       "meta": "1 bug · checked 20 Nov",
@@ -4293,6 +4891,66 @@
       "nofix": true,
       "chips": [],
       "url": "https://tldrcve.com/versions/sglang/"
+    },
+    {
+      "slug": "spring-ai",
+      "name": "Spring AI",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "2.0",
+          "version": "2.0.3"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/spring-ai/"
+    },
+    {
+      "slug": "spring-boot",
+      "name": "Spring Boot",
+      "meta": "2 bugs · checked 20 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "4.1",
+          "version": "4.1.3"
+        },
+        {
+          "line": "4.0",
+          "version": "4.0.10"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/spring-boot/"
+    },
+    {
+      "slug": "spring-framework",
+      "name": "Spring Framework",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "7.0",
+          "version": "7.0.11"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/spring-framework/"
+    },
+    {
+      "slug": "spring-security",
+      "name": "Spring Security",
+      "meta": "2 bugs · checked 20 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "7.1",
+          "version": "7.1.3"
+        },
+        {
+          "line": "7.0",
+          "version": "7.0.9"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/spring-security/"
     },
     {
       "slug": "synology-dsm",
