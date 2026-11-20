@@ -45,10 +45,10 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22"
 
@@ -155,7 +155,7 @@ jobs:
       - name: "Open PR"
         if: steps.diff.outputs.changed == 'true' && github.event.inputs.dry_run != 'true'
         id: pr
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "chore(cert-in): sync advisories from CERT-In"
           title: "CERT-In sync — ${{ github.event_name == 'schedule' && 'weekly' || format('run {0}', github.run_id) }}"
