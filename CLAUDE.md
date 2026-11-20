@@ -1062,6 +1062,24 @@ Deliberately NOT migrated: Telegram offsets/dedupe, idempotency markers,
 feedback/workspace CRUD, admin X cookies/tokens, and `CASE_STUDIES` canonical
 content. Those need atomicity or are source-of-truth, not cache.
 
+## tldrcve.com replication
+
+`scripts/sync-tldrcve.mjs` mirrors the public server-rendered pages of
+https://tldrcve.com (robots allows all paths; REA confirmed no XHR/API) into
+`public/data/tldrcve/index.json`: 22 CVEs with detail sections (scare checklist,
+affected checks, patch steps, sources, changelog) and 27 safe-version lines.
+`src/pages/threatintel/Tldrcve.tsx` is the replication, mounted as the "Plain
+English" tab on `/threatintel/cves/cves`, with Latest updates / All CVEs / Safe
+versions views and a detail view. It merges with the feed mirror in
+`public/data/cve-intel/tldrcve.json`. Runs in `cve-intel-sync.yml` (6h). Tests:
+`scripts/sync-tldrcve.test.mjs`.
+
+Issue #637 (scanner C unverified `dangerouslySetInnerHTML`) was fixed in
+`src/pages/dfir/AgentReports.tsx`: the DOMPurify sanitiser stays dynamically
+imported (bundle-size rule), but is now invoked at the render sink through a
+`sanitizeHtml` wrapper so the guard can see it, and the stored HTML is raw
+until that point.
+
 ## CVE checker — consolidated verdict (tldrcve + RD Intel + exploits)
 
 `scripts/sync-cve-intel.mjs` now also mirrors https://tldrcve.com/feed.xml

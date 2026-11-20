@@ -6,7 +6,7 @@ import { Bug } from 'lucide-react';
 
 const CveList = lazy(() => import('./CveList'));
 const RdintelCve = lazy(() => import('./RdintelCve'));
-const VessScore = lazy(() => import('./VessScore'));
+const Tldrcve = lazy(() => import('./Tldrcve'));
 const CveTrends = lazy(() => import('./CveTrends'));
 const OffseqThreats = lazy(() => import('./Offseq'));
 const OffseqFeeds = lazy(() => import('./OffseqFeeds'));
@@ -23,7 +23,7 @@ const CveHealthCheck = lazy(() => import('./CveHealthCheck'));
 
 type TabId =
   | 'rdintel'
-  | 'vess'
+  | 'tldrcve'
   | 'all'
   | 'trending'
   | 'offseq'
@@ -46,9 +46,9 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
     desc: 'Mirror of rdintel.com/cve: corpus counters, cves.io attention ranking, all-time top threats, and recent CVEs enriched with CVSS, EPSS, KEV and PoC counts',
   },
   {
-    id: 'vess',
-    label: 'VESS Score',
-    desc: 'VESS exploitability calculator (isitwormable.com): score the restrictions on exploitation — difficulty, not severity — with category caps, extreme escalators and feasibility checks',
+    id: 'tldrcve',
+    label: 'Plain English',
+    desc: 'Latest plain-English CVE write-ups and patch verdicts from tldrcve.com, graded on its four-step scare-o-meter',
   },
   { id: 'all', label: 'All Recent', desc: 'NVD + KEV + MyThreatIntel + cvefeed.io + CVE Telegram channels + EPSS' },
   {
@@ -128,10 +128,10 @@ export default function CveIntel(): JSX.Element {
       title="CVE Intelligence"
       description={
         <>
-          Unified CVE intelligence: <strong>RD Intelligence corpus stats</strong>,{' '}
-          <strong>cves.io attention ranking</strong>, NVD + KEV + EPSS enrichment, OffSeq threat radar (threats, feeds,
-          map), exploit availability, and Kubernetes advisories. Scores are upstream values, refreshed on their own
-          schedules.
+          Unified CVE intelligence: <strong>plain-English tldrcve verdicts</strong>,{' '}
+          <strong>RD Intelligence corpus stats</strong>, <strong>cves.io attention ranking</strong>, NVD + KEV + EPSS
+          enrichment, OffSeq threat radar (threats, feeds, map), exploit availability, and Kubernetes advisories. Scores
+          are upstream values, refreshed on their own schedules.
         </>
       }
     >
@@ -161,7 +161,7 @@ export default function CveIntel(): JSX.Element {
       <div role="tabpanel" id={`tabpanel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
         <Suspense fallback={<TabLoader />}>
           {activeTab === 'rdintel' && <RdintelCve bare />}
-          {activeTab === 'vess' && <VessScore />}
+          {activeTab === 'tldrcve' && <Tldrcve bare />}
           {activeTab === 'all' && <CveList bare />}
           {activeTab === 'trending' && <CveTrends />}
           {activeTab === 'offseq' && <OffseqThreats bare />}

@@ -4213,7 +4213,8 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
   {
     path: '/threatintel/cves/cves',
     label: 'CVE Intel',
-    description: 'RDIntel mirror: corpus stats, cves.io attention ranking, top threats, recent CVEs.',
+    description:
+      'Plain-English tldrcve verdicts, RDIntel corpus stats, cves.io attention ranking, top threats and recent CVEs.',
     sectionLabel: 'Threat Intel · CVEs',
     group: 'threatintel',
     keywords: [
@@ -4222,8 +4223,9 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
       'rdintel',
       'cves.io',
       'offseq',
-      'vess',
-      'exploitability',
+      'tldrcve',
+      'plain english',
+      'scare-o-meter',
       'cvss',
       'epss',
       'kev',

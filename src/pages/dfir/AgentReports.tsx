@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Download, FileText, RefreshCw, Search, ShieldCheck } from 'lucide-react';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { relativeAgo } from '../../lib/relativeTime';
@@ -12,6 +12,12 @@ import { relativeAgo } from '../../lib/relativeTime';
  * cost / data-gap metadata, and download a Markdown copy. All calls are the
  * existing admin-gated agent endpoints, same-origin from the browser.
  */
+
+/** Applied at the render sink, so the HTML injection guard can see the sanitiser. */
+const REPORT_SANITIZE_OPTIONS = {
+  ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|#|\/):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
+  ADD_ATTR: ['title'],
+};
 
 interface SessionRow {
   id: string;
@@ -71,6 +77,8 @@ export default function AgentReports(): JSX.Element {
   const [stateLoading, setStateLoading] = useState(false);
   const [stateError, setStateError] = useState<string | null>(null);
   const [reportHtml, setReportHtml] = useState('');
+  const sanitizeRef = useRef<((html: string) => string) | null>(null);
+  const sanitizeHtml = (html: string): string => (sanitizeRef.current ? sanitizeRef.current(html) : '');
 
   const sessions = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -95,13 +103,10 @@ export default function AgentReports(): JSX.Element {
           import('marked'),
           import('isomorphic-dompurify'),
         ]);
-        const raw = (await marked.parse(next.report)) as string;
-        setReportHtml(
-          DOMPurify.sanitize(raw, {
-            ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|#|\/):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
-            ADD_ATTR: ['title'],
-          })
-        );
+        // Store the unrendered HTML plus the sanitiser; sanitisation happens at
+        // the render sink so every path through this component is covered.
+        sanitizeRef.current = (html: string) => DOMPurify.sanitize(html, REPORT_SANITIZE_OPTIONS);
+        setReportHtml((await marked.parse(next.report)) as string);
       }
     } catch (err) {
       setStateError(err instanceof Error ? err.message : String(err));
@@ -306,7 +311,7 @@ export default function AgentReports(): JSX.Element {
 
                 <div
                   className="prose prose-sm max-w-none text-body dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: reportHtml }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(reportHtml) }}
                 />
                 {!state.report && <p className="text-sm text-muted">No report text is stored for this session.</p>}
               </div>

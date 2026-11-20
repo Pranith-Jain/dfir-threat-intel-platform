@@ -1,0 +1,4331 @@
+{
+  "generatedAt": "2026-11-20T06:20:33.972Z",
+  "upstream": {
+    "site": "https://tldrcve.com",
+    "list": "https://tldrcve.com/cves/",
+    "versions": "https://tldrcve.com/versions/",
+    "feed": "https://tldrcve.com/feed.xml",
+    "scale": "https://tldrcve.com/how-we-rate/"
+  },
+  "stats": {
+    "cves": 22,
+    "details": 22,
+    "versions": 27,
+    "byVerdict": {
+      "Patch now": 11,
+      "Patch now if…": 10,
+      "Next cycle": 1
+    }
+  },
+  "scale": [
+    {
+      "level": 1,
+      "label": "Shrug",
+      "meaning": "Real, but not worth losing sleep over."
+    },
+    {
+      "level": 2,
+      "label": "Keep an eye on it",
+      "meaning": "Patch on schedule. Watch for news."
+    },
+    {
+      "level": 3,
+      "label": "Check today",
+      "meaning": "Find out if you're affected. If you are, patch."
+    },
+    {
+      "level": 4,
+      "label": "Drop everything",
+      "meaning": "Attackers are already on it. Patch now."
+    }
+  ],
+  "cves": [
+    {
+      "slug": "php2shell",
+      "name": "PHP2Shell",
+      "meta": "PHP · CVE-2026-109618, CVE-2026-109619",
+      "line": "Exploited in the wild. In CISA KEV.",
+      "verdict": "Patch now",
+      "scareLevel": 3.9,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-10-21",
+      "url": "https://tldrcve.com/php2shell/",
+      "detail": {
+        "slug": "php2shell",
+        "kicker": "PHP · CVE-2026-109618 · CVE-2026-109619",
+        "name": "PHP2Shell",
+        "verdict": "Patch now",
+        "verdictHint": "Exploited in the wild. In CISA KEV.",
+        "summary": "Two bugs in PHP itself let an attacker with no login run code on web servers that run PHP. Attacks are already happening, so if you serve PHP on the web, update now.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1,2,3"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 9,7"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 4,6,7"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (since 26 Oct) 4"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "PHP older than 8.2.35 / 8.3.36 / 8.4.27 / 8.5.12",
+            "hint": "command",
+            "body": "Or any end-of-life branch (8.1 and older), or patched but workers not restarted since. Check the runtime that serves the web, not just the CLI. Distros may backport the fix without changing the version number. 1,5 php -v php-fpm -v",
+            "code": ["php -v php-fpm -v"]
+          },
+          {
+            "num": "2",
+            "title": "PHP serves web requests",
+            "hint": "command",
+            "body": "Via mod_php, PHP-FPM, php-cgi, FrankenPHP or LiteSpeed. Full exploitation has been shown on Apache mod_php, and for CVE-2026-109619 also on PHP-FPM. Command-line-only use isn't in scope. 1,2,3 apachectl -M | grep php",
+            "code": ["apachectl -M | grep php"]
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update and restart PHP",
+            "hint": null,
+            "body": "Update to 8.6.0, 8.5.13, 8.4.28, 8.3.37 or 8.2.36 (19 Nov 2026), then restart all workers. These include the 21 Oct PHP2Shell fixes plus newer security fixes. 8.1 and older get no official release; use a vendor with long-term support or upgrade. 1,8,10 Latest safe versions checked 20 Nov PHP → 8.6 8.6.0 8.5 8.5.13 8.4 8.4.28 8.3 8.3.37 8.2 8.2.36 PHP 8.1 and older get no fixes from PHP. Distros may backport fixes without changing the version number.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Can't update yet? Change these settings",
+            "hint": "command",
+            "body": "Not a full fix, per PHP. Set them in php.ini or the FPM pool config, not with ini_set() , then restart. On PHP 8.5 also set fatal_error_backtraces = 0 . Keep a container or cgroup memory limit, because memory_limit = -1 removes PHP's own cap. 1,2,3 session.upload_progress.enabled = 0 memory_limit = -1",
+            "code": ["session.upload_progress.enabled = 0 memory_limit = -1"]
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.php.net/archive/2026.php",
+            "title": "PHP: release announcements and advisory",
+            "date": "21 Oct"
+          },
+          {
+            "url": "https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w",
+            "title": "PHP GHSA: CVE-2026-109618",
+            "date": null
+          },
+          {
+            "url": "https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp",
+            "title": "PHP GHSA: CVE-2026-109619",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV: added 26 Oct",
+            "date": "26 Oct"
+          },
+          {
+            "url": "https://pentest-tools.com/research/php2shell-rce",
+            "title": "Pentest-Tools: version checks, backport caveat",
+            "date": null
+          },
+          {
+            "url": "https://www.bleepingcomputer.com/news/security/cisa-confirms-php2shell-vulnerabilities-now-exploited-in-attacks",
+            "title": "BleepingComputer: attacks confirmed",
+            "date": null
+          },
+          {
+            "url": "https://www.wiz.io/blog/php2shell-exploitation-so-far",
+            "title": "Wiz: exploitation so far",
+            "date": "27 Oct"
+          },
+          {
+            "url": "https://www.php.net/ChangeLog-8.php#8.5.13",
+            "title": "PHP: 8.x ChangeLog, 19 Nov 2026 releases",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.bleepingcomputer.com/news/security/php2shell-security-flaws-now-sucessfully-exploited-in-the-wild/",
+            "title": "BleepingComputer: public exploit worked on a single-worker mod_php setup",
+            "date": "26 Oct"
+          },
+          {
+            "url": "https://www.php.net/ChangeLog-8.php#8.6.0",
+            "title": "PHP: 8.6.0 ChangeLog",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/php/php-src/security/advisories",
+            "title": "php-src: 19 Nov security advisories (eight rated Critical)",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "PHP 8.6.0 added. Safe versions added."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "PHP's 19 Nov releases (8.5.13, 8.4.28, 8.3.37 or 8.2.36) are now the recommended update; exploit source and FPM detail added."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Added PHP's scheduled 19 Nov release (pending)."
+          },
+          {
+            "date": "2026-10-26",
+            "text": "Added to CISA KEV. Verdict raised to Patch now."
+          },
+          {
+            "date": "2026-10-21",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/php2shell/"
+      }
+    },
+    {
+      "slug": "puppet",
+      "name": "Puppet Server RCE",
+      "meta": "Puppet / OpenVox · CVE-2026-115731",
+      "line": "Public exploit. In CISA KEV, due 1 Dec.",
+      "verdict": "Patch now",
+      "scareLevel": 3.7,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-11-03",
+      "url": "https://tldrcve.com/puppet/",
+      "detail": {
+        "slug": "puppet",
+        "kicker": "Puppet / OpenVox · CVE-2026-115731",
+        "name": "Puppet Server RCE",
+        "verdict": "Patch now",
+        "verdictHint": "Public exploit. In CISA KEV, due 1 Dec.",
+        "summary": "Anyone with a signed Puppet agent certificate can send a crafted report and run code on your Puppet Server, which holds the key that signs every node's certificate. Any compromised agent is enough, and autosigning lets anyone who can reach the server get a certificate.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": false,
+            "text": "Needs a signed agent certificate first 2,4"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 2"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 1"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (fix by 1 Dec) 1"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Server below a fixed release",
+            "hint": "command",
+            "body": "OpenVox Server below 9.2.0 / 8.18.0, Puppet Enterprise before 2023.8.13 / 2025.12.1 / 2026.0.1, and Puppet Core before 9.1.3 / 8.22.2 (Puppet Server 9.0.24.1 / 8.9.13). OpenVox's advisory says up to 9.1.0 / 8.17.0, but 9.1.1 and 8.17.1 shipped before the fix, so count them as affected. Older open-source Puppet gets no fix, though Debian patched its puppet packages (bookworm 7.23.0-1+deb12u1, trixie 8.10.0-5+deb13u1). The command shows the Puppet Server version, not the Puppet Enterprise release. 2,3,7,8,9,10,11,13,14 puppetserver --version",
+            "code": ["puppetserver --version"]
+          },
+          {
+            "num": "2",
+            "title": "Attacker can get a signed cert",
+            "hint": "command",
+            "body": "Any existing agent's cert works. If autosign prints true , anyone who can reach the server can get one. 2 puppet config print autosign --section server",
+            "code": ["puppet config print autosign --section server"]
+          },
+          {
+            "num": "3",
+            "title": "Report endpoint is reachable",
+            "hint": null,
+            "body": "PUT /puppet/v3/report on the server, which agents use normally. 2",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade the server",
+            "hint": null,
+            "body": "OpenVox: server 9.2.0 / 8.18.0, agent 9.3.0 / 8.32.0, openvoxdb 9.2.0 / 8.18.0. Puppet Enterprise: 2023.8.13 / 2025.12.1 / 2026.0.1. Puppet Core: 9.1.3 or 8.22.2 (Puppet Server 9.0.24.1 or 8.9.13). Debian: install the patched packages. Other open-source Puppet: move to OpenVox, Puppet Core or Enterprise. 2,3,7,8,10,11,13,14 Latest safe versions checked 20 Nov OpenVox and Puppet → openvox-server 9 9.2.0 openvox-server 8 8.18.0 openvox agent 9 9.5.0 openvox agent 8 8.34.0 Puppet Core 9 9.1.4 Puppet Core 8 8.22.3 Puppet Enterprise 2026.0 2026.0.1 Puppet Enterprise 2025.12 2025.12.1 Puppet Enterprise 2023.8 2023.8.13 openvoxdb: 9.2.0 / 8.18.0 or later. Debian: bookworm 7.23.0-1+deb12u1, trixie 8.10.0-5+deb13u1.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Until then: turn off autosign",
+            "hint": "command",
+            "body": "Set autosign = false in the [server] section of puppet.conf, restart, and confirm with the command below. Also limit network access to the server. 4,6 puppet config print autosign --section server",
+            "code": ["puppet config print autosign --section server"]
+          },
+          {
+            "num": "3",
+            "title": "Also covers CVE-2026-115732",
+            "hint": null,
+            "body": "The same releases fix a sibling bug where a cert for evil.target.example.com can act as target.example.com . 5",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV: added 17 Nov, due 1 Dec",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://github.com/OpenVoxProject/openvox/security/advisories/GHSA-ffr6-rwpm-p5wq",
+            "title": "OpenVox GHSA-ffr6-rwpm-p5wq: versions, exploit",
+            "date": "3 Nov"
+          },
+          {
+            "url": "https://voxpupuli.org/blog/2026/11/03/critical-cve-updates/",
+            "title": "Vox Pupuli: fixed versions",
+            "date": null
+          },
+          {
+            "url": "https://access.redhat.com/security/cve/CVE-2026-115731",
+            "title": "Red Hat: CVE-2026-115731 / 115732",
+            "date": null
+          },
+          {
+            "url": "https://www.openwall.com/lists/oss-security/2026/11/03/14",
+            "title": "oss-security: disclosure",
+            "date": "3 Nov"
+          },
+          {
+            "url": "https://help.puppet.com/core/8.13/Content/PuppetCore/ssl_disable_autosigning.htm",
+            "title": "Puppet docs: disable autosigning",
+            "date": null
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-115731",
+            "title": "CVE record (Perforce): Puppet Enterprise fixed versions",
+            "date": null
+          },
+          {
+            "url": "https://security-tracker.debian.org/tracker/CVE-2026-115731",
+            "title": "Debian: patched puppet-agent (DLA-4884-1, DSA-6608-1)",
+            "date": null
+          },
+          {
+            "url": "https://github.com/OpenVoxProject/openvox-server/releases/tag/9.1.1",
+            "title": "OpenVox Server 9.1.1: shipped 29 Oct, before the fix",
+            "date": "29 Oct"
+          },
+          {
+            "url": "https://help.puppet.com/core/current/Content/PuppetCore/PuppetReleaseNotes/release_notes_puppet_x-9-1-3.htm",
+            "title": "Puppet Core 9.1.3 release notes: fixes both CVEs",
+            "date": null
+          },
+          {
+            "url": "https://help.puppet.com/core/current/Content/PuppetCore/server/release_notes.htm",
+            "title": "Puppet Server release notes: 9.0.24.1 patched",
+            "date": null
+          },
+          {
+            "url": "https://github.com/OpenVoxProject/openvox/releases",
+            "title": "OpenVox: releases",
+            "date": null
+          },
+          {
+            "url": "https://help.puppet.com/core/8/Content/PuppetCore/PuppetReleaseNotes/release_notes_puppet_x-8-22-2.htm",
+            "title": "Puppet Core 8.22.2 release notes: fixes both CVEs",
+            "date": null
+          },
+          {
+            "url": "https://help.puppet.com/core/8/Content/PuppetCore/server/release_notes.htm",
+            "title": "Puppet Server 8 release notes: 8.9.13 patched",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Puppet Core 8.22.2 (Puppet Server 8.9.13) fixes it on the 8.x line."
+          },
+          {
+            "date": "2026-11-20",
+            "text": "Puppet Core 9.1.3 (Puppet Server 9.0.24.1) fixes it. OpenVox Server 9.1.1 / 8.17.1 count as affected too. Safe versions added."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Review: Debian's patched packages, Puppet Enterprise versions sourced, read-only autosign check."
+          },
+          {
+            "date": "2026-11-17",
+            "text": "Added to CISA KEV. Verdict raised to Patch now."
+          },
+          {
+            "date": "2026-11-03",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/puppet/"
+      }
+    },
+    {
+      "slug": "brotli",
+      "name": "Brotli decoder RCE",
+      "meta": "Brotli (Node.js +3 more) · CVE-2026-111497",
+      "line": "In Node.js, .NET, Envoy, Python. In CISA KEV.",
+      "verdict": "Patch now",
+      "scareLevel": 3.5,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-10-21",
+      "url": "https://tldrcve.com/brotli/",
+      "detail": {
+        "slug": "brotli",
+        "kicker": "Brotli (Node.js, .NET, Envoy, Python) · CVE-2026-111497 · aka Node2Shell, HTTP2Shell",
+        "name": "Brotli decoder RCE",
+        "verdict": "Patch now",
+        "verdictHint": "In Node.js, .NET, Envoy, Python. In CISA KEV.",
+        "summary": "A bug in the Brotli decompressor, built into Node.js, .NET, Envoy and many Python apps, can crash your app, leak memory or possibly run code. It only matters where you decompress Brotli data someone else controls, which is common, and attacks have started. The public exploit only runs code on a deliberately weakened build.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 9"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 3,4,9"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (since 27 Oct) 3"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "A vulnerable Brotli copy",
+            "hint": "command",
+            "body": "Brotli 1.0.3–1.2.0, Node.js below 22.23.4 / 24.22.1 / 26.12.1 (including 20, 23 and 25, which get no fix), .NET 8/9/10, Envoy/Istio, or Python Brotli / brotlicffi below the fix, and PHP for Windows before the 26 Oct rebuilds. On RHEL, Node 22, Node 24 on RHEL 10 and .NET 9/10/11 use the system libbrotli, so update that package too; Node 24 on RHEL 8/9 and .NET 8 bundle their own copy. .NET Framework, Java and pure-JS/Rust ports use other code and aren't affected. process.versions.brotli only shows Node's bundled copy, so check node -v . 9,2,5,8,10 node -v pip show Brotli brotlicffi dpkg -l | grep -i brotli",
+            "code": ["node -v pip show Brotli brotlicffi dpkg -l | grep -i brotli"]
+          },
+          {
+            "num": "2",
+            "title": "You decompress outside Brotli data",
+            "hint": null,
+            "body": "Node's fetch() or zlib Brotli APIs, Express 5 request bodies, Python requests/urllib3/aiohttp with a Brotli package installed, .NET HttpClient auto-decompression, ASP.NET Core request decompression or BrotliStream/BrotliDecoder (off by default), PHP's cURL with auto-decompression, or Envoy/Istio with the Brotli decompressor turned on. A bare node:http server doesn't decompress. 2,5,9,10",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update the runtime",
+            "hint": null,
+            "body": "Install the latest safe version for your line (listed below); it also fixes later bugs. Node.js 20, 23 and 25 get no fix, and .NET 8 and 9 reached end of life on 10 Nov 2026. Also: PHP for Windows 8.5.12-1 / 8.4.27-1 / 8.3.36-1 / 8.2.35-1, and Brotli itself 1.0.10 / 1.1.1 / 1.2.1. 1,2,5,6,7,10,13,14 Latest safe versions checked 20 Nov Node.js → 26 26.13.1 24 24.22.3 22 22.23.5 Node.js 20, 23 and 25 get no fix: move to a supported line.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Rebuild container images",
+            "hint": null,
+            "body": "Patching the host doesn't fix copies baked into images. Rebuild, redeploy, and bump lockfile pins. 5",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Stopgap: block br request bodies",
+            "hint": null,
+            "body": "Reject Content-Encoding: br request bodies at your proxy or WAF. This doesn't cover responses your app fetches. 9",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://github.com/google/brotli/releases",
+            "title": "google/brotli: fixed releases",
+            "date": "21 Oct"
+          },
+          {
+            "url": "https://nodejs.org/en/blog/vulnerability/october-2026-security-releases",
+            "title": "Node.js: October 2026 security releases",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV: added 27 Oct",
+            "date": "27 Oct"
+          },
+          {
+            "url": "https://www.bleepingcomputer.com/news/security/cisa-warns-of-hackers-now-exploiting-critical-node2shell-flaw/",
+            "title": "BleepingComputer: CISA warns of attacks",
+            "date": null
+          },
+          {
+            "url": "https://devblogs.microsoft.com/dotnet/dotnet-october-2026-oob-security-updates/",
+            "title": "Microsoft: .NET out-of-band updates",
+            "date": null
+          },
+          {
+            "url": "https://istio.io/latest/news/security/istio-security-2026-007/",
+            "title": "Istio: security bulletin 2026-007",
+            "date": null
+          },
+          {
+            "url": "https://github.com/envoyproxy/envoy/security/advisories/GHSA-3wvj-j6qm-62mr",
+            "title": "Envoy: GHSA-3wvj-j6qm-62mr",
+            "date": null
+          },
+          {
+            "url": "https://access.redhat.com/security/cve/CVE-2026-111497",
+            "title": "Red Hat: CVE page",
+            "date": null
+          },
+          {
+            "url": "https://broccoli2shell.com",
+            "title": "broccoli2shell.com: preconditions (aggregator)",
+            "date": null
+          },
+          {
+            "url": "https://www.php.net/archive/2026.php",
+            "title": "PHP: Windows builds rebuilt with Brotli 1.2.1",
+            "date": "26 Oct"
+          },
+          {
+            "url": "https://nodejs.org/dist/index.json",
+            "title": "Node.js: release index",
+            "date": null
+          },
+          {
+            "url": "https://nodejs.org/en/blog/vulnerability/november-2026-security-releases",
+            "title": "Node.js: November 2026 security releases",
+            "date": null
+          },
+          {
+            "url": "https://builds.dotnet.microsoft.com/dotnet/release-metadata/8.0/releases.json",
+            "title": ".NET 8 release metadata: end of life 10 Nov 2026",
+            "date": null
+          },
+          {
+            "url": "https://builds.dotnet.microsoft.com/dotnet/release-metadata/9.0/releases.json",
+            "title": ".NET 9 release metadata: end of life 10 Nov 2026",
+            "date": null
+          },
+          {
+            "url": "https://github.com/envoyproxy/envoy/releases",
+            "title": "Envoy: releases",
+            "date": null
+          },
+          {
+            "url": "https://pypi.org/project/Brotli/",
+            "title": "PyPI: Brotli",
+            "date": null
+          },
+          {
+            "url": "https://pypi.org/project/brotlicffi/",
+            "title": "PyPI: brotlicffi",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "RHEL bundling corrected (Node 24 on RHEL 8/9 and .NET 8 carry their own copy). .NET 11.0.0 is out; .NET 8 and 9 reached end of life. Safe versions added."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Review: full Envoy and Node version lists, RHEL system-library note, PHP for Windows, exploit caveat."
+          },
+          {
+            "date": "2026-11-03",
+            "text": "Microsoft: container images must be rebuilt."
+          },
+          {
+            "date": "2026-10-27",
+            "text": "Added to CISA KEV. Verdict raised to Patch now."
+          },
+          {
+            "date": "2026-10-21",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/brotli/"
+      }
+    },
+    {
+      "slug": "redcap-survey-rce",
+      "name": "REDCap survey RCE",
+      "meta": "REDCap · CVE-2026-90817",
+      "line": "Attacks since 7 Oct. In CISA KEV, due 21 Nov.",
+      "verdict": "Patch now",
+      "scareLevel": 3.5,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-09-20",
+      "url": "https://tldrcve.com/redcap-survey-rce/",
+      "detail": {
+        "slug": "redcap-survey-rce",
+        "kicker": "REDCap · CVE-2026-90817",
+        "name": "REDCap survey RCE",
+        "verdict": "Patch now",
+        "verdictHint": "Attacks since 7 Oct. In CISA KEV, due 21 Nov.",
+        "summary": "A bug in REDCap, the research survey and data tool used by over 8,500 institutions, lets anyone who has a public survey link run code on the server, with no login. Exploit code has been public since 1 Oct 2026, Palo Alto's Unit 42 reported attackers using it to install crypto miners on 7 Oct, and CISA added it to its exploited list on 18 Nov. REDCap 16.0.49, 17.3.10 and 17.4.4 fix it.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 2"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 5"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 3,1"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (fix by 21 Nov) 1"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "REDCap 13.3.0 or newer, unfixed",
+            "hint": null,
+            "body": "The bug is in REDCap 13.3.0 and later. Fixed in 16.0.49 (LTS), 17.3.10 (LTS) and 17.4.4 (Standard). The CVE record lists only those three as fixed, so other branches have no fix. 2",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Attacker has a public survey link",
+            "hint": null,
+            "body": "The attack needs one valid public survey hash (the s= value in a survey link). Securifera says these are easy to find through search engines, urlscan or the Wayback Machine. 2,3,4",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Attacker can reach the server",
+            "hint": null,
+            "body": "Unit 42 describes attacks on public-facing REDCap servers. Public survey links are made to be shared with people who have no login. 3,4",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade REDCap",
+            "hint": null,
+            "body": "Upgrade to 16.0.49 or 17.3.10 (LTS) or 17.4.4 (Standard), or a newer release. REDCap says it shipped the fix within two days of learning about the bug in September 2026. Downloads and release notes need a REDCap Community login. 2,3,6 Latest safe versions checked 20 Nov REDCap → 17.4 Standard 17.4.4 17.3 LTS 17.3.10 16.0 LTS 16.0.49",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Until then: limit public surveys",
+            "hint": null,
+            "body": "Securifera's stopgap: disable or restrict public surveys and block survey requests to the root dispatcher, DataImportController and ParcelController . Treat this as temporary. 4",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Check for signs of attack",
+            "hint": null,
+            "body": "In web logs, look for survey requests with an encoded __passthru (such as %2569ndex.php ) or route=DataImportController:index or ParcelController:show . Also check for unexpected changes under temp/cache and processes started by the web server user. Unit 42 saw miners running as syslog-ng-… with files under /var/tmp/.syslog-… . 4,3",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2026-90817",
+            "title": "CISA KEV: added 18 Nov, due 21 Nov",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-90817",
+            "title": "CVE record (Securifera): 13.3.0 and later, fixed versions, CVSS 9.8",
+            "date": "20 Sep"
+          },
+          {
+            "url": "https://github.com/PaloAltoNetworks/Unit42-timely-threat-intel/blob/main/2026-10-07-XMRig-campaign-through-CVE-2026-90817.txt",
+            "title": "Unit 42: attacks installing XMRig miners; REDCap statement",
+            "date": "7 Oct"
+          },
+          {
+            "url": "https://www.securifera.com/blog/2026/09/27/survey-says-remote-code-execution-cve-2026-90817/",
+            "title": "Securifera: how the bug works, stopgaps, what to look for",
+            "date": "27 Sep"
+          },
+          {
+            "url": "https://github.com/securifera/CVE-2026-90817",
+            "title": "Securifera GitHub: public exploit code",
+            "date": "1 Oct"
+          },
+          {
+            "url": "https://projectredcap.org/resources/community/",
+            "title": "REDCap: 8,547 institutions; Community site needs a login",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/redcap-survey-rce/"
+      }
+    },
+    {
+      "slug": "4everable2shell",
+      "name": "4EverAble2Shell",
+      "meta": "N-able N-central · CVE-2026-90436",
+      "line": "Exploited, no login. Axis bug in KEV, due 21 Nov.",
+      "verdict": "Patch now",
+      "scareLevel": 3.4,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-11-12",
+      "url": "https://tldrcve.com/4everable2shell/",
+      "detail": {
+        "slug": "4everable2shell",
+        "kicker": "N-able N-central · CVE-2026-90436 · aka Able2Shell, Agent2Shell (sibling chains)",
+        "name": "4EverAble2Shell",
+        "verdict": "Patch now",
+        "verdictHint": "Exploited, no login. Axis bug in KEV, due 21 Nov.",
+        "summary": "A public exploit chain gives an attacker root on on-prem N-central servers that have the old Legacy API turned on, with no login. It gets in through an Apache Axis bug (CVE-2026-90436); the N-central root step has no CVE yet. Security firm Huntback found crypto miners on 21 servers within hours, and N-able reported attacks on 13 Nov.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 3,7"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 3,5"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 3,5"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (fix by 21 Nov) 1,2"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "On-prem N-central below 2026.4 HF3",
+            "hint": null,
+            "body": "Hotfix 2 (2026.4.1.26, 10 Nov) does not stop this chain; the exploit was tested on it. Hotfix 3 (2026.4.1.39, 16 Nov) removes the Legacy API. N-able says hosted N-central is not vulnerable to the server chain and gets HF3 automatically. 3,4,5,6",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Legacy API is enabled",
+            "hint": null,
+            "body": "Off by default, but admins can turn it on under Administration > Mail and Network Settings > Network Security > LEGACY APIS. N-able and the researcher agree the server chain needs it on and reachable. 3,4,8",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Attacker can reach the server",
+            "hint": null,
+            "body": "No login needed: the Axis bug fires while the SOAP request is parsed, before any per-service auth runs. N-able says the server chain needs the Legacy API enabled and exposed to the internet. 7,4",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade to 2026.4 HF3 (2026.4.1.39)",
+            "hint": null,
+            "body": "Rapid7 says apply it as an emergency, outside normal patch cycles. HF3 permanently blocks the Legacy API and fixes 17 new CVEs. Also update all Agents and Probes to 2026.4.1 HF3, and Patch Management Engine to 2.14.4.5829 or later. 4,5,6 Latest safe versions checked 20 Nov N-able N-central → Server 2026.4 2026.4.1.39 (HF3) Agents and Probes 2026.4.1 HF3 Patch Management Engine 2.14.4.5829 Agents and Probes have no published build number.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Until then: turn off Legacy API",
+            "hint": null,
+            "body": "Make sure the LEGACY APIS setting is off, even on HF2. If you truly need it, never expose it to the internet. 4,5,8",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Hunt for compromise",
+            "hint": "command",
+            "body": "Look in web logs for requests to /dms/services/ServerUI that mention jline.internal.TerminalLineSettings , an unexpected xvd.service unit, mining processes, files in /tmp/.xvd or /var/tmp/.xvd , and traffic to 157.20.241[.]16. If found, treat the server as fully owned (root). 3,4 systemctl status xvd.service; ls -la /tmp/.xvd /var/tmp/.xvd",
+            "code": ["systemctl status xvd.service; ls -la /tmp/.xvd /var/tmp/.xvd"]
+          },
+          {
+            "num": "4",
+            "title": "Then clean up downstream",
+            "hint": null,
+            "body": "A hacked RMM server reaches every managed client. Rotate secrets stored in Automation Manager policies, enforce MFA on N-central accounts, and review activity from 11 Nov on for new accounts, scripts, scheduled tasks and remote sessions. The same Axis bug was also exploited against Confluence Data Center on 13 Nov. 4,5",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV: CVE-2026-90436 added 18 Nov, due 21 Nov",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/news-events/alerts/2026/11/18/cisa-adds-four-known-exploited-vulnerabilities-catalog",
+            "title": "CISA alert: four KEV additions incl. Apache Axis",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.bleepingcomputer.com/news/security/new-n-able-4everable2shell-zero-day-exploited-hours-after-poc-released/",
+            "title": "BleepingComputer: chain, 21 miners, IoCs, N-able response",
+            "date": "12 Nov"
+          },
+          {
+            "url": "https://www.huntress.com/blog/n-able-disables-cloud-services-following-disclosure-of-able2shell-exploit-chains",
+            "title": "Huntress: timeline, HF3 build, actions",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://www.rapid7.com/blog/post/etr-rapid7-detected-exploitation-of-cve-2026-90436-against-atlassian-confluence-data-center-n-able-n-central-also-exploited/",
+            "title": "Rapid7: CVE-2026-90436 exploited, HF3 guidance",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://www.n-able.com/blog/n-able-vulnerability-remediation-update",
+            "title": "N-able: remediation update, HF3 removes Legacy API",
+            "date": "16 Nov"
+          },
+          {
+            "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-90436",
+            "title": "NVD: CVE-2026-90436, Axis 1.x through 1.4, no fix release",
+            "date": "6 Nov"
+          },
+          {
+            "url": "https://developer.n-able.com/n-central/docs/soap-api-legacy",
+            "title": "N-able docs: where the Legacy API setting lives",
+            "date": null
+          },
+          {
+            "url": "https://www.tenable.com/blog/able2shell-frequently-asked-questions-for-reported-n-able-n-central-zero-day-vulnerabilities",
+            "title": "Tenable: Able2Shell FAQ",
+            "date": "16 Nov"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Safe versions added; nothing else changed."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Review: N-able confirmed attacks on 13 Nov; no CVE for the N-central step; claims matched to sources."
+          },
+          {
+            "date": "2026-11-18",
+            "text": "CVE-2026-90436 (Apache Axis) added to CISA KEV, due 21 Nov."
+          },
+          {
+            "date": "2026-11-16",
+            "text": "N-able shipped 2026.4 HF3 (2026.4.1.39), which permanently blocks the Legacy API."
+          },
+          {
+            "date": "2026-11-12",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/4everable2shell/"
+      }
+    },
+    {
+      "slug": "chrome-zero-day",
+      "name": "Chrome zero-day",
+      "meta": "Chrome (Edge +4 more) · CVE-2026-125350",
+      "line": "Exploited via web pages. In CISA KEV, due 24 Nov.",
+      "verdict": "Patch now",
+      "scareLevel": 3.4,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-11-09",
+      "url": "https://tldrcve.com/chrome-zero-day/",
+      "detail": {
+        "slug": "chrome-zero-day",
+        "kicker": "Chrome (Edge, Brave, Opera, Electron apps, ChromeOS) · CVE-2026-125350",
+        "name": "Chrome zero-day",
+        "verdict": "Patch now",
+        "verdictHint": "Exploited via web pages. In CISA KEV, due 24 Nov.",
+        "summary": "A use-after-free bug in Chromium's XML handling lets a crafted web page run code inside the browser's sandbox. Google says an exploit exists in the wild. It's fixed in Chrome 157.0.8103.50 (9 Nov 2026), and Edge, Brave, Opera and Electron have shipped fixes too.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1,5"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 1,5"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (fix by 24 Nov) 5"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "An unpatched Chromium-based browser",
+            "hint": "command",
+            "body": "Chrome below 157.0.8103.50 on desktop and Android (Extended Stable below 156.0.8078.96; ChromeOS fixed in 156.0.8078.102). Also Edge below 157.0.4341.46 (Extended Stable 156.0.4314.80, Android 157.0.4341.53), Brave below 1.99.56 and Opera below 140.0.6074.17, and Electron apps built before Electron 45.3.0, 44.11.1 or 43.8.8. Chrome only applies updates after a relaunch. 1,2,3,4,6,7,8,11,12,13 chrome://settings/help",
+            "code": ["chrome://settings/help"]
+          },
+          {
+            "num": "2",
+            "title": "Someone visits a malicious page",
+            "hint": null,
+            "body": "A crafted web page is enough to run code inside the browser's sandbox. Google says an exploit exists in the wild. 5,10",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update Chrome and relaunch",
+            "hint": "command",
+            "body": "Open the About page; Chrome checks for an update, then click Relaunch. Any 157.0.8103.50 or later build is fixed, including Chrome 158. Admins: check the version your fleet actually runs, since rollouts take days or weeks. 1,2 chrome://settings/help Latest safe versions checked 20 Nov Chrome → 158 158.0.8127.36 157 157.0.8103.78 Extended Stable 156 156.0.8078.108 ChromeOS 158.0.8127.65 Chrome for Android: 157.0.8103.50 or later.",
+            "code": ["chrome://settings/help"]
+          },
+          {
+            "num": "2",
+            "title": "Check the version from a shell",
+            "hint": "command",
+            "body": "Linux shown. On macOS run \"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --version . On Windows, use the About page or chrome://version. google-chrome --version",
+            "code": ["google-chrome --version"]
+          },
+          {
+            "num": "3",
+            "title": "Update Edge, Brave and Opera too",
+            "hint": null,
+            "body": "Edge 157.0.4341.46 (9 Nov), Extended Stable 156.0.4314.80 and Android 157.0.4341.53. Brave 1.99.56 (10 Nov, Chromium 157.0.8103.50). Opera 140.0.6074.17 (10 Nov). Later versions are fine. 6,7,8 Latest safe versions checked 20 Nov Edge, Brave and Opera → Edge 158.0.4370.33 Brave 1.100.58 Opera 140 140.0.6074.36",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Update Electron apps",
+            "hint": null,
+            "body": "Desktop apps built on Electron ship their own Chromium. Electron 45.3.0, 44.11.1 and 43.8.8 (10 Nov) include the fix; their notes don't name the CVE: 45.3.0 moved to a fixed Chromium, and 44.11.1 and 43.8.8 carry the libxslt fix. An app is fixed only once it ships one of these or later, so check with each vendor. 11,12,13,1 Latest safe versions checked 20 Nov Electron → 45 45.4.1 44 44.11.5 43 43.8.12 Apps built on Electron are fixed only once they ship one of these.",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://chromereleases.googleblog.com/2026/11/stable-channel-update-for-desktop_018223192.html",
+            "title": "Chrome Releases: Stable fix, exploit in the wild",
+            "date": "9 Nov"
+          },
+          {
+            "url": "https://chromereleases.googleblog.com/2026/11/extended-stable-update-for-desktop_0910980127.html",
+            "title": "Chrome Releases: Extended Stable 156.0.8078.96",
+            "date": "9 Nov"
+          },
+          {
+            "url": "https://chromereleases.googleblog.com/2026/11/chrome-for-android-update_01533302390.html",
+            "title": "Chrome Releases: Android 157.0.8103.50",
+            "date": "9 Nov"
+          },
+          {
+            "url": "https://chromereleases.googleblog.com/2026/11/stable-channel-update-for-chromeos_01089491269.html",
+            "title": "Chrome Releases: ChromeOS 156.0.8078.102",
+            "date": "13 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: added 10 Nov, due 24 Nov",
+            "date": null
+          },
+          {
+            "url": "https://learn.microsoft.com/en-us/deployedge/microsoft-edge-relnotes-security",
+            "title": "Microsoft: Edge security release notes",
+            "date": null
+          },
+          {
+            "url": "https://github.com/brave/brave-browser/releases/tag/v1.99.56",
+            "title": "Brave: 1.99.56 on Chromium 157.0.8103.50",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://blogs.opera.com/desktop/changelog-for-140/",
+            "title": "Opera: changelog for 140, CVE cherry-pick",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://releases.electronjs.org/",
+            "title": "Electron: releases and bundled Chromium",
+            "date": null
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-125350",
+            "title": "CVE record: code execution inside the sandbox",
+            "date": null
+          },
+          {
+            "url": "https://github.com/electron/electron/pull/55703",
+            "title": "Electron 45.3.0: moves to Chromium 156.0.8078.96, which has the fix",
+            "date": null
+          },
+          {
+            "url": "https://github.com/electron/electron/pull/55709",
+            "title": "Electron 44.11.1: libxslt use-after-free fix",
+            "date": null
+          },
+          {
+            "url": "https://github.com/electron/electron/pull/55710",
+            "title": "Electron 43.8.8: libxslt use-after-free fix",
+            "date": null
+          },
+          {
+            "url": "https://chromereleases.googleblog.com/2026/11/stable-channel-update-for-chromeos_01891834105.html",
+            "title": "Chrome Releases: ChromeOS 158.0.8127.65 lists the CVE",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://chromereleases.googleblog.com/2026/11/stable-channel-update-for-desktop_01744469280.html",
+            "title": "Chrome Releases: Stable 157.0.8103.78",
+            "date": "11 Nov"
+          },
+          {
+            "url": "https://chromereleases.googleblog.com/2026/11/stable-channel-update-for-desktop_01699533288.html",
+            "title": "Chrome Releases: Stable 158.0.8127.36",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://chromereleases.googleblog.com/2026/11/extended-stable-update-for-desktop_01061812727.html",
+            "title": "Chrome Releases: Extended Stable 156.0.8078.108",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://github.com/brave/brave-browser/releases",
+            "title": "Brave: releases",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Electron sources corrected. ChromeOS 158 confirmed fixed. Safe versions added."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Review: Electron's 10 Nov fix added (it was listed as unknown); more Edge builds; sandbox claim now cites CISA and the CVE record."
+          },
+          {
+            "date": "2026-11-13",
+            "text": "ChromeOS fix out (156.0.8078.102)."
+          },
+          {
+            "date": "2026-11-10",
+            "text": "Added to CISA KEV, due 24 Nov. Edge, Brave and Opera fixes out."
+          },
+          {
+            "date": "2026-11-09",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/chrome-zero-day/"
+      }
+    },
+    {
+      "slug": "roller-xmlrpc",
+      "name": "Roller XML-RPC",
+      "meta": "Apache Roller · CVE-2026-129448, CVE-2026-82384",
+      "line": "Apache says exploited. No login. Fixed in 6.1.6.",
+      "verdict": "Patch now",
+      "scareLevel": 3.4,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-09-25",
+      "url": "https://tldrcve.com/roller-xmlrpc/",
+      "detail": {
+        "slug": "roller-xmlrpc",
+        "kicker": "Apache Roller · CVE-2026-129448 · CVE-2026-82384",
+        "name": "Roller XML-RPC",
+        "verdict": "Patch now",
+        "verdictHint": "Apache says exploited. No login. Fixed in 6.1.6.",
+        "summary": "A bug in Apache Roller, a Java blog server, lets anyone who can reach the site send one crafted request to its XML-RPC address and, in the worst case, run their own code, without logging in. Default installs from 4.0.0 through 6.1.5 are affected, even with XML-RPC switched off. Apache rates it Critical (CVSS 9.8) and says it is being actively exploited; one researcher's public code reaches the bug but says running code on a stock, up-to-date setup needs extra work. 6.1.6 (24 Sep 2026) and later fix it.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1,3"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 10,11"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 1"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 9"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Roller 4.0.0 to 6.1.5",
+            "hint": null,
+            "body": "It's one bug with two CVEs: CVE-2026-129448 covers 4.0.0 through 6.1.4, and CVE-2026-82384 (25 Sep 2026) covers 6.1.5. 6.1.6 and later are fixed. Some news sites name 6.1.5 as the fix; Apache says 6.1.6. 1,2,4",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "XML-RPC extensions still on",
+            "hint": "command",
+            "body": "Every release up to 6.1.5 ships with enabledForExtensions set to true and /roller-services/xmlrpc mapped, so default installs are exposed. Turning XML-RPC off in the admin settings (off by default) does not help. Run this in Roller's webapp folder; <param-value>true</param-value> means exposed. 1,2,7,8 grep -A1 enabledForExtensions WEB-INF/web.xml",
+            "code": ["grep -A1 enabledForExtensions WEB-INF/web.xml"]
+          },
+          {
+            "num": "3",
+            "title": "Attackers can reach the site",
+            "hint": null,
+            "body": "One web request to /roller-services/xmlrpc is enough. No login and no user action are needed. 1,3",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade to Roller 6.1.7",
+            "hint": null,
+            "body": "6.1.6 (24 Sep 2026) fixes this bug; 6.1.7 (11 Nov 2026) is the newest and also fixes CVE-2026-123374, a separate deserialization bug in ping responses. Read the 6.1.7 behaviour changes first: for example, Planet is now off by default. Apache doesn't patch older lines. 4,5,6,12,13 Latest safe versions checked 20 Nov Apache Roller → 6.1 6.1.7 Apache fixes only the current release line. On anything older, upgrade to the newest 6.1 release.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Can't upgrade yet?",
+            "hint": null,
+            "body": "In WEB-INF/web.xml , set enabledForExtensions to false , or remove the /roller-services/xmlrpc servlet mapping. Then restart Roller. The admin-screen switch alone is not enough. 1",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Look for signs of attack",
+            "hint": null,
+            "body": "Attacks are POST requests to /roller-services/xmlrpc . Apache hasn't published other signs, attacker details or how many sites were hit. If you were exposed, check the server for changes you didn't make. 1,10",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://lists.apache.org/thread/lnz4s26tv6hdo03wngtdbpfj4hg4gtds",
+            "title": "Apache: CVE-2026-129448 advisory, 4.0.0-6.1.4, actively exploited",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://lists.apache.org/thread/cc0jck13nb9vvcmzxzwotr6n16mx28z9",
+            "title": "Apache: CVE-2026-82384 advisory, 6.1.5, default setup affected",
+            "date": "25 Sep"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-129448",
+            "title": "CVE record: CVSS 9.8, no login; CISA SSVC exploitation none (18 Nov)",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://roller.apache.org/security.html",
+            "title": "Apache Roller: security page, 6.1.6 and 6.1.7 release dates and fixes",
+            "date": null
+          },
+          {
+            "url": "https://security.apache.org/projects/roller/",
+            "title": "Apache Security: Roller advisories, CVE-2026-123374 fixed in 6.1.7",
+            "date": null
+          },
+          {
+            "url": "https://github.com/apache/roller/pull/171",
+            "title": "Apache Roller GitHub: the fix (PR #171)",
+            "date": "5 Sep"
+          },
+          {
+            "url": "https://github.com/apache/roller/blob/roller-6.1.5/app/src/main/webapp/WEB-INF/web.xml",
+            "title": "Roller 6.1.5 source: extensions on, XML-RPC endpoint always mapped",
+            "date": null
+          },
+          {
+            "url": "https://github.com/apache/roller/blob/roller-6.1.5/app/src/main/resources/org/apache/roller/weblogger/config/runtimeConfigDefs.xml",
+            "title": "Roller 6.1.5 source: XML-RPC setting off by default",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed (18 Nov release)",
+            "date": null
+          },
+          {
+            "url": "https://github.com/Yanixos/APACHE-CVE-2026-129448",
+            "title": "Tuxshin Security: public PoC, scanner and lab; RCE needs a gadget chain",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://github.com/murrez/CVE-2026-82384",
+            "title": "Public PoC for CVE-2026-82384 (6.1.5)",
+            "date": "28 Sep"
+          },
+          {
+            "url": "https://github.com/apache/roller/blob/roller-6.1.7/CHANGES.md",
+            "title": "Apache Roller: 6.1.7 changes and behaviour changes",
+            "date": null
+          },
+          {
+            "url": "https://roller.apache.org/downloads/downloads.html",
+            "title": "Apache Roller: downloads, 6.1.7 is the current release",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/roller-xmlrpc/"
+      }
+    },
+    {
+      "slug": "sshole",
+      "name": "SSHole",
+      "meta": "OpenSSH (Alpine) · CVE-2026-123158",
+      "line": "Exploited, in CISA KEV. Alpine-style sshd only.",
+      "verdict": "Patch now",
+      "scareLevel": 3.3,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-11-05",
+      "url": "https://tldrcve.com/sshole/",
+      "detail": {
+        "slug": "sshole",
+        "kicker": "OpenSSH (Alpine) · CVE-2026-123158",
+        "name": "SSHole",
+        "verdict": "Patch now",
+        "verdictHint": "Exploited, in CISA KEV. Alpine-style sshd only.",
+        "summary": "On Linux systems that use musl libc and run sshd without PAM, mainly Alpine, an attacker can log in to password-less accounts (key-only users, Alpine's cloud alpine user) just by sending a very long password. Attacks started within hours of disclosure on 5 Nov 2026. Debian, Ubuntu, Fedora and other glibc systems aren't affected.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 2,5"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 7"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 6"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (since 9 Nov) 4"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "sshd uses musl libc",
+            "hint": "command",
+            "body": "Alpine and other musl-based systems, including Alpine containers that run sshd. glibc systems (Debian, Ubuntu, Fedora, RHEL) and Dropbear are not affected. A line with ld-musl means musl. 2,5,7 ldd \"$(command -v sshd)\" | grep -i musl",
+            "code": ["ldd \"$(command -v sshd)\" | grep -i musl"]
+          },
+          {
+            "num": "2",
+            "title": "PAM off, password login on",
+            "hint": "command",
+            "body": "Alpine's openssh-server is built without PAM, so sshd -T prints no usepam line. openssh-server-pam with UsePAM yes is safe. passwordauthentication yes is the default. Run as root. 1,2,8 sshd -T | grep -Ei '^(passwordauthentication|usepam|permitrootlogin) '",
+            "code": ["sshd -T | grep -Ei '^(passwordauthentication|usepam|permitrootlogin) '"]
+          },
+          {
+            "num": "3",
+            "title": "A * account plus a real hash",
+            "hint": "command",
+            "body": "Some account has * as its password (key-only users, root since about Alpine 3.16 if PermitRootLogin yes , the alpine user in cloud images 3.18.11–3.24.3) and at least one account has a $5$ or $6$ hash. Directory-service users (nslcd, winbind, sssd) with no shadow entry also count, and the commands below miss them. Locked ! accounts are safe. Run as root; the second command counts real hashes. 2 awk -F: '$2==\"*\"{print $1}' /etc/shadow; grep -cE '^[^:]*:\\$[56]\\$' /etc/shadow",
+            "code": ["awk -F: '$2==\"*\"{print $1}' /etc/shadow; grep -cE '^[^:]*:\\$[56]\\$' /etc/shadow"]
+          },
+          {
+            "num": "4",
+            "title": "openssh below the fixed package",
+            "hint": "command",
+            "body": "Upstream: OpenSSH before 10.6p2. Alpine's fixed packages are listed under Upgrade. 9,2 apk info -v | grep '^openssh'",
+            "code": ["apk info -v | grep '^openssh'"]
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade openssh, then restart",
+            "hint": null,
+            "body": "Install the fixed package for your Alpine branch (listed below; fixes go back to 3.16). Run apk upgrade -U -a , then rc-service sshd restart : upgrading alone leaves the old sshd running. Other musl builds: OpenSSH 10.6p2. 1,2,3 Latest safe versions checked 20 Nov OpenSSH → Upstream 10.6p2 Alpine edge 10.6_p2-r0 Alpine 3.24 10.3_p1-r2 Alpine 3.23 10.2_p1-r1 Alpine 3.22 10.0_p1-r11 Alpine 3.21 9.9_p2-r1 Alpine 3.20 9.7_p1-r6 Alpine 3.19 9.6_p1-r3 Alpine 3.16 to 3.18 are fixed too: 9.0_p1-r6, 9.1_p1-r7, 9.3_p2-r4.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Can't upgrade? Turn off passwords",
+            "hint": "command",
+            "body": "In sshd_config (or a drop-in in /etc/ssh/sshd_config.d/ on Alpine 3.19+). Also set any PasswordAuthentication yes inside Match blocks to no; a drop-in doesn't override those. Check key login works, validate with sshd -t , then restart sshd and confirm sshd -T shows passwordauthentication no . 2 PasswordAuthentication no",
+            "code": ["PasswordAuthentication no"]
+          },
+          {
+            "num": "3",
+            "title": "Look for break-ins",
+            "hint": "command",
+            "body": "A password login for root , alpine or any key-only user is a red flag. Also review doas use, new users, new authorized_keys entries and changed files. If you can't rule out a login, treat the host as compromised. US federal agencies must also do forensic triage under the KEV listing. 2,4 grep 'Accepted password for' /var/log/messages",
+            "code": ["grep 'Accepted password for' /var/log/messages"]
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.openssh.org/releasenotes.html",
+            "title": "OpenSSH: 10.6p2 release notes",
+            "date": "5 Nov"
+          },
+          {
+            "url": "https://alpinelinux.org/posts/2026-11-05-openssh-password-authentication-bypass/",
+            "title": "Alpine: advisory, conditions, fixed packages",
+            "date": "5 Nov"
+          },
+          {
+            "url": "https://security.alpinelinux.org/vuln/CVE-2026-123158",
+            "title": "Alpine security tracker: fixed versions",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV: added 9 Nov, due 12 Nov",
+            "date": "9 Nov"
+          },
+          {
+            "url": "https://www.csoonline.com/article/4245407/open-ssh-flaw-lets-attackers-access-password-disabled-accounts-on-some-linux-systems.html",
+            "title": "CSO Online: how it works, who's affected",
+            "date": "5 Nov"
+          },
+          {
+            "url": "https://www.helpnetsecurity.com/2026/11/06/openssh-sshole-cve-2026-123158-exploitation/",
+            "title": "Help Net Security: exploited within hours",
+            "date": "6 Nov"
+          },
+          {
+            "url": "https://github.com/oz9un/sshole",
+            "title": "Researcher: checker script and PoC",
+            "date": null
+          },
+          {
+            "url": "https://github.com/openssh/openssh-portable/blob/master/servconf.c",
+            "title": "openssh-portable: sshd -T shows usepam only with PAM",
+            "date": null
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-123158",
+            "title": "CVE record: OpenSSH before 10.6p2, 256–1024 chars",
+            "date": null
+          },
+          {
+            "url": "https://pkgs.alpinelinux.org/packages?name=openssh&repo=main&arch=x86_64",
+            "title": "Alpine packages: current openssh per branch",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Dropped a conflicting Alpine 3.19 tracker version (the package index matches the advisory). Safe versions added."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Review: directory-service accounts, Match blocks, and the CVE record's version and length range added."
+          },
+          {
+            "date": "2026-11-09",
+            "text": "Added to CISA KEV, due 12 Nov."
+          },
+          {
+            "date": "2026-11-06",
+            "text": "Attacks seen within hours of the fix."
+          },
+          {
+            "date": "2026-11-05",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/sshole/"
+      }
+    },
+    {
+      "slug": "synology-dsm",
+      "name": "Synology DSM RCE",
+      "meta": "Synology DSM (BeeStation) · CVE-2024-10441",
+      "line": "Ransomware hits old DSM. In CISA KEV, due 21 Nov.",
+      "verdict": "Patch now",
+      "scareLevel": 3.2,
+      "meterLabel": "Drop everything",
+      "disclosed": "2024-11-05",
+      "url": "https://tldrcve.com/synology-dsm/",
+      "detail": {
+        "slug": "synology-dsm",
+        "kicker": "Synology DSM (BeeStation) · CVE-2024-10441",
+        "name": "Synology DSM RCE",
+        "verdict": "Patch now",
+        "verdictHint": "Ransomware hits old DSM. In CISA KEV, due 21 Nov.",
+        "summary": "A bug in Synology's NAS software (DSM) lets an attacker with no login run code on the NAS. Synology fixed it in Nov 2024, but on 29 Oct 2026 it warned that ransomware (C3RB3R) is hitting NAS boxes on outdated DSM, and CISA added this bug to its exploited list on 18 Nov 2026. Current DSM builds are fixed.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 4"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 1,5"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (fix by 21 Nov) 1"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "DSM older than the 2024 fix",
+            "hint": null,
+            "body": "DSM 7.2.2 before 7.2.2-72806 Update 1, 7.2.1 before 7.2.1-69057 Update 6, 7.2 before 7.2-64570 Update 4, or 7.1 before 7.1.1-42962 Update 7; BeeStation OS before 1.1-65374. DSM 7.3 and 7.4 came out later and aren't listed. For DSM 6.2 the CVE record says \"unknown\", while Synology's advisory lists a Moderate fix in 6.2.4-25556 Update 8. Synology's warning says the bug was \"patched in December 2024\"; the DSM 7 fixes shipped in Nov 2024. Control Panel > Info Center shows your version. 2,3,4,5,7,10",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Attackers can reach DSM",
+            "hint": null,
+            "body": "The bug needs no login and works over the network. A NAS with the DSM web interface open to the internet is the obvious target; BleepingComputer's advice is to block that access. 4,6",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update DSM now",
+            "hint": null,
+            "body": "Install the newest DSM your model offers. On 12 Oct 2026 that was 7.4.1-90080 Update 1, 7.3.2-86009 Update 5, 7.2.2-72806 Update 10 or 7.2.1-69057 Update 13; Synology says available versions vary by model. BeeStation: 1.1-65374 or newer. Synology hasn't named the bug the attackers use: CISA lists this one, while a report citing 360 blames Synology's Sept 2026 bugs (SA-26:13). These newest builds fix both. 7,11,3,5,1,9,8 Latest safe versions checked 20 Nov Synology DSM → 7.4 7.4.1-90080 Update 1 7.3 7.3.2-86009 Update 5 7.2.2 7.2.2-72806 Update 10 7.2.1 7.2.1-69057 Update 13 7.2 7.2-64570 Update 4 7.1 7.1.1-42962 Update 9 DSM 6.2's last update is 6.2.4-25556 Update 8 (3 Dec 2024). Synology rates DSM 6.2 Moderate in SA-24:20; the CVE record doesn't say whether it has CVE-2024-10441.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Turn on automatic updates",
+            "hint": null,
+            "body": "Synology recommends it. In Control Panel > Update & Restore > Update Settings, choose to install important updates automatically. 5,11",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Take DSM off the internet",
+            "hint": null,
+            "body": "Block outside access to the DSM web interface. 6",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Look for signs of C3RB3R",
+            "hint": null,
+            "body": "Victims report files renamed with a .L0CK3D extension and a ransom note called read-me3.txt . 6",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2024-10441",
+            "title": "CISA KEV: added 18 Nov, due 21 Nov, ransomware use \"Unknown\"",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.synology.com/en-global/security/advisory/Synology_SA_24_20",
+            "title": "Synology SA-24:20: DSM fixed versions, Critical, Pwn2Own 2024",
+            "date": "5 Nov 2024"
+          },
+          {
+            "url": "https://www.synology.com/en-global/security/advisory/Synology_SA_24_23",
+            "title": "Synology SA-24:23: BeeStation OS fixed in 1.1-65374",
+            "date": "5 Nov 2024"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2024-10441",
+            "title": "CVE record (Synology): affected versions, CVSS 9.8, no login",
+            "date": null
+          },
+          {
+            "url": "https://www.synology.com/en-global/company/news/article/C3RB3R/Synology%20urges%20users%20to%20update%20DSM%20following%20ransomware%20attacks%20on%20outdated%20DSM%20versions",
+            "title": "Synology: ransomware warning, update DSM, turn on auto-update",
+            "date": "29 Oct"
+          },
+          {
+            "url": "https://www.bleepingcomputer.com/news/security/synology-warns-customers-of-ongoing-c3rb3r-ransomware-attacks/",
+            "title": "BleepingComputer: C3RB3R attacks, ransom note, block DSM from internet",
+            "date": "2 Nov"
+          },
+          {
+            "url": "https://www.synology.com/en-global/releaseNote/DSM",
+            "title": "Synology: DSM release notes, builds and dates (DS920+)",
+            "date": null
+          },
+          {
+            "url": "https://www.synology.com/en-global/security/advisory/Synology_SA_26_13",
+            "title": "Synology SA-26:13: newer critical DSM bugs, fixed builds",
+            "date": "18 Sep"
+          },
+          {
+            "url": "https://techaeris.com/2026/10/31/synology-nas-ransomware-alert-c3rb3r/",
+            "title": "Techaeris: 360 blames the SA-26:13 bugs instead",
+            "date": "31 Oct"
+          },
+          {
+            "url": "https://kb.synology.com/en-global/DSM/help/DSM/AdminCenter/system_info_center?version=7",
+            "title": "Synology docs: Info Center shows the DSM version",
+            "date": null
+          },
+          {
+            "url": "https://kb.synology.com/en-global/DSM/help/DSM/AdminCenter/system_dsmupdate?version=7",
+            "title": "Synology docs: automatic updates; versions vary by model",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/synology-dsm/"
+      }
+    },
+    {
+      "slug": "litellm",
+      "name": "LiteLLM RCE",
+      "meta": "BerriAI LiteLLM proxy · CVE-2026-40217",
+      "line": "In CISA KEV, due 2 Dec. Public PoC, needs admin key.",
+      "verdict": "Patch now",
+      "scareLevel": 3,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-04-08",
+      "url": "https://tldrcve.com/litellm/",
+      "detail": {
+        "slug": "litellm",
+        "kicker": "BerriAI LiteLLM proxy · CVE-2026-40217",
+        "name": "LiteLLM RCE",
+        "verdict": "Patch now",
+        "verdictHint": "In CISA KEV, due 2 Dec. Public PoC, needs admin key.",
+        "summary": "LiteLLM's proxy has an endpoint for testing custom guardrail code, and its home-made sandbox can be escaped to run any command, as root in the default Docker image. It needs a proxy-admin key, but attackers have been guessing default keys, and two other bugs let ordinary users become admin on older versions.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": false,
+            "text": "Needs a LiteLLM admin key first 3,4"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 4"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 1,5"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (fix by 2 Dec) 1,2"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "LiteLLM 1.81.8 – 1.83.10",
+            "hint": "command",
+            "body": "GitHub's advisory lists >= 1.81.8, < 1.83.10 as affected, but its text says the fix is in 1.83.11, so count 1.83.10 as affected to be safe. Only the proxy server is at risk, not plain use of the Python SDK. In Docker, image tags don't reliably match versions ( main-latest tells you nothing), so check the pip version inside the container. 3,5 pip show litellm",
+            "code": ["pip show litellm"]
+          },
+          {
+            "num": "2",
+            "title": "Management API is reachable",
+            "hint": "command",
+            "body": "The attacker can reach the proxy's management API, including POST /guardrails/test_custom_code . Keep it off untrusted networks. 3,4 docker ps --format '{{.Names}} {{.Image}}' | grep -i litellm",
+            "code": ["docker ps --format '{{.Names}} {{.Image}}' | grep -i litellm"]
+          },
+          {
+            "num": "3",
+            "title": "Attacker has an admin key",
+            "hint": null,
+            "body": "The default config requires a proxy-admin credential (the master key). These also count: a weak key like sk-1234 ; no master key at all (callers are treated as admin); any user account below 1.83.14 (CVE-2026-47101/47102) or on 1.91.0 up to the CVE-2026-114612 fix; Enterprise-licensed proxies below 1.106.5, which can leak the master key to anyone; and proxies below 1.106.9 with an Azure model but no Azure API key set, where any logged-in user can read the master key. 3,5,6,7,11,12,13,16",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade to the newest on your line",
+            "hint": null,
+            "body": "1.83.11 fixed this sandbox escape, but later releases had their own admin-takeover bugs. Use at least 1.106.9, 1.108.6 or 1.109.1 (listed below). These also cover the older LiteLLM KEV entries CVE-2026-42208 and CVE-2026-42271 (fixed 1.83.7) and CVE-2026-59822 (fixed 1.84.0). 3,11,12,16,14,15,10 Latest safe versions checked 20 Nov LiteLLM → 1.110 1.110.1 1.109 1.109.2 1.108 (LTS) 1.108.12 1.106 1.106.11 Releases older than 1.106 have no fix: move up.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Until then: block the endpoint",
+            "hint": null,
+            "body": "Block POST /guardrails/test_custom_code at your reverse proxy or API gateway. Keep the admin port off the internet. If you use Azure models, also block the fields tenant_id , client_id , client_secret , azure_username , azure_password and azure_scope in request bodies. 3,4,16",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Rotate a weak or old master key",
+            "hint": null,
+            "body": "Attackers sprayed default-style keys at this endpoint. If yours is guessable or was exposed, replace it. The escape exposes provider and cloud keys stored in the proxy, so rotate those too. 5",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Run the container as non-root",
+            "hint": null,
+            "body": "The default image runs as root, so a sandbox escape gets root. LiteLLM also ships a non-root image. 3,5",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV: CVE-2026-40217 added 18 Nov, due 2 Dec",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/news-events/alerts/2026/11/18/cisa-adds-four-known-exploited-vulnerabilities-catalog",
+            "title": "CISA alert: four KEV additions incl. LiteLLM",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://github.com/BerriAI/litellm/security/advisories/GHSA-wxxx-gvqv-xp7p",
+            "title": "LiteLLM GHSA-wxxx-gvqv-xp7p: versions, auth, workaround",
+            "date": "7 May"
+          },
+          {
+            "url": "https://www.x41-dsec.de/lab/advisories/x41-2026-001-litellm/",
+            "title": "X41 D-Sec: original advisory and PoC",
+            "date": "8 Apr"
+          },
+          {
+            "url": "https://labs.zenity.io/p/threat-actors-are-trying-to-use-litellm-s-guardrail-tester-to-run-code-as-root",
+            "title": "Zenity Labs: in-the-wild attempts, key spraying",
+            "date": "30 Jun"
+          },
+          {
+            "url": "https://github.com/advisories/GHSA-qrc4-49gv-mv9m",
+            "title": "GHSA-qrc4-49gv-mv9m: CVE-2026-47101, fixed 1.83.14",
+            "date": "21 May"
+          },
+          {
+            "url": "https://github.com/advisories/GHSA-wpfp-gwwc-vwq6",
+            "title": "GHSA-wpfp-gwwc-vwq6: CVE-2026-47102, fixed 1.83.10",
+            "date": "21 May"
+          },
+          {
+            "url": "https://github.com/BerriAI/litellm/releases/tag/v1.83.10-stable",
+            "title": "LiteLLM v1.83.10-stable release: Docker tag format",
+            "date": "27 Apr"
+          },
+          {
+            "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-40217",
+            "title": "NVD: CVE-2026-40217",
+            "date": null
+          },
+          {
+            "url": "https://github.com/BerriAI/litellm/security/advisories/GHSA-7488-6r32-c95q",
+            "title": "LiteLLM GHSA-7488-6r32-c95q: CVE-2026-59822, fixed 1.84.0",
+            "date": "30 Jun"
+          },
+          {
+            "url": "https://github.com/BerriAI/litellm/security/advisories/GHSA-7hp6-4w63-5g45",
+            "title": "LiteLLM GHSA-7hp6: CVE-2026-114612, user to admin on 1.91.0+",
+            "date": null
+          },
+          {
+            "url": "https://github.com/BerriAI/litellm/security/advisories/GHSA-w4c7-34wj-hqm8",
+            "title": "LiteLLM GHSA-w4c7: master key leak, fixed 1.106.5",
+            "date": null
+          },
+          {
+            "url": "https://github.com/BerriAI/litellm/security/advisories/GHSA-72m8-9m7m-h278",
+            "title": "LiteLLM GHSA-72m8: no master key means admin",
+            "date": null
+          },
+          {
+            "url": "https://github.com/BerriAI/litellm/security/advisories/GHSA-r75f-5x8p-qvmc",
+            "title": "LiteLLM GHSA-r75f: CVE-2026-42208, fixed 1.83.7",
+            "date": null
+          },
+          {
+            "url": "https://github.com/BerriAI/litellm/security/advisories/GHSA-v4p8-mg3p-g94g",
+            "title": "LiteLLM GHSA-v4p8: CVE-2026-42271, fixed 1.83.7",
+            "date": null
+          },
+          {
+            "url": "https://github.com/BerriAI/litellm/security/advisories/GHSA-2rwg-2wh4-7c4f",
+            "title": "LiteLLM GHSA-2rwg: master key leak via Azure models, fixed 1.106.9",
+            "date": "12 Nov"
+          },
+          {
+            "url": "https://pypi.org/project/litellm/#history",
+            "title": "PyPI: LiteLLM release history",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "New advisory GHSA-2rwg (master key leak via Azure models): minimum raised to 1.106.9 / 1.108.6 / 1.109.1. Safe versions added."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Review: upgrade floor raised to 1.106.5 after newer admin-takeover advisories; Docker tag caveat."
+          },
+          {
+            "date": "2026-11-18",
+            "text": "Added to CISA KEV, due 2 Dec."
+          },
+          {
+            "date": "2026-06-30",
+            "text": "Zenity reported in-the-wild exploitation attempts."
+          },
+          {
+            "date": "2026-04-08",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/litellm/"
+      }
+    },
+    {
+      "slug": "outlook-zero-day",
+      "name": "Outlook hash leak",
+      "meta": "Microsoft Outlook · CVE-2026-124194",
+      "line": "Exploited, in CISA KEV (due 24 Nov). Update Office.",
+      "verdict": "Patch now",
+      "scareLevel": 3,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-11-10",
+      "url": "https://tldrcve.com/outlook-zero-day/",
+      "detail": {
+        "slug": "outlook-zero-day",
+        "kicker": "Microsoft Outlook · CVE-2026-124194",
+        "name": "Outlook hash leak",
+        "verdict": "Patch now",
+        "verdictHint": "Exploited, in CISA KEV (due 24 Nov). Update Office.",
+        "summary": "If a user opens a crafted Office file in classic Outlook, Outlook connects to an attacker's server without its usual warning and hands over the user's NTLMv2 hash. Attackers can use that hash to sign in as the user. Microsoft says it is being exploited; it is fixed in the 10 Nov 2026 Office update, not a Windows update.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 1,4"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (fix by 24 Nov) 3"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Classic Outlook from a listed Office",
+            "hint": null,
+            "body": "Microsoft lists Microsoft 365 Apps for Enterprise, Office LTSC 2024 and Office LTSC 2021, 32- and 64-bit; retail Office 2021 and 2024 get the same Current Channel fix. Office Watch says new Outlook for Windows isn't affected and Outlook for Mac isn't on Microsoft's list. 1,2,5",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Build older than the 10 Nov 2026 fix",
+            "hint": null,
+            "body": "In Outlook: File > Office Account > About Outlook. Fixed builds: Current Channel 2610 (20527.20196). Monthly Enterprise 2610 (20527.20194), 2609 (20430.20264) or 2608 (20326.20320). Semi-Annual Enterprise 2610 (20527.20192), 2609 (20430.20262) or 2608 (20326.20318). LTSC 2024 2408 (17932.21140). LTSC 2021 2108 (14334.21048). 1,2,5",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "A user opens the malicious file",
+            "hint": null,
+            "body": "The attacker has to get the user to open a crafted message or Office file. Microsoft says the Preview Pane is not an attack vector. 1,5",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update Office, not just Windows",
+            "hint": null,
+            "body": "The fix comes through Office's own updater, not a Windows cumulative update. In any Office app: File > Office Account > Update Options > Update Now, then restart Outlook. Admins: make sure your channel has reached the builds above (Intune, Configuration Manager or your Office update source). 1,2,5 Latest safe versions checked 20 Nov Microsoft 365 Apps → Current Channel 2611 (20625.20108) Monthly Enterprise 2610 20527.20194 Monthly Enterprise 2609 20430.20264 Monthly Enterprise 2608 20326.20320 Semi-Annual 2610 20527.20192 Semi-Annual 2609 20430.20262 Semi-Annual 2608 20326.20318 LTSC 2024 17932.21140 LTSC 2021 14334.21048 Current Channel 2611's notes list no security fixes; it's newer than the fixed 2610 build.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Retire Office 2016 and 2019",
+            "hint": null,
+            "body": "Microsoft doesn't list Office 2016 or 2019 for this CVE, though Office 2019 volume-licensed builds did get a 10 Nov update (1808, build 10417.20236). Office Watch assumes they're affected. Both are out of support: move those users to a supported Office. 1,2,5",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Until patched: warn users",
+            "hint": null,
+            "body": "Microsoft lists no workaround. Tell users not to open unexpected message or Office attachments, and lean on your email gateway. Microsoft hasn't published indicators of compromise. 1,4",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-124194",
+            "title": "Microsoft MSRC: advisory, FAQ, affected products",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://learn.microsoft.com/en-us/officeupdates/microsoft365-apps-security-updates",
+            "title": "Microsoft Learn: Office security update builds",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: added 10 Nov, due 24 Nov",
+            "date": null
+          },
+          {
+            "url": "https://www.csoonline.com/article/4247015/november-2026-patch-tuesday-63-critical-microsoft-fixes-plus-an-outlook-zero-day.html",
+            "title": "CSO Online: needs a user to open a file",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://office-watch.com/?p=78156",
+            "title": "Office Watch: classic Outlook only, how to update",
+            "date": null
+          },
+          {
+            "url": "https://learn.microsoft.com/en-us/officeupdates/update-history-microsoft365-apps-by-date",
+            "title": "Microsoft Learn: Microsoft 365 Apps update history",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Current Channel 2611 (17 Nov) is now the newest build. Safe versions added."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Review: wording matched to Microsoft's advisory; retail Office and Office 2019 builds noted."
+          },
+          {
+            "date": "2026-11-10",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/outlook-zero-day/"
+      }
+    },
+    {
+      "slug": "sap-icm2shell",
+      "name": "SAP ICM2SHELL",
+      "meta": "SAP ICM / Web Dispatcher · CVE-2026-76964, CVE-2026-89126",
+      "line": "If SAP's web ports are reachable. No attacks yet.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2.9,
+      "meterLabel": "Check today",
+      "disclosed": "2026-11-10",
+      "url": "https://tldrcve.com/sap-icm2shell/",
+      "detail": {
+        "slug": "sap-icm2shell",
+        "kicker": "SAP ICM / Web Dispatcher · CVE-2026-76964 · CVE-2026-89126",
+        "name": "SAP ICM2SHELL",
+        "verdict": "Patch now if…",
+        "verdictHint": "If SAP's web ports are reachable. No attacks yet.",
+        "summary": "A memory bug in how SAP's built-in web server handles WebSocket traffic lets an attacker with no login leak server memory or run code as the SAP admin user (<sid>adm). It hits the ICM in NetWeaver AS ABAP and every SAP Web Dispatcher, including the one in HANA XS, and WebSocket support is on by default. SAP rates it 10.0 and fixed it on 10 Nov 2026; Onapsis (\"ICM2SHELL\") and nullFaktor (\"SAPBleed\") both built working exploits but haven't published them, and no attacks are reported.",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 5,6,4"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 2,5,6"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 7"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Kernel or Web Dispatcher not patched",
+            "hint": null,
+            "body": "AS ABAP on kernel 7.40 or newer (7.22 isn't affected) and every Web Dispatcher. Fixed in 7.53 PL 1616, 7.54 PL 710, 7.77 PL 914, 7.93 PL 420 (or the updated-stack PL 401; PL 419 is still affected), 9.16 PL 111, 9.18 PL 37 and 9.20 PL 11. HANA 2.0 Web Dispatcher: 2.00.079.11 or 2.00.089.05; XS Advanced 1.0 SP05: Patch 4. Out-of-maintenance kernels (7.40, 7.41, 7.42, 7.45, 7.49, 7.73, 7.81, 7.85, 7.89) get no fix. AS Java alone isn't affected; dual-stack systems are. Check each server's kernel patch level in transaction SM51. 2,5,6,8",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "WebSocket upgrades are on",
+            "hint": null,
+            "body": "On by default in both the ICM and the Web Dispatcher, whether or not you use WebSockets. Not affected if icm/HTTP/support_websocket_upgrade is set to FALSE . 2,3",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Attackers can reach its web port",
+            "hint": null,
+            "body": "Anyone who can reach the ICM or Web Dispatcher HTTP or HTTPS port can attack it; no SAP user or click is needed. An unpatched Web Dispatcher in front of the ICM doesn't stop the attack and can pass it on to internal systems. 3,4,5",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Apply SAP Notes 3778530 and 3778556",
+            "hint": null,
+            "body": "Patch the kernel (ICM) and every Web Dispatcher, including HANA XS, to the fixed patch level for your release, then restart. On an out-of-maintenance kernel, move to a supported kernel first. 1,2 Latest safe versions checked 20 Nov SAP kernel and Web Dispatcher → Kernel 9.20 9.20 PL 11 Kernel 9.18 9.18 PL 37 Kernel 9.16 9.16 PL 111 Kernel 7.93 7.93 PL 420 Kernel 7.77 7.77 PL 914 Kernel 7.54 7.54 PL 710 Kernel 7.53 7.53 PL 1616 HANA 2.0 Rev. 089 (XS) 2.00.089.05 HANA 2.0 Rev. 079 (XS) 2.00.079.11 Kernel 7.22 isn't affected. XS Advanced 1.0 SP05 is fixed in Patch 4.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Can't patch? Turn off WebSocket",
+            "hint": "command",
+            "body": "Set this parameter in the ICM and Web Dispatcher profiles and restart. It breaks ABAP Push Channels and some Fiori apps, so first look for status code 101 in the ICM or Web Dispatcher HTTP log. SAP's FAQ Note 3778788 says where the parameter goes for each component. 2,3 icm/HTTP/support_websocket_upgrade = FALSE",
+            "code": ["icm/HTTP/support_websocket_upgrade = FALSE"]
+          },
+          {
+            "num": "3",
+            "title": "Or shield behind a patched Web Dispatcher",
+            "hint": null,
+            "body": "A Web Dispatcher on 7.53 PL 1629, 7.54 PL 723, 7.93 PL 430, 9.16 PL 200 or later protects systems behind it, but only if nothing can reach them directly (check with a network scan) and it isn't set up with PROT=ROUTER . 2,8",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Keep SAP web ports off the internet",
+            "hint": null,
+            "body": "Until you've patched, limit who can reach the ICM and Web Dispatcher ports. 3",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://support.sap.com/en/my-support/knowledge-base/security-notes-news/november-2026.html",
+            "title": "SAP: November 2026 Patch Day, Notes 3778530 and 3778556 rated 10.0",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://onapsis.com/blog/icm2shell-cve-2026-76964-cve-2026-89126-sap-netweaver-web-dispatcher-threat-advisory/",
+            "title": "Onapsis: ICM2SHELL advisory, fixed patch levels, WebSocket on by default, workarounds",
+            "date": "12 Nov"
+          },
+          {
+            "url": "https://www.nullfaktor.com/blog/cve-2026-76964-cve-2026-89126-sapbleed",
+            "title": "nullFaktor: SAPBleed write-up, memory leak, exploit withheld, workaround",
+            "date": "12 Nov"
+          },
+          {
+            "url": "https://seclists.org/fulldisclosure/2026/Nov/36",
+            "title": "Full Disclosure: SAPBleed advisory, no login needed, timeline",
+            "date": "13 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-76964",
+            "title": "CVE record: CVE-2026-76964 (ICM), CVSS 10.0, CISA SSVC exploitation none",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-89126",
+            "title": "CVE record: CVE-2026-89126 (Web Dispatcher), CVSS 10.0, CISA SSVC exploitation none",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          },
+          {
+            "url": "https://redrays.io/blog/sap-note-3778530-icm-websocket-memory-corruption-cve-2026-76964/",
+            "title": "RedRays: check kernel level in SM51, AS Java not affected, verify shielding by scan",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://www.bleepingcomputer.com/news/security/sap-patches-four-maximum-severity-security-vulnerabilities/",
+            "title": "BleepingComputer: four CVSS 10 SAP flaws, Onapsis's ICM2SHELL name",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://support.sap.com/en/my-support/knowledge-base/security-notes-news/credits-for-security-researchers.html",
+            "title": "SAP: researcher credits, November 2026 lists Onapsis and Raschin Tavakoli",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/sap-icm2shell/"
+      }
+    },
+    {
+      "slug": "sglang",
+      "name": "SGLang RCE",
+      "meta": "SGLang · CVE-2026-15969, CVE-2026-15971, CVE-2026-15974, CVE-2026-15976, CVE-2026-15977, CVE-2026-15978",
+      "line": "Exploited, no fix yet. Risky if the port is reachable.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2.8,
+      "meterLabel": "Check today",
+      "disclosed": "2026-07-30",
+      "url": "https://tldrcve.com/sglang/",
+      "detail": {
+        "slug": "sglang",
+        "kicker": "SGLang · CVE-2026-15969 · CVE-2026-15971 · CVE-2026-15974 · CVE-2026-15976 · CVE-2026-15977 · CVE-2026-15978",
+        "name": "SGLang RCE",
+        "verdict": "Patch now if…",
+        "verdictHint": "Exploited, no fix yet. Risky if the port is reachable.",
+        "summary": "SGLang, a popular server for running AI models, has unfixed bugs that let anyone who can reach its port run code or steal its API keys, mostly without logging in. On 9 Nov 2026 NEAR AI said an attacker used an SGLang code-execution bug, which it hasn't named, to break into an inference server. There's no fix yet, so keep SGLang off untrusted networks.",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 2,4"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 1,8,9"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 10"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "You run SGLang (any version)",
+            "hint": "command",
+            "body": "The CVE record for CVE-2026-15969 lists v0.5.15 and earlier, but no fixed version has been named. As of 20 Nov 2026 the advisories still list no patched version, and v0.5.23 (2 Nov) is the newest release. Treat every version as affected. 3,6,7,8 pip show sglang",
+            "code": ["pip show sglang"]
+          },
+          {
+            "num": "2",
+            "title": "Its HTTP port is reachable by attackers",
+            "hint": "command",
+            "body": "By default SGLang listens only on 127.0.0.1, port 30000. You're exposed if it was started with --host 0.0.0.0, published from a container or Kubernetes, or put behind a proxy that forwards every route. API keys alone don't close it: the LoRA tensor route has no auth check when LoRA is on, and /server_info can leak the keys. Admin routes are open when no keys are set. Changes merged on 7 and 14 Nov stop /server_info leaking keys and make admin routes need an admin key (the current docs already describe this), but no release includes them yet. 4,5,11,12 ss -ltnp | grep 30000",
+            "code": ["ss -ltnp | grep 30000"]
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Keep SGLang off untrusted networks",
+            "hint": null,
+            "body": "Bind it to 127.0.0.1 or a private network, segment inference hosts, and firewall the port. If clients must reach it, put a reverse proxy in front that allows only the inference routes you use and blocks everything else, including /server_info. 2,4,8",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Set separate user and admin API keys",
+            "hint": null,
+            "body": "Start with both --api-key and --admin-api-key, and block /server_info, which gives the admin key to anyone holding the user key. This doesn't fix the LoRA tensor bug, so it's no substitute for network limits. 4,5",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Turn off pickle IPC and unused features",
+            "hint": null,
+            "body": "Set SGLANG_USE_PICKLE_IPC to false (it defaults to true). Don't enable LoRA, the dumper (DUMPER_SERVER_PORT), remote weight updates or distributed weight routes unless you need them. Prefer safetensors and refuse untrusted .bin/.pt checkpoints. 2,4",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Was it exposed? Rotate keys, check logs",
+            "hint": null,
+            "body": "/server_info returns the API keys and SSL key password, so rotate them. Make sure API keys and prompts aren't written to logs; NEAR AI lost two customers' API keys that way. Watch for an upstream fix and update when one ships. 1,4,8",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://near.ai/blog/security-incident-report-sglang-vulnerability",
+            "title": "NEAR AI: incident report, SGLang RCE used",
+            "date": "9 Nov"
+          },
+          {
+            "url": "https://kb.cert.org/vuls/id/281278",
+            "title": "CERT/CC VU#281278: six SGLang CVEs, no patches",
+            "date": "30 Jul"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-15969",
+            "title": "CVE.org: CVE-2026-15969 record (v0.5.15 and earlier)",
+            "date": null
+          },
+          {
+            "url": "https://thoughts.apoorvdayal.com/posts/sglang-disclosures/",
+            "title": "Apoorv Dayal: researcher write-up, routes and defaults",
+            "date": "30 Jul"
+          },
+          {
+            "url": "https://docs.sglang.io/advanced_features/server_arguments.html",
+            "title": "SGLang docs: server argument defaults",
+            "date": null
+          },
+          {
+            "url": "https://github.com/sgl-project/sglang/releases",
+            "title": "SGLang GitHub: releases",
+            "date": null
+          },
+          {
+            "url": "https://hol.org/guard/security/cves/CVE-2026-15969",
+            "title": "HOL Guard: CVE-2026-15969, no fixed version",
+            "date": null
+          },
+          {
+            "url": "https://labs.cloudsecurityalliance.org/research/csa-research-note-confidential-ai-inference-tee-limits-20261/",
+            "title": "Cloud Security Alliance: research note on the breach",
+            "date": null
+          },
+          {
+            "url": "https://decrypt.co/382965/near-ai-breach-exposes-user-details-data-ai-agents",
+            "title": "Decrypt: NEAR AI breach coverage",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          },
+          {
+            "url": "https://github.com/sgl-project/sglang/pull/48518",
+            "title": "SGLang PR #48518: /server_info stops leaking keys (merged 7 Nov, unreleased)",
+            "date": "7 Nov"
+          },
+          {
+            "url": "https://github.com/sgl-project/sglang/pull/49896",
+            "title": "SGLang PR #49896: admin routes need an admin key (merged 14 Nov, unreleased)",
+            "date": "14 Nov"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Still no fixed release (newest v0.5.23). Partial fixes merged on 7 and 14 Nov, not yet released; this explains the docs conflict. Safe versions added."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Review: no fix as of 19 Nov; NEAR AI hasn't named the bug; /server_info leaks the admin key; docs conflict noted."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/sglang/"
+      }
+    },
+    {
+      "slug": "nginx2root",
+      "name": "nginx2root",
+      "meta": "nginx · CVE-2026-123007, CVE-2026-123633",
+      "line": "Only if HTTP/2 is on. Public exploit, no attacks yet.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2.7,
+      "meterLabel": "Check today",
+      "disclosed": "2026-11-18",
+      "url": "https://tldrcve.com/nginx2root/",
+      "detail": {
+        "slug": "nginx2root",
+        "kicker": "nginx · CVE-2026-123007 · CVE-2026-123633",
+        "name": "nginx2root",
+        "verdict": "Patch now if…",
+        "verdictHint": "Only if HTTP/2 is on. Public exploit, no attacks yet.",
+        "summary": "A bug in nginx's HTTP/2 handling lets an attacker with no login crash nginx or run code as the nginx worker user. Despite the name, it doesn't give root by itself (Xint got root by chaining it with a separate Linux kernel bug, covered on our Linux SCTP root page), and code execution needs ASLR to be off or bypassed. A second HTTP/2 bug (CVE-2026-123633) is fixed by the same releases, and so are three other nginx bugs (HTTP/3, resolver, mail proxy) that Xint groups under the same name; turning off HTTP/2 doesn't cover those.",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 3,4"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 3,4"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 6"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 7"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "nginx 1.9.5 – 1.31.8",
+            "hint": "command",
+            "body": "Stable 1.30.7 and later are fixed. Also NGINX Plus 37.0.0–37.0.7.1 and 37.1.0–37.2.0.1; older NGINX Plus R33–R36 get no fix (sources differ on R33), so move to 37.x. Distros backport fixes without changing nginx -v , so check the package against your distro's advisory. After upgrading, restart: a reload keeps the old binary. 1,3,8,5,9 nginx -v",
+            "code": ["nginx -v"]
+          },
+          {
+            "num": "2",
+            "title": "HTTP/2 is on anywhere",
+            "hint": "command",
+            "body": "Either http2 on; or listen ... http2 , on any server block. Static-only sites count. Behind a proxy that terminates HTTP/2, the public exploit likely fails, but the bug is still there. 1,3,4 sudo nginx -T 2>&1 | grep -nE 'listen[[:space:]].*http2|http2 on'",
+            "code": ["sudo nginx -T 2>&1 | grep -nE 'listen[[:space:]].*http2|http2 on'"]
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade nginx",
+            "hint": null,
+            "body": "1.31.9 (mainline) or 1.30.7 (stable). NGINX Plus: 37.3.0.1 or 37.0.8.1. Debian (DSA-6642-1, DLA-4918-1) and Ubuntu (USN-9159-1) have fixed packages. Then restart. 1,3,14,15,16,17 Latest safe versions checked 20 Nov NGINX Plus → 37.x (CR) 37.3.0.1 37.0 (LTS) 37.0.8.1",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Can't upgrade? Turn off HTTP/2",
+            "hint": "command",
+            "body": "Set http2 off; in each server block and remove http2 from every listen line (before 1.25.1, only the listen change). This breaks native gRPC, and doesn't cover the HTTP/3, resolver and mail-proxy bugs the same upgrade fixes. 1,5 http2 off;",
+            "code": ["http2 off;"]
+          },
+          {
+            "num": "3",
+            "title": "Check bundled nginx",
+            "hint": null,
+            "body": "Kong, APISIX, NGINX Gateway Fabric and community ingress-nginx bundle nginx with HTTP/2 on by default. APISIX 3.21.0 and NGINX Gateway Fabric 2.9.0 are built on the fixed 1.31.9; F5's NGINX Ingress Controller 5.8.0 still ships 1.31.8. Community ingress-nginx gets no fixes after March 2026. Check with your vendor. 6,10,11,12,13",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://nginx.org/en/security_advisories.html",
+            "title": "nginx.org: security advisories",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://nginx.org/en/CHANGES",
+            "title": "nginx.org: CHANGES",
+            "date": null
+          },
+          {
+            "url": "https://www.rapid7.com/blog/post/ve-cve-2026-123007-critical-nginx-http-2-integer-underflow-leads-to-rce-fixed/",
+            "title": "Rapid7: NGINX Plus versions, exploit limits",
+            "date": null
+          },
+          {
+            "url": "https://github.com/sfewer-r7/CVE-2026-123007",
+            "title": "Rapid7: public exploit code",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://xint.io/blog/nginx2root-remote-code-execution",
+            "title": "Xint: original disclosure",
+            "date": null
+          },
+          {
+            "url": "https://www.csoonline.com/article/4250460/ai-unearths-internet-breaker-flaws-in-nginx-web-server.html",
+            "title": "CSO Online: no attacks seen, forks",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-123007",
+            "title": "CVE record (F5): NGINX Plus R33+ affected, ASLR note",
+            "date": null
+          },
+          {
+            "url": "https://www.tenable.com/blog/nginx2root-cve-2026-123007-frequently-asked-questions-about-five-critical-nginx",
+            "title": "Tenable FAQ: reload vs restart, NGINX Plus R33–R36",
+            "date": null
+          },
+          {
+            "url": "https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/",
+            "title": "Kubernetes: ingress-nginx retirement",
+            "date": null
+          },
+          {
+            "url": "https://github.com/apache/apisix/releases/tag/3.21.0",
+            "title": "Apache APISIX 3.21.0: nginx 1.31.9 core, fixes it",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/nginx/nginx-gateway-fabric/blob/v2.9.0/build/Dockerfile.nginx",
+            "title": "NGINX Gateway Fabric 2.9.0: built on nginx 1.31.9",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://github.com/nginx/kubernetes-ingress/releases/tag/v5.8.0",
+            "title": "NGINX Ingress Controller 5.8.0: ships nginx 1.31.8",
+            "date": null
+          },
+          {
+            "url": "https://security-tracker.debian.org/tracker/CVE-2026-123007",
+            "title": "Debian tracker: DSA-6642-1 fixed packages",
+            "date": null
+          },
+          {
+            "url": "https://ubuntu.com/security/CVE-2026-123007",
+            "title": "Ubuntu: USN-9159-1, all releases fixed",
+            "date": null
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-123633",
+            "title": "CVE record (F5): CVE-2026-123633, HTTP/2 use-after-free when proxying",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://security-tracker.debian.org/tracker/CVE-2026-123633",
+            "title": "Debian tracker: DLA-4918-1 and DSA-6642-1 fix both",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Points to the Linux SCTP root page for the kernel bug Xint chained it with."
+          },
+          {
+            "date": "2026-11-20",
+            "text": "Added CVE-2026-123633 (second HTTP/2 bug, same fix) and the other nginx bugs fixed by the same releases; Debian DLA-4918-1."
+          },
+          {
+            "date": "2026-11-20",
+            "text": "APISIX 3.21.0 and NGINX Gateway Fabric 2.9.0 include the fix; NGINX Ingress Controller 5.8.0 doesn't yet. Debian and Ubuntu packages out. Safe versions added."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Review: NGINX Plus R33–R36 (no fix), full HTTP/2 workaround, ASLR note, bundled-nginx sources."
+          },
+          {
+            "date": "2026-11-18",
+            "text": "Public exploit released. No attacks seen."
+          },
+          {
+            "date": "2026-11-18",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/nginx2root/"
+      }
+    },
+    {
+      "slug": "linux-tcp-root",
+      "name": "Linux TCP root",
+      "meta": "Linux kernel · CVE-2026-98432",
+      "line": "Any IPv4 TCP server. Root shown only via MPTCP.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2.6,
+      "meterLabel": "Check today",
+      "disclosed": "2026-10-15",
+      "url": "https://tldrcve.com/linux-tcp-root/",
+      "detail": {
+        "slug": "linux-tcp-root",
+        "kicker": "Linux kernel · CVE-2026-98432",
+        "name": "Linux TCP root",
+        "verdict": "Patch now if…",
+        "verdictHint": "Any IPv4 TCP server. Root shown only via MPTCP.",
+        "summary": "A race in the kernel's IPv4 TCP handshake code lets a remote attacker with no login corrupt kernel memory by sending connection requests that carry IP options. On 27 Oct, Anthropic showed remote root against a server with a Multipath TCP (MPTCP) listener, but the bug is in plain TCP, so turning off MPTCP doesn't make you safe. Full exploit code isn't public and no attacks are reported.",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1,4"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 5"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 12"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Kernel 4.4 or later, not yet patched",
+            "hint": "command",
+            "body": "Upstream fixes: 5.10.272, 5.15.223, 6.1.190, 6.6.159, 6.12.113, 6.18.56, 7.2.10, 7.3. Distro kernels backport, so compare with your distro's fixed version under Update. RHEL 6 and 7 are not affected. 1,4,10 uname -r",
+            "code": ["uname -r"]
+          },
+          {
+            "num": "2",
+            "title": "Accepts IPv4 TCP connections",
+            "hint": "command",
+            "body": "Any IPv4 TCP listener counts, MPTCP or not: Red Hat says MPTCP is not required, and RHEL with MPTCP off by default is still affected. IPv6 is not affected by the main bug. Nearly every server has a TCP listener. 1,4,5 sudo ss -tlnp",
+            "code": ["sudo ss -tlnp"]
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update the kernel and reboot",
+            "hint": null,
+            "body": "Install your distro's fixed kernel (listed below), then reboot. Ubuntu 20.04 (5.4.0-247.267) and 18.04 (4.15.0-263.275) fixes are in Ubuntu Pro only. Debian 12's linux-6.12: 6.12.113-1~deb12u1. Cloud and HWE kernels have their own versions. 8,9,10,14 Latest safe versions checked 20 Nov Linux kernel → Debian 13 6.12.117-1 Debian 12 6.1.192-2 Ubuntu 26.04 7.0.0-44.44 Ubuntu 24.04 6.8.0-151.151 Ubuntu 22.04 5.15.0-204.214 RHEL 10.3 6.12.0-264.16.1.el10_3 RHEL 10.2 6.12.0-211.75.1.el10_2 RHEL 9 5.14.0-687.67.1.el9_8 RHEL 8 4.18.0-553.186.1.el8_10 Ubuntu 26.10: 7.3.0-10.10. Cloud and HWE kernels have their own versions.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Can't reboot yet? Live patch or filter",
+            "hint": "command",
+            "body": "RHEL 8, RHEL 9.8 EUS and some RHEL SAP streams have a kpatch live patch (19 Nov; plain RHEL 9 has none) that avoids the reboot. Otherwise drop inbound IPv4 TCP packets with IP options in an nftables input chain (normal TCP options are fine). That reduces exposure but isn't a fix: traffic between containers on the same host can skip it. 10,4,9,11 ip protocol tcp ip hdrlength > 5 counter drop",
+            "code": ["ip protocol tcp ip hdrlength > 5 counter drop"]
+          },
+          {
+            "num": "3",
+            "title": "Optional: turn off MPTCP",
+            "hint": "command",
+            "body": "Blocks the known root path only (the public demo used an MPTCP listener; Go 1.24+ programs open them by default). May break programs that need MPTCP. For Go services, GODEBUG=multipathtcp=0 does the same per program. sudo ss -Mlnp lists MPTCP listeners. 2,3,6,7 sysctl -w net.mptcp.enabled=0",
+            "code": ["sysctl -w net.mptcp.enabled=0"]
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-98432",
+            "title": "CVE record (kernel CNA): bug, 9.8, fixed versions",
+            "date": "15 Oct"
+          },
+          {
+            "url": "https://www.anthropic.com/research/discovering-vulnerabilities-with-claude",
+            "title": "Anthropic: remote root demo on MPTCP listener",
+            "date": "27 Oct"
+          },
+          {
+            "url": "https://www.openwall.com/lists/oss-security/2026/10/30/1",
+            "title": "Go team (oss-security): Go 1.24+ MPTCP default",
+            "date": "29 Oct"
+          },
+          {
+            "url": "https://access.redhat.com/security/vulnerabilities/RHSB-2026-016",
+            "title": "Red Hat RHSB-2026-016: MPTCP not required, nft rule",
+            "date": "11 Nov"
+          },
+          {
+            "url": "https://bleepingcomputer.com/news/security/linux-kernel-exploit-enables-remote-root-attacks-on-mptcp-servers",
+            "title": "BleepingComputer: early ratings, no attacks",
+            "date": "30 Oct"
+          },
+          {
+            "url": "https://www.openwall.com/lists/oss-security/2026/10/30/6",
+            "title": "oss-security: sysctl to disable MPTCP",
+            "date": "30 Oct"
+          },
+          {
+            "url": "https://www.openwall.com/lists/oss-security/2026/11/03/1",
+            "title": "CIQ (oss-security): MPTCP-off not enough",
+            "date": "2 Nov"
+          },
+          {
+            "url": "https://security-tracker.debian.org/tracker/CVE-2026-98432",
+            "title": "Debian tracker: fixed versions",
+            "date": null
+          },
+          {
+            "url": "https://ubuntu.com/security/CVE-2026-98432",
+            "title": "Ubuntu: fixed versions, firewall stopgap",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://access.redhat.com/security/cve/CVE-2026-98432",
+            "title": "Red Hat: CVE page, RHEL errata",
+            "date": null
+          },
+          {
+            "url": "https://www.openwall.com/lists/oss-security/2026/10/31/5",
+            "title": "oss-security: filter bypass between containers",
+            "date": "31 Oct"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          },
+          {
+            "url": "https://phoenix.security/cve-2026-98432-linux-tcp-use-after-free-cvss-scoring/",
+            "title": "Phoenix Security: trigger code public, no full chain",
+            "date": null
+          },
+          {
+            "url": "https://ubuntu.com/security/notices/USN-9170-1",
+            "title": "Ubuntu USN-9170-1: 20.04 and 18.04 fixed (Ubuntu Pro)",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://launchpad.net/ubuntu/+source/linux",
+            "title": "Launchpad: Ubuntu kernel builds",
+            "date": null
+          },
+          {
+            "url": "https://security-tracker.debian.org/tracker/source-package/linux",
+            "title": "Debian tracker: linux package versions",
+            "date": null
+          },
+          {
+            "url": "https://access.redhat.com/hydra/rest/securitydata/csaf.json?package=kernel",
+            "title": "Red Hat: kernel errata (CSAF)",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Ubuntu 20.04 and 18.04 fixed through Ubuntu Pro. RHEL 10.3 fixed. kpatch coverage clarified. Safe versions added."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Review: verdict set to Patch now if… (no public exploit or attacks), kpatch, correct listener check."
+          },
+          {
+            "date": "2026-11-01",
+            "text": "RHEL 8, 9 and 10 fixed kernels released."
+          },
+          {
+            "date": "2026-10-30",
+            "text": "Red Hat: MPTCP is not required to hit the bug."
+          },
+          {
+            "date": "2026-10-27",
+            "text": "Anthropic shows remote root on an MPTCP server."
+          },
+          {
+            "date": "2026-10-15",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/linux-tcp-root/"
+      }
+    },
+    {
+      "slug": "ruby2shell",
+      "name": "Ruby2Shell",
+      "meta": "Ruby (GitLab +2 more) · CVE-2026-132825",
+      "line": "Rails or classic Sinatra on old Ruby. No public exploit.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2.6,
+      "meterLabel": "Check today",
+      "disclosed": "2026-11-18",
+      "url": "https://tldrcve.com/ruby2shell/",
+      "detail": {
+        "slug": "ruby2shell",
+        "kicker": "Ruby (GitLab, GitHub Enterprise Server, Chatwoot) · CVE-2026-132825",
+        "name": "Ruby2Shell",
+        "verdict": "Patch now if…",
+        "verdictHint": "Rails or classic Sinatra on old Ruby. No public exploit.",
+        "summary": "A one-byte memory bug in how Ruby changes the case of text in older Western encodings (like ISO-8859-1) may let an attacker with no login run code on the server. The researchers who named it say default Rails and classic-style Sinatra apps reach it. The fix is a Ruby upgrade, which also fixes six related regex and string bugs.",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 4,5"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 5,6"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 10"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Ruby older than the fix",
+            "hint": "command",
+            "body": "Affected: 3.3.13 and earlier, 3.4.0–3.4.12 and 4.0.0–4.0.9. Ruby 3.2 and older are end of life and won't get a fix. Check the Ruby your app actually runs (its container image or .ruby-version ), not just the system one. Distros may patch without changing the version; on 20 Nov Ubuntu (priority Medium) and Debian were still evaluating. 1,2,6,8,9 ruby -v",
+            "code": ["ruby -v"]
+          },
+          {
+            "num": "2",
+            "title": "Web input gets case-changed",
+            "hint": "command",
+            "body": "Veria Labs says default Rails and classic-style Sinatra apps reach the bug with no login, but hasn't said through which code path. Other frameworks and plain Rack aren't exposed by default, unless your code calls upcase , swapcase , downcase(:fold) or casecmp? on ISO-8859 or Windows-125x text; UTF-8 isn't affected. Sources disagree on reach: Ruby rates it Critical, the CVE record scores it 7.4 (local), and Sekurak thinks a crash is likelier than code execution. Run the check in your app's folder. 2,3,4,6,7 bundle list | grep -E '\\* (rails|sinatra) \\('",
+            "code": ["bundle list | grep -E '\\* (rails|sinatra) \\('"]
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade Ruby",
+            "hint": null,
+            "body": "To 3.3.14, 3.4.13 or 4.0.10. Then restart app servers and rebuild container images. Updating Rails or other gems doesn't help: the fix is in Ruby itself. 1,5,6 Latest safe versions checked 20 Nov Ruby → 4.0 4.0.10 3.4 3.4.13 3.3 3.3.14 Ruby 3.2 and older are end of life and get no fixes. Apps like GitLab bundle their own Ruby.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "On Ruby 3.2 or older? Move up",
+            "hint": null,
+            "body": "These are end of life and won't be fixed. Move to a supported series. 1",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Update self-hosted apps",
+            "hint": "command",
+            "body": "Some bundle their own Ruby, which a system upgrade doesn't touch. On 19 Nov, Veria listed GitLab 19.6.0, GitHub Enterprise Server 3.22.5 and Chatwoot 4.20.0 as still affected, and Mastodon 4.7.6, OpenProject 17.9.8 and the Discourse base image 2.0.20261119-0203 as fixed. Aikido's list, made earlier, shows older versions of the last three as affected. For GitLab, check its bundled Ruby with the command below. 4,5,6 /opt/gitlab/embedded/bin/ruby -v",
+            "code": ["/opt/gitlab/embedded/bin/ruby -v"]
+          },
+          {
+            "num": "4",
+            "title": "Can't upgrade yet?",
+            "hint": null,
+            "body": "Ruby gives no workaround. For self-hosted apps, Aikido suggests keeping them reachable only over VPN or an IP allowlist until the vendor ships a fix. 5",
+            "code": []
+          },
+          {
+            "num": "5",
+            "title": "Patch before the exploit is out",
+            "hint": null,
+            "body": "Veria Labs plans to publish its proof of concept on 25 Nov 2026, or later if major vendors haven't shipped a fix by then. 4",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.ruby-lang.org/en/news/2026/11/18/multiple-vulnerabilities-in-regexp-and-string/",
+            "title": "Ruby: security advisory, versions, PoCs known",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://github.com/ruby/ruby/security/advisories/GHSA-34m4-m9fh-gqp5",
+            "title": "GitHub: GHSA-34m4-m9fh-gqp5, rated Critical",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-132825",
+            "title": "CVE record: CVE-2026-132825, CVSS 7.4 local",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://verialabs.com/ruby2shell/",
+            "title": "Veria Labs: write-up, frameworks, bundled apps",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.aikido.dev/blog/ruby2shell",
+            "title": "Aikido: no attacks, no workaround, VPN advice",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://equixly.com/blog/2026/11/19/ruby2shell-pre-auth-heap-overflow-in-ruby/",
+            "title": "Equixly: gem updates don't help, Rails path unknown",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://sekurak.pl/ruby2shell-heap-overflow-przy-zmianie-wielkosci-liter-w-ruby-rzekomo-pozwala-na-rce",
+            "title": "Sekurak: doubts reliable code execution",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://ubuntu.com/security/CVE-2026-132825",
+            "title": "Ubuntu: CVE tracker",
+            "date": null
+          },
+          {
+            "url": "https://security-tracker.debian.org/tracker/CVE-2026-132825",
+            "title": "Debian: security tracker",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Rechecked: no fixed GitLab, GitHub Enterprise Server or Chatwoot release yet; Veria's 25 Nov plan unchanged."
+          },
+          {
+            "date": "2026-11-20",
+            "text": "Veria moved its exploit release to 25 Nov (later if vendors haven't shipped fixes). Safe versions added."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/ruby2shell/"
+      }
+    },
+    {
+      "slug": "php-fpm-smuggling",
+      "name": "PHP-FPM smuggling",
+      "meta": "PHP · CVE-2026-129289",
+      "line": "Only if FastCGI connections are reused. Fixed 19 Nov.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2.5,
+      "meterLabel": "Check today",
+      "disclosed": "2026-11-19",
+      "url": "https://tldrcve.com/php-fpm-smuggling/",
+      "detail": {
+        "slug": "php-fpm-smuggling",
+        "kicker": "PHP · CVE-2026-129289",
+        "name": "PHP-FPM smuggling",
+        "verdict": "Patch now if…",
+        "verdictHint": "Only if FastCGI connections are reused. Fixed 19 Nov.",
+        "summary": "A bug in PHP-FPM can let an attacker with no login sneak a second, hidden request to PHP in one web request and run their own code. It only works where the web server reuses its connections to PHP-FPM (off by default in nginx and Apache) and the app opens the request body without reading all of it. PHP rates it Critical (CVSS 9.2); public test code runs PHP on a target, and the 19 Nov 2026 releases fix it.",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1,3"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 6"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 3"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 7"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "PHP-FPM older than the 19 Nov 2026 fix",
+            "hint": "command",
+            "body": "Below 8.5.13, 8.4.28, 8.3.37 or 8.2.36. PHP 8.6.0 (19 Nov) is fixed. PHP says the bug has been in the code since 5.6.0, so older, unsupported PHP is affected too. The code-execution attack needs PHP-FPM; with LiteSpeed's LSAPI it only breaks later requests. Distros may backport the fix without changing the version number. 1,2,3,10 php-fpm -v",
+            "code": ["php-fpm -v"]
+          },
+          {
+            "num": "2",
+            "title": "The web server reuses FPM connections",
+            "hint": "command",
+            "body": "nginx with fastcgi_keep_conn on , Apache mod_proxy_fcgi with enablereuse=on , or HAProxy keeping FastCGI connections open. Both nginx and Apache close the connection by default, which is not affected, but Apache's own PHP-FPM example turns reuse on. PHP's advisory doesn't mention Caddy. For Apache, look for enablereuse=on in your config. 1,4,5 nginx -T 2>/dev/null | grep fastcgi_keep_conn",
+            "code": ["nginx -T 2>/dev/null | grep fastcgi_keep_conn"]
+          },
+          {
+            "num": "3",
+            "title": "The app leaves the body unread",
+            "hint": null,
+            "body": "Some code path opens php://input and doesn't read it to the end. PHP says frameworks that open the input stream before routing or login checks can be affected; public test code worked against an unmodified Slim 4 app. Reading the body fully avoids it, but PHP says that isn't reliable on its own. 1,6",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update PHP and restart FPM",
+            "hint": null,
+            "body": "Update to 8.6.0, 8.5.13, 8.4.28, 8.3.37 or 8.2.36 (19 Nov 2026), then restart PHP-FPM. Debian has fixed packages (DSA-6641-1 for Debian 13, DLA-4916-1 for Debian 12); Ubuntu's supported releases were still \"needs evaluation\" on 20 Nov. 1,2,10,8,9 Latest safe versions checked 20 Nov PHP → 8.6 8.6.0 8.5 8.5.13 8.4 8.4.28 8.3 8.3.37 8.2 8.2.36 PHP 8.1 and older get no fixes from PHP. Distros may backport fixes without changing the version number.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Turn off connection reuse",
+            "hint": "command",
+            "body": "Until you've updated: in nginx, remove fastcgi_keep_conn on (off is the default); in Apache, remove enablereuse=on . Then reload the web server. 1,4,5 fastcgi_keep_conn off;",
+            "code": ["fastcgi_keep_conn off;"]
+          },
+          {
+            "num": "3",
+            "title": "Keep PHP-FPM off the network",
+            "hint": null,
+            "body": "Don't let untrusted networks reach PHP-FPM's port or socket directly. 1",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://github.com/php/php-src/security/advisories/GHSA-qc49-hpvq-g2w6",
+            "title": "PHP GHSA-qc49: full advisory, affected setups, mitigations",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.php.net/ChangeLog-8.php#8.5.13",
+            "title": "PHP: 8.x ChangeLog, 19 Nov 2026 releases",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-129289",
+            "title": "CVE record: affected versions, CVSS 9.2, CISA SSVC exploitation none",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://nginx.org/en/docs/http/ngx_http_fastcgi_module.html#fastcgi_keep_conn",
+            "title": "nginx docs: fastcgi_keep_conn is off by default",
+            "date": null
+          },
+          {
+            "url": "https://httpd.apache.org/docs/2.4/mod/mod_proxy_fcgi.html",
+            "title": "Apache docs: mod_proxy_fcgi reuse off by default; PHP-FPM example turns it on",
+            "date": null
+          },
+          {
+            "url": "https://github.com/blacklanternsecurity/PoCs/pull/6",
+            "title": "Public Nuclei templates; active one runs PHP on the target",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          },
+          {
+            "url": "https://security-tracker.debian.org/tracker/CVE-2026-129289",
+            "title": "Debian tracker: DSA-6641-1, DLA-4916-1",
+            "date": null
+          },
+          {
+            "url": "https://ubuntu.com/security/CVE-2026-129289",
+            "title": "Ubuntu: CVE tracker, needs evaluation",
+            "date": null
+          },
+          {
+            "url": "https://www.php.net/ChangeLog-8.php#8.6.0",
+            "title": "PHP: 8.6.0 ChangeLog, fixes GHSA-qc49",
+            "date": "19 Nov"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/php-fpm-smuggling/"
+      }
+    },
+    {
+      "slug": "php-sessions",
+      "name": "PHP session RCE",
+      "meta": "PHP · CVE-2026-115560",
+      "line": "Only with mixed session serializers. Fixed 19 Nov.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2.5,
+      "meterLabel": "Check today",
+      "disclosed": "2026-10-23",
+      "url": "https://tldrcve.com/php-sessions/",
+      "detail": {
+        "slug": "php-sessions",
+        "kicker": "PHP · CVE-2026-115560",
+        "name": "PHP session RCE",
+        "verdict": "Patch now if…",
+        "verdictHint": "Only with mixed session serializers. Fixed 19 Nov.",
+        "summary": "PHP's session upload-progress feature can let an attacker with no login run code, but only where sessions are written with one serializer and read with another, and the app has a suitable code library. PHP rates it Critical; exploit code for a test lab is public, and the 19 Nov 2026 releases fix it. It's a sibling of PHP2Shell (CVE-2026-109618/109619).",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 1,8"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 5"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 6"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "PHP older than the 19 Nov 2026 fix",
+            "hint": "command",
+            "body": "PHP 8.2 to 8.5 below 8.5.13, 8.4.28, 8.3.37 or 8.2.36. PHP 8.6.0 (19 Nov) is fixed. The 21 Oct releases didn't fix this bug. Older, unsupported PHP may also be affected. Distros may backport the fix without changing the version number. 1,2,7 php -v",
+            "code": ["php -v"]
+          },
+          {
+            "num": "2",
+            "title": "Session upload progress is on",
+            "hint": "command",
+            "body": "In anything that can write to your session store. It was on by default before the fix; the fix turns it off by default, but an explicit setting in php.ini or a pool still wins. The CLI can read a different php.ini than PHP-FPM or Apache. 1,4 php -i | grep session.upload_progress.enabled",
+            "code": ["php -i | grep session.upload_progress.enabled"]
+          },
+          {
+            "num": "3",
+            "title": "Two serializers share sessions",
+            "hint": "command",
+            "body": "Something writes sessions with php_binary or php_serialize while something else reads the same sessions with php . For example, an app calls ini_set() before session_start(), or two apps, FPM pools, virtual hosts or CLI jobs with different settings share a session directory. PHP's 23 Oct notice described only the first case; the 19 Nov advisory says no runtime switch is needed. 1,3 php -i | grep session.serialize_handler",
+            "code": ["php -i | grep session.serialize_handler"]
+          },
+          {
+            "num": "4",
+            "title": "The reader has a usable library",
+            "hint": null,
+            "body": "Code execution needs a suitable \"gadget chain\" in the reading app. PHP's advisory demonstrates it with Guzzle and Monolog, both common in Composer apps. Without one, the bug can still corrupt sessions or crash requests. 1",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update PHP and restart",
+            "hint": null,
+            "body": "Update to 8.6.0, 8.5.13, 8.4.28, 8.3.37 or 8.2.36 (19 Nov 2026), then restart every PHP worker. Debian has fixed packages (DSA-6641-1, DLA-4916-1); Ubuntu hadn't shipped one by 20 Nov. The fix turns session upload progress off by default and blocks runtime changes to session settings while it's on. 1,2,7,9,10 Latest safe versions checked 20 Nov PHP → 8.6 8.6.0 8.5 8.5.13 8.4 8.4.28 8.3 8.3.37 8.2 8.2.36 PHP 8.1 and older get no fixes from PHP. Distros may backport fixes without changing the version number.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Keep upload progress off",
+            "hint": "command",
+            "body": "Set it in php.ini, the FPM pool or server config, not with ini_set() (that's too late), then restart. Check that nothing explicitly turns it back on. 1,4 session.upload_progress.enabled = 0",
+            "code": ["session.upload_progress.enabled = 0"]
+          },
+          {
+            "num": "3",
+            "title": "If you need upload progress",
+            "hint": null,
+            "body": "Every app, pool and job that reads those sessions must use the same serialize_handler , even after updating. Otherwise give each app its own session storage, and expire old sessions when you change formats. 1",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://github.com/php/php-src/security/advisories/GHSA-658j-r8rw-q6mx",
+            "title": "PHP GHSA-658j: full advisory, conditions, demonstrated exploit",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.php.net/ChangeLog-8.php#8.5.13",
+            "title": "PHP: 8.x ChangeLog, 19 Nov 2026 releases",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.php.net/archive/2026.php#2026-10-23-1",
+            "title": "PHP: 23 Oct notice (described only the runtime-switch case)",
+            "date": "23 Oct"
+          },
+          {
+            "url": "https://www.php.net/manual/en/session.configuration.php",
+            "title": "PHP manual: session setting defaults",
+            "date": null
+          },
+          {
+            "url": "https://bleepingcomputer.com/news/security/php-shares-mitigation-for-new-and-unpatched-rce-vulnerability",
+            "title": "BleepingComputer: mitigation, no attacks reported",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          },
+          {
+            "url": "https://www.php.net/ChangeLog-8.php#8.6.0",
+            "title": "PHP: 8.6.0 ChangeLog, fixes GHSA-658j",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/googlesky/CVE-2026-115560",
+            "title": "Public exploit for a test lab (planted gadget class)",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://security-tracker.debian.org/tracker/CVE-2026-115560",
+            "title": "Debian tracker: DSA-6641-1, DLA-4916-1",
+            "date": null
+          },
+          {
+            "url": "https://ubuntu.com/security/CVE-2026-115560",
+            "title": "Ubuntu: CVE tracker, needs triage",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "PHP 8.6.0 added. A public exploit for a test lab is out (uses a planted gadget class): exploit status set to public. Debian packages out. Safe versions added."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Rewritten after PHP's full advisory: no runtime switch needed, exploit demonstrated, verdict raised to Patch now if…"
+          },
+          {
+            "date": "2026-11-19",
+            "text": "PHP released the fix: 8.5.13, 8.4.28, 8.3.37 or 8.2.36."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/php-sessions/"
+      }
+    },
+    {
+      "slug": "java4shell",
+      "name": "Java4Shell",
+      "meta": "OpenJDK · CVE-2026-114938",
+      "line": "Only on newer Intel/AMD CPUs.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2.3,
+      "meterLabel": "Check today",
+      "disclosed": "2026-11-17",
+      "url": "https://tldrcve.com/java4shell/",
+      "detail": {
+        "slug": "java4shell",
+        "kicker": "OpenJDK · CVE-2026-114938",
+        "name": "Java4Shell",
+        "verdict": "Patch now if…",
+        "verdictHint": "Only on newer Intel/AMD CPUs.",
+        "summary": "A bug in Java's Base64 decoder can let an attacker run code on your server. It only works on newer Intel/AMD CPUs, so on most systems a two-command check settles whether you need to rush. Proof-of-concept code for the memory corruption is public, but no attacks are reported.",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 9,7"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 3,20,23"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Java 17.0.6+, 21, 25 or 27",
+            "hint": "command",
+            "body": "Any distribution (Oracle, Temurin, Corretto, Zulu, Red Hat…) without the November 2026 fix, plus Oracle's Java 8 Performance Pack ( 8u511b33-perf ) and Oracle GraalVM for JDK 17/21. Standard Java 8 and 11 aren't affected. 11,2,8,10,17 java -version",
+            "code": ["java -version"]
+          },
+          {
+            "num": "2",
+            "title": "CPU has AVX-512 VBMI",
+            "hint": "command",
+            "body": "Intel Ice Lake or newer, AMD Zen 4 or newer (including Ryzen). ARM servers (Graviton, Ampere) never are. Run it where the app runs, on every node pool, because clusters often mix CPU generations. 1,2 grep -o -m1 avx512vbmi /proc/cpuinfo",
+            "code": ["grep -o -m1 avx512vbmi /proc/cpuinfo"]
+          },
+          {
+            "num": "3",
+            "title": "Untrusted input gets Base64-decoded",
+            "hint": null,
+            "body": "Auth headers, tokens, SAML and uploads all qualify. Assume yes for anything internet-facing; researchers showed it against Jira, Confluence, Artifactory and Jenkins. 7,9",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Patch Java",
+            "hint": null,
+            "body": "Oracle: 17.0.21.1, 21.0.13.1, 25.0.5.1 and 27.0.1.1 (17 Nov). Corretto shipped all four lines on 17 Nov. Temurin's fixed builds are out for x64 Linux, Alpine and Apple-silicon Macs, but on 20 Nov not yet for Windows or the eclipse-temurin Docker images. Red Hat, Ubuntu and Debian have fixed packages. For Oracle's Java 8 Performance Pack, see Oracle's advisory. 16,15,13,14,12,18,19,11 Latest safe versions checked 20 Nov Java → 27 27.0.1.1 25 25.0.5.1 21 21.0.13.1 17 17.0.21.1 Vendor builds add a suffix: Corretto 17.0.21.1.2, Temurin 17.0.21.1+2 (27.0.1.1.4 / +4 on Java 27). Standard Java 8 and 11 aren't affected.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Can't patch yet? Set this flag",
+            "hint": "command",
+            "body": "Turns off only the vulnerable fast path. Needs a restart. Not an official Oracle workaround. 8,3 -XX:-UseBASE64Intrinsics",
+            "code": ["-XX:-UseBASE64Intrinsics"]
+          },
+          {
+            "num": "3",
+            "title": "Check bundled Java",
+            "hint": null,
+            "body": "Common tools like Jira, Confluence, Artifactory, Jenkins and many others ship with their own Java. Updating the system Java doesn't fix them: update the tool, or set the flag in its own JVM settings. Red Hat still lists its Keycloak build, JBoss EAP OpenJDK 17 images and OpenShift Pipelines as affected. Appliances too: Cisco (for example Catalyst Center and Finesse) and Palo Alto (Privilege Threat Analytics, Remote Access Connector, the on-prem HTML5 Gateway) list affected products, and Fortinet is still checking. Their firewalls (Cisco ASA/FTD, PAN-OS, FortiOS) aren't affected. 7,9,12,20,21,22",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://calif.io/java4shell",
+            "title": "Calif: original disclosure",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://www.wiz.io/blog/cve-2026-114938-rce-java4shell-openjdk",
+            "title": "Wiz: CPU check, workarounds",
+            "date": null
+          },
+          {
+            "url": "https://www.sophos.com/en-us/security-advisories/sophos-sa-20261118-java4shell",
+            "title": "Sophos: no attacks seen",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://blog.qualys.com/vulnerabilities-threat-research/2026/11/17/how-to-find-mitigate-and-patch-the-critical-java4shell-flaw-cve-2026-114938-now",
+            "title": "Qualys: fixed builds",
+            "date": null
+          },
+          {
+            "url": "https://orca.security/resources/research/java4shell-critical-openjdk-base64-decoder-flaw-could-allow-unauthenticated-remote-code-execution/",
+            "title": "Orca: early doubts about Oracle's release notes",
+            "date": null
+          },
+          {
+            "url": "https://www.sonatype.com/blog/critical-openjdk-rce-cve-2026-114938-what-to-know",
+            "title": "Sonatype: version range unconfirmed",
+            "date": null
+          },
+          {
+            "url": "https://socprime.com/blog/cve-2026-114938-java4shell-flaw-enables-pre-auth-rce-in-major-java-applications/",
+            "title": "SOC Prime: products demonstrated",
+            "date": null
+          },
+          {
+            "url": "https://tuxcare.com/blog/java4shell-cve-2026-114938/",
+            "title": "TuxCare: workaround",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/news-events/alerts/2026/11/17/critical-java-vulnerability-requires-immediate-patching",
+            "title": "CISA: patch-now alert",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://fieldeffect.com/blog/java4shell-exposure-concerns",
+            "title": "Field Effect: Java 8/11 not affected",
+            "date": null
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-114938",
+            "title": "CVE record (Oracle): affected and fixed Oracle builds",
+            "date": null
+          },
+          {
+            "url": "https://access.redhat.com/security/cve/CVE-2026-114938",
+            "title": "Red Hat: CVE page, RHEL fixes 18–19 Nov",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://adoptium.net/news/2026/11/temurin-november-2026-cspu-java4shell",
+            "title": "Adoptium: Temurin November release includes the fix",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://github.com/adoptium/temurin/issues/326",
+            "title": "Adoptium: Temurin publishing status per platform",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/corretto/corretto-21/blob/21.0.13.1.2/CHANGELOG.md",
+            "title": "Corretto 21.0.13.1.2 changelog: lists the CVE",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://www.oracle.com/java/technologies/javase/17-0-21-1-relnotes.html",
+            "title": "Oracle: JDK 17.0.21.1 release notes",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://openjdk.org/groups/vulnerability/advisories/2026-11-17",
+            "title": "OpenJDK Vulnerability Group: advisory, affects 17, 21, 25, 27",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://ubuntu.com/security/CVE-2026-114938",
+            "title": "Ubuntu: fixed openjdk packages",
+            "date": null
+          },
+          {
+            "url": "https://security-tracker.debian.org/tracker/CVE-2026-114938",
+            "title": "Debian tracker: fixed openjdk packages",
+            "date": null
+          },
+          {
+            "url": "https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-nov2026-java-rce-eCa6ss9z",
+            "title": "Cisco: affected products, PoC code public, no malicious use",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://security.paloaltonetworks.com/CVE-2026-114938",
+            "title": "Palo Alto Networks: affected products and fixes, PAN-OS not affected",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://fortiguard.fortinet.com/psirt/FG-IR-26-278",
+            "title": "Fortinet FG-IR-26-278: still investigating, FortiOS not affected",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://blog.talosintelligence.com/java4shell/",
+            "title": "Cisco Talos: no exploitation seen yet",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Cisco, Palo Alto and Fortinet appliance advisories added; PoC code for the memory corruption is public; Temurin Windows and Docker images still pending."
+          },
+          {
+            "date": "2026-11-20",
+            "text": "Corretto, Ubuntu and Debian fixes out; Temurin Windows and Docker images still pending. Oracle fixed builds now cited to Oracle. Safe versions added."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Review: Oracle's own fixed builds, Red Hat and Temurin fixes, GraalVM; 'disputed' note removed."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Added the CISA alert and Oracle's Java 8 Performance Pack exception."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Added fix status."
+          },
+          {
+            "date": "2026-11-17",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/java4shell/"
+      }
+    },
+    {
+      "slug": "linux-sctp-root",
+      "name": "Linux SCTP root",
+      "meta": "Linux kernel ·",
+      "line": "Needs code running on the box. No distro fix yet.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2.3,
+      "meterLabel": "Check today",
+      "disclosed": "2026-11-10",
+      "url": "https://tldrcve.com/linux-sctp-root/",
+      "detail": {
+        "slug": "linux-sctp-root",
+        "kicker": "Linux kernel",
+        "name": "Linux SCTP root",
+        "verdict": "Patch now if…",
+        "verdictHint": "Needs code running on the box. No distro fix yet.",
+        "summary": "A bug in the Linux kernel's SCTP code lets any local user, including one inside a container, free the same kernel memory twice and take over the machine. Xint chained it with nginx2root to get root on the host and escape a Docker container. The fix reached the main kernel tree on 19 Nov, but no stable or distro kernel ships it yet, so blocking the sctp module is the stopgap.",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": false,
+            "text": "Needs a way to run code on the machine or in one of its containers, as any user first 1,2"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 8"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 17"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Kernel 4.15 or later",
+            "hint": "command",
+            "body": "The bug arrived in 4.15 (Jan 2018). The fix was merged into the main kernel tree on 19 Nov, after 7.4-rc3. The newest stable kernels (7.3.5, 6.18.64, 6.12.118, released 17 Nov) don't have it; the only distro we found carrying it on 20 Nov is Gentoo (kernel sources). Xint hasn't named the fix, but the commit credits Xint's tool and matches its description. 1,2,3,4,5,6 uname -r",
+            "code": ["uname -r"]
+          },
+          {
+            "num": "2",
+            "title": "Untrusted code can run on it",
+            "hint": null,
+            "body": "The attacker must already run code on the machine, as any user or inside a container. Xint got there through nginx2root. The bug needs no special rights. Containers don't stop it: they share the host kernel, Docker's default seccomp profile doesn't block SCTP sockets, and Kubernetes pods run without seccomp unless you turn it on. 1,2,9,12,13,14",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "SCTP can load",
+            "hint": "command",
+            "body": "The kernel loads the sctp module the first time any program opens an SCTP socket, unless it's blocked. Many distros ship it. Red Hat says it isn't loaded by default on RHEL: it's in kernel-modules-extra, which blacklists it on install. If lsmod prints nothing, it can still load on demand; modprobe -c | grep sctp shows any block. 1,9,10,11,15 lsmod | grep sctp",
+            "code": ["lsmod | grep sctp"]
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Block SCTP if you don't use it",
+            "hint": "command",
+            "body": "Put this line in a file under /etc/modprobe.d/ (Ubuntu uses disable-sctp.conf); on Debian and Ubuntu, then run sudo update-initramfs -u . It doesn't unload a module that's already loaded (reboot, or sudo rmmod sctp if nothing uses it) and doesn't help if SCTP is built into the kernel. It breaks telecom signalling and some Kubernetes network plugins. Red Hat's version is install sctp /bin/true plus blacklist sctp . 1,9,10,16 install sctp /bin/false",
+            "code": ["install sctp /bin/false"]
+          },
+          {
+            "num": "2",
+            "title": "Update the kernel and reboot",
+            "hint": null,
+            "body": "Install your distro's kernel with the fix (\"sctp: do not free a new asoc peeled off while sendmsg slept\") once it ships, then reboot. No stable release or major distro kernel has it as of 20 Nov. 2,3,4",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Patch the way in",
+            "hint": null,
+            "body": "Xint's chain starts with nginx2root, so upgrade nginx too. Any other way to run code on the host or in a container works just as well. 1,7",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://xint.io/blog/nginx2root-remote-code-execution",
+            "title": "Xint: nginx-to-root chain, Docker escape, since 4.15, module block",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=f2540da93a113d3f0a70fd0961e00eb849ce8342",
+            "title": "Linux kernel: the fix, unprivileged double free, Xint Code credit",
+            "date": "16 Nov"
+          },
+          {
+            "url": "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=1e575bda30acc0bf01f799cee798d4a1c100d538",
+            "title": "Linux kernel: fix merged into mainline (net-7.4-rc4)",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.kernel.org/releases.json",
+            "title": "kernel.org: newest stable kernels, all from 17 Nov or earlier",
+            "date": null
+          },
+          {
+            "url": "https://github.com/gentoo/gentoo/commit/be7b97dd8b59799c7bbf26d669faf0ba6a8ae6a8",
+            "title": "Gentoo: gentoo-sources patched for the SCTP fix",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://lore.kernel.org/all/GldWrQHQT5-PC10gNmItEg@gmail.com/",
+            "title": "Linux stable list: developer ties the patch to Xint's post",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.helpnetsecurity.com/2026/11/19/nginx2root-nginx-vulnerabilities/",
+            "title": "Help Net Security: no CVE or patch on 18 Nov, Docker host root",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.tenable.com/blog/nginx2root-cve-2026-123007-frequently-asked-questions-about-five-critical-nginx",
+            "title": "Tenable: no CVE on 19 Nov, no attacks reported on the chain",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.sysdig.com/blog/nginx2root",
+            "title": "Sysdig: module loads on first SCTP socket, lsmod check, side effects",
+            "date": null
+          },
+          {
+            "url": "https://access.redhat.com/security/cve/CVE-2026-64564",
+            "title": "Red Hat: SCTP not loaded by default on RHEL, block lines",
+            "date": null
+          },
+          {
+            "url": "https://access.redhat.com/solutions/6625041",
+            "title": "Red Hat: sctp blacklisted on install, kernel-modules-extra",
+            "date": null
+          },
+          {
+            "url": "https://github.com/moby/profiles/blob/main/seccomp/default.json",
+            "title": "Docker (moby): default seccomp filters sockets by family only",
+            "date": null
+          },
+          {
+            "url": "https://kubernetes.io/docs/tutorials/security/seccomp/",
+            "title": "Kubernetes: pods run Unconfined unless seccompDefault is on",
+            "date": null
+          },
+          {
+            "url": "https://matrix.tencent.com/en/2026/08/06/sctphantom-CVE-2026-64564",
+            "title": "Tencent: earlier SCTP bug escaped Docker with default seccomp",
+            "date": "6 Aug"
+          },
+          {
+            "url": "https://man7.org/linux/man-pages/man8/modprobe.8.html",
+            "title": "modprobe(8) man page: -c prints the effective configuration",
+            "date": null
+          },
+          {
+            "url": "https://ubuntu.com/security/CVE-2026-64564",
+            "title": "Ubuntu: disable-sctp.conf, update-initramfs, rmmod steps",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/linux-sctp-root/"
+      }
+    },
+    {
+      "slug": "apache-http2",
+      "name": "Apache HTTP/2 RCE",
+      "meta": "Apache httpd · CVE-2026-119618",
+      "line": "Only if HTTP/2 is on. Crash PoC public, no RCE code.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2.2,
+      "meterLabel": "Check today",
+      "disclosed": "2026-11-11",
+      "url": "https://tldrcve.com/apache-http2/",
+      "detail": {
+        "slug": "apache-http2",
+        "kicker": "Apache httpd · CVE-2026-119618",
+        "name": "Apache HTTP/2 RCE",
+        "verdict": "Patch now if…",
+        "verdictHint": "Only if HTTP/2 is on. Crash PoC public, no RCE code.",
+        "summary": "A race condition in Apache's HTTP/2 module can corrupt memory and may let an attacker with no login run code. It only matters if HTTP/2 is turned on. Red Hat says a reliable exploit was shown; public proof-of-concept code crashes the server but doesn't run code. Singapore's Cyber Security Agency says it's reportedly exploited, without naming a source; F5 and Horizon3 report no attacks.",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 2,6"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 5,8,10"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 7"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "httpd 2.4.55 – 2.4.70",
+            "hint": "command",
+            "body": "Also standalone mod_h2 2.0.8–2.0.42. Distro packages differ: Ubuntu 22.04's 2.4.52 is affected through a backport, while base RHEL 8 and Ubuntu 18.04 or older aren't. Red Hat JBoss Core Services is affected, including on RHEL 8. Check your distro's advisory, not just the version number. 1,2,3 apachectl -v",
+            "code": ["apachectl -v"]
+          },
+          {
+            "num": "2",
+            "title": "mod_http2 is loaded",
+            "hint": "command",
+            "body": "apachectl -M | grep http2",
+            "code": ["apachectl -M | grep http2"]
+          },
+          {
+            "num": "3",
+            "title": "h2 or h2c in Protocols",
+            "hint": "command",
+            "body": "An active Protocols line that includes h2 or h2c . 2 grep -ri '^\\s*Protocols' /etc/httpd /etc/apache2 2>/dev/null",
+            "code": ["grep -ri '^\\s*Protocols' /etc/httpd /etc/apache2 2>/dev/null"]
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade httpd",
+            "hint": null,
+            "body": "To 2.4.71, or your distro's fixed package. Standalone mod_h2 has no fixed release; switch to the built-in module. 1,5 Latest safe versions checked 20 Nov Apache httpd → 2.4 2.4.71 Standalone mod_h2 gets no fix: use the module built into httpd. Distro packages carry fixes under their own version numbers.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Can't upgrade? Turn off HTTP/2",
+            "hint": "command",
+            "body": "Then restart Apache. 4 Protocols http/1.1",
+            "code": ["Protocols http/1.1"]
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://httpd.apache.org/security/vulnerabilities_24.html",
+            "title": "Apache httpd: 2.4 vulnerabilities",
+            "date": "11 Nov"
+          },
+          {
+            "url": "https://access.redhat.com/security/cve/CVE-2026-119618",
+            "title": "Red Hat: CVE page, HTTP/2 required",
+            "date": null
+          },
+          {
+            "url": "https://ubuntu.com/security/CVE-2026-119618",
+            "title": "Ubuntu: fixed packages",
+            "date": null
+          },
+          {
+            "url": "https://access.redhat.com/security/vulnerabilities/RHSB-2026-017",
+            "title": "Red Hat bulletin RHSB-2026-017: mitigation",
+            "date": null
+          },
+          {
+            "url": "https://www.f5.com/labs/articles/cve-2026-119618",
+            "title": "F5 Labs: no attacks seen",
+            "date": "16 Nov"
+          },
+          {
+            "url": "https://labs.cloudsecurityalliance.org/research/csa-research-note-apache-mod-http2-cve-2026-119618-20261112/",
+            "title": "CSA: exploit research not found",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          },
+          {
+            "url": "https://horizon3.ai/attack-research/vulnerabilities/cve-2026-119618/",
+            "title": "Horizon3: public PoC crashes, no code execution, no attacks confirmed",
+            "date": null
+          },
+          {
+            "url": "https://github.com/googlesky/CVE-2026-119618",
+            "title": "Public proof of concept (crash only)",
+            "date": "12 Nov"
+          },
+          {
+            "url": "https://www.csa.gov.sg/alerts-and-advisories/alerts/al-2026-164/",
+            "title": "CSA Singapore AL-2026-164: \"reportedly\" exploited, no source named",
+            "date": "19 Nov"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Public crash PoC noted (no code execution). Singapore's CSA says reportedly exploited; others report no attacks. JBoss Core Services affected. Safe versions added."
+          },
+          {
+            "date": "2026-11-19",
+            "text": "Review: exploit status set to demonstrated (Red Hat), mod_h2 versions, citations fixed."
+          },
+          {
+            "date": "2026-11-16",
+            "text": "F5: no attacks seen."
+          },
+          {
+            "date": "2026-11-11",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/apache-http2/"
+      }
+    },
+    {
+      "slug": "openssl-encodeblock",
+      "name": "OpenSSL base64",
+      "meta": "OpenSSL · CVE-2026-121481",
+      "line": "Needs ~1.6 GB of input you supply. No remote path known.",
+      "verdict": "Next cycle",
+      "scareLevel": 0.5,
+      "meterLabel": "Shrug",
+      "disclosed": "2026-11-18",
+      "url": "https://tldrcve.com/openssl-encodeblock/",
+      "detail": {
+        "slug": "openssl-encodeblock",
+        "kicker": "OpenSSL · CVE-2026-121481",
+        "name": "OpenSSL base64",
+        "verdict": "Next cycle",
+        "verdictHint": "Needs ~1.6 GB of input you supply. No remote path known.",
+        "summary": "A bug in OpenSSL 4.0 and 4.1 can write past the end of a buffer when a program asks it to base64-encode about 1.6 GB or more in one go. The only trigger described so far is the openssl s_client command given a huge proxy password by the person running it. The Critical 9.8 score comes from CISA, which assumes a remote attacker with no login; OpenSSL hasn't rated it yet, and Ubuntu rates it Medium.",
+        "meterLabel": "Shrug",
+        "meterHint": "Real, but not worth losing sleep over.",
+        "checklist": [
+          {
+            "yes": false,
+            "text": "Needs control over ~1.6 GB of data an app base64-encodes first 2"
+          },
+          {
+            "yes": false,
+            "text": "No public exploit 1"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 1"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 6"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "OpenSSL 4.0.0 to 4.0.3, or 4.1.0",
+            "hint": "command",
+            "body": "OpenSSL's CVE record lists only these versions; 3.x and older are not listed. Ubuntu disagrees in one place: it marks the Node.js package on Ubuntu 22.04, which bundles OpenSSL 1.1.1m, as vulnerable. Apps can also bundle their own OpenSSL. 1,7 openssl version",
+            "code": ["openssl version"]
+          },
+          {
+            "num": "2",
+            "title": "Something encodes ~1.6 GB at once",
+            "hint": null,
+            "body": "A program has to pass more than (INT_MAX / 4) * 3 bytes, about 1.6 GB, to EVP_EncodeBlock() in one call. Inside OpenSSL the known path is the proxy login of openssl s_client -proxy_pass , with the password read from an environment variable because a command line is too short to hold it. The fix changes only the base64 code and the HTTP proxy login code. 1,2",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "An attacker controls that data",
+            "hint": null,
+            "body": "The s_client proxy password is a setting chosen by whoever runs the command, so an attacker would already need to control your command or environment. Apps that call EVP_EncodeBlock() themselves on huge untrusted input would also be exposed. CISA's 9.8 assumes a remote attacker with no login; neither OpenSSL nor NVD has scored it. 2,1,3,5",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update when 4.1.1 / 4.0.4 ship",
+            "hint": null,
+            "body": "OpenSSL's CVE record names 4.1.1 and 4.0.4 as the first fixed versions, and OpenSSL has scheduled those releases for 1 Dec 2026. On 20 Nov the fix was still under review, on hold for discussion and not merged, so check the release notes. Debian and Ubuntu had not assessed their packages yet on 20 Nov. 1,4,2,9,7,8",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Only use proxy passwords you set",
+            "hint": null,
+            "body": "If you script openssl s_client -proxy_pass , don't let other people supply the password or the environment variable it's read from. 2",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Cap input in your own code",
+            "hint": null,
+            "body": "If your code calls EVP_EncodeBlock() on data from others, reject inputs over (INT_MAX / 4) * 3 bytes. That's the limit OpenSSL's fix enforces. 2",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-121481",
+            "title": "CVE record: OpenSSL lists 4.0.0-4.0.3 and 4.1.0; CISA adds 9.8, SSVC exploitation none",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://github.com/openssl/openssl/pull/33652",
+            "title": "OpenSSL PR #33652: the fix, s_client -proxy_pass trigger, still open on 20 Nov",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://openssl-library.org/news/vulnerabilities/",
+            "title": "OpenSSL: vulnerabilities list, no entry or rating for this CVE on 20 Nov",
+            "date": null
+          },
+          {
+            "url": "https://openssl-library.org/news/secadv/20261117.txt",
+            "title": "OpenSSL advisory: 4.1.1, 4.0.4 releases scheduled for 1 Dec 2026",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-121481",
+            "title": "NVD: awaiting analysis, only CISA's 9.8 score",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          },
+          {
+            "url": "https://ubuntu.com/security/CVE-2026-121481",
+            "title": "Ubuntu: priority Medium, openssl needs evaluation, Node.js on 22.04 vulnerable",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://security-tracker.debian.org/tracker/CVE-2026-121481",
+            "title": "Debian tracker: no packages assessed yet",
+            "date": null
+          },
+          {
+            "url": "https://github.com/openssl/openssl/releases",
+            "title": "OpenSSL releases: newest are 4.1.0 and 4.0.3, no 4.1.1 or 4.0.4 yet",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-20",
+            "text": "Rechecked: the fix is still unmerged and on hold for discussion; no OpenSSL rating yet."
+          },
+          {
+            "date": "2026-11-20",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/openssl-encodeblock/"
+      }
+    }
+  ],
+  "versions": [
+    {
+      "slug": "dotnet",
+      "name": ".NET",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "11",
+          "version": "11.0.0"
+        },
+        {
+          "line": "10",
+          "version": "10.0.15"
+        },
+        {
+          "line": "9 (end of life)",
+          "version": "9.0.23"
+        },
+        {
+          "line": "8 (end of life)",
+          "version": "8.0.34"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/dotnet/"
+    },
+    {
+      "slug": "apache-axis",
+      "name": "Apache Axis 1.x",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": true,
+      "chips": [],
+      "url": "https://tldrcve.com/versions/apache-axis/"
+    },
+    {
+      "slug": "apache-httpd",
+      "name": "Apache httpd",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "2.4",
+          "version": "2.4.71"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/apache-httpd/"
+    },
+    {
+      "slug": "apache-roller",
+      "name": "Apache Roller",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "6.1",
+          "version": "6.1.7"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/apache-roller/"
+    },
+    {
+      "slug": "brotli-python",
+      "name": "Brotli for Python",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "Brotli",
+          "version": "1.2.1"
+        },
+        {
+          "line": "brotlicffi",
+          "version": "1.2.1.0"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/brotli-python/"
+    },
+    {
+      "slug": "chrome",
+      "name": "Chrome",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "158",
+          "version": "158.0.8127.36"
+        },
+        {
+          "line": "157",
+          "version": "157.0.8103.78"
+        },
+        {
+          "line": "Extended Stable 156",
+          "version": "156.0.8078.108"
+        },
+        {
+          "line": "ChromeOS",
+          "version": "158.0.8127.65"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/chrome/"
+    },
+    {
+      "slug": "chromium-browsers",
+      "name": "Edge, Brave and Opera",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "Edge",
+          "version": "158.0.4370.33"
+        },
+        {
+          "line": "Brave",
+          "version": "1.100.58"
+        },
+        {
+          "line": "Opera 140",
+          "version": "140.0.6074.36"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/chromium-browsers/"
+    },
+    {
+      "slug": "electron",
+      "name": "Electron",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "45",
+          "version": "45.4.1"
+        },
+        {
+          "line": "44",
+          "version": "44.11.5"
+        },
+        {
+          "line": "43",
+          "version": "43.8.12"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/electron/"
+    },
+    {
+      "slug": "envoy",
+      "name": "Envoy",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "1.40",
+          "version": "1.40.2"
+        },
+        {
+          "line": "1.39",
+          "version": "1.39.6"
+        },
+        {
+          "line": "1.38",
+          "version": "1.38.9"
+        },
+        {
+          "line": "1.37",
+          "version": "1.37.11"
+        },
+        {
+          "line": "1.36",
+          "version": "1.36.13"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/envoy/"
+    },
+    {
+      "slug": "istio",
+      "name": "Istio",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "1.31",
+          "version": "1.31.4"
+        },
+        {
+          "line": "1.30",
+          "version": "1.30.8"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/istio/"
+    },
+    {
+      "slug": "java",
+      "name": "Java",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "27",
+          "version": "27.0.1.1"
+        },
+        {
+          "line": "25",
+          "version": "25.0.5.1"
+        },
+        {
+          "line": "21",
+          "version": "21.0.13.1"
+        },
+        {
+          "line": "17",
+          "version": "17.0.21.1"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/java/"
+    },
+    {
+      "slug": "linux-kernel",
+      "name": "Linux kernel",
+      "meta": "2 bugs · checked 20 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "Debian 13",
+          "version": "6.12.117-1"
+        },
+        {
+          "line": "Debian 12",
+          "version": "6.1.192-2"
+        },
+        {
+          "line": "Ubuntu 26.04",
+          "version": "7.0.0-44.44"
+        },
+        {
+          "line": "Ubuntu 24.04",
+          "version": "6.8.0-151.151"
+        },
+        {
+          "line": "Ubuntu 22.04",
+          "version": "5.15.0-204.214"
+        },
+        {
+          "line": "RHEL 10.3",
+          "version": "6.12.0-264.16.1.el10_3"
+        },
+        {
+          "line": "RHEL 10.2",
+          "version": "6.12.0-211.75.1.el10_2"
+        },
+        {
+          "line": "RHEL 9",
+          "version": "5.14.0-687.67.1.el9_8"
+        },
+        {
+          "line": "RHEL 8",
+          "version": "4.18.0-553.186.1.el8_10"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/linux-kernel/"
+    },
+    {
+      "slug": "litellm",
+      "name": "LiteLLM",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "1.110",
+          "version": "1.110.1"
+        },
+        {
+          "line": "1.109",
+          "version": "1.109.2"
+        },
+        {
+          "line": "1.108 (LTS)",
+          "version": "1.108.12"
+        },
+        {
+          "line": "1.106",
+          "version": "1.106.11"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/litellm/"
+    },
+    {
+      "slug": "microsoft-365-apps",
+      "name": "Microsoft 365 Apps",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "Current Channel",
+          "version": "2611 (20625.20108)"
+        },
+        {
+          "line": "Monthly Enterprise 2610",
+          "version": "20527.20194"
+        },
+        {
+          "line": "Monthly Enterprise 2609",
+          "version": "20430.20264"
+        },
+        {
+          "line": "Monthly Enterprise 2608",
+          "version": "20326.20320"
+        },
+        {
+          "line": "Semi-Annual 2610",
+          "version": "20527.20192"
+        },
+        {
+          "line": "Semi-Annual 2609",
+          "version": "20430.20262"
+        },
+        {
+          "line": "Semi-Annual 2608",
+          "version": "20326.20318"
+        },
+        {
+          "line": "LTSC 2024",
+          "version": "17932.21140"
+        },
+        {
+          "line": "LTSC 2021",
+          "version": "14334.21048"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/microsoft-365-apps/"
+    },
+    {
+      "slug": "n-central",
+      "name": "N-able N-central",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "Server 2026.4",
+          "version": "2026.4.1.39 (HF3)"
+        },
+        {
+          "line": "Agents and Probes",
+          "version": "2026.4.1 HF3"
+        },
+        {
+          "line": "Patch Management Engine",
+          "version": "2.14.4.5829"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/n-central/"
+    },
+    {
+      "slug": "nginx",
+      "name": "nginx",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "1.31 (mainline)",
+          "version": "1.31.9"
+        },
+        {
+          "line": "1.30 (stable)",
+          "version": "1.30.7"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/nginx/"
+    },
+    {
+      "slug": "nginx-plus",
+      "name": "NGINX Plus",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "37.x (CR)",
+          "version": "37.3.0.1"
+        },
+        {
+          "line": "37.0 (LTS)",
+          "version": "37.0.8.1"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/nginx-plus/"
+    },
+    {
+      "slug": "nodejs",
+      "name": "Node.js",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "26",
+          "version": "26.13.1"
+        },
+        {
+          "line": "24",
+          "version": "24.22.3"
+        },
+        {
+          "line": "22",
+          "version": "22.23.5"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/nodejs/"
+    },
+    {
+      "slug": "openssh",
+      "name": "OpenSSH",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "Upstream",
+          "version": "10.6p2"
+        },
+        {
+          "line": "Alpine edge",
+          "version": "10.6_p2-r0"
+        },
+        {
+          "line": "Alpine 3.24",
+          "version": "10.3_p1-r2"
+        },
+        {
+          "line": "Alpine 3.23",
+          "version": "10.2_p1-r1"
+        },
+        {
+          "line": "Alpine 3.22",
+          "version": "10.0_p1-r11"
+        },
+        {
+          "line": "Alpine 3.21",
+          "version": "9.9_p2-r1"
+        },
+        {
+          "line": "Alpine 3.20",
+          "version": "9.7_p1-r6"
+        },
+        {
+          "line": "Alpine 3.19",
+          "version": "9.6_p1-r3"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/openssh/"
+    },
+    {
+      "slug": "openssl",
+      "name": "OpenSSL",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": true,
+      "chips": [],
+      "url": "https://tldrcve.com/versions/openssl/"
+    },
+    {
+      "slug": "openvox",
+      "name": "OpenVox and Puppet",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "openvox-server 9",
+          "version": "9.2.0"
+        },
+        {
+          "line": "openvox-server 8",
+          "version": "8.18.0"
+        },
+        {
+          "line": "openvox agent 9",
+          "version": "9.5.0"
+        },
+        {
+          "line": "openvox agent 8",
+          "version": "8.34.0"
+        },
+        {
+          "line": "Puppet Core 9",
+          "version": "9.1.4"
+        },
+        {
+          "line": "Puppet Core 8",
+          "version": "8.22.3"
+        },
+        {
+          "line": "Puppet Enterprise 2026.0",
+          "version": "2026.0.1"
+        },
+        {
+          "line": "Puppet Enterprise 2025.12",
+          "version": "2025.12.1"
+        },
+        {
+          "line": "Puppet Enterprise 2023.8",
+          "version": "2023.8.13"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/openvox/"
+    },
+    {
+      "slug": "php",
+      "name": "PHP",
+      "meta": "3 bugs · checked 20 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "8.6",
+          "version": "8.6.0"
+        },
+        {
+          "line": "8.5",
+          "version": "8.5.13"
+        },
+        {
+          "line": "8.4",
+          "version": "8.4.28"
+        },
+        {
+          "line": "8.3",
+          "version": "8.3.37"
+        },
+        {
+          "line": "8.2",
+          "version": "8.2.36"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/php/"
+    },
+    {
+      "slug": "redcap",
+      "name": "REDCap",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "17.4 Standard",
+          "version": "17.4.4"
+        },
+        {
+          "line": "17.3 LTS",
+          "version": "17.3.10"
+        },
+        {
+          "line": "16.0 LTS",
+          "version": "16.0.49"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/redcap/"
+    },
+    {
+      "slug": "ruby",
+      "name": "Ruby",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "4.0",
+          "version": "4.0.10"
+        },
+        {
+          "line": "3.4",
+          "version": "3.4.13"
+        },
+        {
+          "line": "3.3",
+          "version": "3.3.14"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/ruby/"
+    },
+    {
+      "slug": "sap-kernel",
+      "name": "SAP kernel and Web Dispatcher",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "Kernel 9.20",
+          "version": "9.20 PL 11"
+        },
+        {
+          "line": "Kernel 9.18",
+          "version": "9.18 PL 37"
+        },
+        {
+          "line": "Kernel 9.16",
+          "version": "9.16 PL 111"
+        },
+        {
+          "line": "Kernel 7.93",
+          "version": "7.93 PL 420"
+        },
+        {
+          "line": "Kernel 7.77",
+          "version": "7.77 PL 914"
+        },
+        {
+          "line": "Kernel 7.54",
+          "version": "7.54 PL 710"
+        },
+        {
+          "line": "Kernel 7.53",
+          "version": "7.53 PL 1616"
+        },
+        {
+          "line": "HANA 2.0 Rev. 089 (XS)",
+          "version": "2.00.089.05"
+        },
+        {
+          "line": "HANA 2.0 Rev. 079 (XS)",
+          "version": "2.00.079.11"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/sap-kernel/"
+    },
+    {
+      "slug": "sglang",
+      "name": "SGLang",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": true,
+      "chips": [],
+      "url": "https://tldrcve.com/versions/sglang/"
+    },
+    {
+      "slug": "synology-dsm",
+      "name": "Synology DSM",
+      "meta": "1 bug · checked 20 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "7.4",
+          "version": "7.4.1-90080 Update 1"
+        },
+        {
+          "line": "7.3",
+          "version": "7.3.2-86009 Update 5"
+        },
+        {
+          "line": "7.2.2",
+          "version": "7.2.2-72806 Update 10"
+        },
+        {
+          "line": "7.2.1",
+          "version": "7.2.1-69057 Update 13"
+        },
+        {
+          "line": "7.2",
+          "version": "7.2-64570 Update 4"
+        },
+        {
+          "line": "7.1",
+          "version": "7.1.1-42962 Update 9"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/synology-dsm/"
+    }
+  ]
+}
