@@ -27,19 +27,6 @@ export function registerDnSourcesTools(h: McpToolHost): void {
       return untrustedToolResult(data);
     }
   );
-  h.tools(
-    'dn_greynoise_check',
-    'Quick check: is this IP a known scanner or known benign service? Returns classification only (benign/malicious/unknown). Free, no key.',
-    { ip: z.string().describe('IPv4 address to check') },
-    async ({ ip }) => {
-      const data = await apiFetch<Record<string, unknown>>(
-        h.env.SELF,
-        `/api/v1/darknet-intel/greynoise/check?ip=${encodeURIComponent(ip)}`,
-        h.apiKey
-      );
-      return untrustedToolResult(data);
-    }
-  );
 
   // ── Pulsedive (free, optional key) ───────────────────────────────
   h.tools(
@@ -140,60 +127,6 @@ export function registerDnSourcesTools(h: McpToolHost): void {
     }
   );
 
-  // ── IntelligenceX (paid key required) ────────────────────────────
-  h.tools(
-    'dn_intelx_search',
-    'Search IntelligenceX for leaked data, dark web content, paste sites, and breach archives. Requires INTELX_API_KEY (paid).',
-    { q: z.string().describe('Search term (email, domain, keyword)') },
-    async ({ q }) => {
-      const data = await apiFetch<Record<string, unknown>>(
-        h.env.SELF,
-        `/api/v1/darknet-intel/intelx/search?q=${encodeURIComponent(q)}`,
-        h.apiKey
-      );
-      return untrustedToolResult(data);
-    }
-  );
-  h.tools(
-    'dn_intelx_search_results',
-    'Retrieve results for an IntelligenceX search by search_id (from dn_intelx_search). Requires INTELX_API_KEY.',
-    { id: z.string().describe('Search ID from dn_intelx_search') },
-    async ({ id }) => {
-      const data = await apiFetch<Record<string, unknown>>(
-        h.env.SELF,
-        `/api/v1/darknet-intel/intelx/results?id=${encodeURIComponent(id)}`,
-        h.apiKey
-      );
-      return untrustedToolResult(data);
-    }
-  );
-  h.tools(
-    'dn_intelx_phonebook',
-    'IntelligenceX Phonebook — find emails, domains, and URLs associated with a search term. Requires INTELX_API_KEY (paid).',
-    { q: z.string().describe('Search term (name, domain, keyword)') },
-    async ({ q }) => {
-      const data = await apiFetch<Record<string, unknown>>(
-        h.env.SELF,
-        `/api/v1/darknet-intel/intelx/phonebook?q=${encodeURIComponent(q)}`,
-        h.apiKey
-      );
-      return untrustedToolResult(data);
-    }
-  );
-  h.tools(
-    'dn_intelx_phonebook_results',
-    'Retrieve IntelligenceX Phonebook search results by search_id. Requires INTELX_API_KEY.',
-    { id: z.string().describe('Search ID from dn_intelx_phonebook') },
-    async ({ id }) => {
-      const data = await apiFetch<Record<string, unknown>>(
-        h.env.SELF,
-        `/api/v1/darknet-intel/intelx/phonebook-results?id=${encodeURIComponent(id)}`,
-        h.apiKey
-      );
-      return untrustedToolResult(data);
-    }
-  );
-
   // ── AbuseIPDB (key required) ─────────────────────────────────────
   h.tools(
     'dn_abuseipdb_check',
@@ -255,19 +188,6 @@ export function registerDnSourcesTools(h: McpToolHost): void {
   );
 
   // ── Deep Ransomware Intelligence (free) ──────────────────────────
-  h.tools(
-    'dn_ransomware_group',
-    'Get a detailed profile for a specific ransomware group from ransomware.live: description, aliases, tools, TTPs, CVEs. Free, no key.',
-    { name: z.string().describe('Ransomware group name (e.g. "lockbit3", "blackcat")') },
-    async ({ name }) => {
-      const data = await apiFetch<Record<string, unknown>>(
-        h.env.SELF,
-        `/api/v1/darknet-intel/ransomware/group?name=${encodeURIComponent(name)}`,
-        h.apiKey
-      );
-      return untrustedToolResult(data);
-    }
-  );
   h.tools(
     'dn_ransomware_victims',
     'Get all victims claimed by a specific ransomware group from ransomware.live. Free, no key.',
@@ -407,19 +327,6 @@ export function registerDnSourcesTools(h: McpToolHost): void {
     }
   );
   h.tools(
-    'dn_threatfox_search',
-    'Search ThreatFox IOCs by IP, domain, hash, or URL. Free, no key.',
-    { q: z.string().describe('IOC value to search (IP, domain, hash, or URL)') },
-    async ({ q }) => {
-      const data = await apiFetch<Record<string, unknown>>(
-        h.env.SELF,
-        `/api/v1/darknet-intel/abusech/threatfox-search?q=${encodeURIComponent(q)}`,
-        h.apiKey
-      );
-      return untrustedToolResult(data);
-    }
-  );
-  h.tools(
     'dn_threatfox_tag',
     'Search ThreatFox IOCs by tag (e.g. Cobalt Strike, Emotet, AgentTesla). Free, no key.',
     {
@@ -430,19 +337,6 @@ export function registerDnSourcesTools(h: McpToolHost): void {
       const data = await apiFetch<Record<string, unknown>>(
         h.env.SELF,
         `/api/v1/darknet-intel/abusech/threatfox-tag?tag=${encodeURIComponent(tag)}${limit ? `&limit=${limit}` : ''}`,
-        h.apiKey
-      );
-      return untrustedToolResult(data);
-    }
-  );
-  h.tools(
-    'dn_threatfox_malware',
-    'Search ThreatFox IOCs by malware family using Malpedia naming. Free, no key.',
-    { malware: z.string().describe('Malware family name (Malpedia naming)') },
-    async ({ malware }) => {
-      const data = await apiFetch<Record<string, unknown>>(
-        h.env.SELF,
-        `/api/v1/darknet-intel/abusech/threatfox-malware?malware=${encodeURIComponent(malware)}`,
         h.apiKey
       );
       return untrustedToolResult(data);
@@ -501,22 +395,6 @@ export function registerDnSourcesTools(h: McpToolHost): void {
       const data = await apiFetch<Record<string, unknown>>(
         h.env.SELF,
         '/api/v1/darknet-intel/abusech/bazaar-recent',
-        h.apiKey
-      );
-      return untrustedToolResult(data);
-    }
-  );
-  h.tools(
-    'dn_bazaar_tag',
-    'Search MalwareBazaar by tag or YARA signature name. Free, no key.',
-    {
-      tag: z.string().describe('Tag or YARA rule name'),
-      limit: z.number().int().min(1).max(1000).optional().describe('Max results (default 50)'),
-    },
-    async ({ tag, limit }) => {
-      const data = await apiFetch<Record<string, unknown>>(
-        h.env.SELF,
-        `/api/v1/darknet-intel/abusech/bazaar-tag?tag=${encodeURIComponent(tag)}${limit ? `&limit=${limit}` : ''}`,
         h.apiKey
       );
       return untrustedToolResult(data);
@@ -597,17 +475,6 @@ export function registerDnSourcesTools(h: McpToolHost): void {
     {},
     async () => {
       const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/darknet-intel/hybrid/feed', h.apiKey);
-      return untrustedToolResult(data);
-    }
-  );
-
-  // ── Darknet Intel Source Status ──────────────────────────────────
-  h.tools(
-    'dn_sources',
-    'List all available darknet intel data sources with configuration status, API key status, tool counts, and free/paid indicators.',
-    {},
-    async () => {
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/darknet-intel/sources', h.apiKey);
       return untrustedToolResult(data);
     }
   );

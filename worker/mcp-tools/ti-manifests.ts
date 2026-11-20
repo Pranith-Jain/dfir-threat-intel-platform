@@ -16,7 +16,7 @@
  * the tools/list response is served.
  */
 
-import { dbCacheStats, filterBriefs, getDbBrief, loadDbIndex } from '../lib/daily-briefs-manifest';
+import { filterBriefs, getDbBrief, loadDbIndex } from '../lib/daily-briefs-manifest';
 import type { DbBriefType } from '../lib/daily-briefs-manifest';
 
 import { filterFlowvizTechniques, loadFlowvizTechniques } from '../lib/flowviz-manifest';
@@ -34,7 +34,6 @@ import type { McpToolHost } from './host';
 // still bundled and deployed while every tool that touched one threw
 // ReferenceError at call time. Fixed alongside the tsc (worker) gate.
 import {
-  actorsCacheStats,
   filterActors,
   getActor,
   listAptmapDataFiles,
@@ -98,15 +97,8 @@ import {
   loadThreaticonIndex,
   loadTiIndex,
   searchListEntries,
-  tiCacheStats,
 } from '../lib/threat-intel-manifest';
-import {
-  filterWdtbBriefs,
-  getWdtbBrief,
-  getWdtbLatest,
-  loadWdtbIndex,
-  wdtbCacheStats,
-} from '../lib/webamon-dtb-manifest';
+import { filterWdtbBriefs, getWdtbBrief, getWdtbLatest, loadWdtbIndex } from '../lib/webamon-dtb-manifest';
 import type { ActorCategory } from '../lib/etda-actors-manifest';
 import type { TcEntityType, TiIocIndexEntry, TiSeverity } from '../lib/threat-intel-manifest';
 export async function registerTiManifestsTools(h: McpToolHost): Promise<void> {
@@ -266,23 +258,6 @@ export async function registerTiManifestsTools(h: McpToolHost): Promise<void> {
         });
       }
       return untrustedToolResult(body);
-    }
-  );
-
-  h.tools(
-    'ti_stats',
-    'Return cache + manifest stats for the Threat Intel data: index loaded, KEV loaded, body-cache sizes and hit ratios. Useful for diagnosing cold-start latency.',
-    {},
-    async () => {
-      const idx = await loadTiIndex(ASSETS);
-      return untrustedToolResult({
-        counts: idx.counts,
-        source: idx.source,
-        license: idx.license,
-        replicatedAt: idx.replicatedAt,
-        lastSyncedAt: idx.lastSyncedAt,
-        cache: tiCacheStats(),
-      });
     }
   );
 
@@ -1069,22 +1044,6 @@ export async function registerTiManifestsTools(h: McpToolHost): Promise<void> {
     }
   );
 
-  h.tools(
-    'dl_stats',
-    'Return Destroylist feed statistics: primary/community/DNS-active domain counts, root-domain rollup count, last sync time, bucket layout, and per-isolate bucket cache health. Use before bulk checks to confirm the manifest is loaded.',
-    {},
-    async () => {
-      const idx = await loadDestroylistIndex(ASSETS);
-      if (!idx) {
-        return untrustedToolResult({
-          error: 'destroylist_manifest_unavailable',
-          hint: 'Data ships via scripts/sync-destroylist.mjs && scripts/build-destroylist.mjs.',
-        });
-      }
-      return untrustedToolResult({ ...idx, cache: tiCacheStats().destroylist });
-    }
-  );
-
   // ── Living Threat Repository (living-threat.rabitanoor.com) ────
   // Real-world incidents continuously mapped to MITRE ATT&CK tactics +
   // techniques, with per-kill-chain-stage detection/remediation notes,
@@ -1362,22 +1321,6 @@ export async function registerTiManifestsTools(h: McpToolHost): Promise<void> {
     }
   );
 
-  h.tools(
-    'db_stats',
-    'Return cache + manifest stats for the Daily Briefs data: index loaded, body-cache sizes and hit ratios. Useful for diagnosing cold-start latency.',
-    {},
-    async () => {
-      const idx = await loadDbIndex(ASSETS);
-      return untrustedToolResult({
-        counts: idx.counts,
-        source: idx.source,
-        license: idx.license,
-        generatedAt: idx.generatedAt,
-        cache: dbCacheStats(),
-      });
-    }
-  );
-
   // ── Webamon Daily Threat Brief (WDTB) tools ───────────────────
   // Campaign intelligence from webamon-org/Daily-Threat-Brief (Apache-2.0).
   // Phishing/malware estate tracking: domain growth, takedowns, infra
@@ -1434,22 +1377,6 @@ export async function registerTiManifestsTools(h: McpToolHost): Promise<void> {
         return untrustedToolResult({ error: 'no_briefs_available' });
       }
       return untrustedToolResult(body);
-    }
-  );
-
-  h.tools(
-    'wdtb_stats',
-    'Return cache + manifest stats for the Webamon DTB data: index loaded, body-cache sizes and hit ratios.',
-    {},
-    async () => {
-      const idx = await loadWdtbIndex(ASSETS);
-      return untrustedToolResult({
-        counts: idx.counts,
-        source: idx.source,
-        license: idx.license,
-        generatedAt: idx.generatedAt,
-        cache: wdtbCacheStats(),
-      });
     }
   );
 
@@ -1678,24 +1605,6 @@ export async function registerTiManifestsTools(h: McpToolHost): Promise<void> {
         total: sectors.length,
         minActors: threshold,
         sectors,
-      });
-    }
-  );
-
-  h.tools(
-    'etda_stats',
-    'Return cache + manifest stats for the APT Actors data: index loaded, APTmap loaded, body-cache sizes and hit ratios. Useful for diagnosing cold-start latency.',
-    {},
-    async () => {
-      const idx = await loadActorIndex(ASSETS);
-      return untrustedToolResult({
-        counts: idx.counts,
-        source: idx.source,
-        license: idx.license,
-        replicatedAt: idx.replicatedAt,
-        lastSyncedAt: idx.lastSyncedAt,
-        aptmap: idx.aptmap,
-        cache: actorsCacheStats(),
       });
     }
   );

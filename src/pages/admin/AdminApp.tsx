@@ -76,13 +76,33 @@ function summariseRunResult(stage: string, result: unknown): string {
   const r = result as Record<string, unknown>;
   if (typeof r.slug === 'string') return `${stage}: published /blog/${r.slug}`;
   if (typeof r.scheduled === 'number') return `${stage}: scheduled ${r.scheduled} slot(s)`;
+  if (typeof r.kept === 'number') {
+    const byTopic = r.byTopic && typeof r.byTopic === 'object' ? (r.byTopic as Record<string, unknown>) : {};
+    const mix = Object.entries(byTopic)
+      .filter((entry): entry is [string, number] => typeof entry[1] === 'number' && entry[1] > 0)
+      .sort((a, b) => b[1] - a[1])
+      .map(([topic, count]) => `${topic} ${count}`)
+      .join(' · ');
+    const stats =
+      r.runnerStats && typeof r.runnerStats === 'object' ? (r.runnerStats as Record<string, { error?: unknown }>) : {};
+    const failed = Object.entries(stats)
+      .filter(([, stat]) => stat && typeof stat === 'object' && typeof stat.error === 'string')
+      .map(([name]) => name);
+    const floor =
+      typeof r.filledFromSuppressed === 'number' && r.filledFromSuppressed > 0
+        ? ` (${r.filledFromSuppressed} from floor)`
+        : '';
+    return `${stage}: ${r.kept} suggestion(s)${floor}${mix ? ` — ${mix}` : ''}${
+      failed.length ? ` · failed: ${failed.slice(0, 3).join(', ')}${failed.length > 3 ? '…' : ''}` : ''
+    }`;
+  }
   if (typeof r.discovered === 'number') return `${stage}: discovered ${r.discovered} candidate(s)`;
   if (typeof r.published === 'number') return `${stage}: published ${r.published}`;
   if (typeof r.count === 'number') return `${stage}: ${r.count}`;
   return `${stage}: ${JSON.stringify(result).slice(0, 160)}`;
 }
 
-function PipelineBar() {
+function PipelineBar({ onDiscoveryComplete }: { onDiscoveryComplete?: () => void }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -92,6 +112,7 @@ function PipelineBar() {
     try {
       const r = await postJson<{ ok?: boolean; stage?: string; result?: unknown; error?: string }>(`/run/${stage}`);
       setMsg(r.error ? `${stage}: ${r.error}` : summariseRunResult(stage, r.result));
+      if (stage === 'discovery') onDiscoveryComplete?.();
     } catch (e) {
       console.error('run failed:', errMessage(e));
       setMsg(`${stage}: ${errMessage(e)}`);
@@ -107,6 +128,7 @@ function PipelineBar() {
     try {
       const d = await postJson<{ ok?: boolean; result?: unknown; error?: string }>(`/run/discovery`);
       parts.push(summariseRunResult('discovery', d.result));
+      onDiscoveryComplete?.();
       const p = await postJson<{ ok?: boolean; result?: unknown; error?: string }>(`/run/planner`);
       parts.push(summariseRunResult('planner', p.result));
       const u = await postJson<{ ok?: boolean; result?: unknown; error?: string }>(`/run/publisher`);
@@ -152,6 +174,7 @@ function PipelineBar() {
 export default function AdminApp() {
   const [authStatus, setAuthStatus] = useState<'probing' | 'unauthed' | 'authed'>('probing');
   const [active, setActive] = useState<TabKey>('pending');
+  const [pendingRefresh, setPendingRefresh] = useState(0);
   const [inferenceStats, setInferenceStats] = useState<{
     calls: number;
     totalTokens: number;
@@ -248,7 +271,7 @@ export default function AdminApp() {
         </div>
       </div>
 
-      <PipelineBar />
+      <PipelineBar onDiscoveryComplete={() => setPendingRefresh((n) => n + 1)} />
 
       {/* Tabs */}
       <nav className="flex flex-wrap gap-1 border-b border-line-2 mb-6">
@@ -269,7 +292,7 @@ export default function AdminApp() {
 
       {/* Content */}
       <section className="bg-surface-100 border border-line-2 rounded-xl p-4">
-        {active === 'pending' && <PendingTab />}
+        {active === 'pending' && <PendingTab refreshToken={pendingRefresh} />}
         {active === 'approved' && <ApprovedTab />}
         {active === 'schedule' && <ScheduleTab />}
         {active === 'drafts' && <DraftsTab />}

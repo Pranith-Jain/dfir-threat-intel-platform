@@ -76,12 +76,50 @@ async function writeTypeBlob(ns: KVNamespace, type: CaseStudyType, list: Candida
 }
 
 export async function putCandidate(ns: KVNamespace, c: Candidate): Promise<void> {
-  // readTypeBlob triggers migration on first access if blob doesn't exist yet.
-  const list = await readTypeBlob(ns, c.type);
-  const idx = list.findIndex((x) => x.key === c.key);
-  if (idx >= 0) list[idx] = c;
-  else list.push(c);
-  await writeTypeBlob(ns, c.type, list);
+  await putCandidates(ns, [c]);
+}
+
+/**
+ * Persist many candidates with ONE read+write per TYPE.
+ *
+ * `runDiscovery` used to call `putCandidate` for every kept candidate inside
+ * a `Promise.all`. Candidates of the same type share a single KV blob, so
+ * those calls raced: each read the same pre-run list, appended its own row,
+ * and the last write won. A six-item run that kept five CVEs and one exploit
+ * persisted exactly two rows — one per type — which is the "discover only
+ * shows 2 suggestions" bug.
+ *
+ * Grouping by type makes each read-modify-write atomic within the run (KV has
+ * no compare-and-swap, so this is the strongest guarantee available) while
+ * different types still write in parallel. All candidates for a type are
+ * merged into the list before the single write.
+ */
+export async function putCandidates(ns: KVNamespace, candidates: Candidate[]): Promise<void> {
+  if (candidates.length === 0) return;
+  const byType = new Map<CaseStudyType, Candidate[]>();
+  for (const c of candidates) {
+    const list = byType.get(c.type);
+    if (list) list.push(c);
+    else byType.set(c.type, [c]);
+  }
+
+  await Promise.all(
+    [...byType.entries()].map(async ([type, incoming]) => {
+      // readTypeBlob triggers the one-time legacy migration if needed.
+      const list = await readTypeBlob(ns, type);
+      const indexByKey = new Map(list.map((c, i) => [c.key, i] as const));
+      for (const c of incoming) {
+        const idx = indexByKey.get(c.key);
+        if (idx === undefined) {
+          indexByKey.set(c.key, list.length);
+          list.push(c);
+        } else {
+          list[idx] = c;
+        }
+      }
+      await writeTypeBlob(ns, type, list);
+    })
+  );
 }
 
 export async function getCandidate(ns: KVNamespace, type: CaseStudyType, stableKey: string): Promise<Candidate | null> {
@@ -138,37 +176,12 @@ export async function listAllCandidates(ns: KVNamespace): Promise<Candidate[]> {
 }
 
 /**
- * Order candidates so the first screen shows the day's mix rather than a
- * wall of whichever topic scores highest — in practice, KEV CVEs carry a
- * severity of 1.0 and used to fill every visible row of the admin queue.
- *
- * Types are ranked by their best candidate, items within a type stay
- * score-ordered, and the output takes one item from each type per round.
- * The round-robin preserves relative quality (the global top item is still
- * first) while guaranteeing every represented topic appears before any
- * topic repeats.
+ * Display order for the admin queue — one item per type per round, so the
+ * first screen shows the day's mix instead of a wall of KEV CVEs. The
+ * implementation is shared with discovery's final daily cap; see
+ * `discovery/sampling.ts` for the ordering rules.
  */
-export function interleaveByType(cands: Candidate[]): Candidate[] {
-  const byType = new Map<CaseStudyType, Candidate[]>();
-  for (const c of cands) {
-    const list = byType.get(c.type);
-    if (list) list.push(c);
-    else byType.set(c.type, [c]);
-  }
-  const groups = [...byType.values()];
-  for (const g of groups) g.sort((a, b) => b.score - a.score);
-  groups.sort((a, b) => (b[0]?.score ?? 0) - (a[0]?.score ?? 0));
-
-  const out: Candidate[] = [];
-  const max = groups.reduce((m, g) => Math.max(m, g.length), 0);
-  for (let i = 0; i < max; i++) {
-    for (const g of groups) {
-      const item = g[i];
-      if (item) out.push(item);
-    }
-  }
-  return out;
-}
+export { interleaveByType } from '../discovery/sampling';
 
 export async function deleteCandidate(ns: KVNamespace, type: CaseStudyType, stableKey: string): Promise<void> {
   const list = await readTypeBlob(ns, type);

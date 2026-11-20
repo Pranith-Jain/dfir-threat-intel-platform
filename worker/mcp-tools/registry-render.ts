@@ -17,15 +17,10 @@ import type { StixIndicator } from '../lib/cti-ioc-export';
 import { cerastSearch } from '../lib/cerast';
 import { dehashLookup } from '../lib/dehash';
 import { enrichIp, enrichIpsBatch, isValidIp } from '../lib/si-enrich';
-import { fbiWantedList, fbiWantedSearch } from '../lib/fbi-wanted';
 import { fullhuntDomainDetails, fullhuntSubdomains } from '../lib/fullhunt';
-import { getTool, listTools, loadToolsIndex } from '../lib/tools-manifest';
-import type { ToolCategory } from '../lib/tools-manifest';
 import { intelxPhonebook, intelxSearch } from '../lib/intelx';
-import { interpolNoticeDetail, interpolSearch } from '../lib/interpol';
 import { mozillaTlsScan } from '../lib/mozilla-tls';
 import { opencveGetCve } from '../lib/opencve';
-import { opensanctionsEntity, opensanctionsSearch, opensanctionsStats } from '../lib/opensanctions';
 import { threatmonInfostealerSearch } from '../lib/threatmon-infostealer';
 import { traceixLookup } from '../lib/traceix';
 import { truecallerLookup } from '../lib/truecaller';
@@ -50,12 +45,11 @@ import {
 } from '../../api/src/lib/nhi-scan';
 import {
   getCampaignIntel as webamonGetCampaignIntel,
-  getCampaignStats as webamonGetCampaignStats,
   listCampaigns as webamonListCampaigns,
   listChanges as webamonListChanges,
   listClusters as webamonListClusters,
 } from '../../api/src/lib/webamon-campaigns';
-import { getDoc, getRef, getRoutingPrompt, getSiSkill, loadDocsIndex } from '../lib/si-manifest';
+import { getDoc, getRef, loadDocsIndex } from '../lib/si-manifest';
 import type { WebamonClusterSeverity } from '../lib/webamon-campaigns';
 export function registerRegistryRenderTools(h: McpToolHost): void {
   // Was: `if (h.env.ASSETS) { const ASSETS = h.env.ASSETS; ... }`
@@ -66,89 +60,11 @@ export function registerRegistryRenderTools(h: McpToolHost): void {
   // Curated catalog of 50+ offensive and defensive security tools
   // with filtering by category, keyword, and offensive/defensive scope.
 
-  h.tools(
-    'tools_list',
-    'List security tools from the curated Tools Directory. Filter by category (recon, exploitation, post-exploitation, defense, detection, forensics, osint, c2, phishing, crypto, mobile, cloud, network, reverse-engineering, web, misc), keyword, or offensive/defensive scope.',
-    {
-      category: z
-        .enum([
-          'recon',
-          'exploitation',
-          'post-exploitation',
-          'defense',
-          'detection',
-          'forensics',
-          'osint',
-          'c2',
-          'phishing',
-          'crypto',
-          'mobile',
-          'cloud',
-          'network',
-          'reverse-engineering',
-          'web',
-          'misc',
-        ])
-        .optional()
-        .describe('Filter by tool category'),
-      keyword: z.string().optional().describe('Search keyword in name/description/tags'),
-      offensive: z.boolean().optional().describe('Filter by offensive tools (true) or defensive (false)'),
-      limit: z.number().int().min(1).max(200).optional().describe('Max results (default 50)'),
-    },
-    async ({ category, keyword, offensive, limit }) => {
-      const idx = await loadToolsIndex(ASSETS).catch(() => null);
-      if (!idx) return untrustedToolResult({ error: 'tools index not loaded' });
-      const results = listTools(idx, {
-        category: category as ToolCategory | undefined,
-        keyword,
-        offensive,
-        limit: limit ?? 50,
-      });
-      return untrustedToolResult({ count: results.length, tools: results });
-    }
-  );
-
-  h.tools(
-    'tools_get',
-    'Get the full profile for a specific security tool by slug.',
-    {
-      slug: z.string().describe('Tool slug (e.g. "amass", "volatility", "metasploit")'),
-    },
-    async ({ slug }) => {
-      const body = await getTool(ASSETS, slug);
-      if (!body) return untrustedToolResult({ error: 'tool_not_found', slug });
-      return untrustedToolResult(body);
-    }
-  );
-
   // ── R2 SVG dashboard renderer ─────────────────────────────────
   // Returns the SVG widget manifest for a skill (the YAML body
   // embedded in the skill JSON), plus a reference to the
   // svg-dashboard skill's component library. Clients render the
   // SVG client-side using the widget library + the manifest.
-  h.tools(
-    'si_render_svg_dashboard',
-    'Return the SVG widget manifest (YAML) for a skill that ships one (14 of 25 skills do). The manifest declares canvas, palette, and a list of widget instances to render. Pair with si_get_skill({slug: "svg-dashboard"}) for the component-library reference. Returns {hasManifest:false,...} if the skill has no SVG manifest.',
-    {
-      slug: z.string().describe('Skill slug, e.g. "threat-pulse", "mitre-coverage-report".'),
-    },
-    async ({ slug }) => {
-      const skill = await getSiSkill(ASSETS, slug);
-      if (!skill) {
-        return untrustedToolResult({ error: 'skill_not_found', slug });
-      }
-      const yaml = (skill as unknown as Record<string, unknown>).svgWidgetsYaml as string | undefined;
-      return untrustedToolResult({
-        slug,
-        hasManifest: !!yaml,
-        manifestYaml: yaml ?? null,
-        manifestSizeBytes: yaml ? yaml.length : 0,
-        hint: yaml
-          ? 'Parse manifestYaml client-side and render widgets per the svg-dashboard skill component library.'
-          : 'This skill does not ship an SVG manifest. Use the freeform mode of svg-dashboard with ad-hoc data.',
-      });
-    }
-  );
 
   // ── R3 Knowledge base: 10 deep-dive docs ──────────────────────
   h.tools(
@@ -181,24 +97,6 @@ export function registerRegistryRenderTools(h: McpToolHost): void {
         });
       }
       return untrustedToolResult(doc);
-    }
-  );
-
-  // ── R4 Routing prompt (copilot-instructions.md) ───────────────
-  h.tools(
-    'si_get_routing_prompt',
-    'Return the upstream .github/copilot-instructions.md verbatim — the universal skill-detection / routing prompt. Clients should load this once at session start to learn how to map natural language to the right si_* tool. ~91 KB.',
-    {},
-    async () => {
-      const text = await getRoutingPrompt(ASSETS);
-      return untrustedToolResult({
-        source: 'github.com/SCStelz/security-investigator/.github/copilot-instructions.md',
-        license: 'MIT',
-        bytes: text.length,
-        promptMarkdown: text,
-        usage:
-          "Inject this into the client's system prompt at session start. It contains the skill-detection logic that maps user natural language to si_* tool calls.",
-      });
     }
   );
 
@@ -507,40 +405,6 @@ export function registerRegistryRenderTools(h: McpToolHost): void {
   );
 
   h.tools(
-    'nhi_inventory',
-    "Summarize a non-human & agent identity (NHI) inventory: counts by identity type and risk tier, plus orphaned and long-lived-secret tallies. Input is the inventory JSON (a list of NHI records or {'identities': [...]}); only id and name are required per record. Deterministic, local, no LLM.",
-    {
-      inventory: z
-        .string()
-        .describe(
-          'The NHI inventory as a JSON string: an array of NHI records, or an object with an "identities" array'
-        ),
-    },
-    async ({ inventory }) => {
-      const raw = JSON.parse(inventory) as unknown;
-      const result = nhiScanFleet(nhiParseFleet(raw));
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                total_identities: result.total,
-                by_type: result.typeCounts,
-                tier_counts: result.tierCounts,
-                orphaned: result.orphaned,
-                long_lived_secrets: result.longLived,
-              },
-              null,
-              2
-            ),
-          },
-        ],
-      };
-    }
-  );
-
-  h.tools(
     'nhi_owasp_catalog',
     'Return the OWASP Non-Human Identities (NHI) Top 10 — 2025 catalog (NHI1-NHI10 with titles and summaries), the tiering-rule inventory the NHI scanner enforces (rule id, floor tier, rationale), policy thresholds (rotation/staleness windows, wildcard scope tokens), and the allowed inventory field values (types, privileges, credentials). Use this to understand what nhi_scan checks before running an inventory.',
     {},
@@ -678,16 +542,6 @@ export function registerRegistryRenderTools(h: McpToolHost): void {
   );
 
   h.tools(
-    'webamon_campaign_stats',
-    'Webamon global estate rollup — total tracked campaigns, unique domains, online percentage, and aggregate activity. The headline numbers for the campaign-intelligence estate. Requires WEBAMON_API_KEY secret.',
-    {},
-    async () => {
-      const r = await webamonGetCampaignStats(h.env as { WEBAMON_API_KEY?: string });
-      return untrustedToolResult(r);
-    }
-  );
-
-  h.tools(
     'webamon_campaign_intel',
     'Webamon aggregated daily-brief digest in one call: global stats + top campaigns by 24h delta + change events in the window + emerging clusters, rolled up into "by the numbers" totals (new domains, takedowns, infra changes, new lure titles). Requires WEBAMON_API_KEY secret.',
     {
@@ -740,16 +594,6 @@ export function registerRegistryRenderTools(h: McpToolHost): void {
         params.set('package', pkg);
       }
       const r = await apiFetch(h.env.SELF, `/api/v1/depx/feed/check?${params}`, h.apiKey);
-      return untrustedToolResult(r);
-    }
-  );
-
-  h.tools(
-    'depx_stats',
-    'Supply-chain intelligence statistics — ecosystem breakdown, recent advisory counts, and disclosure trends from the OpenSSF Malicious Packages database.',
-    {},
-    async () => {
-      const r = await apiFetch(h.env.SELF, '/api/v1/depx/feed/stats', h.apiKey);
       return untrustedToolResult(r);
     }
   );
@@ -865,40 +709,6 @@ export function registerRegistryRenderTools(h: McpToolHost): void {
   // ── OpenSanctions — sanctions / PEP / crime entity search ──
   // NOTE: the hosted OpenSanctions API has required `Authorization: ApiKey …`
   // since 2025 — these tools need OPENSANCTIONS_API_KEY set.
-  h.tools(
-    'opensanctions_search',
-    'Search OpenSanctions for entities (individuals, companies, vessels) flagged in sanctions lists, PEP (politically exposed persons) databases, and crime watchlists. Requires OPENSANCTIONS_API_KEY (free for public-interest work at opensanctions.org).',
-    {
-      q: z.string().min(2).describe('Search query — entity name, domain, or email address.'),
-      limit: z.number().int().min(1).max(100).optional().describe('Max results (default 20, max 100).'),
-    },
-    async ({ q, limit }) => {
-      const r = await opensanctionsSearch(q, limit, h.env as { OPENSANCTIONS_API_KEY?: string });
-      return untrustedToolResult(r);
-    }
-  );
-
-  h.tools(
-    'opensanctions_entity',
-    'Get detailed entity information from OpenSanctions by ID. Returns full properties, associated datasets, topics, and schema. Use after opensanctions_search to explore a specific match. Requires OPENSANCTIONS_API_KEY.',
-    {
-      id: z.string().describe('OpenSanctions entity ID (e.g. from opensanctions_search results).'),
-    },
-    async ({ id }) => {
-      const r = await opensanctionsEntity(id, h.env as { OPENSANCTIONS_API_KEY?: string });
-      return untrustedToolResult(r);
-    }
-  );
-
-  h.tools(
-    'opensanctions_stats',
-    'Get OpenSanctions dataset statistics: total entities, datasets, countries covered, and schema counts. Requires OPENSANCTIONS_API_KEY.',
-    {},
-    async () => {
-      const r = await opensanctionsStats(h.env as { OPENSANCTIONS_API_KEY?: string });
-      return untrustedToolResult(r);
-    }
-  );
 
   // ── OpenCVE Cloud — enriched CVE records ────────────────────
   // Requires OPENCVE_API_TOKEN (free org token at app.opencve.io).
@@ -930,59 +740,6 @@ export function registerRegistryRenderTools(h: McpToolHost): void {
     },
     async ({ hash }) => {
       const r = await dehashLookup(hash);
-      return untrustedToolResult(r);
-    }
-  );
-
-  // ── FBI Wanted — wanted persons database ───────────────────
-  h.tools(
-    'fbi_wanted_search',
-    'Search the FBI Wanted database for wanted persons by name. Returns titles, descriptions, reward amounts, and field offices. No API key required.',
-    {
-      q: z.string().min(2).describe('Search query — person name to search for in FBI wanted database.'),
-    },
-    async ({ q }) => {
-      const r = await fbiWantedSearch(q);
-      return untrustedToolResult(r);
-    }
-  );
-
-  h.tools(
-    'fbi_wanted_list',
-    'List current FBI wanted persons with pagination. No API key required.',
-    {
-      page: z.number().int().min(1).optional().describe('Page number (default 1).'),
-      pageSize: z.number().int().min(1).max(50).optional().describe('Results per page (default 20, max 50).'),
-    },
-    async ({ page, pageSize }) => {
-      const r = await fbiWantedList(page, pageSize);
-      return untrustedToolResult(r);
-    }
-  );
-
-  // ── Interpol Red Notices — wanted persons database ─────────
-  h.tools(
-    'interpol_search',
-    'Search INTERPOL Red Notices for wanted persons by name, forename, or nationality. Returns entity IDs, charges, and issuing countries. No API key required.',
-    {
-      name: z.string().optional().describe('Family/surname of the wanted person.'),
-      forename: z.string().optional().describe('Given/forename of the wanted person.'),
-      nationality: z.string().optional().describe('Two-letter nationality code (e.g. "US", "FR", "GB").'),
-    },
-    async ({ name, forename, nationality }) => {
-      const r = await interpolSearch({ name, forename, nationality });
-      return untrustedToolResult(r);
-    }
-  );
-
-  h.tools(
-    'interpol_notice_detail',
-    'Get details of a specific INTERPOL Red Notice by entity ID. Returns full charge info, arrest warrant details, and physical description. No API key required.',
-    {
-      noticeId: z.string().describe('Interpol Red Notice entity ID (e.g. from interpol_search results).'),
-    },
-    async ({ noticeId }) => {
-      const r = await interpolNoticeDetail(noticeId);
       return untrustedToolResult(r);
     }
   );

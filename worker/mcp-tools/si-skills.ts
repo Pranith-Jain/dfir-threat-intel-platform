@@ -33,15 +33,7 @@ import type { McpToolHost } from './host';
 // names. esbuild does not typecheck free variables, so the Worker
 // still bundled and deployed while every tool that touched one threw
 // ReferenceError at call time. Fixed alongside the tsc (worker) gate.
-import {
-  filterQueries,
-  filterSkills,
-  getSiAutomation,
-  getSiQuery,
-  getSiSkill,
-  loadSiIndex,
-  siCacheStats,
-} from '../lib/si-manifest';
+import { filterQueries, filterSkills, getSiAutomation, getSiQuery, getSiSkill, loadSiIndex } from '../lib/si-manifest';
 import type { SiSkillCategory } from '../lib/si-manifest';
 export function registerSiSkillsTools(h: McpToolHost): void {
   // Was: `if (h.env.ASSETS) { const ASSETS = h.env.ASSETS; ... }`
@@ -177,22 +169,6 @@ export function registerSiSkillsTools(h: McpToolHost): void {
         return untrustedToolResult({ error: 'automation_not_found', slug });
       }
       return untrustedToolResult(body);
-    }
-  );
-
-  h.tools(
-    'si_stats',
-    'Return cache + manifest stats for the Security Investigator data: index loaded, body-cache sizes and hit ratios. Useful for diagnosing cold-start latency.',
-    {},
-    async () => {
-      const idx = await loadSiIndex(ASSETS);
-      return untrustedToolResult({
-        counts: idx.counts,
-        source: idx.source,
-        license: idx.license,
-        replicatedAt: idx.replicatedAt,
-        cache: siCacheStats(),
-      });
     }
   );
 }

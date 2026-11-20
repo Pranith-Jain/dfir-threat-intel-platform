@@ -11,7 +11,7 @@
  * the `if (h.env.ASSETS)` block this was extracted from.
  */
 
-import { bwCacheStats, filterBreaches, getBwBreach, listGroups, loadBwIndex } from '../lib/breach-watch-manifest';
+import { filterBreaches, getBwBreach, listGroups, loadBwIndex } from '../lib/breach-watch-manifest';
 import { untrustedToolResult } from './core';
 import { z } from 'zod';
 
@@ -24,14 +24,12 @@ import type { McpToolHost } from './host';
 // still bundled and deployed while every tool that touched one threw
 // ReferenceError at call time. Fixed alongside the tsc (worker) gate.
 import {
-  dwCacheStats,
   filterDwSecurityAuditingEvents,
   filterDwTechniques,
   filterDwWindowsProviders,
   getDwAttackTechnique,
   getDwLab,
   loadDwAttackIndex,
-  loadDwIndex,
   loadDwLabs,
   loadDwPlatformDetail,
   loadDwPlatforms,
@@ -45,7 +43,6 @@ import {
   getPcmDigest,
   getPcmLatest,
   loadPcmIndex,
-  pcmCacheStats,
   searchPcmItems,
 } from '../lib/pcmedicalist-manifest';
 import {
@@ -55,7 +52,6 @@ import {
   getSigBaseYara,
   loadSigBaseIndex,
   searchIocEntries as searchSigBaseIocEntries,
-  sigBaseCacheStats,
 } from '../lib/sigbase-manifest';
 import {
   filterTamGroups,
@@ -63,10 +59,8 @@ import {
   filterTamTechniques as filterTamTechniquesMcp,
   getTamGroup,
   loadTamGroups,
-  loadTamIndex,
   loadTamSources,
   loadTamTechniques,
-  tamCacheStats,
 } from '../lib/threat-monitor-manifest';
 export function registerDetectionManifestsTools(h: McpToolHost): void {
   // Was: `if (h.env.ASSETS) { const ASSETS = h.env.ASSETS; ... }`
@@ -277,32 +271,6 @@ export function registerDetectionManifestsTools(h: McpToolHost): void {
   );
 
   h.tools(
-    'dw_stats',
-    'Return cache + manifest stats for the detection.wiki mirror: 15k rules, 218 techniques, 1,518 Windows providers, 426 Security-Auditing events, 17 platforms, 6 labs, and LRU body-cache info.',
-    {},
-    async () => {
-      const idx = await loadDwIndex(ASSETS);
-      const windows = await loadDwWindows(ASSETS);
-      const sa = await loadDwSecurityAuditing(ASSETS);
-      return untrustedToolResult({
-        index: idx.stats,
-        windows: windows
-          ? {
-              totalProviders: windows.totalProviders,
-              sampled: windows.providers.length,
-              totalEvents: windows.totalEvents,
-            }
-          : null,
-        securityAuditing: sa
-          ? { eventCount: sa.eventCount, sampleCount: sa.sampleCount, rulesCount: sa.rulesCount }
-          : null,
-        source: idx.source,
-        cache: dwCacheStats(),
-      });
-    }
-  );
-
-  h.tools(
     'dw_get_platform',
     'Return detailed event catalog for a single detection.wiki platform (e.g. macOS ESF, auditd, AWS CloudTrail, Defender XDR, Entra ID): total events, sampled event types, and source URL. Use dw_list_platforms first to discover slugs.',
     {
@@ -491,23 +459,6 @@ export function registerDetectionManifestsTools(h: McpToolHost): void {
     }
   );
 
-  h.tools(
-    'tam_stats',
-    'Return cache + manifest stats for the Global Threat Actor Monitor replication: 40->81 groups, 29->108 techniques, 30->39 OSINT feeds, 7 Kill Chain stages, and LRU cache info.',
-    {},
-    async () => {
-      const idx = await loadTamIndex(ASSETS);
-      return untrustedToolResult({
-        stats: idx.stats,
-        upstream: idx.upstream,
-        expanded: idx.expanded,
-        source: idx.source,
-        architecture: idx.architecture,
-        cache: tamCacheStats(),
-      });
-    }
-  );
-
   // ── PCMedicalist feed tools ────────────────────────────────────
   // Daily security-intel digest from the PCMedicalist Intelligence
   // Network. Slim static mirror in public/data/pcmedicalist/
@@ -607,23 +558,6 @@ export function registerDetectionManifestsTools(h: McpToolHost): void {
       }
       const items = searchPcmItems(digest, { layer, keyword, cve, limit: limit ?? 50 });
       return untrustedToolResult({ date, returned: items.length, items });
-    }
-  );
-
-  h.tools(
-    'pcm_stats',
-    'Return cache + manifest stats for the PCMedicalist feed: digest counts, latest date, and LRU body-cache hit/miss ratios.',
-    {},
-    async () => {
-      const idx = await loadPcmIndex(ASSETS);
-      return untrustedToolResult({
-        source: idx.source,
-        sourceUrl: idx.sourceUrl,
-        license: idx.license,
-        counts: idx.counts,
-        latestDate: idx.digests[0]?.date ?? null,
-        cache: pcmCacheStats(),
-      });
     }
   );
 
@@ -757,22 +691,6 @@ export function registerDetectionManifestsTools(h: McpToolHost): void {
     }
   );
 
-  h.tools(
-    'sigbase_stats',
-    'Return cache + manifest stats for the Signature-Base data: YARA file/rule counts, IOC list/entry counts, external-variable rule files, and LRU body-cache hit/miss ratios.',
-    {},
-    async () => {
-      const idx = await loadSigBaseIndex(ASSETS);
-      return untrustedToolResult({
-        counts: idx.counts,
-        source: idx.source,
-        license: idx.license,
-        replicatedAt: idx.replicatedAt,
-        cache: sigBaseCacheStats(),
-      });
-    }
-  );
-
   // ── Breach Watch tools ────────────────────────────────────────
   // Live breach/leak data from 6 free public trackers
   // (ransomware.live + ransomlook.io + Darkfield +
@@ -858,23 +776,6 @@ export function registerDetectionManifestsTools(h: McpToolHost): void {
         returned: groups.length,
         source: idx.source,
         groups,
-      });
-    }
-  );
-
-  h.tools(
-    'bw_stats',
-    'Return cache + manifest stats for the Breach Watch data: breach counts, group counts, categories, and LRU body-cache hit/miss ratios.',
-    {},
-    async () => {
-      const idx = await loadBwIndex(ASSETS);
-      return untrustedToolResult({
-        counts: idx.counts,
-        source: idx.source,
-        license: idx.license,
-        replicatedAt: idx.replicatedAt,
-        categories: idx.categories,
-        cache: bwCacheStats(),
       });
     }
   );
