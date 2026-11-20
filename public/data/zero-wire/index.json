@@ -16,9 +16,9 @@
     "briefings": 13,
     "cves": 100,
     "bySeverity": {
-      "MEDIUM": 39,
-      "LOW": 2,
+      "LOW": 3,
       "HIGH": 52,
+      "MEDIUM": 38,
       "CRITICAL": 6,
       "UNKNOWN": 1
     }
@@ -2309,6 +2309,54 @@
     }
   ],
   "cves": [
+    {
+      "id": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-133697",
+      "url": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-133697",
+      "title": "CVE-2026-133697: continuedev continue Config Resolution LocalPlatformClient.ts LocalPlatformClient.resolveFQSNs information disclosure",
+      "summary": "A vulnerability has been found in continuedev continue up to 2.1.0. This vulnerability affects the function LocalPlatformClient.resolveFQSNs of the file core/config/yaml/LocalPlatformClient.ts of the component Config Resolution. Such manipulation of the argument Name leads to information disclosure. Local access is required to approach this attack. The vendor was contacted early about this disclosure but did not respond in any way.",
+      "contentText": "A vulnerability has been found in continuedev continue up to 2.1.0. This vulnerability affects the function LocalPlatformClient.resolveFQSNs of the file core/config/yaml/LocalPlatformClient.ts of the component Config Resolution. Such manipulation of the argument Name leads to information disclosure. Local access is required to approach this attack. The vendor was contacted early about this disclosure but did not respond in any way.\n\nCVSS 4.0 score: 2.4 (Low)\n\nDetails on Cloudflare Radar: https://radar.cloudflare.com/zero-wire/cves/CVE-2026-133697",
+      "published": "2026-11-20T21:00:21.925Z",
+      "modified": null,
+      "tags": [
+        "Low"
+      ],
+      "image": "https://radar.cloudflare.com/api/og/zero-wire/cves/CVE-2026-133697",
+      "ext": {
+        "about": "https://radar.cloudflare.com/zero-wire/cves/feed/schema.json",
+        "id": "CVE-2026-133697",
+        "severity": "LOW",
+        "score": 2.4,
+        "cvss_version": "4.0"
+      },
+      "cveId": "CVE-2026-133697",
+      "severity": "LOW",
+      "score": 2.4,
+      "cvssVersion": "4.0"
+    },
+    {
+      "id": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-134126",
+      "url": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-134126",
+      "title": "CVE-2026-134126: WPC Smart Messages for WooCommerce before 4.3.6 Information Disclosure via Shortcodes",
+      "summary": "WPC Smart Messages for WooCommerce plugin before 4.3.6 contains a missing authorization vulnerability that allows authenticated attackers with Contributor or Author privileges to disclose arbitrary post meta and private product data by supplying attacker-controlled id and key attributes to the [wpcsm_product_field] and [wpcsm_product_data] shortcodes without any capability or protected-meta checks. Attackers can embed these shortcodes in a published post to exfiltrate sensitive order data such as billing email, phone, and address stored as post meta, as well as private or draft product descriptions and purchase notes, exposing confidential customer and business information to unauthenticated site visitors.",
+      "contentText": "WPC Smart Messages for WooCommerce plugin before 4.3.6 contains a missing authorization vulnerability that allows authenticated attackers with Contributor or Author privileges to disclose arbitrary post meta and private product data by supplying attacker-controlled id and key attributes to the [wpcsm_product_field] and [wpcsm_product_data] shortcodes without any capability or protected-meta checks. Attackers can embed these shortcodes in a published post to exfiltrate sensitive order data such as billing email, phone, and address stored as post meta, as well as private or draft product descriptions and purchase notes, exposing confidential customer and business information to unauthenticated site visitors.\n\nCVSS 4.0 score: 7.1 (High)\n\nDetails on Cloudflare Radar: https://radar.cloudflare.com/zero-wire/cves/CVE-2026-134126",
+      "published": "2026-11-20T20:55:29.153Z",
+      "modified": null,
+      "tags": [
+        "High"
+      ],
+      "image": "https://radar.cloudflare.com/api/og/zero-wire/cves/CVE-2026-134126",
+      "ext": {
+        "about": "https://radar.cloudflare.com/zero-wire/cves/feed/schema.json",
+        "id": "CVE-2026-134126",
+        "severity": "HIGH",
+        "score": 7.1,
+        "cvss_version": "4.0"
+      },
+      "cveId": "CVE-2026-134126",
+      "severity": "HIGH",
+      "score": 7.1,
+      "cvssVersion": "4.0"
+    },
     {
       "id": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-133696",
       "url": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-133696",
@@ -4655,55 +4703,7 @@
       "severity": "UNKNOWN",
       "score": null,
       "cvssVersion": ""
-    },
-    {
-      "id": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-95827",
-      "url": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-95827",
-      "title": "CVE-2026-95827: Network packet reference leak in IPv6 Router Advertisement handling leads to buffer pool exhaustion",
-      "summary": "The IPv6 neighbour discovery code in subsys/net/ip/ipv6_nbr.c keeps packets that are waiting for address resolution on a per-neighbour pending queue. A queued packet holds two references: the one handed over by the sender and a second one taken by net_ipv6_send_ns() when the packet is put on the queue. The Router Advertisement handler handle_ra_input() popped each packet off the queue and passed it to net_send_data(), relying on a trailing nbr_clear_ns_pending() call to release the queue reference — but that call then found the queue already empty and released nothing, so one reference was leaked for every pending packet flushed on an RA. Router Advertisements are unauthenticated link-local ICMPv6 messages, so any node on the same link can trigger the flush. An attacker can make the leak deterministic by advertising itself as a router without a source link-layer address option, so the victim's neighbour entry stays INCOMPLETE, then inducing the victim to transmit through that next hop (the packet is queued and a neighbour solicitation is sent), leaving the solicitation unanswered and sending a further RA to drain the queue. Each round leaks one struct net_pkt together with its net_buf chain. Leaked packets are never returned to the fixed-size pools, so the loss is permanent for the lifetime of the boot. With CONFIG_NET_PKT_TX_COUNT defaulting to 4 (14 with CONFIG_NET_PKT_LARGE_DEFAULTS), a small number of repetitions exhausts the transmit packet slab and the node stops being able to send any traffic. The impact is availability only: the reference count is always too high, never too low, so no use-after-free or memory corruption arises. The fix moves the flush into a helper, nbr_send_pending(), which releases the queue reference for every packet it takes off the queue before handing the remaining reference to net_send_data(), and releases that one too if the send is refused.",
-      "contentText": "The IPv6 neighbour discovery code in subsys/net/ip/ipv6_nbr.c keeps packets that are waiting for address resolution on a per-neighbour pending queue. A queued packet holds two references: the one handed over by the sender and a second one taken by net_ipv6_send_ns() when the packet is put on the queue. The Router Advertisement handler handle_ra_input() popped each packet off the queue and passed it to net_send_data(), relying on a trailing nbr_clear_ns_pending() call to release the queue reference — but that call then found the queue already empty and released nothing, so one reference was leaked for every pending packet flushed on an RA. Router Advertisements are unauthenticated link-local ICMPv6 messages, so any node on the same link can trigger the flush. An attacker can make the leak deterministic by advertising itself as a router without a source link-layer address option, so the victim's neighbour entry stays INCOMPLETE, then inducing the victim to transmit through that next hop (the packet is queued and a neighbour solicitation is sent), leaving the solicitation unanswered and sending a further RA to drain the queue. Each round leaks one struct net_pkt together with its net_buf chain. Leaked packets are never returned to the fixed-size pools, so the loss is permanent for the lifetime of the boot. With CONFIG_NET_PKT_TX_COUNT defaulting to 4 (14 with CONFIG_NET_PKT_LARGE_DEFAULTS), a small number of repetitions exhausts the transmit packet slab and the node stops being able to send any traffic. The impact is availability only: the reference count is always too high, never too low, so no use-after-free or memory corruption arises. The fix moves the flush into a helper, nbr_send_pending(), which releases the queue reference for every packet it takes off the queue before handing the remaining reference to net_send_data(), and releases that one too if the send is refused.\n\nCVSS 3.1 score: 6.5 (Medium)\n\nDetails on Cloudflare Radar: https://radar.cloudflare.com/zero-wire/cves/CVE-2026-95827",
-      "published": "2026-11-20T18:18:57.470Z",
-      "modified": null,
-      "tags": [
-        "Medium"
-      ],
-      "image": "https://radar.cloudflare.com/api/og/zero-wire/cves/CVE-2026-95827",
-      "ext": {
-        "about": "https://radar.cloudflare.com/zero-wire/cves/feed/schema.json",
-        "id": "CVE-2026-95827",
-        "severity": "MEDIUM",
-        "score": 6.5,
-        "cvss_version": "3.1"
-      },
-      "cveId": "CVE-2026-95827",
-      "severity": "MEDIUM",
-      "score": 6.5,
-      "cvssVersion": "3.1"
-    },
-    {
-      "id": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-95826",
-      "url": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-95826",
-      "title": "CVE-2026-95826: Out-of-bounds write in the SMSC911x Ethernet driver when transmitting frames larger than the staging buffer",
-      "summary": "The SMSC911x/LAN9220 Ethernet driver stages every outgoing frame in a fixed-size static buffer before pushing it to the controller FIFO. eth_tx() in drivers/ethernet/eth_smsc911x.c took the frame length from net_pkt_get_len(pkt) and passed it directly to net_pkt_read(pkt, tx_buf, total_len), with no comparison against the size of tx_buf (NET_ETH_MAX_FRAME_SIZE). net_pkt_read() takes no destination size and only fails when the packet is shorter than the requested length, so any packet longer than the staging buffer was copied past its end. Nothing between the IP layer and the driver bounds the frame to what the link can carry: ethernet_send() in subsys/net/l2/ethernet/ethernet.c performs no length check, and the IPv6 output path only compares the packet against the interface MTU when CONFIG_NET_IPV6_FRAGMENT is enabled (it is disabled by default). The size the stack will build is therefore governed by the interface MTU, and that MTU is remotely settable: handle_ra_input() in subsys/net/ip/ipv6_nbr.c honours the MTU option of any Router Advertisement with a value up to 0xffff, gated only by the standard hop-limit-255 and link-local-source checks. An unauthenticated attacker on the same link can raise the MTU and then have the device emit a single frame of several kilobytes, for example as a TCP segment from any service that returns more than ~1.5 KB or as an oversized UDP datagram. The result is an out-of-bounds write into .bss immediately after tx_buf, with the overrun length and much of its content derived from the transmitted frame. Consequences range from corruption of adjacent kernel data and a crash to potential control-flow influence where the clobbered globals hold pointers; the practical overrun size is bounded by the network buffer pool rather than by the advertised MTU. The fix rejects frames larger than NET_ETH_MAX_FRAME_SIZE with -EMSGSIZE before any TX_DATA_PORT write, so the controller FIFO is also not left holding a command word without its payload.",
-      "contentText": "The SMSC911x/LAN9220 Ethernet driver stages every outgoing frame in a fixed-size static buffer before pushing it to the controller FIFO. eth_tx() in drivers/ethernet/eth_smsc911x.c took the frame length from net_pkt_get_len(pkt) and passed it directly to net_pkt_read(pkt, tx_buf, total_len), with no comparison against the size of tx_buf (NET_ETH_MAX_FRAME_SIZE). net_pkt_read() takes no destination size and only fails when the packet is shorter than the requested length, so any packet longer than the staging buffer was copied past its end. Nothing between the IP layer and the driver bounds the frame to what the link can carry: ethernet_send() in subsys/net/l2/ethernet/ethernet.c performs no length check, and the IPv6 output path only compares the packet against the interface MTU when CONFIG_NET_IPV6_FRAGMENT is enabled (it is disabled by default). The size the stack will build is therefore governed by the interface MTU, and that MTU is remotely settable: handle_ra_input() in subsys/net/ip/ipv6_nbr.c honours the MTU option of any Router Advertisement with a value up to 0xffff, gated only by the standard hop-limit-255 and link-local-source checks. An unauthenticated attacker on the same link can raise the MTU and then have the device emit a single frame of several kilobytes, for example as a TCP segment from any service that returns more than ~1.5 KB or as an oversized UDP datagram. The result is an out-of-bounds write into .bss immediately after tx_buf, with the overrun length and much of its content derived from the transmitted frame. Consequences range from corruption of adjacent kernel data and a crash to potential control-flow influence where the clobbered globals hold pointers; the practical overrun size is bounded by the network buffer pool rather than by the advertised MTU. The fix rejects frames larger than NET_ETH_MAX_FRAME_SIZE with -EMSGSIZE before any TX_DATA_PORT write, so the controller FIFO is also not left holding a command word without its payload.\n\nCVSS 3.1 score: 7.5 (High)\n\nDetails on Cloudflare Radar: https://radar.cloudflare.com/zero-wire/cves/CVE-2026-95826",
-      "published": "2026-11-20T18:18:57.320Z",
-      "modified": null,
-      "tags": [
-        "High"
-      ],
-      "image": "https://radar.cloudflare.com/api/og/zero-wire/cves/CVE-2026-95826",
-      "ext": {
-        "about": "https://radar.cloudflare.com/zero-wire/cves/feed/schema.json",
-        "id": "CVE-2026-95826",
-        "severity": "HIGH",
-        "score": 7.5,
-        "cvss_version": "3.1"
-      },
-      "cveId": "CVE-2026-95826",
-      "severity": "HIGH",
-      "score": 7.5,
-      "cvssVersion": "3.1"
     }
   ],
-  "generatedAt": "2026-11-20T20:52:28.790Z"
+  "generatedAt": "2026-11-20T21:09:13.598Z"
 }
