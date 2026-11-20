@@ -236,7 +236,7 @@ checkout never needs the folder until someone rebuilds locally.
 
 **Weekly sync**: `.github/workflows/si-upstream-sync.yml` re-runs sync + build every Monday 06:00 UTC; opens a PR if `public/data/si/` changed.
 
-**MCP tool inventory**: 446 tools total across the `DFIR_MCP` Durable Object — DFIR/threat-intel tools (`check_ioc`, `lookup_cve`, `enrich_actor`, `lookup_domain`, etc.) + SI tools (`si_*`) + threat-intel vertical (`ti_*`) + NHI scanner (`nhi_*`) + depx (`depx_*`) + winreg (`winreg_*`) + HudsonRock (`hr_*`) + Telegram (`tg_*`) + workspace/notebook (`ws_*`, `notebook_*`) + passive DNS + IOC watchlist + report analysis + more. Regenerate `public/mcp-manifest.json` + `public/mcp/README.md` + `public/llms-full.txt` with `node scripts/build-mcp-manifest.mjs && node scripts/build-llms-full.mjs`.
+**MCP tool inventory**: 435 tools total across the `DFIR_MCP` Durable Object — DFIR/threat-intel tools (`check_ioc`, `lookup_cve`, `enrich_actor`, `lookup_domain`, etc.) + SI tools (`si_*`) + threat-intel vertical (`ti_*`) + NHI scanner (`nhi_*`) + depx (`depx_*`) + winreg (`winreg_*`) + HudsonRock (`hr_*`) + Telegram (`tg_*`) + workspace/notebook (`ws_*`, `notebook_*`) + passive DNS + IOC watchlist + report analysis + more. Regenerate `public/mcp-manifest.json` + `public/mcp/README.md` + `public/llms-full.txt` with `node scripts/build-mcp-manifest.mjs && node scripts/build-llms-full.mjs`.
 
 ## Threat Intel vertical — CVE/KEV/IOC/sector brief (v1)
 
@@ -550,7 +550,7 @@ Two replicated verticals added 2026-10-17, plus live integrations:
 for the digest) reused; `offseq-radar` RSS entry already in `src/data/rssFeeds.ts`.
 
 **Both verticals ride** `.github/workflows/threat-intel-sync.yml` (sync + build
-steps added) and regenerate `public/mcp-manifest.json` (now 446 tools).
+steps added) and regenerate `public/mcp-manifest.json` (now 435 tools).
 
 ## Content-generation system (/admin)
 
@@ -604,16 +604,36 @@ outcome.
 family). `infostealers` is always-on: ClickFix needs no CVE, so CVE feeds
 never mention it.
 
-**Daily discovery floor.** The standing requirement is 5-8 fresh candidates a
-day, so `runDiscoveryNow` asks `runDiscovery` for `minKept: 6`. The queue used
-to come back with 2-3 because the 14d anti-repetition gate (see `isKeySuppressed`)
-suppressed nearly everything the runners returned; `SURFACED_BLOCK_MS` is now 5d
-and, when the strict pass still lands under the floor, `runDiscovery` refills
-from the pool the runners **already fetched** (no extra subrequests) under the
-caller's `admitSuppressed` policy: admin skips always win and an already-published
-key is **never** re-offered, only items last surfaced >2d ago. `perTopic` 3→5,
-`limit` 36→60. The cron logs `kept/total/suppressed/blocked/filled` — if `filled`
-is high every day, the runners (not the gate) are the next thing to fix.
+**Threat-intel corpus runners** (`discovery/threat-intel.ts`):
+`threatClusters` (threatcluster.io multi-source clusters, cyber-relevant titles
+only — kinetic/geopolitical clusters are filtered out), `livingThreat`
+(priority ≥60 incidents with ATT&CK mapping), and `incidentDesk` (identity
+incident briefs). All three are always-on and read the platform's replicated
+corpora through the SELF binding, giving the daily mix a non-CVE backbone
+independent of RSS. They **throw** on transport/shape failure so
+`runnerStats` names the broken source instead of silently returning zero.
+
+**Daily discovery floor.** The standing requirement is 5-10 fresh candidates a
+day, so `runDiscoveryNow` asks `runDiscovery` for `minKept: 6` and caps the
+output at `limit: 10`. The queue used to come back with 2-3 because the 14d
+anti-repetition gate (see `isKeySuppressed`) suppressed nearly everything the
+runners returned; `SURFACED_BLOCK_MS` is now 5d and, when the strict pass still
+lands under the floor, `runDiscovery` refills from the pool the runners
+**already fetched** (no extra subrequests) under the caller's
+`admitSuppressed` policy: admin skips always win and an already-published key
+is **never** re-offered, only items last surfaced >2d ago. `perTopic` 3→5, and
+the final cap is applied **round-robin by type** (`interleaveByType`), not by a
+global score sort — so ten slots are the day's mix, never ten CVEs.
+
+**Candidate persistence is batched by type** (`putCandidates` in
+`storage/candidates.ts`). The old `Promise.all(kept.map(putCandidate))` raced on
+the single `candidates:<type>:all` KV blob: every candidate of a type read the
+same pre-run list, appended itself, and the last write won. A six-item run
+persisted one row per type — exactly the "discover only shows 2 suggestions"
+bug. `runDiscovery` now hands the whole kept set to `putCandidates`, which does
+one read-modify-write per type. The cron logs
+`kept/total/suppressed/blocked/filled/byTopic/byTopicSelected` plus
+`runnerErrors` (present only when a source failed).
 
 **Barred sources.** `api/src/case-study/source-blocklist.ts` bars ExploitGrid from
 **every** discovery/queue surface. Enforcement is two-sided on purpose: discovery
@@ -1079,6 +1099,42 @@ Issue #637 (scanner C unverified `dangerouslySetInnerHTML`) was fixed in
 imported (bundle-size rule), but is now invoked at the render sink through a
 `sanitizeHtml` wrapper so the guard can see it, and the stored HTML is raw
 until that point.
+
+## Cloudflare Radar Zero Wire tab
+
+`scripts/sync-zero-wire.mjs` mirrors the two public JSON Feed 1.1 endpoints
+`radar.cloudflare.com/zero-wire/feed?format=json` (analyst briefings) and
+`/zero-wire/cves/feed?format=json` (100 newest CVEs with CVSS) into
+`public/data/zero-wire/index.json`. REA browser capture on
+`https://radar.cloudflare.com/zero-wire` confirmed the page advertises both
+feeds via `<link rel="alternate">` and that the feed extensions (`_zero_wire`
+action steps/WAF coverage, `_cve` severity/score) carry the structured detail.
+`src/pages/threatintel/ZeroWire.tsx` is the reader, mounted as the "Zero Wire"
+tab on `/threatintel/cves/cves` with Briefings and CVEs views. Runs in
+`cve-intel-sync.yml` (6h). Tests: `scripts/sync-zero-wire.test.mjs`.
+
+## CyberView replication (5 separate pages)
+
+`scripts/sync-cyberview.mjs` mirrors the public static JSON behind
+`https://xanderhutch.github.io/CyberView/` into `public/data/cyberview/`.
+REA browser scenarios captured all five rendered pages (DOM + accessibility):
+the site is static, with no private API or key — every page reads those same
+files. Each page is replicated in the app's design system as a separate route,
+with a shared `CyberViewNav`:
+
+| Route                                    | Source page               | Data file                                     |
+| ---------------------------------------- | ------------------------- | --------------------------------------------- |
+| `/threatintel/cyberview`                 | `index.html` (globe/wire) | `data/events.json`, `data/feed.json`          |
+| `/threatintel/cyberview/vulnerabilities` | `vulnerabilities.html`    | `data/workbench.json`, `data/cve/recent.json` |
+| `/threatintel/cyberview/archive`         | `archive.html`            | `data/archive/*.json`                         |
+| `/threatintel/cyberview/trends`          | `trends.html`             | `data/trends.json`                            |
+| `/threatintel/cyberview/tabletop`        | `tabletop.html`           | `data/tabletop.json`                          |
+
+The upstream JSON Lines history is converted to `data/events.json` (a JSON
+array) so the globe page can plot every event without a map library. The routes
+are in `HUB_META` (hub `cyberview`), `pages-index.ts`, `App.tsx`,
+`scripts/prerender.mjs` and `worker/prerender-routes.ts`. Runs in
+`cve-intel-sync.yml` (6h).
 
 ## CVE checker — consolidated verdict (tldrcve + RD Intel + exploits)
 

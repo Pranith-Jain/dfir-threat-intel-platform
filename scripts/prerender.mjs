@@ -63,6 +63,12 @@ const ROUTES = [
   '/threatintel/cves/advisories',
   '/threatintel/cves/cves',
   '/threatintel/cves/resources',
+  // ── CyberView replication (5 separate pages) ──────────────────
+  '/threatintel/cyberview',
+  '/threatintel/cyberview/vulnerabilities',
+  '/threatintel/cyberview/archive',
+  '/threatintel/cyberview/trends',
+  '/threatintel/cyberview/tabletop',
   // ── OSINT / dark-web verticals (added with the external-tool
   // integrations) ─────────────────────────────────────────────────
   '/threatintel/cve-triage',

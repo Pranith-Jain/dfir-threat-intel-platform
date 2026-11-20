@@ -20,6 +20,7 @@ const CertInAdvisories = lazy(() => import('./CertInAdvisories'));
 const PocScanner = lazy(() => import('./PocScanner'));
 const CyberNewsFeed = lazy(() => import('./CyberNewsFeed'));
 const CveHealthCheck = lazy(() => import('./CveHealthCheck'));
+const ZeroWire = lazy(() => import('./ZeroWire'));
 
 type TabId =
   | 'rdintel'
@@ -37,7 +38,8 @@ type TabId =
   | 'cert-in'
   | 'poc'
   | 'news'
-  | 'health';
+  | 'health'
+  | 'zero-wire';
 
 const TABS: Array<{ id: TabId; label: string; desc: string }> = [
   {
@@ -100,6 +102,11 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
     desc: 'Indian CERT advisories (CIAD-YYYY-NNNN) with severity, products, and CVE mapping',
   },
   { id: 'health', label: 'Health', desc: 'Data pipeline health - NVD, EPSS, KEV, GitHub, and Exploit-DB status' },
+  {
+    id: 'zero-wire',
+    label: 'Zero Wire',
+    desc: 'Cloudflare Radar Zero Wire — analyst security briefings with patch actions and WAF coverage, plus the 100 most recently published CVEs with CVSS severity',
+  },
 ];
 
 export default function CveIntel(): JSX.Element {
@@ -130,8 +137,8 @@ export default function CveIntel(): JSX.Element {
         <>
           Unified CVE intelligence: <strong>plain-English tldrcve verdicts</strong>,{' '}
           <strong>RD Intelligence corpus stats</strong>, <strong>cves.io attention ranking</strong>, NVD + KEV + EPSS
-          enrichment, OffSeq threat radar (threats, feeds, map), exploit availability, and Kubernetes advisories. Scores
-          are upstream values, refreshed on their own schedules.
+          enrichment, OffSeq threat radar (threats, feeds, map), Cloudflare Radar Zero Wire briefings and CVEs, exploit
+          availability, and Kubernetes advisories. Scores are upstream values, refreshed on their own schedules.
         </>
       }
     >
@@ -176,6 +183,7 @@ export default function CveIntel(): JSX.Element {
           {activeTab === 'k8s' && <K8sCve bare />}
           {activeTab === 'cert-in' && <CertInAdvisories bare />}
           {activeTab === 'health' && <CveHealthCheck bare />}
+          {activeTab === 'zero-wire' && <ZeroWire bare />}
         </Suspense>
       </div>
     </DataPageLayout>

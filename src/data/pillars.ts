@@ -87,6 +87,7 @@ export const HUB_PILLAR: Readonly<Record<string, string>> = {
   // ── Threat Landscape ──────────────────────────────────────────────
   'threatintel:actors': 'threat-landscape',
   'threatintel:campaigns': 'threat-landscape',
+  'threatintel:cyberview': 'threat-landscape',
   'threatintel:monitoring-estate': 'threat-landscape',
   'threatintel:predictive': 'threat-landscape',
   'threatintel:social': 'threat-landscape',
