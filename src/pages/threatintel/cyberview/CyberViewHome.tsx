@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useDataFetch } from '../../../hooks/useDataFetch';
 import { relativeAgo } from '../../../lib/relativeTime';
+import { ThreatGlobe3D, type GlobeMarker } from '../../../components/ThreatGlobe3D';
 import { asArray, fmtDay, matches, text, topCounts } from './shared-utils';
 import { Badge, CyberViewPage, Empty, OutLink } from './shared-ui';
 
@@ -420,6 +421,7 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
   const [tab, setTab] = useState<PanelTab>('feed');
   const [sort, setSort] = useState<'priority' | 'recent'>('priority');
   const [zoom, setZoom] = useState(1);
+  const [map3d, setMap3d] = useState(true);
   const [showLayers, setShowLayers] = useState(false);
   const [wall, setWall] = useState(false);
   const [help, setHelp] = useState(false);
@@ -504,6 +506,18 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
       ),
     [filtered, showLayers]
   );
+  const globeMarkers = useMemo<GlobeMarker[]>(
+    () =>
+      plotted.map((e) => ({
+        id: text(e.id),
+        lat: Number(e.lat),
+        lng: Number(e.lng),
+        color: SEVERITY_COLOR[e.severity] ?? SEVERITY_COLOR[2]!,
+        label: `${text(e.title)} — ${SEVERITY_LABEL[e.severity] ?? 'unknown'} · ${text(e.country)}`,
+        size: e.severity === 3 ? 1.25 : e.severity === 1 ? 0.8 : 1,
+      })),
+    [plotted]
+  );
   const highCount = useMemo(() => filtered.filter((e) => e.severity === 3).length, [filtered]);
   const unverifiedHidden = useMemo(() => windowEvents.filter(isUnverified).length, [windowEvents]);
   const sorted = useMemo(() => sortEvents(filtered, sort), [filtered, sort]);
@@ -586,82 +600,99 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
     >
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <p className="font-mono text-[11px] text-muted">
-          <span className="font-semibold text-heading">World map</span> · {plotted.length} markers · equirectangular ·{' '}
-          {fmtDay(windowDates[0] ?? '')}–{fmtDay(windowDates[windowDates.length - 1] ?? '')}
+          <span className="font-semibold text-heading">World map</span> · {plotted.length} markers ·{' '}
+          {map3d ? '3D globe (drag to turn, scroll to zoom)' : 'equirectangular'} · {fmtDay(windowDates[0] ?? '')}–
+          {fmtDay(windowDates[windowDates.length - 1] ?? '')}
         </p>
         <div className="flex flex-wrap items-center gap-1">
-          <IconBtn label="Zoom in" onClick={() => setZoom((z) => Math.min(3, +(z + 0.4).toFixed(1)))}>
-            <Plus size={14} />
-          </IconBtn>
-          <IconBtn label="Zoom out" onClick={() => setZoom((z) => Math.max(1, +(z - 0.4).toFixed(1)))}>
-            <Minus size={14} />
-          </IconBtn>
-          <IconBtn label="Reset map view" onClick={() => setZoom(1)}>
-            <Home size={13} />
-          </IconBtn>
+          <Choice active={map3d} onClick={() => setMap3d(true)}>
+            <Globe2 size={12} aria-hidden="true" /> 3D
+          </Choice>
+          <Choice active={!map3d} onClick={() => setMap3d(false)}>
+            <MapPin size={12} aria-hidden="true" /> 2D
+          </Choice>
+          {!map3d && (
+            <>
+              <IconBtn label="Zoom in" onClick={() => setZoom((z) => Math.min(3, +(z + 0.4).toFixed(1)))}>
+                <Plus size={14} />
+              </IconBtn>
+              <IconBtn label="Zoom out" onClick={() => setZoom((z) => Math.max(1, +(z - 0.4).toFixed(1)))}>
+                <Minus size={14} />
+              </IconBtn>
+              <IconBtn label="Reset map view" onClick={() => setZoom(1)}>
+                <Home size={13} />
+              </IconBtn>
+            </>
+          )}
           <Choice active={showLayers} onClick={() => setShowLayers((v) => !v)} className="ml-1">
             <Layers size={12} aria-hidden="true" /> Map layers
           </Choice>
         </div>
       </div>
-      <svg
-        viewBox={`0 0 ${MAP_W} ${MAP_H}`}
-        className="w-full rounded-lg border border-line-1"
-        role="img"
-        aria-label="World map with event markers"
-      >
-        <rect width={MAP_W} height={MAP_H} className="fill-surface-100" />
-        <g transform={zoomTransform}>
-          <g className="text-line-1" stroke="currentColor" strokeWidth={0.7} fill="none" opacity={0.5}>
-            {Array.from({ length: 11 }, (_, i) => (
-              <line key={`v${i}`} x1={(i * MAP_W) / 10} y1={0} x2={(i * MAP_W) / 10} y2={MAP_H} />
-            ))}
-            {Array.from({ length: 7 }, (_, i) => (
-              <line key={`h${i}`} x1={0} y1={(i * MAP_H) / 6} x2={MAP_W} y2={(i * MAP_H) / 6} />
-            ))}
-            <line x1={0} y1={MAP_H / 2} x2={MAP_W} y2={MAP_H / 2} strokeWidth={1} strokeDasharray="4 4" />
+      {map3d ? (
+        <div className="relative h-[min(62vh,620px)] w-full overflow-hidden rounded-lg border border-line-1 bg-[#050814]">
+          <ThreatGlobe3D markers={globeMarkers} onSelect={setSelectedId} />
+        </div>
+      ) : (
+        <svg
+          viewBox={`0 0 ${MAP_W} ${MAP_H}`}
+          className="w-full rounded-lg border border-line-1"
+          role="img"
+          aria-label="World map with event markers"
+        >
+          <rect width={MAP_W} height={MAP_H} className="fill-surface-100" />
+          <g transform={zoomTransform}>
+            <g className="text-line-1" stroke="currentColor" strokeWidth={0.7} fill="none" opacity={0.5}>
+              {Array.from({ length: 11 }, (_, i) => (
+                <line key={`v${i}`} x1={(i * MAP_W) / 10} y1={0} x2={(i * MAP_W) / 10} y2={MAP_H} />
+              ))}
+              {Array.from({ length: 7 }, (_, i) => (
+                <line key={`h${i}`} x1={0} y1={(i * MAP_H) / 6} x2={MAP_W} y2={(i * MAP_H) / 6} />
+              ))}
+              <line x1={0} y1={MAP_H / 2} x2={MAP_W} y2={MAP_H / 2} strokeWidth={1} strokeDasharray="4 4" />
+            </g>
+            <g className="text-surface-200" fill="currentColor" stroke="currentColor" strokeWidth={0.8} opacity={0.95}>
+              {CONTINENTS.map((poly, i) => (
+                <path key={i} d={polygonPath(poly)} />
+              ))}
+            </g>
+            {plotted.map((e) => {
+              const [x, y] = project(e.lng as number, e.lat as number);
+              const color = SEVERITY_COLOR[e.severity] ?? SEVERITY_COLOR[2];
+              const active = selectedId === e.id;
+              return (
+                <g
+                  key={e.id}
+                  role="button"
+                  tabIndex={0}
+                  className="cursor-pointer focus:outline-none"
+                  aria-label={`${text(e.title)} — ${SEVERITY_LABEL[e.severity] ?? 'unknown'} severity, ${text(e.country)}`}
+                  onMouseEnter={() => setSelectedId(e.id)}
+                  onFocus={() => setSelectedId(e.id)}
+                  onClick={() => setSelectedId(e.id)}
+                  onKeyDown={(ev) => {
+                    if (ev.key === 'Enter' || ev.key === ' ') {
+                      ev.preventDefault();
+                      setSelectedId(e.id);
+                    }
+                  }}
+                >
+                  <title>{text(e.title)}</title>
+                  <circle cx={x} cy={y} r={markerR * 2.8} fill={color} opacity={active ? 0.32 : 0.16} />
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r={markerR}
+                    fill={color}
+                    stroke={active ? '#ffffff' : 'transparent'}
+                    strokeWidth={active ? 1.6 : 0}
+                  />
+                </g>
+              );
+            })}
           </g>
-          <g className="text-surface-200" fill="currentColor" stroke="currentColor" strokeWidth={0.8} opacity={0.95}>
-            {CONTINENTS.map((poly, i) => (
-              <path key={i} d={polygonPath(poly)} />
-            ))}
-          </g>
-          {plotted.map((e) => {
-            const [x, y] = project(e.lng as number, e.lat as number);
-            const color = SEVERITY_COLOR[e.severity] ?? SEVERITY_COLOR[2];
-            const active = selectedId === e.id;
-            return (
-              <g
-                key={e.id}
-                role="button"
-                tabIndex={0}
-                className="cursor-pointer focus:outline-none"
-                aria-label={`${text(e.title)} — ${SEVERITY_LABEL[e.severity] ?? 'unknown'} severity, ${text(e.country)}`}
-                onMouseEnter={() => setSelectedId(e.id)}
-                onFocus={() => setSelectedId(e.id)}
-                onClick={() => setSelectedId(e.id)}
-                onKeyDown={(ev) => {
-                  if (ev.key === 'Enter' || ev.key === ' ') {
-                    ev.preventDefault();
-                    setSelectedId(e.id);
-                  }
-                }}
-              >
-                <title>{text(e.title)}</title>
-                <circle cx={x} cy={y} r={markerR * 2.8} fill={color} opacity={active ? 0.32 : 0.16} />
-                <circle
-                  cx={x}
-                  cy={y}
-                  r={markerR}
-                  fill={color}
-                  stroke={active ? '#ffffff' : 'transparent'}
-                  strokeWidth={active ? 1.6 : 0}
-                />
-              </g>
-            );
-          })}
-        </g>
-      </svg>
+        </svg>
+      )}
       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[10px] text-muted">
         {([3, 2, 1] as const).map((s) => (
           <span key={s} className="inline-flex items-center gap-1">
