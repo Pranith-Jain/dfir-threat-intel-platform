@@ -1,0 +1,73 @@
+name: Live feed mirrors (upstream-triggered)
+
+# Keeps the new feed mirrors fresh. Upstream can trigger this instantly via
+# repository_dispatch (event: feed-update); the 30-minute cron is only a
+# backstop for sources that do not emit a dispatch. Data-only changes are
+# committed straight to main (no PR), which triggers the normal CI deploy.
+# Quiet ticks produce no diff, no commit and no deploy.
+
+on:
+  repository_dispatch:
+    types: [feed-update, upstream-update]
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch: {}
+
+concurrency:
+  group: feed-live-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Mirror Zero Wire feeds
+        run: node scripts/sync-zero-wire.mjs
+
+      - name: Mirror ExploitTotal public feed
+        run: node scripts/sync-exploittotal.mjs
+
+      - name: Mirror dbugs public index
+        run: node scripts/sync-dbugs.mjs
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git add public/data/zero-wire/ public/data/exploittotal/ public/data/dbugs/
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No feed changes — skipping commit."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --cached --stat | tail -10
+          fi
+
+      - name: Commit to main
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit --no-verify -m "chore(feeds): live mirror sync $(date -u +%Y-%m-%dT%H%M)"
+          for attempt in 1 2 3; do
+            if git push origin main 2>/dev/null; then exit 0; fi
+            echo "Push rejected (attempt $attempt) — rebasing and retrying."
+            git pull --rebase origin main || git rebase --abort
+          done
+          echo "::error::push failed after 3 attempts"
+          exit 1

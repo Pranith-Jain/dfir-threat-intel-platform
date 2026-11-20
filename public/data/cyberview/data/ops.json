@@ -1,5 +1,5 @@
 {
-  "built_at": "2026-11-20T18:45:44.821Z",
+  "built_at": "2026-11-20T19:59:29.797Z",
   "routines": [
     {
       "key": "collect",
@@ -12,7 +12,7 @@
       "max_age_hours": 3,
       "active": true,
       "does": "Reads 131 agency, vendor and news feeds in several languages every 30 minutes, plus any the source scout has added, and files new items as leads.",
-      "last_at": "2026-11-20T18:40:21Z"
+      "last_at": "2026-11-20T19:43:47Z"
     },
     {
       "key": "feeds",
@@ -49,7 +49,7 @@
       "max_age_hours": 3,
       "active": true,
       "does": "Keeps every published CVE current from the official CVE List (with CISA's enrichment), EPSS daily and CISA's known-exploited dates, for the CVE lookup page; files new notable CVEs (exploited, known exploited or CVSS 9+) as leads for the research loop.",
-      "last_at": "2026-11-20T17:59:38Z"
+      "last_at": "2026-11-20T19:53:48Z"
     },
     {
       "key": "monitor",
@@ -76,7 +76,7 @@
       "active": true,
       "active_since": "2026-11-19T00:00:00Z",
       "does": "Asks three independent news indexes in 12 languages, the EU and US vulnerability databases, Have I Been Pwned, leak-site tracking, Hacker News and cloud status pages, so no single search engine decides what is seen.",
-      "last_at": "2026-11-20T18:41:02Z"
+      "last_at": "2026-11-20T19:45:19Z"
     },
     {
       "key": "grid",
@@ -89,7 +89,7 @@
       "max_age_hours": 2,
       "active": true,
       "does": "Runs in the research loop every few minutes (collect.yml every 30 minutes as backup): reads grid operators' public outage feeds and open grid data, tracks incidents from start to end, finds outages unusual for the hour and what corroborates them, gathers outages reported in the news, and audits every source each cycle (failing or frozen feeds, sudden falls, misplaced points). Map context, never cyber events.",
-      "last_at": "2026-11-20T18:42:39Z"
+      "last_at": "2026-11-20T19:45:44Z"
     },
     {
       "key": "exploit-watch",
@@ -158,7 +158,7 @@
       "active": true,
       "does": "Continuous research loop: every few minutes it collects leads, researches new stories and second-reviews earlier events in parallel, then commits (target: lead to published and reviewed in under 15 minutes). The four schedules restart it when it is not running.",
       "reviewed": "2026-11-20",
-      "last_at": "2026-11-20T18:43:47Z"
+      "last_at": "2026-11-20T19:50:46Z"
     },
     {
       "key": "review",
@@ -181,14 +181,14 @@
       "tier": "ai",
       "workflow": "claude-task",
       "active_since": "2026-11-19T00:00:00Z",
-      "cron": "55 */3 * * *",
+      "cron": "55 * * * *",
       "model": "claude-sonnet-5-5",
       "status_key": "last_backlog_at",
       "max_age_hours": 7,
       "active": true,
       "does": "Keeps the research queue empty when the research loop falls behind: rules close routine bulletins and commentary, triagers sort the remaining headlines, and up to four researchers take what the loop did not reach. Every 3 hours; the loop's own rules run at every collection.",
       "reviewed": "2026-11-20",
-      "last_at": null
+      "last_at": "2026-11-20T18:55:55Z"
     },
     {
       "key": "verify",
@@ -340,7 +340,7 @@
       "active": true,
       "does": "Runs inside the research loop every 2 hours (config/pipeline.json flow.followup_every_minutes): checks whether developing stories and claims were confirmed, denied or grew, and updates them. Its separate daily schedule was switched off on 2026-11-20.",
       "reviewed": "2026-11-20",
-      "last_at": "2026-11-20T18:11:02Z"
+      "last_at": "2026-11-20T19:43:39Z"
     },
     {
       "key": "steward",
@@ -627,59 +627,143 @@
       "note": "closed by rule: commentary"
     },
     { "at": "2026-11-20Tre:vi:00Z", "job": "reviewer", "added": 0, "updated": 0, "failed": 0, "note": "" },
-    { "at": "2026-11-20T18:43:00Z", "job": "sweep-r1", "added": 1, "updated": 0, "failed": 0, "note": "" },
-    { "at": "2026-11-20T18:42:00Z", "job": "grid", "added": 0, "updated": 0, "failed": 0, "note": "" },
-    { "at": "2026-11-20T18:42:00Z", "job": "grid", "added": 0, "updated": 0, "failed": 0, "note": "" },
-    { "at": "2026-11-20T18:42:00Z", "job": "backlog-auto", "added": 0, "updated": 0, "failed": 0, "note": "" },
-    { "at": "2026-11-20T18:40:00Z", "job": "context", "added": 0, "updated": 0, "failed": 0, "note": "" },
-    { "at": "2026-11-20T18:39:00Z", "job": "feeds", "added": 0, "updated": 0, "failed": 0, "note": "" },
-    { "at": "2026-11-20T18:37:00Z", "job": "backlog-auto", "added": 0, "updated": 0, "failed": 0, "note": "" },
-    { "at": "2026-11-20T18:32:00Z", "job": "triage", "added": 0, "updated": 0, "failed": 0, "note": "" },
     {
-      "at": "2026-11-20T18:32:00Z",
+      "at": "2026-11-20T19:50:00Z",
+      "job": "sweep",
+      "added": 2,
+      "updated": 0,
+      "failed": 0,
+      "note": "Pages were read through a fetch subagent; company primary notices not read directly, so both new events are single_source."
+    },
+    {
+      "at": "2026-11-20T19:50:00Z",
+      "job": "sweep-r5",
+      "added": 1,
+      "updated": 0,
+      "failed": 0,
+      "note": "Page text was read through a fetch subagent because direct curl was not permitted. PHP story (CVE-2026-115560) is covered by php-critical-security-release-announced-2026-11."
+    },
+    {
+      "at": "2026-11-20T19:50:00Z",
+      "job": "sweep-r2",
+      "added": 1,
+      "updated": 1,
+      "failed": 2,
+      "note": "Pages read through a fetch subagent."
+    },
+    {
+      "at": "2026-11-20T19:50:00Z",
       "job": "sweep-r1",
+      "added": 4,
+      "updated": 0,
+      "failed": 0,
+      "note": "TeamSpirit and AEON dates are the organisations' announcement days (6 and 10 Nov); ScanNetSecurity published on 20 and 19 Nov; date_note set. The duplicate Rakuten file could not be deleted (shell den"
+    },
+    {
+      "at": "2026-11-20T19:50:00Z",
+      "job": "reviewer",
       "added": 0,
       "updated": 0,
       "failed": 0,
-      "note": "Newsweek page shows no publication date. Pages were read through a fetch subagent."
+      "note": "Iwamizawa notice and ITmedia not read."
     },
-    { "at": "2026-11-20T18:32:00Z", "job": "backlog-auto", "added": 0, "updated": 0, "failed": 0, "note": "" },
-    { "at": "2026-11-20T18:26:00Z", "job": "backlog-auto", "added": 0, "updated": 0, "failed": 0, "note": "" },
-    { "at": "2026-11-20T18:21:00Z", "job": "triage", "added": 0, "updated": 0, "failed": 0, "note": "" },
-    { "at": "2026-11-20T18:21:00Z", "job": "backlog-auto", "added": 0, "updated": 0, "failed": 0, "note": "" },
-    { "at": "2026-11-20T18:16:00Z", "job": "grid", "added": 0, "updated": 0, "failed": 0, "note": "" },
-    { "at": "2026-11-20T18:16:00Z", "job": "backlog-auto", "added": 0, "updated": 0, "failed": 0, "note": "" },
+    { "at": "2026-11-20T19:49:00Z", "job": "reviewer", "added": 0, "updated": 0, "failed": 0, "note": "" },
     {
-      "at": "2026-11-20T18:14:00Z",
-      "job": "triage",
-      "added": 0,
+      "at": "2026-11-20T19:48:00Z",
+      "job": "sweep-r4",
+      "added": 1,
       "updated": 0,
       "failed": 0,
-      "note": "Queue at start: 31 open stories, all leak-site claims with one publisher (ransomware.live); no non-claim stories. Closed: 0. Left open: 31. Decision: the closing rule for leak-site claims needs the or"
+      "note": "Ruby, PHP, Ymir Link and Rakuten Securities already on file; closed."
     },
-    { "at": "2026-11-20T18:13:00Z", "job": "review", "added": 0, "updated": 0, "failed": 0, "note": "" },
     {
-      "at": "2026-11-20T18:12:00Z",
+      "at": "2026-11-20T19:46:00Z",
+      "job": "sweep-r3",
+      "added": 3,
+      "updated": 0,
+      "failed": 0,
+      "note": "Pages were read through a fetch subagent. Official PDFs for the Japanese items were not opened because those stories were out of window."
+    },
+    {
+      "at": "2026-11-20T19:45:00Z",
+      "job": "sweep-r6",
+      "added": 2,
+      "updated": 0,
+      "failed": 1,
+      "note": "Mastercard, PHP and Optimizely stories were already on file."
+    },
+    {
+      "at": "2026-11-20T19:45:00Z",
+      "job": "sweep-r5",
+      "added": 1,
+      "updated": 1,
+      "failed": 2,
+      "note": "plaid has possible-duplicate warning with basefood (downstream victim, separate event)."
+    },
+    {
+      "at": "2026-11-20T19:45:00Z",
+      "job": "sweep-r3",
+      "added": 1,
+      "updated": 0,
+      "failed": 1,
+      "note": "Direct curl was denied in this session; pages were read through a fetch agent. CERT-PY page gives CVE-2026-132825 (six digits after year, unverified on cve.org); Ruby event already corroborated on fil"
+    },
+    {
+      "at": "2026-11-20T19:45:00Z",
+      "job": "sweep-r2",
+      "added": 2,
+      "updated": 0,
+      "failed": 0,
+      "note": "059096a5, 27ff8595, bc959590, 205dfe3f, 2b72a34b closed as already on file; 4d2d18ea closed on file with open lead."
+    },
+    {
+      "at": "2026-11-20T19:45:00Z",
       "job": "sweep-r1",
       "added": 1,
       "updated": 0,
-      "failed": 3,
-      "note": "ABC article dated 21 Nov AEDT (one day ahead of UTC clock)."
+      "failed": 0,
+      "note": "Sharp page text was read through the web-fetch agent."
     },
-    { "at": "2026-11-20T18:12:00Z", "job": "backlog-auto", "added": 0, "updated": 0, "failed": 0, "note": "" },
     {
-      "at": "2026-11-20T18:10:00Z",
+      "at": "2026-11-20T19:45:00Z",
       "job": "followup",
+      "added": 0,
+      "updated": 1,
+      "failed": 0,
+      "note": "Pages were fetched by delegate readers. Only 2 events checked; Equinor and Visa were updated within 24h."
+    },
+    { "at": "2026-11-20T19:45:00Z", "job": "backlog-auto", "added": 0, "updated": 0, "failed": 0, "note": "" },
+    { "at": "2026-11-20T19:41:00Z", "job": "updater", "added": 0, "updated": 0, "failed": 0, "note": "" },
+    {
+      "at": "2026-11-20T19:41:00Z",
+      "job": "sweep-gap",
       "added": 0,
       "updated": 0,
       "failed": 0,
-      "note": "Only one eligible candidate. The Nvidia record already carries Nvidia's statement (investigating a third-party partner incident, no indication its own systems affected); both pages show nothing newer "
-    }
+      "note": "Quiet run: first two searches found nothing new; Africa region pass returned only 2023-2025 background."
+    },
+    {
+      "at": "2026-11-20T19:41:00Z",
+      "job": "sweep-gap-2",
+      "added": 0,
+      "updated": 0,
+      "failed": 0,
+      "note": "Both searches found only old incidents; quiet run ended after two searches per the limits."
+    },
+    {
+      "at": "2026-11-20T19:40:00Z",
+      "job": "sweep-r4",
+      "added": 0,
+      "updated": 0,
+      "failed": 3,
+      "note": "EC x2, GTA, Digital Agency, Visa, vCenter already on file."
+    },
+    { "at": "2026-11-20T19:38:00Z", "job": "triage", "added": 0, "updated": 0, "failed": 0, "note": "" }
   ],
   "leads": {
-    "last_24h": 1826,
-    "by_tier": { "gov": 288, "vendor": 199, "news": 1339 },
-    "failed_feeds": ["Industrial Cyber: HTTP 403 (refuses automated readers; not retried) (136 runs)"]
+    "last_24h": 2057,
+    "by_tier": { "gov": 354, "vendor": 210, "news": 1493 },
+    "failed_feeds": ["Industrial Cyber: HTTP 403 (refuses automated readers; not retried) (151 runs)"]
   },
   "sources": [
     {
@@ -687,81 +771,81 @@
       "ok": true,
       "error": "",
       "items": 5,
-      "at": "2026-11-20T18:41:02Z",
-      "last_ok": "2026-11-20T18:41:02Z"
+      "at": "2026-11-20T19:45:19Z",
+      "last_ok": "2026-11-20T19:45:19Z"
     },
     {
       "name": "euvd",
       "ok": true,
       "error": "",
       "items": 4,
-      "at": "2026-11-20T18:41:02Z",
-      "last_ok": "2026-11-20T18:41:02Z"
+      "at": "2026-11-20T19:45:19Z",
+      "last_ok": "2026-11-20T19:45:19Z"
     },
     {
       "name": "ransomware-live",
       "ok": true,
       "error": "",
       "items": 60,
-      "at": "2026-11-20T18:41:02Z",
-      "last_ok": "2026-11-20T18:41:02Z"
+      "at": "2026-11-20T19:45:19Z",
+      "last_ok": "2026-11-20T19:45:19Z"
     },
     {
       "name": "hibp",
       "ok": true,
       "error": "",
-      "items": 1,
-      "at": "2026-11-20T18:41:02Z",
-      "last_ok": "2026-11-20T18:41:02Z"
+      "items": 2,
+      "at": "2026-11-20T19:45:19Z",
+      "last_ok": "2026-11-20T19:45:19Z"
     },
     {
       "name": "nvd",
       "ok": true,
       "error": "",
       "items": 1,
-      "at": "2026-11-20T18:41:02Z",
-      "last_ok": "2026-11-20T18:41:02Z"
+      "at": "2026-11-20T19:45:19Z",
+      "last_ok": "2026-11-20T19:45:19Z"
     },
     {
       "name": "cloud-status",
       "ok": true,
       "error": "",
       "items": 1,
-      "at": "2026-11-20T18:41:02Z",
-      "last_ok": "2026-11-20T18:41:02Z"
+      "at": "2026-11-20T19:45:19Z",
+      "last_ok": "2026-11-20T19:45:19Z"
     },
     {
       "name": "bing-news",
       "ok": true,
       "error": "",
-      "items": 297,
-      "at": "2026-11-20T18:41:02Z",
-      "last_ok": "2026-11-20T18:41:02Z"
+      "items": 357,
+      "at": "2026-11-20T19:37:21Z",
+      "last_ok": "2026-11-20T19:37:21Z"
     },
     {
       "name": "gdelt",
       "ok": false,
       "error": "UND_ERR_CONNECT_TIMEOUT",
       "items": 0,
-      "at": "2026-11-20T18:41:02Z",
+      "at": "2026-11-20T19:45:19Z",
       "last_ok": "2026-11-20T11:58:37Z"
     }
   ],
   "pipeline": {
-    "feeds": 154,
-    "leads_7d": 4577,
-    "leads_used_7d": 832,
+    "feeds": 228,
+    "leads_7d": 4900,
+    "leads_used_7d": 878,
     "days_covered": 2.1,
-    "events_7d": 408,
-    "single_source": 160,
+    "events_7d": 430,
+    "single_source": 173,
     "median_hours": 0.2,
     "regions": {
-      "north-america": 174,
-      "other": 14,
+      "north-america": 176,
+      "other": 16,
       "oceania": 12,
-      "europe": 96,
+      "europe": 97,
+      "east-asia": 73,
       "unplaced": 21,
-      "east-asia": 56,
       "middle-east": 11,
       "south-asia": 5,
       "southeast-asia": 8,
@@ -769,18 +853,26 @@
       "africa": 1
     },
     "collectors": [
-      { "name": "google-news", "leads": 1052, "used": 361, "skipped": 658, "yield": 34 },
-      { "name": "rss", "leads": 2346, "used": 315, "skipped": 1705, "yield": 13 },
-      { "name": "bing-news", "leads": 870, "used": 251, "skipped": 569, "yield": 29 },
-      { "name": "cvelist", "leads": 59, "used": 7, "skipped": 52, "yield": 12 },
+      { "name": "rss", "leads": 2634, "used": 352, "skipped": 1845, "yield": 13 },
+      { "name": "bing-news", "leads": 895, "used": 259, "skipped": 581, "yield": 29 },
+      { "name": "cvelist", "leads": 61, "used": 7, "skipped": 54, "yield": 11 },
       { "name": "nvd", "leads": 26, "used": 5, "skipped": 21, "yield": 19 },
       { "name": "hacker-news", "leads": 10, "used": 3, "skipped": 7, "yield": 30 },
-      { "name": "ransomware-live", "leads": 207, "used": 1, "skipped": 157, "yield": 0 },
-      { "name": "euvd", "leads": 4, "used": 0, "skipped": 4, "yield": 0 },
-      { "name": "hibp", "leads": 2, "used": 0, "skipped": 2, "yield": 0 },
+      { "name": "ransomware-live", "leads": 209, "used": 1, "skipped": 157, "yield": 0 },
+      { "name": "euvd", "leads": 8, "used": 1, "skipped": 6, "yield": 13 },
+      { "name": "hibp", "leads": 4, "used": 0, "skipped": 4, "yield": 0 },
       { "name": "cloud-status", "leads": 1, "used": 0, "skipped": 1, "yield": 0 }
     ],
-    "stories": { "open": 34, "corroborated": 0, "claims": 33, "leads_72h": 3999 }
+    "retired_collectors": [
+      {
+        "name": "google-news",
+        "leads": 1052,
+        "used": 361,
+        "retired": "2026-11-20",
+        "why": "Not collected since 2026-11-20: news.google.com/robots.txt disallows /rss/ and its links are redirects that cannot be cited. Bing News and GDELT run the same standing searches."
+      }
+    ],
+    "stories": { "open": 36, "corroborated": 0, "claims": 34, "leads_72h": 4029 }
   },
   "improve": {
     "at": "2026-11-19T09:40:44Z",
@@ -876,11 +968,11 @@
   },
   "speed": {
     "hours": 24,
-    "n": 70,
-    "publish": { "p50": 5, "p90": 22 },
-    "review": { "n": 69, "p50": 12, "p90": 38 },
+    "n": 91,
+    "publish": { "p50": 5, "p90": 14 },
+    "review": { "n": 79, "p50": 12, "p90": 37 },
     "reopened": 7,
-    "publish_from_first_lead": { "p50": 5, "p90": 174 },
-    "rereview": { "n": 53, "p50": 1, "p90": 9 }
+    "publish_from_first_lead": { "p50": 5, "p90": 33 },
+    "rereview": { "n": 55, "p50": 1, "p90": 9 }
   }
 }

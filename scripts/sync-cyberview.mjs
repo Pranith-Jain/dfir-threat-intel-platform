@@ -18,7 +18,7 @@
  * Run:    node scripts/sync-cyberview.mjs [--force]
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync, cpSync, mkdtempSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync, cpSync, mkdtempSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -110,6 +110,21 @@ async function main() {
         written.push(rel);
       }
       try { builtAt = String(JSON.parse(readFileSync(join(repo, 'site', 'data', 'manifest.json'), 'utf8')).built_at ?? ''); } catch { /* optional */ }
+
+      // A true mirror of the upstream repo's shipped site source (the exact
+      // port reference), excluding site/data which is mirrored above.
+      const srcSite = join(repo, 'site');
+      const srcOut = join(OUT, 'source');
+      mkdirSync(srcOut, { recursive: true });
+      for (const entry of readdirSync(srcSite, { withFileTypes: true })) {
+        if (entry.name === 'data') continue;
+        const from = join(srcSite, entry.name);
+        const to = join(srcOut, entry.name);
+        try {
+          cpSync(from, to, { recursive: entry.isDirectory() });
+          written.push(`source/${entry.name}`);
+        } catch { /* best effort per entry */ }
+      }
     } else {
       console.log('  ! SHA lookup unavailable — falling back to published Pages files');
     }

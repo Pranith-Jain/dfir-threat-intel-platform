@@ -1178,9 +1178,22 @@ and runs its `scripts/build.mjs --quarantine` (Node stdlib only). The built
 `site/data/*` files are copied into the mirror; the separate hourly upstream
 CVE files (`data/cve/*`) still come from the published Pages site. SHAs are
 recorded in `public/data/cyberview/manifest.json`.
-`.github/workflows/cyberview-upstream-sync.yml` polls hourly and auto-merges a
-data-only PR only when upstream SHAs changed, so quiet hours produce no deploy.
-The script also runs in `cve-intel-sync.yml` (6h) as a backstop.
+`.github/workflows/cyberview-upstream-sync.yml` mirrors code + data + the
+upstream `site/` source into `public/data/cyberview/source/`. All sync
+workflows now accept `repository_dispatch` (events `upstream-update`,
+`feed-update`, `cve-update`, `cyberview-update`) so an upstream webhook/GitHub
+App can trigger an immediate refresh. To wire that: create a repo webhook in
+the source repository pointing at
+`https://api.github.com/repos/Pranith-Jain/dfir-threat-intel-platform/dispatches`
+with `event_type: upstream-update` and a PAT in the header. Until every source
+emits a dispatch, cron remains a backstop (`feed-live-sync` 30m, `cyberview`
+every 2h with SHA gating, `cve-intel-sync` 6h).
+
+**No more PR noise:** these data workflows commit straight to `main` (the
+breach-watch / generated-artifacts pattern) instead of opening a PR per tick.
+Scripts are idempotent — `writeJsonIfChanged` ignores only `generatedAt`, and
+the CyberView sync compares upstream SHAs — so quiet ticks produce no diff, no
+commit and no deploy. A push to `main` triggers the normal CI deploy.
 
 The upstream JSON Lines history is converted to `data/events.json` (a JSON
 array) so the globe page can plot every event without a map library. The routes
