@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-20T15:38:24.568Z",
+  "generatedAt": "2026-11-20T20:52:28.564Z",
   "upstream": {
     "site": "https://tldrcve.com",
     "list": "https://tldrcve.com/cves/",
@@ -8,12 +8,12 @@
     "scale": "https://tldrcve.com/how-we-rate/"
   },
   "stats": {
-    "cves": 26,
-    "details": 26,
+    "cves": 27,
+    "details": 27,
     "versions": 32,
     "byVerdict": {
       "Patch now": 11,
-      "Patch now if…": 13,
+      "Patch now if…": 14,
       "Watching": 1,
       "Next cycle": 1
     }
@@ -84,14 +84,18 @@
             "title": "PHP older than 8.2.35 / 8.3.36 / 8.4.27 / 8.5.12",
             "hint": "command",
             "body": "Or any end-of-life branch (8.1 and older), or patched but workers not restarted since. Check the runtime that serves the web, not just the CLI. Distros may backport the fix without changing the version number. 1,5 php -v php-fpm -v",
-            "code": ["php -v php-fpm -v"]
+            "code": [
+              "php -v php-fpm -v"
+            ]
           },
           {
             "num": "2",
             "title": "PHP serves web requests",
             "hint": "command",
             "body": "Via mod_php, PHP-FPM, php-cgi, FrankenPHP or LiteSpeed. Full exploitation has been shown on Apache mod_php, and for CVE-2026-109619 also on PHP-FPM. Command-line-only use isn't in scope. 1,2,3 apachectl -M | grep php",
-            "code": ["apachectl -M | grep php"]
+            "code": [
+              "apachectl -M | grep php"
+            ]
           }
         ],
         "actions": [
@@ -99,7 +103,7 @@
             "num": "1",
             "title": "Update and restart PHP",
             "hint": null,
-            "body": "Update to 8.6.0, 8.5.13, 8.4.28, 8.3.37 or 8.2.36 (19 Nov 2026), then restart all workers. These include the 21 Oct PHP2Shell fixes plus newer security fixes. 8.1 and older get no official release; use a vendor with long-term support or upgrade. 1,8,10 Latest safe versions checked 20 Nov PHP → 8.6 8.6.0 8.5 8.5.13 8.4 8.4.28 8.3 8.3.37 8.2 8.2.36 PHP 8.1 and older get no fixes from PHP. Distros may backport fixes without changing the version number.",
+            "body": "Update to 8.6.0, 8.5.13, 8.4.28, 8.3.37 or 8.2.36 (19 Nov 2026), then restart all workers. These include the 21 Oct PHP2Shell fixes plus newer security fixes. 8.1 and older get no official release; use a vendor with long-term support or upgrade. 1,8,10 Latest safe versions checked 21 Nov PHP → 8.6 8.6.0 8.5 8.5.13 8.4 8.4.28 8.3 8.3.37 8.2 8.2.36 PHP 8.1 and older get no fixes from PHP. Distros may backport fixes without changing the version number.",
             "code": []
           },
           {
@@ -107,7 +111,9 @@
             "title": "Can't update yet? Change these settings",
             "hint": "command",
             "body": "Not a full fix, per PHP. Set them in php.ini or the FPM pool config, not with ini_set() , then restart. On PHP 8.5 also set fatal_error_backtraces = 0 . Keep a container or cgroup memory limit, because memory_limit = -1 removes PHP's own cap. 1,2,3 session.upload_progress.enabled = 0 memory_limit = -1",
-            "code": ["session.upload_progress.enabled = 0 memory_limit = -1"]
+            "code": [
+              "session.upload_progress.enabled = 0 memory_limit = -1"
+            ]
           }
         ],
         "sources": [
@@ -235,14 +241,18 @@
             "title": "Server below a fixed release",
             "hint": "command",
             "body": "OpenVox Server below 9.2.0 / 8.18.0, Puppet Enterprise before 2023.8.13 / 2025.12.1 / 2026.0.1, and Puppet Core before 9.1.3 / 8.22.2 (Puppet Server 9.0.24.1 / 8.9.13). OpenVox's advisory says up to 9.1.0 / 8.17.0, but 9.1.1 and 8.17.1 shipped before the fix, so count them as affected. Older open-source Puppet gets no fix, though Debian patched its puppet packages (bookworm 7.23.0-1+deb12u1, trixie 8.10.0-5+deb13u1). The command shows the Puppet Server version, not the Puppet Enterprise release. 2,3,7,8,9,10,11,13,14 puppetserver --version",
-            "code": ["puppetserver --version"]
+            "code": [
+              "puppetserver --version"
+            ]
           },
           {
             "num": "2",
             "title": "Attacker can get a signed cert",
             "hint": "command",
             "body": "Any existing agent's cert works. If autosign prints true , anyone who can reach the server can get one. 2 puppet config print autosign --section server",
-            "code": ["puppet config print autosign --section server"]
+            "code": [
+              "puppet config print autosign --section server"
+            ]
           },
           {
             "num": "3",
@@ -265,7 +275,9 @@
             "title": "Until then: turn off autosign",
             "hint": "command",
             "body": "Set autosign = false in the [server] section of puppet.conf, restart, and confirm with the command below. Also limit network access to the server. 4,6 puppet config print autosign --section server",
-            "code": ["puppet config print autosign --section server"]
+            "code": [
+              "puppet config print autosign --section server"
+            ]
           },
           {
             "num": "3",
@@ -411,7 +423,9 @@
             "title": "A vulnerable Brotli copy",
             "hint": "command",
             "body": "Brotli 1.0.3–1.2.0, Node.js below 22.23.4 / 24.22.1 / 26.12.1 (including 20, 23 and 25, which get no fix), .NET 8/9/10, Envoy/Istio, or Python Brotli / brotlicffi below the fix, and PHP for Windows before the 26 Oct rebuilds. On RHEL, Node 22, Node 24 on RHEL 10 and .NET 9/10/11 use the system libbrotli, so update that package too; Node 24 on RHEL 8/9 and .NET 8 bundle their own copy. .NET Framework, Java and pure-JS/Rust ports use other code and aren't affected. process.versions.brotli only shows Node's bundled copy, so check node -v . 9,2,5,8,10 node -v pip show Brotli brotlicffi dpkg -l | grep -i brotli",
-            "code": ["node -v pip show Brotli brotlicffi dpkg -l | grep -i brotli"]
+            "code": [
+              "node -v pip show Brotli brotlicffi dpkg -l | grep -i brotli"
+            ]
           },
           {
             "num": "2",
@@ -760,7 +774,9 @@
             "title": "Hunt for compromise",
             "hint": "command",
             "body": "Look in web logs for requests to /dms/services/ServerUI that mention jline.internal.TerminalLineSettings , an unexpected xvd.service unit, mining processes, files in /tmp/.xvd or /var/tmp/.xvd , and traffic to 157.20.241[.]16. If found, treat the server as fully owned (root). 3,4 systemctl status xvd.service; ls -la /tmp/.xvd /var/tmp/.xvd",
-            "code": ["systemctl status xvd.service; ls -la /tmp/.xvd /var/tmp/.xvd"]
+            "code": [
+              "systemctl status xvd.service; ls -la /tmp/.xvd /var/tmp/.xvd"
+            ]
           },
           {
             "num": "4",
@@ -881,7 +897,9 @@
             "title": "An unpatched Chromium-based browser",
             "hint": "command",
             "body": "Chrome below 157.0.8103.50 on desktop and Android (Extended Stable below 156.0.8078.96; ChromeOS fixed in 156.0.8078.102). Also Edge below 157.0.4341.46 (Extended Stable 156.0.4314.80, Android 157.0.4341.53), Brave below 1.99.56 and Opera below 140.0.6074.17, and Electron apps built before Electron 45.3.0, 44.11.1 or 43.8.8. Chrome only applies updates after a relaunch. 1,2,3,4,6,7,8,11,12,13 chrome://settings/help",
-            "code": ["chrome://settings/help"]
+            "code": [
+              "chrome://settings/help"
+            ]
           },
           {
             "num": "2",
@@ -897,14 +915,18 @@
             "title": "Update Chrome and relaunch",
             "hint": "command",
             "body": "Open the About page; Chrome checks for an update, then click Relaunch. Any 157.0.8103.50 or later build is fixed, including Chrome 158. Admins: check the version your fleet actually runs, since rollouts take days or weeks. 1,2 chrome://settings/help Latest safe versions checked 20 Nov Chrome → 158 158.0.8127.36 157 157.0.8103.78 Extended Stable 156 156.0.8078.108 ChromeOS 158.0.8127.65 Chrome for Android: 157.0.8103.50 or later.",
-            "code": ["chrome://settings/help"]
+            "code": [
+              "chrome://settings/help"
+            ]
           },
           {
             "num": "2",
             "title": "Check the version from a shell",
             "hint": "command",
             "body": "Linux shown. On macOS run \"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --version . On Windows, use the About page or chrome://version. google-chrome --version",
-            "code": ["google-chrome --version"]
+            "code": [
+              "google-chrome --version"
+            ]
           },
           {
             "num": "3",
@@ -1088,7 +1110,9 @@
             "title": "XML-RPC extensions still on",
             "hint": "command",
             "body": "Every release up to 6.1.5 ships with enabledForExtensions set to true and /roller-services/xmlrpc mapped, so default installs are exposed. Turning XML-RPC off in the admin settings (off by default) does not help. Run this in Roller's webapp folder; <param-value>true</param-value> means exposed. 1,2,7,8 grep -A1 enabledForExtensions WEB-INF/web.xml",
-            "code": ["grep -A1 enabledForExtensions WEB-INF/web.xml"]
+            "code": [
+              "grep -A1 enabledForExtensions WEB-INF/web.xml"
+            ]
           },
           {
             "num": "3",
@@ -1240,28 +1264,36 @@
             "title": "sshd uses musl libc",
             "hint": "command",
             "body": "Alpine and other musl-based systems, including Alpine containers that run sshd. glibc systems (Debian, Ubuntu, Fedora, RHEL) and Dropbear are not affected. A line with ld-musl means musl. 2,5,7 ldd \"$(command -v sshd)\" | grep -i musl",
-            "code": ["ldd \"$(command -v sshd)\" | grep -i musl"]
+            "code": [
+              "ldd \"$(command -v sshd)\" | grep -i musl"
+            ]
           },
           {
             "num": "2",
             "title": "PAM off, password login on",
             "hint": "command",
             "body": "Alpine's openssh-server is built without PAM, so sshd -T prints no usepam line. openssh-server-pam with UsePAM yes is safe. passwordauthentication yes is the default. Run as root. 1,2,8 sshd -T | grep -Ei '^(passwordauthentication|usepam|permitrootlogin) '",
-            "code": ["sshd -T | grep -Ei '^(passwordauthentication|usepam|permitrootlogin) '"]
+            "code": [
+              "sshd -T | grep -Ei '^(passwordauthentication|usepam|permitrootlogin) '"
+            ]
           },
           {
             "num": "3",
             "title": "A * account plus a real hash",
             "hint": "command",
             "body": "Some account has * as its password (key-only users, root since about Alpine 3.16 if PermitRootLogin yes , the alpine user in cloud images 3.18.11–3.24.3) and at least one account has a $5$ or $6$ hash. Directory-service users (nslcd, winbind, sssd) with no shadow entry also count, and the commands below miss them. Locked ! accounts are safe. Run as root; the second command counts real hashes. 2 awk -F: '$2==\"*\"{print $1}' /etc/shadow; grep -cE '^[^:]*:\\$[56]\\$' /etc/shadow",
-            "code": ["awk -F: '$2==\"*\"{print $1}' /etc/shadow; grep -cE '^[^:]*:\\$[56]\\$' /etc/shadow"]
+            "code": [
+              "awk -F: '$2==\"*\"{print $1}' /etc/shadow; grep -cE '^[^:]*:\\$[56]\\$' /etc/shadow"
+            ]
           },
           {
             "num": "4",
             "title": "openssh below the fixed package",
             "hint": "command",
             "body": "Upstream: OpenSSH before 10.6p2. Alpine's fixed packages are listed under Upgrade. 9,2 apk info -v | grep '^openssh'",
-            "code": ["apk info -v | grep '^openssh'"]
+            "code": [
+              "apk info -v | grep '^openssh'"
+            ]
           }
         ],
         "actions": [
@@ -1277,14 +1309,18 @@
             "title": "Can't upgrade? Turn off passwords",
             "hint": "command",
             "body": "In sshd_config (or a drop-in in /etc/ssh/sshd_config.d/ on Alpine 3.19+). Also set any PasswordAuthentication yes inside Match blocks to no; a drop-in doesn't override those. Check key login works, validate with sshd -t , then restart sshd and confirm sshd -T shows passwordauthentication no . 2 PasswordAuthentication no",
-            "code": ["PasswordAuthentication no"]
+            "code": [
+              "PasswordAuthentication no"
+            ]
           },
           {
             "num": "3",
             "title": "Look for break-ins",
             "hint": "command",
             "body": "A password login for root , alpine or any key-only user is a red flag. Also review doas use, new users, new authorized_keys entries and changed files. If you can't rule out a login, treat the host as compromised. US federal agencies must also do forensic triage under the KEV listing. 2,4 grep 'Accepted password for' /var/log/messages",
-            "code": ["grep 'Accepted password for' /var/log/messages"]
+            "code": [
+              "grep 'Accepted password for' /var/log/messages"
+            ]
           }
         ],
         "sources": [
@@ -1552,14 +1588,18 @@
             "title": "LiteLLM 1.81.8 – 1.83.10",
             "hint": "command",
             "body": "GitHub's advisory lists >= 1.81.8, < 1.83.10 as affected, but its text says the fix is in 1.83.11, so count 1.83.10 as affected to be safe. Only the proxy server is at risk, not plain use of the Python SDK. In Docker, image tags don't reliably match versions ( main-latest tells you nothing), so check the pip version inside the container. 3,5 pip show litellm",
-            "code": ["pip show litellm"]
+            "code": [
+              "pip show litellm"
+            ]
           },
           {
             "num": "2",
             "title": "Management API is reachable",
             "hint": "command",
             "body": "The attacker can reach the proxy's management API, including POST /guardrails/test_custom_code . Keep it off untrusted networks. 3,4 docker ps --format '{{.Names}} {{.Image}}' | grep -i litellm",
-            "code": ["docker ps --format '{{.Names}} {{.Image}}' | grep -i litellm"]
+            "code": [
+              "docker ps --format '{{.Names}} {{.Image}}' | grep -i litellm"
+            ]
           },
           {
             "num": "3",
@@ -1908,7 +1948,9 @@
             "title": "Can't patch? Turn off WebSocket",
             "hint": "command",
             "body": "Set this parameter in the ICM and Web Dispatcher profiles and restart. It breaks ABAP Push Channels and some Fiori apps, so first look for status code 101 in the ICM or Web Dispatcher HTTP log. SAP's FAQ Note 3778788 says where the parameter goes for each component. 2,3 icm/HTTP/support_websocket_upgrade = FALSE",
-            "code": ["icm/HTTP/support_websocket_upgrade = FALSE"]
+            "code": [
+              "icm/HTTP/support_websocket_upgrade = FALSE"
+            ]
           },
           {
             "num": "3",
@@ -2025,14 +2067,18 @@
             "title": "You run SGLang (any version)",
             "hint": "command",
             "body": "The CVE record for CVE-2026-15969 lists v0.5.15 and earlier, but no fixed version has been named. As of 20 Nov 2026 the advisories still list no patched version, and v0.5.23 (2 Nov) is the newest release. Treat every version as affected. 3,6,7,8 pip show sglang",
-            "code": ["pip show sglang"]
+            "code": [
+              "pip show sglang"
+            ]
           },
           {
             "num": "2",
             "title": "Its HTTP port is reachable by attackers",
             "hint": "command",
             "body": "By default SGLang listens only on 127.0.0.1, port 30000. You're exposed if it was started with --host 0.0.0.0, published from a container or Kubernetes, or put behind a proxy that forwards every route. API keys alone don't close it: the LoRA tensor route has no auth check when LoRA is on, and /server_info can leak the keys. Admin routes are open when no keys are set. Changes merged on 7 and 14 Nov stop /server_info leaking keys and make admin routes need an admin key (the current docs already describe this), but no release includes them yet. 4,5,11,12 ss -ltnp | grep 30000",
-            "code": ["ss -ltnp | grep 30000"]
+            "code": [
+              "ss -ltnp | grep 30000"
+            ]
           }
         ],
         "actions": [
@@ -2187,14 +2233,18 @@
             "title": "nginx 1.9.5 – 1.31.8",
             "hint": "command",
             "body": "Stable 1.30.7 and later are fixed. Also NGINX Plus 37.0.0–37.0.7.1 and 37.1.0–37.2.0.1; older NGINX Plus R33–R36 get no fix (sources differ on R33), so move to 37.x. Distros backport fixes without changing nginx -v , so check the package against your distro's advisory. After upgrading, restart: a reload keeps the old binary. 1,3,8,5,9 nginx -v",
-            "code": ["nginx -v"]
+            "code": [
+              "nginx -v"
+            ]
           },
           {
             "num": "2",
             "title": "HTTP/2 is on anywhere",
             "hint": "command",
             "body": "Either http2 on; or listen ... http2 , on any server block. Static-only sites count. Behind a proxy that terminates HTTP/2, the public exploit likely fails, but the bug is still there. 1,3,4 sudo nginx -T 2>&1 | grep -nE 'listen[[:space:]].*http2|http2 on'",
-            "code": ["sudo nginx -T 2>&1 | grep -nE 'listen[[:space:]].*http2|http2 on'"]
+            "code": [
+              "sudo nginx -T 2>&1 | grep -nE 'listen[[:space:]].*http2|http2 on'"
+            ]
           }
         ],
         "actions": [
@@ -2210,7 +2260,9 @@
             "title": "Can't upgrade? Turn off HTTP/2",
             "hint": "command",
             "body": "Set http2 off; in each server block and remove http2 from every listen line (before 1.25.1, only the listen change). This breaks native gRPC, and doesn't cover the HTTP/3, resolver and mail-proxy bugs the same upgrade fixes. 1,5 http2 off;",
-            "code": ["http2 off;"]
+            "code": [
+              "http2 off;"
+            ]
           },
           {
             "num": "3",
@@ -2375,14 +2427,18 @@
             "title": "Kernel 4.4 or later, not yet patched",
             "hint": "command",
             "body": "Upstream fixes: 5.10.272, 5.15.223, 6.1.190, 6.6.159, 6.12.113, 6.18.56, 7.2.10, 7.3. Distro kernels backport, so compare with your distro's fixed version under Update. RHEL 6 and 7 are not affected. 1,4,10 uname -r",
-            "code": ["uname -r"]
+            "code": [
+              "uname -r"
+            ]
           },
           {
             "num": "2",
             "title": "Accepts IPv4 TCP connections",
             "hint": "command",
             "body": "Any IPv4 TCP listener counts, MPTCP or not: Red Hat says MPTCP is not required, and RHEL with MPTCP off by default is still affected. IPv6 is not affected by the main bug. Nearly every server has a TCP listener. 1,4,5 sudo ss -tlnp",
-            "code": ["sudo ss -tlnp"]
+            "code": [
+              "sudo ss -tlnp"
+            ]
           }
         ],
         "actions": [
@@ -2398,14 +2454,18 @@
             "title": "Can't reboot yet? Live patch or filter",
             "hint": "command",
             "body": "RHEL 8, RHEL 9.8 EUS and some RHEL SAP streams have a kpatch live patch (19 Nov; plain RHEL 9 has none) that avoids the reboot. Otherwise drop inbound IPv4 TCP packets with IP options in an nftables input chain (normal TCP options are fine). That reduces exposure but isn't a fix: traffic between containers on the same host can skip it. 10,4,9,11 ip protocol tcp ip hdrlength > 5 counter drop",
-            "code": ["ip protocol tcp ip hdrlength > 5 counter drop"]
+            "code": [
+              "ip protocol tcp ip hdrlength > 5 counter drop"
+            ]
           },
           {
             "num": "3",
             "title": "Optional: turn off MPTCP",
             "hint": "command",
             "body": "Blocks the known root path only (the public demo used an MPTCP listener; Go 1.24+ programs open them by default). May break programs that need MPTCP. For Go services, GODEBUG=multipathtcp=0 does the same per program. sudo ss -Mlnp lists MPTCP listeners. 2,3,6,7 sysctl -w net.mptcp.enabled=0",
-            "code": ["sysctl -w net.mptcp.enabled=0"]
+            "code": [
+              "sysctl -w net.mptcp.enabled=0"
+            ]
           }
         ],
         "sources": [
@@ -2563,14 +2623,18 @@
             "title": "Ruby older than the fix",
             "hint": "command",
             "body": "Affected: 3.3.13 and earlier, 3.4.0–3.4.12 and 4.0.0–4.0.9. Ruby 3.2 and older are end of life and won't get a fix. Check the Ruby your app actually runs (its container image or .ruby-version ), not just the system one. Distros may patch without changing the version; on 20 Nov Ubuntu (priority Medium) and Debian were still evaluating. 1,2,6,8,9 ruby -v",
-            "code": ["ruby -v"]
+            "code": [
+              "ruby -v"
+            ]
           },
           {
             "num": "2",
             "title": "Web input gets case-changed",
             "hint": "command",
             "body": "Veria Labs says default Rails and classic-style Sinatra apps reach the bug with no login, but hasn't said through which code path. Other frameworks and plain Rack aren't exposed by default, unless your code calls upcase , swapcase , downcase(:fold) or casecmp? on ISO-8859 or Windows-125x text; UTF-8 isn't affected. Sources disagree on reach: Ruby rates it Critical, the CVE record scores it 7.4 (local), and Sekurak thinks a crash is likelier than code execution. Run the check in your app's folder. 2,3,4,6,7 bundle list | grep -E '\\* (rails|sinatra) \\('",
-            "code": ["bundle list | grep -E '\\* (rails|sinatra) \\('"]
+            "code": [
+              "bundle list | grep -E '\\* (rails|sinatra) \\('"
+            ]
           }
         ],
         "actions": [
@@ -2593,7 +2657,9 @@
             "title": "Update self-hosted apps",
             "hint": "command",
             "body": "Some bundle their own Ruby, which a system upgrade doesn't touch. On 19 Nov, Veria listed GitLab 19.6.0, GitHub Enterprise Server 3.22.5 and Chatwoot 4.20.0 as still affected, and Mastodon 4.7.6, OpenProject 17.9.8 and the Discourse base image 2.0.20261119-0203 as fixed. Aikido's list, made earlier, shows older versions of the last three as affected. For GitLab, check its bundled Ruby with the command below. 4,5,6 /opt/gitlab/embedded/bin/ruby -v",
-            "code": ["/opt/gitlab/embedded/bin/ruby -v"]
+            "code": [
+              "/opt/gitlab/embedded/bin/ruby -v"
+            ]
           },
           {
             "num": "4",
@@ -2722,14 +2788,18 @@
             "title": "PHP-FPM older than the 19 Nov 2026 fix",
             "hint": "command",
             "body": "Below 8.5.13, 8.4.28, 8.3.37 or 8.2.36. PHP 8.6.0 (19 Nov) is fixed. PHP says the bug has been in the code since 5.6.0, so older, unsupported PHP is affected too. The code-execution attack needs PHP-FPM; with LiteSpeed's LSAPI it only breaks later requests. Distros may backport the fix without changing the version number. 1,2,3,10 php-fpm -v",
-            "code": ["php-fpm -v"]
+            "code": [
+              "php-fpm -v"
+            ]
           },
           {
             "num": "2",
             "title": "The web server reuses FPM connections",
             "hint": "command",
             "body": "nginx with fastcgi_keep_conn on , Apache mod_proxy_fcgi with enablereuse=on , or HAProxy keeping FastCGI connections open. Both nginx and Apache close the connection by default, which is not affected, but Apache's own PHP-FPM example turns reuse on. PHP's advisory doesn't mention Caddy. For Apache, look for enablereuse=on in your config. 1,4,5 nginx -T 2>/dev/null | grep fastcgi_keep_conn",
-            "code": ["nginx -T 2>/dev/null | grep fastcgi_keep_conn"]
+            "code": [
+              "nginx -T 2>/dev/null | grep fastcgi_keep_conn"
+            ]
           },
           {
             "num": "3",
@@ -2744,7 +2814,7 @@
             "num": "1",
             "title": "Update PHP and restart FPM",
             "hint": null,
-            "body": "Update to 8.6.0, 8.5.13, 8.4.28, 8.3.37 or 8.2.36 (19 Nov 2026), then restart PHP-FPM. Debian has fixed packages (DSA-6641-1 for Debian 13, DLA-4916-1 for Debian 12); Ubuntu's supported releases were still \"needs evaluation\" on 20 Nov. 1,2,10,8,9 Latest safe versions checked 20 Nov PHP → 8.6 8.6.0 8.5 8.5.13 8.4 8.4.28 8.3 8.3.37 8.2 8.2.36 PHP 8.1 and older get no fixes from PHP. Distros may backport fixes without changing the version number.",
+            "body": "Update to 8.6.0, 8.5.13, 8.4.28, 8.3.37 or 8.2.36 (19 Nov 2026), then restart PHP-FPM. Debian has fixed packages (DSA-6641-1 for Debian 13, DLA-4916-1 for Debian 12); Ubuntu's supported releases were still \"needs evaluation\" on 20 Nov. 1,2,10,8,9 Latest safe versions checked 21 Nov PHP → 8.6 8.6.0 8.5 8.5.13 8.4 8.4.28 8.3 8.3.37 8.2 8.2.36 PHP 8.1 and older get no fixes from PHP. Distros may backport fixes without changing the version number.",
             "code": []
           },
           {
@@ -2752,7 +2822,9 @@
             "title": "Turn off connection reuse",
             "hint": "command",
             "body": "Until you've updated: in nginx, remove fastcgi_keep_conn on (off is the default); in Apache, remove enablereuse=on . Then reload the web server. 1,4,5 fastcgi_keep_conn off;",
-            "code": ["fastcgi_keep_conn off;"]
+            "code": [
+              "fastcgi_keep_conn off;"
+            ]
           },
           {
             "num": "3",
@@ -2866,21 +2938,27 @@
             "title": "PHP older than the 19 Nov 2026 fix",
             "hint": "command",
             "body": "PHP 8.2 to 8.5 below 8.5.13, 8.4.28, 8.3.37 or 8.2.36. PHP 8.6.0 (19 Nov) is fixed. The 21 Oct releases didn't fix this bug. Older, unsupported PHP may also be affected. Distros may backport the fix without changing the version number. 1,2,7 php -v",
-            "code": ["php -v"]
+            "code": [
+              "php -v"
+            ]
           },
           {
             "num": "2",
             "title": "Session upload progress is on",
             "hint": "command",
             "body": "In anything that can write to your session store. It was on by default before the fix; the fix turns it off by default, but an explicit setting in php.ini or a pool still wins. The CLI can read a different php.ini than PHP-FPM or Apache. 1,4 php -i | grep session.upload_progress.enabled",
-            "code": ["php -i | grep session.upload_progress.enabled"]
+            "code": [
+              "php -i | grep session.upload_progress.enabled"
+            ]
           },
           {
             "num": "3",
             "title": "Two serializers share sessions",
             "hint": "command",
             "body": "Something writes sessions with php_binary or php_serialize while something else reads the same sessions with php . For example, an app calls ini_set() before session_start(), or two apps, FPM pools, virtual hosts or CLI jobs with different settings share a session directory. PHP's 23 Oct notice described only the first case; the 19 Nov advisory says no runtime switch is needed. 1,3 php -i | grep session.serialize_handler",
-            "code": ["php -i | grep session.serialize_handler"]
+            "code": [
+              "php -i | grep session.serialize_handler"
+            ]
           },
           {
             "num": "4",
@@ -2895,7 +2973,7 @@
             "num": "1",
             "title": "Update PHP and restart",
             "hint": null,
-            "body": "Update to 8.6.0, 8.5.13, 8.4.28, 8.3.37 or 8.2.36 (19 Nov 2026), then restart every PHP worker. Debian has fixed packages (DSA-6641-1, DLA-4916-1); Ubuntu hadn't shipped one by 20 Nov. The fix turns session upload progress off by default and blocks runtime changes to session settings while it's on. 1,2,7,9,10 Latest safe versions checked 20 Nov PHP → 8.6 8.6.0 8.5 8.5.13 8.4 8.4.28 8.3 8.3.37 8.2 8.2.36 PHP 8.1 and older get no fixes from PHP. Distros may backport fixes without changing the version number.",
+            "body": "Update to 8.6.0, 8.5.13, 8.4.28, 8.3.37 or 8.2.36 (19 Nov 2026), then restart every PHP worker. Debian has fixed packages (DSA-6641-1, DLA-4916-1); Ubuntu hadn't shipped one by 20 Nov. The fix turns session upload progress off by default and blocks runtime changes to session settings while it's on. 1,2,7,9,10 Latest safe versions checked 21 Nov PHP → 8.6 8.6.0 8.5 8.5.13 8.4 8.4.28 8.3 8.3.37 8.2 8.2.36 PHP 8.1 and older get no fixes from PHP. Distros may backport fixes without changing the version number.",
             "code": []
           },
           {
@@ -2903,7 +2981,9 @@
             "title": "Keep upload progress off",
             "hint": "command",
             "body": "Set it in php.ini, the FPM pool or server config, not with ini_set() (that's too late), then restart. Check that nothing explicitly turns it back on. 1,4 session.upload_progress.enabled = 0",
-            "code": ["session.upload_progress.enabled = 0"]
+            "code": [
+              "session.upload_progress.enabled = 0"
+            ]
           },
           {
             "num": "3",
@@ -2987,6 +3067,173 @@
       }
     },
     {
+      "slug": "phpaftershell",
+      "name": "phpAfterShell",
+      "meta": "PHP · CVE-2026-126714",
+      "line": "Needs a crashed session write and a gadget. Fixed 19 Nov.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2.4,
+      "meterLabel": "Check today",
+      "disclosed": "2026-11-19",
+      "url": "https://tldrcve.com/phpaftershell/",
+      "detail": {
+        "slug": "phpaftershell",
+        "kicker": "PHP · CVE-2026-126714",
+        "name": "phpAfterShell",
+        "verdict": "Patch now if…",
+        "verdictHint": "Needs a crashed session write and a gadget. Fixed 19 Nov.",
+        "summary": "PHP's default file-based session storage can leave a half-old, half-new session file if a write is cut short, and an attacker can use that to make PHP rebuild objects of their choice and run code. It also needs the attacker's data in the session, a worker killed mid-write and a suitable code library in the app; lab exploit code is public, no attacks are reported, and the 19 Nov 2026 releases fix it. It's a separate bug from PHP2Shell , not a bypass: the October releases just don't include this fix.",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 6,7"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 5,9"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 10"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "PHP older than the 19 Nov 2026 fix",
+            "hint": "command",
+            "body": "PHP 8.2 to 8.5 below 8.5.13, 8.4.28, 8.3.37 or 8.2.36. PHP 8.6.0 (19 Nov) is fixed. The October PHP2Shell releases don't fix it. PHP says the code dates back to PHP 4.1.0, so older, unsupported PHP is affected too. Distros may backport the fix without changing the version number. 1,2,3 php -v",
+            "code": [
+              "php -v"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "Sessions are stored in files",
+            "hint": "command",
+            "body": "The files save handler is PHP's default. Sessions in Redis, a database or another store that replaces a record in one step aren't hit by this bug. The CLI can read a different php.ini than PHP-FPM or Apache. 1,3 php -i | grep session.save_handler",
+            "code": [
+              "php -i | grep session.save_handler"
+            ]
+          },
+          {
+            "num": "3",
+            "title": "Attackers can fill the session",
+            "hint": "command",
+            "body": "They need to put a lot of their own data into a session. Session upload progress does that for anyone who sends a file upload, and it was on by default until the 19 Nov releases (see PHP session RCE ). An app that stores large user input in the session works too, even with upload progress off. Whether a login is needed depends on the app. 1,3,4 php -i | grep session.upload_progress.enabled",
+            "code": [
+              "php -i | grep session.upload_progress.enabled"
+            ]
+          },
+          {
+            "num": "4",
+            "title": "The write can be cut short",
+            "hint": null,
+            "body": "The PHP worker has to die partway through saving the session. PHP's advisory describes a memory-limit crash in another thread on threaded PHP builds; Wiz says memory limits or timeouts can do it. One public lab does it over plain HTTP by pushing a memory-limited container into an out-of-memory kill. 1,5,6",
+            "code": []
+          },
+          {
+            "num": "5",
+            "title": "The app has a usable library",
+            "hint": null,
+            "body": "Running code needs a suitable \"gadget chain\" in the app, which isn't in every app. Both public labs plant their own gadget class. Without one, the bug can still corrupt sessions. 1,5,6,7",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update PHP and restart",
+            "hint": null,
+            "body": "Update to 8.6.0, 8.5.13, 8.4.28, 8.3.37 or 8.2.36 (19 Nov 2026), then restart every PHP worker. The fix empties the session file before writing, so a cut-short write can lose a session but can't mix two. Debian has fixed packages (DSA-6641-1, DLA-4916-1). The same releases fix our other PHP pages, PHP session RCE and PHP-FPM smuggling . 1,2,8 Latest safe versions checked 21 Nov PHP → 8.6 8.6.0 8.5 8.5.13 8.4 8.4.28 8.3 8.3.37 8.2 8.2.36 PHP 8.1 and older get no fixes from PHP. Distros may backport fixes without changing the version number.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Can't update? Turn off upload progress",
+            "hint": "command",
+            "body": "Set it in php.ini, the FPM pool or server config, then restart. PHP says this removes the easiest way in, not the bug: apps that store user input in sessions stay exposed. Keep untrusted data in sessions small. 1,3 session.upload_progress.enabled = 0",
+            "code": [
+              "session.upload_progress.enabled = 0"
+            ]
+          },
+          {
+            "num": "3",
+            "title": "Optional: a different session store",
+            "hint": null,
+            "body": "PHP says a store that replaces records in one step avoids this bug; depthfirst names Redis and databases. Updating PHP is still the recommended fix for the default files handler. 1,3",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://github.com/php/php-src/security/advisories/GHSA-fm2m-fjf5-v3cp",
+            "title": "PHP GHSA-fm2m: full advisory, conditions, fix and mitigation",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.php.net/ChangeLog-8.php#8.5.13",
+            "title": "PHP: 8.x ChangeLog, 19 Nov 2026 releases",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://depthfirst.com/phpaftershell",
+            "title": "depthfirst: the finder's write-up, separate flaw from PHP2Shell, other session stores",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/php/php-src/security/advisories/GHSA-658j-r8rw-q6mx",
+            "title": "PHP GHSA-658j: upload progress off by default from the 19 Nov releases",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.wiz.io/blog/phpaftershell-critical-php-rce-vulnerabilities-cve-2026-126714",
+            "title": "Wiz: memory limits or timeouts, gadget chain needed, no exploitation seen",
+            "date": null
+          },
+          {
+            "url": "https://github.com/VABISMO/PHPAfterShell-poc",
+            "title": "Public lab exploit: out-of-memory kill over HTTP, planted gadget",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://github.com/tani2shell/phpaftershell-lab",
+            "title": "Public practice lab: killed worker, planted gadget chain",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://security-tracker.debian.org/tracker/CVE-2026-126714",
+            "title": "Debian tracker: DSA-6641-1, DLA-4916-1",
+            "date": null
+          },
+          {
+            "url": "https://cycode.com/blog/phpaftershell-cve-2026-126714/",
+            "title": "Cycode: no attacks reported by PHP or the finder",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-126714",
+            "title": "CVE record: CVE-2026-126714 (CVSS 4.0 9.2)",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-21",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/phpaftershell/"
+      }
+    },
+    {
       "slug": "java4shell",
       "name": "Java4Shell",
       "meta": "OpenJDK · CVE-2026-114938",
@@ -3021,14 +3268,18 @@
             "title": "Java 17.0.6+, 21, 25 or 27",
             "hint": "command",
             "body": "Any distribution (Oracle, Temurin, Corretto, Zulu, Red Hat…) without the November 2026 fix, plus Oracle's Java 8 Performance Pack ( 8u511b33-perf ) and Oracle GraalVM for JDK 17/21. Standard Java 8 and 11 aren't affected. 11,2,8,10,17 java -version",
-            "code": ["java -version"]
+            "code": [
+              "java -version"
+            ]
           },
           {
             "num": "2",
             "title": "CPU has AVX-512 VBMI",
             "hint": "command",
             "body": "Intel Ice Lake or newer, AMD Zen 4 or newer (including Ryzen). ARM servers (Graviton, Ampere) never are. Run it where the app runs, on every node pool, because clusters often mix CPU generations. 1,2 grep -o -m1 avx512vbmi /proc/cpuinfo",
-            "code": ["grep -o -m1 avx512vbmi /proc/cpuinfo"]
+            "code": [
+              "grep -o -m1 avx512vbmi /proc/cpuinfo"
+            ]
           },
           {
             "num": "3",
@@ -3051,7 +3302,9 @@
             "title": "Can't patch yet? Set this flag",
             "hint": "command",
             "body": "Turns off only the vulnerable fast path. Needs a restart. Not an official Oracle workaround. 8,3 -XX:-UseBASE64Intrinsics",
-            "code": ["-XX:-UseBASE64Intrinsics"]
+            "code": [
+              "-XX:-UseBASE64Intrinsics"
+            ]
           },
           {
             "num": "3",
@@ -3246,7 +3499,9 @@
             "title": "Kernel 4.15 or later",
             "hint": "command",
             "body": "The bug arrived in 4.15 (Jan 2018). The fix was merged into the main kernel tree on 19 Nov, after 7.4-rc3. The newest stable kernels (7.3.5, 6.18.64, 6.12.118, released 17 Nov) don't have it; the only distro we found carrying it on 20 Nov is Gentoo (kernel sources). Xint hasn't named the fix, but the commit credits Xint's tool and matches its description. 1,2,3,4,5,6 uname -r",
-            "code": ["uname -r"]
+            "code": [
+              "uname -r"
+            ]
           },
           {
             "num": "2",
@@ -3260,7 +3515,9 @@
             "title": "SCTP can load",
             "hint": "command",
             "body": "The kernel loads the sctp module the first time any program opens an SCTP socket, unless it's blocked. Many distros ship it. Red Hat says it isn't loaded by default on RHEL: it's in kernel-modules-extra, which blacklists it on install. If lsmod prints nothing, it can still load on demand; modprobe -c | grep sctp shows any block. 1,9,10,11,15 lsmod | grep sctp",
-            "code": ["lsmod | grep sctp"]
+            "code": [
+              "lsmod | grep sctp"
+            ]
           }
         ],
         "actions": [
@@ -3269,7 +3526,9 @@
             "title": "Block SCTP if you don't use it",
             "hint": "command",
             "body": "Put this line in a file under /etc/modprobe.d/ (Ubuntu uses disable-sctp.conf); on Debian and Ubuntu, then run sudo update-initramfs -u . It doesn't unload a module that's already loaded (reboot, or sudo rmmod sctp if nothing uses it) and doesn't help if SCTP is built into the kernel. It breaks telecom signalling and some Kubernetes network plugins. Red Hat's version is install sctp /bin/true plus blacklist sctp . 1,9,10,16 install sctp /bin/false",
-            "code": ["install sctp /bin/false"]
+            "code": [
+              "install sctp /bin/false"
+            ]
           },
           {
             "num": "2",
@@ -3421,21 +3680,27 @@
             "title": "httpd 2.4.55 – 2.4.70",
             "hint": "command",
             "body": "Also standalone mod_h2 2.0.8–2.0.42. Distro packages differ: Ubuntu 22.04's 2.4.52 is affected through a backport, while base RHEL 8 and Ubuntu 18.04 or older aren't. Red Hat JBoss Core Services is affected, including on RHEL 8. Check your distro's advisory, not just the version number. 1,2,3 apachectl -v",
-            "code": ["apachectl -v"]
+            "code": [
+              "apachectl -v"
+            ]
           },
           {
             "num": "2",
             "title": "mod_http2 is loaded",
             "hint": "command",
             "body": "apachectl -M | grep http2",
-            "code": ["apachectl -M | grep http2"]
+            "code": [
+              "apachectl -M | grep http2"
+            ]
           },
           {
             "num": "3",
             "title": "h2 or h2c in Protocols",
             "hint": "command",
             "body": "An active Protocols line that includes h2 or h2c . 2 grep -ri '^\\s*Protocols' /etc/httpd /etc/apache2 2>/dev/null",
-            "code": ["grep -ri '^\\s*Protocols' /etc/httpd /etc/apache2 2>/dev/null"]
+            "code": [
+              "grep -ri '^\\s*Protocols' /etc/httpd /etc/apache2 2>/dev/null"
+            ]
           }
         ],
         "actions": [
@@ -3451,7 +3716,9 @@
             "title": "Can't upgrade? Turn off HTTP/2",
             "hint": "command",
             "body": "Then restart Apache. 4 Protocols http/1.1",
-            "code": ["Protocols http/1.1"]
+            "code": [
+              "Protocols http/1.1"
+            ]
           }
         ],
         "sources": [
@@ -3570,7 +3837,9 @@
             "title": "Spring Boot 4.1.2 or older",
             "hint": "command",
             "body": "Almost every advisory affects Spring Boot 4.1.2, 4.0.9 and older, or the Spring libraries those versions bring in (Framework, Security, Data, Integration, Web Services, LDAP). Spring AI and Spring Cloud have their own version numbers: see each bug. Spring Boot 4.2.0 came out the same day; the advisories don't list it either way. Check what your build actually resolves; with Gradle, run ./gradlew dependencies --configuration runtimeClasspath instead. 1,2,3,4 mvn dependency:list | grep org.springframework",
-            "code": ["mvn dependency:list | grep org.springframework"]
+            "code": [
+              "mvn dependency:list | grep org.springframework"
+            ]
           },
           {
             "num": "2",
@@ -3739,7 +4008,9 @@
             "title": "Spring Security 7.1.2 or older",
             "hint": "command",
             "body": "Affected: 7.1.0 to 7.1.2, 7.0.0 to 7.0.8, 6.5.0 to 6.5.12, 6.4.0 to 6.4.19, 5.8.0 to 5.8.28, and 5.7.26 and older. Spring Boot 4.1.3 and 4.0.10 bring in the fixed 7.1.3 and 7.0.9. 1,8,9 mvn dependency:list | grep spring-security",
-            "code": ["mvn dependency:list | grep spring-security"]
+            "code": [
+              "mvn dependency:list | grep spring-security"
+            ]
           },
           {
             "num": "2",
@@ -3762,7 +4033,9 @@
             "title": "On 6.x or 5.x: no free fix",
             "hint": "command",
             "body": "Spring's fixes for 6.5, 6.4, 5.8 and 5.7 (6.5.13, 6.4.20, 5.8.29, 5.7.27) are only for Enterprise support customers, and the advisory lists no workaround. Until you can move to 7.x, check that no request data, form field or external config value is bound onto a RequestMatcher property. 1 grep -rn \"RequestMatcher\" --include=*.java --include=*.xml src/",
-            "code": ["grep -rn \"RequestMatcher\" --include=*.java --include=*.xml src/"]
+            "code": [
+              "grep -rn \"RequestMatcher\" --include=*.java --include=*.xml src/"
+            ]
           },
           {
             "num": "3",
@@ -3871,7 +4144,9 @@
             "title": "Spring Boot 4.1.2 or older",
             "hint": "command",
             "body": "Affected: 4.1.0 to 4.1.2, 4.0.0 to 4.0.9, 3.5.0 to 3.5.17, 3.0.0 to 3.4.18, and 2.7.35 and older. 1 mvn dependency:list | grep spring-boot",
-            "code": ["mvn dependency:list | grep spring-boot"]
+            "code": [
+              "mvn dependency:list | grep spring-boot"
+            ]
           },
           {
             "num": "2",
@@ -3885,7 +4160,9 @@
             "title": "A configured path ends in /",
             "hint": "command",
             "body": "For example management.endpoints.web.path-mapping.health=status/ or spring.h2.console.path=/custom/ , which produce a rule for /actuator/status//** that never matches /actuator/status . The fix also covers health group additional paths and / as the Actuator base path. Look for those properties and check whether a value ends in a slash. 2 grep -rnE \"path-mapping|console.path|base-path|additional-path\" src/main/resources/",
-            "code": ["grep -rnE \"path-mapping|console.path|base-path|additional-path\" src/main/resources/"]
+            "code": [
+              "grep -rnE \"path-mapping|console.path|base-path|additional-path\" src/main/resources/"
+            ]
           },
           {
             "num": "4",
@@ -3997,7 +4274,9 @@
             "title": "MySQL 8.4, 9.7 or 26.10",
             "hint": "command",
             "body": "Oracle lists MySQL Server 8.4.0 to 8.4.13, 9.7.0 to 9.7.4 and 26.10, and MySQL Cluster 8.0.0 to 8.0.50, 8.4.0 to 8.4.13, 9.7.0 to 9.7.4 and 26.10. Server 8.0 isn't listed because Oracle no longer supports it, not because it was checked, so TuxCare treats it as possibly affected. Oracle files the bug under \"Client programs\", so machines with only the mysql command-line tools count too. MariaDB and Percona haven't said whether they're affected; Red Hat lists its hardened MariaDB 10.11 and 11.8 images as affected. 1,7,8 mysql --version",
-            "code": ["mysql --version"]
+            "code": [
+              "mysql --version"
+            ]
           },
           {
             "num": "2",
@@ -4159,7 +4438,9 @@
             "title": "OpenSSL 4.0.0 to 4.0.3, or 4.1.0",
             "hint": "command",
             "body": "OpenSSL's CVE record lists only these versions; 3.x and older are not listed. Ubuntu disagrees in one place: it marks the Node.js package on Ubuntu 22.04, which bundles OpenSSL 1.1.1m, as vulnerable. Apps can also bundle their own OpenSSL. 1,7 openssl version",
-            "code": ["openssl version"]
+            "code": [
+              "openssl version"
+            ]
           },
           {
             "num": "2",
@@ -4771,7 +5052,7 @@
     {
       "slug": "php",
       "name": "PHP",
-      "meta": "3 bugs · checked 20 Nov",
+      "meta": "4 bugs · checked 21 Nov",
       "nofix": true,
       "chips": [
         {

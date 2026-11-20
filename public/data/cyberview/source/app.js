@@ -49,7 +49,7 @@ var LAYERS=[["ot","Industrial control: OT, building and plant systems",/ot-ics|s
 var SECG=[["energy","Energy and utilities"],["health","Healthcare"],["gov","Government"],["finance","Finance"],["telecom","Telecom"],["transport","Transport"],["edu","Education"],["tech","Technology"],["other","Other sectors"]];
 /* every piece of text CyberView writes is written by its AI agents, which are Claude models; say so wherever it appears */
 var AI_BY="CyberView AI (a Claude model)";
-var BUILD={version:"1.59",date:"2026-11-20"};
+var BUILD={version:"1.60",date:"2026-11-20"};
 var viz={lane:"layer",mat:"layer"};
 var kev=[],ripples=null;
 function own(o,k){return typeof k==="string"&&Object.prototype.hasOwnProperty.call(o,k);}

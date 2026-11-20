@@ -1,9 +1,9 @@
-// CyberView status page. Answers, in this order: is the site healthy right now, are we hitting the four targets, what
-// needs attention, how the data flows from the feeds to the globe and where it comes from; everything else sits in
-// collapsed details. Reads site/data/ops.json (routines, run logs, lead queue,
-// collectors, improver; scripts/build.mjs), health.json and manifest.json (pipeline timestamps, grid sources, what the
-// build left out, live commits) and efficiency.json (the four targets, usage and output per routine, feeds, coverage,
-// accuracy; scripts/efficiency.mjs). Every record goes through a clean*() function; every panel renders inside safe().
+// CyberView status page. Answers, in this order: is the site healthy right now, how the data flows from the feeds to the
+// globe, where it comes from and what needs attention; everything else sits in collapsed details. Reads site/data/ops.json
+// (routines, run logs, lead queue, collectors, improver; scripts/build.mjs), health.json and manifest.json (pipeline
+// timestamps, grid sources, what the build left out, live commits) and efficiency.json (flow, sources, usage and output per
+// routine, feeds, coverage, accuracy; scripts/efficiency.mjs). efficiency.json also holds the four targets for the improver,
+// the guard and `swarm.mjs board`; the owner took them off this page (2026-11-20), so the page reads none of them. Every record goes through a clean*() function; every panel renders inside safe().
 // Lateness is worked out here against the visitor's clock, so the page stays truthful between deploys.
 (function () {
   "use strict";
@@ -96,7 +96,6 @@
     };
   }
   function countMap(o) { var out = {}; if (obj(o)) Object.keys(o).slice(0, 60).forEach(function (k) { var v = nn(o[k]); if (v !== null && /^[a-z0-9 -]{1,30}$/i.test(k)) out[k] = Math.max(0, Math.round(v)); }); return out; }
-  var EFF_STATE = { pass: ["ok", "Met"], fail: ["bad", "Not met"], unknown: ["info", "Not measurable yet"] };
   var USAGE_STATE = ["logged", "partly logged", "not logged", "none (script)", "no runs"];
   var VERDICTS = ["useful", "noise", "nothing used yet", "silent"];
   /** Every field the page shows from efficiency.json, checked and cut to size; anything else is dropped. */
@@ -113,9 +112,6 @@
     };
     return {
       at: isoOk(o.at || o.built_at), note: txt(o.note, 300), days: nn(o.days) || 7, covered: { leads: nn(CV.leads), usage: nn(CV.usage), runs: nn(CV.runs) },
-      targets: arr(o.targets, 6).filter(obj).map(function (t) {
-        return { key: txt(t.key, 20), title: txt(t.title, 40), goal: txt(t.goal, 80), figure: txt(t.figure, 24), detail: txt(t.detail, 240), target: txt(t.target, 160), value: txt(t.value, 260), note: txt(t.note, 300),
-          state: has(EFF_STATE, t.state) ? t.state : "unknown" }; }),
       windows: { estimate: W.estimate !== false, five: w(W.five_hour), week: w(W.week),
         budget: B ? { window_pct: nn(B.window_pct), week_pct: nn(B.week_pct), level: lvl(B), limited_until: isoOk(B.limited_until) } : null },
       loop: LP ? { cycles: int0(LP.cycles), idle: int0(LP.idle), idle_pct: nn(LP.idle_pct), ok: int0(LB.ok), tight: int0(LB.tight), stop: int0(LB.stop), unknown: int0(LB.unknown),
@@ -253,31 +249,12 @@
     p.dataset.data = d.slice(0, 7); p.dataset.code = c.slice(0, 7); p.hidden = false;
   }
 
-  /* ---------------- B. targets ---------------- */
-
-  function renderTargets(e) {
-    var note = $("effNote"), box = $("effTargets"); box.textContent = "";
-    if (!e) { note.textContent = "The efficiency report is not available yet. It is written at every build."; $("eff").dataset.state = "missing"; return; }
-    if (e.error) { note.textContent = e.error; $("eff").dataset.state = "error"; return; }
-    $("eff").dataset.state = "ok";
-    e.targets.forEach(function (t) {
-      var s = EFF_STATE[t.state], c = el("article", "tcard " + s[0]); c.dataset.target = t.key;
-      var head = el("div", "thead"); head.appendChild(el("h3", null, t.title || t.key)); head.appendChild(badge(s[0], s[1])); c.appendChild(head);
-      var fig = el("p", "tfig", t.figure || t.value || "not measured"); if (t.key === "speed") fig.dataset.speed = "1"; c.appendChild(fig);
-      c.appendChild(el("p", "tdetail", t.detail || (t.figure ? t.value : t.target)));
-      c.appendChild(el("p", "tgoal", "Target: " + (t.goal || t.target) + (t.note ? ". " + t.note.charAt(0).toUpperCase() + t.note.slice(1) : "")));
-      box.appendChild(c);
-    });
-    if (!e.targets.length) box.appendChild(el("p", "muted", "No targets in the report."));
-    note.textContent = (e.at ? "Worked out " + ago(e.at) + " by a script with no AI model. " : "") + e.note;
-  }
-
-  /* ---------------- B2. how the data flows: one box per stage, left to right (stacked on phones) ---------------- */
+  /* ---------------- B. how the data flows: one box per stage, left to right (stacked on phones) ---------------- */
 
   function fmt(n) { return n === null || n === undefined ? "—" : Number(n).toLocaleString("en"); }
   function pctOf(a, b) { return b ? Math.round(a / b * 100) : null; }
   function sentence(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ""; }
-  // the stages, with every number from efficiency.json (flow, the speed target) and manifest.json (the map); "—" when missing
+  // the stages, with every number from efficiency.json (flow) and manifest.json (the map); "—" when missing
   function flowStages(F, ops, m) {
     var a = F && F.d1, b = F && F.d7, S = F && F.sources, has1 = !!a, C = m && obj(m.counts) ? m.counts : null;
     var open = ops && ops.pipeline && ops.pipeline.open !== null ? ops.pipeline.open : null, decided = has1 ? a.rule + a.researched : 0;
@@ -315,7 +292,7 @@
     var ol = $("flow"), F = e && !e.error ? e.flow : null, err = F && F.error ? F.error : "";
     ol.textContent = "";
     if (err) F = null;
-    $("secFlow").dataset.state = F && F.d1 ? "ok" : "missing";
+    $("secFlow").dataset.state = F && F.d1 ? "ok" : (e && e.error) || err ? "error" : "missing";
     flowStages(F, ops, m).forEach(function (s, i, all) {
       var li = el("li", "fstage"); li.dataset.stage = s.key;
       var L = el("div", "fl"), R = el("div", "fr"); li.appendChild(L); li.appendChild(R);
@@ -335,16 +312,13 @@
       if (i < all.length - 1) { var ar = el("span", "farrow", "→"); ar.setAttribute("aria-hidden", "true"); li.appendChild(ar); }
       ol.appendChild(li);
     });
-    // speed: the same figure as the Speed target card (efficiency.json), never worked out a second time
-    var sp = e && !e.error ? e.targets.filter(function (t) { return t.key === "speed"; })[0] : null;
-    $("flowSpeed").textContent = sp ? "Speed from the first lead to a published and second-reviewed event: " + (sp.figure || "not measured") + " for nine events in ten, the Speed card's figure (target " + (sp.goal || sp.target).replace(/, nine times in ten$/, "") + ")." : "Speed: not measured yet.";
     var ld = F ? F.lead_days : null;
-    $("flowNote").textContent = err ? err : !F ? "The flow figures are not available yet; they are worked out at every build by a script with no AI model." :
+    $("flowNote").textContent = e && e.error ? e.error : err ? err : !F ? "The flow figures are not available yet; they are worked out at every build by a script with no AI model." :
       "Each stage counts what it did in the window (leads when seen, decisions when made, events when published, reviews when first done), so the stages need not add up." +
       (ld !== null && ld < 7 ? " The 7-day figures rest on " + ld + " days of lead data, all there is so far." : "");
   }
 
-  /* ---------------- B3. where the data comes from: the week's events by tier, collector, region and language ---------------- */
+  /* ---------------- B2. where the data comes from: the week's events by tier, collector, region and language ---------------- */
 
   var TIER_LABEL = { gov: "Government or CERT", vendor: "Security vendor", news: "News", database: "Database row (CVE, breach)", untraced: "No lead (own search)", "before-leads": "Before lead files" };
   var FAMILY_LABEL = { rss: "Agency, vendor, news RSS", "bing-news": "Bing News", gdelt: "GDELT", "google-news": "Google News (retired)", "cve-kev": "CVE corpus, NVD and KEV", claims: "Leak-site claims",
@@ -565,7 +539,7 @@
     if (!e || e.error) return;
     var A = e.accuracy, tb = $("accTotals").querySelector("tbody"); tb.textContent = "";
     $("accDays").textContent = String(A.days);
-    [["Reviewed", String(A.reviewed)], ["Corrected", A.corrected + (A.corrected_pct !== null ? " (" + A.corrected_pct + "%)" : "")], ["Flagged", String(A.flagged)], ["Target", "under 10% corrected"]].forEach(function (r) {
+    [["Reviewed", String(A.reviewed)], ["Corrected", A.corrected + (A.corrected_pct !== null ? " (" + A.corrected_pct + "%)" : "")], ["Flagged", String(A.flagged)]].forEach(function (r) {
       var tr = el("tr"); tr.appendChild(el("th", null, r[0])).scope = "row"; tr.appendChild(el("td", "num", r[1])); tb.appendChild(tr);
     });
     var wb = $("accWeeks").querySelector("tbody"); wb.textContent = "";
@@ -583,7 +557,7 @@
 
   function renderImprove(I) {
     if (!I) return;
-    // the improver's own cost figures; its review rate and speed are left out: the targets above are the current ones
+    // the improver's own cost figures; its review rate and speed are left out (the current review rate is under Accuracy)
     if (I.at) $("impSum").textContent = "Improver report from " + ago(I.at) + " (last " + (I.days || 7) + " days): " + (I.events_added !== null ? I.events_added : 0) + " events added" +
       (I.cost_usd !== null ? "; worker cost $" + I.cost_usd.toFixed(2) : "") + (I.cost_per_event !== null ? " ($" + I.cost_per_event.toFixed(2) + " per event)" : "") + "." +
       (I.guard ? " Quality guard " + (I.guard.blocked ? "on: nothing is made cheaper until the second review corrects 15% or less." : "off.") : "");
@@ -650,7 +624,6 @@
     safe(function () { ops = cleanOps(a[0]); }); safe(function () { h = cleanHealth(a[1]); }); safe(function () { e = cleanEff(a[3]); });
     safe(function () { renderHealth(h, m); });
     safe(function () { liveCommits(m); });
-    safe(function () { renderTargets(e); });
     safe(function () { renderFlow(e, ops, m); });
     safe(function () { renderFrom(e); });
     safe(function () { counts = renderRoutines(ops, e, attn); });

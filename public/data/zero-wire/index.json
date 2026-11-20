@@ -17,8 +17,8 @@
     "cves": 100,
     "bySeverity": {
       "MEDIUM": 39,
-      "HIGH": 53,
-      "LOW": 1,
+      "LOW": 2,
+      "HIGH": 52,
       "CRITICAL": 6,
       "UNKNOWN": 1
     }
@@ -2309,6 +2309,54 @@
     }
   ],
   "cves": [
+    {
+      "id": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-133696",
+      "url": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-133696",
+      "title": "CVE-2026-133696: continuedev continue Dev Data Logging log.ts DataLogger.logDevData information disclosure",
+      "summary": "A flaw has been found in continuedev continue up to 2.1.0. This affects the function DataLogger.logDevData of the file core/data/log.ts of the component Dev Data Logging. This manipulation causes information disclosure. The attack can be initiated remotely. The vendor was contacted early about this disclosure but did not respond in any way.",
+      "contentText": "A flaw has been found in continuedev continue up to 2.1.0. This affects the function DataLogger.logDevData of the file core/data/log.ts of the component Dev Data Logging. This manipulation causes information disclosure. The attack can be initiated remotely. The vendor was contacted early about this disclosure but did not respond in any way.\n\nCVSS 4.0 score: 5.3 (Medium)\n\nDetails on Cloudflare Radar: https://radar.cloudflare.com/zero-wire/cves/CVE-2026-133696",
+      "published": "2026-11-20T20:45:21.144Z",
+      "modified": null,
+      "tags": [
+        "Medium"
+      ],
+      "image": "https://radar.cloudflare.com/api/og/zero-wire/cves/CVE-2026-133696",
+      "ext": {
+        "about": "https://radar.cloudflare.com/zero-wire/cves/feed/schema.json",
+        "id": "CVE-2026-133696",
+        "severity": "MEDIUM",
+        "score": 5.3,
+        "cvss_version": "4.0"
+      },
+      "cveId": "CVE-2026-133696",
+      "severity": "MEDIUM",
+      "score": 5.3,
+      "cvssVersion": "4.0"
+    },
+    {
+      "id": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-133695",
+      "url": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-133695",
+      "title": "CVE-2026-133695: continuedev continue Docs Crawler DocsCrawler.ts DocsCrawler server-side request forgery",
+      "summary": "A vulnerability was detected in continuedev continue 2.0.0/2.1.0. Affected by this issue is the function DocsCrawler of the file core/indexing/docs/crawlers/DocsCrawler.ts of the component Docs Crawler. The manipulation of the argument startUrl/useLocalCrawling results in server-side request forgery. It is possible to launch the attack remotely. The attack requires a high level of complexity. The exploitation is known to be difficult. The vendor was contacted early about this disclosure but did not respond in any way.",
+      "contentText": "A vulnerability was detected in continuedev continue 2.0.0/2.1.0. Affected by this issue is the function DocsCrawler of the file core/indexing/docs/crawlers/DocsCrawler.ts of the component Docs Crawler. The manipulation of the argument startUrl/useLocalCrawling results in server-side request forgery. It is possible to launch the attack remotely. The attack requires a high level of complexity. The exploitation is known to be difficult. The vendor was contacted early about this disclosure but did not respond in any way.\n\nCVSS 4.0 score: 2.3 (Low)\n\nDetails on Cloudflare Radar: https://radar.cloudflare.com/zero-wire/cves/CVE-2026-133695",
+      "published": "2026-11-20T20:30:18.438Z",
+      "modified": null,
+      "tags": [
+        "Low"
+      ],
+      "image": "https://radar.cloudflare.com/api/og/zero-wire/cves/CVE-2026-133695",
+      "ext": {
+        "about": "https://radar.cloudflare.com/zero-wire/cves/feed/schema.json",
+        "id": "CVE-2026-133695",
+        "severity": "LOW",
+        "score": 2.3,
+        "cvss_version": "4.0"
+      },
+      "cveId": "CVE-2026-133695",
+      "severity": "LOW",
+      "score": 2.3,
+      "cvssVersion": "4.0"
+    },
     {
       "id": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-54026",
       "url": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-54026",
@@ -4655,55 +4703,7 @@
       "severity": "HIGH",
       "score": 7.5,
       "cvssVersion": "3.1"
-    },
-    {
-      "id": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-95825",
-      "url": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-95825",
-      "title": "CVE-2026-95825: Reference-count underflow in Zephyr network interface address removal releases an IP address that is still in use",
-      "summary": "net_if_ipv4_addr_rm() and net_if_ipv6_addr_rm() in subsys/net/ip/net_if.c unconditionally called net_if_addr_unref() on the target address. When an earlier removal could not complete because another subsystem still held a reference (the TCP stack takes one on the local address of every connection, in tcp_conn_new() and on connect()), the address is left in place with is_added cleared and is_used still set. A second removal of such an address decremented the reference count again, consuming a reference owned by that other holder. When it was the last one, the address slot was released, its NET_EVENT_IPV*_ADDR_DEL event fired, and the slot became reusable while the holder still believed it owned a reference. Every address lookup helper matches on is_used and not on is_added, so a half-removed address stays visible to the rest of the stack and repeat removals are readily reachable from remote input. Under IPv6 SLAAC, an on-link node that sends a Router Advertisement with a short valid lifetime causes the address to expire into the deferred state; a refreshing Router Advertisement is handled by net_if_ipv6_addr_update_lifetime(), which re-arms the lifetime timer without restoring the reference, so the next expiry performs the second, reference-stealing removal. With CONFIG_NET_IPV4_ACD and DHCPv4, repeated spoofed ARP conflicts for the device's lease drive dhcpv4_acd_event_handler() into calling net_if_ipv4_addr_rm() more than once on the same address. Where CONFIG_USERSPACE is enabled, the net_if_ipv4_addr_rm_by_index() and net_if_ipv6_addr_rm_by_index() system calls let an unprivileged user-mode thread trigger the same kernel-side release deterministically. The impact is loss of a configured IP address while connections are still using it, and a corrupted reference count that propagates: the slot can be handed to a newly added address, and when the stale holder later tears down, net_if_addr_unref() resolves the address by value and drops the new incarnation's only reference, removing a live address a second time. The affected objects are static array slots and the counter is never decremented below zero, so there is no memory corruption or information disclosure; the consequence is denial of service against the device's network connectivity, repeatable at the attacker's pace. The fix resolves the address before touching the reference count and returns false without calling net_if_addr_unref() when the address is already marked as removed, so the public removal API can no longer consume a reference it does not own.",
-      "contentText": "net_if_ipv4_addr_rm() and net_if_ipv6_addr_rm() in subsys/net/ip/net_if.c unconditionally called net_if_addr_unref() on the target address. When an earlier removal could not complete because another subsystem still held a reference (the TCP stack takes one on the local address of every connection, in tcp_conn_new() and on connect()), the address is left in place with is_added cleared and is_used still set. A second removal of such an address decremented the reference count again, consuming a reference owned by that other holder. When it was the last one, the address slot was released, its NET_EVENT_IPV*_ADDR_DEL event fired, and the slot became reusable while the holder still believed it owned a reference. Every address lookup helper matches on is_used and not on is_added, so a half-removed address stays visible to the rest of the stack and repeat removals are readily reachable from remote input. Under IPv6 SLAAC, an on-link node that sends a Router Advertisement with a short valid lifetime causes the address to expire into the deferred state; a refreshing Router Advertisement is handled by net_if_ipv6_addr_update_lifetime(), which re-arms the lifetime timer without restoring the reference, so the next expiry performs the second, reference-stealing removal. With CONFIG_NET_IPV4_ACD and DHCPv4, repeated spoofed ARP conflicts for the device's lease drive dhcpv4_acd_event_handler() into calling net_if_ipv4_addr_rm() more than once on the same address. Where CONFIG_USERSPACE is enabled, the net_if_ipv4_addr_rm_by_index() and net_if_ipv6_addr_rm_by_index() system calls let an unprivileged user-mode thread trigger the same kernel-side release deterministically. The impact is loss of a configured IP address while connections are still using it, and a corrupted reference count that propagates: the slot can be handed to a newly added address, and when the stale holder later tears down, net_if_addr_unref() resolves the address by value and drops the new incarnation's only reference, removing a live address a second time. The affected objects are static array slots and the counter is never decremented below zero, so there is no memory corruption or information disclosure; the consequence is denial of service against the device's network connectivity, repeatable at the attacker's pace. The fix resolves the address before touching the reference count and returns false without calling net_if_addr_unref() when the address is already marked as removed, so the public removal API can no longer consume a reference it does not own.\n\nCVSS 3.1 score: 5.3 (Medium)\n\nDetails on Cloudflare Radar: https://radar.cloudflare.com/zero-wire/cves/CVE-2026-95825",
-      "published": "2026-11-20T18:18:57.160Z",
-      "modified": null,
-      "tags": [
-        "Medium"
-      ],
-      "image": "https://radar.cloudflare.com/api/og/zero-wire/cves/CVE-2026-95825",
-      "ext": {
-        "about": "https://radar.cloudflare.com/zero-wire/cves/feed/schema.json",
-        "id": "CVE-2026-95825",
-        "severity": "MEDIUM",
-        "score": 5.3,
-        "cvss_version": "3.1"
-      },
-      "cveId": "CVE-2026-95825",
-      "severity": "MEDIUM",
-      "score": 5.3,
-      "cvssVersion": "3.1"
-    },
-    {
-      "id": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-84693",
-      "url": "https://radar.cloudflare.com/zero-wire/cves/CVE-2026-84693",
-      "title": "CVE-2026-84693: WPvivid — Backup, Migration & Staging <= 0.9.134 - Unauthenticated Arbitrary File Deletion via Migration Receiver and Backup Cleanup",
-      "summary": "The WPvivid — Backup, Migration & Staging plugin for WordPress is vulnerable to Arbitrary File Deletion in version up to, and including, 0.9.134. This is due to a timing side channel in the bundled RSA decryption path, insufficient validation of migration receiver backup records, and missing path validation in the cleanup_local_backup() function. This makes it possible for unauthenticated attackers to recover an active migration receiver's RSA modulus, inject a backup record containing path traversal, and cause a later scheduled cleanup to delete an attacker-selected file writable by the web server. Exploitation requires an unexpired receiver key generated by an administrator and a subsequent manual or scheduled backup lifecycle.",
-      "contentText": "The WPvivid — Backup, Migration & Staging plugin for WordPress is vulnerable to Arbitrary File Deletion in version up to, and including, 0.9.134. This is due to a timing side channel in the bundled RSA decryption path, insufficient validation of migration receiver backup records, and missing path validation in the cleanup_local_backup() function. This makes it possible for unauthenticated attackers to recover an active migration receiver's RSA modulus, inject a backup record containing path traversal, and cause a later scheduled cleanup to delete an attacker-selected file writable by the web server. Exploitation requires an unexpired receiver key generated by an administrator and a subsequent manual or scheduled backup lifecycle.\n\nCVSS 3.1 score: 8.1 (High)\n\nDetails on Cloudflare Radar: https://radar.cloudflare.com/zero-wire/cves/CVE-2026-84693",
-      "published": "2026-11-20T18:18:56.847Z",
-      "modified": null,
-      "tags": [
-        "High"
-      ],
-      "image": "https://radar.cloudflare.com/api/og/zero-wire/cves/CVE-2026-84693",
-      "ext": {
-        "about": "https://radar.cloudflare.com/zero-wire/cves/feed/schema.json",
-        "id": "CVE-2026-84693",
-        "severity": "HIGH",
-        "score": 8.1,
-        "cvss_version": "3.1"
-      },
-      "cveId": "CVE-2026-84693",
-      "severity": "HIGH",
-      "score": 8.1,
-      "cvssVersion": "3.1"
     }
   ],
-  "generatedAt": "2026-11-20T20:31:29.740Z"
+  "generatedAt": "2026-11-20T20:52:28.790Z"
 }
