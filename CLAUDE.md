@@ -1194,7 +1194,10 @@ breach-watch / generated-artifacts pattern) instead of opening a PR per tick.
 Scripts are idempotent — `writeJsonIfChanged` ignores only `generatedAt`, and
 the CyberView sync compares upstream SHAs and mirrors the upstream `site/`
 source into `public/data/cyberview/source/` — so quiet ticks produce no diff,
-no commit and no deploy. A push to `main` triggers the normal CI deploy.
+no commit and no deploy. Because commits made with `GITHUB_TOKEN` do **not**
+trigger `on:push` workflows, the sync workflow deploys explicitly with
+`npx wrangler deploy` (guarded on a missing `CLOUDFLARE_API_TOKEN`) after a
+real data change — the same self-deploy pattern as breach-watch-sync.
 
 The upstream JSON Lines history is converted to `data/events.json` (a JSON
 array) so the globe page can plot every event without a map library. The routes
