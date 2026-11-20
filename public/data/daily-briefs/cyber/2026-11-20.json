@@ -1,0 +1,147 @@
+{
+  "type": "cyber",
+  "date": "2026-11-20",
+  "threatLevel": "",
+  "executiveSummary": "Critical vCenter authentication bypass (CVE-2026-123890) is under active exploitation by a China-linked actor to gain admin access and abuse SAML/STS; patch immediately and restrict vCenter/ESXi management exposure. View Article Firewall management planes exposed to the Internet are being compromised via chained PHP zero-days, with kernel LPE to root on PAN-OS devices; remove public access and apply vendor updates/WAF mitigations now. View Article Siemens S7 PLCs: multi-agency alert warns of active targeting using S7comm and AI-assisted scripts; isolate controllers, block TCP/102, and harden engineering workstations. Security Advisory Nation-state operators are leveraging covert SOHO/IoT botnets and misconfigured routers to mask operations and pre-position in critical infrastructure networks; prioritize edge hardening and monitoring. Security Advisory Security Advisory Ransomware operators continue to weaponize virtualization layers using only native vCenter/ESXi features; treat vCenter as Tier-0, segregate identities, and ensure offline immutable backups. Supporting Report Multiple high-severity web-stack issues (PHP, NGINX, Brotli, Drupal) affect public-facing portals that can be bridges into OT-adjacent networks; update and apply virtual patching. Vendor Advisory View Article",
+  "keyFindings": [
+    {
+      "title": "Exploitation of VMware vCenter CVE-2026-123890 enables domain-wide virtualizatio",
+      "summary": "Exploitation of VMware vCenter CVE-2026-123890 enables domain-wide virtualization control including OT VMs; suspected China-nexus activity observed. View Article"
+    },
+    {
+      "title": "PHP \"php2shell/phpAfterShell\" session-handling flaws and related 8.x issues are ",
+      "summary": "PHP \"php2shell/phpAfterShell\" session-handling flaws and related 8.x issues are widely targeted; JPCERT and industry reports confirm active probing and compromises. Vendor Advisory View Article"
+    },
+    {
+      "title": "China-nexus covert SOHO/IoT proxy networks and router misconfigurations are acti",
+      "summary": "China-nexus covert SOHO/IoT proxy networks and router misconfigurations are actively abused to hide operations against CI targets. Security Advisory Security Advisory"
+    },
+    {
+      "title": "Direct OT risk",
+      "summary": "active multi-agency alert on Siemens S7 PLC access via S7comm and weak segmentation; immediate network and access hardening required. Security Advisory"
+    },
+    {
+      "title": "Ransomware crews (SafePay, hypervisor-layer incidents) emphasize MFA for VPNs, K",
+      "summary": "Ransomware crews (SafePay, hypervisor-layer incidents) emphasize MFA for VPNs, KEV patching, and offline/immutable backups to protect ICS-supporting systems. Security Advisory Supporting Report"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "24",
+        "label": "Events (this brief)"
+      },
+      {
+        "value": "9",
+        "label": "Decision: ESCALATE"
+      },
+      {
+        "value": "12",
+        "label": "Decision: MONITOR"
+      },
+      {
+        "value": "3",
+        "label": "Decision: IGNORE"
+      },
+      {
+        "value": "6",
+        "label": "Actively Exploited Items"
+      },
+      {
+        "value": "9",
+        "label": "OT-Relevant Vendors"
+      },
+      {
+        "value": "20+",
+        "label": "New/Updated CVEs Referenced"
+      },
+      {
+        "value": "Gov, WWS, Energy, Telco, Transport",
+        "label": "Sectors with Indications"
+      },
+      {
+        "value": "Exploit Public-Facing App (T1190), Valid Accounts (T1078), Phishing, Router/SOHO Misconfig",
+        "label": "Primary Initial Access Vectors"
+      },
+      {
+        "value": "vCenter/ESXi, PAN-OS mgmt, PHP/NGINX stacks, Routers/SOHO, Siemens S7",
+        "label": "High-Risk Tech Surfaces"
+      },
+      {
+        "value": "SafePay, Citrus (AI-assisted), Hypervisor-layer",
+        "label": "Active Ransomware Focus"
+      },
+      {
+        "value": "SAML/STS Abuse, S7comm Writes, VLESS/AnyDesk, Webshells, Proxy Botnets",
+        "label": "Notable TTPs"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Virtualization & Cloud: VMware vCenter/ESXi, VMware Cloud/Telco Cloud components Network & Edge: Palo Alto Networks PAN-OS (mgmt plane exposure), Cisco routers (SNMP/SMI), Juniper Junos OS Evolved, Axis OS (cameras) OT/ICS: Siemens S7 PLCs (S7comm/TCP 102) Web/Runtime: PHP 8.x (multiple criticals), NGINX (HTTP/2/3), Brotli C library, Drupal Core Enterprise Apps/Tools: CAST Imaging, mRemoteNG, Axence nVision, Ubiquiti UniFi Access Microsoft Platform: Windows/Outlook (CVE-2026-124194), Patch Tuesday rollups"
+    ],
+    "sectors": [
+      "Government services and administration; Water and Wastewater Systems Energy and critical manufacturing (router/edge, PLCs, virtualization) Telecommunications and service providers (vCenter/Telco Cloud) Transportation and healthcare (Axis cameras, enterprise portals)"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "China-linked operations using covert device networks and vCenter zero-day exploitation for admin takeover and SAML abuse. Security Advisory View Article",
+        "Ransomware ecosystems: SafePay (#StopRansomware) with PsExec/WinRM/RDP and cloud exfil; Citrus using VLESS/REALITY tunnels and AI-assisted scripts; hypervisor-layer incidents using only native vSphere features. Security Advisory Vendor Report Vendor Report",
+        "Operation ShadowCloud implants (GitDoor/GraphDoor) hide C2 in GitHub/Graph/Ably and leverage MeshAgent; potential lateral movement risk to OT if bridges exist. Vendor Report"
+      ]
+    }
+  ],
+  "relevance": "Virtualization dependency: Many ICS servers (HMI, historians, eng. workstations) run on vSphere. vCenter compromise can cascade into OT if segmentation and identity separation are weak. Supporting Report Perimeter device exploitation (PAN-OS, routers) jeopardizes OT firewalls/DMZs and remote access pathways commonly used by integrators and vendors. View Article Direct PLC threat: Active S7comm probing/write attempts raise immediate safety/availability concerns if conduits allow cross-domain access. Security Advisory Web-layer CVEs (PHP/NGINX/Brotli/Drupal) on enterprise portals can provide durable IT footholds adjacent to OT networks where flat or weakly controlled paths persist. Vendor Advisory",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "VMware vCenter auth bypass CVE-2026-123890 (active exploitation). View Article",
+        "PHP RCE/session flaws (e.g., CVE-2026-126714 \"phpAfterShell\"; prior CVE-2026-109618/109619 active). View Article Vendor Advisory",
+        "NGINX critical RCE set (multiple CVEs; config-dependent). View Article",
+        "Brotli C out-of-bounds write CVE-2026-111497 (HTTP stacks). Vendor Advisory",
+        "SiteGuard Server Edition OS command injection CVE-2026-106931 (active exploitation). Vendor Advisory",
+        "Axis OS RCE (versions ≥6.50.5.10; workaround until patch). Security Advisory",
+        "Juniper Junos OS Evolved RCE/DoS (workaround, fix pending). Security Advisory",
+        "Microsoft November updates incl. Outlook CVE-2026-124194 (exploited). Vendor Advisory",
+        "CISA KEV additions across OpenSSH/FreeSWITCH/Aspera and others (active exploitation). Security Advisory"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Initial Access: Exploit Public-Facing App (T1190), Valid Accounts (T1078), Supply Chain (T1195), External Remote Services (T1133)",
+      "Execution/Lateral Movement: PSExec/WinRM/WMI (T1570/T1021), Webshell (T1505), S7comm PUT/GET; vCenter/ESXi native operations",
+      "Defense Evasion: SAML/STS abuse (Golden SAML), AnyDesk/TeamViewer, covert SOHO/IoT proxies (T1090)",
+      "Credential Access: Mimikatz/LSASS (T1003), VPN/VDI auth manipulation",
+      "Exfiltration: Cloud storage (OneDrive, Mega) (T1567), DNS/HTTPS covert channels"
+    ],
+    "mitreIds": [
+      "T1190",
+      "T1078",
+      "T1195",
+      "T1133",
+      "T1570",
+      "T1021",
+      "T1505",
+      "T1090",
+      "T1003",
+      "T1567"
+    ]
+  },
+  "outlook72h": "Expect continued exploitation attempts against vCenter and PHP-exposed management planes; prioritize hotfix windows and isolation even if full upgrade is deferred. Increase telemetry on router/SOHO edges; block unsolicited SNMP/TFTP and alert on config copy OIDs and anomalous egress to residential networks. Conduct focused hunts for S7comm writes/unauthorized program downloads; validate PLC and engineering station access lists. Rehearse ransomware response for hypervisor-layer attacks; verify restore of ICS-supporting VMs from offline/immutable backups.",
+  "relatedCves": [
+    "CVE-2026-123890",
+    "CVE-2026-126714",
+    "CVE-2026-109618",
+    "CVE-2026-111497",
+    "CVE-2026-106931",
+    "CVE-2026-124194",
+    "CVE-2026-132165"
+  ]
+}
