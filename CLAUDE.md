@@ -1113,6 +1113,27 @@ action steps/WAF coverage, `_cve` severity/score) carry the structured detail.
 tab on `/threatintel/cves/cves` with Briefings and CVEs views. Runs in
 `cve-intel-sync.yml` (6h). Tests: `scripts/sync-zero-wire.test.mjs`.
 
+## Exploit finder — three sources
+
+The Exploits tab (`/threatintel/cves/cves?tab=exploits`, component
+`src/pages/threatintel/CveExploits.tsx`) is now an exploit finder with three
+source tabs. ExploitGrid remains the default and still comes from the live
+`/api/v1/cve-exploits` API. Two public mirrors were added to the 6h sync:
+
+- `scripts/sync-exploittotal.mjs` → `public/data/exploittotal/index.json`.
+  REA confirmed `exploittotal.ai` has no public API (only `/api/me`, auth
+  state); the records live in the Next.js RSC payload served on the homepage
+  and CVE pages. We mirror only publicly served fields (CVSS, PoC/AI flags,
+  run cost/time, CVE-2026-114938 featured). The Model Matrix, Capability
+  Breakdown, Timeline and Community sections require upstream sign-in and are
+  **not** mirrored; the UI says so explicitly.
+- `scripts/sync-dbugs.mjs` → `public/data/dbugs/index.json`. `dbu.gs` is also
+  Next.js SSR; rows come from `__NEXT_DATA__` (public CVE index + social trend
+  counts). No private endpoint is used.
+
+Both sync scripts are in `cve-intel-sync.yml`. Parser tests:
+`scripts/sync-exploit-sources.test.mjs` (`test:exploit-sources`).
+
 ## CyberView replication (5 separate pages)
 
 `scripts/sync-cyberview.mjs` mirrors the public static JSON behind

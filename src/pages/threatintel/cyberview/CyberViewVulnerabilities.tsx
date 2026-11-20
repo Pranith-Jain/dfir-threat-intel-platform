@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   AlertTriangle,
   CalendarDays,
@@ -6,26 +6,22 @@ import {
   ChevronDown,
   Copy,
   Download,
-  ExternalLink,
   FileText,
   Search,
   ShieldAlert,
   Target,
 } from 'lucide-react';
-import { DataPageLayout } from '../../../components/DataPageLayout';
 import { useDataFetch } from '../../../hooks/useDataFetch';
-import { sanitizeUrl } from '../../../lib/sanitize-url';
-import { CyberViewNav } from './CyberViewNav';
+import { asArray, matches, text } from './shared-utils';
+import { Badge, CyberViewPage, Empty, OutLink, Pager, Section } from './shared-ui';
 
 /**
- * Replication of the CyberView "Vulnerabilities" workbench. Every number on
- * this page is derived from the mirrored workbench.json / recent.json files;
- * nothing is fetched live and nothing typed into the search boxes leaves the
- * browser. The upstream ranking score is not stored in the mirror, so the
- * number shown is a transparent local approximation built from the weights
- * CyberView publishes in its own "How the score works" disclosure.
+ * CyberView "Vulnerabilities" workbench replication. All numbers come from the
+ * mirrored workbench.json / recent.json; nothing is fetched live and nothing
+ * typed into the search boxes leaves the browser. The upstream ranking score is
+ * not stored in the mirror, so the number is a transparent local approximation
+ * built from the weights CyberView publishes in its own score disclosure.
  */
-
 interface Affected {
   vendor: string;
   product: string;
@@ -155,13 +151,13 @@ interface RankedRow {
   products: string[];
   action: string;
 }
-enum Tab {
-  Queue = 'queue',
-  All = 'all',
-  Inventory = 'inventory',
-  Hunt = 'hunt',
+interface Scored {
+  row: RankedRow;
+  score: number;
 }
-const TABS: Array<{ id: Tab; label: string }> = [
+const Tab = { Queue: 'queue', All: 'all', Inventory: 'inventory', Hunt: 'hunt' } as const;
+type Tab = (typeof Tab)[keyof typeof Tab];
+const TABS = [
   { id: Tab.Queue, label: 'Known exploited' },
   { id: Tab.All, label: 'All CVEs' },
   { id: Tab.Inventory, label: 'My software' },
@@ -177,33 +173,43 @@ type ShowFilter = (typeof SHOW_FILTERS)[number]['id'];
 const INVENTORY_KEY = 'cwm.inv';
 const PAGE_SIZE = 25;
 const DAY_MS = 86_400_000;
+const SEV_LABEL: Record<string, string> = { H: 'High', M: 'Medium', L: 'Low', C: 'Critical' };
+const CARD = 'surface-card rounded-xl border border-line-1';
+const HEAD = 'font-mono text-meta font-semibold text-heading';
+const LINK = 'font-mono text-mini text-accent-text hover:underline';
+const INPUT =
+  'rounded-control border border-line-input bg-input-200 px-2.5 py-1.5 font-mono text-meta text-heading placeholder:text-muted';
+const SELECT = 'rounded-control border border-line-input bg-input-200 px-2 py-1.5 font-mono text-meta text-heading';
+const BTN =
+  'inline-flex items-center gap-1.5 rounded-control border border-line-1 bg-surface-100 px-2.5 py-1.5 font-mono text-meta text-body transition-colors hover:border-brand-400 hover:text-heading disabled:cursor-not-allowed disabled:opacity-50';
 
 function dayDiff(due: string | null, builtAt: string): number | null {
   if (!due) return null;
   const built = new Date(builtAt);
   if (Number.isNaN(built.getTime())) return null;
   const b = Date.UTC(built.getUTCFullYear(), built.getUTCMonth(), built.getUTCDate());
-  const d = Date.parse(`${due.slice(0, 10)}T00:00:00Z`);
-  if (Number.isNaN(d)) return null;
-  return Math.round((b - d) / DAY_MS);
+  const d = Date.parse(`${text(due).slice(0, 10)}T00:00:00Z`);
+  return Number.isNaN(d) ? null : Math.round((b - d) / DAY_MS);
 }
 function fmtBuilt(stamp: string): string {
   const d = new Date(stamp);
-  if (Number.isNaN(d.getTime())) return stamp;
-  return `${d.toISOString().slice(0, 10)} ${d.toISOString().slice(11, 16)} UTC`;
+  return Number.isNaN(d.getTime()) ? stamp : `${d.toISOString().slice(0, 10)} ${d.toISOString().slice(11, 16)} UTC`;
 }
 function deadlineText(due: string | null, builtAt: string): string {
   const d = dayDiff(due, builtAt);
-  if (d === null) return 'Not on CISA’s list';
-  if (d === 0) return 'due today';
-  if (d > 0) return `${d} day${d === 1 ? '' : 's'} overdue`;
-  return `${-d} day${d === -1 ? '' : 's'} left`;
+  return d === null
+    ? 'Not on CISA’s list'
+    : d === 0
+      ? 'due today'
+      : d > 0
+        ? `${d} day${d === 1 ? '' : 's'} overdue`
+        : `${-d} day${d === -1 ? '' : 's'} left`;
 }
 function epssText(v: number | null): string | null {
-  return v === null || v === undefined ? null : `${Math.round(v * 100)}%`;
+  return v == null ? null : `${Math.round(v * 100)}%`;
 }
 function affectedLabel(a: Affected): string {
-  const bits = [a.vendor, a.product].filter(Boolean);
+  const bits = [text(a.vendor), text(a.product)].filter(Boolean);
   if (a.exact) bits.push(a.exact);
   else if (a.from || a.to)
     bits.push(`${a.from_incl === false ? '(' : ''}${a.from ?? ''} → ${a.to ?? ''}${a.to_incl === false ? ')' : ''}`);
@@ -211,22 +217,27 @@ function affectedLabel(a: Affected): string {
   return bits.join(' ').trim();
 }
 function hasSteps(cve: string, data: Workbench | null): boolean {
-  if (!data) return false;
-  const g = data.guides[cve];
-  return Boolean(g && (g.check.length || g.fixed.length || g.workaround.length || g.compromise_signs.length));
+  const g = data?.guides?.[cve];
+  return Boolean(
+    g &&
+    (asArray(g.check).length ||
+      asArray(g.fixed).length ||
+      asArray(g.workaround).length ||
+      asArray(g.compromise_signs).length)
+  );
 }
 function internetFacing(row: RankedRow, guide?: Guide): boolean {
   if (guide?.exposure) return guide.exposure === 'internet';
   return /\b(server|web|http|nginx|apache|firewall|vpn|exchange|email|gateway|router|appliance|cloud|portal|ssl|vcenter|remote|ftp|smtp|proxy|dsm|nas|cms|sharepoint|confluence|jenkins|gitlab)\b/i.test(
-    `${row.product} ${row.products.join(' ')}`
+    `${row.product} ${asArray(row.products).join(' ')}`
   );
 }
 function publicExploit(row: RankedRow, guide?: Guide): boolean {
-  return Boolean(guide?.exploit_public || (row.repo && row.repo.top.length > 0));
+  return Boolean(guide?.exploit_public || (row.repo && asArray(row.repo.top).length > 0));
 }
 function matchInventory(row: RankedRow, inventory: string[]): 'version' | 'product' | null {
   if (!inventory.length) return null;
-  const hay = `${row.vendor} ${row.product} ${row.products.join(' ')}`.toLowerCase();
+  const hay = `${row.vendor} ${row.product} ${asArray(row.products).join(' ')}`.toLowerCase();
   let best: 'version' | 'product' | null = null;
   for (const line of inventory) {
     const m = line.match(/^(.*?)\s+v?(\d+(?:[.\-_]\d+)*[a-z0-9.\-_]*)$/i);
@@ -235,7 +246,7 @@ function matchInventory(row: RankedRow, inventory: string[]): 'version' | 'produ
     if (name.length < 3 || !hay.includes(name)) continue;
     best = 'product';
     if (!version) continue;
-    const hit = row.affected.some((a) => {
+    const hit = asArray(row.affected).some((a) => {
       const av = `${a.exact ?? ''} ${a.from ?? ''} ${a.to ?? ''} ${a.update ?? ''}`.trim().toLowerCase();
       const first = av.split(/\s+/)[0] ?? '';
       return Boolean(av) && (av.includes(version) || (version.includes(first) && first.length > 2));
@@ -247,8 +258,8 @@ function matchInventory(row: RankedRow, inventory: string[]): 'version' | 'produ
 function priority(row: RankedRow, data: Workbench | null, inv: 'version' | 'product' | null): number {
   let s = row.kev ? 35 : row.severity === 3 ? 15 : 0;
   if (row.kev && row.ransomware) s += 10;
-  if (row.epss !== null) s += Math.round(row.epss * 15);
-  const guide = data?.guides[row.cve];
+  if (typeof row.epss === 'number') s += Math.round(row.epss * 15);
+  const guide = data?.guides?.[row.cve];
   if (publicExploit(row, guide)) s += 5;
   if (internetFacing(row, guide)) s += 10;
   const d = dayDiff(row.due, data?.built_at ?? '');
@@ -262,7 +273,7 @@ function priority(row: RankedRow, data: Workbench | null, inv: 'version' | 'prod
 }
 function ranked(data: Workbench | null): RankedRow[] {
   if (!data) return [];
-  const out: RankedRow[] = data.kev.map((r) => ({
+  const out: RankedRow[] = asArray(data.kev).map((r) => ({
     key: r.cve,
     cve: r.cve,
     vendor: r.vendor,
@@ -275,20 +286,20 @@ function ranked(data: Workbench | null): RankedRow[] {
     added: r.added,
     epss: r.epss,
     required: r.required,
-    refs: r.refs ?? [],
-    affected: r.affected ?? [],
+    refs: asArray(r.refs),
+    affected: asArray(r.affected),
     repo: r.repo,
     severity: 0,
     date: r.added,
     products: [r.product],
     action: r.required,
   }));
-  for (const v of data.vulns) {
+  for (const v of asArray(data.vulns))
     out.push({
       key: `v-${v.cve}-${v.event_id}`,
       cve: v.cve,
       vendor: v.vendor,
-      product: v.products[0] ?? v.vendor,
+      product: asArray(v.products)[0] ?? v.vendor,
       name: v.title,
       desc: v.desc,
       kev: false,
@@ -302,34 +313,33 @@ function ranked(data: Workbench | null): RankedRow[] {
       repo: v.repo,
       severity: v.severity,
       date: v.date,
-      products: v.products,
+      products: asArray(v.products),
       action: v.action,
     });
-  }
   return out;
 }
 function recentRows(data: RecentData | null): CveLite[] {
   if (!data) return [];
-  const ix = (f: string) => data.fields.indexOf(f);
-  const at = (row: unknown[], f: string): unknown => {
-    const i = ix(f);
+  const fields = asArray(data.fields);
+  const at = (row: unknown[], f: string) => {
+    const i = fields.indexOf(f);
     return i < 0 ? null : row[i];
   };
-  const str = (v: unknown) => (v === null || v === undefined ? '' : String(v));
-  return data.rows.map((row) => ({
-    id: str(at(row, 'id')),
-    pub: str(at(row, 'pub')),
-    cvss: typeof at(row, 'cvss') === 'number' ? (at(row, 'cvss') as number) : null,
-    sev: str(at(row, 'sev')),
-    vendor: str(at(row, 'vendor')),
-    product: str(at(row, 'product')),
-    title: str(at(row, 'title')),
-    kev: str(at(row, 'kev')),
-    epss: typeof at(row, 'epss') === 'number' ? (at(row, 'epss') as number) : null,
+  const num = (row: unknown[], f: string) => (typeof at(row, f) === 'number' ? (at(row, f) as number) : null);
+  return asArray(data.rows).map((row) => ({
+    id: text(at(row, 'id')),
+    pub: text(at(row, 'pub')),
+    cvss: num(row, 'cvss'),
+    sev: text(at(row, 'sev')),
+    vendor: text(at(row, 'vendor')),
+    product: text(at(row, 'product')),
+    title: text(at(row, 'title')),
+    kev: text(at(row, 'kev')),
+    epss: num(row, 'epss'),
   }));
 }
-function download(name: string, text: string, mime: string): void {
-  const url = URL.createObjectURL(new Blob([text], { type: mime }));
+function download(name: string, contents: string, mime: string): void {
+  const url = URL.createObjectURL(new Blob([contents], { type: mime }));
   const a = document.createElement('a');
   a.href = url;
   a.download = name;
@@ -340,13 +350,250 @@ function icsEscape(s: string): string {
   return s.replace(/\\/g, '\\\\').replace(/,/g, '\\,').replace(/;/g, '\\;').replace(/\r?\n/g, '\\n');
 }
 function icsDay(d: string): string {
-  return d.slice(0, 10).replace(/-/g, '');
+  return text(d).slice(0, 10).replace(/-/g, '');
 }
 
-const SEV_LABEL: Record<string, string> = { H: 'High', M: 'Medium', L: 'Low', C: 'Critical' };
-const BADGE = 'rounded border border-line-1 px-1.5 py-0.5 font-mono text-mini';
-const BTN =
-  'inline-flex items-center gap-1.5 rounded-control border border-line-1 bg-surface-100 px-2.5 py-1.5 font-mono text-meta text-body transition-colors hover:border-brand-400 hover:text-heading disabled:cursor-not-allowed disabled:opacity-50';
+/* Extracted detail sections shared by the expandable queue rows. */
+function DetailList({ label, items }: { label: string; items: string[] }) {
+  const list = asArray(items);
+  return list.length ? (
+    <div className="mt-2">
+      <p className={HEAD}>{label}</p>
+      <ul className="mt-1 list-disc space-y-0.5 pl-4 text-meta leading-relaxed text-body">
+        {list.map((s, i) => (
+          <li key={i}>{text(s)}</li>
+        ))}
+      </ul>
+    </div>
+  ) : null;
+}
+function ActionNote({ label, value }: { label: string; value: string }) {
+  return (
+    <p className="rounded-lg border border-line-1 bg-wash px-3 py-2 text-meta leading-relaxed text-body">
+      <span className="font-mono font-semibold text-heading">{label}: </span>
+      {value}
+    </p>
+  );
+}
+function RefLinks({ urls }: { urls: string[] }) {
+  const list = asArray(urls);
+  return list.length ? (
+    <div>
+      <p className={HEAD}>CISA references</p>
+      <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+        {list.map((r, i) => (
+          <li key={i}>
+            <OutLink href={text(r)} className="font-mono text-mini">
+              {text(r)
+                .replace(/^https?:\/\//, '')
+                .slice(0, 60)}
+            </OutLink>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ) : null;
+}
+function AffectedChips({ affected }: { affected: Affected[] }) {
+  const list = asArray(affected);
+  return list.length ? (
+    <div>
+      <p className={HEAD}>Affected versions</p>
+      <div className="mt-1 flex flex-wrap gap-1">
+        {list.slice(0, 40).map((a, i) => (
+          <Badge key={i} className="font-mono text-mini">
+            {affectedLabel(a)}
+          </Badge>
+        ))}
+        {list.length > 40 && <Badge>+{list.length - 40} more</Badge>}
+      </div>
+    </div>
+  ) : null;
+}
+function GuideBox({ guide }: { guide?: Guide }) {
+  return guide ? (
+    <div className="rounded-lg border border-line-1 bg-surface-100 p-3">
+      <p className={HEAD}>Check and fix steps</p>
+      <DetailList label="Check" items={asArray(guide.check)} />
+      <DetailList label="Fixed versions" items={asArray(guide.fixed)} />
+      <DetailList label="Workarounds" items={asArray(guide.workaround)} />
+      <DetailList label="Signs of compromise" items={asArray(guide.compromise_signs)} />
+    </div>
+  ) : null;
+}
+function AnalysisBox({ analysis }: { analysis?: Analysis }) {
+  return analysis ? (
+    <div className="rounded-lg border border-line-1 bg-surface-100 p-3">
+      <p className={HEAD}>Exploit and fix analysis</p>
+      {analysis.exploitation_status && (
+        <p className="mt-1 text-meta leading-relaxed text-body">{analysis.exploitation_status}</p>
+      )}
+      {analysis.how_exploited && <p className="mt-2 text-meta leading-relaxed text-body">{analysis.how_exploited}</p>}
+      <DetailList label="Detection" items={asArray(analysis.detect)} />
+      <DetailList label="Remediation" items={asArray(analysis.remediation?.steps)} />
+      <DetailList label="Verify" items={asArray(analysis.remediation?.verify)} />
+      {analysis.caveats && <p className="mt-2 text-mini italic text-muted">{analysis.caveats}</p>}
+    </div>
+  ) : null;
+}
+function RepoLinks({ repo }: { repo: Repo | null }) {
+  const top = asArray(repo?.top);
+  return top.length ? (
+    <div>
+      <p className={HEAD}>Public exploit code ({repo?.repos} repos found)</p>
+      <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+        {top.map((r) => (
+          <li key={r.url}>
+            <OutLink href={text(r.url)} className="font-mono text-mini">
+              {text(r.name)} <span className="text-muted">★ {r.stars}</span>
+            </OutLink>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ) : null;
+}
+function TimelineGroup({
+  items,
+  empty,
+  builtAt,
+  onOpen,
+}: {
+  items: Scored[];
+  empty: string;
+  builtAt: string;
+  onOpen: (cve: string) => void;
+}) {
+  return (
+    <ul className="grid gap-1.5">
+      {items.slice(0, 8).map(({ row }) => {
+        const late = dayDiff(row.due, builtAt) !== null && (dayDiff(row.due, builtAt) ?? 0) > 0;
+        return (
+          <li key={row.key}>
+            <button
+              type="button"
+              onClick={() => onOpen(row.cve)}
+              className="flex w-full flex-wrap items-center gap-x-2 gap-y-0.5 rounded-control border border-line-1 bg-surface-100 px-2.5 py-1.5 text-left font-mono text-meta transition-colors hover:border-brand-400"
+            >
+              <span className="min-w-0 flex-1 truncate text-body">{row.product}</span>
+              <span className="text-accent-text">{row.cve}</span>
+              <span className={late ? 'text-rose-600 dark:text-rose-400' : 'text-muted'}>
+                {deadlineText(row.due, builtAt)}
+              </span>
+            </button>
+          </li>
+        );
+      })}
+      {items.length === 0 && (
+        <li>
+          <Empty>{empty}</Empty>
+        </li>
+      )}
+    </ul>
+  );
+}
+function CveRow({ r }: { r: CveLite }) {
+  return (
+    <div className="grid grid-cols-[110px_70px_60px_1fr_90px] gap-2 border-b border-line-1 px-3 py-2 text-meta last:border-b-0">
+      <span className="truncate font-mono text-accent-text">{r.id}</span>
+      <span className="font-mono text-muted">{SEV_LABEL[r.sev] ?? (r.sev || '—')}</span>
+      <span className="font-mono text-body">{r.cvss ?? '—'}</span>
+      <span className="truncate text-body" title={r.title}>
+        {r.title}
+        <span className="ml-1 font-mono text-mini text-muted">{r.vendor}</span>
+      </span>
+      <span className="font-mono text-mini text-muted">{r.pub}</span>
+    </div>
+  );
+}
+function HuntCardView({ h, onOpen }: { h: HuntCard; onOpen: (cve?: string) => void }) {
+  return (
+    <li className={`${CARD} p-4`}>
+      <div className="flex flex-wrap items-center gap-2">
+        <Target size={14} className="text-accent-text" aria-hidden="true" />
+        <OutLink
+          href={text(h.url)}
+          className="inline-flex items-center gap-1 font-mono text-meta font-semibold text-heading hover:text-accent-text"
+        >
+          {h.name}
+        </OutLink>
+        <Badge className="ml-auto uppercase">{text(h.format)}</Badge>
+      </div>
+      <p className="mt-2 text-meta leading-relaxed text-body">{h.about}</p>
+      <p className="mt-2 font-mono text-mini text-muted">
+        {h.publisher}
+        {h.date ? ` · ${h.date}` : ''}
+      </p>
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line-1 pt-2">
+        <span className="font-mono text-mini text-muted">Flaw: {h.cve ?? h.event_id ?? 'linked advisory'}</span>
+        <button type="button" className={LINK} onClick={() => onOpen(h.cve)}>
+          See in patch queue →
+        </button>
+      </div>
+    </li>
+  );
+}
+function QueueRow({
+  entry,
+  open,
+  builtAt,
+  onToggle,
+  onExpand,
+  badges,
+}: {
+  entry: Scored;
+  open: boolean;
+  builtAt: string;
+  onToggle: () => void;
+  onExpand: ReactNode;
+  badges: ReactNode;
+}) {
+  const { row, score } = entry;
+  const d = dayDiff(row.due, builtAt) ?? 0;
+  return (
+    <li className="surface-card overflow-hidden rounded-xl border border-line-1">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={onToggle}
+        className="flex w-full flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2.5 text-left transition-colors hover:bg-wash"
+      >
+        <span
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-control border border-line-1 bg-wash font-mono text-meta font-bold text-accent-text"
+          title="priority (local approximation of the upstream score)"
+          aria-label={`priority ${score}`}
+        >
+          {score}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="flex flex-wrap items-center gap-x-2 font-mono text-meta">
+            <b className="text-accent-text">{row.cve}</b>
+            <span className="text-body">
+              {row.vendor} {row.product}
+            </span>
+            <ChevronDown
+              size={12}
+              className={`text-muted transition-transform ${open ? 'rotate-180' : ''}`}
+              aria-hidden="true"
+            />
+          </span>
+          <span className="mt-0.5 block truncate text-meta text-heading">{row.name}</span>
+          <span className="mt-1 flex flex-wrap gap-1">
+            <Badge tone={row.kev ? 'high' : 'neutral'}>{row.kev ? 'Known exploited' : 'Not on CISA’s list'}</Badge>
+            {row.ransomware && (
+              <Badge tone="high">
+                <AlertTriangle size={9} className="mr-0.5 inline" aria-hidden="true" /> Ransomware
+              </Badge>
+            )}
+            <Badge tone={row.kev && d > 0 ? 'high' : 'neutral'}>{deadlineText(row.due, builtAt)}</Badge>
+            {badges}
+          </span>
+        </span>
+      </button>
+      {open && onExpand}
+    </li>
+  );
+}
 
 export default function CyberViewVulnerabilities({ bare = false }: { bare?: boolean }): JSX.Element {
   const work = useDataFetch<Workbench>({ url: '/data/cyberview/data/workbench.json', ttl: 600_000 });
@@ -374,7 +621,7 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
     try {
       localStorage.setItem(INVENTORY_KEY, invText);
     } catch {
-      /* storage may be disabled; the list still works in memory */
+      /* storage may be disabled */
     }
   }, [invText]);
 
@@ -390,10 +637,9 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
   );
   const allRows = useMemo(() => ranked(data), [data]);
   const scored = useMemo(
-    () => allRows.map((r) => ({ row: r, score: priority(r, data, matchInventory(r, inventory)) })),
+    () => allRows.map((row) => ({ row, score: priority(row, data, matchInventory(row, inventory)) })),
     [allRows, data, inventory]
   );
-
   const pastDeadline = allRows.filter((r) => r.kev && (dayDiff(r.due, builtAt) ?? 0) > 0).length;
   const totalFlaws = (data?.kev.length ?? 0) + (data?.vulns.length ?? 0);
   const need = scored
@@ -412,38 +658,31 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
         if (show === 'mine' && !matchInventory(row, inventory)) return false;
         if (show === 'week') {
           const d = dayDiff(row.due, builtAt);
-          // Ahead by at most seven days, or already past.
           if (d === null || d < -7) return false;
-        }
+        } // ahead ≤7 days or passed
         if (show === 'steps' && !hasSteps(row.cve, data)) return false;
-        if (!needle) return true;
-        return `${row.cve} ${row.vendor} ${row.product} ${row.name} ${row.desc}`.toLowerCase().includes(needle);
+        return !needle || matches(`${row.cve} ${row.vendor} ${row.product} ${row.name} ${row.desc}`, needle);
       })
       .sort((a, b) => b.score - a.score || a.row.cve.localeCompare(b.row.cve));
   }, [scored, query, show, inventory, builtAt, data]);
 
   const huntCards = useMemo<HuntCard[]>(() => {
     if (!data) return [];
-    const guides: Record<string, Guide> = data.guides;
-    const fromGuides = Object.values(guides).flatMap((g: Guide) =>
-      g.hunt.map((h) => ({ ...h, cve: g.cve, event_id: data.event_of[g.cve] ?? h.event_id }))
+    const fromGuides = Object.values(data.guides ?? {}).flatMap((g) =>
+      asArray(g.hunt).map((h) => ({ ...h, cve: g.cve, event_id: data.event_of?.[g.cve] ?? h.event_id }))
     );
-    return [...data.hunt, ...fromGuides];
+    return [...asArray(data.hunt), ...fromGuides];
   }, [data]);
   const formats = useMemo(
     () => ['all', ...Array.from(new Set(huntCards.map((h) => h.format).filter(Boolean)))],
     [huntCards]
   );
-  const cardAffectsMine = (h: HuntCard): boolean => {
-    if (!h.cve) {
-      const cves = Object.keys(data?.event_of ?? {}).filter((c) => data?.event_of[c] === h.event_id);
-      return cves.some((c) => {
-        const r = allRows.find((x) => x.cve === c);
-        return Boolean(r && matchInventory(r, inventory));
-      });
-    }
-    const r = allRows.find((x) => x.cve === h.cve);
-    return Boolean(r && matchInventory(r, inventory));
+  const cardAffectsMine = (h: HuntCard) => {
+    const cves = h.cve ? [h.cve] : Object.keys(data?.event_of ?? {}).filter((c) => data?.event_of?.[c] === h.event_id);
+    return cves.some((c) => {
+      const r = allRows.find((x) => x.cve === c);
+      return Boolean(r && matchInventory(r, inventory));
+    });
   };
   const visibleHunt = huntCards.filter(
     (h) => (huntFormat === 'all' || h.format === huntFormat) && (!huntMine || cardAffectsMine(h))
@@ -451,9 +690,7 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
 
   const cveList = useMemo(() => recentRows(recent.data), [recent.data]);
   const recentList = cveList.filter((r) => !recent.data?.since || r.pub >= recent.data.since);
-  const cveSearch = recentList.filter((r) =>
-    `${r.id} ${r.vendor} ${r.product} ${r.title}`.toLowerCase().includes(cveQuery.trim().toLowerCase())
-  );
+  const cveSearch = recentList.filter((r) => matches(`${r.id} ${r.vendor} ${r.product} ${r.title}`, cveQuery.trim()));
   const paged = cveSearch.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
   const pages = Math.max(1, Math.ceil(cveSearch.length / PAGE_SIZE));
 
@@ -462,8 +699,14 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
     inventory.length -
     new Set(
       affectedCves.flatMap((r) => {
-        const hay = `${r.vendor} ${r.product} ${r.products.join(' ')}`.toLowerCase();
-        return inventory.filter((line) => hay.includes((line.split(/\s+v?\d/)[0] ?? line).trim().toLowerCase()));
+        const hay = `${r.vendor} ${r.product} ${asArray(r.products).join(' ')}`.toLowerCase();
+        return inventory.filter((line) =>
+          hay.includes(
+            text(line.split(/\s+v?\d/)[0] ?? line)
+              .trim()
+              .toLowerCase()
+          )
+        );
       })
     ).size;
 
@@ -482,7 +725,7 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
         'BEGIN:VEVENT',
         `UID:${row.cve}-${start}@cyberview.local`,
         `DTSTAMP:${start}T000000Z`,
-        `DTSTART;VALUE=DATE:${start}`,
+        `DTSTART;VALUE:DATE:${start}`,
         `SUMMARY:${icsEscape(`Patch ${row.cve} — ${row.product}`)}`,
         `DESCRIPTION:${icsEscape(`${row.name}. ${row.required}`.slice(0, 500))}`,
         'BEGIN:VALARM',
@@ -497,9 +740,9 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
     download('cyberview-deadlines.ics', lines.join('\r\n'), 'text/calendar;charset=utf-8');
   };
   const toCsv = () => {
-    const cell = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const cell = (v: unknown) => `"${text(v).replace(/"/g, '""')}"`;
     const lines = ['priority,cve,vendor,product,name,known_exploited,ransomware,due,epss'];
-    for (const { row, score } of filtered) {
+    for (const { row, score } of filtered)
       lines.push(
         [
           score,
@@ -515,7 +758,6 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
           .map(cell)
           .join(',')
       );
-    }
     download('cyberview-patch-queue.csv', lines.join('\n'), 'text/csv;charset=utf-8');
   };
   const copyChangeRequest = async () => {
@@ -546,169 +788,64 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
       '',
       ...visibleHunt.map((h, i) => {
         const linked =
-          h.cve ?? Object.keys(data?.event_of ?? {}).find((c) => data?.event_of[c] === h.event_id) ?? 'no linked CVE';
+          h.cve ?? Object.keys(data?.event_of ?? {}).find((c) => data?.event_of?.[c] === h.event_id) ?? 'no linked CVE';
         return `${i + 1}. ${h.name} (${h.format}) — ${h.publisher}${h.date ? ` — ${h.date}` : ''}\n   Flaw: ${linked}\n   About: ${h.about}\n   ${h.url}`;
       }),
     ];
     download('cyberview-hunt-plan.txt', lines.join('\n'), 'text/plain;charset=utf-8');
   };
-
-  const timelineGroup = (items: typeof need, empty: string) => (
-    <ul className="grid gap-1.5">
-      {items.slice(0, 8).map(({ row }) => (
-        <li key={row.key}>
-          <button
-            type="button"
-            onClick={() => openCve(row.cve)}
-            className="flex w-full flex-wrap items-center gap-x-2 gap-y-0.5 rounded-control border border-line-1 bg-surface-100 px-2.5 py-1.5 text-left font-mono text-meta transition-colors hover:border-brand-400"
-          >
-            <span className="min-w-0 flex-1 truncate text-body">{row.product}</span>
-            <span className="text-accent-text">{row.cve}</span>
-            <span
-              className={
-                dayDiff(row.due, builtAt) !== null && (dayDiff(row.due, builtAt) ?? 0) > 0
-                  ? 'text-rose-600 dark:text-rose-400'
-                  : 'text-muted'
-              }
-            >
-              {deadlineText(row.due, builtAt)}
-            </span>
-          </button>
-        </li>
-      ))}
-      {items.length === 0 && <li className="font-mono text-meta text-muted">{empty}</li>}
-    </ul>
-  );
-
-  const expandedPanel = ({ row, score }: { row: RankedRow; score: number }) => {
-    const guide = data?.guides[row.cve];
-    const analysis = data?.analyses[row.cve];
-    const list = (label: string, items: string[]) =>
-      items.length > 0 && (
-        <div className="mt-2">
-          <p className="font-mono text-meta font-semibold text-heading">{label}</p>
-          <ul className="mt-1 list-disc space-y-0.5 pl-4 text-meta leading-relaxed text-body">
-            {items.map((s, i) => (
-              <li key={i}>{s}</li>
-            ))}
-          </ul>
-        </div>
-      );
+  const expandedPanel = ({ row, score }: Scored) => {
+    const guide = data?.guides?.[row.cve];
+    const analysis = data?.analyses?.[row.cve];
     return (
       <div className="space-y-3 border-t border-line-1 px-4 py-4">
         <p className="text-meta leading-relaxed text-body">{row.desc}</p>
-        {row.required && (
-          <p className="rounded-lg border border-line-1 bg-wash px-3 py-2 text-meta leading-relaxed text-body">
-            <span className="font-mono font-semibold text-heading">Required action: </span>
-            {row.required}
-          </p>
-        )}
-        {!row.kev && row.action && (
-          <p className="rounded-lg border border-line-1 bg-wash px-3 py-2 text-meta leading-relaxed text-body">
-            <span className="font-mono font-semibold text-heading">Suggested action: </span>
-            {row.action}
-          </p>
-        )}
+        {row.required && <ActionNote label="Required action" value={row.required} />}
+        {!row.kev && row.action && <ActionNote label="Suggested action" value={row.action} />}
         {guide?.advisory && (
           <p className="text-meta">
             <span className="font-mono text-muted">Vendor advisory: </span>
-            <a
-              href={sanitizeUrl(guide.advisory.url) ?? '#'}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-accent-text hover:underline"
-            >
-              {guide.advisory.name} <ExternalLink size={10} aria-hidden="true" />
-            </a>
+            <OutLink href={text(guide.advisory.url)} className="inline-flex items-center gap-1">
+              {text(guide.advisory.name)}
+            </OutLink>
           </p>
         )}
-        {row.refs.length > 0 && (
-          <div>
-            <p className="font-mono text-meta font-semibold text-heading">CISA references</p>
-            <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
-              {row.refs.map((r, i) => (
-                <li key={i}>
-                  <a
-                    href={sanitizeUrl(r) ?? '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 font-mono text-mini text-accent-text hover:underline"
-                  >
-                    {r.replace(/^https?:\/\//, '').slice(0, 60)} <ExternalLink size={9} aria-hidden="true" />
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {row.affected.length > 0 && (
-          <div>
-            <p className="font-mono text-meta font-semibold text-heading">Affected versions</p>
-            <div className="mt-1 flex flex-wrap gap-1">
-              {row.affected.slice(0, 40).map((a, i) => (
-                <span key={i} className={BADGE}>
-                  {affectedLabel(a)}
-                </span>
-              ))}
-              {row.affected.length > 40 && <span className={BADGE}>+{row.affected.length - 40} more</span>}
-            </div>
-          </div>
-        )}
-        {guide && (
-          <div className="rounded-lg border border-line-1 bg-surface-100 p-3">
-            <p className="font-mono text-meta font-semibold text-heading">Check and fix steps</p>
-            {list('Check', guide.check)}
-            {list('Fixed versions', guide.fixed)}
-            {list('Workarounds', guide.workaround)}
-            {list('Signs of compromise', guide.compromise_signs)}
-          </div>
-        )}
-        {analysis && (
-          <div className="rounded-lg border border-line-1 bg-surface-100 p-3">
-            <p className="font-mono text-meta font-semibold text-heading">Exploit and fix analysis</p>
-            {analysis.exploitation_status && (
-              <p className="mt-1 text-meta leading-relaxed text-body">{analysis.exploitation_status}</p>
-            )}
-            {analysis.how_exploited && (
-              <p className="mt-2 text-meta leading-relaxed text-body">{analysis.how_exploited}</p>
-            )}
-            {list('Detection', analysis.detect)}
-            {list('Remediation', analysis.remediation?.steps ?? [])}
-            {list('Verify', analysis.remediation?.verify ?? [])}
-            {analysis.caveats && <p className="mt-2 text-mini italic text-muted">{analysis.caveats}</p>}
-          </div>
-        )}
-        {row.repo && row.repo.top.length > 0 && (
-          <div>
-            <p className="font-mono text-meta font-semibold text-heading">
-              Public exploit code ({row.repo.repos} repos found)
-            </p>
-            <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
-              {row.repo.top.map((r) => (
-                <li key={r.url}>
-                  <a
-                    href={sanitizeUrl(r.url) ?? '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 font-mono text-mini text-accent-text hover:underline"
-                  >
-                    {r.name} <span className="text-muted">★ {r.stars}</span>{' '}
-                    <ExternalLink size={9} aria-hidden="true" />
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <RefLinks urls={row.refs} />
+        <AffectedChips affected={row.affected} />
+        <GuideBox guide={guide} />
+        <AnalysisBox analysis={analysis} />
+        <RepoLinks repo={row.repo} />
         <p className="font-mono text-mini text-muted">priority {score} (local approximation)</p>
       </div>
     );
   };
-
-  const body = (
+  const scoreBadges = (row: RankedRow) => (
     <>
-      <CyberViewNav />
+      {epssText(row.epss) && <Badge tone="brand">EPSS {epssText(row.epss)}</Badge>}
+      {hasSteps(row.cve, data) && (
+        <Badge tone="good">
+          <Check size={9} className="mr-0.5 inline" aria-hidden="true" /> Check and fix steps
+        </Badge>
+      )}
+      {data?.analyses?.[row.cve] && <Badge tone="good">Exploit and fix analysis</Badge>}
+      {matchInventory(row, inventory) && <Badge tone="brand">Affects my software</Badge>}
+    </>
+  );
 
+  return (
+    <CyberViewPage
+      bare={bare}
+      icon={<ShieldAlert size={28} />}
+      title="CyberView — Vulnerabilities"
+      description="Replication of CyberView's patch workbench: known-exploited flaws ranked by federal deadline and EPSS, check-and-fix steps, a hunt pack and a CVE browser."
+      loading={work.loading || recent.loading}
+      error={work.error ?? recent.error}
+      onRetry={() => {
+        work.refetch();
+        recent.refetch();
+      }}
+      maxWidthClass="max-w-7xl"
+    >
       <div className="space-y-6">
         <header className="space-y-2">
           <h2 className="text-2xl font-display font-semibold text-heading sm:text-3xl">Vulnerabilities</h2>
@@ -718,7 +855,7 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
           </p>
         </header>
 
-        <div role="search" className="surface-card rounded-xl border border-line-1 bg-surface-100 p-3">
+        <div role="search" className={`${CARD} bg-surface-100 p-3`}>
           <label className="flex items-center gap-2">
             <Search size={14} className="shrink-0 text-muted" aria-hidden="true" />
             <span className="sr-only">Search</span>
@@ -728,7 +865,7 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
               onChange={(e) => setQuery(e.target.value)}
               placeholder="CVE, vendor or product"
               aria-label="Search vulnerabilities"
-              className="w-full rounded-control border border-line-input bg-input-200 px-2.5 py-1.5 font-mono text-meta text-heading placeholder:text-muted"
+              className={`w-full ${INPUT}`}
             />
           </label>
           <p className="mt-1.5 font-mono text-mini text-muted">
@@ -748,11 +885,7 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
                 aria-selected={tab === t.id}
                 aria-controls={`panel-${t.id}`}
                 onClick={() => setTab(t.id)}
-                className={`border-b-2 px-3 py-2 font-mono text-meta font-semibold transition-colors ${
-                  tab === t.id
-                    ? 'border-brand-500 text-accent-text'
-                    : 'border-transparent text-muted hover:text-heading'
-                }`}
+                className={`border-b-2 px-3 py-2 font-mono text-meta font-semibold transition-colors ${tab === t.id ? 'border-brand-500 text-accent-text' : 'border-transparent text-muted hover:text-heading'}`}
               >
                 {t.label}
                 {count !== null ? ` (${count})` : ''}
@@ -772,56 +905,65 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
 
         {tab === Tab.Queue && (
           <section role="tabpanel" id="panel-queue" aria-labelledby="tab-queue" className="space-y-6">
-            <div className="surface-card rounded-xl border border-line-1 p-4">
-              <h3 className="text-lg font-semibold text-heading">How long do we have to patch?</h3>
-              <p className="mt-1 max-w-3xl text-meta leading-relaxed text-muted">
-                Flaws CISA confirms attackers are using, measured from today. A bar to the right is time left before the
-                US federal deadline; a bar to the left is how long ago it passed. Use the deadline as an upper limit for
-                your own patching.
-              </p>
-              <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                <div>
-                  <h4 className="font-mono text-meta font-semibold text-heading">Deadline ahead ({need.length})</h4>
-                  <div className="mt-2">{timelineGroup(need, 'No deadlines ahead.')}</div>
-                  {need.length > 8 && (
-                    <p className="mt-2 font-mono text-mini text-muted">
-                      +{need.length - 8} more in the list below (use the Show filter: deadline within 7 days or passed).
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <h4 className="font-mono text-meta font-semibold text-heading">
-                    Deadline passed in the last two weeks ({overdue.length})
-                  </h4>
-                  <div className="mt-2">{timelineGroup(overdue, 'Nothing passed in the last two weeks.')}</div>
-                  {overdue.length > 8 && (
-                    <p className="mt-2 font-mono text-mini text-muted">
-                      +{overdue.length - 8} more in the list below (use the Show filter: deadline within 7 days or
-                      passed).
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button type="button" className={BTN} onClick={toCalendar} aria-label="Deadlines to calendar">
-                  <CalendarDays size={13} aria-hidden="true" /> Deadlines to calendar
-                </button>
-                <button type="button" className={BTN} onClick={toCsv} aria-label="Download CSV">
-                  <Download size={13} aria-hidden="true" /> Download CSV
-                </button>
-                <button type="button" className={BTN} onClick={copyChangeRequest} aria-label="Copy change request">
-                  <Copy size={13} aria-hidden="true" /> Copy change request
-                </button>
-              </div>
-              {copyMsg && (
-                <p className="mt-2 font-mono text-mini text-muted" role="status">
-                  {copyMsg}
+            <Section title="How long do we have to patch?">
+              <div className={`${CARD} p-4`}>
+                <p className="mt-1 max-w-3xl text-meta leading-relaxed text-muted">
+                  Flaws CISA confirms attackers are using, measured from today. A bar to the right is time left before
+                  the US federal deadline; a bar to the left is how long ago it passed. Use the deadline as an upper
+                  limit for your own patching.
                 </p>
-              )}
-              <p className="mt-2 font-mono text-mini text-muted">
-                Source: CISA Known Exploited Vulnerabilities catalog. The deadline binds US federal agencies only.
-              </p>
-            </div>
+                <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                  <div>
+                    <h4 className={HEAD}>Deadline ahead ({need.length})</h4>
+                    <div className="mt-2">
+                      <TimelineGroup items={need} empty="No deadlines ahead." builtAt={builtAt} onOpen={openCve} />
+                    </div>
+                    {need.length > 8 && (
+                      <p className="mt-2 font-mono text-mini text-muted">
+                        +{need.length - 8} more in the list below (use the Show filter: deadline within 7 days or
+                        passed).
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <h4 className={HEAD}>Deadline passed in the last two weeks ({overdue.length})</h4>
+                    <div className="mt-2">
+                      <TimelineGroup
+                        items={overdue}
+                        empty="Nothing passed in the last two weeks."
+                        builtAt={builtAt}
+                        onOpen={openCve}
+                      />
+                    </div>
+                    {overdue.length > 8 && (
+                      <p className="mt-2 font-mono text-mini text-muted">
+                        +{overdue.length - 8} more in the list below (use the Show filter: deadline within 7 days or
+                        passed).
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button type="button" className={BTN} onClick={toCalendar} aria-label="Deadlines to calendar">
+                    <CalendarDays size={13} aria-hidden="true" /> Deadlines to calendar
+                  </button>
+                  <button type="button" className={BTN} onClick={toCsv} aria-label="Download CSV">
+                    <Download size={13} aria-hidden="true" /> Download CSV
+                  </button>
+                  <button type="button" className={BTN} onClick={copyChangeRequest} aria-label="Copy change request">
+                    <Copy size={13} aria-hidden="true" /> Copy change request
+                  </button>
+                </div>
+                {copyMsg && (
+                  <p className="mt-2 font-mono text-mini text-muted" role="status">
+                    {copyMsg}
+                  </p>
+                )}
+                <p className="mt-2 font-mono text-mini text-muted">
+                  Source: CISA Known Exploited Vulnerabilities catalog. The deadline binds US federal agencies only.
+                </p>
+              </div>
+            </Section>
 
             <div className="flex flex-wrap items-center gap-3">
               <label htmlFor="show-filter" className="font-mono text-meta text-muted">
@@ -831,7 +973,7 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
                 id="show-filter"
                 value={show}
                 onChange={(e) => setShow(e.target.value as ShowFilter)}
-                className="rounded-control border border-line-input bg-input-200 px-2 py-1.5 font-mono text-meta text-heading"
+                className={SELECT}
               >
                 {SHOW_FILTERS.map((f) => (
                   <option key={f.id} value={f.id}>
@@ -856,7 +998,7 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
               </p>
             )}
 
-            <details className="surface-card rounded-xl border border-line-1 p-3">
+            <details className={`${CARD} p-3`}>
               <summary className="cursor-pointer font-mono text-meta font-semibold text-heading">
                 How the score works
               </summary>
@@ -877,79 +1019,21 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
               Highest priority first. The number is the local priority approximation.
             </p>
             <ol className="space-y-1.5">
-              {filtered.map(({ row, score }) => {
-                const open = expanded === row.key;
-                return (
-                  <li key={row.key} className="surface-card overflow-hidden rounded-xl border border-line-1">
-                    <button
-                      type="button"
-                      aria-expanded={open}
-                      onClick={() => setExpanded(open ? null : row.key)}
-                      className="flex w-full flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2.5 text-left transition-colors hover:bg-wash"
-                    >
-                      <span
-                        className="grid h-8 w-8 shrink-0 place-items-center rounded-control border border-line-1 bg-wash font-mono text-meta font-bold text-accent-text"
-                        title="priority (local approximation of the upstream score)"
-                        aria-label={`priority ${score}`}
-                      >
-                        {score}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="flex flex-wrap items-center gap-x-2 font-mono text-meta">
-                          <b className="text-accent-text">{row.cve}</b>
-                          <span className="text-body">
-                            {row.vendor} {row.product}
-                          </span>
-                          <ChevronDown
-                            size={12}
-                            className={`text-muted transition-transform ${open ? 'rotate-180' : ''}`}
-                            aria-hidden="true"
-                          />
-                        </span>
-                        <span className="mt-0.5 block truncate text-meta text-heading">{row.name}</span>
-                        <span className="mt-1 flex flex-wrap gap-1">
-                          <span
-                            className={`${BADGE} ${row.kev ? 'border-rose-500/40 text-rose-600 dark:text-rose-400' : 'text-muted'}`}
-                          >
-                            {row.kev ? 'Known exploited' : 'Not on CISA’s list'}
-                          </span>
-                          {row.ransomware && (
-                            <span className={`${BADGE} border-rose-500/40 text-rose-600 dark:text-rose-400`}>
-                              <AlertTriangle size={9} className="mr-0.5 inline" aria-hidden="true" />
-                              Ransomware
-                            </span>
-                          )}
-                          <span
-                            className={`${BADGE} ${row.kev && (dayDiff(row.due, builtAt) ?? 0) > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-muted'}`}
-                          >
-                            {deadlineText(row.due, builtAt)}
-                          </span>
-                          {epssText(row.epss) && (
-                            <span className={`${BADGE} text-accent-text`}>EPSS {epssText(row.epss)}</span>
-                          )}
-                          {hasSteps(row.cve, data) && (
-                            <span className={`${BADGE} text-emerald-600 dark:text-emerald-400`}>
-                              <Check size={9} className="mr-0.5 inline" aria-hidden="true" />
-                              Check and fix steps
-                            </span>
-                          )}
-                          {data?.analyses[row.cve] && (
-                            <span className={`${BADGE} text-emerald-600 dark:text-emerald-400`}>
-                              Exploit and fix analysis
-                            </span>
-                          )}
-                          {matchInventory(row, inventory) && (
-                            <span className={`${BADGE} border-brand-500/40 text-accent-text`}>Affects my software</span>
-                          )}
-                        </span>
-                      </span>
-                    </button>
-                    {open && expandedPanel({ row, score })}
-                  </li>
-                );
-              })}
+              {filtered.map((entry) => (
+                <QueueRow
+                  key={entry.row.key}
+                  entry={entry}
+                  open={expanded === entry.row.key}
+                  builtAt={builtAt}
+                  onToggle={() => setExpanded(expanded === entry.row.key ? null : entry.row.key)}
+                  onExpand={expandedPanel(entry)}
+                  badges={scoreBadges(entry.row)}
+                />
+              ))}
               {filtered.length === 0 && (
-                <li className="py-8 text-center font-mono text-meta text-muted">No rows match this filter.</li>
+                <li>
+                  <Empty>No rows match this filter.</Empty>
+                </li>
               )}
             </ol>
           </section>
@@ -957,64 +1041,65 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
 
         {tab === Tab.All && (
           <section role="tabpanel" id="panel-all" aria-labelledby="tab-all" className="space-y-4">
-            <div className="surface-card rounded-xl border border-line-1 p-4">
-              <h3 className="text-lg font-semibold text-heading">Browse every recent CVE</h3>
-              <p className="mt-1 text-meta leading-relaxed text-muted">
-                Type an id in the box and press Look up. Only the mirrored recent-CVE file is read; nothing is sent
-                anywhere.
-              </p>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <input
-                  type="search"
-                  value={cveQuery}
-                  onChange={(e) => {
-                    setCveQuery(e.target.value);
-                    setLookup(null);
-                    setLookupMsg('');
-                    setPage(0);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter')
-                      setLookup(cveList.find((r) => r.id.toLowerCase() === cveQuery.trim().toLowerCase()) ?? null);
-                  }}
-                  placeholder="CVE-2024-3400"
-                  aria-label="Look up a CVE id"
-                  className="w-full max-w-xs rounded-control border border-line-input bg-input-200 px-2.5 py-1.5 font-mono text-meta text-heading placeholder:text-muted"
-                />
-                <button
-                  type="button"
-                  className={BTN}
-                  onClick={() => {
-                    const id = cveQuery.trim().toLowerCase();
-                    if (!/^cve-\d{4}-\d+$/.test(id)) {
+            <Section title="Browse every recent CVE">
+              <div className={`${CARD} p-4`}>
+                <p className="mt-1 text-meta leading-relaxed text-muted">
+                  Type an id in the box and press Look up. Only the mirrored recent-CVE file is read; nothing is sent
+                  anywhere.
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <input
+                    type="search"
+                    value={cveQuery}
+                    onChange={(e) => {
+                      setCveQuery(e.target.value);
                       setLookup(null);
-                      setLookupMsg('Use a CVE id like CVE-2024-3400.');
-                      return;
-                    }
-                    const hit = cveList.find((r) => r.id.toLowerCase() === id) ?? null;
-                    setLookup(hit);
-                    setLookupMsg(hit ? '' : 'Not in the mirrored recent list.');
-                  }}
-                >
-                  Look up
-                </button>
-                <span className="font-mono text-mini text-muted" role="status" aria-live="polite">
-                  {lookupMsg}
-                </span>
-              </div>
-              {lookup && (
-                <div className="mt-3 rounded-lg border border-line-1 bg-wash p-3">
-                  <p className="font-mono text-meta font-semibold text-accent-text">
-                    {lookup.id} · {SEV_LABEL[lookup.sev] ?? (lookup.sev || 'Unknown')} · CVSS {lookup.cvss ?? '—'}
-                  </p>
-                  <p className="mt-1 text-meta text-body">{lookup.title}</p>
-                  <p className="mt-1 font-mono text-mini text-muted">
-                    {lookup.vendor} {lookup.product} · published {lookup.pub || '—'}
-                    {lookup.kev ? ' · on CISA list' : ''}
-                  </p>
+                      setLookupMsg('');
+                      setPage(0);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter')
+                        setLookup(cveList.find((r) => r.id.toLowerCase() === cveQuery.trim().toLowerCase()) ?? null);
+                    }}
+                    placeholder="CVE-2024-3400"
+                    aria-label="Look up a CVE id"
+                    className={`max-w-xs ${INPUT}`}
+                  />
+                  <button
+                    type="button"
+                    className={BTN}
+                    onClick={() => {
+                      const id = cveQuery.trim().toLowerCase();
+                      if (!/^cve-\d{4}-\d+$/.test(id)) {
+                        setLookup(null);
+                        setLookupMsg('Use a CVE id like CVE-2024-3400.');
+                        return;
+                      }
+                      const hit = cveList.find((r) => r.id.toLowerCase() === id) ?? null;
+                      setLookup(hit);
+                      setLookupMsg(hit ? '' : 'Not in the mirrored recent list.');
+                    }}
+                  >
+                    Look up
+                  </button>
+                  <span className="font-mono text-mini text-muted" role="status" aria-live="polite">
+                    {lookupMsg}
+                  </span>
                 </div>
-              )}
-            </div>
+                {lookup && (
+                  <div className="mt-3 rounded-lg border border-line-1 bg-wash p-3">
+                    <p className="font-mono text-meta font-semibold text-accent-text">
+                      {lookup.id} · {SEV_LABEL[lookup.sev] ?? (lookup.sev || 'Unknown')} · CVSS {lookup.cvss ?? '—'}
+                    </p>
+                    <p className="mt-1 text-meta text-body">{lookup.title}</p>
+                    <p className="mt-1 font-mono text-mini text-muted">
+                      {lookup.vendor} {lookup.product} · published {lookup.pub || '—'}
+                      {lookup.kev ? ' · on CISA list' : ''}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Section>
             <div className="surface-card overflow-hidden rounded-xl border border-line-1">
               <div className="grid grid-cols-[110px_70px_60px_1fr_90px] gap-2 border-b border-line-1 px-3 py-2 font-mono text-mini uppercase tracking-wide text-muted">
                 <span>CVE</span>
@@ -1024,84 +1109,48 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
                 <span>Published</span>
               </div>
               {paged.map((r) => (
-                <div
-                  key={r.id}
-                  className="grid grid-cols-[110px_70px_60px_1fr_90px] gap-2 border-b border-line-1 px-3 py-2 text-meta last:border-b-0"
-                >
-                  <span className="truncate font-mono text-accent-text">{r.id}</span>
-                  <span className="font-mono text-muted">{SEV_LABEL[r.sev] ?? (r.sev || '—')}</span>
-                  <span className="font-mono text-body">{r.cvss ?? '—'}</span>
-                  <span className="truncate text-body" title={r.title}>
-                    {r.title}
-                    <span className="ml-1 font-mono text-mini text-muted">{r.vendor}</span>
-                  </span>
-                  <span className="font-mono text-mini text-muted">{r.pub}</span>
-                </div>
+                <CveRow key={r.id} r={r} />
               ))}
-              {paged.length === 0 && (
-                <p className="px-3 py-8 text-center font-mono text-meta text-muted">No CVEs match.</p>
-              )}
+              {paged.length === 0 && <Empty>No CVEs match.</Empty>}
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                className={BTN}
-                disabled={page === 0}
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-              >
-                ← Prev
-              </button>
-              <span className="font-mono text-meta text-muted">
-                Page {page + 1} of {pages}
-              </span>
-              <button
-                type="button"
-                className={BTN}
-                disabled={page + 1 >= pages}
-                onClick={() => setPage((p) => Math.min(pages - 1, p + 1))}
-              >
-                Next →
-              </button>
-              <span className="ml-auto font-mono text-mini text-muted">
-                Loaded {recentList.length} CVEs since {recent.data?.since ?? '—'} · {cveSearch.length} shown
-              </span>
-            </div>
+            <Pager page={page} pages={pages} onPage={setPage} />
+            <p className="font-mono text-mini text-muted">
+              Page {page + 1} of {pages} · Loaded {recentList.length} CVEs since {recent.data?.since ?? '—'} ·{' '}
+              {cveSearch.length} shown
+            </p>
           </section>
         )}
 
         {tab === Tab.Inventory && (
           <section role="tabpanel" id="panel-inventory" aria-labelledby="tab-inventory" className="space-y-4">
-            <div className="surface-card rounded-xl border border-line-1 p-4">
-              <h3 className="text-lg font-semibold text-heading">My software</h3>
-              <p className="mt-1 max-w-2xl text-meta leading-relaxed text-muted">
-                Paste one product per line, with a version if you know it, for example{' '}
-                <code className="font-mono text-accent-text">Google Chromium 131</code>. Matching happens here in your
-                browser against the mirrored affected-version ranges. Nothing is uploaded or sent anywhere.
-              </p>
-              <label htmlFor="inv" className="mt-3 block font-mono text-meta text-muted">
-                Software list
-              </label>
-              <textarea
-                id="inv"
-                rows={8}
-                value={invText}
-                onChange={(e) => setInvText(e.target.value)}
-                placeholder={'Google Chromium 131\nMicrosoft Office 2021\nApache Struts 2.5.30'}
-                className="mt-1 w-full rounded-control border border-line-input bg-input-200 p-3 font-mono text-meta text-heading placeholder:text-muted"
-              />
-              <p className="mt-2 font-mono text-mini text-muted">
-                Stored locally in this browser (localStorage key “{INVENTORY_KEY}”). {inventory.length} lines entered ·{' '}
-                {affectedCves.length} affected CVEs · {Math.max(0, unmatchedCount)} unmatched lines.
-              </p>
-            </div>
-            <div className="surface-card overflow-hidden rounded-xl border border-line-1">
-              <h4 className="border-b border-line-1 px-3 py-2 font-mono text-meta font-semibold text-heading">
-                Affected CVEs in the patch queue
-              </h4>
-              {affectedCves.length === 0 ? (
-                <p className="px-3 py-8 text-center font-mono text-meta text-muted">
-                  No matches yet — add a product above.
+            <Section title="My software">
+              <div className={`${CARD} p-4`}>
+                <p className="mt-1 max-w-2xl text-meta leading-relaxed text-muted">
+                  Paste one product per line, with a version if you know it, for example{' '}
+                  <code className="font-mono text-accent-text">Google Chromium 131</code>. Matching happens here in your
+                  browser against the mirrored affected-version ranges. Nothing is uploaded or sent anywhere.
                 </p>
+                <label htmlFor="inv" className="mt-3 block font-mono text-meta text-muted">
+                  Software list
+                </label>
+                <textarea
+                  id="inv"
+                  rows={8}
+                  value={invText}
+                  onChange={(e) => setInvText(e.target.value)}
+                  placeholder={'Google Chromium 131\nMicrosoft Office 2021\nApache Struts 2.5.30'}
+                  className="mt-1 w-full rounded-control border border-line-input bg-input-200 p-3 font-mono text-meta text-heading placeholder:text-muted"
+                />
+                <p className="mt-2 font-mono text-mini text-muted">
+                  Stored locally in this browser (localStorage key “{INVENTORY_KEY}”). {inventory.length} lines entered
+                  · {affectedCves.length} affected CVEs · {Math.max(0, unmatchedCount)} unmatched lines.
+                </p>
+              </div>
+            </Section>
+            <div className="surface-card overflow-hidden rounded-xl border border-line-1">
+              <h4 className={HEAD + ' border-b border-line-1 px-3 py-2'}>Affected CVEs in the patch queue</h4>
+              {affectedCves.length === 0 ? (
+                <Empty>No matches yet — add a product above.</Empty>
               ) : (
                 <ul className="divide-y divide-line-1">
                   {affectedCves.map((r) => (
@@ -1110,12 +1159,14 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
                       <span className="min-w-0 flex-1 truncate text-meta text-body">
                         {r.product} — {r.name}
                       </span>
-                      <span className={`${BADGE} text-muted`}>{deadlineText(r.due, builtAt)}</span>
-                      <button
-                        type="button"
-                        className="font-mono text-mini text-accent-text hover:underline"
-                        onClick={() => openCve(r.cve)}
+                      <Badge
+                        tone={
+                          dayDiff(r.due, builtAt) !== null && (dayDiff(r.due, builtAt) ?? 0) > 0 ? 'high' : 'neutral'
+                        }
                       >
+                        {deadlineText(r.due, builtAt)}
+                      </Badge>
+                      <button type="button" className={LINK} onClick={() => openCve(r.cve)}>
                         Open in queue
                       </button>
                     </li>
@@ -1128,70 +1179,42 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
 
         {tab === Tab.Hunt && (
           <section role="tabpanel" id="panel-hunt" aria-labelledby="tab-hunt" className="space-y-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <label htmlFor="hunt-format" className="font-mono text-meta text-muted">
-                Format
-              </label>
-              <select
-                id="hunt-format"
-                value={huntFormat}
-                onChange={(e) => setHuntFormat(e.target.value)}
-                className="rounded-control border border-line-input bg-input-200 px-2 py-1.5 font-mono text-meta text-heading"
-              >
-                {formats.map((f) => (
-                  <option key={f} value={f}>
-                    {f === 'all' ? 'all' : f}
-                  </option>
-                ))}
-              </select>
-              <label className="inline-flex items-center gap-2 font-mono text-meta text-muted">
-                <input type="checkbox" checked={huntMine} onChange={(e) => setHuntMine(e.target.checked)} /> only my
-                software
-              </label>
-              <button type="button" className={`${BTN} ml-auto`} onClick={huntPlan} aria-label="Download hunt plan">
-                <Download size={13} aria-hidden="true" /> Download hunt plan
-              </button>
-            </div>
-            <p className="font-mono text-mini text-muted">
-              {visibleHunt.length} of {huntCards.length} hunt resources shown
-            </p>
+            <Section title="Hunt pack">
+              <div className="flex flex-wrap items-center gap-3">
+                <label htmlFor="hunt-format" className="font-mono text-meta text-muted">
+                  Format
+                </label>
+                <select
+                  id="hunt-format"
+                  value={huntFormat}
+                  onChange={(e) => setHuntFormat(e.target.value)}
+                  className={SELECT}
+                >
+                  {formats.map((f) => (
+                    <option key={f} value={f}>
+                      {f === 'all' ? 'all' : f}
+                    </option>
+                  ))}
+                </select>
+                <label className="inline-flex items-center gap-2 font-mono text-meta text-muted">
+                  <input type="checkbox" checked={huntMine} onChange={(e) => setHuntMine(e.target.checked)} /> only my
+                  software
+                </label>
+                <button type="button" className={`${BTN} ml-auto`} onClick={huntPlan} aria-label="Download hunt plan">
+                  <Download size={13} aria-hidden="true" /> Download hunt plan
+                </button>
+              </div>
+              <p className="mt-2 font-mono text-mini text-muted">
+                {visibleHunt.length} of {huntCards.length} hunt resources shown
+              </p>
+            </Section>
             <ul className="grid gap-3 lg:grid-cols-2">
               {visibleHunt.map((h, i) => (
-                <li key={`${h.name}-${i}`} className="surface-card rounded-xl border border-line-1 p-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Target size={14} className="text-accent-text" aria-hidden="true" />
-                    <a
-                      href={sanitizeUrl(h.url) ?? '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 font-mono text-meta font-semibold text-heading hover:text-accent-text"
-                    >
-                      {h.name} <ExternalLink size={11} aria-hidden="true" />
-                    </a>
-                    <span className={`${BADGE} ml-auto uppercase text-muted`}>{h.format}</span>
-                  </div>
-                  <p className="mt-2 text-meta leading-relaxed text-body">{h.about}</p>
-                  <p className="mt-2 font-mono text-mini text-muted">
-                    {h.publisher}
-                    {h.date ? ` · ${h.date}` : ''}
-                  </p>
-                  <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line-1 pt-2">
-                    <span className="font-mono text-mini text-muted">
-                      Flaw: {h.cve ?? h.event_id ?? 'linked advisory'}
-                    </span>
-                    <button
-                      type="button"
-                      className="ml-auto font-mono text-mini text-accent-text hover:underline"
-                      onClick={() => (h.cve ? openCve(h.cve) : setTab(Tab.Queue))}
-                    >
-                      See in patch queue →
-                    </button>
-                  </div>
-                </li>
+                <HuntCardView key={`${h.name}-${i}`} h={h} onOpen={(cve) => (cve ? openCve(cve) : setTab(Tab.Queue))} />
               ))}
               {visibleHunt.length === 0 && (
-                <li className="py-8 text-center font-mono text-meta text-muted">
-                  No hunt resources match these filters.
+                <li>
+                  <Empty>No hunt resources match these filters.</Empty>
                 </li>
               )}
             </ul>
@@ -1200,41 +1223,18 @@ export default function CyberViewVulnerabilities({ bare = false }: { bare?: bool
 
         <footer className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line-1 pt-4 font-mono text-mini text-muted">
           <span>
-            <ShieldAlert size={11} className="mr-1 inline" aria-hidden="true" />
-            CyberView replication — community research, locally mirrored.
+            <ShieldAlert size={11} className="mr-1 inline" aria-hidden="true" /> CyberView replication — community
+            research, locally mirrored.
           </span>
-          <a
+          <OutLink
             href="https://xanderhutch.github.io/CyberView/vulnerabilities.html"
-            target="_blank"
-            rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-accent-text hover:underline"
           >
-            <FileText size={10} aria-hidden="true" /> Original CyberView page{' '}
-            <ExternalLink size={9} aria-hidden="true" />
-          </a>
+            <FileText size={10} aria-hidden="true" /> Original CyberView page
+          </OutLink>
           <span className="ml-auto">Built {fmtBuilt(builtAt)}</span>
         </footer>
       </div>
-    </>
-  );
-
-  return bare ? (
-    body
-  ) : (
-    <DataPageLayout
-      backTo="/threatintel"
-      icon={<ShieldAlert size={28} />}
-      title="CyberView — Vulnerabilities"
-      description="Replication of CyberView's patch workbench: known-exploited flaws ranked by federal deadline and EPSS, check-and-fix steps, a hunt pack and a CVE browser."
-      onRetry={() => {
-        work.refetch();
-        recent.refetch();
-      }}
-      loading={work.loading || recent.loading}
-      error={work.error ?? recent.error}
-      maxWidthClass="max-w-7xl"
-    >
-      {body}
-    </DataPageLayout>
+    </CyberViewPage>
   );
 }
