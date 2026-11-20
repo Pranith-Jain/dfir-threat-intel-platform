@@ -1178,22 +1178,23 @@ and runs its `scripts/build.mjs --quarantine` (Node stdlib only). The built
 `site/data/*` files are copied into the mirror; the separate hourly upstream
 CVE files (`data/cve/*`) still come from the published Pages site. SHAs are
 recorded in `public/data/cyberview/manifest.json`.
-`.github/workflows/cyberview-upstream-sync.yml` mirrors code + data + the
-upstream `site/` source into `public/data/cyberview/source/`. All sync
-workflows now accept `repository_dispatch` (events `upstream-update`,
-`feed-update`, `cve-update`, `cyberview-update`) so an upstream webhook/GitHub
-App can trigger an immediate refresh. To wire that: create a repo webhook in
-the source repository pointing at
+All of the above run in ONE consolidated workflow,
+`.github/workflows/cve-intel-sync.yml` ("Unified feed + repo sync"). It accepts
+`repository_dispatch` (events `upstream-update`, `feed-update`, `cve-update`,
+`cyberview-update`) so an upstream webhook / GitHub App can trigger an instant
+refresh; a 30-minute cron is the backstop until every source emits a dispatch.
+To wire a webhook: point the source repo at
 `https://api.github.com/repos/Pranith-Jain/dfir-threat-intel-platform/dispatches`
-with `event_type: upstream-update` and a PAT in the header. Until every source
-emits a dispatch, cron remains a backstop (`feed-live-sync` 30m, `cyberview`
-every 2h with SHA gating, `cve-intel-sync` 6h).
+with `event_type: upstream-update` and a PAT in the header. The workflow is
+serialized with a concurrency group and re-syncs from `origin/main` on a push
+conflict — separate workflows previously raced and one push failed.
 
-**No more PR noise:** these data workflows commit straight to `main` (the
+**No more PR noise:** the sync commits data straight to `main` (the
 breach-watch / generated-artifacts pattern) instead of opening a PR per tick.
 Scripts are idempotent — `writeJsonIfChanged` ignores only `generatedAt`, and
-the CyberView sync compares upstream SHAs — so quiet ticks produce no diff, no
-commit and no deploy. A push to `main` triggers the normal CI deploy.
+the CyberView sync compares upstream SHAs and mirrors the upstream `site/`
+source into `public/data/cyberview/source/` — so quiet ticks produce no diff,
+no commit and no deploy. A push to `main` triggers the normal CI deploy.
 
 The upstream JSON Lines history is converted to `data/events.json` (a JSON
 array) so the globe page can plot every event without a map library. The routes
