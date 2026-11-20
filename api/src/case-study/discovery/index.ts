@@ -1,11 +1,19 @@
 import type { Candidate } from '../types';
 import { candidateUsesBlockedSource } from '../source-blocklist';
+import { interleaveByType } from './sampling';
 
 export interface RunDiscoveryDeps {
   /** Topic name → runner. Generic so new topics (breach, scam, aisec,
    *  intel, …) slot in without changing the orchestrator. */
   runners: Record<string, () => Promise<Candidate[]>>;
   putCandidate: (c: Candidate) => Promise<void>;
+  /**
+   * Batch persistence. Preferred over `putCandidate`: candidates of one type
+   * share a single KV blob, so a per-candidate `Promise.all` races on the
+   * read-modify-write and only the last write per type survives. When set,
+   * the orchestrator hands the whole kept set over in one call.
+   */
+  putCandidates?: (cs: Candidate[]) => Promise<void>;
   /** Mark all kept stable-keys "seen" in ONE batched read+write. */
   commitDedup: (keys: string[], now: Date) => Promise<void>;
   now: Date;
@@ -65,6 +73,21 @@ export interface RunDiscoveryDeps {
   rankTopUp?: (pool: Candidate[]) => void;
 }
 
+export interface RunnerStat {
+  /** Candidates the runner returned before any gate. */
+  returned: number;
+  /** Candidates selected for this topic after the novelty gate. */
+  selected: number;
+  /** Returned candidates dropped by the novelty / KEV-reservation gate. */
+  suppressed: number;
+  /** Returned candidates dropped by the source blocklist. */
+  blocked: number;
+  /** Wall-clock runtime in milliseconds. */
+  ms: number;
+  /** Present when the runner threw; the pipeline continues with the others. */
+  error?: string;
+}
+
 export interface RunDiscoveryResult {
   total: number;
   kept: number;
@@ -91,6 +114,10 @@ export interface RunDiscoveryResult {
    *  If selected >> kept for a topic, split that topic into sub-topics
    *  or lower its perTopic budget. */
   byTopicSelected: Record<string, number>;
+  /** Per-runner health and yield. `error` makes a silent feed failure
+   *  visible in the admin result instead of just removing a topic from the
+   *  day's mix. */
+  runnerStats: Record<string, RunnerStat>;
 }
 
 export async function runDiscovery(deps: RunDiscoveryDeps): Promise<RunDiscoveryResult> {
@@ -98,6 +125,7 @@ export async function runDiscovery(deps: RunDiscoveryDeps): Promise<RunDiscovery
   const isSuppressed = deps.isSuppressed ?? (() => false);
   // Pre-dedup per-topic counts — see RunDiscoveryResult.byTopicSelected.
   const byTopicSelected: Record<string, number> = {};
+  const runnerStats: Record<string, RunnerStat> = {};
   let total = 0;
   let suppressed = 0;
   let blocked = 0;
@@ -124,10 +152,18 @@ export async function runDiscovery(deps: RunDiscoveryDeps): Promise<RunDiscovery
         }
       })
     );
-    for (const { name, cands, error } of batchResults) {
+    for (const { name, cands, error, ms } of batchResults) {
       if (error) {
         byTopicSelected[name] = 0;
         bags[name] = { suppressed: [] };
+        runnerStats[name] = {
+          returned: 0,
+          selected: 0,
+          suppressed: 0,
+          blocked: 0,
+          ms,
+          error: error instanceof Error ? error.message : String(error),
+        };
         continue;
       }
       total += cands.length;
@@ -142,10 +178,16 @@ export async function runDiscovery(deps: RunDiscoveryDeps): Promise<RunDiscovery
       });
       // Drop already-surfaced keys BEFORE selection so a fresher,
       // lower-scored candidate can take the slot instead of the same
-      // recurring story.
-      const gateSuppressed = allowed.filter((c) => isSuppressed(c.key, c));
+      // recurring story. Evaluate the gate once per candidate: the old
+      // two-filter form called it twice and could disagree with itself if a
+      // gate ever becomes stateful.
+      const gateSuppressed: Candidate[] = [];
+      const fresh: Candidate[] = [];
+      for (const c of allowed) {
+        if (isSuppressed(c.key, c)) gateSuppressed.push(c);
+        else fresh.push(c);
+      }
       suppressed += gateSuppressed.length;
-      const fresh = allowed.filter((c) => !isSuppressed(c.key, c));
       bags[name] = { suppressed: gateSuppressed };
       const topicPerTopic = deps.perTopicOverride?.[name] ?? perTopic;
       const select =
@@ -153,6 +195,13 @@ export async function runDiscovery(deps: RunDiscoveryDeps): Promise<RunDiscovery
       const top = select(fresh, topicPerTopic, name);
       byTopicSelected[name] = top.length;
       selected.push(...top);
+      runnerStats[name] = {
+        returned: cands.length,
+        selected: top.length,
+        suppressed: gateSuppressed.length,
+        blocked: cands.length - allowed.length,
+        ms,
+      };
     }
   }
 
@@ -223,11 +272,21 @@ export async function runDiscovery(deps: RunDiscoveryDeps): Promise<RunDiscovery
       return true;
     });
 
+  // Sort by score before URL dedup. The dedup keeps the FIRST candidate per
+  // URL, so without this the survivor was whichever runner happened to be
+  // iterated first — e.g. a headline-only RSS item could beat a Living Threat
+  // incident with ATT&CK context for the same article. The comment has always
+  // promised “highest-scored per URL”; this makes it true.
+  selected.sort((a, b) => b.score - a.score);
   selected = dropUrlDuplicates(selected);
 
-  // Sort by score for the optional global cap.
-  selected.sort((a, b) => b.score - a.score);
-  let kept = typeof deps.limit === 'number' ? selected.slice(0, deps.limit) : selected;
+  // Final cap. A plain global score sort would hand every slot to the
+  // highest-scoring type (in practice, KEV CVEs) and undo the per-topic
+  // diversity the selection step just guaranteed. Interleave instead: one
+  // item per type per round, ranked by each type's best candidate, stopping
+  // at `limit`. With limit=10 and 5 confirmed topics, that is five rounds of
+  // the day's mix — never ten CVEs.
+  let kept = interleaveByType(selected, deps.limit);
 
   // ── Daily floor ────────────────────────────────────────────────────────
   // The queue used to come back with 2-3 items on a normal day: the runners
@@ -292,7 +351,13 @@ export async function runDiscovery(deps: RunDiscoveryDeps): Promise<RunDiscovery
     if (!(name in byTopic)) byTopic[name] = 0;
   }
 
-  await Promise.all(kept.map((c) => deps.putCandidate(c)));
+  if (deps.putCandidates) {
+    await deps.putCandidates(kept);
+  } else {
+    // Sequential fallback for callers that only implement the single-item
+    // seam. Concurrent puts on a per-type blob lose all but the last write.
+    for (const c of kept) await deps.putCandidate(c);
+  }
   // One read+write for the whole dedup map instead of one per kept candidate.
   await deps.commitDedup(
     kept.map((c) => c.key),
@@ -308,5 +373,6 @@ export async function runDiscovery(deps: RunDiscoveryDeps): Promise<RunDiscovery
     ids: kept.map((c) => c.key),
     byTopic,
     byTopicSelected,
+    runnerStats,
   };
 }

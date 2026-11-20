@@ -22,69 +22,33 @@ import type { McpToolHost } from './host';
 // names. esbuild does not typecheck free variables, so the Worker
 // still bundled and deployed while every tool that touched one threw
 // ReferenceError at call time. Fixed alongside the tsc (worker) gate.
+import { filterAiPlaybookRiskIds, getAiPlaybookCveRefs, getAiPlaybookRiskId } from '../lib/ai-playbook-manifest';
 import {
-  aiPlaybookStats,
-  filterAiPlaybookRiskIds,
-  getAiPlaybookCveRefs,
-  getAiPlaybookLayer,
-  getAiPlaybookRiskId,
-  listAiPlaybookLayers,
-  loadAiPlaybookIndex,
-  riskIdsForLayer,
-} from '../lib/ai-playbook-manifest';
-import {
-  anarchyCacheStats,
-  filterAnarchyCourses,
-  getAnarchyCourse,
-  loadAnarchyIndex,
-  recommendAnarchyCourses,
-  similarAnarchyCourses,
-} from '../lib/anarchy-manifest';
-import {
-  cairnCacheStats,
   filterCairnFilters,
   getCairnFamily,
   getCairnRule,
   listCairnFamilies,
   listCairnRules,
-  loadCairnArchetypes,
   loadCairnFilters,
   loadCairnIndex,
   scanCairnText,
 } from '../lib/cairn-manifest';
 import {
   classifyConsent,
-  denaliCacheStats,
   evaluateFailedSignins,
   evaluateRiskySequences,
   getDenaliDoc,
   getDenaliRule,
   listDenaliDocs,
   listDenaliRules,
-  loadDenaliIndex,
   loadDenaliRules,
-  loadDenaliTaxonomy,
 } from '../lib/denali-manifest';
-import {
-  getNovaRule,
-  listNovaRules,
-  loadNovaIndex,
-  loadNovaTaxonomy,
-  novaCacheStats,
-  scanNovaPrompt,
-} from '../lib/nova-manifest';
+import { getNovaRule, listNovaRules, loadNovaIndex, loadNovaTaxonomy, scanNovaPrompt } from '../lib/nova-manifest';
 
 // ORCA AI Incident Archive (CC BY 4.0) + MMD toolkit catalog
-import {
-  filterOrcaIncidents,
-  getOrcaIncident,
-  loadOrcaIndex,
-  loadOrcaStats,
-  loadOrcaCommits,
-  orcaCacheStats,
-} from '../lib/orca-manifest';
+import { filterOrcaIncidents, getOrcaIncident, loadOrcaIndex, loadOrcaCommits } from '../lib/orca-manifest';
 // HI / OH / KP — three public-source replication verticals (metadata + links only).
-import { filterHiIncidents, getHiIncident, hiCacheStats, loadHiIndex, loadHiStats } from '../lib/hi-manifest';
+import { filterHiIncidents, getHiIncident, loadHiIndex } from '../lib/hi-manifest';
 import {
   filterOhHarnesses,
   getOhHarness,
@@ -93,9 +57,8 @@ import {
   ohCacheStats,
   type OhSource,
 } from '../lib/oh-manifest';
-import { filterKpExploits, filterKpTools, getKpFeed, kpCacheStats, loadKpIndex } from '../lib/kp-manifest';
-import { getMmdCategory, listMmdTools, loadMmdCommits, loadMmdIndex, mmdCacheStats } from '../lib/mmd-manifest';
-import { filterArtifacts, getWinRegArtifact, loadWinRegIndex, winRegCacheStats } from '../lib/winreg-manifest';
+import { filterKpExploits, getKpFeed, loadKpIndex } from '../lib/kp-manifest';
+import { filterArtifacts, getWinRegArtifact, loadWinRegIndex } from '../lib/winreg-manifest';
 import type { DenaliActivity } from '../lib/denali-manifest';
 export function registerDfirManifestsTools(h: McpToolHost): void {
   // Was: `if (h.env.ASSETS) { const ASSETS = h.env.ASSETS; ... }`
@@ -174,152 +137,6 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
         source: idx.source,
         sourceUrl: idx.sourceUrl,
         categories: idx.categories,
-      });
-    }
-  );
-
-  h.tools(
-    'anarchy_list_courses',
-    'List courses from the Anarchy (kazamadono.github.io) portal — 1708 courses across 20 tracks (AI/ML, Low Level, PsyOps, Defensive, Offensive, OSINT, Game Hacking, BugBounty, Crypto, Reversing, Cloud, Forensics, CTF, Blockchain, IoT/HW, Dev/CS, Math). Filter by tag, difficulty, provider, hours, or free-text query. Daily sync from https://kazamadono.github.io/courses.json.',
-    {
-      tag: z
-        .string()
-        .optional()
-        .describe(
-          'Filter by tag: aiml, exploits, psyops, bio, infra, blue, red, osint, game, webappsec, crypto, re, mobile, cloud, forensics, ctf, blockchain, iot, dev, math, project'
-        ),
-      q: z.string().optional().describe('Free-text search across title, preview, tags, provider'),
-      difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional().describe('Filter by difficulty'),
-      provider: z
-        .string()
-        .optional()
-        .describe('Filter by provider name/host substring (e.g. "TryHackMe", "github.com")'),
-      maxHours: z.number().int().min(1).max(12).optional().describe('Only courses <= this many hours'),
-      sort: z.enum(['id', 'hours', 'difficulty']).optional().describe('Sort results'),
-      limit: z.number().int().min(1).max(500).optional().describe('Max courses to return (default 50)'),
-    },
-    async ({ tag, q, difficulty, provider, maxHours, sort, limit }) => {
-      const idx = await loadAnarchyIndex(ASSETS);
-      const filtered = filterAnarchyCourses(idx, {
-        tag,
-        q,
-        difficulty,
-        provider,
-        maxHours,
-        sort,
-        limit: limit ?? 50,
-      });
-      return untrustedToolResult({
-        total: idx.counts.courses,
-        returned: filtered.length,
-        categories: idx.categories,
-        syncedAt: idx.syncedAt,
-        builtAt: idx.builtAt,
-        source: idx.source,
-        sourceUrl: idx.url,
-        courses: filtered,
-      });
-    }
-  );
-
-  h.tools(
-    'anarchy_recommend',
-    'Rank Anarchy courses for a user library. Deterministic scorer (no LLM): tag affinity with saved/done/doing courses, same-provider affinity, and a difficulty ladder one rung above completed courses. Excludes library courses. Empty library returns beginner-friendly popular picks.',
-    {
-      saved: z.array(z.string()).optional().describe('Bookmarked course IDs, e.g. ["0001","0042"]'),
-      done: z.array(z.string()).optional().describe('Completed course IDs'),
-      doing: z.array(z.string()).optional().describe('In-progress course IDs'),
-      maxHours: z.number().int().min(1).max(12).optional().describe('Only courses within this many hours'),
-      limit: z.number().int().min(1).max(50).optional().describe('Max recommendations (default 12)'),
-    },
-    async ({ saved, done, doing, maxHours, limit }) => {
-      const idx = await loadAnarchyIndex(ASSETS);
-      const recs = recommendAnarchyCourses(idx, { saved, done, doing, maxHours, limit: limit ?? 12 });
-      return untrustedToolResult({
-        total: idx.counts.courses,
-        returned: recs.length,
-        recommendations: recs.map((r) => ({ ...r.course, score: r.score, reasons: r.reasons })),
-      });
-    }
-  );
-
-  h.tools(
-    'anarchy_similar',
-    'Courses similar to one Anarchy course: shared tracks first, then same provider, then same difficulty. Use anarchy_list_courses first to discover IDs.',
-    {
-      id: z.string().describe('Course ID, e.g. "0001".'),
-      limit: z.number().int().min(1).max(20).optional().describe('Max similar courses (default 4)'),
-    },
-    async ({ id, limit }) => {
-      const idx = await loadAnarchyIndex(ASSETS);
-      const sims = similarAnarchyCourses(idx, id, limit ?? 4);
-      if (sims.length === 0)
-        return untrustedToolResult({
-          error: `anarchy course not found: ${id}`,
-          hint: 'Call anarchy_list_courses to see available IDs.',
-        });
-      return untrustedToolResult({
-        id,
-        returned: sims.length,
-        similar: sims.map((r) => ({ ...r.course, score: r.score, reasons: r.reasons })),
-      });
-    }
-  );
-
-  h.tools(
-    'anarchy_get_course',
-    'Return the full body of a single Anarchy course by ID. Includes title, full description, tags, and external href. Use anarchy_list_courses first to discover IDs.',
-    {
-      id: z.string().describe('Course ID, e.g. "0001" or "0420". Get these from anarchy_list_courses.'),
-    },
-    async ({ id }) => {
-      const body = await getAnarchyCourse(ASSETS, String(id).padStart(4, '0'));
-      if (!body)
-        return untrustedToolResult({
-          error: `anarchy course not found: ${id}`,
-          hint: 'Call anarchy_list_courses to see available IDs.',
-        });
-      return untrustedToolResult(body);
-    }
-  );
-
-  h.tools(
-    'anarchy_stats',
-    'Return cache + manifest stats for the Anarchy course catalog: course counts, top tags, sync timestamps, and LRU cache hit/miss ratios.',
-    {},
-    async () => {
-      const idx = await loadAnarchyIndex(ASSETS);
-      return untrustedToolResult({
-        counts: idx.counts,
-        categories: idx.categories,
-        topTags: idx.topTags,
-        source: idx.source,
-        sourceUrl: idx.url,
-        syncedAt: idx.syncedAt,
-        builtAt: idx.builtAt,
-        author: idx.author,
-        authorUrl: idx.authorUrl,
-        cache: anarchyCacheStats(),
-      });
-    }
-  );
-
-  h.tools(
-    'winreg_stats',
-    'Return cache + manifest stats for the WinReg DFIR data: artifact counts, hive types, MITRE technique coverage, and LRU body-cache hit/miss ratios.',
-    {},
-    async () => {
-      const idx = await loadWinRegIndex(ASSETS);
-      return untrustedToolResult({
-        counts: idx.counts,
-        hives: idx.hives,
-        tactics: idx.tactics,
-        techniques: idx.techniques,
-        source: idx.source,
-        sourceUrl: idx.sourceUrl,
-        license: idx.license,
-        replicatedAt: idx.replicatedAt,
-        cache: winRegCacheStats(),
       });
     }
   );
@@ -456,26 +273,6 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
     }
   );
 
-  h.tools(
-    'cairn_stats',
-    'Return CAIRN manifest stats: rule counts by tier, filter/family/archetype counts, source + license, and edge cache ratios.',
-    {},
-    async () => {
-      const idx = await loadCairnIndex(ASSETS);
-      const arch = await loadCairnArchetypes(ASSETS);
-      return untrustedToolResult({
-        counts: idx.counts,
-        filterCategories: idx.filterCategories,
-        archetypes: arch.archetypes.map((a) => ({ id: a.id, name: a.name, families: a.families })),
-        source: idx.source,
-        sourceUrl: idx.sourceUrl,
-        license: idx.license,
-        replicatedAt: idx.replicatedAt,
-        cache: cairnCacheStats(),
-      });
-    }
-  );
-
   // ── NOVA tools ──────────────────────────────────────────────────
   // Prompt pattern matching (Nova-Hunting/nova-framework engine +
   // nova-rules collection, MIT): 69 .nov rules with
@@ -576,27 +373,6 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
     }
   );
 
-  h.tools(
-    'nova_stats',
-    'Return NOVA manifest stats: rule/pattern counts, severity mix, keyword-only coverage, source + license, and edge cache ratios.',
-    {},
-    async () => {
-      const idx = await loadNovaIndex(ASSETS);
-      return untrustedToolResult({
-        counts: idx.counts,
-        byCategory: idx.byCategory,
-        bySeverity: idx.bySeverity,
-        source: idx.source,
-        sourceUrl: idx.sourceUrl,
-        engineSource: idx.engineSource,
-        license: idx.license,
-        replicatedAt: idx.replicatedAt,
-        edgeNote: idx.edgeNote,
-        cache: novaCacheStats(),
-      });
-    }
-  );
-
   // ── ORCA tools ──────────────────────────────────────────────────
   // Open database of real-world AI agent security incidents
   // (Continuum-AI-Corp/Orca-AI-Incident-Archive, CC BY 4.0). 417 records,
@@ -671,24 +447,6 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
   );
 
   h.tools(
-    'orca_stats',
-    'Return ORCA archive stats: counts by severity/kind/type/region/real_harm, monthly volume, source totals, source + license, and cache state.',
-    {},
-    async () => {
-      const idx = await loadOrcaIndex(ASSETS);
-      const stats = await loadOrcaStats(ASSETS);
-      return untrustedToolResult({
-        upstreamVersion: idx.upstreamVersion,
-        source: idx.source,
-        sourceUrl: idx.sourceUrl,
-        license: idx.license,
-        stats: stats ?? idx.stats,
-        cache: orcaCacheStats(),
-      });
-    }
-  );
-
-  h.tools(
     'orca_recent_activity',
     'Return recent upstream ORCA commits (record sweeps, corrections), last commit date, and the upstream web page URLs. The manifest rebuilds weekly, so new pushes surface here.',
     {},
@@ -747,25 +505,6 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
   );
 
   h.tools(
-    'hi_stats',
-    'Return hackingincidents.ai ledger stats: counts by grade, year, autonomy, role, sector and country, source totals and cache state.',
-    {},
-    async () => {
-      const idx = await loadHiIndex(ASSETS);
-      const stats = await loadHiStats(ASSETS);
-      return untrustedToolResult({
-        source: idx.source,
-        sourceUrl: idx.sourceUrl,
-        license: idx.license,
-        upstreamUpdated: idx.upstreamUpdated,
-        counts: idx.counts,
-        stats: stats ?? idx.stats,
-        cache: hiCacheStats(),
-      });
-    }
-  );
-
-  h.tools(
     'oh_list_harnesses',
     'List open-source offensive-AI agent harnesses from offsecharnesses.ai (154 tracked, 14 in real attacks). Filter by table (evidence/field), tier (confirmed/observed/no attack on record), use tag, named actor or keyword. Outlined use tags are README claims, not tested results.',
     {
@@ -818,29 +557,6 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
   );
 
   h.tools(
-    'kp_list_tools',
-    'List newest security tools from kitploit.com/en (crawled HTML only — upstream robots.txt disallows /api/). Filter by category, provider (GitHub/GitLab) or keyword.',
-    {
-      category: z.string().optional().describe('Category label, e.g. "osint"'),
-      provider: z.string().optional().describe('GitHub or GitLab'),
-      keyword: z.string().optional().describe('Substring match on title, description, repo path'),
-      limit: z.number().int().min(1).max(100).optional().describe('Max rows (default 30)'),
-    },
-    async ({ category, provider, keyword, limit }) => {
-      const idx = await loadKpIndex(ASSETS);
-      const rows = filterKpTools(idx.tools, { category, provider, keyword, limit: limit ?? 30 });
-      return untrustedToolResult({
-        total: idx.counts.tools,
-        returned: rows.length,
-        source: idx.source,
-        license: idx.license,
-        robots: idx.robots,
-        tools: rows,
-      });
-    }
-  );
-
-  h.tools(
     'kp_list_exploits',
     'List newest CVE exploit evidence cards mirrored from kitploit.com/en with CVSS, EPSS and exploit counts. These are metadata cards only — no exploit code is stored. Filter by severity or keyword.',
     {
@@ -873,95 +589,10 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
     }
   );
 
-  h.tools(
-    'kp_stats',
-    'Return Kitploit mirror stats: listed tools/exploits, feed item counts, provider/category/severity breakdowns, robots policy and cache state.',
-    {},
-    async () => {
-      const idx = await loadKpIndex(ASSETS);
-      return untrustedToolResult({
-        source: idx.source,
-        sourceUrl: idx.sourceUrl,
-        license: idx.license,
-        robots: idx.robots,
-        counts: idx.counts,
-        stats: idx.stats,
-        cache: kpCacheStats(),
-      });
-    }
-  );
-
   // ── MMD tools ───────────────────────────────────────────────────
   // MalwareMustDie (MMD) shared codes & tools catalog
   // (github.com/unixfreaxjp/malwaremustdie): 228 malware-analysis files
   // across 12 language categories + recent commit activity feed.
-
-  h.tools(
-    'mmd_list_tools',
-    'List tools & scripts from the MalwareMustDie (MMD) shared codes repository (228 files across Python/Bash/Perl/C/radare2/…). Filter by category (language directory), kind (script/source/doc/webtool/binary), file extension, or keyword. Every entry deep-links the upstream file.',
-    {
-      category: z
-        .string()
-        .optional()
-        .describe(
-          'Language dir: Python, Bash, Perl, Clang, Autoit, batch, HTML, etc, radare2stuff, radare2test, slides, wiki'
-        ),
-      kind: z.string().optional().describe('script, source, doc, webtool, slides, archive, binary, image, resource'),
-      ext: z.string().optional().describe('File extension, e.g. sh, py, pl, c'),
-      keyword: z.string().optional().describe('Substring match against the repo path'),
-      limit: z.number().int().min(1).max(250).optional().describe('Max files (default 50, capped at 250)'),
-    },
-    async ({ category, kind, ext, keyword, limit }) => {
-      const idx = await loadMmdIndex(ASSETS);
-      const tools = listMmdTools(idx, { category, kind, ext, keyword, limit: limit ?? 50 });
-      return untrustedToolResult({
-        total: idx.counts.files,
-        returned: tools.length,
-        lastCommit: idx.lastCommit,
-        source: idx.source,
-        license: idx.license,
-        tools,
-      });
-    }
-  );
-
-  h.tools(
-    'mmd_get_category',
-    'Return one MMD category (language directory) with its full file listing and sizes. Use mmd_list_tools or mmd_stats to discover categories.',
-    {
-      category: z.string().describe('e.g. "Python", "Bash", "radare2stuff".'),
-    },
-    async ({ category }) => {
-      const body = await getMmdCategory(ASSETS, category);
-      if (!body) {
-        return untrustedToolResult({
-          error: 'category_not_found',
-          category,
-          hint: 'Categories: Python, Bash, Perl, Clang, Autoit, batch, HTML, etc, radare2stuff, radare2test, slides, wiki.',
-        });
-      }
-      return untrustedToolResult(body);
-    }
-  );
-
-  h.tools(
-    'mmd_recent_activity',
-    'Return recent MMD upstream commits (activity feed) plus repository counts. The manifest rebuilds weekly, so new upstream pushes surface here.',
-    {},
-    async () => {
-      const idx = await loadMmdIndex(ASSETS);
-      const commits = await loadMmdCommits(ASSETS);
-      return untrustedToolResult({
-        counts: idx.counts,
-        lastCommit: idx.lastCommit,
-        source: idx.source,
-        sourceUrl: idx.sourceUrl,
-        license: idx.license,
-        commits: commits?.commits ?? idx.recentCommits,
-        cache: mmdCacheStats(),
-      });
-    }
-  );
 
   // ── Denali tools ────────────────────────────────────────────────
   // Evidence-led AI security reference (transilienceai/denali,
@@ -1081,28 +712,6 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
     }
   );
 
-  h.tools(
-    'denali_stats',
-    'Return Denali manifest stats: rule/taxonomy/doc counts, evidence principles, source + license, and edge cache ratios.',
-    {},
-    async () => {
-      const idx = await loadDenaliIndex(ASSETS);
-      const tax = await loadDenaliTaxonomy(ASSETS);
-      return untrustedToolResult({
-        counts: idx.counts,
-        assetKinds: tax.assetKinds.map((k) => k.id),
-        coverageStates: tax.coverageStates.map((s) => s.id),
-        evidencePrinciples: tax.evidencePrinciples,
-        source: idx.source,
-        sourceUrl: idx.sourceUrl,
-        license: idx.license,
-        replicatedAt: idx.replicatedAt,
-        edgeNote: idx.edgeNote,
-        cache: denaliCacheStats(),
-      });
-    }
-  );
-
   // ── AI Security Playbook tools ────────────────────────────────────
   // Taxonomy layer from aisecurity.zone: 8 system divisions (44 chapters) and
   // 20 risk identifiers (OWASP LLM01-10 + the author's ASI01-10).
@@ -1110,38 +719,6 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
   // LICENCE: upstream declares no reuse licence, so this surface is
   // STRUCTURE ONLY — divisions, identifiers, CVE references and deep links.
   // No chapter prose. See scripts/build-ai-playbook.mjs.
-
-  h.tools(
-    'ai_playbook_list_layers',
-    'List the 8 system divisions of the AI Security Playbook (I model .. VIII governance), with chapter counts and the risk identifiers each division defines.',
-    {},
-    async () => {
-      const layers = await listAiPlaybookLayers(ASSETS);
-      return untrustedToolResult({ total: layers.length, layers });
-    }
-  );
-
-  h.tools(
-    'ai_playbook_get_layer',
-    'Get one AI Security Playbook division by roman id (I..VIII) or slug, including the risk identifiers it defines.',
-    {
-      id: z
-        .string()
-        .describe(
-          'Roman numeral (I, II, ... VIII) or slug (model, context, loop, protocol, infra, method, program, govern)'
-        ),
-    },
-    async ({ id }) => {
-      const layer = await getAiPlaybookLayer(ASSETS, id);
-      if (!layer)
-        return untrustedToolResult({
-          error: `layer '${id}' not found`,
-          valid: ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'],
-        });
-      const idx = await loadAiPlaybookIndex(ASSETS);
-      return untrustedToolResult({ ...layer, riskIdsDetailed: riskIdsForLayer(idx, layer.id) });
-    }
-  );
 
   h.tools(
     'ai_playbook_list_risk_ids',
@@ -1185,12 +762,5 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
         cves: out,
       });
     }
-  );
-
-  h.tools(
-    'ai_playbook_stats',
-    'AI Security Playbook manifest stats: division/chapter/identifier counts, KEV matches, licence scope, and edge cache state.',
-    {},
-    async () => untrustedToolResult(await aiPlaybookStats(ASSETS))
   );
 }

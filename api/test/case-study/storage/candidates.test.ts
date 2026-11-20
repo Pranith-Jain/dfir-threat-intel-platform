@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   putCandidate,
+  putCandidates,
   getCandidate,
   listCandidates,
   listAllCandidates,
@@ -106,6 +107,34 @@ describe('candidates storage', () => {
     await deleteCandidate(kv, 'cve', 'cve-2026-1234');
     expect(await getCandidate(kv, 'cve', 'cve-2026-1234')).toBeNull();
   });
+
+  it('putCandidates persists every same-type candidate', async () => {
+    // Regression: discovery used `Promise.all(kept.map(putCandidate))`. Every
+    // candidate of a type read the same blob, appended itself, and wrote it
+    // back — the last write won. A six-item run persisted one row per type,
+    // which is the "discover only shows 2 suggestions" bug.
+    const kv = mockKV() as any;
+    const rows = Array.from({ length: 5 }, (_, i) => ({
+      ...sampleCandidate,
+      key: `cve-2026-100${i}`,
+      title: `Test CVE ${i}`,
+    }));
+    await putCandidates(kv, rows);
+    const stored = await listCandidates(kv, 'cve');
+    expect(stored.map((c) => c.key).sort()).toEqual(rows.map((c) => c.key).sort());
+  });
+
+  it('putCandidates merges with the existing blob and dedupes by key', async () => {
+    const kv = mockKV() as any;
+    await putCandidate(kv, sampleCandidate);
+    await putCandidates(kv, [
+      { ...sampleCandidate, title: 'Updated title' },
+      { ...sampleCandidate, key: 'cve-2026-5678' },
+    ]);
+    const stored = await listCandidates(kv, 'cve');
+    expect(stored).toHaveLength(2);
+    expect(stored.find((c) => c.key === sampleCandidate.key)?.title).toBe('Updated title');
+  });
 });
 
 describe('interleaveByType', () => {
@@ -146,5 +175,20 @@ describe('interleaveByType', () => {
 
   it('returns an empty array for an empty queue', () => {
     expect(interleaveByType([])).toEqual([]);
+  });
+
+  it('caps during the interleave, not after a global score sort', () => {
+    // Five CVEs at 1.0 would fill a post-sort slice(0, 4) entirely.
+    const queue = [
+      cand('cve-1', 'cve', 1.0),
+      cand('cve-2', 'cve', 1.0),
+      cand('cve-3', 'cve', 1.0),
+      cand('cve-4', 'cve', 1.0),
+      cand('cve-5', 'cve', 1.0),
+      cand('actor-1', 'actor', 0.9),
+      cand('breach-1', 'breach', 0.8),
+    ];
+    expect(interleaveByType(queue, 4).map((c) => c.type)).toEqual(['cve', 'actor', 'breach', 'cve']);
+    expect(interleaveByType(queue, 0)).toEqual([]);
   });
 });

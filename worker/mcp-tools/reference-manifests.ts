@@ -11,15 +11,15 @@
  * the `if (h.env.ASSETS)` block this was extracted from.
  */
 
-import { capecCacheStats, getCapec, listCapec, loadCapecIndex } from '../lib/capec-manifest';
-import { carCacheStats, getCar, listCar, loadCarIndex } from '../lib/car-manifest';
-import { engageCacheStats, getEngage, listEngage, loadEngageIndex } from '../lib/engage-manifest';
-import { getHijacklib, hijacklibsCacheStats, listHijacklibs, loadHijacklibsIndex } from '../lib/hijacklibs-manifest';
-import { getLots, listLots, loadLotsIndex, lotsCacheStats } from '../lib/lots-manifest';
-import { getMalapi, listMalapi, loadMalapiIndex, malapiCacheStats } from '../lib/malapi-manifest';
-import { getPortal, listPortals, loadOsintIndex, osintCacheStats } from '../lib/osint-manifest';
+import { getCapec, listCapec, loadCapecIndex } from '../lib/capec-manifest';
+import { getCar, listCar, loadCarIndex } from '../lib/car-manifest';
+import { getEngage, listEngage, loadEngageIndex } from '../lib/engage-manifest';
+import { getHijacklib, listHijacklibs, loadHijacklibsIndex } from '../lib/hijacklibs-manifest';
+import { getLots, listLots, loadLotsIndex } from '../lib/lots-manifest';
+import { getMalapi, listMalapi, loadMalapiIndex } from '../lib/malapi-manifest';
+import { getPortal, listPortals, loadOsintIndex } from '../lib/osint-manifest';
 import type { OsintCategory } from '../lib/osint-manifest';
-import { getVeris, listVeris, loadVerisIndex, verisCacheStats } from '../lib/veris-manifest';
+import { getVeris, listVeris, loadVerisIndex } from '../lib/veris-manifest';
 import { untrustedToolResult } from './core';
 import { z } from 'zod';
 
@@ -31,14 +31,9 @@ import type { McpToolHost } from './host';
 // names. esbuild does not typecheck free variables, so the Worker
 // still bundled and deployed while every tool that touched one threw
 // ReferenceError at call time. Fixed alongside the tsc (worker) gate.
-import { campaignsCacheStats, getCampaign, listCampaigns, loadCampaignsIndex } from '../lib/campaigns-manifest';
-import {
-  ctiBookmarksCacheStats,
-  getBookmark,
-  listBookmarks,
-  loadCtiBookmarksIndex,
-} from '../lib/cti-bookmarks-manifest';
-import { getReport, listReports, loadReportsIndex, reportsCacheStats } from '../lib/reports-manifest';
+import { getCampaign, listCampaigns, loadCampaignsIndex } from '../lib/campaigns-manifest';
+import { getBookmark, listBookmarks, loadCtiBookmarksIndex } from '../lib/cti-bookmarks-manifest';
+import { getReport, listReports, loadReportsIndex } from '../lib/reports-manifest';
 import type { CampaignCategory, CampaignStatus } from '../lib/campaigns-manifest';
 import type { CtiBookmarkStatus } from '../lib/cti-bookmarks-manifest';
 import type { ReportCategory } from '../lib/reports-manifest';
@@ -101,22 +96,6 @@ export function registerReferenceManifestsTools(h: McpToolHost): void {
     }
   );
 
-  h.tools(
-    'osint_stats',
-    'Return cache + manifest stats for the OSINT Portal Directory: total portals, indexed categories, and index cache status.',
-    {},
-    async () => {
-      const idx = await loadOsintIndex(ASSETS);
-      return untrustedToolResult({
-        count: idx.count,
-        source: idx.source,
-        license: idx.license,
-        replicatedAt: idx.replicatedAt,
-        cache: osintCacheStats(),
-      });
-    }
-  );
-
   // ── CTI Bookmarks tools ─────────────────────────────────────
   // 387 curated CTI links (Operational/Tactical/Strategic/Tools) from
   // Chick3nHawk01/Open_Source-CTI-Tooling. Each entry is tagged
@@ -176,24 +155,6 @@ export function registerReferenceManifestsTools(h: McpToolHost): void {
     }
   );
 
-  h.tools(
-    'cti_bookmarks_stats',
-    'Return cache + manifest stats for the CTI Bookmarks directory: totals by level and integration status (live/reference/missing gap counts).',
-    {},
-    async () => {
-      const idx = await loadCtiBookmarksIndex(ASSETS);
-      return untrustedToolResult({
-        count: idx.count,
-        levels: idx.levels,
-        categories: idx.categories,
-        statusCounts: idx.statusCounts,
-        source: idx.source,
-        replicatedAt: idx.replicatedAt,
-        cache: ctiBookmarksCacheStats(),
-      });
-    }
-  );
-
   // ── LOTS Project tools ──────────────────────────────────────
   // 175 trusted sites abusable for phishing/C2/exfil/download.
   // Data ships in public/data/lots/ built by
@@ -238,23 +199,6 @@ export function registerReferenceManifestsTools(h: McpToolHost): void {
         });
       }
       return untrustedToolResult(site);
-    }
-  );
-
-  h.tools(
-    'lots_stats',
-    'Return cache + manifest stats for the LOTS directory: total sites and per-tag counts.',
-    {},
-    async () => {
-      const idx = await loadLotsIndex(ASSETS);
-      return untrustedToolResult({
-        count: idx.count,
-        tags: idx.tags,
-        tagCounts: idx.tagCounts,
-        source: idx.source,
-        replicatedAt: idx.replicatedAt,
-        cache: lotsCacheStats(),
-      });
     }
   );
 
@@ -304,22 +248,6 @@ export function registerReferenceManifestsTools(h: McpToolHost): void {
     }
   );
 
-  h.tools(
-    'malapi_stats',
-    'Return cache + manifest stats for the MalAPI catalog: total APIs and attack categories.',
-    {},
-    async () => {
-      const idx = await loadMalapiIndex(ASSETS);
-      return untrustedToolResult({
-        count: idx.count,
-        categories: idx.categories,
-        source: idx.source,
-        replicatedAt: idx.replicatedAt,
-        cache: malapiCacheStats(),
-      });
-    }
-  );
-
   // ── MITRE CAR tools ─────────────────────────────────────────
   // 102 cyber analytics with ATT&CK coverage + D3FEND mappings.
   // Data ships in public/data/car/ built by
@@ -363,23 +291,6 @@ export function registerReferenceManifestsTools(h: McpToolHost): void {
         });
       }
       return untrustedToolResult(analytic);
-    }
-  );
-
-  h.tools(
-    'car_stats',
-    'Return cache + manifest stats for the CAR directory: total analytics and covered technique count.',
-    {},
-    async () => {
-      const idx = await loadCarIndex(ASSETS);
-      return untrustedToolResult({
-        count: idx.count,
-        techniqueCount: idx.techniqueCount,
-        source: idx.source,
-        license: idx.license,
-        replicatedAt: idx.replicatedAt,
-        cache: carCacheStats(),
-      });
     }
   );
 
@@ -430,23 +341,6 @@ export function registerReferenceManifestsTools(h: McpToolHost): void {
         });
       }
       return untrustedToolResult(pattern);
-    }
-  );
-
-  h.tools(
-    'capec_stats',
-    'Return cache + manifest stats for the CAPEC directory: totals by abstraction and status.',
-    {},
-    async () => {
-      const idx = await loadCapecIndex(ASSETS);
-      return untrustedToolResult({
-        count: idx.count,
-        byAbstraction: idx.byAbstraction,
-        byStatus: idx.byStatus,
-        source: idx.source,
-        replicatedAt: idx.replicatedAt,
-        cache: capecCacheStats(),
-      });
     }
   );
 
@@ -501,24 +395,6 @@ export function registerReferenceManifestsTools(h: McpToolHost): void {
     }
   );
 
-  h.tools(
-    'hijacklibs_stats',
-    'Return cache + manifest stats for the HijackLibs directory: totals by hijack type and CVE count.',
-    {},
-    async () => {
-      const idx = await loadHijacklibsIndex(ASSETS);
-      return untrustedToolResult({
-        count: idx.count,
-        hijackTypes: idx.hijackTypes,
-        typeCounts: idx.typeCounts,
-        withCve: idx.withCve,
-        source: idx.source,
-        replicatedAt: idx.replicatedAt,
-        cache: hijacklibsCacheStats(),
-      });
-    }
-  );
-
   // ── VERIS Framework tools ───────────────────────────────────
   // 68 incident-taxonomy fields (Actor/Action/Asset/Attribute + more).
   // Data ships in public/data/veris/ built by
@@ -561,23 +437,6 @@ export function registerReferenceManifestsTools(h: McpToolHost): void {
         });
       }
       return untrustedToolResult(field);
-    }
-  );
-
-  h.tools(
-    'veris_stats',
-    'Return cache + manifest stats for the VERIS taxonomy: field counts by section.',
-    {},
-    async () => {
-      const idx = await loadVerisIndex(ASSETS);
-      return untrustedToolResult({
-        count: idx.count,
-        sections: idx.sections,
-        source: idx.source,
-        license: idx.license,
-        replicatedAt: idx.replicatedAt,
-        cache: verisCacheStats(),
-      });
     }
   );
 
@@ -625,23 +484,6 @@ export function registerReferenceManifestsTools(h: McpToolHost): void {
         });
       }
       return untrustedToolResult(approach);
-    }
-  );
-
-  h.tools(
-    'engage_stats',
-    'Return cache + manifest stats for the Engage matrix: phases, goals, approach count.',
-    {},
-    async () => {
-      const idx = await loadEngageIndex(ASSETS);
-      return untrustedToolResult({
-        count: idx.count,
-        phases: idx.phases,
-        goals: idx.goals,
-        source: idx.source,
-        replicatedAt: idx.replicatedAt,
-        cache: engageCacheStats(),
-      });
     }
   );
 
@@ -696,22 +538,6 @@ export function registerReferenceManifestsTools(h: McpToolHost): void {
         });
       }
       return untrustedToolResult(campaign);
-    }
-  );
-
-  h.tools(
-    'campaigns_stats',
-    'Return cache + manifest stats for the Active Campaigns tracker: total campaigns, active vs dormant/concluded breakdown, categories, and index cache status.',
-    {},
-    async () => {
-      const idx = await loadCampaignsIndex(ASSETS);
-      return untrustedToolResult({
-        count: idx.count,
-        source: idx.source,
-        license: idx.license,
-        replicatedAt: idx.replicatedAt,
-        cache: campaignsCacheStats(),
-      });
     }
   );
 
@@ -771,22 +597,6 @@ export function registerReferenceManifestsTools(h: McpToolHost): void {
         });
       }
       return untrustedToolResult(report);
-    }
-  );
-
-  h.tools(
-    'reports_stats',
-    'Return cache + manifest stats for the Reports & Reading Library: total entries, categories, and index cache status.',
-    {},
-    async () => {
-      const idx = await loadReportsIndex(ASSETS);
-      return untrustedToolResult({
-        count: idx.count,
-        source: idx.source,
-        license: idx.license,
-        replicatedAt: idx.replicatedAt,
-        cache: reportsCacheStats(),
-      });
     }
   );
 }

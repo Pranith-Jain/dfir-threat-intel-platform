@@ -25,7 +25,6 @@ import {
   torExitCheck,
   torExitDetails,
   torExitNodes,
-  torFetchOnion,
   torScrapeOnion,
   torSearchOnion,
   torStatus,
@@ -39,33 +38,6 @@ export function registerTelegramDarknetAgentTools(h: McpToolHost): void {
     async () => {
       const r = await torStatus();
       return untrustedToolResult(r);
-    }
-  );
-
-  h.tools(
-    'tor_fetch_onion',
-    'Fetch raw HTML from a .onion URL via tor2web gateway. Returns page HTML and status code. Note: uses public tor2web proxies, not a local Tor SOCKS5 daemon — for true Tor anonymity, use tor locally.',
-    {
-      url: z
-        .string()
-        .describe('Full .onion URL, e.g. http://facebookwkhpilnemxj7asaniu7vnjjbiltxjqhye3mhbshg7kx5tfyd.onion/'),
-      gateway: z
-        .number()
-        .int()
-        .min(0)
-        .max(3)
-        .optional()
-        .describe('Tor2Web gateway index (0=tor2web.io, 1=onion.ws, 2=onion.sh, 3=tor2web.org). Default: 0.'),
-    },
-    async ({ url, gateway }) => {
-      const r = await torFetchOnion(url, gateway ?? 0);
-      return untrustedToolResult({
-        url,
-        html_length: r.html.length,
-        status_code: r.statusCode,
-        fetched_via: r.fetchedVia,
-        html: r.html.slice(0, 100_000),
-      });
     }
   );
 
@@ -386,37 +358,7 @@ export function registerTelegramDarknetAgentTools(h: McpToolHost): void {
     }
   );
 
-  // ── Role-Aware Copilot (Vera + Role) ──────────────────────────────
-  h.tools(
-    'si_copilot_ask',
-    'Ask a threat intelligence question with role-aware context. Choose your analyst persona to get answers framed for your role. Roles: ciso (strategic risk), detection (TTPs/rules), ir (IOCs/triage), cti (context/attribution). Covers any threat intel question — actors, malware, campaigns, CVEs, sectors, IOCs, trends.',
-    {
-      query: z.string().describe('Your threat intelligence question in plain English'),
-      role: z.enum(['ciso', 'detection', 'ir', 'cti']).optional().describe('Analyst persona (default: cti)'),
-      mode: z.enum(['ask', 'investigate', 'draft', 'challenge']).optional().describe('Vera mode (default: ask)'),
-      sessionId: z.string().optional().describe('Optional session ID for follow-up questions'),
-    },
-    async ({ query, role, mode, sessionId }) => {
-      const body: Record<string, string> = { query: query ?? '', mode: mode ?? 'ask', role: role ?? 'cti' };
-      if (sessionId) body.sessionId = sessionId;
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/agents/chat', h.apiKey, {
-        method: 'POST',
-        body: JSON.stringify(body),
-      });
-      return untrustedToolResult(data);
-    }
-  );
-
   // ── List available analyst roles ──────────────────────────────────
-  h.tools(
-    'si_copilot_roles',
-    'List the available analyst personas for the role-aware copilot. Each role frames threat intelligence differently: ciso (risk posture, strategic, executive view), detection (TTPs, detection rules, hunting), ir (IOCs, containment, triage), cti (contextual analysis, attribution, trends).',
-    {},
-    async () => {
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/agents/chat/roles', h.apiKey);
-      return untrustedToolResult(data);
-    }
-  );
 
   // ══════════════════════════════════════════════════════════════════
   // DARKNET INTEL TOOLS — GreyNoise, Pulsedive, Vulners, IntelX,

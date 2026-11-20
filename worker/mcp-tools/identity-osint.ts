@@ -353,15 +353,6 @@ export function registerIdentityOsintTools(h: McpToolHost): void {
       return untrustedToolResult(data);
     }
   );
-  h.tools(
-    'ioc_watchlist_stats',
-    'Get watchlist dashboard stats: total watches, alerts by type, webhook delivery rate.',
-    {},
-    async () => {
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/ioc-watchlist/stats', h.apiKey);
-      return untrustedToolResult(data);
-    }
-  );
 
   // ── Investigation Notebooks ────────────────────────────────────────
   h.tools(

@@ -2,7 +2,7 @@
   "$schema": "https://modelcontextprotocol.io/schemas/manifest/v1.json",
   "name": "DFIR-ThreatIntel-MCP",
   "version": "1.0.0",
-  "description": "DFIR + Threat Intel MCP server. 446 tools across IOC check, CVE/KEV, actor enrichment, domain/ASN/WHOIS pivots, ransomware + breach monitoring, phishing analysis, supply-chain attacks, YARA/Sigma authoring, MITRE ATT&CK extraction, Hudson Rock infostealer search, passive DNS, IOC watchlists, investigation notebooks, shift handover, prompt vault, and the full SCStelz/security-investigator playbook library (KQL queries, skills, automations, knowledge-base docs).",
+  "description": "DFIR + Threat Intel MCP server. 362 tools across IOC check, CVE/KEV, actor enrichment, domain/ASN/WHOIS pivots, ransomware + breach monitoring, phishing analysis, supply-chain attacks, YARA/Sigma authoring, MITRE ATT&CK extraction, Hudson Rock infostealer search, passive DNS, IOC watchlists, investigation notebooks, shift handover, prompt vault, and the full SCStelz/security-investigator playbook library (KQL queries, skills, automations, knowledge-base docs).",
   "transport": "streamable-http",
   "endpoint": "https://pranithjain.qzz.io/api/mcp",
   "auth": {
@@ -16,7 +16,7 @@
       "listChanged": false
     }
   },
-  "toolCount": 446,
+  "toolCount": 362,
   "generatedAt": "2026-10-21T14:31:05+05:30",
   "tools": [
     {
@@ -30,28 +30,13 @@
       "category": "other"
     },
     {
-      "name": "ai_playbook_get_layer",
-      "description": "Get one AI Security Playbook division by roman id (I..VIII) or slug, including the risk identifiers it defines.",
-      "category": "other"
-    },
-    {
       "name": "ai_playbook_get_risk_id",
       "description": "Get one AI-security risk identifier by id (e.g. LLM01, ASI06), with its name, taxonomy and defining division.",
       "category": "other"
     },
     {
-      "name": "ai_playbook_list_layers",
-      "description": "List the 8 system divisions of the AI Security Playbook (I model .. VIII governance), with chapter counts and the risk identifiers each division defines.",
-      "category": "other"
-    },
-    {
       "name": "ai_playbook_list_risk_ids",
       "description": "List the 20 AI-security risk identifiers: OWASP Top 10 for LLM Applications (LLM01-LLM10) and the Agentic Security Index (ASI01-ASI10). Filter by scheme or layer, or search by id/name.",
-      "category": "other"
-    },
-    {
-      "name": "ai_playbook_stats",
-      "description": "AI Security Playbook manifest stats: division/chapter/identifier counts, KEV matches, licence scope, and edge cache state.",
       "category": "other"
     },
     {
@@ -67,11 +52,6 @@
     {
       "name": "ai_threats_list",
       "description": "List AI-capable threat actors from the Cybershujin tracker (79 entries, MIT). Each entry documents real-world confirmed use of AI/LLMs by threat actors. Filter by table (main/deepfake), category, TTP, or keyword.",
-      "category": "other"
-    },
-    {
-      "name": "ai_threats_stats",
-      "description": "Return cache + manifest stats for the AI Threat Actors data: total entries, index load state, body-cache hit ratios.",
       "category": "other"
     },
     {
@@ -105,31 +85,6 @@
       "category": "phishing"
     },
     {
-      "name": "anarchy_get_course",
-      "description": "Return the full body of a single Anarchy course by ID. Includes title, full description, tags, and external href. Use anarchy_list_courses first to discover IDs.",
-      "category": "other"
-    },
-    {
-      "name": "anarchy_list_courses",
-      "description": "List courses from the Anarchy (kazamadono.github.io) portal — 1708 courses across 20 tracks (AI/ML, Low Level, PsyOps, Defensive, Offensive, OSINT, Game Hacking, BugBounty, Crypto, Reversing, Cloud, Forensics, CTF, Blockchain, IoT/HW, Dev/CS, Math). Filter by tag, difficulty, provider, hours, or free-text query. Daily sync from https://kazamadono.github.io/courses.json.",
-      "category": "other"
-    },
-    {
-      "name": "anarchy_recommend",
-      "description": "Rank Anarchy courses for a user library. Deterministic scorer (no LLM): tag affinity with saved/done/doing courses, same-provider affinity, and a difficulty ladder one rung above completed courses. Excludes library courses. Empty library returns beginner-friendly popular picks.",
-      "category": "other"
-    },
-    {
-      "name": "anarchy_similar",
-      "description": "Courses similar to one Anarchy course: shared tracks first, then same provider, then same difficulty. Use anarchy_list_courses first to discover IDs.",
-      "category": "other"
-    },
-    {
-      "name": "anarchy_stats",
-      "description": "Return cache + manifest stats for the Anarchy course catalog: course counts, top tags, sync timestamps, and LRU cache hit/miss ratios.",
-      "category": "other"
-    },
-    {
       "name": "breach_vip_search",
       "description": "Search the BreachVIP breach corpus (10B+ records, 1000+ datasets) directly. Supports 10 field types (email, username, domain, ip, phone, password, name, uuid, steamid, discordid). Returns grouped metadata: breach name, record count, and exposed data classes — raw credentials are never surfaced.",
       "category": "breach"
@@ -157,11 +112,6 @@
     {
       "name": "bw_list_groups",
       "description": "List threat actor groups tracked in the Breach Watch database with their breach counts and top category. Filter by keyword or minimum count.",
-      "category": "other"
-    },
-    {
-      "name": "bw_stats",
-      "description": "Return cache + manifest stats for the Breach Watch data: breach counts, group counts, categories, and LRU body-cache hit/miss ratios.",
       "category": "other"
     },
     {
@@ -195,11 +145,6 @@
       "category": "other"
     },
     {
-      "name": "cairn_stats",
-      "description": "Return CAIRN manifest stats: rule counts by tier, filter/family/archetype counts, source + license, and edge cache ratios.",
-      "category": "other"
-    },
-    {
       "name": "campaigns_get",
       "description": "Return the full details of a single threat campaign entry by slug, including writeup links, TTPs, targets, and geography. Use campaigns_list first to discover slugs.",
       "category": "other"
@@ -207,11 +152,6 @@
     {
       "name": "campaigns_list",
       "description": "List currently active threat campaigns from the curated tracker. Filter by status (active, dormant, concluded), category (ransomware, apt, malware, phishing, c2, supply-chain, cyber-espionage, hacktivism, other), or keyword.",
-      "category": "other"
-    },
-    {
-      "name": "campaigns_stats",
-      "description": "Return cache + manifest stats for the Active Campaigns tracker: total campaigns, active vs dormant/concluded breakdown, categories, and index cache status.",
       "category": "other"
     },
     {
@@ -225,11 +165,6 @@
       "category": "other"
     },
     {
-      "name": "capec_stats",
-      "description": "Return cache + manifest stats for the CAPEC directory: totals by abstraction and status.",
-      "category": "other"
-    },
-    {
       "name": "car_get",
       "description": "Return the full details of a single CAR analytic by slug: ATT&CK coverage, D3FEND mappings, and implementation names. Use car_list first to discover slugs.",
       "category": "other"
@@ -237,11 +172,6 @@
     {
       "name": "car_list",
       "description": "List MITRE Cyber Analytics Repository (CAR) analytics: validated detection ideas mapped to ATT&CK techniques. Filter by technique ID (e.g. \"T1059\"), platform, or keyword.",
-      "category": "other"
-    },
-    {
-      "name": "car_stats",
-      "description": "Return cache + manifest stats for the CAR directory: total analytics and covered technique count.",
       "category": "other"
     },
     {
@@ -280,18 +210,8 @@
       "category": "other"
     },
     {
-      "name": "cti_bookmarks_stats",
-      "description": "Return cache + manifest stats for the CTI Bookmarks directory: totals by level and integration status (live/reference/missing gap counts).",
-      "category": "other"
-    },
-    {
       "name": "cve_compare",
       "description": "Compare 2-10 CVEs and get a patch order, where every position states the signal that separated it from the one below (KEV override, score gap, or a specific tiebreaker).",
-      "category": "cve"
-    },
-    {
-      "name": "cve_health",
-      "description": "Check the health of CVE data pipelines. Validates NVD API, EPSS API, CISA KEV, GitHub API rate limit, KV intel cache (EPSS coverage, KEV count, field completeness), and Exploit-DB mirror availability. Returns overall status (healthy/degraded/unhealthy) with per-check details.",
       "category": "cve"
     },
     {
@@ -325,11 +245,6 @@
       "category": "other"
     },
     {
-      "name": "db_stats",
-      "description": "Return cache + manifest stats for the Daily Briefs data: index loaded, body-cache sizes and hit ratios. Useful for diagnosing cold-start latency.",
-      "category": "other"
-    },
-    {
       "name": "dehash_lookup",
       "description": "Look up a cryptographic hash (md5/sha1/sha256/sha384/sha512) against Dehash.lt to find its plaintext value. Useful for cracking password hashes or identifying known hash values. No API key required.",
       "category": "other"
@@ -360,11 +275,6 @@
       "category": "other"
     },
     {
-      "name": "denali_stats",
-      "description": "Return Denali manifest stats: rule/taxonomy/doc counts, evidence principles, source + license, and edge cache ratios.",
-      "category": "other"
-    },
-    {
       "name": "depx_check",
       "description": "Check if a specific package is known-malicious. Queries the OpenSSF Malicious Packages database and OSV. Returns verdict (clean/malicious/unknown) with advisory details. Inspired by projectdiscovery/depx.",
       "category": "other"
@@ -372,11 +282,6 @@
     {
       "name": "depx_feed",
       "description": "Feed of recently disclosed malicious packages from the OpenSSF Malicious Packages database. Returns packages disclosed within the time window, with ecosystem breakdown and disclosure age. Inspired by projectdiscovery/depx.",
-      "category": "other"
-    },
-    {
-      "name": "depx_stats",
-      "description": "Supply-chain intelligence statistics — ecosystem breakdown, recent advisory counts, and disclosure trends from the OpenSSF Malicious Packages database.",
       "category": "other"
     },
     {
@@ -397,11 +302,6 @@
     {
       "name": "dl_check_domain",
       "description": "Check whether a domain (or URL host) is on the Destroylist phishing/scam blacklist (github.com/phishdestroy/destroylist, MIT): ~193k curated primary domains replicated locally (zero egress) plus parent-domain matching, so a phishing page on a listed apex matches too. Returns listed status, matched feed entry, verdict, and feed sync timestamp.",
-      "category": "phishing"
-    },
-    {
-      "name": "dl_stats",
-      "description": "Return Destroylist feed statistics: primary/community/DNS-active domain counts, root-domain rollup count, last sync time, bucket layout, and per-isolate bucket cache health. Use before bulk checks to confirm the manifest is loaded.",
       "category": "phishing"
     },
     {
@@ -432,16 +332,6 @@
     {
       "name": "dn_bazaar_recent",
       "description": "Get the most recently submitted malware samples from MalwareBazaar (last 100). Free, no key.",
-      "category": "other"
-    },
-    {
-      "name": "dn_bazaar_tag",
-      "description": "Search MalwareBazaar by tag or YARA signature name. Free, no key.",
-      "category": "other"
-    },
-    {
-      "name": "dn_greynoise_check",
-      "description": "Quick check: is this IP a known scanner or known benign service? Returns classification only (benign/malicious/unknown). Free, no key.",
       "category": "other"
     },
     {
@@ -477,26 +367,6 @@
     {
       "name": "dn_hybrid_search",
       "description": "Search Hybrid Analysis sandbox by file hash: verdict, AV detection rate, MITRE ATT&CK techniques, network indicators. Requires HYBRID_ANALYSIS_API_KEY.",
-      "category": "other"
-    },
-    {
-      "name": "dn_intelx_phonebook",
-      "description": "IntelligenceX Phonebook — find emails, domains, and URLs associated with a search term. Requires INTELX_API_KEY (paid).",
-      "category": "other"
-    },
-    {
-      "name": "dn_intelx_phonebook_results",
-      "description": "Retrieve IntelligenceX Phonebook search results by search_id. Requires INTELX_API_KEY.",
-      "category": "other"
-    },
-    {
-      "name": "dn_intelx_search",
-      "description": "Search IntelligenceX for leaked data, dark web content, paste sites, and breach archives. Requires INTELX_API_KEY (paid).",
-      "category": "other"
-    },
-    {
-      "name": "dn_intelx_search_results",
-      "description": "Retrieve results for an IntelligenceX search by search_id (from dn_intelx_search). Requires INTELX_API_KEY.",
       "category": "other"
     },
     {
@@ -550,11 +420,6 @@
       "category": "other"
     },
     {
-      "name": "dn_ransomware_group",
-      "description": "Get a detailed profile for a specific ransomware group from ransomware.live: description, aliases, tools, TTPs, CVEs. Free, no key.",
-      "category": "other"
-    },
-    {
       "name": "dn_ransomware_search",
       "description": "Search ransomware victims by keyword (company name, domain, etc.) across ransomware.live. Free, no key.",
       "category": "other"
@@ -570,23 +435,8 @@
       "category": "other"
     },
     {
-      "name": "dn_sources",
-      "description": "List all available darknet intel data sources with configuration status, API key status, tool counts, and free/paid indicators.",
-      "category": "other"
-    },
-    {
       "name": "dn_threatfox_iocs",
       "description": "Get recent IOCs from ThreatFox reported in the last N days. Free, no key.",
-      "category": "other"
-    },
-    {
-      "name": "dn_threatfox_malware",
-      "description": "Search ThreatFox IOCs by malware family using Malpedia naming. Free, no key.",
-      "category": "other"
-    },
-    {
-      "name": "dn_threatfox_search",
-      "description": "Search ThreatFox IOCs by IP, domain, hash, or URL. Free, no key.",
       "category": "other"
     },
     {
@@ -685,11 +535,6 @@
       "category": "other"
     },
     {
-      "name": "dw_stats",
-      "description": "Return cache + manifest stats for the detection.wiki mirror: 15k rules, 218 techniques, 1,518 Windows providers, 426 Security-Auditing events, 17 platforms, 6 labs, and LRU body-cache info.",
-      "category": "other"
-    },
-    {
       "name": "email_check_registration",
       "description": "Check which platforms an email address is registered on using site-specific APIs (not just HTTP status codes). Returns rich profile metadata when available. Inspired by kaifcodec/user-scanner (MIT, 2.4k stars). Checks 20+ platforms: GitHub, GitLab, Instagram, TikTok, Etsy, Spotify, Steam, and more.",
       "category": "other"
@@ -710,11 +555,6 @@
       "category": "other"
     },
     {
-      "name": "engage_stats",
-      "description": "Return cache + manifest stats for the Engage matrix: phases, goals, approach count.",
-      "category": "other"
-    },
-    {
       "name": "enrich_actor",
       "description": "Get a threat actor profile. Returns aliases, country attribution, MITRE ATT&CK techniques, known campaigns, and associated malware families.",
       "category": "actor"
@@ -727,11 +567,6 @@
     {
       "name": "escape_list",
       "description": "List AI agent containment-failure incidents (15-entry seed registry, CBS-scored). Filter by class (containment-breach/agent-hijack/supply-chain/tool-misuse/injection), severity, evidence tier, absent guardrail, autonomy, or keyword.",
-      "category": "other"
-    },
-    {
-      "name": "escape_stats",
-      "description": "Registry stats (entries, Tier A, eval-env breaches, autonomous count, median dwell, most-absent guardrail, days-since clock inputs), per-guardrail absent counts, month timeline buckets, and the 10 guardrail definitions + provenance trackers.",
       "category": "other"
     },
     {
@@ -760,11 +595,6 @@
       "category": "other"
     },
     {
-      "name": "etda_stats",
-      "description": "Return cache + manifest stats for the APT Actors data: index loaded, APTmap loaded, body-cache sizes and hit ratios. Useful for diagnosing cold-start latency.",
-      "category": "other"
-    },
-    {
       "name": "extract_fivew",
       "description": "Extract the classic 5W grid (who/what/when/where/why) from a free-text report. Single LLM call; returns structured JSON with a per-grid confidence score.",
       "category": "analysis"
@@ -783,16 +613,6 @@
       "name": "extract_ttps",
       "description": "Extract MITRE ATT&CK techniques from a free-text threat report. Returns technique IDs, tactic labels, confidence (high/medium/low), and the supporting evidence string. Combines a deterministic keyword scanner with an LLM pass and merges the results.",
       "category": "analysis"
-    },
-    {
-      "name": "fbi_wanted_list",
-      "description": "List current FBI wanted persons with pagination. No API key required.",
-      "category": "other"
-    },
-    {
-      "name": "fbi_wanted_search",
-      "description": "Search the FBI Wanted database for wanted persons by name. Returns titles, descriptions, reward amounts, and field offices. No API key required.",
-      "category": "other"
     },
     {
       "name": "flowviz_list_techniques",
@@ -853,11 +673,6 @@
       "name": "get_domain_history",
       "description": "Get the WHOIS history for a domain. Returns all historical registration snapshots, ownership changes, registrar changes, and nameserver changes over time. Essential for tracking domain ownership transfers and identifying infrastructure reuse by threat actors.",
       "category": "domain"
-    },
-    {
-      "name": "get_feed_status",
-      "description": "Get the health and freshness status of all 30+ threat intelligence feed sources. Shows last update time, error rates, and data volume.",
-      "category": "other"
     },
     {
       "name": "get_ioc_lifecycle",
@@ -930,11 +745,6 @@
       "category": "other"
     },
     {
-      "name": "hi_stats",
-      "description": "Return hackingincidents.ai ledger stats: counts by grade, year, autonomy, role, sector and country, source totals and cache state.",
-      "category": "other"
-    },
-    {
       "name": "hijacklibs_get",
       "description": "Return the full details of a single HijackLibs DLL by slug: vulnerable executables, expected locations, CVE. Use hijacklibs_list first to discover slugs.",
       "category": "other"
@@ -942,11 +752,6 @@
     {
       "name": "hijacklibs_list",
       "description": "List HijackLibs DLL hijacking candidates: DLLs abusable for sideloading/phantom/search-order/environment-variable hijacking (T1574.001). Filter by hijack type, vendor, CVE presence, or keyword.",
-      "category": "other"
-    },
-    {
-      "name": "hijacklibs_stats",
-      "description": "Return cache + manifest stats for the HijackLibs directory: totals by hijack type and CVE count.",
       "category": "other"
     },
     {
@@ -1005,16 +810,6 @@
       "category": "other"
     },
     {
-      "name": "interpol_notice_detail",
-      "description": "Get details of a specific INTERPOL Red Notice by entity ID. Returns full charge info, arrest warrant details, and physical description. No API key required.",
-      "category": "other"
-    },
-    {
-      "name": "interpol_search",
-      "description": "Search INTERPOL Red Notices for wanted persons by name, forename, or nationality. Returns entity IDs, charges, and issuing countries. No API key required.",
-      "category": "other"
-    },
-    {
       "name": "ioc_watchlist_add",
       "description": "Add an IOC to the watchlist for proactive alerting. Supported types: ip, domain, url, hash, cve, email. Alerts fire when the IOC appears in feeds.",
       "category": "ioc"
@@ -1030,11 +825,6 @@
       "category": "ioc"
     },
     {
-      "name": "ioc_watchlist_stats",
-      "description": "Get watchlist dashboard stats: total watches, alerts by type, webhook delivery rate.",
-      "category": "ioc"
-    },
-    {
       "name": "kp_get_feed",
       "description": "Return a full Kitploit RSS feed mirrored locally: updates (50 items), exploits (100 items) or blog (recent posts). Each item carries title, URL, description, publication date and image URL.",
       "category": "other"
@@ -1042,16 +832,6 @@
     {
       "name": "kp_list_exploits",
       "description": "List newest CVE exploit evidence cards mirrored from kitploit.com/en with CVSS, EPSS and exploit counts. These are metadata cards only — no exploit code is stored. Filter by severity or keyword.",
-      "category": "other"
-    },
-    {
-      "name": "kp_list_tools",
-      "description": "List newest security tools from kitploit.com/en (crawled HTML only — upstream robots.txt disallows /api/). Filter by category, provider (GitHub/GitLab) or keyword.",
-      "category": "other"
-    },
-    {
-      "name": "kp_stats",
-      "description": "Return Kitploit mirror stats: listed tools/exploits, feed item counts, provider/category/severity breakdowns, robots policy and cache state.",
       "category": "other"
     },
     {
@@ -1100,11 +880,6 @@
       "category": "other"
     },
     {
-      "name": "lots_stats",
-      "description": "Return cache + manifest stats for the LOTS directory: total sites and per-tag counts.",
-      "category": "other"
-    },
-    {
       "name": "malapi_get",
       "description": "Return the full details of a single Windows API by slug: description, library, attack categories, and Microsoft docs link. Use malapi_list first to discover slugs.",
       "category": "other"
@@ -1115,34 +890,9 @@
       "category": "other"
     },
     {
-      "name": "malapi_stats",
-      "description": "Return cache + manifest stats for the MalAPI catalog: total APIs and attack categories.",
-      "category": "other"
-    },
-    {
-      "name": "mmd_get_category",
-      "description": "Return one MMD category (language directory) with its full file listing and sizes. Use mmd_list_tools or mmd_stats to discover categories.",
-      "category": "other"
-    },
-    {
-      "name": "mmd_list_tools",
-      "description": "List tools & scripts from the MalwareMustDie (MMD) shared codes repository (228 files across Python/Bash/Perl/C/radare2/…). Filter by category (language directory), kind (script/source/doc/webtool/binary), file extension, or keyword. Every entry deep-links the upstream file.",
-      "category": "other"
-    },
-    {
-      "name": "mmd_recent_activity",
-      "description": "Return recent MMD upstream commits (activity feed) plus repository counts. The manifest rebuilds weekly, so new upstream pushes surface here.",
-      "category": "other"
-    },
-    {
       "name": "mozilla_tls_scan",
       "description": "Scan a domain's security posture using the Mozilla Observatory (successor to the retired TLS Observatory). Returns grade (A+ through F) and test counts. No API key required.",
       "category": "other"
-    },
-    {
-      "name": "nhi_inventory",
-      "description": "Summarize a non-human & agent identity (NHI) inventory: counts by identity type and risk tier, plus orphaned and long-lived-secret tallies. Input is the inventory JSON (a list of NHI records or {'identities': [...]}); only id and name are required per record. Deterministic, local, no LLM.",
-      "category": "identity"
     },
     {
       "name": "nhi_owasp_catalog",
@@ -1200,11 +950,6 @@
       "category": "other"
     },
     {
-      "name": "nova_stats",
-      "description": "Return NOVA manifest stats: rule/pattern counts, severity mix, keyword-only coverage, source + license, and edge cache ratios.",
-      "category": "other"
-    },
-    {
       "name": "nova_taxonomy",
       "description": "Return the NOVA threat taxonomy: 4 categories (prompt manipulation, abusing legitimate functions, suspicious prompt patterns, abnormal outputs) with 38 threat types and examples.",
       "category": "other"
@@ -1235,21 +980,6 @@
       "category": "other"
     },
     {
-      "name": "opensanctions_entity",
-      "description": "Get detailed entity information from OpenSanctions by ID. Returns full properties, associated datasets, topics, and schema. Use after opensanctions_search to explore a specific match. Requires OPENSANCTIONS_API_KEY.",
-      "category": "other"
-    },
-    {
-      "name": "opensanctions_search",
-      "description": "Search OpenSanctions for entities (individuals, companies, vessels) flagged in sanctions lists, PEP (politically exposed persons) databases, and crime watchlists. Requires OPENSANCTIONS_API_KEY (free for public-interest work at opensanctions.org).",
-      "category": "other"
-    },
-    {
-      "name": "opensanctions_stats",
-      "description": "Get OpenSanctions dataset statistics: total entities, datasets, countries covered, and schema counts. Requires OPENSANCTIONS_API_KEY.",
-      "category": "other"
-    },
-    {
       "name": "orca_get_incident",
       "description": "Return the full ORCA incident record: summary, confirmed sources with URLs, dates, severity, real_harm, ai_involvement, and a deep link to the upstream Markdown record. Use orca_list_incidents first to discover ids.",
       "category": "other"
@@ -1265,11 +995,6 @@
       "category": "other"
     },
     {
-      "name": "orca_stats",
-      "description": "Return ORCA archive stats: counts by severity/kind/type/region/real_harm, monthly volume, source totals, source + license, and cache state.",
-      "category": "other"
-    },
-    {
       "name": "osint_get_portal",
       "description": "Return the full details of a single OSINT portal entry by slug. Use osint_list_portals first to discover slugs.",
       "category": "other"
@@ -1278,31 +1003,6 @@
       "name": "osint_list_portals",
       "description": "List OSINT portals and resources from the curated directory. Filter by category (threat-intel, paste-monitoring, dark-web, reputation, certificate, dns, domain, ip, hash, email, username, social-media, phone, crypto, breach, whois, forensics, misc), keyword, or free/paid status.",
       "category": "other"
-    },
-    {
-      "name": "osint_stats",
-      "description": "Return cache + manifest stats for the OSINT Portal Directory: total portals, indexed categories, and index cache status.",
-      "category": "other"
-    },
-    {
-      "name": "oss_feeds_get_category",
-      "description": "Return all feeds in a specific category with full URLs. Use oss_feeds_list first to discover category names.",
-      "category": "other"
-    },
-    {
-      "name": "oss_feeds_list",
-      "description": "List open-source threat intel feeds from the curated catalog (145+ feeds, BSD-3-Clause). Filter by vendor, category, status, or keyword. Each entry shows vendor, description, category, and feed status.",
-      "category": "other"
-    },
-    {
-      "name": "oss_feeds_stats",
-      "description": "Return cache + manifest stats for the OSS Feed Registry: total feeds, category breakdown, status breakdown, cache state.",
-      "category": "other"
-    },
-    {
-      "name": "parse_threat_report",
-      "description": "Parse a threat intelligence report or article to extract structured data: IOCs (IPs, domains, URLs, hashes), threat actors, malware families, MITRE ATT&CK techniques, CVEs, targeted sectors, and an executive summary. Use this when analyzing threat reports, blog posts, or incident write-ups.",
-      "category": "analysis"
     },
     {
       "name": "passive_dns_overlap",
@@ -1337,11 +1037,6 @@
     {
       "name": "pcm_search_items",
       "description": "Search items within a PCMedicalist digest body. Filters against the mirrored top-items per layer (capped): filter by layer id, keyword, CVE, or limit.",
-      "category": "other"
-    },
-    {
-      "name": "pcm_stats",
-      "description": "Return cache + manifest stats for the PCMedicalist feed: digest counts, latest date, and LRU body-cache hit/miss ratios.",
       "category": "other"
     },
     {
@@ -1395,11 +1090,6 @@
       "category": "other"
     },
     {
-      "name": "reports_stats",
-      "description": "Return cache + manifest stats for the Reports & Reading Library: total entries, categories, and index cache status.",
-      "category": "other"
-    },
-    {
       "name": "reverse_image_search",
       "description": "Generate reverse image search URLs across 8+ engines (Google Lens, Yandex, TinEye, Bing, Baidu, SauceNAO, IQDB, KarmaDecay). Validates image reachability and returns categorized deep links for manual investigation.",
       "category": "other"
@@ -1423,16 +1113,6 @@
       "name": "search_triage",
       "description": "Search Recorded Future Triage sandbox for malware samples by family, tag, hash, URL, or domain. Returns analysis results, behavioral reports, and extracted configs.",
       "category": "search"
-    },
-    {
-      "name": "si_copilot_ask",
-      "description": "Ask a threat intelligence question with role-aware context. Choose your analyst persona to get answers framed for your role. Roles: ciso (strategic risk), detection (TTPs/rules), ir (IOCs/triage), cti (context/attribution). Covers any threat intel question — actors, malware, campaigns, CVEs, sectors, IOCs, trends.",
-      "category": "si"
-    },
-    {
-      "name": "si_copilot_roles",
-      "description": "List the available analyst personas for the role-aware copilot. Each role frames threat intelligence differently: ciso (risk posture, strategic, executive view), detection (TTPs, detection rules, hunting), ir (IOCs, containment, triage), cti (contextual analysis, attribution, trends).",
-      "category": "si"
     },
     {
       "name": "si_enrich_agent",
@@ -1477,11 +1157,6 @@
     {
       "name": "si_get_ref",
       "description": "Return a reference dataset by name. Get names from si_list_ref. Common: mitre-attck-enterprise (MITRE ATT&CK enterprise matrix, ~32 KB), known-kql-tables (M365 Defender table inventory, ~17 KB), m365-platform-coverage (coverage map, ~16 KB), ingestion-qN (Sentinel ingestion-scan query result schemas).",
-      "category": "si"
-    },
-    {
-      "name": "si_get_routing_prompt",
-      "description": "Return the upstream .github/copilot-instructions.md verbatim — the universal skill-detection / routing prompt. Clients should load this once at session start to learn how to map natural language to the right si_* tool. ~91 KB.",
       "category": "si"
     },
     {
@@ -1550,46 +1225,6 @@
       "category": "si"
     },
     {
-      "name": "si_promptvault_categories",
-      "description": "PROMPTVAULT: list the valid prompt categories.",
-      "category": "si"
-    },
-    {
-      "name": "si_promptvault_create",
-      "description": "PROMPTVAULT: add a new prompt to the vault. Returns the created entry.",
-      "category": "si"
-    },
-    {
-      "name": "si_promptvault_get",
-      "description": "PROMPTVAULT: fetch a single prompt by slug. Auto-increments the download counter.",
-      "category": "si"
-    },
-    {
-      "name": "si_promptvault_list",
-      "description": "PROMPTVAULT: list community AI prompts for SOC analysts, detection engineers, and threat hunters. Filter by category, tag, or text search.",
-      "category": "si"
-    },
-    {
-      "name": "si_promptvault_rate",
-      "description": "PROMPTVAULT: rate a prompt 1-5 stars. Returns the updated entry with new rating count and average.",
-      "category": "si"
-    },
-    {
-      "name": "si_render_png",
-      "description": "Render an SVG dashboard and rasterise it to PNG (base64-encoded in the JSON response). Same manifest + data shape as si_render_svg, but the output is a portable bitmap you can embed in markdown, email, or social previews. Uses the bundled @resvg/resvg-wasm + Hanken Grotesk TTF.",
-      "category": "si"
-    },
-    {
-      "name": "si_render_svg",
-      "description": "Render an SVG dashboard from a manifest + data. Returns a self-contained <svg> string with inline styles, no external dependencies. Use si_render_svg_dashboard(slug) to get the canonical manifest for a skill, then pass its body as manifestYaml here. Supports all 14 widget types: title-banner, kpi-card, delta-kpi-card, score-card, donut-chart, stacked-bar-chart, horizontal-bar-chart, line-chart, waterfall-chart, sparkline, progress-bar, table-widget, recommendation-cards, assessment-banner, coverage-matrix. Unknown types render as a dashed warning panel.",
-      "category": "si"
-    },
-    {
-      "name": "si_render_svg_dashboard",
-      "description": "Return the SVG widget manifest (YAML) for a skill that ships one (14 of 25 skills do). The manifest declares canvas, palette, and a list of widget instances to render. Pair with si_get_skill({slug: \"svg-dashboard\"}) for the component-library reference. Returns {hasManifest:false,...} if the skill has no SVG manifest.",
-      "category": "si"
-    },
-    {
       "name": "si_shiftlog_close",
       "description": "SHIFTLOG: close a shift entry (sets ended_at to now, or to a provided ISO timestamp).",
       "category": "si"
@@ -1615,11 +1250,6 @@
       "category": "si"
     },
     {
-      "name": "si_stats",
-      "description": "Return cache + manifest stats for the Security Investigator data: index loaded, body-cache sizes and hit ratios. Useful for diagnosing cold-start latency.",
-      "category": "si"
-    },
-    {
       "name": "sigbase_get_ioc",
       "description": "Return the entries of a single IOC list by slug: hashes (md5/sha1/sha256 + comment), C2 domains/IPs, filename regexes (with score + false-positive exclusion), or malicious keywords. Optional keyword filter narrows entries.",
       "category": "sigbase"
@@ -1637,11 +1267,6 @@
     {
       "name": "sigbase_list_rules",
       "description": "List YARA rule files from the Neo23x0 signature-base feed. Filter by category tag (apt, malware, expl, gen, thr...), author, or free-text keyword. Each file contains 1+ rules with metadata (description, author, date, score, references).",
-      "category": "sigbase"
-    },
-    {
-      "name": "sigbase_stats",
-      "description": "Return cache + manifest stats for the Signature-Base data: YARA file/rule counts, IOC list/entry counts, external-variable rule files, and LRU body-cache hit/miss ratios.",
       "category": "sigbase"
     },
     {
@@ -1692,11 +1317,6 @@
     {
       "name": "tam_list_techniques",
       "description": "List MITRE ATT&CK techniques curated for the Threat Actor Monitor (29 upstream -> 108 expanded) with Kill Chain mapping and detection keywords. Filter by tactic, kill chain stage, or keyword. Use for killchain_mapper scoring.",
-      "category": "other"
-    },
-    {
-      "name": "tam_stats",
-      "description": "Return cache + manifest stats for the Global Threat Actor Monitor replication: 40->81 groups, 29->108 techniques, 30->39 OSINT feeds, 7 Kill Chain stages, and LRU cache info.",
       "category": "other"
     },
     {
@@ -1935,11 +1555,6 @@
       "category": "other"
     },
     {
-      "name": "ti_stats",
-      "description": "Return cache + manifest stats for the Threat Intel data: index loaded, KEV loaded, body-cache sizes and hit ratios. Useful for diagnosing cold-start latency.",
-      "category": "other"
-    },
-    {
       "name": "ti_threaticon_coverage",
       "description": "Return the Threaticon ATT&CK detection-coverage dataset: every technique the platform ships detection content for, its tactic, and the number of detection rules, plus per-tactic coverage percentages. Filter by tactic, minimum rule count, or keyword. Use for gap analysis when planning detection coverage.",
       "category": "other"
@@ -1955,16 +1570,6 @@
       "category": "other"
     },
     {
-      "name": "tools_get",
-      "description": "Get the full profile for a specific security tool by slug.",
-      "category": "other"
-    },
-    {
-      "name": "tools_list",
-      "description": "List security tools from the curated Tools Directory. Filter by category (recon, exploitation, post-exploitation, defense, detection, forensics, osint, c2, phishing, crypto, mobile, cloud, network, reverse-engineering, web, misc), keyword, or offensive/defensive scope.",
-      "category": "other"
-    },
-    {
       "name": "tor_exit_check",
       "description": "Check if a specific IP address is a known Tor exit node. Returns boolean and the queried IP.",
       "category": "other"
@@ -1977,11 +1582,6 @@
     {
       "name": "tor_exit_nodes",
       "description": "Get current Tor exit node IP addresses from the official Tor Project bulk exit list. Useful for identifying if traffic originates from the Tor network.",
-      "category": "other"
-    },
-    {
-      "name": "tor_fetch_onion",
-      "description": "Fetch raw HTML from a .onion URL via tor2web gateway. Returns page HTML and status code. Note: uses public tor2web proxies, not a local Tor SOCKS5 daemon — for true Tor anonymity, use tor locally.",
       "category": "other"
     },
     {
@@ -2100,11 +1700,6 @@
       "category": "other"
     },
     {
-      "name": "veris_stats",
-      "description": "Return cache + manifest stats for the VERIS taxonomy: field counts by section.",
-      "category": "other"
-    },
-    {
       "name": "virushee_check",
       "description": "Check a file hash (MD5/SHA1/SHA256) against the Virushee multi-engine AV database. Returns detection ratio and per-engine results. No API key required.",
       "category": "other"
@@ -2135,11 +1730,6 @@
       "category": "other"
     },
     {
-      "name": "wdtb_stats",
-      "description": "Return cache + manifest stats for the Webamon DTB data: index loaded, body-cache sizes and hit ratios.",
-      "category": "other"
-    },
-    {
       "name": "webamon_campaign_changes",
       "description": "Webamon per-campaign change events — the daily-digest feed. For each campaign: new domains, IPs, ASNs, cert issuers, page titles, and domains that went offline / came online within the window. Powers the \"by the numbers\" estate brief. Requires WEBAMON_API_KEY secret.",
       "category": "other"
@@ -2147,11 +1737,6 @@
     {
       "name": "webamon_campaign_intel",
       "description": "Webamon aggregated daily-brief digest in one call: global stats + top campaigns by 24h delta + change events in the window + emerging clusters, rolled up into \"by the numbers\" totals (new domains, takedowns, infra changes, new lure titles). Requires WEBAMON_API_KEY secret.",
-      "category": "other"
-    },
-    {
-      "name": "webamon_campaign_stats",
-      "description": "Webamon global estate rollup — total tracked campaigns, unique domains, online percentage, and aggregate activity. The headline numbers for the campaign-intelligence estate. Requires WEBAMON_API_KEY secret.",
       "category": "other"
     },
     {
@@ -2187,11 +1772,6 @@
     {
       "name": "winreg_list_categories",
       "description": "List the Windows Registry artifact categories in the WinReg DFIR reference. Returns category keys, names, descriptions, and artifact counts.",
-      "category": "winreg"
-    },
-    {
-      "name": "winreg_stats",
-      "description": "Return cache + manifest stats for the WinReg DFIR data: artifact counts, hive types, MITRE technique coverage, and LRU body-cache hit/miss ratios.",
       "category": "winreg"
     },
     {

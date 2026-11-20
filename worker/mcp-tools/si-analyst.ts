@@ -22,15 +22,7 @@ import type { McpToolHost } from './host';
 // names. esbuild does not typecheck free variables, so the Worker
 // still bundled and deployed while every tool that touched one threw
 // ReferenceError at call time. Fixed alongside the tsc (worker) gate.
-import {
-  promptVaultCategories,
-  promptVaultCreate,
-  promptVaultGet,
-  promptVaultList,
-  promptVaultRate,
-} from '../lib/si-promptvault';
 import { shiftlogClose, shiftlogCreate, shiftlogGet, shiftlogList, shiftlogUpdate } from '../lib/si-shiftlog';
-import type { CreatePromptInput } from '../lib/si-promptvault';
 import type { UpdateShiftLogInput } from '../lib/si-shiftlog';
 export function registerSiAnalystTools(h: McpToolHost): void {
   // ── si_parse_text (PARSE-X) ─────────────────────────────────────────
@@ -191,71 +183,4 @@ export function registerSiAnalystTools(h: McpToolHost): void {
       return untrustedToolResult(r);
     }
   );
-
-  // ── si_promptvault_* (PROMPTVAULT) ──────────────────────────────────
-  h.tools(
-    'si_promptvault_list',
-    'PROMPTVAULT: list community AI prompts for SOC analysts, detection engineers, and threat hunters. Filter by category, tag, or text search.',
-    {
-      category: z.string().optional().describe('e.g. detection-engineering, threat-hunting, incident-response.'),
-      tag: z.string().optional(),
-      q: z.string().optional().describe('Full-text search across title, body, tags.'),
-      limit: z.number().int().min(1).max(100).optional(),
-    },
-    async (input) => {
-      const list = await promptVaultList(h.env, input);
-      return untrustedToolResult(list);
-    }
-  );
-  h.tools(
-    'si_promptvault_get',
-    'PROMPTVAULT: fetch a single prompt by slug. Auto-increments the download counter.',
-    { slug: z.string() },
-    async ({ slug }) => {
-      const p = await promptVaultGet(h.env, slug);
-      return untrustedToolResult(p);
-    }
-  );
-  h.tools(
-    'si_promptvault_create',
-    'PROMPTVAULT: add a new prompt to the vault. Returns the created entry.',
-    {
-      slug: z.string().describe('URL-safe slug, /^[a-z0-9][a-z0-9-_]{1,63}$/'),
-      title: z.string().describe('≤200 chars.'),
-      category: z.enum([
-        'detection-engineering',
-        'threat-hunting',
-        'incident-response',
-        'threat-intelligence',
-        'malware-analysis',
-        'cloud-security',
-        'identity-security',
-        'osint',
-        'phishing-analysis',
-        'reverse-engineering',
-        'forensics',
-        'governance',
-        'general',
-      ]),
-      tags: z.array(z.string()).optional(),
-      author: z.string().describe('Analyst handle.'),
-      body: z.string().describe('Prompt body, ≤32KB. Use {{placeholder}} for variables.'),
-    },
-    async (input) => {
-      const p = await promptVaultCreate(h.env, input as CreatePromptInput);
-      return untrustedToolResult(p);
-    }
-  );
-  h.tools(
-    'si_promptvault_rate',
-    'PROMPTVAULT: rate a prompt 1-5 stars. Returns the updated entry with new rating count and average.',
-    { slug: z.string(), rating: z.number().int().min(1).max(5) },
-    async ({ slug, rating }) => {
-      const p = await promptVaultRate(h.env, { slug, rating });
-      return untrustedToolResult(p);
-    }
-  );
-  h.tools('si_promptvault_categories', 'PROMPTVAULT: list the valid prompt categories.', {}, async () => ({
-    content: [{ type: 'text' as const, text: JSON.stringify({ categories: promptVaultCategories() }) }],
-  }));
 }

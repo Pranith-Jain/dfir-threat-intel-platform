@@ -32,6 +32,7 @@ import {
   discoverFromTrendingIocs,
   discoverFromThreatPulse,
 } from './discovery/platform-data';
+import { discoverThreatClusters, discoverLivingThreatIncidents, discoverIncidentDesk } from './discovery/threat-intel';
 import { discoverAdvisories } from './discovery/advisories';
 import { discoverVulnCheckKev } from './discovery/vulncheck';
 import { discoverEuvd } from './discovery/euvd';
@@ -40,7 +41,7 @@ import { discoverPhishuntHunts } from './discovery/phishunt';
 import { activeRunnerNames } from './discovery/rotation';
 import { runPlanner } from './publishing/planner';
 import { runPublisher } from './publishing/publisher';
-import { putCandidate } from './storage/candidates';
+import { putCandidate, putCandidates } from './storage/candidates';
 import { listApproved, getApproved, unapprove } from './storage/approved';
 import { setSchedule, markSlotStatus, pickDueSlot } from './storage/schedule';
 import { loadDedupMap, touchDedup, touchDedupMany, isKeySuppressed, suppressDedupMany } from './storage/dedup';
@@ -174,6 +175,7 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
       ids: [] as string[],
       byTopic: {} as Record<string, number>,
       byTopicSelected: {} as Record<string, number>,
+      runnerStats: {},
     };
   }
   // Load the dedup map ONCE. Every runner scores novelty against this
@@ -223,7 +225,7 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
     isKeySuppressed(dedupMap[key] ?? null, now, REPUBLISH_BLOCK_MS, SURFACED_BLOCK_MS);
 
   /**
-   * Daily floor — the operator's standing requirement is 5-8 fresh options a
+   * Daily floor — the operator's standing requirement is 5-10 fresh options a
    * day. When the strict pass comes back under this, `runDiscovery` refills
    * from the same fetched pool under the relaxation rules below.
    */
@@ -315,6 +317,16 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
     platformTelegram: () => discoverFromTelegramLeaks({ apiFetch, now, getDedup: memGet }),
     platformIocs: () => discoverFromTrendingIocs({ apiFetch, now, getDedup: memGet }),
     platformPulse: () => discoverFromThreatPulse({ apiFetch, now, getDedup: memGet }),
+    // Threat-intel corpus runners. These read the platform's own replicated
+    // corpora (threatcluster.io clusters, Living Threat incidents, Incident
+    // Desk briefs) — daily-fresh sources that are richer than the RSS feeds
+    // and independent of them. Without these, a quiet RSS day is a CVE-only
+    // queue; with them, the day's mix always has non-CVE analysis to choose
+    // from. Each gets its own runner so `runnerStats` can show its yield and
+    // a broken source cannot hide behind another.
+    threatClusters: () => discoverThreatClusters({ apiFetch, now, getDedup: memGet }),
+    livingThreat: () => discoverLivingThreatIncidents({ apiFetch, now, getDedup: memGet }),
+    incidentDesk: () => discoverIncidentDesk({ apiFetch, now, getDedup: memGet }),
     // Phishunt: free, no-auth phishing feed with enriched data (IP, ASN, TLS,
     // detection sources). Surfaces brand impersonation campaigns and critical
     // phishing sites flagged by multiple detection engines.
@@ -369,17 +381,22 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
       }),
   };
   // Discovery diversity model:
-  //   - 10 high-value "always-on" topics: `cve`, `actor`, `exploit`,
-  //     `darkweb`, `infostealers`, `phish`, `trends`, and 3 platform
-  //     sub-runners (telegram, iocs, pulse). Platform split gives each
-  //     source its own perTopic budget.
+  //   - 13 high-value "always-on" topics: `cve`, `actor`, `exploit`,
+  //     `darkweb`, `infostealers`, `phish`, `trends`, 3 platform
+  //     sub-runners (telegram, iocs, pulse), and 3 threat-intel corpus
+  //     runners (clusters, living-threat, incident-desk). The corpus runners
+  //     are intentionally always-on: they are the non-CVE backbone of the
+  //     daily mix.
   //   - The remaining optional topics partition into 4 day-buckets
   //     (rotation.ts), so each optional runner surfaces once every four
   //     days.
-  //   - Total per day: 10 always-on + ~4 rotating.
+  //   - Total per day: 13 always-on + ~4-5 rotating.
   //   - perTopic=5: each topic contributes up to 5 candidates, so a quiet
   //     CVE day cannot crowd the other topics out of the queue while a busy
   //     one still fills the day's floor on its own.
+  //   - limit=10 + round-robin cap: the operator asked for 5-10 suggestions
+  //     a day. The cap is applied by topic rather than by raw score, so the
+  //     ten are the day's mix, not ten CVEs.
   //   - trends=3: fewer LLM candidates, higher quality bar enforced by
   //     dedup-avoidance list fed into the prompt.
   const ALWAYS_ON = new Set([
@@ -391,10 +408,13 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
     'platformTelegram',
     'platformIocs',
     'platformPulse',
+    'threatClusters',
+    'livingThreat',
+    'incidentDesk',
     'phish',
     'trends',
   ]);
-  // 4 rotation groups: with ~16 optional runners, each runs once every 4 days,
+  // 4 rotation groups: with ~17 optional runners, each runs once every 4 days,
   // so the daily mix always carries non-CVE topics alongside the always-on
   // core. Fewer groups than before = more variety per day, still bounded.
   const active = new Set(activeRunnerNames(Object.keys(allRunners), ALWAYS_ON, now, 4));
@@ -405,20 +425,25 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
     isSuppressed,
     runners,
     putCandidate: (c) => putCandidate(env.CASE_STUDIES, c),
+    // Batch by type. The per-candidate path races on the shared per-type KV
+    // blob and silently keeps only the last write per type (the "2
+    // suggestions instead of 6" bug).
+    putCandidates: (cs) => putCandidates(env.CASE_STUDIES, cs),
     commitDedup: (keys, n) => touchDedupMany(env.CASE_STUDIES, keys, n),
     now,
     // Diversity controls:
-    //   - perTopic=5: each topic contributes up to 5. With ~14 topics running
-    //     per day (10 always-on + ~4 rotating), this keeps every category
+    //   - perTopic=5: each topic contributes up to 5. With ~17-18 topics running
+    //     per day (13 always-on + ~4 rotating), this keeps every category
     //     represented without letting one topic flood the queue.
-    //   - limit=60: comfortable for ~14 active topics × 5, with headroom for
-    //     context items.
+    //   - limit=10: the operator's 5-10/day target. Applied with the
+    //     round-robin cap in the orchestrator, so the ten are spread across
+    //     topics instead of being ten CVEs.
     //   - trends=3: fewer LLM-generated candidates, so it keeps the old
     //     budget; kept explicit so the override is visible if either value is
     //     ever tuned.
     //   - minKept=6: the daily floor (see MIN_DAILY_CANDIDATES above).
     perTopic: 5,
-    limit: 60,
+    limit: 10,
     perTopicOverride: { trends: 3 },
     minKept: MIN_DAILY_CANDIDATES,
     // Top-up admission policy. Two hard rules, both non-negotiable:

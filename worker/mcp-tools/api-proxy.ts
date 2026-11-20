@@ -505,17 +505,6 @@ export function registerApiProxyTools(h: McpToolHost): void {
     }
   );
 
-  // ── Feed Status ──────────────────────────────────────────────────────
-  h.tools(
-    'get_feed_status',
-    'Get the health and freshness status of all 30+ threat intelligence feed sources. Shows last update time, error rates, and data volume.',
-    {},
-    async () => {
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/feed-status', h.apiKey);
-      return untrustedToolResult(data);
-    }
-  );
-
   // ── MITRE Technique ──────────────────────────────────────────────────
   h.tools(
     'lookup_mitre',
@@ -682,27 +671,6 @@ export function registerApiProxyTools(h: McpToolHost): void {
       const qs = new URLSearchParams({ address });
       if (chain) qs.set('chain', chain);
       const data = await apiFetch<Record<string, unknown>>(h.env.SELF, `/api/v1/crypto-trace?${qs}`, h.apiKey);
-      return untrustedToolResult(data);
-    }
-  );
-
-  // ── Report Parser ───────────────────────────────────────────────────
-  h.tools(
-    'parse_threat_report',
-    'Parse a threat intelligence report or article to extract structured data: IOCs (IPs, domains, URLs, hashes), threat actors, malware families, MITRE ATT&CK techniques, CVEs, targeted sectors, and an executive summary. Use this when analyzing threat reports, blog posts, or incident write-ups.',
-    {
-      text: z.string().optional().describe('The report text to analyze'),
-      url: z.string().optional().describe('URL of the report to fetch and analyze'),
-    },
-    async ({ text, url }) => {
-      if (!text && !url) {
-        throw new Error('Either text or url must be provided');
-      }
-      const data = await adminApiFetch<Record<string, unknown>>(h, '/api/v1/report/parse', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ text, url }),
-      });
       return untrustedToolResult(data);
     }
   );

@@ -301,15 +301,6 @@ export function registerWorkspaceCveTools(h: McpToolHost): void {
     }
   );
   h.tools(
-    'cve_health',
-    'Check the health of CVE data pipelines. Validates NVD API, EPSS API, CISA KEV, GitHub API rate limit, KV intel cache (EPSS coverage, KEV count, field completeness), and Exploit-DB mirror availability. Returns overall status (healthy/degraded/unhealthy) with per-check details.',
-    {},
-    async () => {
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/cve-health', h.apiKey);
-      return untrustedToolResult(data);
-    }
-  );
-  h.tools(
     'soc_cve_report',
     'Generate a SOC CVE intelligence report. Takes a list of up to 50 CVE IDs and bundles CVE lookup + PoC scan + health check into a downloadable CSV or Markdown report. Returns executive summary, CVSS/EPSS/KEV details, PoC repos, and pipeline health.',
     {
