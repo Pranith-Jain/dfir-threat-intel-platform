@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import {
   Activity,
   ArrowUpDown,
-  ExternalLink,
   Globe2,
+  Home,
   Keyboard,
   Layers,
   List,
@@ -16,20 +17,14 @@ import {
   Table2,
   X,
   Zap,
-  Home,
 } from 'lucide-react';
-import { DataPageLayout } from '../../../components/DataPageLayout';
 import { useDataFetch } from '../../../hooks/useDataFetch';
 import { relativeAgo } from '../../../lib/relativeTime';
-import { sanitizeUrl } from '../../../lib/sanitize-url';
-import { CyberViewNav } from './CyberViewNav';
+import { asArray, fmtDay, matches, text, topCounts } from './shared-utils';
+import { Badge, CyberViewPage, Empty, OutLink } from './shared-ui';
 
-/**
- * Replication of the public CyberView home page (xanderhutch.github.io/CyberView).
- * Mirrored data lives in public/data/cyberview/data/events.json. Every number on
- * this page is derived from that file; nothing is copied from the upstream UI.
- */
-
+/** Replication of the public CyberView home page (xanderhutch.github.io/CyberView).
+ * Every number is derived from public/data/cyberview/data/events.json. */
 interface CvValidation {
   state: string;
   note?: string;
@@ -64,17 +59,14 @@ interface CvEvent {
   first_seen: string;
   updated_at: string;
 }
-
 type View = 'globe' | 'timeline' | 'grid';
 type PanelTab = 'feed' | 'exploited' | 'patterns' | 'insights' | 'brief';
 type SeverityFilter = 'all' | 'med' | 'high';
-
 const EMPTY: CvEvent[] = [];
 const EMPTY_DATES: string[] = [];
 const DAY_MS = 86_400_000;
 const MAP_W = 1000;
 const MAP_H = 500;
-
 const VIEWS: Array<{ id: View; label: string; icon: typeof Globe2 }> = [
   { id: 'globe', label: 'Globe', icon: Globe2 },
   { id: 'timeline', label: 'Timeline', icon: List },
@@ -109,11 +101,15 @@ const CATEGORY_LABEL: Record<string, string> = {
 const SEVERITY_LABEL: Record<number, string> = { 1: 'Low', 2: 'Medium', 3: 'High' };
 const SEVERITY_COLOR: Record<number, string> = { 1: '#0ea5e9', 2: '#f59e0b', 3: '#f43f5e' };
 const SEVERITY_BADGE: Record<number, string> = {
-  1: 'border-sky-500/40 bg-sky-500/10 text-sky-700 dark:text-sky-300',
-  2: 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300',
-  3: 'border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300',
+  1: 'border-sky-500/40 text-sky-700 dark:text-sky-300',
+  2: 'border-amber-500/40 text-amber-700 dark:text-amber-300',
+  3: 'border-rose-500/40 text-rose-700 dark:text-rose-300',
 };
-
+const SEVERITY_OPTIONS: Array<[SeverityFilter, string]> = [
+  ['all', 'All'],
+  ['med', 'Med+'],
+  ['high', 'High'],
+];
 /* Rough, hand-drawn continent outlines in [longitude, latitude] pairs. */
 const CONTINENTS: Array<Array<[number, number]>> = [
   [
@@ -229,7 +225,6 @@ const CONTINENTS: Array<Array<[number, number]>> = [
     [-60, 70],
   ],
 ];
-
 function project(lng: number, lat: number): [number, number] {
   return [((lng + 180) / 360) * MAP_W, ((90 - lat) / 180) * MAP_H];
 }
@@ -243,36 +238,97 @@ function polygonPath(points: Array<[number, number]>): string {
       .join(' ') + ' Z'
   );
 }
-function dateMs(date: string): number {
+function dayMs(date: string): number {
   const t = Date.parse(`${date}T00:00:00Z`);
   return Number.isFinite(t) ? t : 0;
 }
-function formatDay(date: string): string {
-  const t = dateMs(date);
-  return t ? new Date(t).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }) : date;
-}
 function isUnverified(event: CvEvent): boolean {
-  const state = event.validation?.state ?? '';
+  const state = text(event.validation?.state);
   return state === 'unconfirmed_claim' || state === 'disputed' || event.status === 'claimed';
-}
-function topCounts(values: string[], limit: number): Array<[string, number]> {
-  const counts = new Map<string, number>();
-  for (const value of values) {
-    const key = value.trim();
-    if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
-  }
-  return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit);
 }
 function sortEvents(events: CvEvent[], sort: 'priority' | 'recent'): CvEvent[] {
   return [...events].sort((a, b) =>
     sort === 'priority'
-      ? b.severity - a.severity ||
-        b.date.localeCompare(a.date) ||
-        (b.first_seen ?? '').localeCompare(a.first_seen ?? '')
-      : (b.first_seen ?? '').localeCompare(a.first_seen ?? '') || b.date.localeCompare(a.date)
+      ? b.severity - a.severity || b.date.localeCompare(a.date) || text(b.first_seen).localeCompare(text(a.first_seen))
+      : text(b.first_seen).localeCompare(text(a.first_seen)) || b.date.localeCompare(a.date)
   );
 }
-
+/* Small presentational helpers for the repeated card/list/button markup. */
+function Tag({ children, className = '' }: { children: ReactNode; className?: string }): JSX.Element {
+  return <span className={`rounded border px-1.5 py-0.5 font-mono text-[10px] ${className}`}>{children}</span>;
+}
+function Choice({
+  active,
+  onClick,
+  children,
+  label,
+  brand = false,
+  className = '',
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+  label?: string;
+  brand?: boolean;
+  className?: string;
+}): JSX.Element {
+  const cls = brand ? 'rounded' : 'rounded-control border';
+  const on = brand ? 'bg-brand-600 text-on-fill' : 'border-accent-text/50 bg-wash text-accent-text';
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      aria-label={label}
+      onClick={onClick}
+      className={`${cls} px-2 py-1 font-mono text-[11px] ${active ? on : 'border-line-1 text-muted hover:text-heading'} ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+function IconBtn({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+}): JSX.Element {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className="grid h-7 w-7 place-items-center rounded-control border border-line-1 text-muted hover:bg-wash hover:text-heading"
+    >
+      {children}
+    </button>
+  );
+}
+function HeaderBtn({
+  label,
+  onClick,
+  children,
+  active,
+}: {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+  active?: boolean;
+}): JSX.Element {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={active}
+      className={`rounded-control border px-2 py-1.5 font-mono text-[11px] ${active ? 'border-accent-text/50 bg-wash text-accent-text' : 'border-line-1 text-muted hover:text-heading'}`}
+    >
+      {children}
+    </button>
+  );
+}
 function EventCard({
   event,
   selected,
@@ -284,60 +340,70 @@ function EventCard({
   onSelect: (id: string) => void;
   compact: boolean;
 }): JSX.Element {
-  const source = sanitizeUrl(event.sources?.[0]?.url ?? '');
+  const cves = asArray(event.cves);
+  const source = asArray(event.sources)[0];
   return (
     <article
-      className={`surface-card rounded-lg border ${
-        selected ? 'border-accent-text/60 bg-wash' : 'border-line-1'
-      } ${compact ? 'p-2' : 'p-3'}`}
+      className={`surface-card rounded-lg border ${selected ? 'border-accent-text/60 bg-wash' : 'border-line-1'} ${compact ? 'p-2' : 'p-3'}`}
     >
       <button type="button" aria-pressed={selected} onClick={() => onSelect(event.id)} className="w-full text-left">
         <span className="flex flex-wrap items-center gap-1.5">
-          <span className="rounded border border-line-1 px-1.5 py-0.5 font-mono text-[10px] text-muted">
-            {CATEGORY_LABEL[event.category] ?? event.category}
-          </span>
-          <span className="font-mono text-[10px] text-muted">{formatDay(event.date)}</span>
-          <span
-            className={`rounded border px-1.5 py-0.5 font-mono text-[10px] font-bold ${SEVERITY_BADGE[event.severity] ?? ''}`}
-          >
+          <Tag className="border-line-1 text-muted">{CATEGORY_LABEL[event.category] ?? text(event.category)}</Tag>
+          <span className="font-mono text-[10px] text-muted">{fmtDay(event.date)}</span>
+          <Tag className={`font-bold ${SEVERITY_BADGE[event.severity] ?? ''}`}>
             {SEVERITY_LABEL[event.severity] ?? 'Unknown'}
-          </span>
+          </Tag>
           {event.source_tier === 'primary' && (
-            <span className="rounded border border-emerald-500/40 px-1.5 py-0.5 font-mono text-[10px] text-emerald-700 dark:text-emerald-300">
-              Primary source
-            </span>
+            <Tag className="border-emerald-500/40 text-emerald-700 dark:text-emerald-300">Primary source</Tag>
           )}
-          {event.cves.length > 0 && (
-            <span className="rounded border border-rose-500/40 px-1.5 py-0.5 font-mono text-[10px] text-rose-700 dark:text-rose-300">
-              {event.cves.length} CVE{event.cves.length === 1 ? '' : 's'}
-            </span>
+          {cves.length > 0 && (
+            <Tag className="border-rose-500/40 text-rose-700 dark:text-rose-300">
+              {cves.length} CVE{cves.length === 1 ? '' : 's'}
+            </Tag>
           )}
         </span>
-        <span className="mt-1.5 block text-sm font-semibold leading-snug text-heading">{event.title}</span>
+        <span className="mt-1.5 block text-sm font-semibold leading-snug text-heading">{text(event.title)}</span>
         {!compact && (
-          <span className="mt-1 block line-clamp-2 text-xs leading-relaxed text-muted">{event.summary}</span>
+          <span className="mt-1 block line-clamp-2 text-xs leading-relaxed text-muted">{text(event.summary)}</span>
         )}
         <span className="mt-1 flex items-center gap-1 font-mono text-[10px] text-muted">
-          <MapPin size={10} aria-hidden="true" /> {event.place || event.country || 'Location not stated'}
+          <MapPin size={10} aria-hidden="true" /> {text(event.place) || text(event.country) || 'Location not stated'}
         </span>
         {event.action && (
           <span className="mt-2 block rounded border border-line-1 bg-surface-100 px-2 py-1.5 text-xs leading-relaxed text-body">
             <strong className="text-heading">Do: </strong>
-            {event.action}
+            {text(event.action)}
           </span>
         )}
       </button>
-      {source && (
-        <a
-          href={source}
-          target="_blank"
-          rel="noopener noreferrer"
+      {source?.url && (
+        <OutLink
+          href={text(source.url)}
           className="mt-2 inline-flex items-center gap-1 font-mono text-[10px] text-accent-text hover:underline"
         >
-          {event.sources?.[0]?.name ?? 'Source'} <ExternalLink size={10} aria-hidden="true" />
-        </a>
+          {text(source.name) || 'Source'}
+        </OutLink>
       )}
     </article>
+  );
+}
+function RankedList({ title, rows }: { title: string; rows: Array<[string, number]> }): JSX.Element {
+  return (
+    <div>
+      <h3 className="font-mono text-[11px] font-bold uppercase tracking-wide text-heading">{title}</h3>
+      <ol className="mt-1.5 space-y-1">
+        {rows.map(([name, count], i) => (
+          <li key={name} className="flex items-baseline gap-2 text-xs">
+            <span className="w-4 font-mono text-[10px] text-muted">{i + 1}.</span>
+            <span className="min-w-0 flex-1 truncate text-body" title={name}>
+              {name}
+            </span>
+            <span className="font-mono text-[10px] text-muted">{count}</span>
+          </li>
+        ))}
+      </ol>
+      {rows.length === 0 && <p className="mt-1 font-mono text-[10px] text-muted">No data.</p>}
+    </div>
   );
 }
 
@@ -358,11 +424,10 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
   const [wall, setWall] = useState(false);
   const [help, setHelp] = useState(false);
   const [patternBy, setPatternBy] = useState<'sector' | 'tag'>('sector');
-
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent): void {
-      const target = e.target as HTMLElement | null;
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
       if (e.key === '?') setHelp((v) => !v);
       else if (e.key === 'Escape') {
         setSelectedId(null);
@@ -374,35 +439,42 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
-
   const all = events.data ?? EMPTY;
-  const maxDate = useMemo(() => all.reduce((m, e) => Math.max(m, dateMs(e.date)), 0), [all]);
-  const builtAt = useMemo(() => all.reduce((m, e) => (e.updated_at && e.updated_at > m ? e.updated_at : m), ''), [all]);
+  const maxDate = useMemo(() => all.reduce((m, e) => Math.max(m, dayMs(e.date)), 0), [all]);
+  const builtAt = useMemo(
+    () =>
+      all.reduce((m, e) => {
+        const v = text(e.updated_at);
+        return v > m ? v : m;
+      }, ''),
+    [all]
+  );
   const builtTime = Date.parse(builtAt);
   const builtLabel = Number.isFinite(builtTime)
     ? `${new Date(builtTime).toISOString().replace('T', ' ').slice(0, 16)} UTC`
     : 'unknown';
-
-  const windowDates = useMemo(() => {
-    if (!maxDate) return EMPTY_DATES;
-    return Array.from({ length: windowDays }, (_, i) =>
-      new Date(maxDate - (windowDays - 1 - i) * DAY_MS).toISOString().slice(0, 10)
-    );
-  }, [maxDate, windowDays]);
+  const windowDates = useMemo(
+    () =>
+      maxDate
+        ? Array.from({ length: windowDays }, (_, i) =>
+            new Date(maxDate - (windowDays - 1 - i) * DAY_MS).toISOString().slice(0, 10)
+          )
+        : EMPTY_DATES,
+    [maxDate, windowDays]
+  );
   const windowSet = useMemo(() => new Set(windowDates), [windowDates]);
   const windowEvents = useMemo(() => all.filter((e) => windowSet.has(e.date)), [all, windowSet]);
-
   const preDay = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return windowEvents.filter((e) => {
       if (!showUnverified && isUnverified(e)) return false;
       if (minSeverity === 'med' && e.severity < 2) return false;
       if (minSeverity === 'high' && e.severity < 3) return false;
-      if (needle && !`${e.title} ${e.summary} ${e.country} ${e.org}`.toLowerCase().includes(needle)) return false;
+      if (needle && !matches(`${text(e.title)} ${text(e.summary)} ${text(e.country)} ${text(e.org)}`, needle))
+        return false;
       return true;
     });
   }, [windowEvents, showUnverified, minSeverity, query]);
-
   const dayCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     windowDates.forEach((d) => {
@@ -413,7 +485,6 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
     });
     return counts;
   }, [preDay, windowDates]);
-
   const base = useMemo(() => (dayFilter ? preDay.filter((e) => e.date === dayFilter) : preDay), [preDay, dayFilter]);
   const typeCounts = useMemo(() => {
     const counts: Record<string, number> = { all: base.length };
@@ -437,24 +508,23 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
   const unverifiedHidden = useMemo(() => windowEvents.filter(isUnverified).length, [windowEvents]);
   const sorted = useMemo(() => sortEvents(filtered, sort), [filtered, sort]);
   const justAdded = useMemo(
-    () => [...filtered].sort((a, b) => (b.first_seen ?? '').localeCompare(a.first_seen ?? '')).slice(0, 5),
+    () => [...filtered].sort((a, b) => text(b.first_seen).localeCompare(text(a.first_seen))).slice(0, 5),
     [filtered]
   );
   const selected = selectedId ? (all.find((e) => e.id === selectedId) ?? null) : null;
-
-  const exploited = useMemo(() => filtered.filter((e) => e.cves.length > 0 || e.severity === 3), [filtered]);
+  const exploited = useMemo(() => filtered.filter((e) => asArray(e.cves).length > 0 || e.severity === 3), [filtered]);
   const panelRows = useMemo(
     () => sortEvents(tab === 'exploited' ? exploited : filtered, sort),
     [tab, exploited, filtered, sort]
   );
   const panelTotal = tab === 'exploited' ? exploited.length : filtered.length;
-
+  /* Grouping guards non-string sector/tag values — upstream can omit them. */
   const patternRows = useMemo(() => {
     const counts = new Map<string, number>();
     filtered.forEach((e) => {
-      const values = patternBy === 'sector' ? [e.sector] : e.tags;
+      const values: Array<string | undefined> = patternBy === 'sector' ? [e.sector] : asArray(e.tags);
       values.forEach((v) => {
-        const key = v.trim();
+        const key = text(v).trim();
         if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
       });
     });
@@ -477,21 +547,20 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
     [filtered]
   );
   const brief = useMemo(() => {
-    const withCve = filtered.filter((e) => e.cves.length > 0).length;
-    const countries = new Set(filtered.map((e) => e.country).filter(Boolean)).size;
+    const withCve = filtered.filter((e) => asArray(e.cves).length > 0).length;
+    const countries = new Set(filtered.map((e) => text(e.country)).filter(Boolean)).size;
     const lead = topCounts(
       filtered.map((e) => e.country),
       1
     )[0];
     const theme = topCounts(
-      filtered.flatMap((e) => e.tags),
+      filtered.flatMap((e) => asArray(e.tags)),
       1
     )[0];
     return `Over the last ${windowDays} days, CyberView recorded ${filtered.length} cyber events across ${countries} countries and territories. ${highCount} were rated high priority and ${withCve} cite known CVEs. ${
       lead ? `${lead[0]} led with ${lead[1]} event${lead[1] === 1 ? '' : 's'}. ` : ''
     }${theme ? `The most common tag was “${theme[0]}” (${theme[1]} event${theme[1] === 1 ? '' : 's'}). ` : ''}Open any card below for the specific action CyberView recommends.`;
   }, [filtered, windowDays, highCount]);
-
   function toggleFullscreen(): void {
     try {
       if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
@@ -506,13 +575,10 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
     setTab(next.id);
     document.getElementById(`cv-tab-${next.id}`)?.focus();
   }
-
   const pad = wall ? 'p-2' : 'p-4';
   const gap = wall ? 'gap-2' : 'gap-4';
-
   const zoomTransform = `translate(${MAP_W / 2} ${MAP_H / 2}) scale(${zoom}) translate(${-MAP_W / 2} ${-MAP_H / 2})`;
   const markerR = 3.2 / zoom;
-
   const stage = (
     <section
       className={`surface-card overflow-hidden rounded-xl border border-line-1 bg-surface-100 ${wall ? 'p-2' : 'p-3'}`}
@@ -521,41 +587,21 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <p className="font-mono text-[11px] text-muted">
           <span className="font-semibold text-heading">World map</span> · {plotted.length} markers · equirectangular ·{' '}
-          {formatDay(windowDates[0] ?? '')}–{formatDay(windowDates[windowDates.length - 1] ?? '')}
+          {fmtDay(windowDates[0] ?? '')}–{fmtDay(windowDates[windowDates.length - 1] ?? '')}
         </p>
         <div className="flex flex-wrap items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setZoom((z) => Math.min(3, +(z + 0.4).toFixed(1)))}
-            aria-label="Zoom in"
-            className="grid h-7 w-7 place-items-center rounded-control border border-line-1 text-muted hover:bg-wash hover:text-heading"
-          >
+          <IconBtn label="Zoom in" onClick={() => setZoom((z) => Math.min(3, +(z + 0.4).toFixed(1)))}>
             <Plus size={14} />
-          </button>
-          <button
-            type="button"
-            onClick={() => setZoom((z) => Math.max(1, +(z - 0.4).toFixed(1)))}
-            aria-label="Zoom out"
-            className="grid h-7 w-7 place-items-center rounded-control border border-line-1 text-muted hover:bg-wash hover:text-heading"
-          >
+          </IconBtn>
+          <IconBtn label="Zoom out" onClick={() => setZoom((z) => Math.max(1, +(z - 0.4).toFixed(1)))}>
             <Minus size={14} />
-          </button>
-          <button
-            type="button"
-            onClick={() => setZoom(1)}
-            aria-label="Reset map view"
-            className="grid h-7 w-7 place-items-center rounded-control border border-line-1 text-muted hover:bg-wash hover:text-heading"
-          >
+          </IconBtn>
+          <IconBtn label="Reset map view" onClick={() => setZoom(1)}>
             <Home size={13} />
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowLayers((v) => !v)}
-            aria-pressed={showLayers}
-            className={`ml-1 inline-flex items-center gap-1 rounded-control border px-2 py-1 font-mono text-[11px] ${showLayers ? 'border-accent-text/50 bg-wash text-accent-text' : 'border-line-1 text-muted hover:text-heading'}`}
-          >
+          </IconBtn>
+          <Choice active={showLayers} onClick={() => setShowLayers((v) => !v)} className="ml-1">
             <Layers size={12} aria-hidden="true" /> Map layers
-          </button>
+          </Choice>
         </div>
       </div>
       <svg
@@ -589,8 +635,8 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
                 key={e.id}
                 role="button"
                 tabIndex={0}
-                aria-label={`${e.title} — ${SEVERITY_LABEL[e.severity] ?? 'unknown'} severity, ${e.country}`}
                 className="cursor-pointer focus:outline-none"
+                aria-label={`${text(e.title)} — ${SEVERITY_LABEL[e.severity] ?? 'unknown'} severity, ${text(e.country)}`}
                 onMouseEnter={() => setSelectedId(e.id)}
                 onFocus={() => setSelectedId(e.id)}
                 onClick={() => setSelectedId(e.id)}
@@ -601,7 +647,7 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
                   }
                 }}
               >
-                <title>{e.title}</title>
+                <title>{text(e.title)}</title>
                 <circle cx={x} cy={y} r={markerR * 2.8} fill={color} opacity={active ? 0.32 : 0.16} />
                 <circle
                   cx={x}
@@ -628,7 +674,7 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
       </div>
     </section>
   );
-
+  const dayMax = Math.max(1, ...windowDates.map((d) => dayCounts[d] ?? 0));
   const timeline = (
     <section
       className={`surface-card space-y-2 rounded-xl border border-line-1 ${pad}`}
@@ -640,7 +686,6 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
       </div>
       {windowDates.map((d) => {
         const count = dayCounts[d] ?? 0;
-        const max = Math.max(1, ...windowDates.map((x) => dayCounts[x] ?? 0));
         const dayEvents = preDay.filter((e) => e.date === d);
         return (
           <div key={d} className="rounded-lg border border-line-1 p-2">
@@ -650,9 +695,9 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
               aria-pressed={dayFilter === d}
               className="flex w-full items-center gap-3 text-left"
             >
-              <span className="w-16 shrink-0 font-mono text-[11px] font-bold text-heading">{formatDay(d)}</span>
+              <span className="w-16 shrink-0 font-mono text-[11px] font-bold text-heading">{fmtDay(d)}</span>
               <span className="h-3 flex-1 overflow-hidden rounded bg-surface-200">
-                <span className="block h-full rounded bg-brand-600" style={{ width: `${(count / max) * 100}%` }} />
+                <span className="block h-full rounded bg-brand-600" style={{ width: `${(count / dayMax) * 100}%` }} />
               </span>
               <span className="w-8 text-right font-mono text-[11px] text-muted">{count}</span>
             </button>
@@ -663,10 +708,10 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
                     <button
                       type="button"
                       onClick={() => setSelectedId(e.id)}
+                      title={text(e.title)}
                       className="max-w-[240px] truncate rounded border border-line-1 px-1.5 py-0.5 font-mono text-[10px] text-muted hover:text-accent-text"
-                      title={e.title}
                     >
-                      {e.title}
+                      {text(e.title)}
                     </button>
                   </li>
                 ))}
@@ -680,7 +725,6 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
       })}
     </section>
   );
-
   const grid = (
     <section className={`surface-card overflow-hidden rounded-xl border border-line-1 ${pad}`} aria-label="Event grid">
       <div className="mb-2 flex items-center gap-2">
@@ -691,36 +735,24 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
         <table className="w-full border-collapse text-left">
           <thead className="sticky top-0 bg-surface-200 font-mono text-[10px] uppercase tracking-wide text-muted">
             <tr>
-              <th scope="col" className="px-2 py-2">
-                Date
-              </th>
-              <th scope="col" className="px-2 py-2">
-                Severity
-              </th>
-              <th scope="col" className="px-2 py-2">
-                Category
-              </th>
-              <th scope="col" className="px-2 py-2">
-                Event
-              </th>
-              <th scope="col" className="px-2 py-2">
-                Country
-              </th>
+              {['Date', 'Severity', 'Category', 'Event', 'Country'].map((h) => (
+                <th key={h} scope="col" className="px-2 py-2">
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {sorted.map((e) => (
               <tr key={e.id} className="border-t border-line-1 align-top hover:bg-wash">
-                <td className="whitespace-nowrap px-2 py-2 font-mono text-[10px] text-muted">{formatDay(e.date)}</td>
+                <td className="whitespace-nowrap px-2 py-2 font-mono text-[10px] text-muted">{fmtDay(e.date)}</td>
                 <td className="px-2 py-2">
-                  <span
-                    className={`rounded border px-1.5 py-0.5 font-mono text-[10px] font-bold ${SEVERITY_BADGE[e.severity] ?? ''}`}
-                  >
+                  <Tag className={`font-bold ${SEVERITY_BADGE[e.severity] ?? ''}`}>
                     {SEVERITY_LABEL[e.severity] ?? '?'}
-                  </span>
+                  </Tag>
                 </td>
                 <td className="whitespace-nowrap px-2 py-2 font-mono text-[10px] text-muted">
-                  {CATEGORY_LABEL[e.category] ?? e.category}
+                  {CATEGORY_LABEL[e.category] ?? text(e.category)}
                 </td>
                 <td className="px-2 py-2">
                   <button
@@ -728,21 +760,20 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
                     onClick={() => setSelectedId(e.id)}
                     className="text-left text-xs font-semibold text-heading hover:text-accent-text"
                   >
-                    {e.title}
+                    {text(e.title)}
                   </button>
                 </td>
-                <td className="whitespace-nowrap px-2 py-2 font-mono text-[10px] text-muted">{e.country || '—'}</td>
+                <td className="whitespace-nowrap px-2 py-2 font-mono text-[10px] text-muted">
+                  {text(e.country) || '—'}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {sorted.length === 0 && (
-          <p className="px-3 py-8 text-center text-xs text-muted">No events match these filters.</p>
-        )}
+        {sorted.length === 0 && <Empty>No events match these filters.</Empty>}
       </div>
     </section>
   );
-
   const selectedDetail = selected && (
     <div className="rounded-lg border border-accent-text/50 bg-wash p-3">
       <div className="flex items-start justify-between gap-2">
@@ -756,33 +787,29 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
           <X size={13} />
         </button>
       </div>
-      <h4 className="mt-1 text-sm font-bold text-heading">{selected.title}</h4>
-      <p className="mt-1 text-xs leading-relaxed text-body">{selected.plain || selected.summary}</p>
+      <h4 className="mt-1 text-sm font-bold text-heading">{text(selected.title)}</h4>
+      <p className="mt-1 text-xs leading-relaxed text-body">{text(selected.plain) || text(selected.summary)}</p>
       <p className="mt-1.5 font-mono text-[10px] text-muted">
-        {formatDay(selected.date)} · {CATEGORY_LABEL[selected.category] ?? selected.category} ·{' '}
-        {SEVERITY_LABEL[selected.severity]} · {selected.place || selected.country}
+        {fmtDay(selected.date)} · {CATEGORY_LABEL[selected.category] ?? text(selected.category)} ·{' '}
+        {SEVERITY_LABEL[selected.severity]} · {text(selected.place) || text(selected.country)}
       </p>
       {selected.action && (
         <p className="mt-2 rounded border border-line-1 bg-surface-100 p-2 text-xs leading-relaxed text-body">
           <strong className="text-heading">Do: </strong>
-          {selected.action}
+          {text(selected.action)}
         </p>
       )}
-      {selected.cves.length > 0 && (
+      {asArray(selected.cves).length > 0 && (
         <p className="mt-2 flex flex-wrap gap-1">
-          {selected.cves.map((cve) => (
-            <span
-              key={cve}
-              className="rounded border border-line-1 px-1.5 py-0.5 font-mono text-[10px] text-accent-text"
-            >
-              {cve}
-            </span>
+          {asArray(selected.cves).map((cve) => (
+            <Tag key={cve} className="border-line-1 text-accent-text">
+              {text(cve)}
+            </Tag>
           ))}
         </p>
       )}
     </div>
   );
-
   const searchBox = (
     <div className="relative w-full sm:w-56">
       <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" aria-hidden="true" />
@@ -796,46 +823,33 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
       />
     </div>
   );
-
   const filterRow = (
     <section className={`surface-card space-y-2 rounded-xl border border-line-1 ${pad}`} aria-label="Event filters">
       <div className="flex flex-wrap items-center gap-1">
         <span className="mr-1 font-mono text-[10px] uppercase tracking-wide text-muted">Event types</span>
         {CATEGORIES.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            aria-pressed={category === c.id}
-            onClick={() => setCategory(c.id)}
-            className={`rounded-control border px-2 py-1 font-mono text-[11px] ${category === c.id ? 'border-accent-text/50 bg-wash text-accent-text' : 'border-line-1 text-muted hover:text-heading'}`}
-          >
+          <Choice key={c.id} active={category === c.id} onClick={() => setCategory(c.id)}>
             {c.label} <span className="opacity-60">{typeCounts[c.id] ?? 0}</span>
-          </button>
+          </Choice>
         ))}
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          aria-pressed={showUnverified}
-          onClick={() => setShowUnverified((v) => !v)}
-          className={`rounded-control border px-2 py-1 font-mono text-[11px] ${showUnverified ? 'border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-300' : 'border-line-1 text-muted hover:text-heading'}`}
-        >
+        <Choice active={showUnverified} onClick={() => setShowUnverified((v) => !v)}>
           Show unverified claims {showUnverified ? '' : `(${unverifiedHidden} hidden)`}
-        </button>
+        </Choice>
         <div role="group" aria-label="Time window" className="inline-flex rounded-control border border-line-1 p-0.5">
           {[2, 3, 7].map((n) => (
-            <button
+            <Choice
               key={n}
-              type="button"
-              aria-pressed={windowDays === n}
+              brand
+              active={windowDays === n}
               onClick={() => {
                 setWindowDays(n);
                 setDayFilter(null);
               }}
-              className={`rounded px-2 py-1 font-mono text-[11px] ${windowDays === n ? 'bg-brand-600 text-on-fill' : 'text-muted hover:text-heading'}`}
             >
               {n} days
-            </button>
+            </Choice>
           ))}
         </div>
         <div
@@ -843,43 +857,28 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
           aria-label="Minimum severity"
           className="inline-flex rounded-control border border-line-1 p-0.5"
         >
-          {(
-            [
-              ['all', 'All'],
-              ['med', 'Med+'],
-              ['high', 'High'],
-            ] as Array<[SeverityFilter, string]>
-          ).map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              aria-pressed={minSeverity === id}
-              onClick={() => setMinSeverity(id)}
-              className={`rounded px-2 py-1 font-mono text-[11px] ${minSeverity === id ? 'bg-brand-600 text-on-fill' : 'text-muted hover:text-heading'}`}
-            >
+          {SEVERITY_OPTIONS.map(([id, label]) => (
+            <Choice key={id} brand active={minSeverity === id} onClick={() => setMinSeverity(id)}>
               {label}
-            </button>
+            </Choice>
           ))}
         </div>
         {searchBox}
       </div>
     </section>
   );
-
   const dayStrip = (
     <div role="group" aria-label="Events per day" className="flex flex-wrap items-center gap-1">
       <span className="mr-1 font-mono text-[10px] uppercase tracking-wide text-muted">Events per day</span>
       {windowDates.map((d) => (
-        <button
+        <Choice
           key={d}
-          type="button"
-          aria-pressed={dayFilter === d}
-          aria-label={`${dayCounts[d] ?? 0} events on ${formatDay(d)}`}
+          active={dayFilter === d}
+          label={`${dayCounts[d] ?? 0} events on ${fmtDay(d)}`}
           onClick={() => setDayFilter(dayFilter === d ? null : d)}
-          className={`rounded-control border px-2 py-1 font-mono text-[11px] ${dayFilter === d ? 'border-accent-text/50 bg-wash text-accent-text' : 'border-line-1 text-muted hover:text-heading'}`}
         >
-          <strong className="mr-1 text-heading">{dayCounts[d] ?? 0}</strong> {formatDay(d)}
-        </button>
+          <strong className="mr-1 text-heading">{dayCounts[d] ?? 0}</strong> {fmtDay(d)}
+        </Choice>
       ))}
       {dayFilter && (
         <button
@@ -892,7 +891,6 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
       )}
     </div>
   );
-
   const panelHead = (
     <div className="border-b border-line-1 px-3 pt-3">
       <div className="flex items-center justify-between gap-2">
@@ -932,7 +930,6 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
       </div>
     </div>
   );
-
   let panelBody: JSX.Element;
   if (tab === 'feed' || tab === 'exploited') {
     panelBody = (
@@ -971,7 +968,7 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
                     onClick={() => setSelectedId(e.id)}
                     className="line-clamp-1 text-left text-accent-text hover:underline"
                   >
-                    {e.title}
+                    {text(e.title)}
                   </button>
                 </li>
               ))}
@@ -985,9 +982,7 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
             </li>
           ))}
         </ol>
-        {panelRows.length === 0 && (
-          <p className="py-8 text-center text-xs text-muted">No events match these filters.</p>
-        )}
+        {panelRows.length === 0 && <Empty>No events match these filters.</Empty>}
       </>
     );
   } else if (tab === 'patterns') {
@@ -1003,15 +998,9 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
             className="inline-flex rounded-control border border-line-1 p-0.5"
           >
             {(['sector', 'tag'] as const).map((p) => (
-              <button
-                key={p}
-                type="button"
-                aria-pressed={patternBy === p}
-                onClick={() => setPatternBy(p)}
-                className={`rounded px-2 py-1 font-mono text-[11px] ${patternBy === p ? 'bg-brand-600 text-on-fill' : 'text-muted'}`}
-              >
+              <Choice key={p} brand active={patternBy === p} onClick={() => setPatternBy(p)}>
                 {p === 'sector' ? 'Sector' : 'Tag'}
-              </button>
+              </Choice>
             ))}
           </div>
         </div>
@@ -1031,31 +1020,14 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
             </li>
           ))}
         </ul>
-        {patternRows.length === 0 && <p className="py-8 text-center text-xs text-muted">Nothing to group yet.</p>}
+        {patternRows.length === 0 && <Empty>Nothing to group yet.</Empty>}
       </>
     );
   } else if (tab === 'insights') {
-    const renderList = (title: string, rows: Array<[string, number]>) => (
-      <div>
-        <h3 className="font-mono text-[11px] font-bold uppercase tracking-wide text-heading">{title}</h3>
-        <ol className="mt-1.5 space-y-1">
-          {rows.map(([name, count], i) => (
-            <li key={name} className="flex items-baseline gap-2 text-xs">
-              <span className="w-4 font-mono text-[10px] text-muted">{i + 1}.</span>
-              <span className="min-w-0 flex-1 truncate text-body" title={name}>
-                {name}
-              </span>
-              <span className="font-mono text-[10px] text-muted">{count}</span>
-            </li>
-          ))}
-        </ol>
-        {rows.length === 0 && <p className="mt-1 font-mono text-[10px] text-muted">No data.</p>}
-      </div>
-    );
     panelBody = (
       <div className="space-y-4">
-        {renderList('Top countries', topCountries)}
-        {renderList('Top organisations', topOrgs)}
+        <RankedList title="Top countries" rows={topCountries} />
+        <RankedList title="Top organisations" rows={topOrgs} />
       </div>
     );
   } else {
@@ -1068,13 +1040,15 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
           <p className="mt-2 text-xs leading-relaxed text-body">{brief}</p>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          {[
-            ['Events', filtered.length],
-            ['High priority', highCount],
-            ['With CVEs', filtered.filter((e) => e.cves.length > 0).length],
-            ['On map', plotted.length],
-          ].map(([label, value]) => (
-            <div key={String(label)} className="rounded-lg border border-line-1 p-2">
+          {(
+            [
+              ['Events', filtered.length],
+              ['High priority', highCount],
+              ['With CVEs', filtered.filter((e) => asArray(e.cves).length > 0).length],
+              ['On map', plotted.length],
+            ] as Array<[string, number]>
+          ).map(([label, value]) => (
+            <div key={label} className="rounded-lg border border-line-1 p-2">
               <p className="font-mono text-lg font-bold text-heading">{value}</p>
               <p className="font-mono text-[10px] text-muted">{label}</p>
             </div>
@@ -1083,10 +1057,8 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
       </div>
     );
   }
-
   const body = (
     <>
-      <CyberViewNav />
       {events.loading && !events.data && <p className="font-mono text-xs text-muted">Loading CyberView events…</p>}
       {events.error && <p className="font-mono text-xs text-rose-500">error: {events.error}</p>}
       {events.data && (
@@ -1096,9 +1068,9 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-lg font-bold text-heading">CyberView</h2>
-                  <span className="inline-flex items-center gap-1.5 rounded-control border border-emerald-500/40 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] text-emerald-700 dark:text-emerald-300">
+                  <Badge tone="good" className="items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Live data connection
-                  </span>
+                  </Badge>
                 </div>
                 <p className="mt-1 font-mono text-[11px] text-muted">
                   <strong className="text-heading">{filtered.length}</strong> events ·{' '}
@@ -1107,50 +1079,29 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => events.refetch()}
-                  aria-label="Refresh data"
-                  className="inline-flex items-center gap-1 rounded-control border border-line-1 px-2 py-1.5 font-mono text-[11px] text-muted hover:text-heading"
-                >
+                <HeaderBtn label="Refresh data" onClick={() => events.refetch()}>
                   <RefreshCw size={12} className={events.loading ? 'animate-spin' : ''} aria-hidden="true" /> Refresh
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={wall}
-                  onClick={() => setWall((v) => !v)}
-                  className={`rounded-control border px-2 py-1.5 font-mono text-[11px] ${wall ? 'border-accent-text/50 bg-wash text-accent-text' : 'border-line-1 text-muted hover:text-heading'}`}
-                >
+                </HeaderBtn>
+                <HeaderBtn label="Wall mode" active={wall} onClick={() => setWall((v) => !v)}>
                   Wall mode
-                </button>
-                <button
-                  type="button"
-                  onClick={toggleFullscreen}
-                  aria-label="Full screen"
-                  className="rounded-control border border-line-1 px-2 py-1.5 font-mono text-[11px] text-muted hover:text-heading"
-                >
+                </HeaderBtn>
+                <HeaderBtn label="Full screen" onClick={toggleFullscreen}>
                   <Maximize2 size={12} className="inline" aria-hidden="true" /> Full screen
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={help}
-                  onClick={() => setHelp((v) => !v)}
-                  aria-label="Keyboard shortcuts"
-                  className="rounded-control border border-line-1 px-2 py-1.5 font-mono text-[11px] text-muted hover:text-heading"
-                >
+                </HeaderBtn>
+                <HeaderBtn label="Keyboard shortcuts" active={help} onClick={() => setHelp((v) => !v)}>
                   <Keyboard size={12} className="inline" aria-hidden="true" /> ?
-                </button>
+                </HeaderBtn>
                 <div role="group" aria-label="View" className="inline-flex rounded-control border border-line-1 p-0.5">
                   {VIEWS.map((v) => (
-                    <button
+                    <Choice
                       key={v.id}
-                      type="button"
-                      aria-pressed={view === v.id}
+                      brand
+                      active={view === v.id}
                       onClick={() => setView(v.id)}
-                      className={`inline-flex items-center gap-1 rounded px-2 py-1.5 font-mono text-[11px] ${view === v.id ? 'bg-brand-600 text-on-fill' : 'text-muted hover:text-heading'}`}
+                      className="inline-flex items-center gap-1 py-1.5"
                     >
                       <v.icon size={12} aria-hidden="true" /> {v.label}
-                    </button>
+                    </Choice>
                   ))}
                 </div>
               </div>
@@ -1167,7 +1118,6 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
               </div>
             )}
           </header>
-
           <div className={`grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(340px,400px)] ${gap}`}>
             <div className="min-w-0 space-y-3">
               {view === 'globe' ? stage : view === 'timeline' ? timeline : grid}
@@ -1190,38 +1140,27 @@ export default function CyberViewHome({ bare = false }: { bare?: boolean }): JSX
               </div>
             </aside>
           </div>
-
           <footer className="border-t border-line-1 pt-3 font-mono text-[11px] text-muted">
             Data mirrored from{' '}
-            <a
-              href="https://xanderhutch.github.io/CyberView/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-accent-text hover:underline"
-            >
-              xanderhutch.github.io/CyberView <ExternalLink size={10} aria-hidden="true" />
-            </a>
-            ; built {builtLabel}.
+            <OutLink href="https://xanderhutch.github.io/CyberView/">xanderhutch.github.io/CyberView</OutLink>; built{' '}
+            {builtLabel}.
           </footer>
         </div>
       )}
     </>
   );
-
-  return bare ? (
-    body
-  ) : (
-    <DataPageLayout
-      backTo="/threatintel"
+  return (
+    <CyberViewPage
+      bare={bare}
       icon={<Globe2 size={28} />}
       title="CyberView — Live cyber event map"
       description="Replication of the CyberView home page: a verified seven-day globe of cyber events, a live wire and severity/type filters."
-      onRetry={() => events.refetch()}
       loading={events.loading}
       error={events.error}
+      onRetry={() => events.refetch()}
       maxWidthClass="max-w-7xl"
     >
       {body}
-    </DataPageLayout>
+    </CyberViewPage>
   );
 }

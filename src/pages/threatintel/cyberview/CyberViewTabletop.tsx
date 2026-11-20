@@ -1,51 +1,30 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Check,
-  ClipboardList,
-  Copy,
-  Download,
-  ExternalLink,
-  Lock,
-  Pause,
-  Play,
-  Printer,
-  RotateCcw,
-} from 'lucide-react';
-import { DataPageLayout } from '../../../components/DataPageLayout';
+import { Check, ClipboardList, Copy, Download, Lock, Pause, Play, Printer, RotateCcw } from 'lucide-react';
 import { useDataFetch } from '../../../hooks/useDataFetch';
 import { sanitizeUrl } from '../../../lib/sanitize-url';
-import { CyberViewNav } from './CyberViewNav';
+import { CyberViewPage, OutLink } from './shared-ui';
+import { asArray, fmtDayFull, text } from './shared-utils';
 
-/**
- * Replication of the CyberView weekly tabletop exercise page. The upstream
- * page pairs one real, verified event with an invented, practice-only scenario
- * for the reader's organisation, then wraps it in facilitator tooling: a clock,
- * timed "injects", discussion prompts and an adaptation guide. All copy comes
- * from the mirrored tabletop.json; nothing here is invented content.
- */
+// CyberView weekly tabletop: a real verified event + an invented practice scenario
+// wrapped in facilitator tooling. All copy comes from the mirrored tabletop.json.
 
 interface Fact {
   text: string;
   source_url: string;
 }
-
 interface Inject {
   at_min: number;
   title: string;
   text: string;
   ask: string;
 }
-
 interface Source {
   name?: string;
   url: string;
 }
-
-interface RawExercise {
+interface Exercise {
   id?: string;
-  label?: string;
-  generated_at?: string;
   date: string;
   title: string;
   based_on?: string[];
@@ -60,25 +39,16 @@ interface RawExercise {
   adapt: string;
   sources: Source[];
 }
-
 interface TabletopData {
   built_at: string;
-  current: RawExercise;
-  past: Array<{ date: string; title: string }>;
-  exercises: RawExercise[];
+  current: Exercise;
+  exercises: Exercise[];
 }
-
-interface Exercise extends RawExercise {
-  key: string;
-  eventId: string | null;
-}
-
 interface PickerOption {
   key: string;
   label: string;
   exercise: Exercise;
 }
-
 type CopyStatus = 'idle' | 'ok' | 'error';
 
 const CARD = 'surface-card rounded-xl border border-line-1 p-5';
@@ -86,72 +56,53 @@ const H2 = 'text-base font-bold text-heading';
 const H3 = 'text-sm font-bold text-heading';
 const BTN =
   'inline-flex items-center gap-1.5 rounded-control border border-line-1 bg-surface-100 px-2.5 py-1.5 font-mono text-[11px] text-heading transition-colors hover:border-brand-400 hover:bg-wash';
+const ATTRIBUTION =
+  "Written by CyberView AI (a Claude model) from the event's verified record and the sources above, under the same rules as every event. Check the facts against the sources before you rely on them. Free to use and adapt for your own team's exercises.";
 
-function normalizeExercise(raw: RawExercise, key: string): Exercise {
-  return { ...raw, key, eventId: raw.based_on?.[0] ?? null };
-}
-
-/** Current week first, then every other archived exercise, de-duplicated by date. */
+/** Current week first, then every other exercise, de-duplicated by date. */
 function buildOptions(data: TabletopData): PickerOption[] {
-  const options: PickerOption[] = [];
-  const current = normalizeExercise(data.current, 'current');
-  options.push({
-    key: 'current',
-    label: `This week: ${current.date} · ${current.title}`,
-    exercise: current,
-  });
+  const current = data.current;
+  const options: PickerOption[] = [
+    { key: 'current', label: `This week: ${current.date} · ${current.title}`, exercise: current },
+  ];
   const seen = new Set<string>([current.date]);
-  for (const raw of data.exercises ?? []) {
-    if (seen.has(raw.date)) continue;
-    seen.add(raw.date);
-    const exercise = normalizeExercise(raw, raw.id ?? raw.date);
-    options.push({ key: exercise.key, label: `${exercise.date} · ${exercise.title}`, exercise });
+  for (const ex of asArray(data.exercises)) {
+    if (!ex || seen.has(ex.date)) continue;
+    seen.add(ex.date);
+    options.push({ key: ex.id ?? ex.date, label: `${ex.date} · ${ex.title}`, exercise: ex });
   }
   return options;
 }
 
-function formatDate(iso: string): string {
-  const d = new Date(`${String(iso).slice(0, 10)}T00:00:00Z`);
-  if (Number.isNaN(d.getTime())) return iso;
-  return new Intl.DateTimeFormat('en-US', {
-    weekday: 'short',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(d);
-}
+const fmtClock = (s: number): string =>
+  `${Math.floor(s / 60)
+    .toString()
+    .padStart(2, '0')}:${Math.floor(s % 60)
+    .toString()
+    .padStart(2, '0')}`;
 
-function formatBuilt(iso: string): string {
+function fmtBuilt(iso: string): string {
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return new Intl.DateTimeFormat('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZoneName: 'short',
-    timeZone: 'UTC',
-  }).format(d);
+  return Number.isNaN(d.getTime())
+    ? iso
+    : new Intl.DateTimeFormat('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short',
+        timeZone: 'UTC',
+      }).format(d);
 }
 
-function formatClock(totalSeconds: number): string {
-  const minutes = Math.floor(totalSeconds / 60)
-    .toString()
-    .padStart(2, '0');
-  const seconds = Math.floor(totalSeconds % 60)
-    .toString()
-    .padStart(2, '0');
-  return `${minutes}:${seconds}`;
-}
-
-/** Plain-text rendering used by both "Copy as text" and "Download". */
+/** Plain-text rendering shared by "Copy as text" and "Download". */
 function exerciseToText(ex: Exercise): string {
-  const lines: string[] = [
+  const eventId = ex.based_on?.[0] ?? null;
+  const lines = [
     ex.title,
-    `${formatDate(ex.date)} · ${ex.duration_min} minutes`,
-    `For: ${ex.roles.join(', ')}`,
+    `${fmtDayFull(ex.date)} · ${ex.duration_min} minutes`,
+    `For: ${asArray(ex.roles).join(', ')}`,
     '',
     'Exercise. Built from a real, verified event. The scenario for your organisation is invented for practice: nothing here says your organisation is affected.',
     '',
@@ -160,31 +111,114 @@ function exerciseToText(ex: Exercise): string {
     '',
     'Verified facts',
   ];
-  ex.facts.forEach((fact, i) => lines.push(`${i + 1}. ${fact.text} (${fact.source_url})`));
-  if (ex.eventId) lines.push(`On the map: /threatintel/cyberview#e=${ex.eventId}`);
+  asArray(ex.facts).forEach((f, i) => lines.push(`${i + 1}. ${f.text} (${f.source_url})`));
+  if (eventId) lines.push(`On the map: /threatintel/cyberview#e=${eventId}`);
   lines.push('', 'Your scenario', ex.scenario, '', 'Timed updates (injects)');
-  ex.injects.forEach((inject) =>
-    lines.push(`+${inject.at_min} min — ${inject.title}`, inject.text, `Ask: ${inject.ask}`, '')
+  asArray(ex.injects).forEach((inj) =>
+    lines.push(`+${inj.at_min} min — ${inj.title}`, inj.text, `Ask: ${inj.ask}`, '')
   );
   lines.push('Discussion questions');
-  ex.questions.forEach((q, i) => lines.push(`${i + 1}. ${q}`));
+  asArray(ex.questions).forEach((q, i) => lines.push(`${i + 1}. ${q}`));
   lines.push('', 'What good looks like');
-  ex.good_looks_like.forEach((item) => lines.push(`- ${item}`));
+  asArray(ex.good_looks_like).forEach((item) => lines.push(`- ${item}`));
   lines.push('', 'Make it yours', ex.adapt, '', 'Sources read');
-  ex.sources.forEach((s) => lines.push(`- ${s.name ?? s.url} — ${s.url}`));
-  lines.push(
-    '',
-    "Written by CyberView AI (a Claude model) from the event's verified record and the sources above, under the same rules as every event. Check the facts against the sources before you rely on them. Free to use and adapt for your own team's exercises."
+  asArray(ex.sources).forEach((s) => lines.push(`- ${s.name ?? s.url} — ${s.url}`));
+  return [...lines, '', ATTRIBUTION].join('\n');
+}
+
+function FactList({ facts }: { facts: Fact[] }): JSX.Element {
+  return (
+    <ul className="mt-2 space-y-2">
+      {asArray(facts).map((fact, i) => {
+        const href = sanitizeUrl(fact.source_url);
+        return (
+          <li key={i} className="flex gap-2 text-xs leading-relaxed text-body">
+            <span className="mt-0.5 shrink-0 font-mono text-muted">{String(i + 1).padStart(2, '0')}</span>
+            <span>
+              {fact.text}{' '}
+              {href && (
+                <OutLink href={fact.source_url} className="font-mono text-[11px]">
+                  source
+                </OutLink>
+              )}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
   );
-  return lines.join('\n');
+}
+
+function InjectList({
+  injects,
+  elapsed,
+  reveal,
+}: {
+  injects: Inject[];
+  elapsed: number;
+  reveal: boolean;
+}): JSX.Element {
+  return (
+    <ol className="mt-4 space-y-3">
+      {asArray(injects).map((inject, i) => {
+        const locked = reveal && elapsed < inject.at_min * 60;
+        return (
+          <li key={i} className="rounded-lg border border-line-1 p-3">
+            <div className="flex items-center gap-2">
+              <span className="rounded border border-brand-500/40 bg-brand-500/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-accent-text">
+                +{inject.at_min} min
+              </span>
+              <h3 className={H3}>{inject.title}</h3>
+            </div>
+            {locked ? (
+              <p
+                className="mt-2 flex items-center gap-1.5 font-mono text-[11px] text-muted"
+                aria-label={`Update locked until minute ${inject.at_min}`}
+              >
+                <Lock size={12} aria-hidden="true" /> Locked until +{inject.at_min} min
+              </p>
+            ) : (
+              <>
+                <p className="mt-2 text-xs leading-relaxed text-body">{inject.text}</p>
+                <p className="mt-2 text-xs leading-relaxed text-muted">
+                  <strong className="text-heading">Ask:</strong> {inject.ask}
+                </p>
+              </>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function SourceList({ sources }: { sources: Source[] }): JSX.Element {
+  const list = asArray(sources);
+  return (
+    <ul className="mt-3 flex flex-wrap gap-x-2 gap-y-1 text-xs">
+      {list.map((source, i) => {
+        const label = source.name ?? source.url;
+        return (
+          <li key={i} className="flex items-center gap-2">
+            {sanitizeUrl(source.url) ? (
+              <OutLink href={source.url}>{label}</OutLink>
+            ) : (
+              <span className="text-body">{label}</span>
+            )}
+            {i < list.length - 1 && (
+              <span aria-hidden="true" className="text-muted">
+                ·
+              </span>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
 }
 
 export default function CyberViewTabletop({ bare = false }: { bare?: boolean }): JSX.Element {
-  const feed = useDataFetch<TabletopData>({
-    url: '/data/cyberview/data/tabletop.json',
-    ttl: 600_000,
-  });
-
+  const feed = useDataFetch<TabletopData>({ url: '/data/cyberview/data/tabletop.json', ttl: 600_000 });
   const [selectedKey, setSelectedKey] = useState('current');
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(false);
@@ -194,11 +228,10 @@ export default function CyberViewTabletop({ bare = false }: { bare?: boolean }):
   const options = useMemo(() => (feed.data ? buildOptions(feed.data) : []), [feed.data]);
   const active = options.find((o) => o.key === selectedKey)?.exercise ?? options[0]?.exercise ?? null;
 
-  // Facilitator clock: a single interval, torn down whenever it is paused or
-  // the page unmounts. Changing exercise resets the clock and reveal state.
+  // One interval, torn down when paused or unmounted. Switching exercise resets the clock.
   useEffect(() => {
     if (!running) return;
-    const id = window.setInterval(() => setElapsed((seconds) => seconds + 1), 1000);
+    const id = window.setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => window.clearInterval(id);
   }, [running]);
 
@@ -226,21 +259,28 @@ export default function CyberViewTabletop({ bare = false }: { bare?: boolean }):
 
   const handleDownload = (): void => {
     if (!active) return;
-    const blob = new Blob([exerciseToText(active)], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = `${active.date}-cyberview-tabletop.txt`;
+    const url = URL.createObjectURL(new Blob([exerciseToText(active)], { type: 'text/plain;charset=utf-8' }));
+    const anchor = Object.assign(document.createElement('a'), {
+      href: url,
+      download: `${active.date}-cyberview-tabletop.txt`,
+    });
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
     URL.revokeObjectURL(url);
   };
 
-  const body = (
-    <>
-      <CyberViewNav />
-
+  return (
+    <CyberViewPage
+      bare={bare}
+      icon={<ClipboardList size={28} />}
+      maxWidthClass="max-w-4xl"
+      title="CyberView — Weekly tabletop exercise"
+      loading={feed.loading}
+      error={feed.error}
+      onRetry={feed.refetch}
+      description="Replication of CyberView's exercise page: a real event, an invented scenario, timed injects, discussion questions and a facilitator clock."
+    >
       {feed.loading && !feed.data && (
         <p className="font-mono text-xs text-muted" role="status">
           Loading tabletop data…
@@ -254,8 +294,8 @@ export default function CyberViewTabletop({ bare = false }: { bare?: boolean }):
             <p className="font-mono text-[11px] uppercase tracking-wide text-accent-text">Weekly tabletop exercise</p>
             <h1 className="mt-1 text-2xl font-bold leading-snug text-heading sm:text-3xl">{active.title}</h1>
             <p className="mt-2 text-xs leading-relaxed text-muted" aria-live="polite">
-              <time dateTime={active.date}>{formatDate(active.date)}</time> · {active.duration_min} minutes · for{' '}
-              {active.roles.join(', ')}
+              <time dateTime={active.date}>{fmtDayFull(active.date)}</time> · {active.duration_min} minutes · for{' '}
+              {asArray(active.roles).join(', ')}
             </p>
           </header>
 
@@ -273,9 +313,9 @@ export default function CyberViewTabletop({ bare = false }: { bare?: boolean }):
                 onChange={(e) => setSelectedKey(e.target.value)}
                 className="max-w-full rounded-control border border-line-input bg-input-200 px-2 py-1.5 font-mono text-xs text-heading"
               >
-                {options.map((option) => (
-                  <option key={option.key} value={option.key}>
-                    {option.label}
+                {options.map((o) => (
+                  <option key={o.key} value={o.key}>
+                    {o.label}
                   </option>
                 ))}
               </select>
@@ -301,40 +341,16 @@ export default function CyberViewTabletop({ bare = false }: { bare?: boolean }):
           <section className={CARD}>
             <h2 className={H2}>What really happened</h2>
             <p className="mt-3 text-sm leading-relaxed text-body">{active.real_story}</p>
-
             <h3 className={`${H3} mt-5`}>Verified facts</h3>
-            <ul className="mt-2 space-y-2">
-              {active.facts.map((fact, i) => {
-                const href = sanitizeUrl(fact.source_url);
-                return (
-                  <li key={i} className="flex gap-2 text-xs leading-relaxed text-body">
-                    <span className="mt-0.5 shrink-0 font-mono text-muted">{String(i + 1).padStart(2, '0')}</span>
-                    <span>
-                      {fact.text}{' '}
-                      {href && (
-                        <a
-                          href={href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-0.5 font-mono text-accent-text hover:underline"
-                        >
-                          source <ExternalLink size={10} aria-hidden="true" />
-                        </a>
-                      )}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-
-            {active.eventId && (
+            <FactList facts={active.facts} />
+            {active.based_on?.[0] && (
               <p className="mt-5 border-t border-line-1 pt-3 text-xs text-muted">
                 On the map:{' '}
                 <Link
-                  to={`/threatintel/cyberview#e=${encodeURIComponent(active.eventId)}`}
+                  to={`/threatintel/cyberview#e=${encodeURIComponent(text(active.based_on[0]))}`}
                   className="font-mono text-accent-text hover:underline"
                 >
-                  {active.eventId}
+                  {active.based_on[0]}
                 </Link>
               </p>
             )}
@@ -350,14 +366,13 @@ export default function CyberViewTabletop({ bare = false }: { bare?: boolean }):
 
           <section className={CARD}>
             <h2 className={H2}>Timed updates (injects)</h2>
-
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-line-1 bg-surface-100 px-3 py-2">
               <time
                 dateTime={`PT${elapsed}S`}
                 aria-label="Elapsed time"
                 className="font-mono text-xl tabular-nums text-heading"
               >
-                {formatClock(elapsed)}
+                {fmtClock(elapsed)}
               </time>
               <button type="button" className={BTN} onClick={() => setRunning((r) => !r)}>
                 {running ? <Pause size={12} aria-hidden="true" /> : <Play size={12} aria-hidden="true" />}
@@ -387,43 +402,13 @@ export default function CyberViewTabletop({ bare = false }: { bare?: boolean }):
               The facilitator drops each update in at its minute. Turn on reveal to hide updates until the clock reaches
               them, so the team can&rsquo;t read ahead on a shared screen.
             </p>
-
-            <ol className="mt-4 space-y-3">
-              {active.injects.map((inject, i) => {
-                const locked = reveal && elapsed < inject.at_min * 60;
-                return (
-                  <li key={i} className="rounded-lg border border-line-1 p-3">
-                    <div className="flex items-center gap-2">
-                      <span className="rounded border border-brand-500/40 bg-brand-500/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-accent-text">
-                        +{inject.at_min} min
-                      </span>
-                      <h3 className={H3}>{inject.title}</h3>
-                    </div>
-                    {locked ? (
-                      <p
-                        className="mt-2 flex items-center gap-1.5 font-mono text-[11px] text-muted"
-                        aria-label={`Update locked until minute ${inject.at_min}`}
-                      >
-                        <Lock size={12} aria-hidden="true" /> Locked until +{inject.at_min} min
-                      </p>
-                    ) : (
-                      <>
-                        <p className="mt-2 text-xs leading-relaxed text-body">{inject.text}</p>
-                        <p className="mt-2 text-xs leading-relaxed text-muted">
-                          <strong className="text-heading">Ask:</strong> {inject.ask}
-                        </p>
-                      </>
-                    )}
-                  </li>
-                );
-              })}
-            </ol>
+            <InjectList injects={active.injects} elapsed={elapsed} reveal={reveal} />
           </section>
 
           <section className={CARD}>
             <h2 className={H2}>Discussion questions</h2>
             <ol className="mt-3 space-y-2">
-              {active.questions.map((q, i) => (
+              {asArray(active.questions).map((q, i) => (
                 <li key={i} className="flex gap-2 text-xs leading-relaxed text-body">
                   <span className="shrink-0 font-mono text-muted">{i + 1}.</span>
                   <span>{q}</span>
@@ -435,7 +420,7 @@ export default function CyberViewTabletop({ bare = false }: { bare?: boolean }):
           <section className={CARD}>
             <h2 className={H2}>What good looks like</h2>
             <ul className="mt-3 space-y-2">
-              {active.good_looks_like.map((item, i) => (
+              {asArray(active.good_looks_like).map((item, i) => (
                 <li key={i} className="flex gap-2 text-xs leading-relaxed text-body">
                   <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded border border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                     <Check size={11} aria-hidden="true" />
@@ -453,62 +438,16 @@ export default function CyberViewTabletop({ bare = false }: { bare?: boolean }):
 
           <section className={CARD}>
             <h2 className={H2}>Sources read</h2>
-            <ul className="mt-3 flex flex-wrap gap-x-2 gap-y-1 text-xs">
-              {active.sources.map((source, i) => {
-                const href = sanitizeUrl(source.url);
-                return (
-                  <li key={i} className="flex items-center gap-2">
-                    {href ? (
-                      <a
-                        href={href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-accent-text hover:underline"
-                      >
-                        {source.name ?? source.url} <ExternalLink size={10} aria-hidden="true" />
-                      </a>
-                    ) : (
-                      <span className="text-body">{source.name ?? source.url}</span>
-                    )}
-                    {i < active.sources.length - 1 && (
-                      <span aria-hidden="true" className="text-muted">
-                        ·
-                      </span>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-            <p className="mt-4 border-t border-line-1 pt-3 text-[11px] leading-relaxed text-muted">
-              Written by CyberView AI (a Claude model) from the event&rsquo;s verified record and the sources above,
-              under the same rules as every event. Check the facts against the sources before you rely on them. Free to
-              use and adapt for your own team&rsquo;s exercises.
-            </p>
+            <SourceList sources={active.sources} />
+            <p className="mt-4 border-t border-line-1 pt-3 text-[11px] leading-relaxed text-muted">{ATTRIBUTION}</p>
           </section>
 
           <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-line-1 pt-4 font-mono text-meta text-muted">
             <span>CyberView · weekly tabletop exercise</span>
-            <span>{feed.data?.built_at ? `Built ${formatBuilt(feed.data.built_at)}` : ''}</span>
+            <span>{feed.data?.built_at ? `Built ${fmtBuilt(feed.data.built_at)}` : ''}</span>
           </footer>
         </article>
       )}
-    </>
-  );
-
-  return bare ? (
-    body
-  ) : (
-    <DataPageLayout
-      backTo="/threatintel"
-      icon={<ClipboardList size={28} />}
-      title="CyberView — Weekly tabletop exercise"
-      description="Replication of CyberView's exercise page: a real event, an invented scenario, timed injects, discussion questions and a facilitator clock."
-      loading={feed.loading}
-      error={feed.error}
-      onRetry={feed.refetch}
-      maxWidthClass="max-w-4xl"
-    >
-      {body}
-    </DataPageLayout>
+    </CyberViewPage>
   );
 }
