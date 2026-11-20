@@ -23,6 +23,7 @@ export default tseslint.config(
       'threat-intel-staging/**',
       'security-investigator-replication/**',
       'public/dfir/**',
+      'public/data/cyberview/source/**',
     ],
   },
 

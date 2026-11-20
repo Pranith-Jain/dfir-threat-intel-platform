@@ -16,9 +16,10 @@
  * Output: public/data/zero-wire/index.json
  * Run:    node scripts/sync-zero-wire.mjs
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { writeJsonIfChanged } from './lib/write-if-changed.mjs';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const OUT = join(ROOT, 'public', 'data', 'zero-wire');
@@ -105,7 +106,7 @@ async function main() {
     cves,
   };
   mkdirSync(OUT, { recursive: true });
-  writeFileSync(join(OUT, 'index.json'), `${JSON.stringify(payload, null, 2)}\n`);
+  writeJsonIfChanged(join(OUT, 'index.json'), payload);
   console.log(`  ✓ ${briefings.length} briefings · ${cves.length} CVEs → ${OUT}/index.json\n`);
 }
 
