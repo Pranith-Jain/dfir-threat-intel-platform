@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-21T09:38:02.785Z",
+  "generatedAt": "2026-11-21T17:10:20.457Z",
   "upstream": {
     "site": "https://tldrcve.com",
     "list": "https://tldrcve.com/cves/",
@@ -8,14 +8,14 @@
     "scale": "https://tldrcve.com/how-we-rate/"
   },
   "stats": {
-    "cves": 33,
-    "details": 33,
-    "versions": 32,
+    "cves": 34,
+    "details": 34,
+    "versions": 33,
     "byVerdict": {
       "Patch now": 12,
       "Patch now if…": 19,
       "Watching": 1,
-      "Next cycle": 1
+      "Next cycle": 2
     }
   },
   "scale": [
@@ -5370,6 +5370,185 @@
       }
     },
     {
+      "slug": "tomcat-2026-11-19",
+      "name": "Tomcat Nov release",
+      "meta": "Tomcat (Spring Boot) · 11 CVEs",
+      "line": "CISA says 9.1, Apache says Low. Off-by-default features.",
+      "verdict": "Next cycle",
+      "scareLevel": 1.2,
+      "meterLabel": "Keep an eye on it",
+      "disclosed": "2026-11-19",
+      "url": "https://tldrcve.com/tomcat-2026-11-19/",
+      "detail": {
+        "slug": "tomcat-2026-11-19",
+        "kicker": "Tomcat (Spring Boot) · Release roundup · 11 CVEs",
+        "name": "Tomcat Nov release",
+        "verdict": "Next cycle",
+        "verdictHint": "CISA says 9.1, Apache says Low. Off-by-default features.",
+        "summary": "Apache disclosed 11 Tomcat vulnerabilities on 19 Nov 2026: 1 critical, 4 important, 2 moderate and 4 low. All but one need a feature you have to turn on, such as HTTP/2, the RewriteValve or clustering, and none has a public exploit or reported attacks. The \"9.1 critical\" posts come from scores CISA added to the CVE records; Apache rates that bug Low. Fixed releases are out for all but two cluster bugs.",
+        "meterLabel": "Keep an eye on it",
+        "meterHint": "Patch on schedule. Watch for news.",
+        "checklist": [
+          {
+            "yes": false,
+            "text": "No public exploit 5,9"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 5,9"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 9"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Tomcat before 11.0.29 / 10.1.62 / 9.0.124",
+            "hint": "command",
+            "body": "Every earlier 11.0, 10.1 and 9.0 release; end-of-life 8.5 and older get no fixes. The critical cluster bug is the exception: it affects only 11.0.29, 10.1.62 and 9.0.124. Spring Boot embeds Tomcat, and its newest releases (4.2.0, 4.1.3 and 4.0.10) still bring in 11.0.27; check with ./mvnw dependency:tree -Dincludes=org.apache.tomcat.embed . 1,2,3,13,14 $CATALINA_HOME/bin/version.sh",
+            "code": [
+              "$CATALINA_HOME/bin/version.sh"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "You turned on an affected feature",
+            "hint": "command",
+            "body": "Ten of the 11 need something you add: HTTP/2 (an Http2Protocol line inside a <Connector> ; in Spring Boot, server.http2.enabled ), the RewriteValve, the ExpiresFilter, CGI, Jakarta Authentication, clustering, an AJP load balancer or the OWB module. The shipped files contain commented-out examples, so matches inside <!-- --> don't count. Check your apps' WEB-INF/web.xml and META-INF/context.xml too. The eleventh, a low-rated memory leak (CVE-2026-118233), needs an app that uses the HTTP upgrade API; Apache only says \"some circumstances\". 1,10,11,16,17 grep -rnE 'Http2Protocol|RewriteValve|ExpiresFilter|CGIServlet|<Cluster|LoadBalancerDrainingValve|OpenWebBeans' $CATALINA_BASE/conf/",
+            "code": [
+              "grep -rnE 'Http2Protocol|RewriteValve|ExpiresFilter|CGIServlet|<Cluster|LoadBalancerDrainingValve|OpenWebBeans' $CATALINA_BASE/conf/"
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade to 11.0.29, 10.1.62 or 9.0.124",
+            "hint": null,
+            "body": "Released 13 to 16 Nov 2026, these fix 10 of the 11 bugs. Tomcat 8.5 gets no fixes (end of life since 31 Mar 2024), and 9.0 support ends on 31 Mar 2027. 12,13,1,2,3 Latest safe versions checked 21 Nov Apache Tomcat → 11.0 11.0.29 10.1 10.1.62 9.0 9.0.124 Tomcat 8.5 reached end of life on 31 Mar 2024 and gets no fixes; 10.0 and older are also unsupported. Spring Boot embeds Tomcat and pins its own version.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Spring Boot: set the Tomcat version",
+            "hint": null,
+            "body": "No Spring Boot release brings in a fixed Tomcat yet. Set the tomcat.version property to 11.0.29 in your build, the documented way to override a version Spring Boot manages. HTTP/2 is off unless you set server.http2.enabled . 14,15,16",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Clusters: stay on TLS 1.2",
+            "hint": null,
+            "body": "If your cluster uses TLS-PSK, keep it on TLS 1.2: on TLS 1.3 a node without the key can join (CVE-2026-133325). The fix comes in 11.0.30, 10.1.63 and 9.0.125; Apache hasn't announced a date, and we'll check again by 28 Nov 2026. The old EncryptInterceptor won't be fixed (CVE-2026-95517): move to TLS-PSK on TLS 1.2. 7,8,1",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Don't panic over the 9.1",
+            "hint": null,
+            "body": "The scary numbers come from CISA's automated scoring added to the CVE records, not from Apache: 9.1 on CVE-2026-116561, which Apache rates Low, meaning \"extremely hard to exploit\" or with \"minimal consequences\". Apache's own ratings: one critical (the cluster bug), four important. 5,4,6,1",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://tomcat.apache.org/security-11.html",
+            "title": "Apache Tomcat 11 security page: all 11 bugs, ratings, affected versions",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://tomcat.apache.org/security-10.html",
+            "title": "Apache Tomcat 10 security page: fixed in 10.1.62",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://tomcat.apache.org/security-9.html",
+            "title": "Apache Tomcat 9 security page: fixed in 9.0.124",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://tomcat.apache.org/security-impact.html",
+            "title": "Apache Tomcat: what Low, Moderate, Important and Critical mean",
+            "date": null
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-116561",
+            "title": "CVE record CVE-2026-116561: Apache \"low\", CISA score 9.1, exploitation none",
+            "date": null
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-133325",
+            "title": "CVE record CVE-2026-133325: Apache \"critical\", CISA score 9.8",
+            "date": null
+          },
+          {
+            "url": "https://lists.apache.org/thread/b53dmjwf81667pw1r27zxx8s6hw71bdn",
+            "title": "Tomcat announce: CVE-2026-133325 cluster TLS-PSK, use TLS 1.2",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://lists.apache.org/thread/xfm33r26trsr90v71wr9hcpv0gvt6l9m",
+            "title": "Tomcat announce: CVE-2026-95517 EncryptInterceptor not fixed, move to TLS-PSK",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: none of the 11 listed",
+            "date": null
+          },
+          {
+            "url": "https://github.com/apache/tomcat/blob/11.0.x/conf/server.xml",
+            "title": "Tomcat source: shipped server.xml, HTTP/2, AJP and cluster commented out",
+            "date": null
+          },
+          {
+            "url": "https://tomcat.apache.org/tomcat-11.0-doc/cgi-howto.html",
+            "title": "Tomcat docs: CGI is disabled by default",
+            "date": null
+          },
+          {
+            "url": "https://tomcat.apache.org/",
+            "title": "Apache Tomcat: latest releases, 9.0 end of support 31 Mar 2027",
+            "date": null
+          },
+          {
+            "url": "https://tomcat.apache.org/tomcat-85-eol.html",
+            "title": "Apache Tomcat: 8.5 end of life 31 Mar 2024",
+            "date": null
+          },
+          {
+            "url": "https://repo1.maven.org/maven2/org/springframework/boot/spring-boot-dependencies/4.1.3/spring-boot-dependencies-4.1.3.pom",
+            "title": "Maven Central: Spring Boot 4.1.3 manages Tomcat 11.0.27 (4.2.0 and 4.0.10 too)",
+            "date": null
+          },
+          {
+            "url": "https://docs.spring.io/spring-boot/maven-plugin/using.html",
+            "title": "Spring Boot docs: override a managed version with a property",
+            "date": null
+          },
+          {
+            "url": "https://docs.spring.io/spring-boot/appendix/application-properties/index.html",
+            "title": "Spring Boot docs: server.http2.enabled defaults to false",
+            "date": null
+          },
+          {
+            "url": "https://tomcat.apache.org/tomcat-11.0-doc/cdi.html",
+            "title": "Tomcat docs: the OWB module must be built from source",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-21",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/tomcat-2026-11-19/"
+      }
+    },
+    {
       "slug": "openssl-encodeblock",
       "name": "OpenSSL base64",
       "meta": "OpenSSL · CVE-2026-121481",
@@ -5574,6 +5753,27 @@
         }
       ],
       "url": "https://tldrcve.com/versions/apache-roller/"
+    },
+    {
+      "slug": "tomcat",
+      "name": "Apache Tomcat",
+      "meta": "1 bug · checked 21 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "11.0",
+          "version": "11.0.29"
+        },
+        {
+          "line": "10.1",
+          "version": "10.1.62"
+        },
+        {
+          "line": "9.0",
+          "version": "9.0.124"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/tomcat/"
     },
     {
       "slug": "brotli-python",
