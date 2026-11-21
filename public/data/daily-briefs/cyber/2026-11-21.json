@@ -1,0 +1,138 @@
+{
+  "type": "cyber",
+  "date": "2026-11-21",
+  "threatLevel": "",
+  "executiveSummary": "Critical OT-relevant exploitation is unfolding across perimeter, virtualization, and industrial control layers. Immediate action is required to harden management planes, remove risky internet exposure, and accelerate patching on systems that bridge IT and OT. Virtualization control planes are under active attack: a vCenter Server zero-day (CVE-2026-123890) used by a China-nexus actor (UNC5221/Armory Castle) grants admin and SAML hijack, enabling rapid lateral movement to ESXi and tenant workloads. View Article Direct OT targeting: a joint U.S. advisory warns of active campaigns probing Siemens S7 PLCs using S7comm/snap7, emphasizing inventory, segmentation, and monitoring of TCP/102. Security Advisory Perimeter risk escalates with unauthenticated HTTP/2 RCE in NGINX (public PoC), affecting reverse proxies that often front ICS DMZs; temporary disablement of HTTP/2 is advised pending patches. CERT-FR Alert \"Java4Shell\" (CVE-2026-114938) enables RCE in Java HotSpot on AVX-512 VBMI CPUs; Java's ubiquity in middleware and appliances creates wide blast radius, including OT-adjacent gateways/services. CISA Alert OPC UA stacks: multiple Eclipse Milo weaknesses enable unauthorized method execution, info leaks, and DoS on industrial servers; apply patched releases and enforce strong OPC UA policies. CISA Bulletin Industrial devices at risk: unauth access and unsigned write surfaces in Danfoss iC7 drives, and public exploit activity against Advantech WISE-6610 LoRaWAN gateways, warrant urgent isolation and firmware updates. CISA Bulletin CISA Bulletin State-backed tradecraft persists: China-nexus covert networks leverage compromised SOHO/IoT devices for CI pre-positioning; separate joint guidance details router hygiene and LOTL detection priorities. Advisory Advisory Email and orchestration platforms in KEV: Zimbra XSS exploited by Russia-linked LAUNDRY BEAR, SonicWall SSLVPN, and Puppet Enterprise deserialization are all confirmed exploited; prioritize patching and compromise assessment. Advisory CISA KEV CISA KEV",
+  "keyFindings": [
+    {
+      "title": "Exploitation of VMware vCenter (CVE-2026-123890) enables SSO admin creation and ",
+      "summary": "Exploitation of VMware vCenter (CVE-2026-123890) enables SSO admin creation and STS/SAML abuse; patch to fixed builds and rotate STS keys immediately. View Article"
+    },
+    {
+      "title": "Siemens S7 PLCs face active reconnaissance and access attempts via S7comm/snap7;",
+      "summary": "Siemens S7 PLCs face active reconnaissance and access attempts via S7comm/snap7; block internet exposure, enforce engineering jump-hosts, and baseline PLC writes. Security Advisory"
+    },
+    {
+      "title": "NGINX HTTP/2 unauth RCE (PoC available) heightens reverse-proxy risk for ICS DMZ",
+      "summary": "NGINX HTTP/2 unauth RCE (PoC available) heightens reverse-proxy risk for ICS DMZs; disable HTTP/2 and apply vendor patches. CERT-FR Alert"
+    },
+    {
+      "title": "Oracle Java \"Java4Shell\" allows unauth RCE with hardware preconditions; inventor",
+      "summary": "Oracle Java \"Java4Shell\" allows unauth RCE with hardware preconditions; inventory and hot-patch Java runtimes across middleware and ICS-adjacent appliances. CISA Alert"
+    },
+    {
+      "title": "Eclipse Milo OPC UA flaws and Danfoss iC7 drive debug surfaces expand attack pat",
+      "summary": "Eclipse Milo OPC UA flaws and Danfoss iC7 drive debug surfaces expand attack paths into ICS networks; segment, enforce cert-based auth, and monitor OT protocol anomalies. CISA Bulletin CISA Bulletin"
+    },
+    {
+      "title": "Router botnets and covert proxy networks continue to mask China-linked operation",
+      "summary": "Router botnets and covert proxy networks continue to mask China-linked operations against U.S. critical infrastructure; enforce SNMPv3/ACLs, disable SMI, and hunt for config exfiltration via TFTP. Advisory Advisory"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "CRITICAL",
+        "label": "Overall OT/ICS Threat Level"
+      },
+      {
+        "value": "64",
+        "label": "Events (This Brief)"
+      },
+      {
+        "value": "22 / 31 / 11",
+        "label": "Escalate / Monitor / Ignore"
+      },
+      {
+        "value": "18 / 10",
+        "label": "Actively Exploited / KEV Items"
+      },
+      {
+        "value": "17",
+        "label": "OT-Specific Issues"
+      },
+      {
+        "value": "14",
+        "label": "Perimeter & VPN Appliance Risks"
+      },
+      {
+        "value": "9",
+        "label": "Virtualization/Cloud Mgmt Risks"
+      },
+      {
+        "value": "8",
+        "label": "Active Campaigns/Actors"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Siemens (S7 PLCs, S7 Webserver .NET Client) VMware/Broadcom (vCenter, ESXi, Cloud/SDDC) F5/NGINX (HTTP/2) Oracle Java (OpenJDK/Java SE) Danfoss iC7 Drives Advantech WISE-6610 Eclipse Milo (OPC UA) SonicWall SonicOS SSLVPN Puppet Enterprise Zimbra Elecbrakes (EB2/VM1) Dorsett Controls InfoScan Siemens Mendix, Simcenter Femap Likely Impacted Sectors Energy, Water and Wastewater, Critical Manufacturing, Transportation Systems, Government Services, Healthcare, and Telco/Communications."
+    ],
+    "sectors": [
+      "Siemens (S7 PLCs, S7 Webserver .NET Client) VMware/Broadcom (vCenter, ESXi, Cloud/SDDC) F5/NGINX (HTTP/2) Oracle Java (OpenJDK/Java SE) Danfoss iC7 Drives Advantech WISE-6610 Eclipse Milo (OPC UA) SonicWall SonicOS SSLVPN Puppet Enterprise Zimbra Elecbrakes (EB2/VM1) Dorsett Controls InfoScan Siemens Mendix, Simcenter Femap Likely Impacted Sectors Energy, Water and Wastewater, Critical Manufacturing, Transportation Systems, Government Services, Healthcare, and Telco/Communications."
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "UNC5221 / \"Armory Castle\": exploiting vCenter CVE-2026-123890; tooling (BONESAW/SAWSNAKE/LAZYBONES) focuses on SSO/SAML and ESXi enumeration; target scope includes telco and cloud backbones. View Article",
+        "China-nexus operations: covert networks of compromised SOHO/IoT devices mask activity and enable CI pre-positioning (Volt/Flax Typhoon TTPs). Advisory",
+        "LAUNDRY BEAR (Void Blizzard): Zimbra XSS phishing chain exfiltrates mail/GAL/2FA data; persistent via IMAP app passwords. Advisory",
+        "Ransomware ecosystems: Gunra and SafePay advisories detail exploitation of VPN/firewalls, LOTL tools (Impacket/RDP/WinRM), and double extortion; hypervisor-level impact observed in recent IRs. Gunra Advisory SafePay Advisory"
+      ]
+    }
+  ],
+  "relevance": "Observed activity and vulnerabilities materially affect industrial operations along three axes: Process control exposure: direct PLC/drive/protocol risks (Siemens S7, Danfoss iC7, Eclipse Milo OPC UA) can degrade safety, availability, or integrity of control processes. Security Advisory CISA Bulletin CISA Bulletin Enterprise-to-OT bridges: active exploitation of vCenter, NGINX, SonicWall SSLVPN, Puppet Enterprise, and Zimbra expands attacker footholds and threatens OT via shared identities and management planes. View Article CISA KEV Advisory Edge and access infrastructure: router botnets and LoRaWAN gateways (WISE-6610) present staging/lateral movement platforms that erode network segmentation and increase OT blast radius. Advisory CISA Bulletin",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Siemens S7 PLC targeting; S7comm monitoring and segmentation required. Security Advisory",
+        "Eclipse Milo OPC UA weaknesses enabling unauthorized methods/DoS. CISA Bulletin",
+        "Danfoss iC7 drives: unsigned engineering/debug surfaces; restrict and enforce signed firmware. CISA Bulletin",
+        "Advantech WISE-6610 LoRaWAN gateways: command injection with public exploits; update and isolate. CISA Bulletin",
+        "Elecbrakes trailer controllers (BLE): unsigned firmware/command injection safety risk. ICS Advisory",
+        "OpenPLC Runtime: unauth admin creation race (CVE-2026-126088). ICS Advisory",
+        "vCenter auth bypass (CVE-2026-123890) exploited; patch and rotate SSO/STS. View Article",
+        "NGINX HTTP/2 unauth RCE (public PoC); disable HTTP/2 pending patches. CERT-FR Alert",
+        "Java \"Java4Shell\" (CVE-2026-114938) RCE; patch and restrict Base64 inputs. CISA Alert",
+        "Puppet Enterprise deserialization (KEV); treat orchestrators as Tier-0 and patch fast. CISA KEV",
+        "Zimbra XSS (CVE-2025-66376) exploited by LAUNDRY BEAR; revoke app passwords and patch. Advisory"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Initial Access: Exploit Public-Facing Application (T1190); Valid Accounts (T1078); Supply-chain/service abuse (reverse proxies, VPNs).",
+      "Execution & Persistence: SAML token/signing abuse (T1606.002); Web Shell (T1505.003); Service modification on appliances; DLL sideloading (Windows).",
+      "Privilege Escalation & Defense Evasion: Credential Dumping (T1003); BYOVD to kill EDR; Log deletion (T1070); Golden SAML.",
+      "Discovery & Lateral Movement: vCenter/ESXi inventory; RDP/SMB/WinRM (T1021.*); OPC UA method calls; router/SOHO pivoting (T1090).",
+      "Command & Control: Covert egress over Slack/HTTPS/DoH; Blockchain C2 (Solana memos) noted in separate criminal ops.",
+      "Impact: Hypervisor VM disruption; PLC/drive parameter tampering; data theft/extortion (double extortion models)."
+    ],
+    "mitreIds": [
+      "T1190",
+      "T1078",
+      "T1606.002",
+      "T1505.003",
+      "T1003",
+      "T1070",
+      "T1021",
+      "T1090"
+    ]
+  },
+  "outlook72h": "Expect automated scanning and broad opportunistic exploitation of NGINX HTTP/2 RCE where HTTP/2 remains enabled; disable and monitor for malformed frames and crashes. CERT-FR Alert Continued targeting of vCenter environments as organizations patch; post-compromise discovery for SAML/STS persistence expected. View Article Incremental increases in S7comm probes and opportunistic OPC UA method-call abuse against poorly segmented plants. Security Advisory Router/SOHO device abuse to mask reconnaissance and credential spraying against VPN/email/IdP interfaces of CI operators. Advisory",
+  "relatedCves": [
+    "CVE-2026-123890",
+    "CVE-2026-114938",
+    "CVE-2026-126088",
+    "CVE-2025-66376",
+    "CVE-2026-109618",
+    "CVE-2026-99312",
+    "CVE-2026-113443",
+    "CVE-2026-107190"
+  ]
+}
