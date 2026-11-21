@@ -168,7 +168,7 @@
       d.appendChild(me);
     }
     if (f.analysis) d.appendChild(analysisBox(f.analysis));
-    var pts = el("div", "wbpts"); pts.appendChild(el("h4", null, "Why it ranks here: " + r.score + " of 100"));
+    var pts = el("div", "wbpts"); pts.appendChild(el("h4", null, "Why it ranks here: " + r.score + " of 100 patch queue points"));
     var pl = el("ul"); r.points.forEach(function (p) { var li = el("li"); li.appendChild(el("b", null, "+" + p[0])); li.appendChild(document.createTextNode(" " + p[1])); pl.appendChild(li); }); pts.appendChild(pl); d.appendChild(pts);
     if (g) {
       var gb = el("div", "wbguide");
@@ -210,7 +210,7 @@
     vis.slice(0, 150).forEach(function (r, i) {
       var f = r.f, li = el("li", "wbrow" + (r.m && r.m.state === "clear" ? " clear" : "")), open = openCve === f.cve;
       var b = el("button", "wbhead"); b.type = "button"; b.setAttribute("aria-expanded", open ? "true" : "false");
-      var sc = el("span", "wbscore", String(r.score)); sc.title = "Priority score out of 100"; b.appendChild(sc);
+      var sc = el("span", "wbscore", String(r.score)); sc.title = "Patch queue rank: points out of 100 that order this list (not a CVSS score or the CyberView rating)"; b.appendChild(sc);
       var mid = el("span", "wbmid");
       var top = el("span", "wbtop"); top.appendChild(el("b", null, f.cve)); top.appendChild(document.createTextNode(" " + [f.vendor, f.product].filter(Boolean).join(" ")));
       mid.appendChild(top); mid.appendChild(el("span", "wbname", f.name));
@@ -337,7 +337,7 @@
   /* ---- exports ---- */
   function csvCell(v) { v = String(v == null ? "" : v); if (/^[=+\-@\t\r]/.test(v)) v = "'" + v; return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }   // no spreadsheet formulas
   function toCsv() {
-    var L = [["Rank", "Score", "CVE", "Vendor", "Product", "Flaw", "Known exploited", "Ransomware", "EPSS %", "CVSS", "CISA deadline", "Your status", "Your versions", "Fixed in", "Why", "Advisory", "NVD"]];
+    var L = [["Rank", "Queue points", "CVE", "Vendor", "Product", "Flaw", "Known exploited", "Ransomware", "EPSS %", "CVSS", "CISA deadline", "Your status", "Your versions", "Fixed in", "Why", "Advisory", "NVD"]];
     visibleRows().forEach(function (r, i) { var f = r.f, g = f.guide;
       L.push([i + 1, r.score, f.cve, f.vendor, f.product, f.name, f.kev ? "yes" : "no", f.ransomware ? "yes" : "no", f.epss === null ? "" : Math.round(f.epss * 100), f.cvss === null ? "" : f.cvss, f.due,
         r.m && STATE[r.m.state] ? STATE[r.m.state][0] : inv.length ? "Not on your list" : "", mineText(r.m), (g && g.fixed.length ? g.fixed : (r.m && r.m.fixed.length ? r.m.fixed : W.fixedIn(f))).join("; "),
@@ -347,7 +347,7 @@
   function toChange() {
     var top = visibleRows().filter(function (r) { return !r.m || r.m.state !== "clear"; }).slice(0, 10), L = ["PATCH PRIORITIES  " + TODAY, "From CyberView's workbench" + (inv.length ? ", matched against our software list (" + inv.length + " products)" : " (general ranking; no software list loaded)"), ""];
     top.forEach(function (r, i) { var f = r.f, g = f.guide;
-      L.push((i + 1) + ". " + f.cve + "  " + [f.vendor, f.product].filter(Boolean).join(" ") + "  [score " + r.score + "]");
+      L.push((i + 1) + ". " + f.cve + "  " + [f.vendor, f.product].filter(Boolean).join(" ") + "  [queue points " + r.score + "/100]");
       if (r.m && r.m.state !== "none") L.push("   We run: " + mineText(r.m) + " -> " + STATE[r.m.state][0]);
       L.push("   Why: " + r.points.map(function (p) { return p[1]; }).join("; "));
       var fx = g && g.fixed.length ? g.fixed : (r.m && r.m.fixed.length ? r.m.fixed : W.fixedIn(f)); if (fx.length) L.push("   Fixed in: " + fx.join("; "));
@@ -457,7 +457,7 @@
     $("cvSummary").textContent = (ix.total !== null ? fmtN(ix.total) + " CVEs on file, every one published since 1999" + (ix.rejected !== null ? " (" + fmtN(ix.rejected) + " of them rejected)" : "") + ". " : "") +
       (ix.kev !== null ? fmtN(ix.kev) + " are in CISA's known-exploited catalog" + (ix.ransomware ? " (" + fmtN(ix.ransomware) + " used by ransomware)" : "") + (ix.criticalNvd ? "; " + fmtN(ix.criticalNvd) + " are rated Critical by NVD's CVSS v3 scores" + (ix.critical !== null ? " (" + fmtN(ix.critical) + " when the vendor's own score is used first)" : "") : ix.critical !== null ? "; " + fmtN(ix.critical) + " are rated Critical (CVSS v3 or v4)" : "") + ". " :
         ix.exploited !== null ? fmtN(ix.exploited) + " are known or seen exploited. " : "") +
-      (ix.bands ? "CyberView rating: " + ["Critical", "High", "Elevated", "Moderate"].map(function (b) { return fmtN(ix.bands[b] || 0) + " " + b; }).join(", ") + ", the rest Low. " : "") +
+      (ix.ratingBands ? "CyberView rating (CVSS adjusted for exploitation): " + ["Critical", "High", "Medium"].map(function (b) { return fmtN(ix.ratingBands[b] || 0) + " " + b; }).join(", ") + ", " + fmtN((ix.ratingBands.Low || 0) + (ix.ratingBands.None || 0)) + " Low or None, " + fmtN(ix.ratingBands["Not scored"] || 0) + " not scored (no CVSS score). " : "") +
       (ix.decisions ? "CISA SSVC priority today: " + fmtN(ix.decisions.act || 0) + " Act, " + fmtN(ix.decisions.attend || 0) + " Attend, " + fmtN(ix.decisions["track*"] || 0) + " Track*, the rest Track. " : "") +
       (ix.audit && ix.audit.nvdTotal !== null ? "Checked against NVD and CISA every hour: NVD lists " + fmtN(ix.audit.nvdTotal) + " CVEs (" + fmtN(ix.audit.nvdRejected) + " rejected), CISA " + fmtN(ix.audit.cisaKev) + " known exploited; NVD's own scores rate " + fmtN(ix.audit.nvdCritical) + " Critical, ours use the assigner's score first. " : "") +
       (age !== null && isFinite(age) ? "Updated " + (age < 90 ? age + " minutes" : Math.round(age / 60) + " hours") + " ago." + (age > 360 ? " This is older than it should be; the hourly update may be failing." : "") : "");
@@ -477,7 +477,12 @@
     });
     return CV.events;
   }
-  function sevBadge(r) { return r.sev ? el("span", "badge " + SEV[r.sev][1], SEV[r.sev][0] + (r.cvss !== null ? " " + r.cvss.toFixed(1) : "")) : el("span", "badge info", r.cvss !== null ? "CVSS " + r.cvss.toFixed(1) : "No score"); }
+  /* the CVSS base score the rating starts from (the assigner's or CISA's, else NVD's), named as CVSS so it is never read as the CyberView rating */
+  function sevBadge(r) {
+    var nvd = r.cvss === null && r.ncvss !== null, s = nvd ? r.ncvss : r.cvss, k = nvd ? r.nsev : r.sev;
+    if (s === null) return el("span", "badge info", "No CVSS score");
+    var b = el("span", "badge " + (SEV[k] ? SEV[k][1] : "info"), "CVSS " + s.toFixed(1) + (SEV[k] ? " " + SEV[k][0] : "") + (nvd ? " (NVD)" : "")); b.title = "CVSS base score from " + (nvd ? "NVD" : "the assigner or CISA") + ", before any adjustment"; return b;
+  }
   function isKev(r) { return !!(r.kev || CV.kev[r.id]); }
   var DEC_CLASS = { act: "bad", attend: "warn", "track*": "info", track: "info" };
   function decBadge(rt) { var b = el("span", "badge " + (DEC_CLASS[rt.decision] || "info"), (rt.decision ? "Priority: " : "") + rt.label); b.title = rt.does; return b; }
@@ -485,24 +490,27 @@
   function nrm(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); }
   function mineFn(r) { if (!inv.length) return false; var p = nrm(r.product), v = nrm(r.vendor); if (!p) return false;
     return inv.some(function (x) { var n = nrm(x.name); return n && (n === p || n.indexOf(p) >= 0 || p.indexOf(n) >= 0) && (!x.vendor || !v || nrm(x.vendor) === v || v.indexOf(nrm(x.vendor)) >= 0); }); }
-  function rateOpts() { return { mission: $("cvMission").value, exposed: $("cvExposed").value === "yes" ? true : $("cvExposed").value === "no" ? false : undefined,
-    mineFn: mineFn, mapFn: function (r) { return !!(onMapIds && onMapIds[r.id]); }, mineKey: inv.length + "|" + (onMapIds ? 1 : 0) }; }
+  function rateOpts() { return { mission: $("cvMission").value, exposed: $("cvExposed").value === "yes" ? true : $("cvExposed").value === "no" ? false : undefined }; }
+  function onMap(r) { return !!(onMapIds && onMapIds[r.id]); }
+  /* the CyberView rating, every step listed: CVSS base x CVSS v3.1 Exploit Code Maturity, CVSS Roundup, CVSS's bands */
   function scoreBox(r) {
     var sc = D.scored(r); if (!sc) return null;
     var box = el("div", "wbme cvscorebox " + sc.tone), head = el("div", "cvsh");
-    var big = el("span", "cvbig", String(sc.score)); big.title = "CyberView rating, 0 to 100"; head.appendChild(big);
-    var hl = el("div"); hl.appendChild(el("b", null, "CyberView rating: " + sc.band)); hl.appendChild(el("p", "note", "Confidence " + sc.confidence.toLowerCase() + ": " + sc.confidenceWhy + ". Calculated by CyberView's published rating rules; every point is listed below."));
+    var big = el("span", "cvbig", sc.score !== null ? sc.score.toFixed(1) : "-"); big.title = sc.score !== null ? "CyberView rating on the CVSS scale, 0.0 to 10.0" : "Not scored: no CVSS base score"; head.appendChild(big);
+    var hl = el("div"); hl.appendChild(el("b", null, sc.score !== null ? "CyberView rating: " + sc.score.toFixed(1) + " " + sc.band : "CyberView rating: not scored"));
+    hl.appendChild(el("p", "note", "The CVSS base score adjusted for exploitation evidence with CVSS's own Exploit Code Maturity metric (CVSS v3.1), on the same 0.0 to 10.0 scale with the same bands as CVSS. Never higher than the CVSS base score. How urgent it is for you: the priority below."));
     head.appendChild(hl); box.appendChild(head);
+    if (sc.score === null) { box.appendChild(el("p", "cvline", sc.text)); return box; }
     var tb = el("div", "cvfactors");
-    sc.factors.forEach(function (f) {
-      var row = el("div", "cvf"); var lab = el("span", "cvfl", f.factor); row.appendChild(lab);
-      var bar = el("span", "cvfb"), fill = el("span", "cvff" + (f.points < 0 ? " neg" : "")); fill.style.width = Math.round(Math.abs(f.points) / Math.max(1, f.max) * 100) + "%"; bar.appendChild(fill); row.appendChild(bar);
-      row.appendChild(el("span", "cvfp", (f.points > 0 ? "+" : "") + f.points + " / " + f.max + (f.capped ? " (capped)" : "")));
-      var ul = el("ul"); f.items.forEach(function (it) { ul.appendChild(el("li", null, (it.points > 0 ? "+" : "") + it.points + " " + it.why)); });
-      if (!f.items.length) ul.appendChild(el("li", "note", "Nothing found for this factor"));
-      row.appendChild(ul); tb.appendChild(row);
-    });
+    var step = function (label, value, why) { var row = el("div", "cvf"); row.appendChild(el("span", "cvfl", label)); row.appendChild(el("span", "cvfp", value)); if (why) row.appendChild(el("span", "cvfw", why)); tb.appendChild(row); };
+    var b = sc.base;
+    step("CVSS base score", b.score.toFixed(1) + " " + sc.baseBand, "From " + b.from + (b.ver ? ", CVSS v" + b.ver : "") + (b.vector ? " · " + b.vector : ""));
+    step("Exploit Code Maturity (E)", "x " + sc.e.value.toFixed(2) + " " + sc.e.label, sc.eWhy.charAt(0).toUpperCase() + sc.eWhy.slice(1) + ". CVSS v3.1 values: High 1.00, Proof-of-Concept 0.94, Unproven 0.91.");
+    step("CyberView rating", "= " + sc.score.toFixed(1) + " " + sc.band, "Rounded up to one decimal (CVSS Roundup). Bands as CVSS: Low 0.1 to 3.9, Medium 4.0 to 6.9, High 7.0 to 8.9, Critical 9.0 to 10.0.");
     box.appendChild(tb);
+    box.appendChild(el("p", "cvline", sc.text));
+    sc.notes.forEach(function (n) { box.appendChild(el("p", "note", n)); });
+    box.appendChild(el("p", "note", "Confidence " + sc.confidence.toLowerCase() + ": " + sc.confidenceWhy + ". Not in the rating, shown with the priority below: EPSS, ransomware use, CISA's dates and your own settings."));
     return box;
   }
   function rateBox(r) {
@@ -523,13 +531,19 @@
   }
   function cvCard(r, open, rank) {
     var li = el("li", "wbrow cvrow" + (r.rejected ? " clear" : "")), b = el("button", "wbhead cvhead"); b.type = "button"; b.setAttribute("aria-expanded", open ? "true" : "false");
-    var sc = el("span", "wbscore cvscore", r.cvss !== null ? r.cvss.toFixed(1) : "-"); sc.title = "CVSS base score"; b.appendChild(sc);
+    // the square is the plain CVSS base score (the same one the rating starts from), captioned so it is never read as the rating
+    var base = r.cvss !== null ? r.cvss : (r.ncvss != null ? r.ncvss : null), fromNvd = r.cvss === null && base !== null;
+    var sc = el("span", "wbscore cvscore"); sc.appendChild(el("span", "cvnum", base !== null ? base.toFixed(1) : "-")); sc.appendChild(el("span", "cvcap", fromNvd ? "CVSS (NVD)" : "CVSS"));
+    sc.title = base !== null ? "CVSS base score from " + (fromNvd ? "NVD" : "the assigner or CISA") + ", before the CyberView adjustment" : "No CVSS base score"; b.appendChild(sc);
     var mid = el("span", "wbmid"), top = el("span", "wbtop"); top.appendChild(el("b", null, r.id)); var who = [r.vendor, r.product].filter(Boolean).join(" "); if (who) top.appendChild(document.createTextNode(" " + who));
     mid.appendChild(top); mid.appendChild(el("span", "wbname", (r.title || r.desc || "No description.").slice(0, 200)));
-    var chips = el("span", "wbchips"); if (!r.rejected) { var scx = D.scored(r); if (scx) { var sbg = el("span", "badge " + scx.tone, "CyberView " + scx.score + " " + scx.band); sbg.title = "CyberView rating, 0 to 100: open the CVE for every point"; chips.appendChild(sbg); } chips.appendChild(decBadge(D.rated(r))); } chips.appendChild(sevBadge(r));
+    var chips = el("span", "wbchips"); if (!r.rejected) { chips.appendChild(decBadge(D.rated(r))); var scx = D.scored(r); if (scx) { var sbg = el("span", "badge " + scx.tone, scx.score !== null ? "CyberView " + scx.score.toFixed(1) + " " + scx.band : "CyberView: not scored"); sbg.title = scx.text; chips.appendChild(sbg); } } chips.appendChild(sevBadge(r));
     if (r.rejected) chips.appendChild(el("span", "badge warn", "Rejected"));
     if (isKev(r)) chips.appendChild(el("span", "badge bad", "Known exploited")); else if (r.expl === "active") chips.appendChild(el("span", "badge bad", "Exploited (CISA)"));
+    if (r.ransom) chips.appendChild(el("span", "badge bad", "Ransomware"));
     if (r.epss !== null) chips.appendChild(el("span", "badge info", "EPSS " + (r.epss * 100).toFixed(r.epss < 0.01 ? 2 : 1) + "%"));
+    if (!r.rejected && mineFn(r)) chips.appendChild(el("span", "badge warn", "On your software list"));
+    if (onMap(r)) chips.appendChild(el("span", "badge info", "On CyberView's map"));
     if (r.cwe) chips.appendChild(el("span", "badge info", r.cwe));
     if (r.pub) chips.appendChild(el("span", "badge info", r.pub));
     mid.appendChild(chips); b.appendChild(mid); b.appendChild(el("span", "wbrank", rank ? "#" + rank : ""));
@@ -543,7 +557,8 @@
     d.appendChild(rateBox(r));
     var kv = el("ul");
     [["Affects", [r.vendor, r.product].filter(Boolean).join(" ")], ["Published", fmtLong(r.pub)], ["Last changed", r.upd && r.upd !== r.pub ? fmtLong(r.upd) : ""], ["Assigned by", r.cna],
-      ["CVSS", r.cvss !== null ? r.cvss.toFixed(1) + (r.sev ? " " + SEV[r.sev][0].toLowerCase() : "") + (r.ver ? " (v" + r.ver + ")" : "") : ""], ["Weakness", r.cwe],
+      ["CVSS", r.cvss !== null ? r.cvss.toFixed(1) + (r.sev ? " " + SEV[r.sev][0].toLowerCase() : "") + (r.ver ? " (v" + r.ver + ")" : "") : ""],
+      ["CVSS from NVD", r.ncvss !== null && (r.cvss === null || r.ncvss !== r.cvss) ? r.ncvss.toFixed(1) + (r.nsev ? " " + SEV[r.nsev][0].toLowerCase() : "") : ""], ["Weakness", r.cwe],
       ["CISA exploitation", r.expl ? D.EXPL[r.expl] : ""], ["Exploit likelihood (EPSS)", r.epss !== null ? (r.epss * 100).toFixed(2) + "% chance of exploitation in the next 30 days" + (r.pct !== null ? "; higher than " + (r.pct * 100).toFixed(1) + "% of CVEs" : "") : ""]]
       .forEach(function (p) { if (!p[1]) return; var li = el("li"); li.appendChild(el("b", null, p[0] + ": ")); li.appendChild(document.createTextNode(p[1])); kv.appendChild(li); });
     d.appendChild(kv);
@@ -564,7 +579,8 @@
     }, function () { ev.textContent = ""; });
     return d;
   }
-  function cvFilters() { D.rateOpts = rateOpts(); return { minScore: +$("cvMin").value || 0, decision: $("cvDec").value, rateOpts: D.rateOpts, q: $("wbQ").value, sev: $("cvSev").value, minEpss: +$("cvEpss").value || 0, cwe: $("cvCwe").value, vendor: $("cvVendor").value, status: $("cvStatusSel").value, exploited: $("cvKev").checked }; }
+  /* one severity filter: the CyberView rating by band floor ("9", "7", "4"), or the CVSS base rating before adjustment ("b:Critical" ...), or "b:unscored" */
+  function cvFilters() { D.rateOpts = rateOpts(); var sv = $("cvMin").value; return { minScore: /^\d/.test(sv) ? +sv : 0, baseSev: sv.slice(0, 2) === "b:" ? sv.slice(2) : "", decision: $("cvDec").value, rateOpts: D.rateOpts, q: $("wbQ").value, minEpss: +$("cvEpss").value || 0, cwe: $("cvCwe").value, vendor: $("cvVendor").value, status: $("cvStatusSel").value, exploited: $("cvKev").checked }; }
   function rebuildPool() {
     var out = [], seen = {};
     Object.keys(CV.sets).forEach(function (k) { if (CV.sets[k].state === "done") CV.sets[k].files.forEach(function (f) { (CV.ready[f] || []).forEach(function (r) { if (!seen[r.id]) { seen[r.id] = 1; out.push(r); } }); }); });
@@ -677,7 +693,7 @@
   $("cvLookup").addEventListener("click", lookup);
   $("cvLoadYear").addEventListener("click", loadYear);
   $("cvClearYears").addEventListener("click", unloadYears);
-  ["cvSev", "cvEpss", "cvStatusSel", "cvSort", "cvKev", "cvDec", "cvMin"].forEach(function (id) { $(id).addEventListener("change", function () { CV.page = 0; renderAll(); }); });
+  ["cvEpss", "cvStatusSel", "cvSort", "cvKev", "cvDec", "cvMin"].forEach(function (id) { $(id).addEventListener("change", function () { CV.page = 0; renderAll(); }); });
   /* the visitor's rating settings stay in this browser, like the software list */
   try { var rs = JSON.parse(localStorage.getItem("cwm.rate") || "{}"); if (/^(low|medium|high)$/.test(rs.mission || "")) $("cvMission").value = rs.mission; if (/^(yes|no)$/.test(rs.exposed || "")) $("cvExposed").value = rs.exposed; } catch (e) {}
   ["cvMission", "cvExposed"].forEach(function (id) { $(id).addEventListener("change", function () { try { localStorage.setItem("cwm.rate", JSON.stringify({ mission: $("cvMission").value, exposed: $("cvExposed").value })); } catch (e) {} D.rateOpts = rateOpts(); CV.page = 0; renderAll(); }); });

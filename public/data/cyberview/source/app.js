@@ -49,7 +49,7 @@ var LAYERS=[["ot","Industrial control: OT, building and plant systems",/ot-ics|s
 var SECG=[["energy","Energy and utilities"],["health","Healthcare"],["gov","Government"],["finance","Finance"],["telecom","Telecom"],["transport","Transport"],["edu","Education"],["tech","Technology"],["other","Other sectors"]];
 /* every piece of text CyberView writes is written by its AI agents, which are Claude models; say so wherever it appears */
 var AI_BY="CyberView AI (a Claude model)";
-var BUILD={version:"1.60",date:"2026-11-20"};
+var BUILD={version:"1.62",date:"2026-11-20"};
 var viz={lane:"layer",mat:"layer"};
 var kev=[],ripples=null;
 function own(o,k){return typeof k==="string"&&Object.prototype.hasOwnProperty.call(o,k);}
@@ -164,6 +164,29 @@ var CTX_DEFS={
 var GRID_DEC={weather:"weather",equipment:"equipment failure",planned:"planned work",supply_shortfall:"supply shortfall",wildfire_safety:"wildfire safety shut-off",third_party:"damage by a third party",
   cyber_official:"cyberattack, stated by an official source",cyber_reported:"reported as a cyberattack, not confirmed by an official source",under_investigation:"under investigation",unknown:"not stated by the operator"};
 var GRID_KIND={outage:"outage",load_shedding:"load shedding",grid_emergency:"grid emergency",supply_warning:"supply warning"};
+/* the outage desk's checks (scripts/outage-desk.mjs; owner, 2026-11-20): an AI checker read the operator's, provider's or a
+   government's page and credible reporting. confirmed names who confirmed it; a cyber link is only ever "reported" or
+   "stated by an official source" and handed to research, never shown as a cyber event; anything else stays unchecked. */
+var OUT_DEC={confirmed:1,not_confirmed:1,cyber_lead:1};
+function cleanVerified(v){
+  if(!v||typeof v!=="object"||!own(OUT_DEC,str(v.decision,20)))return null;
+  var pub=str(v.publisher,80).trim();if(v.decision!=="not_confirmed"&&!pub)return null;
+  return {decision:v.decision,summary:str(v.summary,300).trim(),publisher:pub,official:v.decision==="cyber_lead"&&v.said_by==="official",url:gnLink(v.url),at:str(v.at,30),by:AI_BY};
+}
+function verifiedLabel(v){
+  if(!v)return "";
+  if(v.decision==="confirmed")return "Checked by "+v.by+": confirmed by "+v.publisher;
+  if(v.decision==="not_confirmed")return "Checked by "+v.by+": not confirmed";
+  return "Checked by "+v.by+": "+(v.official?v.publisher+", an official source, links it to a cyberattack":v.publisher+" reports a cyber cause, not confirmed")+"; passed to CyberView's research, not shown as a cyber event";
+}
+/* the check as a small block: the label, the checker's summary, and the page that confirms it (publisher's own https page) */
+function verifiedNode(v){
+  var sm=el("small","aiby ocheck");sm.dataset.decision=v.decision;
+  sm.appendChild(document.createTextNode(verifiedLabel(v)+(v.summary?" \u2014 "+v.summary:"")));
+  if(v.url){sm.appendChild(document.createTextNode(" "));var a=el("a",null,"source");a.href=safeUrl(v.url);a.target="_blank";a.rel="noopener noreferrer";sm.appendChild(a);}
+  if(v.at){var w=ago(v.at);if(w)sm.appendChild(document.createTextNode(" \u00b7 checked "+w));}
+  return sm;
+}
 var ctx={},ctxOn={ioda:false,gdacs:true,grid:true};
 function cleanCtx(name,d){
   var def=CTX_DEFS[name];if(!def||!d||typeof d!=="object"||!Array.isArray(d.items))return null;
@@ -171,7 +194,7 @@ function cleanCtx(name,d){
   var items=d.items.slice(0,name==="grid"?460:60).map(function(x){
     if(!x||typeof x!=="object")return null;
     if(name==="ioda"){var code=str(x.code,2);if(!/^[A-Z]{2}$/.test(code))return null;
-      return {code:code,name:str(x.name,60),map:str(x.map_name,60).toLowerCase(),score:numIn(x.score,0,1e9)||0,events:numIn(x.events,0,1e4)||0,signals:strs(x.signals,4,20),url:link(x.url)};}
+      return {code:code,name:str(x.name,60),map:str(x.map_name,60).toLowerCase(),score:numIn(x.score,0,1e9)||0,events:numIn(x.events,0,1e4)||0,signals:strs(x.signals,4,20),url:link(x.url),verified:cleanVerified(x.verified)};}
     if(name==="grid")return cleanGrid(x,link);
     var lat=numIn(x.lat,-90,90),lng=numIn(x.lng,-180,180);if(lat===null||lng===null)return null;
     return {id:str(x.id,40),type:str(x.type,30),level:x.level==="red"?"red":"orange",name:str(x.name,120),country:str(x.country,80),from:str(x.from,19),lat:lat,lng:lng,url:link(x.url)};
@@ -285,7 +308,8 @@ function cleanGridNews(d){
       figure:fn!==null&&own(GN_UNIT,fu)?{n:Math.round(fn),unit:fu,by:str(f.by,80).trim()}:null,
       causes:strs(x.cause_words,8,20).filter(function(c){return GN_CAUSES.indexOf(c)>=0;}),
       first:str(x.first_seen,30),last:str(x.last_seen,30)||str(x.first_seen,30),pubs:pubs,count:pubs.length,cyber:str(x.cyber_headline,220).trim(),
-      checked:x.checked&&typeof x.checked==="object"&&own(GRID_DEC,str(x.checked.decision,30))?{decision:str(x.checked.decision,30),summary:str(x.checked.summary,300).trim(),by:AI_BY}:null};
+      checked:x.checked&&typeof x.checked==="object"&&own(GRID_DEC,str(x.checked.decision,30))?{decision:str(x.checked.decision,30),summary:str(x.checked.summary,300).trim(),by:AI_BY}:null,
+      verified:cleanVerified(x.verified)};
   }).filter(Boolean).sort(function(a,b){return b.count-a.count||(a.last<b.last?1:a.last>b.last?-1:0);});
   return {at:str(d.updated_at,30),items:items};
 }
@@ -298,7 +322,7 @@ function gnFigure(x){
 function gnShown(x){return gridUi.f!=="incidents"&&(!gridUi.cc||x.country===gridUi.cc);}
 function gnTipBody(x){
   var p=[x.count+" publisher"+(x.count===1?"":"s")];var f=gnFigure(x);if(f)p.push(f);var s=ago(x.first);if(s)p.push("first reported "+s);
-  return p.join(" \u00b7 ")+" \u00b7 not checked by CyberView \u00b7 context, not a cyber event";
+  return p.join(" \u00b7 ")+" \u00b7 "+(x.verified?verifiedLabel(x.verified):"not checked by CyberView")+" \u00b7 context, not a cyber event";
 }
 /* ---------- Grid view (owner, 2026-11-19): power grid outages only, as context. Nothing about cyber events is drawn or
    listed here: no event markers, arcs, other layers, filters or feed. Leaving it restores the other views as they were. ---------- */
@@ -503,8 +527,9 @@ function gridNewsRow(x){
   });
   if(x.pubs.length>8)by.appendChild(document.createTextNode(" and "+(x.pubs.length-8)+" more"));
   li.appendChild(by);
+  if(x.verified)li.appendChild(verifiedNode(x.verified));
   if(x.checked)li.appendChild(el("small","aiby",gridChecked(x)));
-  li.appendChild(el("small","gnote",(x.checked?"The reports themselves are not checked by CyberView. ":"Not checked by CyberView. ")+"A news report, not an incident; drawn at the centre of the place named."));
+  li.appendChild(el("small","gnote",(x.verified?"":x.checked?"The reports themselves are not checked by CyberView. ":"Not checked by CyberView. ")+"A news report, not an incident; drawn at the centre of the place named."));
   li.addEventListener("click",function(ev){if(ev.target&&ev.target.closest&&ev.target.closest("a"))return;gridFocus(x);});
   li.addEventListener("keydown",function(ev){if(ev.target!==li)return;if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();gridFocus(x);}});
   return li;
@@ -514,7 +539,8 @@ function gridNewsList(){
   if(!gridNews){cnt.textContent=loaded?"No news reports of power outages are stored yet.":"Loading news reports";return;}
   if(gridUi.f==="incidents"){cnt.textContent="Hidden while \u201cIncidents only\u201d is on: news reports are never incidents.";return;}
   var list=gridNews.items.filter(gnShown);
-  cnt.textContent=list.length?list.length+" outage"+(list.length===1?"":"s")+" reported in the news in the last 72 hours, grouped by place and time; the more publishers, the stronger the report. Not checked by CyberView and never counted as incidents."
+  var nv=list.filter(function(x){return x.verified;}).length;
+  cnt.textContent=list.length?list.length+" outage"+(list.length===1?"":"s")+" reported in the news in the last 72 hours, grouped by place and time; the more publishers, the stronger the report. "+(nv?nv+" checked by "+AI_BY+" (marked on each); the rest not checked by CyberView. ":"Not checked by CyberView. ")+"Never counted as incidents."
     :gridNews.items.length?"No news report matches this filter.":"No power outage reported in the news in the last 72 hours was found.";
   var cap=gridUi.nall?list.length:30;
   list.slice(0,cap).forEach(function(x){ul.appendChild(gridNewsRow(x));});
@@ -644,6 +670,7 @@ function renderLayers(){
       c.items.slice(0,k==="ioda"?6:5).forEach(function(x){
         var li=el("li"),a=el("a",null,k==="ioda"?x.name:x.name);a.href=safeUrl(x.url);a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);
         li.appendChild(el("span","muted",k==="ioda"?" "+x.signals.join(", ")+(x.map?"":" · not drawn (too small for this map)"):" "+x.level+" alert"+(x.country?" · "+x.country:"")));
+        if(k==="ioda")li.appendChild(x.verified?verifiedNode(x.verified):el("small","gnote","A measurement, not checked by CyberView."));
         ul.appendChild(li);});
       box.appendChild(ul);
     }
@@ -1952,7 +1979,7 @@ function drawGridNews(){
     if(!gnShown(x))return;var p=proj(x.lng,x.lat);if(!p)return;var px=T.applyX(p[0]),py=T.applyY(p[1]),r=gnR(x);
     var head="Reported in the news: "+x.place+(x.country?", "+gridCountry(x.country):""),body=gnTipBody(x);
     var g=gMarks.append("g").attr("class","gnews").attr("transform","translate("+px+","+py+")").attr("tabindex",0)
-      .attr("aria-label",head+", "+x.count+" publisher"+(x.count===1?"":"s")+" (not checked by CyberView; context, not a cyber event)");
+      .attr("aria-label",head+", "+x.count+" publisher"+(x.count===1?"":"s")+" ("+(x.verified?verifiedLabel(x.verified):"not checked by CyberView")+"; context, not a cyber event)");
     g.append("circle").attr("r",r);
     var show=function(){tip(px,py,head,body);};
     g.on("click",function(){gridUi.sel=x.id;gridMark();show();}).on("keydown",function(ev){if(ev.key==="Enter"){ev.preventDefault();gridUi.sel=x.id;gridMark();show();}});

@@ -29,7 +29,7 @@
       years.push({ year: +k, count: n, files: f && f.length ? f : null }); } });
     years.sort(function (a, b) { return b.year - a.year; });
     var s = x.sources && typeof x.sources === "object" ? x.sources : {};
-    var o = { builtAt: str(x.built_at, 30), total: num(x.total, 0, 1e8), rejected: num(x.rejected, 0, 1e8), exploited: num(x.exploited, 0, 1e8), critical: num(x.critical, 0, 1e8), criticalNvd: num(x.critical_nvd, 0, 1e8), bands: x.bands && typeof x.bands === "object" ? { Critical: num(x.bands.Critical, 0, 1e7), High: num(x.bands.High, 0, 1e7), Elevated: num(x.bands.Elevated, 0, 1e7), Moderate: num(x.bands.Moderate, 0, 1e7), Low: num(x.bands.Low, 0, 1e7) } : null, kev: num(x.kev, 0, 1e7), ransomware: num(x.ransomware, 0, 1e7), decisions: x.decisions && typeof x.decisions === "object" ? { act: num(x.decisions.act, 0, 1e7), attend: num(x.decisions.attend, 0, 1e7), "track*": num(x.decisions["track*"], 0, 1e7), track: num(x.decisions.track, 0, 1e7) } : null,
+    var o = { builtAt: str(x.built_at, 30), total: num(x.total, 0, 1e8), rejected: num(x.rejected, 0, 1e8), exploited: num(x.exploited, 0, 1e8), critical: num(x.critical, 0, 1e8), criticalNvd: num(x.critical_nvd, 0, 1e8), ratingBands: x.rating_bands && typeof x.rating_bands === "object" ? { Critical: num(x.rating_bands.Critical, 0, 1e7), High: num(x.rating_bands.High, 0, 1e7), Medium: num(x.rating_bands.Medium, 0, 1e7), Low: num(x.rating_bands.Low, 0, 1e7), None: num(x.rating_bands.None, 0, 1e7), "Not scored": num(x.rating_bands["Not scored"], 0, 1e7) } : null, kev: num(x.kev, 0, 1e7), ransomware: num(x.ransomware, 0, 1e7), decisions: x.decisions && typeof x.decisions === "object" ? { act: num(x.decisions.act, 0, 1e7), attend: num(x.decisions.attend, 0, 1e7), "track*": num(x.decisions["track*"], 0, 1e7), track: num(x.decisions.track, 0, 1e7) } : null,
       audit: x.audit && typeof x.audit === "object" && x.audit.nvd ? { at: str(x.audit.at, 30), nvdTotal: num(x.audit.nvd.total, 0, 1e8), nvdRejected: num(x.audit.nvd.rejected, 0, 1e8), nvdCritical: num(x.audit.nvd.critical_v3, 0, 1e8), cisaKev: num(x.audit.cisa_kev, 0, 1e7) } : null, years: years, cvelist: str(s.cvelist, 30), epss: str(s.epss, 30) };
     return o.total === null && !years.length ? null : o;
   };
@@ -68,10 +68,16 @@
     var st = f.status || "live";
     if (st === "live" ? r.rejected : st === "R" ? !r.rejected : false) return false;
     if (f.exploited && !L.isExploited(r, kev)) return false;
-    if (f.minScore) { var sc = L.scored(r, f.rateOpts); if (!sc || sc.score < f.minScore) return false; }
+    if (f.minScore) { var sc = L.scored(r); if (!sc || sc.score === null || sc.score < f.minScore) return false; }
+    if (f.baseSev) { var bs = L.scored(r); if (!bs || (f.baseSev === "unscored" ? bs.score !== null : bs.baseBand !== f.baseSev)) return false; }
     if (f.decision) { var d = L.rated(r, f.rateOpts); if (!d || (f.decision === "attend+" ? d.rank < 3 : d.decision !== f.decision)) return false; }
     return true;
   };
+  /* sort keys, highest first: the CyberView rating (not scored last), the SSVC priority, EPSS */
+  function ratingOf(r) { var s = L.scored(r); return s && s.score !== null ? s.score : -1; }
+  function byRating(a, b) { return ratingOf(b) - ratingOf(a); }
+  function byRank(a, b) { var x = L.rated(a), y = L.rated(b); return ((y && y.rank) || 0) - ((x && x.rank) || 0); }
+  function byEpss(a, b) { return (b.epss === null ? -1 : b.epss) - (a.epss === null ? -1 : a.epss); }
   function seqOf(id) { var p = L.parseId(id); return p ? p.year * 1e9 + p.seq : 0; }
   var SORTS = {
     pub: function (a, b) { return a.pub < b.pub ? 1 : a.pub > b.pub ? -1 : seqOf(b.id) - seqOf(a.id); },
@@ -80,12 +86,13 @@
     cvss: function (a, b) { return (b.cvss === null ? -1 : b.cvss) - (a.cvss === null ? -1 : a.cvss) || seqOf(b.id) - seqOf(a.id); },
     epss: function (a, b) { return (b.epss === null ? -1 : b.epss) - (a.epss === null ? -1 : a.epss) || seqOf(b.id) - seqOf(a.id); },
     id: function (a, b) { return seqOf(a.id) - seqOf(b.id); },
-    score: function (a, b) { var x = L.scored(a), y = L.scored(b); return ((y && y.score) || 0) - ((x && x.score) || 0) || seqOf(b.id) - seqOf(a.id); },
-    priority: function (a, b) { var x = L.rated(a), y = L.rated(b); return ((y && y.rank) || 0) - ((x && x.rank) || 0) || (b.epss === null ? -1 : b.epss) - (a.epss === null ? -1 : a.epss) || seqOf(b.id) - seqOf(a.id); }
+    score: function (a, b) { return byRating(a, b) || byRank(a, b) || byEpss(a, b) || seqOf(b.id) - seqOf(a.id); },
+    priority: function (a, b) { return byRank(a, b) || byRating(a, b) || byEpss(a, b) || seqOf(b.id) - seqOf(a.id); }
   };
-  /* the rating of a row for the visitor's current settings, computed once per settings */
+  /* the SSVC priority of a row for the visitor's current settings, computed once per settings; the CyberView rating depends on
+     the record alone, so it is computed once */
   L.rateOpts = {};
-  L.scored = function (r, opts) { opts = opts || L.rateOpts; var k = (opts.mission || "") + "|" + opts.exposed + "|" + (opts.mineKey || ""); if (!r._sk || r._sk !== k) { r._score = L.score(r, opts.mineFn ? Object.assign({}, opts, { mine: opts.mineFn(r), onMap: opts.mapFn && opts.mapFn(r) }) : opts); r._sk = k; } return r._score; };
+  L.scored = function (r) { if (!r._sk) { r._score = L.score(r); r._sk = 1; } return r._score; };
   L.rated = function (r, opts) { opts = opts || L.rateOpts; var k = (opts.mission || "") + "|" + opts.exposed; if (!r._rk || r._rk !== k) { r._rate = L.rate(r, opts); r._rk = k; } return r._rate; };
   L.SORT_KEYS = Object.keys(SORTS);
   L.filter = function (list, f, kev, sort) { return (list || []).filter(function (r) { return L.matches(r, f, kev); }).sort(SORTS[sort] || SORTS.pub); };
@@ -155,22 +162,27 @@
   };
   L.WILD = /exploited in the wild|actively exploited|exploitation evidence (?:was )?(?:first )?observed|exploitation (?:was |has been )?(?:observed|detected|seen)|observed (?:being )?exploit|under active exploitation/i;
   L.POC = /proof[- ]of[- ]concept|public(?:ly available)? exploit|exploit has been (?:published|disclosed|made public)|exploit (?:code )?is (?:publicly )?available|PoC (?:is )?(?:publicly )?available/i;
+  /** exploitation evidence for one CVE -> { value: "active" | "poc" | "none", basis, source }: CISA's KEV catalog, then CISA's
+   *  SSVC assessment. The assigner's own record can say more ("exploitation evidence was observed", "the exploit has been
+   *  published"); it is used, and labelled, only when it raises the answer. Shared by the SSVC priority and the CyberView rating. */
+  L.exploitation = function (r) {
+    var ex = "none", exB = "No exploitation reported to CISA", exS = "unassessed";
+    if (r.kev) { ex = "active"; exB = "On CISA's Known Exploited Vulnerabilities catalog" + (r.kev !== "yes" ? " since " + r.kev : ""); exS = "cisa-kev"; }
+    else if (r.expl === "active") { ex = "active"; exB = "CISA reports active exploitation (SSVC)"; exS = "cisa"; }
+    else if (r.expl === "poc") { ex = "poc"; exB = "CISA: public proof of concept or exploit code (SSVC)"; exS = "cisa"; }
+    else if (r.expl === "none") { exB = "CISA has seen no exploitation (SSVC)"; exS = "cisa"; }
+    if (ex !== "active" && L.WILD.test(r.desc || "")) { ex = "active"; exB = "The CVE record's description reports exploitation in the wild (the assigner's statement; CISA has not confirmed it)"; exS = "description"; }
+    else if (ex === "none" && L.POC.test(r.desc || "")) { ex = "poc"; exB = "The CVE record's description says exploit code is public (the assigner's statement)"; exS = "description"; }
+    return { value: ex, basis: exB, source: exS };
+  };
   /** One CVE -> { decision, label, does, inputs: [{name, value, basis, source}], signals: [...], deadline, overdue }.
    *  opts.mission: the visitor's mission and well-being impact for this kind of system (low, medium, high; default medium). */
   L.rate = function (r, opts) {
     opts = opts || {}; if (!r) return null;
     if (r.rejected) return { decision: null, label: "Rejected", does: "Not a vulnerability record: the CVE was withdrawn, merged into another or found not to be a flaw. Nothing to fix.", inputs: [], signals: [] };
     var today = opts.today || new Date().toISOString().slice(0, 10), inputs = [], signals = [];
-    var ex = "none", exB = "No exploitation reported to CISA", exS = "unassessed";
-    if (r.kev) { ex = "active"; exB = "On CISA's Known Exploited Vulnerabilities catalog" + (r.kev !== "yes" ? " since " + r.kev : ""); exS = "cisa-kev"; }
-    else if (r.expl === "active") { ex = "active"; exB = "CISA reports active exploitation (SSVC)"; exS = "cisa"; }
-    else if (r.expl === "poc") { ex = "poc"; exB = "CISA: public proof of concept or exploit code (SSVC)"; exS = "cisa"; }
-    else if (r.expl === "none") { exB = "CISA has seen no exploitation (SSVC)"; exS = "cisa"; }
-    /* the assigner's own record can say more than CISA's assessment: "exploitation evidence was observed", "the exploit has been
-       published". Used, and labelled, only when it raises the answer */
-    if (ex !== "active" && L.WILD.test(r.desc || "")) { ex = "active"; exB = "The CVE record's description reports exploitation in the wild (the assigner's statement; CISA has not confirmed it)"; exS = "description"; }
-    else if (ex === "none" && L.POC.test(r.desc || "")) { ex = "poc"; exB = "The CVE record's description says exploit code is public (the assigner's statement)"; exS = "description"; }
-    inputs.push({ name: "Exploitation", value: ex === "poc" ? "public PoC" : ex, basis: exB, source: exS });
+    var exi = L.exploitation(r), ex = exi.value;
+    inputs.push({ name: "Exploitation", value: ex === "poc" ? "public PoC" : ex, basis: exi.basis, source: exi.source });
     var vec = r.vec || r.nvec || "", au = r.auto, auB = "CISA's assessment (SSVC)", auS = "cisa";
     if (!au) { au = L.automatableFromVector(vec); auB = au ? "Estimated from the CVSS vector (" + (au === "yes" ? "network, low complexity, no privileges or user interaction" : "needs local access, privileges, user action or high complexity") + ")" : "Unknown: no CISA assessment or CVSS vector; assumed no"; auS = au ? "estimate" : "default"; au = au || "no"; }
     inputs.push({ name: "Automatable", value: au, basis: auB, source: auS });
@@ -206,67 +218,47 @@
     return out;
   };
 
-  /* ---- the CyberView rating: 0 to 100, every point listed ----
-     A finer-grained companion to CISA's SSVC decision, built from every signal CyberView holds. Seven factors, each with a
-     ceiling, so no single signal can carry a flaw to the top on its own:
-       Exploitation evidence      up to 35  CISA KEV 35 · CISA saw exploitation 32 · the record reports it in the wild 28 ·
-                                            public exploit code (CISA or the record) 15 · none seen 0
-       Likelihood (FIRST EPSS)    up to 15  by percentile: top 1% 15 · top 5% 12 · top 10% 9 · top 25% 6 · top 50% 3
-       Impact                     up to 20  technical impact total 10, partial 4 · plus CVSS base score / 10 x 10
-       Attack surface             up to 10  automatable 5 · network reachable 2 · no privileges 2 · no user action 1
-       Threat context             up to 10  used by ransomware 7 · on CyberView's map or in its archive 3
-       Time pressure              up to 10  CISA deadline passed 4 or within 7 days 3 · added to KEV in the last 30 days 3 ·
-                                            published in the last 14 days 3
-       Your organisation          -15 to +15  internet-facing +5, internal only -5 · mission high +5, low -5 ·
-                                            on your software list +5
-     Bands: 80 and over Critical · 60 High · 40 Elevated · 20 Moderate · below 20 Low. Confidence says how much of the
-     evidence exists for this CVE (CISA's assessment, a CVSS vector, EPSS, NVD's score). */
-  L.BANDS = [[80, "Critical", "bad"], [60, "High", "bad"], [40, "Elevated", "warn"], [20, "Moderate", "info"], [0, "Low", "info"]];
-  L.score = function (r, opts) {
-    opts = opts || {}; if (!r || r.rejected) return null;
-    var today = opts.today || new Date().toISOString().slice(0, 10), parts = [];
-    var add = function (factor, pts, why) { if (pts) parts.push({ factor: factor, points: pts, why: why }); return pts; };
-    var rt = L.rate(r, opts) || { inputs: [] }, ex = rt.inputs[0] || {}, au = (rt.inputs[1] || {}).value, ti = (rt.inputs[2] || {}).value;
-    // 1 exploitation evidence (the strongest single item)
-    if (r.kev) add("Exploitation", 35, "In CISA's Known Exploited Vulnerabilities catalog");
-    else if (r.expl === "active") add("Exploitation", 32, "CISA reports active exploitation");
-    else if (ex.source === "description" && ex.value === "active") add("Exploitation", 28, "The CVE record reports exploitation in the wild");
-    else if (ex.value === "public PoC") add("Exploitation", 15, ex.source === "description" ? "The CVE record says exploit code is public" : "CISA: public proof of concept");
-    // 2 likelihood
-    if (r.pct != null) { var lp = r.pct >= 0.99 ? 15 : r.pct >= 0.95 ? 12 : r.pct >= 0.9 ? 9 : r.pct >= 0.75 ? 6 : r.pct >= 0.5 ? 3 : 0;
-      add("Likelihood", lp, "EPSS " + (r.epss * 100).toFixed(r.epss < 0.01 ? 2 : 1) + "%, more likely than " + Math.floor(r.pct * 100) + "% of CVEs to be exploited in the next 30 days"); }
-    // 3 impact
-    add("Impact", ti === "total" ? 10 : 4, "Technical impact " + ti + " (" + ((rt.inputs[2] || {}).source === "cisa" ? "CISA" : "estimated from the CVSS vector") + ")");
-    var sc = r.cvss != null ? r.cvss : r.ncvss;
-    if (sc != null) add("Impact", Math.round(sc), "CVSS " + sc.toFixed(1) + " from " + (r.cvss != null ? "the assigner or CISA" : "NVD"));
-    // 4 attack surface
-    var v = r.vec || r.nvec || "";
-    if (au === "yes") add("Attack surface", 5, "An attacker can automate exploitation (" + ((rt.inputs[1] || {}).source === "cisa" ? "CISA" : "estimated") + ")");
-    if (/AV:N/.test(v)) add("Attack surface", 2, "Reachable over the network");
-    if (/PR:N|Au:N/.test(v)) add("Attack surface", 2, "No privileges needed");
-    if (/UI:N/.test(v)) add("Attack surface", 1, "No user action needed");
-    // 5 threat context
-    if (r.ransom) add("Threat context", 7, "Used in ransomware campaigns (CISA)");
-    if (opts.onMap) add("Threat context", 3, "Covered by a checked report on CyberView");
-    // 6 time pressure
-    if (r.due) { if (r.due < today) add("Time pressure", 4, "CISA's remediation date passed on " + r.due); else if (r.due <= addDays(today, 7)) add("Time pressure", 3, "CISA's remediation date is " + r.due); }
-    if (/^\d{4}-\d{2}-\d{2}$/.test(r.kev || "") && r.kev >= addDays(today, -30)) add("Time pressure", 3, "Added to CISA's catalog on " + r.kev);
-    if (r.pub && r.pub >= addDays(today, -14)) add("Time pressure", 3, "Published on " + r.pub);
-    // 7 your organisation
-    if (opts.exposed === true) add("Your organisation", 5, "Your systems are internet-facing");
-    if (opts.exposed === false) add("Your organisation", -5, "Your systems are internal only");
-    if (opts.mission === "high") add("Your organisation", 5, "High mission impact for your organisation");
-    if (opts.mission === "low") add("Your organisation", -5, "Low mission impact for your organisation");
-    if (opts.mine) add("Your organisation", 5, "On your software list");
-    var CAP = { "Exploitation": [0, 35], "Likelihood": [0, 15], "Impact": [0, 20], "Attack surface": [0, 10], "Threat context": [0, 10], "Time pressure": [0, 10], "Your organisation": [-15, 15] };
-    var by = {}; parts.forEach(function (p) { by[p.factor] = (by[p.factor] || 0) + p.points; });
-    var factors = Object.keys(CAP).map(function (k) { var raw = by[k] || 0, c = Math.max(CAP[k][0], Math.min(CAP[k][1], raw)); return { factor: k, points: c, max: CAP[k][1], capped: c !== raw, items: parts.filter(function (p) { return p.factor === k; }) }; });
-    var total = Math.max(0, Math.min(100, factors.reduce(function (n, f) { return n + f.points; }, 0)));
-    var band = L.BANDS.filter(function (b) { return total >= b[0]; })[0];
-    var have = [!!(r.auto || r.ti || r.expl), !!(r.vec || r.nvec), r.epss != null, r.cvss != null || r.ncvss != null].filter(Boolean).length;
-    return { score: total, band: band[1], tone: band[2], factors: factors, confidence: have >= 4 ? "High" : have >= 2 ? "Medium" : "Low",
-      confidenceWhy: (r.auto || r.ti || r.expl ? "CISA assessed it" : "no CISA assessment") + "; " + (r.vec || r.nvec ? "CVSS vector known" : "no CVSS vector") + "; " + (r.epss != null ? "EPSS known" : "no EPSS") + "; " + (r.cvss != null || r.ncvss != null ? "scored" : "no CVSS score") };
+  /* ---- the CyberView rating: CVSS adjusted for exploitation evidence, on CVSS's own 0.0 to 10.0 scale ----
+     The CVSS base score (the assigner's or CISA's first, else NVD's) multiplied by CVSS v3.1's Exploit Code Maturity (E)
+     metric, set from the evidence CyberView holds, and rounded with CVSS's own Roundup. This is the CVSS v3.1 temporal
+     equation (FIRST CVSS v3.1 specification, sections 3.1 and 7.2: Roundup(Base x E x RL x RC)) with Remediation Level and
+     Report Confidence Not Defined (x 1), the adjustment often called CVSS-BT. CVSS v4's Exploit Maturity follows the same idea.
+       Exploit Code Maturity High              x 1.00  exploited in the wild: CISA's KEV catalog, CISA reports active
+                                                       exploitation, or the CVE record states exploitation in the wild
+       Exploit Code Maturity Proof-of-Concept  x 0.94  public exploit code (CISA, or the CVE record says so)
+       Exploit Code Maturity Unproven          x 0.91  no exploitation or public exploit reported
+     (Functional, x 0.97, is not used: CyberView holds no signal that tells it apart from a proof of concept.)
+     Bands are CVSS's own: None 0.0 · Low 0.1-3.9 · Medium 4.0-6.9 · High 7.0-8.9 · Critical 9.0-10.0. The rating is never
+     higher than the base score. No CVSS base score: "Not scored", never an invented number. EPSS, ransomware use, CISA's dates
+     and the visitor's settings are not in it: they are shown beside it, and CISA's SSVC priority (L.rate) says how urgent. */
+  L.E = { active: { label: "High", value: 1, why: "exploited in the wild" }, poc: { label: "Proof-of-Concept", value: 0.94, why: "public exploit code" }, none: { label: "Unproven", value: 0.91, why: "no exploitation or public exploit reported" } };
+  L.BANDS = [[9, "Critical", "bad"], [7, "High", "bad"], [4, "Medium", "warn"], [0.1, "Low", "info"], [0, "None", "info"]];
+  L.band = function (s) { if (typeof s !== "number" || !isFinite(s)) return null; var b = L.BANDS.filter(function (x) { return s >= x[0]; })[0] || L.BANDS[4]; return { band: b[1], tone: b[2] }; };
+  /* CVSS v3.1 Appendix A Roundup: the smallest number, to one decimal place, equal to or higher than its input (with the
+     specification's guard against floating point error) */
+  L.roundup = function (x) { var i = Math.round(x * 100000); return i % 10000 === 0 ? i / 100000 : (Math.floor(i / 10000) + 1) / 10; };
+  function verOf(v) { var m = /^CVSS:(\d\.\d)\//.exec(v || ""); return m ? m[1] : v ? "2.0" : ""; }
+  /** the CVSS base score the rating starts from: { score, from, ver, vector } or null */
+  L.baseOf = function (r) {
+    if (!r) return null;
+    if (r.cvss != null) return { score: r.cvss, from: "assigner or CISA", ver: r.ver || verOf(r.vec), vector: r.vec || "" };
+    if (r.ncvss != null) return { score: r.ncvss, from: "NVD", ver: verOf(r.nvec), vector: r.nvec || "" };
+    return null;
   };
-  function addDays(d, n) { var t = Date.parse(d + "T00:00:00Z") + n * 864e5; return new Date(t).toISOString().slice(0, 10); }
+  /** One CVE -> { score (0.0-10.0, or null when not scored), band, tone, base, baseBand, e, eWhy, notes, confidence, text } */
+  L.score = function (r) {
+    if (!r || r.rejected) return null;
+    var ex = L.exploitation(r), base = L.baseOf(r), e = L.E[ex.value] || L.E.none;
+    var eWhy = ex.value !== "none" ? ex.basis.replace(/^(On|The) /, function (m) { return m.toLowerCase(); }) :r.expl === "none" ? "CISA has seen no exploitation" : e.why;
+    var conf = r.kev || r.expl ? "High" : "Medium";
+    var confWhy = r.kev ? "the exploitation evidence is CISA's KEV catalog" : r.expl ? "CISA has assessed exploitation for this CVE" : ex.source === "description" ? "the exploitation evidence is the assigner's own statement; CISA has not assessed it" : "CISA has not assessed exploitation, so Unproven means none reported to CyberView's sources, not proof that nobody exploits it";
+    if (!base) return { score: null, band: "Not scored", tone: "info", base: null, baseBand: "", e: e, eWhy: eWhy, notes: [], confidence: "", confidenceWhy: "",
+      text: "Not scored: neither the assigner, CISA nor NVD has published a CVSS base score, so there is nothing to adjust. CyberView never invents one; use the priority (CISA SSVC) and the signals shown with it." };
+    var score = Math.min(base.score, L.roundup(base.score * e.value)), b = L.band(score), bb = L.band(base.score), notes = [];
+    if (base.ver && !/^3/.test(base.ver)) notes.push("The base score is CVSS v" + base.ver + ": the CVSS v3.1 Exploit Code Maturity multiplier is applied to it and the result is banded on the v3.1 scale" + (/^4/.test(base.ver) ? " (CVSS v4 builds Exploit Maturity into its own score; this is the closest v3.1 equivalent)" : "") + ".");
+    if (bb.band !== b.band) notes.push("One band below its CVSS base rating (" + bb.band + ") because " + (ex.value === "poc" ? "only a proof of concept is public and no exploitation in the wild is reported" : "no exploitation or public exploit is reported") + ". It returns to " + bb.band + " as soon as exploitation is reported.");
+    return { score: score, band: b.band, tone: b.tone, base: base, baseBand: bb.band, e: e, eWhy: eWhy, notes: notes, confidence: conf, confidenceWhy: confWhy,
+      text: "CVSS " + base.score.toFixed(1) + " (" + base.from + (base.ver ? ", v" + base.ver : "") + ") x " + e.value.toFixed(2) + " Exploit Code Maturity: " + e.label + " (" + eWhy + ") = " + score.toFixed(1) + " " + b.band };
+  };
   if (typeof module !== "undefined" && module.exports) module.exports = L; else root.CVDB = L;
 })(typeof window !== "undefined" ? window : this);

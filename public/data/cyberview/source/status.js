@@ -10,6 +10,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var REPO = "https://github.com/xanderhutch/CyberView";
   var MODEL = { "claude-sonnet-5-5": "Sonnet 5.5", "claude-opus-5-5": "Opus 5.5", "claude-haiku-5-5": "Haiku 5.5" };
+  var AI_BY = "CyberView AI (a Claude model)";
   var DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   var has = function (o, k) { return Object.prototype.hasOwnProperty.call(o, k); };
   function safe(fn) { try { fn(); } catch (e) { if (window.console) console.warn("status panel failed", e); } }
@@ -83,12 +84,14 @@
   }
   function cleanHealth(h) {
     if (!obj(h)) return null;
-    var B = obj(h.backlog), GW = obj(h.grid_waiting);
+    var B = obj(h.backlog), GW = obj(h.grid_waiting), OQ = obj(h.outage_queue);
     return {
       built_at: isoOk(h.built_at), last_sweep_at: isoOk(h.last_sweep_at), last_collect_at: isoOk(h.last_collect_at), last_feeds_at: isoOk(h.last_feeds_at),
       grid: h.last_grid_at !== undefined, last_grid_at: isoOk(h.last_grid_at), grid_open: nn(h.grid_open) === null ? null : int0(h.grid_open), last_grid_research_at: isoOk(h.last_grid_research_at),
       grid_analysis: h.grid_analysis_at !== undefined, grid_analysis_at: isoOk(h.grid_analysis_at), grid_news: h.last_grid_news_at !== undefined, last_grid_news_at: isoOk(h.last_grid_news_at),
       grid_waiting: GW && nn(GW.count) !== null ? { count: int0(GW.count), oldest_min: int0(GW.oldest_min) } : null,
+      outage_queue: OQ && nn(OQ.waiting) !== null ? { waiting: int0(OQ.waiting), checked_24h: int0(OQ.checked_24h), confirmed_24h: int0(OQ.confirmed_24h), cyber_leads_24h: int0(OQ.cyber_leads_24h), oldest_min: int0(OQ.oldest_min) } : null,
+      last_outage_at: isoOk(h.last_outage_at),
       grid_audit_flags: Array.isArray(h.grid_audit_flags) ? h.grid_audit_flags.filter(function (f) { return typeof f === "string" && /^[a-z0-9_]{1,40}$/.test(f); }).slice(0, 10) : null,
       grid_sources: obj(h.grid_sources),
       backlog: B && nn(B.waiting) !== null ? { waiting: int0(B.waiting), incidents: int0(B.incidents), oldest_hours: nn(B.oldest_hours) || 0, oldest_incident_hours: nn(B.oldest_incident_hours) || 0 } : null,
@@ -228,6 +231,11 @@
       var gf = h.grid_audit_flags;
       if (gf) row(!gf.length, gf.length ? "Grid data audit (no AI model) flags: " + gf.map(function (f) { return f.replace(/_/g, " "); }).join(", ") : "Grid data audit (no AI model): no pipeline flags");
     }
+    // the outage desk (scripts/outage-desk.mjs): outage reports nobody had checked, checked by CyberView AI in the research loop
+    var oq = h.outage_queue;
+    if (oq) row(!(oq.waiting && oq.oldest_min > 720), "Outage desk (" + AI_BY + "): " + plural(oq.waiting, "outage report") + " waiting for a check; " + oq.checked_24h + " checked in 24 h" +
+      (oq.checked_24h ? " (" + oq.confirmed_24h + " confirmed" + (oq.cyber_leads_24h ? ", " + plural(oq.cyber_leads_24h, "cyber lead") + " passed to research" : "") + ")" : "") +
+      "; last run " + (h.last_outage_at ? ago(h.last_outage_at) : "not yet") + (oq.waiting && oq.oldest_min > 720 ? " (the oldest report has waited over 12 h)" : ""));
     var bl = h.backlog;
     if (bl) row(bl.waiting <= 60 && !(bl.oldest_incident_hours > 2), "Research queue: " + plural(bl.waiting, "report") + " waiting for a decision" + (bl.incidents ? ", " + bl.incidents + " that read like incidents" : "") + (bl.waiting ? "; oldest " + bl.oldest_hours + " h" : "") + (bl.waiting > 60 ? " (expected under 60)" : ""));
     var q = h.quarantined_count;

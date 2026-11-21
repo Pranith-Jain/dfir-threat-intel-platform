@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-20T21:09:13.386Z",
+  "generatedAt": "2026-11-21T02:00:29.190Z",
   "upstream": {
     "site": "https://tldrcve.com",
     "list": "https://tldrcve.com/cves/",
@@ -8,12 +8,12 @@
     "scale": "https://tldrcve.com/how-we-rate/"
   },
   "stats": {
-    "cves": 27,
-    "details": 27,
+    "cves": 32,
+    "details": 32,
     "versions": 32,
     "byVerdict": {
-      "Patch now": 11,
-      "Patch now if…": 14,
+      "Patch now": 12,
+      "Patch now if…": 18,
       "Watching": 1,
       "Next cycle": 1
     }
@@ -103,7 +103,7 @@
             "num": "1",
             "title": "Update and restart PHP",
             "hint": null,
-            "body": "Update to 8.6.0, 8.5.13, 8.4.28, 8.3.37 or 8.2.36 (19 Nov 2026), then restart all workers. These include the 21 Oct PHP2Shell fixes plus newer security fixes. 8.1 and older get no official release; use a vendor with long-term support or upgrade. 1,8,10 Latest safe versions checked 21 Nov PHP → 8.6 8.6.0 8.5 8.5.13 8.4 8.4.28 8.3 8.3.37 8.2 8.2.36 PHP 8.1 and older get no fixes from PHP. Distros may backport fixes without changing the version number.",
+            "body": "Update to 8.6.0, 8.5.13, 8.4.28, 8.3.37 or 8.2.36 (19 Nov 2026), then restart all workers. These include the 21 Oct PHP2Shell fixes plus newer security fixes, including two gaps PHP found in the October fix (CVE-2026-129481 and CVE-2026-129182); PHP says code execution through either hasn't been demonstrated. See the PHP 19 Nov release page. 8.1 and older get no official release; use a vendor with long-term support or upgrade. 1,8,10,12,13 Latest safe versions checked 21 Nov PHP → 8.6 8.6.0 8.5 8.5.13 8.4 8.4.28 8.3 8.3.37 8.2 8.2.36 PHP 8.1 and older get no fixes from PHP. Distros may backport fixes without changing the version number.",
             "code": []
           },
           {
@@ -171,9 +171,23 @@
             "url": "https://github.com/php/php-src/security/advisories",
             "title": "php-src: 19 Nov security advisories (eight rated Critical)",
             "date": null
+          },
+          {
+            "url": "https://github.com/php/php-src/security/advisories/GHSA-g3vh-838c-65v7",
+            "title": "PHP GHSA-g3vh: CVE-2026-129481, incomplete fix for CVE-2026-109619",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/php/php-src/security/advisories/GHSA-2fjv-p558-g82m",
+            "title": "PHP GHSA-2fjv: CVE-2026-129182, fatal-error backtrace refilled after shutdown",
+            "date": "19 Nov"
           }
         ],
         "changes": [
+          {
+            "date": "2026-11-21",
+            "text": "The 19 Nov releases also close two gaps PHP found in the October fix (CVE-2026-129481, CVE-2026-129182). Links to the new PHP 19 Nov release page."
+          },
           {
             "date": "2026-11-20",
             "text": "PHP 8.6.0 added. Safe versions added."
@@ -196,6 +210,184 @@
           }
         ],
         "url": "https://tldrcve.com/php2shell/"
+      }
+    },
+    {
+      "slug": "citrix-netscaler",
+      "name": "NetScaler RCE",
+      "meta": "Citrix NetScaler · CVE-2026-88771, CVE-2026-88772",
+      "line": "Exploited since September. Patch, then hunt for shells.",
+      "verdict": "Patch now",
+      "scareLevel": 3.8,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-09-27",
+      "url": "https://tldrcve.com/citrix-netscaler/",
+      "detail": {
+        "slug": "citrix-netscaler",
+        "kicker": "Citrix NetScaler · CVE-2026-88771 · CVE-2026-88772",
+        "name": "NetScaler RCE",
+        "verdict": "Patch now",
+        "verdictHint": "Exploited since September. Patch, then hunt for shells.",
+        "summary": "A bug in Citrix NetScaler ADC and Gateway lets anyone who can reach the appliance run commands on it with no login, and default setups are affected. Attackers have used it since at least 20 Sep, public exploit code came out on 28 Sep, and it's on CISA's exploited list. Updating doesn't remove an attacker who already got in, so appliances that were late to patch also need checking for web shells and stolen keys.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 2"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 7,13,14"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 1,9,10"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (since 27 Sep) 3"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "A NetScaler you run yourself",
+            "hint": null,
+            "body": "Customer-managed NetScaler ADC or Gateway, including Secure Private Access hybrid setups that use NetScaler instances. Citrix-managed cloud services and Adaptive Authentication are updated by Citrix's parent, Cloud Software Group. 1",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "A build older than the fix",
+            "hint": null,
+            "body": "14.1 before 14.1-73.37, 13.1 before 13.1-64.23, 14.1-FIPS before 14.1-73.37 FIPS, or 13.1-FIPS/NDcPP before 13.1-37.279. The same builds fix CVE-2026-88772, a second bug attackers used at the same time. 1,2,15",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Attackers can send it web traffic",
+            "hint": null,
+            "body": "Citrix lists \"All deployments (default configuration)\": no Gateway or AAA virtual server is needed. watchTowr says any endpoint that logs attacker-controlled web data can trigger it, including the management interface. Cloudflare says the Gateway must be publicly reachable; Citrix and watchTowr describe it more broadly. 1,6,12",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update to the newest build",
+            "hint": null,
+            "body": "Go to 14.1-73.46, 13.1-64.29, 14.1-73.46 FIPS or 13.1.37.283, not just the first fix. These also fix CVE-2026-88779 (a crash bug, on CISA's exploited list since 4 Oct) and CVE-2026-107406 (SAML setups). 1,4,5,3",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Late to patch? Assume a break-in",
+            "hint": null,
+            "body": "Patching doesn't remove an attacker who's already in. Mandiant says to end admin, Gateway, VPN and ICA sessions after patching, and to rotate admin passwords, SSH keys, TLS certificates and private keys, and the LDAP, RADIUS, TACACS, SNMP and API credentials the appliance uses. Follow Citrix's suspected-compromise steps, which include rebuilding the appliance. 8,11",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Look for web shells",
+            "hint": "command",
+            "body": "Unit 42 and Rapid7 found a web shell at /var/netscaler/logon/LogonPoint/custom/.ctxs.receiver . Mandiant's checks include whether /bin/sh has been made to run as root, and PHP handlers added to /etc/httpd.conf . 8,9,10 grep -En -i \"application/x-httpd-php|php_flag|AliasMatch\" /etc/httpd.conf",
+            "code": [
+              "grep -En -i \"application/x-httpd-php|php_flag|AliasMatch\" /etc/httpd.conf"
+            ]
+          },
+          {
+            "num": "4",
+            "title": "No workaround",
+            "hint": null,
+            "body": "Mandiant says disabling DTLS or blocking UDP 443 only helps against CVE-2026-88772, not this bug. A web firewall in front only covers the traffic that passes through it. Update. 8,12",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://support.citrix.com/external/article/CTX697096",
+            "title": "Citrix CTX697096: affected and fixed builds, attacks seen, default config, cloud scope",
+            "date": "27 Sep"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-88771",
+            "title": "CVE record: CVE-2026-88771, CVSS 4.0 9.5, affected builds",
+            "date": "27 Sep"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: CVE-2026-88771 and 88772 added 27 Sep, due 30 Sep",
+            "date": null
+          },
+          {
+            "url": "https://support.citrix.com/external/article/CTX697174",
+            "title": "Citrix CTX697174: CVE-2026-88779, newer fixed builds",
+            "date": "3 Oct"
+          },
+          {
+            "url": "https://support.citrix.com/external/article/CTX697191/",
+            "title": "Citrix CTX697191: CVE-2026-107406, newest fixed builds",
+            "date": "8 Oct"
+          },
+          {
+            "url": "https://labs.watchtowr.com/oh-look-the-foot-gun-went-off-again-citrix-netscaler-preauth-command-injection-cve-2026-88771/",
+            "title": "watchTowr Labs: root cause, any logged endpoint including management",
+            "date": "28 Sep"
+          },
+          {
+            "url": "https://github.com/watchtowrlabs/watchTowr-vs-Citrix-Netscaler-CVE-2026-88771",
+            "title": "watchTowr: public exploit tooling",
+            "date": "28 Sep"
+          },
+          {
+            "url": "https://cloud.google.com/blog/topics/threat-intelligence/defending-against-active-exploitation-of-citrix-netscaler-adc-and-gateway-appliances/",
+            "title": "Mandiant (Google): campaign, workaround limits, hunting, credential rotation",
+            "date": "30 Sep"
+          },
+          {
+            "url": "https://unit42.paloaltonetworks.com/netscaler-zero-days-exploited/",
+            "title": "Unit 42: attack chain, web shells, 50,277 possibly vulnerable",
+            "date": "30 Sep"
+          },
+          {
+            "url": "https://rapid7.com/blog/post/etr-zero-day-exploitation-of-citrix-netscaler-adc-and-gateway-cve-2026-88771-and-cve-2026-88772",
+            "title": "Rapid7: attempts from 20 Sep, compromised organisations, config theft",
+            "date": "28 Sep"
+          },
+          {
+            "url": "https://support.citrix.com/external/article/CTX694799/steps-to-take-if-netscaler-adc-is-suspec.html",
+            "title": "Citrix CTX694799: steps if a NetScaler is suspected compromised",
+            "date": null
+          },
+          {
+            "url": "https://blog.cloudflare.com/protect-your-netscaler-gateway/",
+            "title": "Cloudflare: says the Gateway must be publicly reachable; WAF rule",
+            "date": "19 Oct"
+          },
+          {
+            "url": "https://helpnetsecurity.com/2026/09/29/netscaler-zero-day-exploitation-escalates-into-mass-attacks-cve-2026-88771",
+            "title": "Help Net Security: watchTowr code used in attacks; under 10% patched by 29 Sep",
+            "date": "29 Sep"
+          },
+          {
+            "url": "https://www.esentire.com/blog/more-shells-than-a-seafood-buffet-tracking-citrix-netscaler-exploitation-activities-cve-2026-88771",
+            "title": "eSentire: four attacker groups, public code used within about 36 hours",
+            "date": "6 Oct"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-88772",
+            "title": "CVE record: CVE-2026-88772, second exploited NetScaler bug, same fix",
+            "date": "27 Sep"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-21",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/citrix-netscaler/"
       }
     },
     {
@@ -2193,8 +2385,8 @@
     {
       "slug": "nginx2root",
       "name": "nginx2root",
-      "meta": "nginx · CVE-2026-123007, CVE-2026-123633",
-      "line": "Only if HTTP/2 is on. Public exploit, no attacks yet.",
+      "meta": "nginx · 10 CVEs",
+      "line": "Public exploit for HTTP/2. Same fix covers 9 more bugs.",
       "verdict": "Patch now if…",
       "scareLevel": 2.7,
       "meterLabel": "Check today",
@@ -2202,11 +2394,11 @@
       "url": "https://tldrcve.com/nginx2root/",
       "detail": {
         "slug": "nginx2root",
-        "kicker": "nginx · CVE-2026-123007 · CVE-2026-123633",
+        "kicker": "nginx · Release roundup · 10 CVEs",
         "name": "nginx2root",
         "verdict": "Patch now if…",
-        "verdictHint": "Only if HTTP/2 is on. Public exploit, no attacks yet.",
-        "summary": "A bug in nginx's HTTP/2 handling lets an attacker with no login crash nginx or run code as the nginx worker user. Despite the name, it doesn't give root by itself (Xint got root by chaining it with a separate Linux kernel bug, covered on our Linux SCTP root page), and code execution needs ASLR to be off or bypassed. A second HTTP/2 bug (CVE-2026-123633) is fixed by the same releases, and so are three other nginx bugs (HTTP/3, resolver, mail proxy) that Xint groups under the same name; turning off HTTP/2 doesn't cover those.",
+        "verdictHint": "Public exploit for HTTP/2. Same fix covers 9 more bugs.",
+        "summary": "A bug in nginx's HTTP/2 handling lets an attacker with no login crash nginx or run code as the nginx worker user, and a public exploit is out. Despite the name, it doesn't give root by itself (Xint got root by chaining it with a separate Linux kernel bug, covered on our Linux SCTP root page), and code execution needs ASLR to be off or bypassed. The same 18 Nov releases fix nine more nginx bugs, including the other four Xint groups as nginx2root (a second HTTP/2 bug, HTTP/3, resolver and mail proxy) and a TLS 1.3 hang; turning off HTTP/2 covers only the two HTTP/2 bugs.",
         "meterLabel": "Check today",
         "meterHint": "Find out if you're affected. If you are, patch.",
         "checklist": [
@@ -2220,7 +2412,7 @@
           },
           {
             "yes": false,
-            "text": "No attacks seen yet 6"
+            "text": "No attacks seen yet 6,22"
           },
           {
             "yes": false,
@@ -2230,20 +2422,20 @@
         "affected": [
           {
             "num": "1",
-            "title": "nginx 1.9.5 – 1.31.8",
+            "title": "nginx before 1.31.9 / 1.30.7",
             "hint": "command",
-            "body": "Stable 1.30.7 and later are fixed. Also NGINX Plus 37.0.0–37.0.7.1 and 37.1.0–37.2.0.1; older NGINX Plus R33–R36 get no fix (sources differ on R33), so move to 37.x. Distros backport fixes without changing nginx -v , so check the package against your distro's advisory. After upgrading, restart: a reload keeps the old binary. 1,3,8,5,9 nginx -v",
+            "body": "Stable 1.30.7 and later are fixed. Also NGINX Plus 37.0 before 37.0.8.1 and 37.1 before 37.3.0.1 (37.2.x included); older NGINX Plus R33–R36 get no fix (sources differ on R33), so move to 37.x. Distros backport fixes without changing nginx -v , so check the package against your distro's advisory. After upgrading, restart: a reload keeps the old binary. 1,3,8,5,9 nginx -v",
             "code": [
               "nginx -v"
             ]
           },
           {
             "num": "2",
-            "title": "HTTP/2 is on anywhere",
+            "title": "You use an affected feature",
             "hint": "command",
-            "body": "Either http2 on; or listen ... http2 , on any server block. Static-only sites count. Behind a proxy that terminates HTTP/2, the public exploit likely fails, but the bug is still there. 1,3,4 sudo nginx -T 2>&1 | grep -nE 'listen[[:space:]].*http2|http2 on'",
+            "body": "HTTP/2 ( http2 on; or listen ... http2 , on any server block) is the one with a public exploit; static-only sites count, and behind a proxy that terminates HTTP/2 the exploit likely fails but the bug is still there. The same upgrade fixes bugs in HTTP/3 ( listen ... quic ) with proxy_pass ; resolver with a variable in proxy_pass plus a mirror or SSI subrequest; the mail proxy with proxy on and auth_http ; and HTTPS servers using TLS 1.3, where a worker can hang (CVE-2026-118899). Smaller stream and try_files bugs are in the bug list. 1,3,4,5,18,19,20,21 sudo nginx -T 2>&1 | grep -nE 'http2|quic|resolver|mirror|ssi on|auth_http'",
             "code": [
-              "sudo nginx -T 2>&1 | grep -nE 'listen[[:space:]].*http2|http2 on'"
+              "sudo nginx -T 2>&1 | grep -nE 'http2|quic|resolver|mirror|ssi on|auth_http'"
             ]
           }
         ],
@@ -2252,14 +2444,14 @@
             "num": "1",
             "title": "Upgrade nginx",
             "hint": null,
-            "body": "1.31.9 (mainline) or 1.30.7 (stable). NGINX Plus: 37.3.0.1 or 37.0.8.1. Debian (DSA-6642-1, DLA-4918-1) and Ubuntu (USN-9159-1) have fixed packages. Then restart. 1,3,14,15,16,17 Latest safe versions checked 20 Nov NGINX Plus → 37.x (CR) 37.3.0.1 37.0 (LTS) 37.0.8.1",
+            "body": "1.31.9 (mainline) or 1.30.7 (stable). NGINX Plus: 37.3.0.1 or 37.0.8.1. Debian (DSA-6642-1, DLA-4918-1) and Ubuntu (USN-9159-1, USN-9182-1) have fixed packages. Then restart. 1,3,8,14,15,16,17,23 Latest safe versions checked 20 Nov NGINX Plus → 37.x (CR) 37.3.0.1 37.0 (LTS) 37.0.8.1",
             "code": []
           },
           {
             "num": "2",
-            "title": "Can't upgrade? Turn off HTTP/2",
+            "title": "Can't upgrade? Turn off what you can",
             "hint": "command",
-            "body": "Set http2 off; in each server block and remove http2 from every listen line (before 1.25.1, only the listen change). This breaks native gRPC, and doesn't cover the HTTP/3, resolver and mail-proxy bugs the same upgrade fixes. 1,5 http2 off;",
+            "body": "HTTP/2: set http2 off; in each server block and remove http2 from every listen line (before 1.25.1, only the listen change); this breaks native gRPC. HTTP/3: remove quic from listen and set http3 off; . Resolver: point proxy_pass at a fixed upstream and turn off mirror ; Xint says turning off mirror alone isn't enough. Mail proxy: bind its listeners to 127.0.0.1 or firewall them. F5 gives no workaround for the TLS 1.3 hang. 1,5,18,19,20,21 http2 off;",
             "code": [
               "http2 off;"
             ]
@@ -2357,9 +2549,43 @@
             "url": "https://security-tracker.debian.org/tracker/CVE-2026-123633",
             "title": "Debian tracker: DLA-4918-1 and DSA-6642-1 fix both",
             "date": null
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-121810",
+            "title": "CVE record (F5): CVE-2026-121810, HTTP/3 use-after-free",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-123634",
+            "title": "CVE record (F5): CVE-2026-123634, resolver use-after-free",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-113425",
+            "title": "CVE record (F5): CVE-2026-113425, mail proxy use-after-free",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-118899",
+            "title": "CVE record (F5): CVE-2026-118899, TLS 1.3 infinite loop, no workaround",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://blog.cloudflare.com/nginx2root/",
+            "title": "Cloudflare: ten nginx CVEs in the same releases, no attacks",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://ubuntu.com/security/notices/USN-9182-1",
+            "title": "Ubuntu: USN-9182-1, more nginx fixes",
+            "date": "20 Nov"
           }
         ],
         "changes": [
+          {
+            "date": "2026-11-21",
+            "text": "Now lists all ten CVEs fixed by the 18 Nov releases, with a bug list. \"Are you affected?\" covers the HTTP/3, resolver, mail proxy and TLS 1.3 bugs, not only HTTP/2. Corrected the affected NGINX Plus range (37.2.x is affected too)."
+          },
           {
             "date": "2026-11-20",
             "text": "Points to the Linux SCTP root page for the kernel bug Xint chained it with."
@@ -3642,6 +3868,151 @@
       }
     },
     {
+      "slug": "nextjs-image-rce",
+      "name": "Next.js image RCE",
+      "meta": "Next.js (sharp +1 more) · CVE-2026-96889, CVE-2026-114111, CVE-2026-119347",
+      "line": "Only with sharp below 0.35.5 on glibc Linux.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2.3,
+      "meterLabel": "Check today",
+      "disclosed": "2026-10-14",
+      "url": "https://tldrcve.com/nextjs-image-rce/",
+      "detail": {
+        "slug": "nextjs-image-rce",
+        "kicker": "Next.js (sharp, librsvg) · CVE-2026-96889 · CVE-2026-114111 · CVE-2026-119347",
+        "name": "Next.js image RCE",
+        "verdict": "Patch now if…",
+        "verdictHint": "Only with sharp below 0.35.5 on glibc Linux.",
+        "summary": "A memory bug in librsvg, the SVG library bundled inside sharp , may let an attacker with no login run code through Next.js image optimization on glibc-based Linux. Almost every Next.js version is affected, and a separate bug fixed on 3 Nov let self-hosted sites parse an attacker's SVG even with SVG support off (the default). The fix is a newer sharp , which upgrading Next.js doesn't always pull in on 15.x; no exploit or attacks are reported.",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1"
+          },
+          {
+            "yes": false,
+            "text": "No public exploit 8,9"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 9"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 10"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "sharp older than 0.35.5",
+            "hint": "command",
+            "body": "Next.js 10.0.0 to 15.5.27 or 16.0.0 to 16.4.0 with sharp below 0.35.5, which bundles the unfixed librsvg. Next.js 15.5.28 and 15.5.29 still accept sharp 0.34.x, so an old lockfile can keep the bug after upgrading Next.js; 16.4.1 and later require 0.35.5. 1,5,6,7 npm ls sharp",
+            "code": [
+              "npm ls sharp"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "Running on glibc-based Linux",
+            "hint": "command",
+            "body": "Vercel says the code execution risk is when Next.js runs on glibc-based Linux. Alpine and other musl-based images aren't named as affected. 1 ldd --version",
+            "code": [
+              "ldd --version"
+            ]
+          },
+          {
+            "num": "3",
+            "title": "The image optimizer takes an attacker's SVG",
+            "hint": "command",
+            "body": "With dangerouslyAllowSVG: true it does by design. With the default false , self-hosted sites before 15.5.29 or 16.4.5 can still be made to parse an attacker-supplied SVG at /_next/image (CVE-2026-119347). The advisories don't say whether Vercel-hosted sites or apps with tight image source rules are exposed. 1,2 grep -rn dangerouslyAllowSVG next.config.*",
+            "code": [
+              "grep -rn dangerouslyAllowSVG next.config.*"
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade Next.js and check sharp",
+            "hint": "command",
+            "body": "Go to 16.4.5 or 15.5.29, which fix this and the SVG bypass, then check that npm ls sharp shows 0.35.5 or later; on 15.x, update sharp yourself if it doesn't. Rebuild and redeploy. 1,2,7 npm ls next sharp",
+            "code": [
+              "npm ls next sharp"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "Can't upgrade Next.js? Upgrade sharp",
+            "hint": null,
+            "body": "Vercel's workaround: make sure the sharp Next.js uses is 0.35.5 or later. Fresh installs get it automatically. 1,6",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://github.com/vercel/next.js/security/advisories/GHSA-2464-fhr4-w9xw",
+            "title": "Next.js GHSA-2464: image optimization RCE, versions, sharp 0.35.5 workaround",
+            "date": "14 Oct"
+          },
+          {
+            "url": "https://github.com/vercel/next.js/security/advisories/GHSA-7qx7-33qx-rqx2",
+            "title": "Next.js GHSA-7qx7: SVG reaches the parser even with dangerouslyAllowSVG off",
+            "date": "3 Nov"
+          },
+          {
+            "url": "https://nextjs.org/blog/nextjs-security-update-october-14-2026",
+            "title": "Next.js: 14 Oct security update",
+            "date": "14 Oct"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-96889",
+            "title": "CVE record: CVE-2026-96889, librsvg use-after-free (Red Hat)",
+            "date": "23 Sep"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-114111",
+            "title": "CVE record: CVE-2026-114111, sharp before 0.35.5",
+            "date": "21 Oct"
+          },
+          {
+            "url": "https://github.com/lovell/sharp/releases/tag/v0.35.5",
+            "title": "sharp v0.35.5 release (bundles the fixed librsvg)",
+            "date": "27 Sep"
+          },
+          {
+            "url": "https://registry.npmjs.org/next/15.5.29",
+            "title": "npm registry: next 15.5.29 still accepts sharp 0.34.x",
+            "date": null
+          },
+          {
+            "url": "https://gitlab.gnome.org/GNOME/librsvg/-/work_items/1241",
+            "title": "GNOME librsvg issue 1241: report and crash reproducer",
+            "date": "18 Sep"
+          },
+          {
+            "url": "https://labs.cloudsecurityalliance.org/research/csa-research-note-nextjs-use-cache-librsvg-rce-20261016-csa/",
+            "title": "Cloud Security Alliance: no exploitation reported as of 15 Oct",
+            "date": "16 Oct"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-21",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/nextjs-image-rce/"
+      }
+    },
+    {
       "slug": "apache-http2",
       "name": "Apache HTTP/2 RCE",
       "meta": "Apache httpd · CVE-2026-119618",
@@ -3792,6 +4163,287 @@
           }
         ],
         "url": "https://tldrcve.com/apache-http2/"
+      }
+    },
+    {
+      "slug": "php-2026-11-19",
+      "name": "PHP Nov release",
+      "meta": "PHP · 17 CVEs",
+      "line": "17 advisories, 7 critical. All need uncommon setups.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2,
+      "meterLabel": "Check today",
+      "disclosed": "2026-11-19",
+      "url": "https://tldrcve.com/php-2026-11-19/",
+      "detail": {
+        "slug": "php-2026-11-19",
+        "kicker": "PHP · Release roundup · 17 CVEs",
+        "name": "PHP Nov release",
+        "verdict": "Patch now if…",
+        "verdictHint": "17 advisories, 7 critical. All need uncommon setups.",
+        "summary": "PHP's 19 Nov releases fix 17 security advisories: 7 critical, 4 high and 6 medium (plus a bundled uriparser update, CVE-2026-48841, which is why some count 18). PHP says every critical one needs a non-default setting or an uncommon setup, and none is reported exploited, though four have public lab or test exploits. Two of them close gaps in October's exploited PHP2Shell fix. One update fixes all of them.",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 8"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 9,10"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 11"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "PHP older than the 19 Nov 2026 fix",
+            "hint": "command",
+            "body": "PHP 8.2 to 8.5 below 8.5.13, 8.4.28, 8.3.37 or 8.2.36. PHP 8.6.0 (19 Nov) is fixed. Some bugs only hit 8.3 and later, or only 8.5: see each one. 8.1 and older get no fixes from PHP. Distros may backport fixes without changing the version number. 1,3 php -v",
+            "code": [
+              "php -v"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "You use an affected feature",
+            "hint": "command",
+            "body": "Each critical bug needs a specific setting or setup, listed under The bugs above. The main ones: sessions stored in files with upload progress on (phpAfterShell, session serializer mismatch); a web server that reuses its connections to PHP-FPM (request smuggling); a non-thread-safe build logging startup warnings to a file (timezone cache); and PHP 8.5 with fatal error backtraces on (two bugs). Most need workers that serve many requests, which PHP-FPM and mod_php do. 2,3,4,5,6,7 php -i | grep -E 'session.save_handler|session.upload_progress.enabled|error_log|fatal_error_backtraces|zend.exception_ignore_args'",
+            "code": [
+              "php -i | grep -E 'session.save_handler|session.upload_progress.enabled|error_log|fatal_error_backtraces|zend.exception_ignore_args'"
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update PHP and restart",
+            "hint": null,
+            "body": "Update to 8.6.0, 8.5.13, 8.4.28, 8.3.37 or 8.2.36 (19 Nov 2026), then restart every PHP worker. This fixes all 17 advisories. 1 Latest safe versions checked 21 Nov PHP → 8.6 8.6.0 8.5 8.5.13 8.4 8.4.28 8.3 8.3.37 8.2 8.2.36 PHP 8.1 and older get no fixes from PHP. Distros may backport fixes without changing the version number.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Check the critical ones first",
+            "hint": null,
+            "body": "phpAfterShell , PHP-FPM request smuggling and PHP session RCE each have a full page with checks. The other four critical bugs and the highs are explained under The bugs above. 3",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Can't update yet? Stopgaps",
+            "hint": null,
+            "body": "Turn off session upload progress ( session.upload_progress.enabled = 0 ) and FastCGI connection reuse in your web server. On PHP 8.5, set fatal_error_backtraces = 0 , or at least keep zend.exception_ignore_args = On as in php.ini-production . These remove some attack paths, not the bugs. 3,5,7,9,12",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.php.net/ChangeLog-8.php#8.5.13",
+            "title": "PHP: 8.x ChangeLog, 19 Nov 2026 releases and every fix",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.php.net/archive/2026.php#2026-11-18-1",
+            "title": "PHP: 18 Nov notice, critical issues need non-default or uncommon setups",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://github.com/php/php-src/security/advisories",
+            "title": "PHP: security advisories (all 17)",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/php/php-src/security/advisories/GHSA-gr4f-wgx5-jpfv",
+            "title": "PHP GHSA-gr4f: timezone cache use-after-free",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/php/php-src/security/advisories/GHSA-8mjj-2r7p-4hg2",
+            "title": "PHP GHSA-8mjj: magic method backtraces, 8.5 only",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/php/php-src/security/advisories/GHSA-g3vh-838c-65v7",
+            "title": "PHP GHSA-g3vh: interrupted session cleanup, incomplete fix for CVE-2026-109619",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/php/php-src/security/advisories/GHSA-2fjv-p558-g82m",
+            "title": "PHP GHSA-2fjv: backtrace refilled after shutdown, workaround",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/abraxas/php-tzcache-rce",
+            "title": "Public lab exploit for CVE-2026-129496 (reads its own memory map)",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://radar.cloudflare.com/zero-wire/php-november-2026-security-release-phpaftershell",
+            "title": "Cloudflare Zero Wire: 17 advisories, 7 critical, no exploitation reported",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.bleepingcomputer.com/news/security/php-security-updates-fix-18-flaws-including-critical-rce-bugs/",
+            "title": "BleepingComputer: counts 18 fixes, no exploitation reported",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: none listed",
+            "date": null
+          },
+          {
+            "url": "https://github.com/php/php-src/blob/PHP-8.5/php.ini-production",
+            "title": "php-src: php.ini-production sets zend.exception_ignore_args = On",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-21",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/php-2026-11-19/"
+      }
+    },
+    {
+      "slug": "wordpress-7-1-5",
+      "name": "WordPress 7.1.5",
+      "meta": "WordPress · 19 advisories",
+      "line": "Worst one needs an admin's click. Auto-updates fix it.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2,
+      "meterLabel": "Check today",
+      "disclosed": "2026-11-18",
+      "url": "https://tldrcve.com/wordpress-7-1-5/",
+      "detail": {
+        "slug": "wordpress-7-1-5",
+        "kicker": "WordPress · Release roundup · 19 advisories",
+        "name": "WordPress 7.1.5",
+        "verdict": "Patch now if…",
+        "verdictHint": "Worst one needs an admin's click. Auto-updates fix it.",
+        "summary": "WordPress 7.1.5 (18 Nov) fixes 19 security advisories plus one hardening change, and the fixes were backported to every branch down to 4.7. The worst one can create an Administrator account for an attacker, and then run code, if a signed-in Administrator opens a crafted editor link. No exploit or attacks are reported, no CVE IDs have been assigned yet, and sites with automatic background updates get the fix on their own.",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 4"
+          },
+          {
+            "yes": false,
+            "text": "No public exploit 7,10"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 10"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 8"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "WordPress older than the fix",
+            "hint": "command",
+            "body": "Below 7.1.5, or below the fixed release on your branch: 7.0.9, 6.9.12, 6.8.13, 6.7.12, 6.6.12, 6.5.15, 6.4.15, 6.3.15, 6.2.16, 6.1.17, 6.0.19, 5.9.21, and so on down to 4.7.40. WordPress 4.6 and older get no fixes. Sites with automatic background updates on (the default for minor releases) get it on their own. 1,2,5,6 wp core version",
+            "code": [
+              "wp core version"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "Someone with access takes the bait",
+            "hint": null,
+            "body": "For the worst bug, a signed-in Administrator has to open a crafted editor link or a post an Author planted it in. The stored XSS needs a Comments or Latest Comments block in post content; the multisite takeover needs a site Administrator on a multisite network. See The bugs above. 3,4",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Make sure every site updated",
+            "hint": "command",
+            "body": "Check that each site runs 7.1.5 or the fixed release for its branch, and update the ones with automatic updates turned off. Sites still below 7.1.4 also miss CVE-2026-119977, which lets attackers run code during a core upgrade and has been on CISA's exploited list since 3 Nov. 1,2,6,8,9 wp core version",
+            "code": [
+              "wp core version"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "Until then: be careful with editor links",
+            "hint": null,
+            "body": "Administrators shouldn't open block editor links they didn't expect. WordPress gives no workaround for these bugs; updating is the fix. 4",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://wordpress.org/news/2026/11/wordpress-7-1-5-release/",
+            "title": "WordPress.org: 7.1.5 release, 20 security fixes, automatic updates",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://wordpress.org/documentation/wordpress-version/version-7-1-5/",
+            "title": "WordPress.org: Version 7.1.5, fixed release for every branch",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://github.com/WordPress/wordpress-develop/security/advisories",
+            "title": "WordPress: security advisories (all 19, no CVE IDs yet)",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://github.com/WordPress/wordpress-develop/security/advisories/GHSA-pmp8-6cv8-q323",
+            "title": "WordPress GHSA-pmp8: Template Part privilege escalation to code execution",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://developer.wordpress.org/advanced-administration/upgrade/upgrading/",
+            "title": "WordPress Developer: minor core updates install automatically by default",
+            "date": null
+          },
+          {
+            "url": "https://developer.wordpress.org/cli/commands/core/version/",
+            "title": "WP-CLI: wp core version",
+            "date": null
+          },
+          {
+            "url": "https://patchstack.com/articles/wordpress-7-1-5-security-release/",
+            "title": "Patchstack: 7.1.5 analysis, no CVE IDs assigned",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: none of the 7.1.5 issues; CVE-2026-119977 added 3 Nov",
+            "date": null
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-119977",
+            "title": "CVE record: CVE-2026-119977, upgrade-window code execution, fixed in 7.1.4",
+            "date": null
+          },
+          {
+            "url": "https://radar.cloudflare.com/zero-wire/wordpress-7-1-5-template-part-privilege-escalation",
+            "title": "Cloudflare Zero Wire: no exploitation reported as of 19 Nov",
+            "date": "19 Nov"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-21",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/wordpress-7-1-5/"
       }
     },
     {
@@ -4099,6 +4751,153 @@
           }
         ],
         "url": "https://tldrcve.com/spring-security-el/"
+      }
+    },
+    {
+      "slug": "react-typed-array-rce",
+      "name": "React RSC RCE",
+      "meta": "React (Next.js) · CVE-2026-126187",
+      "line": "Only Next 16 apps returning typed arrays from use cache.",
+      "verdict": "Patch now if…",
+      "scareLevel": 1.5,
+      "meterLabel": "Keep an eye on it",
+      "disclosed": "2026-10-14",
+      "url": "https://tldrcve.com/react-typed-array-rce/",
+      "detail": {
+        "slug": "react-typed-array-rce",
+        "kicker": "React (Next.js) · CVE-2026-126187",
+        "name": "React RSC RCE",
+        "verdict": "Patch now if…",
+        "verdictHint": "Only Next 16 apps returning typed arrays from use cache.",
+        "summary": "A bug in how React Server Components package several typed arrays (binary data) in one response can let an attacker with no login call one of the app's Server Actions with arguments they choose. React says it only affects \"extremely rare cases\"; in Next.js it needs Cache Components and a use cache function that returns several typed arrays. A lab exploit is public, no attacks are reported, and the fix has been out since 14 Oct; the CVE ID came on 10 Nov.",
+        "meterLabel": "Keep an eye on it",
+        "meterHint": "Patch on schedule. Watch for news.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1,2"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 5"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 3,9"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 8"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Next.js 16.0.0 – 16.4.0",
+            "hint": "command",
+            "body": "Or react-server-dom-webpack , -parcel or -turbopack 19.0.0–19.0.8, 19.1.0–19.1.9, 19.2.0–19.2.8 or 19.3.0 in another Server Components setup. Next.js 15.x isn't affected by this bug. Apps whose React code doesn't use a server aren't affected. 1,2,7 npm ls next react-server-dom-webpack react-server-dom-parcel react-server-dom-turbopack",
+            "code": [
+              "npm ls next react-server-dom-webpack react-server-dom-parcel react-server-dom-turbopack"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "Cache Components is on",
+            "hint": "command",
+            "body": "The App Router with Cache Components ( cacheComponents: true in the Next.js config). 2,6 grep -n cacheComponents next.config.*",
+            "code": [
+              "grep -n cacheComponents next.config.*"
+            ]
+          },
+          {
+            "num": "3",
+            "title": "A use cache function returns typed arrays",
+            "hint": "command",
+            "body": "One that returns several typed arrays. Hash Security adds that they must be larger than 4 KB, share one buffer, and come with a value the attacker influences. 2,4 grep -rln \"use cache\" app src",
+            "code": [
+              "grep -rln \"use cache\" app src"
+            ]
+          },
+          {
+            "num": "4",
+            "title": "A Server Action does something dangerous",
+            "hint": null,
+            "body": "Running commands needs a Server Action that does something risky with the arguments the attacker supplies, per Hash Security; their lab app wraps a shell command in one. 4,5",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade",
+            "hint": "command",
+            "body": "Next.js 16.4.1 or later (16.4.5 also fixes the Next.js image bug ). Other setups: react-server-dom-* 19.0.9, 19.1.10, 19.2.9 or 19.3.1. Next.js says to upgrade even if your app has no such function. 1,2 npm ls next",
+            "code": [
+              "npm ls next"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "No workaround",
+            "hint": null,
+            "body": "Next.js says there's no workaround for apps with an affected use cache function. 2",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://github.com/react/react/security/advisories/GHSA-xqc2-xf4c-x3h3",
+            "title": "React GHSA-xqc2: affected and fixed react-server-dom versions, 'extremely rare'",
+            "date": "14 Oct"
+          },
+          {
+            "url": "https://github.com/vercel/next.js/security/advisories/GHSA-673q-mjm6-r5xr",
+            "title": "Next.js GHSA-673q: Next 16.0.0–16.4.0, Cache Components, no workaround",
+            "date": "14 Oct"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-126187",
+            "title": "CVE record: CVE-2026-126187, CISA assessment exploitation none",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://hash-sec.com/blog/the-use-cache-rce-how-a-typed-array-bug-in-nextjs-became-remote-code-execution",
+            "title": "Hash Security: how the bug works, what a lab exploit needs",
+            "date": "17 Oct"
+          },
+          {
+            "url": "https://github.com/hashseclb/nextjs-use-cache-rce-2026",
+            "title": "Hash Security: public lab exploit",
+            "date": "17 Oct"
+          },
+          {
+            "url": "https://nextjs.org/docs/app/api-reference/config/next-config-js/cacheComponents",
+            "title": "Next.js docs: the cacheComponents setting",
+            "date": null
+          },
+          {
+            "url": "https://github.com/vercel/next.js/releases/tag/v15.5.28",
+            "title": "Next.js: v15.5.28 release notes (no typed-array fix needed)",
+            "date": "14 Oct"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          },
+          {
+            "url": "https://radar.cloudflare.com/zero-wire/rsc-typed-array-rce",
+            "title": "Cloudflare Zero Wire: no exploitation reported as of 11 Nov",
+            "date": "11 Nov"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-21",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/react-typed-array-rce/"
       }
     },
     {
@@ -5052,7 +5851,7 @@
     {
       "slug": "php",
       "name": "PHP",
-      "meta": "4 bugs · checked 21 Nov",
+      "meta": "5 bugs · checked 21 Nov",
       "nofix": true,
       "chips": [
         {

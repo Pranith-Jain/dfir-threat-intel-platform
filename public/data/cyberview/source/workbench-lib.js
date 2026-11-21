@@ -135,7 +135,8 @@
     return Object.keys(f).slice(0, 8);
   };
 
-  /* ---- priority score (0 to 100); every point is listed so the ranking can be checked ---- */
+  /* ---- patch queue rank (points, 0 to 100) for the Known exploited view; every point is listed so the ranking can be checked.
+     It only orders the queue: it is not the CyberView rating (cvedb-lib.js L.score, CVSS adjusted for exploitation) ---- */
   var EDGE = /vpn|firewall|gateway|fortios|fortigate|pan-os|globalprotect|ivanti|pulse|citrix|netscaler|adc\b|big-ip|sonicwall|sma\b|exchange|outlook web|sharepoint|confluence|jira|gitlab|jenkins|moveit|goanywhere|file transfer|web ?server|nginx|apache|tomcat|iis\b|router|access point|load balancer|proxy|remote (desktop|access|support)|screenconnect|connect secure|mail|zimbra|roundcube|wordpress|plugin|cms|vcenter|esxi|edge ?gateway|asa\b|firepower|ios xe|junos|check ?point|sophos|zyxel|d-link|tp-link|qnap|synology|nas\b/i;
   L.score = function (f, m, today) {
     var pts = [], add = function (n, why) { if (n > 0) pts.push([Math.round(n), why]); };
