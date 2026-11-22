@@ -45,11 +45,33 @@ var LAYERS=[["ot","Industrial control: OT, building and plant systems",/ot-ics|s
   ["app","Apps and supply chain: applications, code libraries, build tools",/supply-chain|\bnpm\b|pypi|github|gitlab|java|\bjdk\b|node\.js|react|rails|wordpress|\bsap\b|confluence|atlassian|package|script|puppet|n8n|\bweb/],
   ["endpoint","Endpoints and OS: computers, phones, browsers",/windows|linux|macos|\bios\b|android|chrome|browser|endpoint|kernel|driver|patch tuesday/],
   ["telecom","Telecom: carriers and core network",/telecom|\bbgp\b|\bdns\b|\bsms\b|carrier|\b5g\b|ss7|\birc/],
+  ["people","People and premises: insiders, physical access",/(?!)/],
   ["org","Policy and other: laws, enforcement, business news",/^$/]];
-var SECG=[["energy","Energy and utilities"],["health","Healthcare"],["gov","Government"],["finance","Finance"],["telecom","Telecom"],["transport","Transport"],["edu","Education"],["tech","Technology"],["other","Other sectors"]];
+var SECG=[["energy","Energy and utilities"],["health","Healthcare"],["gov","Government"],["finance","Finance"],["telecom","Telecom"],["transport","Transport"],["edu","Education"],["tech","Technology"],["cross","Many sectors"],["other","Other sectors"]];
 /* every piece of text CyberView writes is written by its AI agents, which are Claude models; say so wherever it appears */
 var AI_BY="CyberView AI (a Claude model)";
-var BUILD={version:"1.62",date:"2026-11-20"};
+/* an event's "sectors" and "surface" come from fixed lists (scripts/lib/taxonomy.mjs; tests/unit/classify.test.mjs keeps this copy in
+   step): sector key -> [label, analysis group, CISA critical infrastructure]; surface key -> [label, analysis lane]. Each carries a basis;
+   without them the analysis views fall back to the keyword rules in LAYERS and LENS, and every view says which it used. */
+var SECTOR_TX={"chemical":["Chemical","other",1],"commercial-facilities":["Commercial facilities (retail, hotels, venues, media)","other",1],"communications":["Communications","telecom",1],
+  "critical-manufacturing":["Critical manufacturing","other",1],"dams":["Dams","energy",1],"defense-industrial-base":["Defense industrial base","gov",1],"emergency-services":["Emergency services","gov",1],
+  "energy":["Energy","energy",1],"financial-services":["Financial services","finance",1],"food-agriculture":["Food and agriculture","other",1],"government-facilities":["Government services and facilities","gov",1],
+  "healthcare-public-health":["Healthcare and public health","health",1],"information-technology":["Information technology","tech",1],"nuclear":["Nuclear reactors, materials and waste","energy",1],
+  "transportation-systems":["Transportation systems","transport",1],"water-wastewater":["Water and wastewater","energy",1],"education":["Education","edu",0],"professional-services":["Professional and legal services","other",0],
+  "manufacturing":["Other manufacturing","other",0],"nonprofit":["Non-profits, civil society and religious groups","other",0],"individuals":["Individuals and consumers","other",0],
+  "cross-sector":["Many sectors","cross",0],"unknown":["Not known","",0]};
+var SURFACE_TX={"edge-appliance":["Internet-facing appliance (VPN, firewall, gateway)","edge"],"web-app":["Web application","app"],"email-phishing":["Email and phishing","email"],
+  "endpoint":["Endpoint (computers, servers, browsers)","endpoint"],"cloud-saas":["Cloud and SaaS","cloud"],"supply-chain":["Supply chain and third parties","app"],"ot-ics":["OT and industrial control","ot"],
+  "identity":["Identity and credentials","identity"],"mobile":["Mobile devices","endpoint"],"physical-insider":["Physical access and insiders","people"],"unknown":["Not known",""]};
+var BASIS={stated:"stated by the source",inferred:"inferred by "+AI_BY,keyword:"keyword-assigned, can be wrong"};
+/* with explicit sectors, a sector lens shows the events in that group; without them, its keyword rule decides */
+["energy","health","gov","finance","telecom","transport","tech","edu"].forEach(function(k){var kw=LENS[k];LENS[k]=function(e){return e.secGroups?e.secGroups.indexOf(k)>=0:kw(e);};});
+(function(kw){LENS.ci=function(e){return e.secGroups?e.secCi||e.tags.indexOf("critical-infrastructure")>=0||e.tags.indexOf("ot-ics")>=0:kw(e);};})(LENS.ci);
+/* how many of these events a view placed from stated, inferred or keyword-assigned fields */
+function basisNote(list,k){var b=k==="layer"?"layerBasis":"secgBasis",c={stated:0,inferred:0,keyword:0};list.forEach(function(e){if(own(c,e[b]))c[e[b]]++;});
+  return (k==="layer"?"Attack surface":"Sector")+": "+c.stated+" "+BASIS.stated+", "+c.inferred+" "+BASIS.inferred+", "+c.keyword+" keyword-assigned from the wording (can be wrong).";}
+function basisEl(list,k){var p=el("p","cav basis",basisNote(list,k));p.dataset.basis=k;return p;}
+var BUILD={version:"1.65",date:"2026-11-21"};
 var viz={lane:"layer",mat:"layer"};
 var kev=[],ripples=null;
 function own(o,k){return typeof k==="string"&&Object.prototype.hasOwnProperty.call(o,k);}
@@ -185,6 +207,68 @@ function verifiedNode(v){
   sm.appendChild(document.createTextNode(verifiedLabel(v)+(v.summary?" \u2014 "+v.summary:"")));
   if(v.url){sm.appendChild(document.createTextNode(" "));var a=el("a",null,"source");a.href=safeUrl(v.url);a.target="_blank";a.rel="noopener noreferrer";sm.appendChild(a);}
   if(v.at){var w=ago(v.at);if(w)sm.appendChild(document.createTextNode(" \u00b7 checked "+w));}
+  return sm;
+}
+/* service status (scripts/status-pages.mjs, no AI model; docs["services/status"]): major or long incidents on cloud, CDN,
+   DNS, SaaS, payment and telecom providers' own status pages. Listed in the map layers panel in neutral ink, never drawn,
+   never counted, never called an attack: each says it is the provider's own status page, not a cyber event. A link is
+   kept only on the provider's own status page domain (the page's last two labels). */
+var services=null,SVC_LV={critical:1,major:1,minor:1,none:1};
+function svcBase(h){return String(h||"").toLowerCase().split(".").slice(-2).join(".");}
+function cleanServices(d){
+  if(!d||typeof d!=="object"||!Array.isArray(d.items))return null;
+  var items=d.items.slice(0,60).map(function(x){
+    if(!x||typeof x!=="object")return null;
+    var name=str(x.name,60).trim(),title=str(x.title,200).trim(),page=gnLink(x.page)||(/^https:\/\/[a-z0-9.-]+\/?$/i.test(str(x.page,200))?str(x.page,200):""),url=gnLink(x.url),ph="",uh="";
+    if(!name||!title||!page)return null;
+    try{ph=new URL(page).hostname;uh=url?new URL(url).hostname:"";}catch(e){return null;}
+    if(url&&svcBase(uh)!==svcBase(ph))url="";
+    var mn=numIn(x.minutes,0,1e6);
+    return {name:name,title:title,page:page,url:url||page,impact:str(x.impact,40).trim(),level:own(SVC_LV,str(x.level,10))?x.level:"",
+      components:strs(x.components,6,80),status:str(x.status,40).toLowerCase(),start:str(x.started_at,30),end:str(x.resolved_at,30),minutes:mn===null?null:Math.round(mn),verified:cleanVerified(x.verified)};
+  }).filter(Boolean);
+  return {at:str(d.updated_at,30),pages:numIn(d.pages,0,500)||0,ok:numIn(d.pages_ok,0,500)||0,items:items};
+}
+function svcDur(m){return m===null?"":m>=120?Math.round(m/60)+" h":m+" min";}
+function servicesBlock(box){
+  if(!services)return;
+  var r=el("div","lrow"),h=ctxHealth({at:services.at,ok:services.ok>0,items:services.items});
+  r.appendChild(el("span","lname","Service status"));r.appendChild(el("span","lh h-"+h.k,h.t));box.appendChild(r);
+  box.appendChild(el("p","lnote","Major or long incidents on cloud, CDN, DNS, SaaS, payment and telecom providers' own status pages. Each is the provider's own status page, not a cyber event; not drawn on the globe."));
+  var ul=el("ul","llist svc");
+  if(!services.items.length)ul.appendChild(el("li","muted","No major or long incident open on the "+services.pages+" status pages read."));
+  services.items.slice(0,6).forEach(function(x){
+    var li=el("li"),a=el("a",null,x.name+": "+x.title);a.href=safeUrl(x.url);a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);
+    var bits=[x.impact?"impact as stated: "+x.impact:"no impact level stated"];var s=ago(x.start);if(s)bits.push("started "+s);
+    bits.push(x.end?"resolved"+(x.minutes!==null?" after "+svcDur(x.minutes):""):x.status==="monitoring"?"fix in place, provider monitoring"+(x.minutes!==null?" (after "+svcDur(x.minutes)+")":""):"open"+(x.minutes!==null?" for "+svcDur(x.minutes):""));
+    li.appendChild(el("span","muted"," "+bits.join(" · ")));
+    li.appendChild(x.verified?verifiedNode(x.verified):el("small","snote","The provider's own status page, not a cyber event. Not checked by CyberView."));
+    ul.appendChild(li);});
+  if(services.items.length>6)ul.appendChild(el("li","muted","and "+(services.items.length-6)+" more"));
+  box.appendChild(ul);
+  box.appendChild(el("p","lsrc","Source: "+services.ok+" of "+services.pages+" providers' status pages read"));
+}
+/* the claims desk's check of a leak-site claim (scripts/claims-desk.mjs; v1.63), shown on the event it names. The claim is the
+   group's word; "confirmed" names who confirmed it (the organisation, a regulator or a government); the link is the page that
+   says so, never a leak site or a claim tracker. Unknown decisions are dropped and the event shows no check. */
+var CLAIM_DEC={confirmed_by_victim:1,reported:1,denied:1,unconfirmed:1,not_found:1};
+var LEAK_HOST=/(^|\.)(onion|ransomware\.live|ransomlook\.io|ransomwatch\.telemetry\.ltd|ransomfeed\.it|ransom-db\.com|ransomdb\.io|t\.me|x\.com|twitter\.com)$/;
+function cleanClaimCheck(c){
+  if(!c||typeof c!=="object"||!own(CLAIM_DEC,str(c.decision,24)))return null;
+  var group=str(c.group,60).trim(),by=str(c.confirmed_by,120).trim(),d=str(c.claimed_at,10);if(!group||(c.decision==="confirmed_by_victim"&&!by))return null;
+  var u=gnLink(c.url);if(u){try{if(LEAK_HOST.test(new URL(u).hostname.toLowerCase()))u="";}catch(e){u="";}}
+  return {decision:c.decision,summary:str(c.summary,300).trim(),group:group,claimed:isDay(d)?d:"",by:by,url:u,at:str(c.at,30),ai:AI_BY};
+}
+function claimLabel(c){
+  var g=c.group+"\u2019s leak-site claim"+(c.claimed?" of "+fmtDay(c.claimed):"");
+  return "Checked by "+c.ai+": "+({confirmed_by_victim:"confirmed by "+c.by+" \u2014 "+g,reported:"reported by publishers, not confirmed by the organisation \u2014 "+g,
+    denied:"the organisation denies "+g,unconfirmed:"nothing beyond "+g+" was found; it will be checked again",not_found:"the organisation in "+g+" could not be identified"})[c.decision];
+}
+function claimNode(c){
+  var sm=el("small","aiby ccheck");sm.dataset.decision=c.decision;
+  sm.appendChild(document.createTextNode(claimLabel(c)+(c.summary?". "+c.summary:"")));
+  if(c.url){sm.appendChild(document.createTextNode(" "));var a=el("a",null,"source");a.href=safeUrl(c.url);a.target="_blank";a.rel="noopener noreferrer";sm.appendChild(a);}
+  if(c.at){var w=ago(c.at);if(w)sm.appendChild(document.createTextNode(" \u00b7 checked "+w));}
   return sm;
 }
 var ctx={},ctxOn={ioda:false,gdacs:true,grid:true};
@@ -676,6 +760,7 @@ function renderLayers(){
     }
     if(c){var src=el("p","lsrc","Source: ");if(c.url){var sa=el("a",null,c.source);sa.href=safeUrl(c.url);sa.target="_blank";sa.rel="noopener noreferrer";src.appendChild(sa);}else src.appendChild(document.createTextNode(c.source));if(c.error)src.appendChild(document.createTextNode(" · last fetch failed ("+c.error+")"));box.appendChild(src);}
   });});
+  safe("service status",function(){servicesBlock(box);});
 }
 function layersToggle(open){var b=$("layers");b.hidden=!open;$("zlayers").setAttribute("aria-expanded",open?"true":"false");if(open)renderLayers();}
 
@@ -758,6 +843,7 @@ function clean(id,d){
     if(aLat!==null&&aLng!==null&&/^https:\/\//i.test(au)&&str(at.by,120)&&str(at.actor,120))e.attr={actor:str(at.actor,120),origin:str(at.origin_country,60),lat:aLat,lng:aLng,by:str(at.by,120),byType:at.by_type,url:au};}
   e.links=(Array.isArray(d.links)?d.links:[]).slice(0,40).map(function(l){if(!l||typeof l!=="object")return null;var to=str(l.to,120),u=str(l.url,600);
     return /^[a-z0-9][a-z0-9-]{2,119}$/.test(to)&&to!==id&&/^https:\/\//i.test(u)?{to:to,rel:str(l.rel,60)||"linked",url:u}:null;}).filter(Boolean);
+  e.claimCheck=cleanClaimCheck(d.claim_check);
   var rv=d.review;e.review=rv&&typeof rv==="object"&&{passed:1,corrected:1,flagged:1}[rv.state]&&str(rv.at,30)?{state:rv.state,at:str(rv.at,30),note:str(rv.note,300)}:null;
   var HF={stix:"STIX",sigma:"Sigma rule",yara:"YARA rule",snort:"Snort rule",suricata:"Suricata rule",kql:"KQL query",spl:"Splunk query",csv:"CSV indicators",json:"JSON indicators",misp:"MISP event",openioc:"OpenIOC",text:"Indicator list",pdf:"PDF with indicators"};
   e.hunt=(Array.isArray(d.hunt)?d.hunt:[]).slice(0,12).map(function(h){if(!h||typeof h!=="object"||!own(HF,h.format))return null;var hu=str(h.url,600);
@@ -766,9 +852,18 @@ function clean(id,d){
   e.wlHay=[e.title,e.org,e.sector,e.country,e.products.join(" | "),e.tags.join(" | "),e.actor,e.cves.join(" ")].join(" | ").toLowerCase();
   e.lensHay=(e.sector+" "+e.tags.join(" ")+" "+e.org).toLowerCase();
   var lh=(e.title+" "+e.products.join(" ")+" "+e.tags.join(" ")+" "+e.sector).toLowerCase();
-  e.layer="org";
-  if(e.category==="incident"||e.category==="vuln"||e.category==="report"||e.category==="outage"){for(var li=0;li<LAYERS.length;li++){if(LAYERS[li][2].test(lh)){e.layer=LAYERS[li][0];break;}}}
-  e.secg="other";for(var si=0;si<SECG.length;si++){if(own(LENS,SECG[si][0])&&LENS[SECG[si][0]](e)){e.secg=SECG[si][0];break;}}
+  var sx=d.sectors,su=d.surface,okB=function(o){return !!o&&typeof o==="object"&&(o.basis==="stated"||o.basis==="inferred");};
+  e.sectors=okB(sx)&&Array.isArray(sx.values)?sx.values.filter(function(k,i,a){return own(SECTOR_TX,k)&&a.indexOf(k)===i;}).slice(0,4):[];
+  e.sectorsBasis=e.sectors.length?sx.basis:"";
+  e.surface=okB(su)&&own(SURFACE_TX,su.value)?su.value:"";e.surfaceBasis=e.surface?su.basis:"";
+  var sg=e.sectors.map(function(k){return SECTOR_TX[k][1];}).filter(Boolean);
+  e.secGroups=sg.length?sg:null;e.secCi=e.sectors.some(function(k){return SECTOR_TX[k][2]===1;});
+  e.layer="org";e.layerBasis="";
+  if(e.category==="incident"||e.category==="vuln"||e.category==="report"||e.category==="outage"){
+    if(e.surface&&SURFACE_TX[e.surface][1]){e.layer=SURFACE_TX[e.surface][1];e.layerBasis=e.surfaceBasis;}
+    else{e.layerBasis="keyword";for(var li=0;li<LAYERS.length;li++){if(LAYERS[li][2].test(lh)){e.layer=LAYERS[li][0];break;}}}}
+  if(sg.length){e.secg=sg[0];e.secgBasis=e.sectorsBasis;}
+  else{e.secg="other";e.secgBasis="keyword";for(var si=0;si<SECG.length;si++){if(own(LENS,SECG[si][0])&&LENS[SECG[si][0]](e)){e.secg=SECG[si][0];break;}}}
   e.wl=wlTest(e);
   return e;
 }
@@ -999,6 +1094,7 @@ function card(e,open){
     }
     var vv=e.val?VAL[e.val.state]:["Not yet checked","v-warn","The validation pass has not reached this event yet."];
     b.appendChild(el("small","aiby","Researched and written by "+AI_BY+" from the sources listed, under CyberView's published rules."));
+    if(e.claimCheck)b.appendChild(claimNode(e.claimCheck));
     var vb=el("div","val "+vv[1]);vb.appendChild(el("b",null,vv[0]));vb.appendChild(document.createTextNode(" · confidence "+CONF[e.conf].toLowerCase()));
     vb.appendChild(el("small",null,(e.val&&e.val.note)||vv[2]));
     if(e.val&&e.val.checked)vb.appendChild(el("small",null,"Checked "+fmtTime(e.val.checked)));
@@ -1008,7 +1104,11 @@ function card(e,open){
     if(e.tags.length){var tg=el("div","tags");e.tags.forEach(function(t){tg.appendChild(el("span","tag",t));});b.appendChild(tg);}
     var dl=el("dl");
     function row(k,v,cls){if(!v)return;dl.appendChild(el("dt",null,k));dl.appendChild(el("dd",cls||null,v));}
-    row("When",fmtWhen(e,true)+(e.hasTime?"":" (time of day not reported)"),"mono");row("Organization",e.org);row("Sector",e.sector);row("Products",e.products.join(", "));row("Actor",e.actor);row("Techniques",e.attack.join("; "));row("Status",STATUS[e.status]);row("Source quality",e.tier?TIER[e.tier]:"");
+    row("When",fmtWhen(e,true)+(e.hasTime?"":" (time of day not reported)"),"mono");row("Organization",e.org);row("Sector",e.sector);
+    var sgName=function(k){var x=SECG.filter(function(g){return g[0]===k;})[0];return x?x[1]:"";},lnName=function(k){var x=LAYERS.filter(function(l){return l[0]===k;})[0];return x?x[1].split(":")[0]:"";};
+    var known=e.sectors.filter(function(k){return k!=="unknown";});
+    row("Sectors (fixed list)",known.length?known.map(function(k){return SECTOR_TX[k][0];}).join(", ")+" · "+BASIS[e.sectorsBasis]:e.secg!=="other"?sgName(e.secg)+" · "+BASIS.keyword:"");
+    row("Attack surface",e.surface&&e.surface!=="unknown"?SURFACE_TX[e.surface][0]+" · "+BASIS[e.surfaceBasis]:e.layer!=="org"?lnName(e.layer)+" · "+BASIS.keyword:"");row("Products",e.products.join(", "));row("Actor",e.actor);row("Techniques",e.attack.join("; "));row("Status",STATUS[e.status]);row("Source quality",e.tier?TIER[e.tier]:"");
     row("Severity",["","Low","Medium","High"][e.severity]);row("Records",e.records?e.records.toLocaleString():"");
     row("CVEs",e.cves.join(", "),"mono");row("Pin shows",[e.geo||(e.pin?PIN[e.pin]:""),e.actorPin?"attributed origin, not a victim location":e.countryPin?"country-level location":""].filter(Boolean).join(" · "));row("Date note",e.dateNote);
     row("First seen",fmtTime(e.firstSeen),"mono");row("Updated",e.updated&&e.updated!==e.firstSeen?fmtTime(e.updated):"","mono");
@@ -1252,6 +1352,7 @@ function renderInsights(list){
   kpi(list.length?Math.round(corr/list.length*100)+"%":"0%","corroborated");
   box.appendChild(k);
   box.appendChild(histBlock());
+  safe("scam warnings",function(){box.appendChild(scamBlock());});
   box.appendChild(bars("Source quality",tally(list,function(e){return e.tier?TIER[e.tier]:"Not rated yet";}),null));
   box.appendChild(bars("Validation",tally(list,function(e){return e.val?VAL[e.val.state][0]:"Not yet checked";}),null));
   box.appendChild(bars("Countries",tally(list,function(e){return e.country;}).slice(0,6),function(c){state.country=normC(c);setTab("feed");render();}));
@@ -1314,6 +1415,75 @@ function renderInsights(list){
   box.appendChild(el("div","empty","CyberView version "+BUILD.version+" · built "+fmtDay(BUILD.date)+(sweep&&sweep.data_version?" · data rules "+str(sweep.data_version,20):"")));
   var subs=el("div","empty");subs.appendChild(document.createTextNode("Subscribe to high-priority events: "));var rl=el("a",null,"RSS");rl.href="data/feed.xml";subs.appendChild(rl);subs.appendChild(document.createTextNode(" · "));var jl=el("a",null,"JSON Feed");jl.href="data/feed.json";subs.appendChild(jl);subs.appendChild(document.createTextNode(" · "));var al=el("a",null,"Full archive");al.href="archive.html";subs.appendChild(al);box.appendChild(subs);
 }
+/* ---------- scam warnings (scripts/scams.mjs, no AI model; docs["scams/warnings"]) ----------
+   Official warnings about scams and phishing from government bodies, police, regulators and national CERTs, by country.
+   Warnings, not cyber events: never drawn on the globe, never counted as events. The issuer is named and an item links only
+   to its issuer's own https hosts (from config/scams.json). The scam type is keyword-assigned and labelled so. */
+var SCAM_TYPES={impersonation:"impersonation",investment:"investment",delivery:"delivery",bank_sms:"bank or SMS",tech_support:"tech support",romance:"romance",job:"job",crypto:"crypto"};
+var scams=null,scamUi={cc:"",type:"",all:false};
+function cleanScams(d){
+  if(!d||typeof d!=="object"||!d.issuers||typeof d.issuers!=="object"||!Array.isArray(d.items))return null;
+  var iss={};
+  Object.keys(d.issuers).slice(0,80).forEach(function(k){var v=d.issuers[k];if(!/^[a-z0-9-]{2,30}$/.test(k)||!v||typeof v!=="object")return;
+    var hosts=(Array.isArray(v.hosts)?v.hosts:[]).slice(0,6).map(function(h){return str(h,80).toLowerCase();}).filter(function(h){return /^[a-z0-9.-]{3,80}$/.test(h);});
+    var cc=str(v.country,2).toUpperCase();
+    iss[k]={name:str(v.name,140).trim()||k,country:/^[A-Z]{2}$/.test(cc)?cc:"",hosts:hosts,ok:v.ok===true,error:str(v.error,60),home:""};
+    iss[k].home=scamLink(iss[k],v.home);});
+  var items=d.items.slice(0,600).map(function(x){
+    if(!x||typeof x!=="object"||!own(iss,str(x.issuer,30)))return null;
+    var i=iss[x.issuer],t=str(x.title,220).trim(),cc=str(x.country,2).toUpperCase();if(!t)return null;
+    return {id:str(x.id,60),issuer:x.issuer,title:t,country:/^[A-Z]{2}$/.test(cc)?cc:i.country,published:str(x.published,30),seen:str(x.first_seen,30),url:scamLink(i,x.url),
+      types:strs(x.types,8,20).filter(function(k){return own(SCAM_TYPES,k);})};
+  }).filter(Boolean);
+  return {at:str(d.updated_at,30),issuers:iss,items:items};
+}
+/* an https link on the issuer's own hosts, or nothing */
+function scamLink(i,u){
+  u=str(u,500);var m=/^https:\/\/([a-z0-9.-]+)(?:[\/?#]|$)/i.exec(u);
+  return m&&!/[\s"'<>\\]/.test(u)&&i.hosts.indexOf(m[1].toLowerCase())>=0?u:"";
+}
+function scamWhen(x){return x.published||x.seen;}
+function scamBlock(){
+  var b=el("section","blk scams");b.id="scamWarnings";b.appendChild(el("h3",null,"Scam warnings by country"));
+  b.appendChild(el("p","scamnote","Official warnings about scams and phishing from government bodies, police, regulators and national cyber security centres, read from their own feeds by a script (no AI model). They are warnings, not cyber events: they are not drawn on the globe and not counted as events. The scam type is assigned by keyword matching and can be wrong."));
+  if(!scams){b.appendChild(el("div","empty",loaded?"No scam warnings are stored yet.":"Loading scam warnings"));return b;}
+  var all=scams.items.slice().sort(function(a,c){return (Date.parse(scamWhen(c))||0)-(Date.parse(scamWhen(a))||0);});
+  var ccs={},tys={};all.forEach(function(x){if(x.country)ccs[x.country]=(ccs[x.country]||0)+1;x.types.forEach(function(t){tys[t]=(tys[t]||0)+1;});});
+  if(scamUi.cc&&!ccs[scamUi.cc])scamUi.cc="";if(scamUi.type&&!tys[scamUi.type])scamUi.type="";
+  var row=el("div","scamtools");
+  var sc=el("select");sc.id="scamCountry";sc.setAttribute("aria-label","Scam warnings: country");
+  var o0=el("option",null,"All countries ("+all.length+")");o0.value="";sc.appendChild(o0);
+  Object.keys(ccs).sort(function(a,c){return gridCountry(a).localeCompare(gridCountry(c));}).forEach(function(c){var o=el("option",null,gridCountry(c)+" ("+ccs[c]+")");o.value=c;sc.appendChild(o);});
+  sc.value=scamUi.cc;sc.addEventListener("change",function(){scamUi.cc=/^[A-Z]{2}$/.test(sc.value)?sc.value:"";scamUi.all=false;scamRedraw();});
+  var st=el("select");st.id="scamType";st.setAttribute("aria-label","Scam warnings: scam type (keyword-assigned)");
+  var t0=el("option",null,"Any scam type");t0.value="";st.appendChild(t0);
+  Object.keys(SCAM_TYPES).forEach(function(k){if(!tys[k])return;var o=el("option",null,SCAM_TYPES[k]+" ("+tys[k]+")");o.value=k;st.appendChild(o);});
+  st.value=scamUi.type;st.addEventListener("change",function(){scamUi.type=own(SCAM_TYPES,st.value)?st.value:"";scamUi.all=false;scamRedraw();});
+  row.appendChild(sc);row.appendChild(st);b.appendChild(row);
+  var list=all.filter(function(x){return (!scamUi.cc||x.country===scamUi.cc)&&(!scamUi.type||x.types.indexOf(scamUi.type)>=0);});
+  if(!list.length)b.appendChild(el("div","empty",all.length?"No warning matches this filter.":"No scam warnings in the last 90 days from the issuers below."));
+  var ul=el("ul","scamlist"),cap=scamUi.all?list.length:8;
+  list.slice(0,cap).forEach(function(x){
+    var li=el("li"),i=scams.issuers[x.issuer];
+    if(x.url){var a=el("a",null,x.title);a.href=safeUrl(x.url);a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);}else li.appendChild(el("b",null,x.title));
+    var w=scamWhen(x),meta=[i.name];if(x.country)meta.push(gridCountry(x.country));
+    if(w&&isFinite(Date.parse(w)))meta.push((x.published?"published ":"first seen ")+fmtDay(w.slice(0,10)));
+    li.appendChild(el("span","muted"," "+meta.join(" · ")));
+    li.appendChild(el("small","scamtype",x.types.length?"Scam type (keyword-assigned): "+x.types.map(function(k){return SCAM_TYPES[k];}).join(", "):"Scam type: no keyword matched"));
+    ul.appendChild(li);});
+  if(list.length)b.appendChild(ul);
+  if(list.length>cap){var more=el("button","linkbtn","Show all "+list.length+" warnings");more.type="button";more.addEventListener("click",function(){scamUi.all=true;scamRedraw();});b.appendChild(more);}
+  var keys=Object.keys(scams.issuers),src=el("p","lsrc","Issuers ("+keys.length+"): ");
+  keys.forEach(function(k,n){var i=scams.issuers[k];if(n)src.appendChild(document.createTextNode("; "));
+    if(i.home){var ha=el("a",null,i.name);ha.href=safeUrl(i.home);ha.target="_blank";ha.rel="noopener noreferrer";src.appendChild(ha);}else src.appendChild(document.createTextNode(i.name));
+    if(!i.ok)src.appendChild(document.createTextNode(" (last fetch failed"+(i.error?": "+i.error:"")+")"));});
+  b.appendChild(src);
+  if(scams.at&&isFinite(Date.parse(scams.at)))b.appendChild(el("p","lsrc","Collected "+ago(scams.at)+". Titles are the issuers' own, in their own language."));
+  return b;
+}
+/* #scams (the About page links here): the Insights tab, scrolled to the warnings */
+function scamOpen(){if(state.view==="grid")setView("map");setTab("ins");var b=$("scamWarnings");if(b&&b.scrollIntoView)b.scrollIntoView({block:"start"});}
+function scamRedraw(){var old=$("scamWarnings");if(!old)return;safe("scam warnings",function(){var n=scamBlock();old.parentNode.replaceChild(n,old);});}
 function histBlock(){
   var b=el("section","blk hist");b.appendChild(el("h3",null,"This week vs earlier"));
   var n=hist?hist.length:0;
@@ -1726,6 +1896,7 @@ function vizTime(v,list){
           .on("pointerenter",function(ev){tipAt(ev,c.length+" events",lab+" · select to list them all");}).on("pointerleave",hideTip);}
     });
   });
+  if(viz.lane!=="type")s2.appendChild(basisEl(geo.reduce(function(a,g){return a.concat(g.evs);},[]),viz.lane==="layer"?"layer":"secg"));
   v.appendChild(s2);
   /* 3. patch clock */
   var s3=el("div","vsec");s3.appendChild(el("h3",null,"How long do we have to patch?"));
@@ -1781,7 +1952,8 @@ function vizCorr(v,list){
       src.forEach(function(s){s.so=0;});dst.forEach(function(d){d.to=0;});});
     colsN.forEach(function(col,ci){col.forEach(function(n){sf2.append("rect").attr("class","nd").attr("x",cx[ci]).attr("y",n.y).attr("width",NW).attr("height",n.h).attr("rx",3);
       if(n.h>=9||col.length<7)sf2.append("text").attr("class","ndl").attr("x",ci===0?cx[ci]-7:cx[ci]+NW+7).attr("y",n.y+n.h/2+4).attr("text-anchor",ci===0?"end":"start").text((ci===1?"":"")+n.label+" · "+n.n);});});
-    sf.appendChild(el("p","cav","Based on "+fe.length+" technical events that carry one of the six most common threat tags; each event is counted once, under its most common tag. Policy, enforcement and business news is left out. Sector and environment are assigned from wording, so treat thin bands as anecdotes."));}
+    sf.appendChild(el("p","cav","Based on "+fe.length+" technical events that carry one of the six most common threat tags; each event is counted once, under its most common tag. Policy, enforcement and business news is left out. Thin bands are anecdotes."));
+    sf.appendChild(basisEl(fe.map(function(x){return x.e;}),"layer"));sf.appendChild(basisEl(fe.map(function(x){return x.e;}),"secg"));}
   v.appendChild(sf);
   /* 1. chains */
   var s0=el("div","vsec");s0.appendChild(el("h3",null,"Chains: what led to what?"));
@@ -1850,7 +2022,7 @@ function vizCorr(v,list){
         rc.on("click",go).on("keydown",function(ev){if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();go();}})
           .on("pointerenter",function(ev){tipAt(ev,c.r.n+" × "+c.t,c.n+" of "+c.r.evs.length+" events in this row"+(c.n>=3?" · "+c.lift.toFixed(1)+"× the rate expected by chance":" · too few to compare"));}).on("pointerleave",hideTip);}
       else rc.style("cursor","default");});
-    s2.appendChild(el("p","cav","▲ and a dark outline mark a combination seen at least 1.5 times more often than its row and column totals alone would predict, counted only where there are 3 or more events. With "+N+" tagged events this is a pointer for where to look, not a statistical finding. Rows are assigned from product and tag wording, so some events sit in the wrong row."+(hot?"":" No combination clears that bar in this view.")));}
+    s2.appendChild(el("p","cav","▲ and a dark outline mark a combination seen at least 1.5 times more often than its row and column totals alone would predict, counted only where there are 3 or more events. With "+N+" tagged events this is a pointer for where to look, not a statistical finding. Rows: "+basisNote(rws.reduce(function(a,r){return a.concat(r.evs);},[]),viz.mat==="layer"?"layer":"secg")+(hot?"":" No combination clears that bar in this view.")));}
   v.appendChild(s2);
 }
 
@@ -2729,10 +2901,11 @@ fetch("world-110m.json").then(function(r){return r.json();}).then(function(topo)
 // every URL that comes from data passes through here before it becomes a link
 function safeUrl(u){u=String(u||"");return /^https?:\/\//i.test(u)?u:"about:blank";}
 /* ---------- permalinks: #e=<id> opens one event (plain #<id> from older links still works) ---------- */
-function hashId(){var h=location.hash.slice(1);try{h=decodeURIComponent(h);}catch(x){}if(h==="grid")return "";if(h.indexOf("e=")===0)h=h.slice(2);return /^[a-z0-9][a-z0-9-]{2,119}$/.test(h)?h:"";}
+function hashId(){var h=location.hash.slice(1);try{h=decodeURIComponent(h);}catch(x){}if(h==="grid"||h==="scams")return "";if(h.indexOf("e=")===0)h=h.slice(2);return /^[a-z0-9][a-z0-9-]{2,119}$/.test(h)?h:"";}
 function eventLink(id){return location.origin+location.pathname+"#e="+encodeURIComponent(id);}
 function openFromHash(){
   if(location.hash==="#grid"){if(state.view!=="grid")setView("grid");return;}
+  if(location.hash==="#scams"){scamOpen();return;}
   var h=hashId();if(!h){if(state.sel&&state.view!=="grid")select(null);return;}
   if(state.view==="grid")setView("map");
   if(h===state.sel)return;
@@ -2800,7 +2973,7 @@ openStore().then(function(d){
   query.onSnapshot(function(snap){
     var n=apply(snap);
     if(!snap.metadata||!snap.metadata.fromCache){clearTimeout(timer);stale=false;}
-    if(first){first=false;if(/[?&]wall(\b|=|&|$)/.test(location.search)){renderSoon();setTimeout(wallStart,60);return;}if(hashId()){openFromHash();return;}}
+    if(first){first=false;if(/[?&]wall(\b|=|&|$)/.test(location.search)){renderSoon();setTimeout(wallStart,60);return;}if(hashId()){openFromHash();return;}if(location.hash==="#scams")setTimeout(scamOpen,0);}
     else if(n)toast(n+" new event"+(n>1?"s":"")+" just arrived.");
     renderSoon();
   },function(){clearTimeout(timer);if(!loaded)unavailable=true;stale=false;render();});
@@ -2812,6 +2985,8 @@ openStore().then(function(d){
   db.doc("stats/history").onSnapshot(function(s){hist=s.exists?cleanHist(s.data()):null;renderInsights(lastList);},function(){});
   try{db.collection("corrections").orderBy("at","desc").limit(20).onSnapshot(function(snap){
     corrections=snap.docs.map(function(x){return cleanCorr(x.data());}).filter(Boolean).slice(0,20);renderInsights(lastList);},function(){});}catch(x){}
+  db.doc("services/status").onSnapshot(function(s){services=s.exists?cleanServices(s.data()):null;renderLayers();},function(){});
+  db.doc("scams/warnings").onSnapshot(function(s){scams=s.exists?cleanScams(s.data()):null;if(state.tab==="ins")scamRedraw();},function(){});
   db.doc("grid/news").onSnapshot(function(s){gridNews=s.exists?cleanGridNews(s.data()):null;if(state.view==="grid")renderSoon();},function(){});
   db.doc("grid/analysis").onSnapshot(function(s){gridA=s.exists?cleanGridAnalysis(s.data()):null;gridTr=s.exists?cleanGridTrends(s.data()):null;renderLayers();if(onGlobe())renderSoon();},function(){});
   db.doc("grid/sources").onSnapshot(function(s){gridSrcDoc=s.exists?cleanGridSrcDoc(s.data()):{};if(ctxRaw.grid){ctx.grid=cleanCtx("grid",ctxRaw.grid);renderLayers();if(onGlobe())renderSoon();}},function(){});

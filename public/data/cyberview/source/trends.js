@@ -2,7 +2,17 @@
 (function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
-  var TITLES = { category: "Event types", sector: "Sectors", country: "Countries", actor: "Threat actors", product: "Products", tag: "Themes" };
+  var TITLES = { category: "Event types", sector: "Sectors", surface: "Attack surfaces", country: "Countries", actor: "Threat actors", product: "Products", tag: "Themes" };
+  var AI_TX = "CyberView AI (a Claude model)";
+  function int0(v) { return typeof v === "number" && isFinite(v) && v >= 0 ? Math.round(v) : 0; }
+  // where the sector and surface rows came from (trends.json "basis"): the source, CyberView AI, or the free-text sector field
+  function basisLine(k, b) {
+    b = b && typeof b === "object" ? b[k] : null; if (!b || typeof b !== "object") return null;
+    var s = int0(b.stated), i = int0(b.inferred), p;
+    if (k === "sector") p = el("p", "note", "Of these two weeks' events, " + s + " have sectors stated by the source, " + i + " inferred by " + AI_TX + " (both from a fixed list based on the US CISA critical infrastructure sectors), and " + int0(b.free) + " only the free-text sector field written with the event, counted as written.");
+    else p = el("p", "note", "Of these two weeks' events, " + s + " have an attack surface stated by the source and " + i + " inferred by " + AI_TX + "; " + int0(b.none) + " have none yet or none is known, and are not counted here.");
+    p.dataset.basis = k; return p;
+  }
   var CAT = { incident: "Incidents", vuln: "Patches and advisories", report: "Threat reports", policy: "Law and policy", enforcement: "Law enforcement", investment: "Investment and vendors", outage: "Outages" };
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = String(text); return n; }
   var AI_BY = "CyberView AI (a Claude model)";
@@ -28,7 +38,7 @@
     safe("daily events", function () { days(t.daily || []); });
     safe("power grid", function () { grid(t.grid); }, $("grid"));
     var box = $("dims");
-    ["category", "sector", "country", "actor", "product", "tag"].forEach(function (k) { var rows = (t.dims && t.dims[k]) || []; if (rows.filter(function (r) { return r.cur > 0; }).length >= 2) safe(TITLES[k], function () { box.appendChild(dim(k, rows, complete)); }, box); });
+    ["category", "sector", "surface", "country", "actor", "product", "tag"].forEach(function (k) { var rows = (t.dims && t.dims[k]) || []; if (rows.filter(function (r) { return r.cur > 0; }).length >= 2) safe(TITLES[k], function () { var sec = dim(k, rows, complete), bl = basisLine(k, t.basis); if (bl) sec.appendChild(bl); box.appendChild(sec); }, box); });
   }
 
   function days(list) {

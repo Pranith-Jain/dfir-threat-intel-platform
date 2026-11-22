@@ -64,6 +64,27 @@
     tb.hidden = list.length <= RECENT_FEW; tb.textContent = all ? "Show fewer" : "Show all " + list.length;
     list.slice(0, all ? list.length : RECENT_FEW).forEach(function (r) { var li = rowEl(r), meta = li.querySelector(".meta"), when = el("span", "pill filed", "Filed " + ago(r.first_seen) + ", happened " + fmt(r.date)); meta.insertBefore(when, meta.firstChild); ol.appendChild(li); });
   }
+  /* the claims desk's check of a leak-site claim (scripts/claims-desk.mjs), on the event it names: label, summary, the
+     confirming page (https, never a leak site or a claim tracker); an unknown decision shows nothing */
+  var CLAIM_DEC = { confirmed_by_victim: 1, reported: 1, denied: 1, unconfirmed: 1, not_found: 1 };
+  var LEAK_HOST = /(^|\.)(onion|ransomware\.live|ransomlook\.io|ransomwatch\.telemetry\.ltd|ransomfeed\.it|ransom-db\.com|ransomdb\.io|t\.me|x\.com|twitter\.com)$/;
+  function str(v, n) { return typeof v === "string" ? v.slice(0, n).trim() : ""; }
+  function cleanClaimCheck(c) {
+    if (!c || typeof c !== "object" || !Object.prototype.hasOwnProperty.call(CLAIM_DEC, str(c.decision, 24))) return null;
+    var group = str(c.group, 60), by = str(c.confirmed_by, 120), d = str(c.claimed_at, 10), u = str(c.url, 1000);
+    if (!group || (c.decision === "confirmed_by_victim" && !by)) return null;
+    try { var x = new URL(u); if (x.protocol !== "https:" || LEAK_HOST.test(x.hostname.toLowerCase())) u = ""; else u = x.href; } catch (e) { u = ""; }
+    return { decision: c.decision, summary: str(c.summary, 300), group: group, claimed: /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : "", by: by, url: u, at: str(c.at, 30) };
+  }
+  function claimNode(c) {
+    var g = c.group + "\u2019s leak-site claim" + (c.claimed ? " of " + fmt(c.claimed) : "");
+    var t = { confirmed_by_victim: "confirmed by " + c.by + " \u2014 " + g, reported: "reported by publishers, not confirmed by the organisation \u2014 " + g,
+      denied: "the organisation denies " + g, unconfirmed: "nothing beyond " + g + " was found; it will be checked again", not_found: "the organisation in " + g + " could not be identified" }[c.decision];
+    var p = el("p", "note ccheck", "Checked by CyberView AI (a Claude model): " + t + (c.summary ? ". " + c.summary : ""));
+    if (c.url) { p.appendChild(document.createTextNode(" ")); var a = el("a", null, "source"); a.href = safeUrl(c.url); a.target = "_blank"; a.rel = "noopener noreferrer"; p.appendChild(a); }
+    if (c.at) { var w = ago(c.at); if (w) p.appendChild(document.createTextNode(" \u00b7 checked " + w)); }
+    return p;
+  }
   function ago(iso) {
     var m = Math.round((Date.now() - Date.parse(iso)) / 6e4); if (!isFinite(m)) return "";
     return m < 60 ? m + " min ago" : m < 1440 ? Math.round(m / 60) + " h ago" : Math.round(m / 1440) + " days ago";
@@ -102,6 +123,7 @@
       if (!e) { box.textContent = "Details are not available."; return; }
       if (e.summary) box.appendChild(el("p", null, e.summary));
       box.appendChild(el("p", "note", "Researched and written by CyberView AI (a Claude model) from the sources listed."));
+      var cc = cleanClaimCheck(e.claim_check); if (cc) box.appendChild(claimNode(cc));
       if (e.action) { var p = el("p"); p.appendChild(el("strong", null, "What to do: ")); p.appendChild(document.createTextNode(e.action)); box.appendChild(p); }
       if (e.actor) box.appendChild(el("p", null, "Actor: " + e.actor));
       var lp = el("p"), la = el("a", null, "Link to this event");

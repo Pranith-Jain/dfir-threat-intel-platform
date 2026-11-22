@@ -8,6 +8,15 @@
   function label(t) { var hs = Array.prototype.map.call(t.querySelectorAll("thead th"), function (h) { return h.textContent.trim(); }); if (!hs.length) return;
     Array.prototype.forEach.call(t.querySelectorAll("tbody tr"), function (tr) { Array.prototype.forEach.call(tr.children, function (td, i) { if (hs[i] && !td.hasAttribute("data-label")) td.setAttribute("data-label", hs[i]); }); }); }
   Array.prototype.forEach.call(document.querySelectorAll("table.stack"), function (t) { label(t); try { new MutationObserver(function () { label(t); }).observe(t, { childList: true, subtree: true }); } catch (e) {} });
+  // pages added after a page's markup was written: added to its links (inline and menu) after the named link, once
+  function safeUrl(u) { return /^[a-z]+\.html$/.test(u) ? u : "./"; }   // own pages only
+  [["actors.html", "Actors", "trends.html"]].forEach(function (x) {
+    Array.prototype.forEach.call(document.querySelectorAll("nav.sitenav, nav.sheetnav"), function (nav) {
+      if (nav.querySelector('a[href="' + x[0] + '"]')) return;
+      var after = nav.querySelector('a[href="' + x[2] + '"]'), a = document.createElement("a"); a.href = safeUrl(x[0]); a.textContent = x[1];
+      if (after) after.parentNode.insertBefore(a, after.nextSibling); else nav.appendChild(a);
+    });
+  });
   var bar = document.querySelector("header.bar, .bar");
   function barh() { if (bar && getComputedStyle(bar).position === "sticky") document.documentElement.style.setProperty("--barh", bar.offsetHeight + "px"); }
   if (bar && !document.getElementById("stage")) { barh(); window.addEventListener("resize", barh); }

@@ -92,11 +92,26 @@
       grid_waiting: GW && nn(GW.count) !== null ? { count: int0(GW.count), oldest_min: int0(GW.oldest_min) } : null,
       outage_queue: OQ && nn(OQ.waiting) !== null ? { waiting: int0(OQ.waiting), checked_24h: int0(OQ.checked_24h), confirmed_24h: int0(OQ.confirmed_24h), cyber_leads_24h: int0(OQ.cyber_leads_24h), oldest_min: int0(OQ.oldest_min) } : null,
       last_outage_at: isoOk(h.last_outage_at),
+      claims_queue: obj(h.claims_queue) && nn(h.claims_queue.waiting) !== null ? { waiting: int0(h.claims_queue.waiting), checked_24h: int0(h.claims_queue.checked_24h), confirmed_24h: int0(h.claims_queue.confirmed_24h),
+        reported_24h: int0(h.claims_queue.reported_24h), denied_24h: int0(h.claims_queue.denied_24h) } : null,
+      last_claims_at: isoOk(h.last_claims_at),
       grid_audit_flags: Array.isArray(h.grid_audit_flags) ? h.grid_audit_flags.filter(function (f) { return typeof f === "string" && /^[a-z0-9_]{1,40}$/.test(f); }).slice(0, 10) : null,
       grid_sources: obj(h.grid_sources),
+      quality: cleanQuality(h.quality),
       backlog: B && nn(B.waiting) !== null ? { waiting: int0(B.waiting), incidents: int0(B.incidents), oldest_hours: nn(B.oldest_hours) || 0, oldest_incident_hours: nn(B.oldest_incident_hours) || 0 } : null,
       quarantined_count: int0(h.quarantined_count), quarantined: arr(h.quarantined, 5).map(function (q) { return txt(q, 160); }).filter(Boolean)
     };
+  }
+  /** The pipeline check's problems (health.json quality, from scripts/pipecheck.mjs): level, plain text, since when. */
+  function cleanQuality(q) {
+    if (!obj(q)) return null;
+    var LV = { bad: "bad", warn: "warn", info: "info" };
+    return { checked_at: isoOk(q.checked_at), problems: arr(q.problems, 30).filter(function (p) { return obj(p) && typeof p.id === "string" && /^[a-z0-9:_-]{1,60}$/.test(p.id) && typeof p.text === "string"; })
+      .map(function (p) { return { id: p.id, level: has(LV, p.level) ? LV[p.level] : "info", text: txt(p.text, 300), since: isoOk(p.since), over: p.over === true }; }) };
+  }
+  // the badge for each kind of pipeline-check problem
+  function qualityBadge(id) {
+    return /^stage-/.test(id) ? "Late" : id === "status-keys" ? "Data lost" : id === "duplicates" ? "Duplicates" : id === "unreviewed" ? "Waiting" : id === "feeds-propose" || /^collector-/.test(id) ? "Not loading" : id === "broken-links" ? "Broken links" : "Check";
   }
   function countMap(o) { var out = {}; if (obj(o)) Object.keys(o).slice(0, 60).forEach(function (k) { var v = nn(o[k]); if (v !== null && /^[a-z0-9 -]{1,30}$/i.test(k)) out[k] = Math.max(0, Math.round(v)); }); return out; }
   var USAGE_STATE = ["logged", "partly logged", "not logged", "none (script)", "no runs"];
@@ -105,7 +120,7 @@
   function cleanEff(o) {
     if (!obj(o)) return null;
     if (typeof o.error === "string") return { error: txt(o.error, 240) };
-    var cov = function (c) { c = obj(c) || {}; return { days: nn(c.days), events: int0(c.events), region: countMap(c.region), language: countMap(c.language), sector: countMap(c.sector) }; };
+    var cov = function (c) { c = obj(c) || {}; return { days: nn(c.days), events: int0(c.events), region: countMap(c.region), language: countMap(c.language), sector: countMap(c.sector), sector_basis: countMap(c.sector_basis) }; };
     var w = function (x) { x = obj(x) || {}; return { runs: int0(x.runs), tokens: int0(x.tokens), cost: nn(x.cost) }; };
     var LP = obj(o.loop), LB = LP && obj(LP.budget) || {}, lvl = function (x) { return x && ["ok", "tight", "stop"].indexOf(x.level) >= 0 ? x.level : ""; };
     var W = obj(o.windows) || {}, B = obj(W.budget), A = obj(o.accuracy) || {}, C = obj(o.coverage) || {}, CV = obj(o.covered) || {};
@@ -236,6 +251,12 @@
     if (oq) row(!(oq.waiting && oq.oldest_min > 720), "Outage desk (" + AI_BY + "): " + plural(oq.waiting, "outage report") + " waiting for a check; " + oq.checked_24h + " checked in 24 h" +
       (oq.checked_24h ? " (" + oq.confirmed_24h + " confirmed" + (oq.cyber_leads_24h ? ", " + plural(oq.cyber_leads_24h, "cyber lead") + " passed to research" : "") + ")" : "") +
       "; last run " + (h.last_outage_at ? ago(h.last_outage_at) : "not yet") + (oq.waiting && oq.oldest_min > 720 ? " (the oldest report has waited over 12 h)" : ""));
+    // the claims desk (scripts/claims-desk.mjs): leak-site claims, checked by CyberView AI in the research loop, most notable
+    // first; a long queue of minor claims is normal, so the row asks only that the desk keeps running while claims wait
+    var cq = h.claims_queue, cAge = h.last_claims_at ? (Date.now() - Date.parse(h.last_claims_at)) / 36e5 : Infinity;
+    if (cq) row(!(cq.waiting && cAge > 6), "Claims desk (" + AI_BY + "): " + plural(cq.waiting, "leak-site claim") + " waiting for a check; " + cq.checked_24h + " checked in 24 h" +
+      (cq.checked_24h ? " (" + cq.confirmed_24h + " confirmed by the organisation, " + cq.reported_24h + " reported, " + cq.denied_24h + " denied)" : "") +
+      "; last run " + (h.last_claims_at ? ago(h.last_claims_at) : "not yet") + (cq.waiting && cAge > 6 ? " (expected every research cycle)" : ""));
     var bl = h.backlog;
     if (bl) row(bl.waiting <= 60 && !(bl.oldest_incident_hours > 2), "Research queue: " + plural(bl.waiting, "report") + " waiting for a decision" + (bl.incidents ? ", " + bl.incidents + " that read like incidents" : "") + (bl.waiting ? "; oldest " + bl.oldest_hours + " h" : "") + (bl.waiting > 60 ? " (expected under 60)" : ""));
     var q = h.quarantined_count;
@@ -534,7 +555,9 @@
       });
       if (!keys.length) ul.appendChild(el("li", "muted", "No events yet."));
       if (keys.length > 12) ul.appendChild(el("li", "muted", (keys.length - 12) + " more with fewer events"));
-      div.appendChild(ul); box.appendChild(div);
+      div.appendChild(ul);
+      if (d[0] === "sector") { var sb = e.d7.sector_basis || {}, bn = el("p", "note", "Sector of the " + e.d7.events + " events in 7 days: " + (sb.stated || 0) + " stated by the source, " + (sb.inferred || 0) + " inferred by CyberView AI (a Claude model), " + (sb.keyword || 0) + " keyword-assigned from the wording (can be wrong)."); bn.dataset.basis = "sector"; div.appendChild(bn); }
+      box.appendChild(div);
     });
     $("covNote").textContent = same ? e.d7.events + " events first seen in the last " + (dd !== null && dd < 7 ? dd + " days (all the event files hold so far, so the 7- and 30-day counts are the same)" : "7 days") + "."
       : e.d7.events + " events first seen in the last 7 days; " + e.d30.events + " in the last 30" + (dd !== null && dd < 30 ? " (the event files hold " + dd + " days)" : "") + ". Bars show 7 days.";
@@ -611,11 +634,20 @@
     if (h && h.backlog && h.backlog.waiting) attn.push({ cls: h.backlog.waiting > 60 || h.backlog.oldest_incident_hours > 2 ? "warn" : "info", badge: "Waiting", text: plural(h.backlog.waiting, "report") + " in the research queue waiting for a decision; oldest " + h.backlog.oldest_hours + " h", jump: "dQueue" });
     if (h && h.grid_waiting && h.grid_waiting.count) attn.push({ cls: h.grid_waiting.oldest_min > 120 ? "warn" : "info", badge: "Waiting", text: plural(h.grid_waiting.count, "grid outage") + " waiting for a cause check", jump: "gridSrcBox" });
     if (h && h.quarantined_count) attn.push({ cls: "bad", badge: "Left out", text: plural(h.quarantined_count, "record") + " failed validation" + (h.quarantined.length ? ": " + h.quarantined.slice(0, 2).join("; ") : ""), href: REPO + "/issues?q=label%3Adata-quarantine" });
+    // the pipeline check (scripts/pipecheck.mjs, every hour): late stages and data quality; one that outlasted its threshold
+    // also has a GitHub issue labelled pipeline-alert
+    if (h && h.quality) h.quality.problems.forEach(function (p) {
+      attn.push({ cls: p.level, badge: qualityBadge(p.id), kind: "quality", id: p.id,
+        text: p.text.charAt(0).toUpperCase() + p.text.slice(1) + (p.since ? " (first seen " + ago(p.since) + ")" : ""),
+        href: p.over ? REPO + "/issues?q=is%3Aopen+label%3Apipeline-alert" : "", jump: p.over ? "" : "dRoutines" });
+    });
     var ul = $("attention"); ul.textContent = "";
     var rank = { bad: 0, warn: 1, info: 2, neutral: 3, wait: 3 };
-    attn.sort(function (a, b) { return (rank[a.cls] || 3) - (rank[b.cls] || 3); });
+    // "bad" ranks 0: `rank[cls] || 3` sorted every red item LAST (found 2026-11-21), so look the rank up explicitly
+    var rk = function (c) { return has(rank, c) ? rank[c] : 3; };
+    attn.sort(function (a, b) { return rk(a.cls) - rk(b.cls); });
     attn.slice(0, 20).forEach(function (x) {
-      var li = el("li"); li.dataset.kind = x.cls; li.appendChild(badge(x.cls, x.badge)); li.appendChild(document.createTextNode(" " + x.text + " "));
+      var li = el("li"); li.dataset.kind = x.cls; if (x.id) li.dataset.check = x.id; li.appendChild(badge(x.cls, x.badge)); li.appendChild(document.createTextNode(" " + x.text + " "));
       if (x.href) li.appendChild(link(x.href, "details")); else if (x.jump) li.appendChild(jump(x.jump, "details"));
       ul.appendChild(li);
     });

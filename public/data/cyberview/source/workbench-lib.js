@@ -129,6 +129,25 @@
     var state = hit.some(function (h) { return h.state === "affected"; }) ? "affected" : hit.some(function (h) { return h.state === "check"; }) ? "check" : "clear";
     return { state: state, items: hit.slice(0, 20), fixed: Object.keys(fixed).sort(L.cmp).slice(-4) };
   };
+  /* one affected range from data, checked (shared by the Vulnerabilities page and the downloadable scanner) */
+  L.cleanRange = function (r) {
+    var str = function (x, n) { return typeof x === "string" ? x.slice(0, n) : ""; };
+    if (!r || typeof r !== "object" || !str(r.product, 60)) return null;
+    var v = function (x) { x = str(x, 40); return /^[\w.+\-~:]+$/.test(x) ? x : ""; };
+    return { vendor: str(r.vendor, 60), product: str(r.product, 60), from: v(r.from), from_incl: r.from_incl === true, to: v(r.to), to_incl: r.to_incl === true, exact: v(r.exact) };
+  };
+  /* one flaw against a software list, as the page and the scanner both judge it: version ranges first; a name-only range
+     (flaws not yet in NVD's range data, marked nameOnly) can only say "you run this product" */
+  L.matchFlaw = function (f, inv) {
+    if (!inv || !inv.length) return null;
+    var all = Array.isArray(f.affected) ? f.affected : [], real = all.filter(function (r) { return !r.nameOnly; });
+    var m = L.match({ vendor: f.vendor, product: f.product, affected: real }, inv);
+    if (m.state === "none" && real.length < all.length) {
+      var hits = inv.filter(function (it) { return all.some(function (r) { return L.nameHit((it.vendor ? it.vendor + " " : "") + it.name, r.vendor, r.product); }); });
+      if (hits.length) m = { state: "check", items: hits.slice(0, 20).map(function (it) { return { name: it.name, version: it.version, count: it.count, state: "check" }; }), fixed: [] };
+    }
+    return m;
+  };
   // "fixed in" versions for a flaw when no inventory is loaded: the upper ends of its ranges
   L.fixedIn = function (flaw) {
     var f = {}; (flaw.affected || []).forEach(function (r) { if (r.to && !r.to_incl) f[(r.product || "") + " " + r.to] = 1; });
