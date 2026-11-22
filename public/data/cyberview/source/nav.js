@@ -10,7 +10,7 @@
   Array.prototype.forEach.call(document.querySelectorAll("table.stack"), function (t) { label(t); try { new MutationObserver(function () { label(t); }).observe(t, { childList: true, subtree: true }); } catch (e) {} });
   // pages added after a page's markup was written: added to its links (inline and menu) after the named link, once
   function safeUrl(u) { return /^[a-z]+\.html$/.test(u) ? u : "./"; }   // own pages only
-  [["actors.html", "Actors", "trends.html"]].forEach(function (x) {
+  [["scanner.html", "Scanner", "vulnerabilities.html"], ["actors.html", "Actors", "trends.html"]].forEach(function (x) {
     Array.prototype.forEach.call(document.querySelectorAll("nav.sitenav, nav.sheetnav"), function (nav) {
       if (nav.querySelector('a[href="' + x[0] + '"]')) return;
       var after = nav.querySelector('a[href="' + x[2] + '"]'), a = document.createElement("a"); a.href = safeUrl(x[0]); a.textContent = x[1];

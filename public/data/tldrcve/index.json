@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T02:32:33.808Z",
+  "generatedAt": "2026-11-22T23:45:03.854Z",
   "upstream": {
     "site": "https://tldrcve.com",
     "list": "https://tldrcve.com/cves/",
@@ -8,11 +8,11 @@
     "scale": "https://tldrcve.com/how-we-rate/"
   },
   "stats": {
-    "cves": 35,
-    "details": 35,
-    "versions": 39,
+    "cves": 37,
+    "details": 37,
+    "versions": 41,
     "byVerdict": {
-      "Patch now": 12,
+      "Patch now": 14,
       "Patch now if…": 20,
       "Watching": 1,
       "Next cycle": 2
@@ -578,6 +578,286 @@
           }
         ],
         "url": "https://tldrcve.com/puppet/"
+      }
+    },
+    {
+      "slug": "roller-xmlrpc",
+      "name": "Roller XML-RPC",
+      "meta": "Apache Roller · CVE-2026-129448, CVE-2026-82384",
+      "line": "Exploited, on CISA's list. No login. Fixed in 6.1.6.",
+      "verdict": "Patch now",
+      "scareLevel": 3.6,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-09-25",
+      "url": "https://tldrcve.com/roller-xmlrpc/",
+      "detail": {
+        "slug": "roller-xmlrpc",
+        "kicker": "Apache Roller · CVE-2026-129448 · CVE-2026-82384",
+        "name": "Roller XML-RPC",
+        "verdict": "Patch now",
+        "verdictHint": "Exploited, on CISA's list. No login. Fixed in 6.1.6.",
+        "summary": "A bug in Apache Roller, a Java blog server, lets anyone who can reach the site send one crafted request to its XML-RPC address and, in the worst case, run their own code, without logging in. Default installs from 4.0.0 through 6.1.5 are affected, even with XML-RPC switched off. Apache rates it Critical (CVSS 9.8) and says it is being actively exploited, and CISA added it to its exploited list (KEV) on 20 Nov 2026; one researcher's public code reaches the bug but says running code on a stock, up-to-date setup needs extra work. 6.1.6 (24 Sep 2026) and later fix it.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1,3"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 10,11"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 1,3,9"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (fix by 23 Nov) 9"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Roller 4.0.0 to 6.1.5",
+            "hint": null,
+            "body": "It's one bug with two CVEs: CVE-2026-129448 covers 4.0.0 through 6.1.4, and CVE-2026-82384 (25 Sep 2026) covers 6.1.5. 6.1.6 and later are fixed. Some news sites name 6.1.5 as the fix; Apache says 6.1.6. 1,2,4",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "XML-RPC extensions still on",
+            "hint": "command",
+            "body": "Every release up to 6.1.5 ships with enabledForExtensions set to true and /roller-services/xmlrpc mapped, so default installs are exposed. Turning XML-RPC off in the admin settings (off by default) does not help. Run this in Roller's webapp folder; <param-value>true</param-value> means exposed. 1,2,7,8 grep -A1 enabledForExtensions WEB-INF/web.xml",
+            "code": [
+              "grep -A1 enabledForExtensions WEB-INF/web.xml"
+            ]
+          },
+          {
+            "num": "3",
+            "title": "Attackers can reach the site",
+            "hint": null,
+            "body": "One web request to /roller-services/xmlrpc is enough. No login and no user action are needed. 1,3",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade to Roller 6.1.7",
+            "hint": null,
+            "body": "6.1.6 (24 Sep 2026) fixes this bug; 6.1.7 (11 Nov 2026) is the newest and also fixes CVE-2026-123374, a separate deserialization bug in ping responses. Read the 6.1.7 behaviour changes first: for example, Planet is now off by default. Apache doesn't patch older lines. 4,5,6,12,13 Latest safe versions checked 20 Nov Apache Roller → 6.1 6.1.7 Apache fixes only the current release line. On anything older, upgrade to the newest 6.1 release.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Can't upgrade yet?",
+            "hint": null,
+            "body": "In WEB-INF/web.xml , set enabledForExtensions to false , or remove the /roller-services/xmlrpc servlet mapping. Then restart Roller. The admin-screen switch alone is not enough. 1",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Look for signs of attack",
+            "hint": null,
+            "body": "Attacks are POST requests to /roller-services/xmlrpc . Apache hasn't published other signs, attacker details or how many sites were hit. If you were exposed, check the server for changes you didn't make. 1,10",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://lists.apache.org/thread/lnz4s26tv6hdo03wngtdbpfj4hg4gtds",
+            "title": "Apache: CVE-2026-129448 advisory, 4.0.0-6.1.4, actively exploited",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://lists.apache.org/thread/cc0jck13nb9vvcmzxzwotr6n16mx28z9",
+            "title": "Apache: CVE-2026-82384 advisory, 6.1.5, default setup affected",
+            "date": "25 Sep"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-129448",
+            "title": "CVE record: CVSS 9.8, no login; CISA SSVC exploitation active, KEV 20 Nov",
+            "date": "17 Nov"
+          },
+          {
+            "url": "https://roller.apache.org/security.html",
+            "title": "Apache Roller: security page, 6.1.6 and 6.1.7 release dates and fixes",
+            "date": null
+          },
+          {
+            "url": "https://security.apache.org/projects/roller/",
+            "title": "Apache Security: Roller advisories, CVE-2026-123374 fixed in 6.1.7",
+            "date": null
+          },
+          {
+            "url": "https://github.com/apache/roller/pull/171",
+            "title": "Apache Roller GitHub: the fix (PR #171)",
+            "date": "5 Sep"
+          },
+          {
+            "url": "https://github.com/apache/roller/blob/roller-6.1.5/app/src/main/webapp/WEB-INF/web.xml",
+            "title": "Roller 6.1.5 source: extensions on, XML-RPC endpoint always mapped",
+            "date": null
+          },
+          {
+            "url": "https://github.com/apache/roller/blob/roller-6.1.5/app/src/main/resources/org/apache/roller/weblogger/config/runtimeConfigDefs.xml",
+            "title": "Roller 6.1.5 source: XML-RPC setting off by default",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2026-129448",
+            "title": "CISA KEV catalog: CVE-2026-129448 added 20 Nov, due 23 Nov",
+            "date": null
+          },
+          {
+            "url": "https://github.com/Yanixos/APACHE-CVE-2026-129448",
+            "title": "Tuxshin Security: public PoC, scanner and lab; RCE needs a gadget chain",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://github.com/murrez/CVE-2026-82384",
+            "title": "Public PoC for CVE-2026-82384 (6.1.5)",
+            "date": "28 Sep"
+          },
+          {
+            "url": "https://github.com/apache/roller/blob/roller-6.1.7/CHANGES.md",
+            "title": "Apache Roller: 6.1.7 changes and behaviour changes",
+            "date": null
+          },
+          {
+            "url": "https://roller.apache.org/downloads/downloads.html",
+            "title": "Apache Roller: downloads, 6.1.7 is the current release",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-22",
+            "text": "CISA added CVE-2026-129448 to its exploited list (KEV) on 20 Nov, due 23 Nov; we'd still said it wasn't listed. Scare 3.6."
+          },
+          {
+            "date": "2026-11-20",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/roller-xmlrpc/"
+      }
+    },
+    {
+      "slug": "vcenter-zero-day",
+      "name": "vCenter zero-day",
+      "meta": "VMware vCenter · CVE-2026-123890",
+      "line": "Exploited in the wild, on KEV. No workaround.",
+      "verdict": "Patch now",
+      "scareLevel": 3.6,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-11-19",
+      "url": "https://tldrcve.com/vcenter-zero-day/",
+      "detail": {
+        "slug": "vcenter-zero-day",
+        "kicker": "VMware vCenter · CVE-2026-123890",
+        "name": "vCenter zero-day",
+        "verdict": "Patch now",
+        "verdictHint": "Exploited in the wild, on KEV. No workaround.",
+        "summary": "A bug in VMware vCenter's directory service lets anyone who can reach vCenter over the network get an administrator session without a password. Mandiant says a suspected China-nexus group, ARMORY CASTLE, exploited it in early September to create a rogue admin account and steal vCenter's login-signing key, and CISA added it to its exploited list on 20 Nov 2026. Broadcom fixed it on 19 Nov and gives no workaround; for vCenter 7.0 it lists no public fix and tells extended-support customers to contact Broadcom Support.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1,4"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 2,3"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (fix by 23 Nov) 3"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "vCenter before the fix",
+            "hint": null,
+            "body": "Below 9.1.1.0200, 9.0.2.0200 or 8.0 U3m. On VMware Cloud Foundation 5.x, you're affected until vCenter is on 8.0 U3m, which VCF 5.2.5 includes (for Telco Cloud, see Broadcom KB463116). vCenter 7.0 is affected too, and Mandiant says the attackers' tool works on 7.x and 8.x; Broadcom says to presume 6.5 and 6.7 are affected. The bug is in vCenter's directory service; Broadcom's FAQ says ESX isn't affected. 1,2,4,5",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "An attacker can reach vCenter",
+            "hint": null,
+            "body": "Network access to vCenter is enough; no login is needed. In the attack Mandiant investigated, the attackers first broke into another machine on the internal network, then reached vCenter's single sign-on port 2012 from there. 1,2",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Patch now",
+            "hint": null,
+            "body": "Install 9.1.1.0200, 9.0.2.0200 or 8.0 U3m (on VCF 5.x, patch vCenter to 8.0 U3m or move to VCF 5.2.5); Broadcom's patches are cumulative, so later versions also fix it. Broadcom gives no workaround. CISA's deadline for US agencies is 23 Nov 2026. Heads-up from Broadcom: 8.0 U3m and 9.0.2.0200 block upgrades to VCF 9.1.1, so patch now and wait for 9.1.2 before that upgrade (or move vCenter to 9.1.1 first and patch there). The same advisory also covers four lesser bugs that need an account or local access, in SDDC Manager and VMware Tools for Windows (CVE-2026-123891 to CVE-2026-123894), with their own fixed versions. 1,3,5 Latest safe versions checked 22 Nov VMware vCenter → 9.1 9.1.1.0200 9.0 9.0.2.0200 8.0 8.0 U3m VMware Cloud Foundation 5.x: patch vCenter to 8.0 U3m, or move to VCF 5.2.5, which includes it.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "On vCenter 7.0?",
+            "hint": null,
+            "body": "Broadcom lists no public fix for 7.0 and tells customers with an extended support contract to contact Broadcom Support to request patches. Without one, there is no fix for 7.0. 1,5",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Limit who can reach vCenter",
+            "hint": null,
+            "body": "Mandiant recommends a default-deny firewall on vCenter that allows its management ports, including 443 and 2012, only from an allowlist of trusted hosts. In its write-up, allowlisting port 2012 would have stopped the exploit, and allowlisting 443 would have stopped the attackers using the logins they forged. This adds protection; it doesn't replace the patch. 2",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Check for a break-in",
+            "hint": null,
+            "body": "Patching doesn't remove attackers who are already in, and CISA flags this one for forensic triage. Look for single sign-on administrator accounts you didn't create, and for Mandiant's file indicators, such as /tmp/123 , /tmp/sss , /tmp/dbr and /usr/bin/vmtoolscs , on other internal Linux machines the attackers took over. The attackers also took vCenter's SAML signing key, which lets them forge logins for any user. 2,3",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/39495",
+            "title": "Broadcom VMSA-2026-0009 (updated as .1 on 20 Nov): affected and fixed versions, no workaround, 7.0",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://cloud.google.com/blog/topics/threat-intelligence/armory-castle-exploits-vsphere",
+            "title": "Mandiant / Google: ARMORY CASTLE exploited it in early September, port 2012, indicators, hardening",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2026-123890",
+            "title": "CISA KEV catalog: CVE-2026-123890 added 20 Nov, due 23 Nov",
+            "date": null
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-123890",
+            "title": "CVE record: CVE-2026-123890, CVSS 9.8, no login, CISA: exploitation active",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/vmware/vcf-security-and-compliance-guidelines/blob/main/security-advisories/vmsa-2026-0009/README.md",
+            "title": "Broadcom: VMSA-2026-0009 FAQ, patches are cumulative",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-22",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/vcenter-zero-day/"
       }
     },
     {
@@ -1258,167 +1538,6 @@
           }
         ],
         "url": "https://tldrcve.com/chrome-zero-day/"
-      }
-    },
-    {
-      "slug": "roller-xmlrpc",
-      "name": "Roller XML-RPC",
-      "meta": "Apache Roller · CVE-2026-129448, CVE-2026-82384",
-      "line": "Apache says exploited. No login. Fixed in 6.1.6.",
-      "verdict": "Patch now",
-      "scareLevel": 3.4,
-      "meterLabel": "Drop everything",
-      "disclosed": "2026-09-25",
-      "url": "https://tldrcve.com/roller-xmlrpc/",
-      "detail": {
-        "slug": "roller-xmlrpc",
-        "kicker": "Apache Roller · CVE-2026-129448 · CVE-2026-82384",
-        "name": "Roller XML-RPC",
-        "verdict": "Patch now",
-        "verdictHint": "Apache says exploited. No login. Fixed in 6.1.6.",
-        "summary": "A bug in Apache Roller, a Java blog server, lets anyone who can reach the site send one crafted request to its XML-RPC address and, in the worst case, run their own code, without logging in. Default installs from 4.0.0 through 6.1.5 are affected, even with XML-RPC switched off. Apache rates it Critical (CVSS 9.8) and says it is being actively exploited; one researcher's public code reaches the bug but says running code on a stock, up-to-date setup needs extra work. 6.1.6 (24 Sep 2026) and later fix it.",
-        "meterLabel": "Drop everything",
-        "meterHint": "Attackers are already on it. Patch now.",
-        "checklist": [
-          {
-            "yes": true,
-            "text": "✓ Works without logging in 1,3"
-          },
-          {
-            "yes": true,
-            "text": "✓ Public exploit code is out 10,11"
-          },
-          {
-            "yes": true,
-            "text": "✓ Attacks seen in the wild 1"
-          },
-          {
-            "yes": false,
-            "text": "Not on CISA's exploited list 9"
-          }
-        ],
-        "affected": [
-          {
-            "num": "1",
-            "title": "Roller 4.0.0 to 6.1.5",
-            "hint": null,
-            "body": "It's one bug with two CVEs: CVE-2026-129448 covers 4.0.0 through 6.1.4, and CVE-2026-82384 (25 Sep 2026) covers 6.1.5. 6.1.6 and later are fixed. Some news sites name 6.1.5 as the fix; Apache says 6.1.6. 1,2,4",
-            "code": []
-          },
-          {
-            "num": "2",
-            "title": "XML-RPC extensions still on",
-            "hint": "command",
-            "body": "Every release up to 6.1.5 ships with enabledForExtensions set to true and /roller-services/xmlrpc mapped, so default installs are exposed. Turning XML-RPC off in the admin settings (off by default) does not help. Run this in Roller's webapp folder; <param-value>true</param-value> means exposed. 1,2,7,8 grep -A1 enabledForExtensions WEB-INF/web.xml",
-            "code": [
-              "grep -A1 enabledForExtensions WEB-INF/web.xml"
-            ]
-          },
-          {
-            "num": "3",
-            "title": "Attackers can reach the site",
-            "hint": null,
-            "body": "One web request to /roller-services/xmlrpc is enough. No login and no user action are needed. 1,3",
-            "code": []
-          }
-        ],
-        "actions": [
-          {
-            "num": "1",
-            "title": "Upgrade to Roller 6.1.7",
-            "hint": null,
-            "body": "6.1.6 (24 Sep 2026) fixes this bug; 6.1.7 (11 Nov 2026) is the newest and also fixes CVE-2026-123374, a separate deserialization bug in ping responses. Read the 6.1.7 behaviour changes first: for example, Planet is now off by default. Apache doesn't patch older lines. 4,5,6,12,13 Latest safe versions checked 20 Nov Apache Roller → 6.1 6.1.7 Apache fixes only the current release line. On anything older, upgrade to the newest 6.1 release.",
-            "code": []
-          },
-          {
-            "num": "2",
-            "title": "Can't upgrade yet?",
-            "hint": null,
-            "body": "In WEB-INF/web.xml , set enabledForExtensions to false , or remove the /roller-services/xmlrpc servlet mapping. Then restart Roller. The admin-screen switch alone is not enough. 1",
-            "code": []
-          },
-          {
-            "num": "3",
-            "title": "Look for signs of attack",
-            "hint": null,
-            "body": "Attacks are POST requests to /roller-services/xmlrpc . Apache hasn't published other signs, attacker details or how many sites were hit. If you were exposed, check the server for changes you didn't make. 1,10",
-            "code": []
-          }
-        ],
-        "sources": [
-          {
-            "url": "https://lists.apache.org/thread/lnz4s26tv6hdo03wngtdbpfj4hg4gtds",
-            "title": "Apache: CVE-2026-129448 advisory, 4.0.0-6.1.4, actively exploited",
-            "date": "17 Nov"
-          },
-          {
-            "url": "https://lists.apache.org/thread/cc0jck13nb9vvcmzxzwotr6n16mx28z9",
-            "title": "Apache: CVE-2026-82384 advisory, 6.1.5, default setup affected",
-            "date": "25 Sep"
-          },
-          {
-            "url": "https://www.cve.org/CVERecord?id=CVE-2026-129448",
-            "title": "CVE record: CVSS 9.8, no login; CISA SSVC exploitation none (18 Nov)",
-            "date": "17 Nov"
-          },
-          {
-            "url": "https://roller.apache.org/security.html",
-            "title": "Apache Roller: security page, 6.1.6 and 6.1.7 release dates and fixes",
-            "date": null
-          },
-          {
-            "url": "https://security.apache.org/projects/roller/",
-            "title": "Apache Security: Roller advisories, CVE-2026-123374 fixed in 6.1.7",
-            "date": null
-          },
-          {
-            "url": "https://github.com/apache/roller/pull/171",
-            "title": "Apache Roller GitHub: the fix (PR #171)",
-            "date": "5 Sep"
-          },
-          {
-            "url": "https://github.com/apache/roller/blob/roller-6.1.5/app/src/main/webapp/WEB-INF/web.xml",
-            "title": "Roller 6.1.5 source: extensions on, XML-RPC endpoint always mapped",
-            "date": null
-          },
-          {
-            "url": "https://github.com/apache/roller/blob/roller-6.1.5/app/src/main/resources/org/apache/roller/weblogger/config/runtimeConfigDefs.xml",
-            "title": "Roller 6.1.5 source: XML-RPC setting off by default",
-            "date": null
-          },
-          {
-            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
-            "title": "CISA KEV catalog: not listed (18 Nov release)",
-            "date": null
-          },
-          {
-            "url": "https://github.com/Yanixos/APACHE-CVE-2026-129448",
-            "title": "Tuxshin Security: public PoC, scanner and lab; RCE needs a gadget chain",
-            "date": "18 Nov"
-          },
-          {
-            "url": "https://github.com/murrez/CVE-2026-82384",
-            "title": "Public PoC for CVE-2026-82384 (6.1.5)",
-            "date": "28 Sep"
-          },
-          {
-            "url": "https://github.com/apache/roller/blob/roller-6.1.7/CHANGES.md",
-            "title": "Apache Roller: 6.1.7 changes and behaviour changes",
-            "date": null
-          },
-          {
-            "url": "https://roller.apache.org/downloads/downloads.html",
-            "title": "Apache Roller: downloads, 6.1.7 is the current release",
-            "date": null
-          }
-        ],
-        "changes": [
-          {
-            "date": "2026-11-20",
-            "text": "Published."
-          }
-        ],
-        "url": "https://tldrcve.com/roller-xmlrpc/"
       }
     },
     {
@@ -2244,7 +2363,7 @@
         "name": "Upload2Shell",
         "verdict": "Patch now if…",
         "verdictHint": "Outsiders' files reach it. Full exploit announced.",
-        "summary": "A bug in Ghostscript before 10.08.0 lets a crafted PostScript or PDF file escape Ghostscript's -dSAFER sandbox and run commands as the account doing the rendering. Ghostscript often runs out of sight behind image previews (ImageMagick, Pillow), email thumbnails and print servers, so even an upload named .png can reach it; the researchers ran commands through Debian's CUPS, Roundcube, WordPress and more. The CVE record scores it as a local attack (8.5), but those routes are remote. The researchers published a proof of concept that does most of the work: it takes control of Ghostscript's memory (tested on 10.07.0, x86-64 Linux), and their write-up shows the remaining steps to running commands in excerpts; one of them relies on memory offsets from the researchers' test build. They say a full exploit for the Debian CUPS route comes next. No attacks are reported yet.",
+        "summary": "A bug in Ghostscript before 10.08.0 lets a crafted file escape Ghostscript's -dSAFER sandbox and run commands as the account doing the rendering. The file holds PostScript but can be uploaded as an image named .png or .jpg : image libraries such as ImageMagick and Pillow pick the format from the content and hand it to Ghostscript, which also runs behind email thumbnails and print servers; the researchers ran commands through Debian's CUPS, Roundcube, WordPress and more. The CVE record scores it as a local attack (8.5), but those routes are remote. The researchers published a proof of concept that does most of the work: it takes control of Ghostscript's memory (tested on 10.07.0, x86-64 Linux), and their write-up shows the remaining steps to running commands in excerpts; one of them relies on memory offsets from the researchers' test build. They say a full exploit for the Debian CUPS route comes next. No attacks are reported yet.",
         "meterLabel": "Check today",
         "meterHint": "Find out if you're affected. If you are, patch.",
         "checklist": [
@@ -2266,7 +2385,7 @@
             "num": "1",
             "title": "Ghostscript before 10.08.0",
             "hint": "command",
-            "body": "Distros backport the fix without changing gs --version , so check the package instead: fixed in Debian 12 10.0.0~dfsg-11+deb12u9 , Debian 13 10.05.1~dfsg-1+deb13u2 , Ubuntu 24.04 10.02.1~dfsg1-0ubuntu7.10 and 22.04 9.55.0~dfsg1-0ubuntu5.15 (newer releases too; older ones through Ubuntu Pro). Ubuntu's notice USN-8949-1 lists this bug as \"No CVE number\" (the researchers link it to this CVE), while Ubuntu's CVE tracker still says \"Needs evaluation\" for every release. No fixed package yet on 22 Nov 2026: Amazon Linux 2, 2023 and 2027 Preview (\"Pending Fix\"), SUSE Linux Enterprise 15 SP7 and 16 (\"In progress\"), openSUSE Leap 16 (\"Affected\"). Container images carry their own copy. 1,3,4,6,7,15,16,17 gs --version",
+            "body": "Distros backport the fix without changing gs --version , so check the package instead: fixed in Debian 12 10.0.0~dfsg-11+deb12u9 , Debian 13 10.05.1~dfsg-1+deb13u2 , Ubuntu 24.04 10.02.1~dfsg1-0ubuntu7.10 and 22.04 9.55.0~dfsg1-0ubuntu5.15 (newer releases too; older ones through Ubuntu Pro). Ubuntu's notice USN-8949-1 lists this bug as \"No CVE number\" (the researchers link it to this CVE), while Ubuntu's CVE tracker still says \"Needs evaluation\" for every release. No fixed package yet on 22 Nov 2026: Amazon Linux 2, 2023 and 2027 Preview (\"Pending Fix\"), SUSE Linux Enterprise 15 SP7 and 16 (\"In progress\"), openSUSE Leap 16 (\"Affected\"). The 10.08.0 release candidate (18 Aug) also calls itself 10.08.0 but came before the fixes, so check it isn't what you run. Container images carry their own copy. 1,3,4,6,7,15,16,17,23,24 gs --version",
             "code": [
               "gs --version"
             ]
@@ -2275,7 +2394,7 @@
             "num": "2",
             "title": "It renders files from outsiders",
             "hint": null,
-            "body": "Something passes files you don't control to Ghostscript. Common routes: image or PDF previews through ImageMagick/Imagick, Pillow (EPS files, once pixels are loaded) or libvips with ImageMagick loaders; these check the file's content, not its name, so a .png upload counts. Also: Roundcube attachment thumbnails (before 1.6.20 / 1.7.5), WordPress uploads by Authors and up or public plugin upload forms (before 7.0.4 / 6.9.7), CUPS print queues shared without a login, and document importers that convert PDFs. On a desktop, the CVE record's score assumes a user opens the file. 1,2,3,8,13,14",
+            "body": "Something passes files you don't control to Ghostscript. Common routes: image or PDF previews through ImageMagick/Imagick, Pillow (EPS files, once pixels are loaded) or libvips with ImageMagick loaders; these check the file's content, not its name, so a .png upload counts. It doesn't have to be a PDF: the researcher says an image or a video can carry it (the write-up tests images and documents, not video). Also: Roundcube attachment thumbnails (before 1.6.20 / 1.7.5), WordPress uploads by Authors and up or public plugin upload forms (before 7.0.4 / 6.9.7), CUPS print queues shared without a login, and document importers that convert PDFs. On a desktop, the CVE record's score assumes a user opens the file. 1,2,3,8,13,14,20",
             "code": []
           }
         ],
@@ -2284,7 +2403,7 @@
             "num": "1",
             "title": "Outsiders' files reach it? Update now",
             "hint": null,
-            "body": "Upload forms, previews, email thumbnails, shared print queues: don't wait for attacks, because the public proof of concept and write-up cover most of an exploit. Update to 10.08.0 or your distro's fixed package: Debian DLA-4914-1 and DSA-6516-1, Ubuntu USN-8949-1 (it lists the bug without a CVE number). This fixes every route at once. Amazon Linux, SUSE Linux Enterprise 15 SP7 and 16, and openSUSE Leap 16 have no fixed package yet: cut the route (below) until they do. Rebuild container images that install Ghostscript. 3,4,5,6,7,15,16 Latest safe versions checked 22 Nov Ghostscript → 10.08 10.08.0 Artifex lists a single current release. Linux distros backport fixes into older versions (Debian 12's fixed package is still 10.0.0), so check your distro's advisory.",
+            "body": "Upload forms, previews, email thumbnails, shared print queues: don't wait for attacks, because the public proof of concept and write-up cover most of an exploit. Update to 10.08.0 or your distro's fixed package: Debian DLA-4914-1 and DSA-6516-1, Ubuntu USN-8949-1 (it lists the bug without a CVE number). This fixes every route at once. 10.08.0 also fixes five other Ghostscript CVEs (CVE-2026-110133, -112922, -103226, -19547 and -39919); Artifex's own CVE list doesn't name this one. One of them, CVE-2026-39919, is a JPEG 2000 overflow in PDFs; Wordfence's two exploits for it only worked on the exact Ghostscript build they were made for, Wordfence hasn't published them, and no attacks are reported. Amazon Linux, SUSE Linux Enterprise 15 SP7 and 16, and openSUSE Leap 16 have no fixed package yet: cut the route (below) until they do. Rebuild container images that install Ghostscript. 3,4,5,6,7,15,16,18,19,21,22,23 Latest safe versions checked 22 Nov Ghostscript → 10.08 10.08.0 Artifex lists a single current release. Linux distros backport fixes into older versions (Debian 12's fixed package is still 10.0.0), so check your distro's advisory.",
             "code": []
           },
           {
@@ -2403,9 +2522,52 @@
             "url": "https://ubuntu.com/security/CVE-2026-125396",
             "title": "Ubuntu CVE tracker: CVE-2026-125396 \"Needs evaluation\" on every release",
             "date": null
+          },
+          {
+            "url": "https://www.ghostscript.com/releases/cve/index.html",
+            "title": "Ghostscript: CVEs fixed in 10.08.0 (doesn't list CVE-2026-125396)",
+            "date": null
+          },
+          {
+            "url": "https://seclists.org/oss-sec/2026/q4/806",
+            "title": "oss-security (Oracle): 10.08.0 fixes five more CVEs; Upload2Shell page published 21 Nov",
+            "date": "21 Nov"
+          },
+          {
+            "url": "https://x.com/PaulosYibelo/status/2124270467246969153",
+            "title": "Paulos Yibelo on X: the file can arrive as an image or a video",
+            "date": "21 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-39919",
+            "title": "CVE record: CVE-2026-39919, JPEG 2000 heap overflow, fixed in 10.08.0",
+            "date": "15 Sep"
+          },
+          {
+            "url": "https://www.bleepingcomputer.com/news/security/ghostscript-flaw-lets-hackers-hijack-servers-via-pdf-uploads/",
+            "title": "BleepingComputer: CVE-2026-39919, Wordfence exploit unreliable, no attacks seen",
+            "date": "13 Oct"
+          },
+          {
+            "url": "https://www.wordfence.com/blog/2026/10/wordfence-argus-discovers-critical-vulnerability-in-ghostscript-the-program-that-turns-uploaded-pdfs-into-thumbnails-on-your-server/",
+            "title": "Wordfence: CVE-2026-39919, two exploits tied to one Ghostscript build, 10.08.0 release candidate unfixed",
+            "date": "12 Oct"
+          },
+          {
+            "url": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/tag/gs10080rc1",
+            "title": "Artifex: Ghostscript 10.08.0 release candidate 1",
+            "date": "18 Aug"
           }
         ],
         "changes": [
+          {
+            "date": "2026-11-22",
+            "text": "Added a note on CVE-2026-39919, another Ghostscript bug the same update fixes, and a warning that the 10.08.0 release candidate isn't fixed."
+          },
+          {
+            "date": "2026-11-22",
+            "text": "Clearer that the crafted file can be uploaded as an image, or, the researcher says, a video. Notes the five other CVEs 10.08.0 fixes. The write-up is dated 17 Nov but first went public on 21 Nov, per oss-security."
+          },
           {
             "date": "2026-11-22",
             "text": "Now says to update right away if outsiders' files reach Ghostscript: the public proof of concept and write-up cover most of an exploit, and the researchers say a full exploit comes next. Scare 2.9. Added what would make this Patch now."
@@ -2825,6 +2987,145 @@
       }
     },
     {
+      "slug": "iterm2-cat-rce",
+      "name": "iTerm2 cmd exec",
+      "meta": "iTerm2 ·",
+      "line": "Public exploit: cat a file, run commands. Get 3.7.9.",
+      "verdict": "Patch now",
+      "scareLevel": 2.6,
+      "meterLabel": "Check today",
+      "disclosed": "2026-11-20",
+      "url": "https://tldrcve.com/iterm2-cat-rce/",
+      "detail": {
+        "slug": "iterm2-cat-rce",
+        "kicker": "iTerm2",
+        "name": "iTerm2 cmd exec",
+        "verdict": "Patch now",
+        "verdictHint": "Public exploit: cat a file, run commands. Get 3.7.9.",
+        "summary": "In iTerm2 3.6.1 through 3.7.8, displaying a crafted file in the terminal, for example with cat README.md , runs commands on your Mac. The trap is hidden in the file (you only see some shell errors when it runs), and it works on a default install in bash, zsh and fish. The researcher published a complete exploit; iTerm2 fixed it in 3.7.9 on 20 Nov 2026. No attacks are reported. There's no fixed release for macOS 12.4 to 12.x, whose newest iTerm2 is 3.6.11. The researcher first called it remote code execution (RCE), then retitled it arbitrary command execution; since you have to display the attacker's file, it isn't remote in the usual sense.",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 1"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 6"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 6"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "iTerm2 3.6.1 to 3.7.8",
+            "hint": "command",
+            "body": "The exploit uses Kitty image file transfer, which arrived in 3.6.1 (18 Sep 2025); in 3.6.0 the code for it still returns \"Unimplemented\". The researcher's write-up now gives the same range, 3.6.1 to 3.7.8. iTerm2 3.6.11, the newest release for macOS 12.4 and later, came out on 2 Jun 2026, before the fix, and has the same flawed code. 1,2,5,7 defaults read /Applications/iTerm.app/Contents/Info.plist CFBundleShortVersionString",
+            "code": [
+              "defaults read /Applications/iTerm.app/Contents/Info.plist CFBundleShortVersionString"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "It shows files from others",
+            "hint": null,
+            "body": "The file's raw contents have to reach iTerm2: cat on a README from a cloned repo or a download is the researcher's example, and any file you might print counts. The hidden part doesn't appear in the output; you only see shell errors when it fires. No setting needs to be changed for it to work. 1",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update to 3.7.9",
+            "hint": null,
+            "body": "Choose iTerm2 > Check for Updates. 3.7.9 is a security update: replies iTerm2 sends back to programs no longer include control characters that a shell could run. 2,3,4,8 Latest safe versions checked 22 Nov iTerm2 → 3.7 (macOS 13+) 3.7.9",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "On macOS 12? No fixed release",
+            "hint": null,
+            "body": "3.7.9 needs macOS 13 or later, and the 3.6 line (macOS 12.4 and later) hasn't had a release since 3.6.11 (2 Jun 2026). Upgrade macOS if you can; until then, don't print files from others in iTerm2. 2",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "The escape-sequence setting won't help",
+            "hint": null,
+            "body": "The \"Disable potentially insecure escape sequences\" setting doesn't cover the escape sequence this uses, per the researcher. Updating is the fix. 1",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://ii4gsp.github.io/iterm2-rce/",
+            "title": "ii4gsp (Minseong Kim): write-up, now titled Arbitrary Command Execution; affected versions, full exploit",
+            "date": "21 Nov"
+          },
+          {
+            "url": "https://iterm2.com/downloads.html",
+            "title": "iTerm2: downloads, 3.7.9 security update, Kitty file transfer added in 3.6.1, 3.6.11 for macOS 12.4+",
+            "date": null
+          },
+          {
+            "url": "https://github.com/gnachman/iTerm2/commit/a53b1bc084fe062de44b52d03ccf713c7962ac83",
+            "title": "iTerm2 fix: sanitize Kitty graphics responses",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://github.com/gnachman/iTerm2/commit/2a63835ca19bbd20b0d051b33c14341b0b708d5b",
+            "title": "iTerm2 fix: strip control characters from all report paths",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://github.com/gnachman/iTerm2/blob/v3.6.11/sources/KittyImageController.swift",
+            "title": "iTerm2 3.6.11 source: same unsanitized error path",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed (as of 20 Nov)",
+            "date": null
+          },
+          {
+            "url": "https://github.com/gnachman/iTerm2/blob/v3.6.0/sources/KittyImageController.swift",
+            "title": "iTerm2 3.6.0 source: Kitty file transfer still \"Unimplemented\"",
+            "date": null
+          },
+          {
+            "url": "https://iterm2.com/documentation-menu-items.html",
+            "title": "iTerm2 docs: iTerm2 > Check for Updates",
+            "date": null
+          },
+          {
+            "url": "https://x.com/ii4gsp/status/2124441046767808943",
+            "title": "ii4gsp on X: updated the write-up title to Arbitrary Command Execution",
+            "date": "22 Nov"
+          },
+          {
+            "url": "https://github.com/ii4gsp/ii4gsp.github.io/commit/75049b15",
+            "title": "ii4gsp: write-up commit changing the title from RCE to Arbitrary Command Execution",
+            "date": "22 Nov"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-22",
+            "text": "Renamed from \"iTerm2 cat RCE\" to match the researcher's new title, Arbitrary Command Execution: you have to display the attacker's file, so it isn't remote in the usual sense. The researcher's affected range now matches ours. The address stays the same."
+          },
+          {
+            "date": "2026-11-22",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/iterm2-cat-rce/"
+      }
+    },
+    {
       "slug": "linux-tcp-root",
       "name": "Linux TCP root",
       "meta": "Linux kernel · CVE-2026-98432",
@@ -2882,7 +3183,7 @@
             "num": "1",
             "title": "Update the kernel and reboot",
             "hint": null,
-            "body": "Install your distro's fixed kernel (listed below), then reboot. Ubuntu 20.04 (5.4.0-247.267) and 18.04 (4.15.0-263.275) fixes are in Ubuntu Pro only. Debian 12's linux-6.12: 6.12.113-1~deb12u1. Cloud and HWE kernels have their own versions. 8,9,10,14 Latest safe versions checked 20 Nov Linux kernel → Debian 13 6.12.117-1 Debian 12 6.1.192-2 Ubuntu 26.04 7.0.0-44.44 Ubuntu 24.04 6.8.0-151.151 Ubuntu 22.04 5.15.0-204.214 RHEL 10.3 6.12.0-264.16.1.el10_3 RHEL 10.2 6.12.0-211.75.1.el10_2 RHEL 9 5.14.0-687.67.1.el9_8 RHEL 8 4.18.0-553.186.1.el8_10 Ubuntu 26.10: 7.3.0-10.10. Cloud and HWE kernels have their own versions.",
+            "body": "Install your distro's fixed kernel (listed below), then reboot. Ubuntu 20.04 (5.4.0-247.267) and 18.04 (4.15.0-263.275) fixes are in Ubuntu Pro only. Debian 12's linux-6.12: 6.12.113-1~deb12u1. Cloud and HWE kernels have their own versions. 8,9,10,14 Latest safe versions checked 22 Nov Linux kernel → Debian 13 6.12.117-1 Debian 12 6.1.192-2 Ubuntu 26.04 7.0.0-44.44 Ubuntu 24.04 6.8.0-151.151 Ubuntu 22.04 5.15.0-204.214 RHEL 10.3 6.12.0-264.16.1.el10_3 RHEL 10.2 6.12.0-211.75.1.el10_2 RHEL 9 5.14.0-687.67.1.el9_8 RHEL 8 4.18.0-553.186.1.el8_10 Ubuntu 26.10: 7.3.0-10.10. Cloud and HWE kernels have their own versions.",
             "code": []
           },
           {
@@ -3900,7 +4201,7 @@
       "slug": "linux-sctp-root",
       "name": "Linux SCTP root",
       "meta": "Linux kernel ·",
-      "line": "Needs code running on the box. No distro fix yet.",
+      "line": "Needs code on the box. No stable kernel fix yet.",
       "verdict": "Patch now if…",
       "scareLevel": 2.3,
       "meterLabel": "Check today",
@@ -3911,8 +4212,8 @@
         "kicker": "Linux kernel",
         "name": "Linux SCTP root",
         "verdict": "Patch now if…",
-        "verdictHint": "Needs code running on the box. No distro fix yet.",
-        "summary": "A bug in the Linux kernel's SCTP code lets any local user, including one inside a container, free the same kernel memory twice and take over the machine. Xint chained it with nginx2root to get root on the host and escape a Docker container. The fix reached the main kernel tree on 19 Nov, but no stable or distro kernel ships it yet, so blocking the sctp module is the stopgap.",
+        "verdictHint": "Needs code on the box. No stable kernel fix yet.",
+        "summary": "A bug in the Linux kernel's SCTP code lets any local user, including one inside a container, free the same kernel memory twice and take over the machine. Xint chained it with nginx2root to get root on the host and escape a Docker container. The fix reached the main kernel tree on 19 Nov, but no stable kernel has it yet and almost no distro ships it, so blocking the sctp module is the stopgap.",
         "meterLabel": "Check today",
         "meterHint": "Find out if you're affected. If you are, patch.",
         "checklist": [
@@ -3934,7 +4235,7 @@
             "num": "1",
             "title": "Kernel 4.15 or later",
             "hint": "command",
-            "body": "The bug arrived in 4.15 (Jan 2018). The fix was merged into the main kernel tree on 19 Nov, after 7.4-rc3. The newest stable kernels (7.3.5, 6.18.64, 6.12.118, released 17 Nov) don't have it; the only distro we found carrying it on 20 Nov is Gentoo (kernel sources). Xint hasn't named the fix, but the commit credits Xint's tool and matches its description. 1,2,3,4,5,6 uname -r",
+            "body": "The bug arrived in 4.15 (Jan 2018). The fix was merged into the main kernel tree on 19 Nov, after 7.4-rc3. The newest stable kernels (7.3.5, 6.18.64, 6.12.118, released 17 Nov) don't have it, and on 22 Nov it wasn't queued for the next ones either; the only distro kernels we found carrying it are Gentoo's kernel sources and a Fedora Rawhide test build that hasn't shipped yet. Xint hasn't named the fix, but the commit credits Xint's tool and matches its description. 1,2,3,4,5,6,18,20,21 uname -r",
             "code": [
               "uname -r"
             ]
@@ -3970,7 +4271,7 @@
             "num": "2",
             "title": "Update the kernel and reboot",
             "hint": null,
-            "body": "Install your distro's kernel with the fix (\"sctp: do not free a new asoc peeled off while sendmsg slept\") once it ships, then reboot. No stable release or major distro kernel has it as of 20 Nov. 2,3,4",
+            "body": "Install your distro's kernel with the fix (\"sctp: do not free a new asoc peeled off while sendmsg slept\") once it ships, then reboot. No stable release has it as of 22 Nov, and it isn't queued for the next stable releases yet; Debian unstable's 7.3.5-1 doesn't have it either. 2,3,4,18,19",
             "code": []
           },
           {
@@ -4066,9 +4367,33 @@
             "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
             "title": "CISA KEV catalog: not listed",
             "date": null
+          },
+          {
+            "url": "https://git.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git/tree/",
+            "title": "Linux stable queue: SCTP fix not queued for any stable release yet",
+            "date": null
+          },
+          {
+            "url": "https://metadata.ftp-master.debian.org/changelogs/main/l/linux/unstable_changelog",
+            "title": "Debian: linux 7.3.5-1 in unstable, without the SCTP fix",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://bodhi.fedoraproject.org/updates/FEDORA-2026-af8fecb210",
+            "title": "Fedora: Rawhide kernel test build of snapshot 65e4fd942f72, not shipped yet (FEDORA-2026-af8fecb210)",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://github.com/torvalds/linux/compare/1e575bda30acc0bf01f799cee798d4a1c100d538...65e4fd942f72",
+            "title": "GitHub: snapshot 65e4fd942f72 comes after the fix's merge (1e575bda)",
+            "date": null
           }
         ],
         "changes": [
+          {
+            "date": "2026-11-22",
+            "text": "Rechecked: still no stable kernel with the fix, and it isn't queued for the next stable releases. Gentoo and a Fedora Rawhide test build carry it."
+          },
           {
             "date": "2026-11-20",
             "text": "Published."
@@ -6145,6 +6470,19 @@
       "url": "https://tldrcve.com/versions/istio/"
     },
     {
+      "slug": "iterm2",
+      "name": "iTerm2",
+      "meta": "1 bug · checked 22 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "3.7 (macOS 13+)",
+          "version": "3.7.9"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/iterm2/"
+    },
+    {
       "slug": "java",
       "name": "Java",
       "meta": "1 bug · checked 20 Nov",
@@ -6172,7 +6510,7 @@
     {
       "slug": "linux-kernel",
       "name": "Linux kernel",
-      "meta": "2 bugs · checked 20 Nov",
+      "meta": "2 bugs · checked 22 Nov",
       "nofix": true,
       "chips": [
         {
@@ -6758,6 +7096,27 @@
         }
       ],
       "url": "https://tldrcve.com/versions/synology-dsm/"
+    },
+    {
+      "slug": "vcenter",
+      "name": "VMware vCenter",
+      "meta": "1 bug · checked 22 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "9.1",
+          "version": "9.1.1.0200"
+        },
+        {
+          "line": "9.0",
+          "version": "9.0.2.0200"
+        },
+        {
+          "line": "8.0",
+          "version": "8.0 U3m"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/vcenter/"
     },
     {
       "slug": "wordpress",

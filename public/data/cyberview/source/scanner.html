@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; form-action 'self'; base-uri 'none'; object-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>CyberView Scanner</title>
+<meta name="description" content="The CyberView Scanner: a free, detection-only vulnerability scanner you run on your own authorized network. It matches the versions your services state against CISA's known-exploited flaws and NVD's ranges, and never uploads anything.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="archive.css">
+<link rel="stylesheet" href="scanner.css">
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="./"><img src="logo.svg" alt="" width="26" height="26">CyberView</a>
+  <nav class="sitenav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="scanner.html" aria-current="page">Scanner</a><a href="archive.html">Archive</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html">Community</a><a href="status.html">Status</a><a href="about.html">About</a></nav>
+  <span class="spacer"></span>
+  <button type="button" class="navbtn" id="navBtn" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+</header>
+<div class="navsheet" id="navSheet" hidden role="dialog" aria-modal="true" aria-label="Menu"><div class="sheethead">CyberView<button type="button" class="sheetclose" id="navClose" aria-label="Close menu">&times;</button></div><nav class="sheetnav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="scanner.html" aria-current="page">Scanner</a><a href="archive.html">Archive</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html">Community</a><a href="status.html">Status</a><a href="about.html">About</a></nav></div>
+<main class="scn">
+  <section class="intro schero">
+    <p class="eyebrow">Free download &middot; detection only &middot; runs on your machine</p>
+    <h1>The CyberView Scanner</h1>
+    <p class="lede">Find known-vulnerable software on your own network and see what to patch first. The scanner reads the version each service states about itself, matches it against CISA's known-exploited flaws and NVD's affected-version ranges with the same code as the <a href="vulnerabilities.html">Vulnerabilities page</a>, and ranks what it finds by the CyberView rating, every point listed. Nothing is uploaded: results stay in a folder on your machine.</p>
+    <div class="wbacts heroacts"><a class="btn primary" href="https://github.com/xanderhutch/CyberView/tree/main/scanner" target="_blank" rel="noopener noreferrer">Get the scanner</a><a class="btn" href="https://github.com/xanderhutch/CyberView/blob/main/scanner/README.md" target="_blank" rel="noopener noreferrer">Read the guide and what it sends</a><a class="btn" href="vulnerabilities.html#inv">Import results into My software</a></div>
+    <p class="caveat"><strong>Only scan systems you own, or systems whose owner has given you written permission to test.</strong> Scanning other people's systems without permission may be unlawful. The scanner will not start until you list your targets in a scope file and attest there that you are authorized; it prints your attestation and scope at the start of every run and writes them into the report.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="glanceH">
+    <h2 id="glanceH">At a glance</h2>
+    <div class="tiles" id="tiles">
+      <div class="tile"><span class="tn" id="nProducts">&mdash;</span><span class="tl">products it can identify</span></div>
+      <div class="tile"><span class="tn" id="nRules">&mdash;</span><span class="tl">fingerprint rules</span></div>
+      <div class="tile"><span class="tn" id="nKev">&mdash;</span><span class="tl" id="nKevL">known-exploited products it can name</span></div>
+      <div class="tile"><span class="tn" id="nRail">&mdash;</span><span class="tl">HTTP path rail paths</span></div>
+      <div class="tile"><span class="tn" id="nVersion">&mdash;</span><span class="tl">scanner version</span></div>
+    </div>
+    <p class="note" id="glanceNote" aria-live="polite">Loading the scanner's numbers</p>
+    <p class="note">Counted by a script from the scanner's own code at every build of this site, not written by hand. Products are distinct vendor and product names (NVD's names) its fingerprints can report. Rules are its built-in banner, header and certificate entries plus the detection rows its fingerprint modules build. Known-exploited coverage compares those names with the products in CISA's KEV catalog on file here, by name only: it is approximate, and a product it can name may still state no version. The path rail is off by default; a dash means that part is not in this release.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="checksH">
+    <h2 id="checksH">What it checks</h2>
+    <p class="note">Everything below comes from what a service sends on its own or in answer to one ordinary request. Each area says what it reads and what it never does.</p>
+    <div class="areas" id="areas">
+      <article class="area" data-area="services"><h3>Services and versions</h3><span class="acount" data-n="services"></span>
+        <p>Greetings that SSH, FTP, mail, MySQL and VNC servers send by themselves, the web server's headers on one request for the root page, and the TLS certificate from one handshake.</p>
+        <p class="never">Never sends crafted input or follows redirects; one request for "/" per web port.</p></article>
+      <article class="area" data-area="edge"><h3>Edge appliances</h3><span class="acount" data-n="edge"></span>
+        <p>VPN gateways, firewalls, load balancers, routers, cameras and NAS that CISA lists as known exploited, named from the page title, a few fixed page markers, headers, the login realm, the greeting or the certificate issuer the scan already has.</p>
+        <p class="never">Never adds a request, a path or a login to identify them.</p></article>
+      <article class="area" data-area="cms"><h3>CMS, plugins and JavaScript libraries</h3><span class="acount" data-n="cms"></span>
+        <p>Versions a site discloses in its own root page: generator tags, versioned script file names, library banners and CDN paths.</p>
+        <p class="never">Never fetches a script, a plugin file or a folder, and uses no wordlist.</p></article>
+      <article class="area" data-area="apps"><h3>Application consoles</h3><span class="acount" data-n="apps"></span>
+        <p>Management and application consoles recognised from the same root-page response the scan already collected.</p>
+        <p class="never">Never logs in or submits a form.</p></article>
+      <article class="area" data-area="tls"><h3>TLS and certificate hygiene</h3>
+        <p>Expired, expiring or not-yet-valid certificates, self-signed ones, weak keys and signatures, a name that does not match, old protocols, weak ciphers, weak Diffie-Hellman and no forward secrecy.</p>
+        <p class="never">Reads the one handshake it made; never enumerates protocols or ciphers.</p></article>
+      <article class="area" data-area="http"><h3>HTTP and mail hygiene</h3>
+        <p>Missing or weak security headers, cookie flags, an open CORS policy, redirects, default, setup and debug pages, and mail or logins offered without encryption.</p>
+        <p class="never">Never sends an extra request; keeps cookie names only, never their values or page text.</p></article>
+      <article class="area" data-area="ssh"><h3>SSH key exchange</h3>
+        <p>The algorithms an SSH server offers in the packet it sends right after its banner, on the same connection: a weak set is flagged, post-quantum key exchange is noted.</p>
+        <p class="never">Never starts a key exchange or logs in.</p></article>
+      <article class="area" data-area="udp"><h3>UDP: DNS, NTP and SNMP</h3><span class="acount optin">opt-in: --udp</span>
+        <p>One read-only datagram per service per host: the resolver's stated version, ntpd's version string, and SNMP's system description with the standard read community "public" only.</p>
+        <p class="never">Never tries another community, walks or writes, or retransmits.</p></article>
+      <article class="area" data-area="discover"><h3>Finding the hosts for you</h3><span class="acount optin">opt-in: scope file</span>
+        <p>Sweeps your attested ranges, resolves your own domains and their Certificate Transparency names, imports an asset list, or reads the cloud inventory JSON your own read-only command printed.</p>
+        <p class="never">Never widens your scope: every host found is re-checked against it. Never runs your cloud CLI or reads your keys.</p></article>
+      <article class="area" data-area="rail"><h3>HTTP path rail</h3><span class="acount" data-n="rail"></span>
+        <p>A frozen table of reviewed version paths, asked only for a product the root page already pointed to, with a small fixed number of extra requests per host.</p>
+        <p class="never">Off by default; no logins, management or exploit paths, and no paths you supply.</p></article>
+    </div>
+  </section>
+
+  <div class="two">
+    <section class="panel" aria-labelledby="neverH">
+      <h2 id="neverH">What it will never do</h2>
+      <ul class="nevers">
+        <li>Exploit anything: no payloads, injection strings or crafted input, and no check that works by triggering a flaw.</li>
+        <li>Log in, guess or test passwords, test SNMP community strings, capture or crack hashes.</li>
+        <li>Use path, plugin or password wordlists.</li>
+        <li>Flood or amplify: polite rate limits you can lower but never raise, and no mode that removes them.</li>
+        <li>Hide what it is: no spoofed addresses, stealth or fragmented packets, or disguised User-Agent. It names itself in its requests and its SSH identification.</li>
+        <li>Touch anything outside your scope file, or sweep public address space: public addresses need an extra confirmation and stay under a hard cap.</li>
+        <li>Run your cloud CLI, or read or store your cloud or API keys.</li>
+        <li>Upload anything: no findings, scope, addresses or telemetry. No AI model runs in it.</li>
+      </ul>
+    </section>
+    <section class="panel" aria-labelledby="outH">
+      <h2 id="outH">Outputs</h2>
+      <p class="note">Written to a folder on your machine, readable only by you.</p>
+      <table class="outs stack">
+        <thead><tr><th>File</th><th>What it holds</th></tr></thead>
+        <tbody>
+          <tr><td><code>summary.txt</code></td><td>Headline counts (confident findings only), coverage gaps, then each finding.</td></tr>
+          <tr><td><code>report.json</code></td><td>Everything: attestation, scope, limits used, what was sent, every service seen.</td></tr>
+          <tr><td><code>findings.csv</code></td><td>One row per CVE and place it was seen.</td></tr>
+          <tr><td><code>report.sarif</code></td><td>SARIF 2.1.0 for dashboards that read code-scanning results.</td></tr>
+          <tr><td><code>inventory.csv</code></td><td>The software found, ready to import into <a href="vulnerabilities.html#inv">My software</a>.</td></tr>
+          <tr><td><code>report.html</code></td><td>With <code>--html</code>: one self-contained page, no script.</td></tr>
+        </tbody>
+      </table>
+      <h3 class="subh">Opt-ins in this release</h3>
+      <ul class="optins" id="optins"><li class="note">Loading</li></ul>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="runH">
+    <h2 id="runH">How to run it</h2>
+    <p class="note">Needs Node.js 22 or later and a copy of the CyberView repository; nothing else to install. Run from the repository's folder.</p>
+    <ol class="steps">
+      <li><span class="sl">Write a scope file: <a href="#scope">build one on this page</a>, or start one from the command line</span><pre><code>node scanner/cyberview-scan.mjs init --out scope.json</code></pre></li>
+      <li><span class="sl">Edit scope.json: owner, contact and targets; set attestation.agreed to true and attestation.name to your name. Then check it (nothing is scanned)</span><pre><code>node scanner/cyberview-scan.mjs check --scope scope.json</code></pre></li>
+      <li><span class="sl">Scan, reading CyberView's public data</span><pre><code>node scanner/cyberview-scan.mjs scan --scope scope.json --online</code></pre></li>
+    </ol>
+    <p class="note">No internet on that network? Run <code>node scanner/cyberview-scan.mjs data --out cyberview-data</code> on a connected machine, carry the folder across, and scan with <code>--data cyberview-data</code> instead of <code>--online</code>. Exit code 0 means clean and complete, 2 means some hosts or ports could not be checked, 3 means the scan stopped early.</p>
+  </section>
+
+  <div class="toolsintro" id="tools">
+    <h2>Tools that run in this page</h2>
+    <p>Both tools below work entirely in your browser. A report you open is read by this page's own script and is never uploaded, sent or stored: close the tab and it is gone. A scope file is built here and saved by your browser as a download. Nothing goes to CyberView or anyone else.</p>
+  </div>
+
+  <section class="panel" id="viewer" aria-labelledby="viewH">
+    <h2 id="viewH">View a scan report</h2>
+    <p class="note">Open one or more <code>report.json</code> files from the scanner's output folder. You see the run and its authorization, the headline counts, every finding with its rating points, the hosts, certificates, observations and what the scan could not see. Open two or more to see what changed between scans, with the same rules as the scanner's <code>--compare</code>.</p>
+    <div class="drop" id="drop">
+      <p>Drop report.json files here, or</p>
+      <label class="btn primary" for="repFile">Choose report.json files</label>
+      <input type="file" id="repFile" class="vh" accept=".json,application/json" multiple>
+      <p class="note">Up to 8 files, 64 MB each. Read in this browser only.</p>
+    </div>
+    <div class="note repmsg" id="repMsg" role="status" aria-live="polite"></div>
+    <div id="repOut" hidden></div>
+  </section>
+
+  <section class="panel" id="scope" aria-labelledby="scopeH">
+    <h2 id="scopeH">Build a scope file</h2>
+    <p class="caveat" id="scWarn"><strong>Only list systems you own, or systems whose owner has given you written permission to test.</strong> Scanning other people's systems without permission may be unlawful. The scanner reads this file before it sends anything, refuses to start without your attestation, prints it at the start of every run and writes it into the report.</p>
+    <form id="scopeForm" class="scform" novalidate autocomplete="off">
+      <div class="fgrid">
+        <label class="field" for="scOwner">Owner of the targets<input type="text" id="scOwner" maxlength="160" placeholder="Organisation or person"></label>
+        <label class="field" for="scContact">Contact<input type="text" id="scContact" maxlength="160" placeholder="Email or phone (optional)"></label>
+        <label class="field" for="scName">Your name (who attests)<input type="text" id="scName" maxlength="120"></label>
+        <label class="field" for="scRef">Authorization reference<input type="text" id="scRef" maxlength="200" placeholder="Ticket, contract or letter (optional)"></label>
+        <label class="field" for="scExpires">Valid until<input type="date" id="scExpires"><span class="hint">Optional; without it the attestation must be renewed after a year.</span></label>
+        <label class="field" for="scPorts">Ports<select id="scPorts">
+          <option value="default">The scanner's default (22 common ports)</option>
+          <option value="web">Web only (80, 443, 8000, 8008, 8080, 8443, 8888, 9443)</option>
+          <option value="remote">Remote access (22, 23, 3389, 5900)</option>
+          <option value="custom">My own list</option>
+        </select></label>
+        <label class="field" for="scCustom" id="scCustomL" hidden>Port list<input type="text" id="scCustom" maxlength="400" placeholder="22,80,8000-8010"></label>
+      </div>
+      <div class="fgrid two-up">
+        <label class="field" for="scTargets">Targets, one per line<textarea id="scTargets" rows="6" placeholder="192.168.1.0/24&#10;10.0.0.5&#10;files.example.internal"></textarea><span class="hint">Addresses, CIDR ranges (IPv4 no wider than a /16, IPv6 no wider than a /120) or host names. Lines starting with # are skipped.</span></label>
+        <label class="field" for="scExclude">Leave out, one per line<textarea id="scExclude" rows="6" placeholder="192.168.1.1"></textarea><span class="hint">Optional: addresses, ranges or host names inside the targets that must not be touched.</span></label>
+      </div>
+      <p class="note pubrule" id="scRule">Private ranges (10/8, 172.16/12, 192.168/16, loopback, link-local, IPv6 fc00::/7) run with the scope file alone. A public address also needs <code>--i-am-authorized-for-public-ranges</code> on the command line; a public IPv4 range may be no wider than a /24, and one scan touches at most 1,024 public addresses, whatever the file says.</p>
+      <p class="caveat pubflag" id="scPublic" role="status" hidden></p>
+      <div class="attest">
+        <label class="chk" for="scAgree"><input type="checkbox" id="scAgree"> I attest, as the scanner requires, in these exact words:</label>
+        <blockquote id="scStatement">I own the systems listed in targets, or I hold written permission from their owner to scan them for known vulnerabilities, and this scan stays within that permission.</blockquote>
+      </div>
+      <p class="heroacts"><button type="submit" class="btn primary" id="scMake">Make scope.json</button></p>
+    </form>
+    <div id="scopeOut" aria-live="polite" hidden></div>
+    <p class="note">The file is checked here with the same rules as the scanner's own <code>check</code> command; run that command too, since it is the scanner that decides. Discovery options (domains, Certificate Transparency, asset lists, cloud inventory) can be added to the file by hand: see the guide.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="recentH">
+    <h2 id="recentH">Recently added</h2>
+    <ol class="recent" id="recent"><li class="note">Loading</li></ol>
+  </section>
+
+  <p class="note foot-note">A proprietary CyberView product, free to download and use on your own authorised systems under its <a href="https://github.com/xanderhutch/CyberView/blob/main/scanner/LICENSE" target="_blank" rel="noopener noreferrer">licence</a>; no redistribution without permission. A clean result is not proof that a host has no vulnerabilities: the scanner knows only the flaws CyberView's data covers, and a service can hide or misstate its version.</p>
+</main>
+<footer class="foot"><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="about.html#corrections">Corrections</a><a href="about.html#security">Report a security issue</a><a href="account.html">Account</a></footer>
+<script src="scanner-lib.js"></script>
+<script src="scanner.js"></script>
+<script src="nav.js"></script>
+</body>
+</html>

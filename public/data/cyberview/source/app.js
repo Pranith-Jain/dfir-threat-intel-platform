@@ -71,7 +71,7 @@ var BASIS={stated:"stated by the source",inferred:"inferred by "+AI_BY,keyword:"
 function basisNote(list,k){var b=k==="layer"?"layerBasis":"secgBasis",c={stated:0,inferred:0,keyword:0};list.forEach(function(e){if(own(c,e[b]))c[e[b]]++;});
   return (k==="layer"?"Attack surface":"Sector")+": "+c.stated+" "+BASIS.stated+", "+c.inferred+" "+BASIS.inferred+", "+c.keyword+" keyword-assigned from the wording (can be wrong).";}
 function basisEl(list,k){var p=el("p","cav basis",basisNote(list,k));p.dataset.basis=k;return p;}
-var BUILD={version:"1.65",date:"2026-11-21"};
+var BUILD={version:"1.69",date:"2026-11-22"};
 var viz={lane:"layer",mat:"layer"};
 var kev=[],ripples=null;
 function own(o,k){return typeof k==="string"&&Object.prototype.hasOwnProperty.call(o,k);}
@@ -106,6 +106,9 @@ function nextSweep(){
   var min=sweep&&typeof sweep.sweep_minute==="number"?sweep.sweep_minute:10,now=new Date().getUTCMinutes();
   var d=(min-now+60)%60;return d===0?"now":"in "+d+" min";
 }
+/* GDACS disaster recency: the 2 / 3 / 7-day bands inside the 30-day window the layer keeps (days = how long ago it was last active). */
+function gdacsBand(d){return d==null?"":d<=2?"past 2 days":d<=3?"past 3 days":d<=7?"past week":"past 30 days";}
+function gdacsWhen(x){var s=String(x.from||""),dt=/^\d{4}-\d{2}-\d{2}/.test(s)?fmtDay(s.slice(0,10)):"",b=gdacsBand(x.days);return (dt?" · "+dt:"")+(b?" · "+b:"");}
 function fmtWhen(e,long){
   if(!e.hasTime)return fmtDay(e.date);
   var s=(long?DTF.tz:DTF.time).format(new Date(e.t));
@@ -178,7 +181,7 @@ function cleanCorr(d){
 /* ---------- context layers: not cyber events; fetched at build time by scripts/context.mjs ---------- */
 var CTX_DEFS={
   ioda:{label:"Internet disruptions",what:"Countries where IODA's automated measurements (routing, active probing, Google traffic) saw a drop in the last 24 hours. A signal, not a confirmed outage, and never by itself evidence of an attack.",host:/^https:\/\/ioda\.inetintel\.cc\.gatech\.edu\//},
-  gdacs:{label:"Disaster alerts",what:"Orange and red GDACS alerts now in effect (earthquakes, cyclones, floods, volcanoes). Disasters cause outages and draw scams; they are context, not cyber events.",host:/^https:\/\/www\.gdacs\.org\//},
+  gdacs:{label:"Disaster alerts",what:"Significant GDACS alerts, orange and red, of every type (earthquakes, cyclones, floods, volcanoes, wildfires, droughts) active in the last 30 days, each dated and banded by the last 2 / 3 / 7 days. Disasters cause outages and draw scams; they are context, not cyber events.",host:/^https:\/\/www\.gdacs\.org\//},
   grid:{label:"Power grid outages",what:"Outages and grid emergencies that grid operators report themselves (Hydro-Qu\u00e9bec, BC Hydro, UK Power Networks, Eskom, ERCOT, AEMO): customers without power, load shedding, energy emergencies. Context, not cyber events. The cause is shown as the operator reports it; the larger rings are incidents (5,000 or more customers out in one operator's area, drawn at that area); the small rings are single outages of 100 or more customers, at the place the operator gives. Customers are accounts, not people.",
     host:/^https:\/\/(?:[a-z0-9-]+\.)*(?:hydroquebec\.com|bchydro\.com|ukpowernetworks\.co\.uk|eskom\.co\.za|ercot\.com|aemo\.com\.au|nemweb\.com\.au)(?:\/|$)|^https:\/\/ukpowernetworks\.opendatasoft\.com(?:\/|$)/}
 };
@@ -281,7 +284,7 @@ function cleanCtx(name,d){
       return {code:code,name:str(x.name,60),map:str(x.map_name,60).toLowerCase(),score:numIn(x.score,0,1e9)||0,events:numIn(x.events,0,1e4)||0,signals:strs(x.signals,4,20),url:link(x.url),verified:cleanVerified(x.verified)};}
     if(name==="grid")return cleanGrid(x,link);
     var lat=numIn(x.lat,-90,90),lng=numIn(x.lng,-180,180);if(lat===null||lng===null)return null;
-    return {id:str(x.id,40),type:str(x.type,30),level:x.level==="red"?"red":"orange",name:str(x.name,120),country:str(x.country,80),from:str(x.from,19),lat:lat,lng:lng,url:link(x.url)};
+    return {id:str(x.id,40),type:str(x.type,30),level:x.level==="red"?"red":"orange",name:str(x.name,120),country:str(x.country,80),from:str(x.from,19),to:str(x.to,19),days:numIn(x.days,0,366),lat:lat,lng:lng,url:link(x.url)};
   }).filter(Boolean);
   var at=str(d.fetched_at,30);
   return {source:str(d.source,100),url:link(d.source_url),at:at,ok:d.ok===true,error:str(d.error,60),items:items};
@@ -753,7 +756,7 @@ function renderLayers(){
       var ul=el("ul","llist");
       c.items.slice(0,k==="ioda"?6:5).forEach(function(x){
         var li=el("li"),a=el("a",null,k==="ioda"?x.name:x.name);a.href=safeUrl(x.url);a.target="_blank";a.rel="noopener noreferrer";li.appendChild(a);
-        li.appendChild(el("span","muted",k==="ioda"?" "+x.signals.join(", ")+(x.map?"":" · not drawn (too small for this map)"):" "+x.level+" alert"+(x.country?" · "+x.country:"")));
+        li.appendChild(el("span","muted",k==="ioda"?" "+x.signals.join(", ")+(x.map?"":" · not drawn (too small for this map)"):" "+x.level+" alert"+(x.country?" · "+x.country:"")+gdacsWhen(x)));
         if(k==="ioda")li.appendChild(x.verified?verifiedNode(x.verified):el("small","gnote","A measurement, not checked by CyberView."));
         ul.appendChild(li);});
       box.appendChild(ul);
