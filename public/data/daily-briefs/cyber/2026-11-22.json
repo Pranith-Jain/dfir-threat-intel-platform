@@ -1,0 +1,88 @@
+{
+  "type": "cyber",
+  "date": "2026-11-22",
+  "threatLevel": "",
+  "executiveSummary": "CISA and partners warn of active targeting of Siemens S7 PLCs across critical sectors using AI-assisted tooling; immediate removal of Internet exposure and S7comm monitoring is urged. Security Advisory Multiple unauthenticated RCE and missing-auth flaws in Advantech EKI-1242 industrial gateways could enable remote takeover of OT data paths; prioritize segmentation and vendor remediation. CISA Bulletin CERT-FR reports unauthenticated HTTP/2 RCE in F5 NGINX (public PoC) - high risk to OT DMZ reverse proxies; disable HTTP/2 where feasible and patch urgently. Alert Actively exploited management-plane vulns (VMware vCenter auth bypass; Cisco Expressway) linked to China-nexus espionage pose enterprise-to-OT pivot risk; isolate management networks and patch immediately. View Article Supporting Report OpenPLC Runtime race condition allows remote creation of admin accounts (CVE in advisory) - patch to 4.3.0+ and restrict management ports to jump hosts with MFA. ICS Advisory CISA/NSA/FBI highlight PRC covert networks using compromised SOHO/IoT devices to mask CNI intrusions; tighten edge hygiene and egress controls. Security Advisory CISA bulletins enumerate additional OT-adjacent risks: Danfoss iC7 drives (unsigned firmware/app uploads), EV chargers (unauth OCPP RCE), OPC UA (Eclipse Milo) auth bypass/DoS, and eProsima Fast-DDS issues; prioritize segmentation and updates. Bulletin 1 Bulletin 2 Ransomware pressure remains high: joint #StopRansomware advisories for SafePay and Gunra detail VPN/appliance exploits, rapid lateral movement, and data theft; reinforce MFA, backups, and monitoring. SafePay Gunra KEV updates add multiple actively exploited vulns (Synology DSM, Apache Axis, BerriAI LiteLLM, REDCap; plus SonicWall, Outlook/Chromium, others) - accelerate remediation on internet-exposed assets per BOD timelines. 11/18 KEV 11/10 KEV",
+  "keyFindings": [
+    {
+      "title": "Immediate OT risk",
+      "summary": "Internet-exposed Siemens S7 PLCs are being scanned and probed with AI-assisted scripts, enabling read/write operations. Remove exposure, patch, and monitor S7comm (TCP/102). Security Advisory"
+    },
+    {
+      "title": "ICS gateways under threat",
+      "summary": "Advantech EKI-1242 (firmware V1.06.01) includes unauth RCE and unsigned firmware paths; segment and restrict management interfaces; apply vendor updates when available. CISA Bulletin"
+    },
+    {
+      "title": "Edge proxy exposure",
+      "summary": "NGINX HTTP/2 unauth RCE with public PoC can compromise OT DMZ reverse proxies; disable HTTP/2 and patch now. CERT-FR Alert"
+    },
+    {
+      "title": "OpenPLC runtime account-creation race condition enables remote admin creation; u",
+      "summary": "OpenPLC runtime account-creation race condition enables remote admin creation; update to 4.3.0+ and restrict access to brokered jump hosts. ICS Advisory"
+    },
+    {
+      "title": "Active exploitation of enterprise management planes (vCenter, Expressway) tied t",
+      "summary": "Active exploitation of enterprise management planes (vCenter, Expressway) tied to China-linked groups increases lateral movement risk toward OT; isolate, patch, and hunt for STS/SSO abuse. View Article"
+    }
+  ],
+  "dashboard": {
+    "kpis": [],
+    "activelyExploited": [],
+    "vendors": [
+      "Siemens (S7 PLCs; SIMATIC S7 client library), Advantech (EKI-1242; WISE-6610), Autonomy Logic (OpenPLC Runtime), Autel (MaxiCharger EVSE), Danfoss (iC7 drives), Eclipse (Milo OPC UA; Arrowhead/Ditto via other bulletins), eProsima (Fast-DDS), F5 NGINX, VMware vCenter / Cloud Foundation / SDDC Manager, Cisco Expressway, SonicWall (KEV), Synology DSM (KEV), Apache Axis/Roller (KEV), Vanderbilt REDCap (KEV), BerriAI LiteLLM (KEV), Dorsett Controls (InfoScan), Elecbrakes (EB2/VM1/ELBC2000), Siemens Simcenter Femap, CAST Imaging, Poste.io, mRemoteNG."
+    ],
+    "sectors": [
+      "Water and Wastewater Systems; Energy; Transportation Systems (incl. EVSE & braking controllers); Critical Manufacturing; Government Facilities; Healthcare; Communications."
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "China-nexus operations leveraging covert SOHO/IoT networks for CNI access and espionage; prioritize edge hardening and egress controls. Security Advisory",
+        "Zimbra zero-day campaign by Russian state-supported actors (LAUNDRY BEAR) auto-exfiltrating mail/2FA; rotate secrets and patch ZCS. Security Advisory",
+        "Ransomware groups (SafePay, Gunra) abusing VPNs/appliances and LOTL tools; double-extortion persists. Prepare immutable backups and IR playbooks. SafePay Gunra"
+      ]
+    }
+  ],
+  "relevance": "Direct OT impact risks are present in PLC control (Siemens S7), industrial gateways (Advantech EKI series), OT runtimes (OpenPLC), OT client libraries (OPC UA Eclipse Milo; MQTT libumqtt), safety/transport controllers (Elecbrakes), and drives (Danfoss iC7). Compromise at these layers can alter physical processes, impair safety functions, or disrupt telemetry/control paths. High-probability indirect OT exposure persists via enterprise management planes (vCenter), reverse proxies (NGINX), VPN/firewall appliances, and email/web stacks added to KEV. Weak IT/OT segmentation and vendor remote access increase pivot potential from IT footholds into operations networks.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Siemens S7 PLCs - active probing and unauthorized S7comm operations (read/write). Security Advisory",
+        "Advantech EKI-1242 gateways - unauth RCE, unsigned firmware acceptance (Nozomi research via CISA bulletin). CISA Bulletin",
+        "OpenPLC Runtime ≤4.2.4 - race condition enabling remote admin creation; fixed in 4.3.0+. ICS Advisory",
+        "Danfoss iC7 drives - write access to internal values and unsigned uploads; isolate, enforce code-signing. CISA Bulletin",
+        "Autel EV chargers - OCPP WebSockets unauth RCE (energy/transport ops risk). CISA Bulletin",
+        "OPC UA Eclipse Milo server stack - authorization bypass/DoS; enforce SignAndEncrypt, disable Anonymous. CISA Bulletin",
+        "Elecbrakes EB2/VM1/ELBC2000 - unauth BLE command/control (patch EB2/VM1; ELBC2000 no fix). ICS Advisory",
+        "Siemens .NET Client Library for SIMATIC S7 Webserver API - path traversal & password exposure in logs; patch to 3.3.61/3.3.62+. ICS Advisory",
+        "Dorsett Controls InfoScan ≤1.45.0 - unauth stack trace leaks aiding recon; update to 1.46+ and remove Internet exposure. ICS Advisory",
+        "libumqtt ≤1.1.1 - embedded MQTT client DoS/memory corruption; apply compensating controls. ICS Advisory"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Exploit Public-Facing Application (T1190): NGINX HTTP/2 RCE; vCenter auth bypass; EVSE OCPP unauth RCE.",
+      "External Remote Services (T1133): VPN/SSL-VPN abuse; vendor remote access to OT gateways.",
+      "Valid Accounts (T1078) and Abuse of SSO/STS: vCenter SSO admin creation; app passcodes in Zimbra campaigns.",
+      "Living off the Land: PsExec/WinRM/WMI; credential theft; AD CS abuse in ransomware playbooks.",
+      "Exfiltration to Cloud Services (T1567.002): OneDrive/SharePoint/Mega/Zimbra HTTPS/DNS channels.",
+      "Command and Control over Application Layer Protocol (T1071) & Encrypted Channels: HTTP/2 frames, cloud-hosted APIs.",
+      "ICS-specific: Unauthorized S7comm PUT/GET; OPC UA auth bypass/DoS; MQTT client DoS; unsigned firmware/config uploads on drives/gateways."
+    ],
+    "mitreIds": [
+      "T1190",
+      "T1133",
+      "T1078",
+      "T1567.002",
+      "T1071"
+    ]
+  },
+  "outlook72h": "Day 0-1: Disable HTTP/2 on NGINX edges where possible; block TCP/102 at perimeters; freeze Internet exposure of PLCs/gateways; enable surge monitoring on S7comm and HTTP/2. Day 1-2: Patch vCenter/SDDC Manager and KEV-listed internet-facing assets; rotate admin tokens/secrets; run targeted hunts for STS/SSO abuse and webshells on edges. Day 2-3: Segment EVSE/OT gateways to dedicated VLANs; enforce SignAndEncrypt on OPC UA; implement IDS rules for edgserver/OPC UA anomalies; stage tabletop for ransomware-playbook activation.",
+  "relatedCves": []
+}
