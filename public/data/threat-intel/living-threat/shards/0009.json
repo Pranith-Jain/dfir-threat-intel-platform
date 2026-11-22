@@ -3,6 +3,663 @@
     "Adversary": {
       "Aliases": [],
       "Associated_Groups": [],
+      "Description": "Threat actors using ClickFix attack variants with fake Windows Update animations and steganography.",
+      "Known_Campaigns": [],
+      "Motivation": "Financial gain through information stealing.",
+      "Sophistication": "High, due to use of steganography and dynamic evasion tactics.",
+      "Strategic_Objectives": "To steal information using LummaC2 and Rhadamanthys malware.",
+      "TTPs_Employed": ["Steganography", "Social engineering", "Dynamic evasion tactics"]
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Encoding of malicious payloads within PNG images using steganography.",
+        "Detection": "Monitor for unusual file types or large numbers of files being created or modified.",
+        "Remediation": "Implement file integrity monitoring to detect changes to critical files.",
+        "Stage": "Weaponization",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to establish resources they can use to support operations.",
+            "tactic_id": "TA0042",
+            "tactic_name": "Resource Development"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may attempt to make an executable or file difficult to discover or analyze by encrypting, encoding, or otherwise obfuscating its contents on the system or in transit.",
+            "technique_id": "T1027",
+            "technique_name": "Obfuscated Files or Information"
+          }
+        ],
+        "Techniques": ["T1027"]
+      },
+      {
+        "Description": "Use of fake Windows Update animations to deliver malicious payloads.",
+        "Detection": "Monitor for unusual network activity related to known malicious domains.",
+        "Remediation": "Educate users on recognizing phishing attempts and suspicious links.",
+        "Stage": "Delivery",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to get into your network.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may send spearphishing emails with a malicious link to gain access to victim systems.",
+            "technique_id": "T1566.002",
+            "technique_name": "Spearphishing Link"
+          }
+        ],
+        "Techniques": ["T1566.002"]
+      },
+      {
+        "Description": "Execution of malicious commands via social engineering.",
+        "Detection": "Monitor for unusual PowerShell activity or command line usage.",
+        "Remediation": "Restrict PowerShell execution to only authorized users.",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to run malicious code.",
+            "tactic_id": "TA0002",
+            "tactic_name": "Execution"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may abuse PowerShell commands and scripts for execution.",
+            "technique_id": "T1059.001",
+            "technique_name": "Command and Scripting Interpreter: PowerShell"
+          }
+        ],
+        "Techniques": ["T1059.001"]
+      },
+      {
+        "Description": "Installation of LummaC2 and Rhadamanthys malware.",
+        "Detection": "Monitor for changes to autostart execution locations.",
+        "Remediation": "Implement application whitelisting to prevent unauthorized software installation.",
+        "Stage": "Installation",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to maintain their foothold.",
+            "tactic_id": "TA0003",
+            "tactic_name": "Persistence"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may use methods that register programs to run at system boot or logon.",
+            "technique_id": "T1547",
+            "technique_name": "Boot or Logon Autostart Execution"
+          }
+        ],
+        "Techniques": ["T1547"]
+      },
+      {
+        "Description": "Use of steganography to communicate with C2 servers.",
+        "Detection": "Monitor for unusual outbound traffic patterns.",
+        "Remediation": "Implement network segmentation to limit C2 communication.",
+        "Stage": "Command and Control",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to communicate with compromised systems to control them.",
+            "tactic_id": "TA0011",
+            "tactic_name": "Command and Control"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may communicate using application layer protocols to avoid detection/network filtering by blending in with existing traffic.",
+            "technique_id": "T1071.001",
+            "technique_name": "Application Layer Protocol: Web Protocols"
+          }
+        ],
+        "Techniques": ["T1071.001"]
+      },
+      {
+        "Description": "Exfiltration of information using LummaC2 and Rhadamanthys.",
+        "Detection": "Monitor for data exfiltration attempts over known C2 channels.",
+        "Remediation": "Implement data loss prevention solutions to detect and block exfiltration attempts.",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to steal data.",
+            "tactic_id": "TA0010",
+            "tactic_name": "Exfiltration"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may steal data by exfiltrating it over an existing command and control channel.",
+            "technique_id": "T1041",
+            "technique_name": "Exfiltration Over C2 Channel"
+          }
+        ],
+        "Techniques": ["T1041"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": ["Steganography", "Dynamic evasion tactics"],
+      "Description": "Use of steganography to hide malware payloads and social engineering to trick users.",
+      "Exploits": [],
+      "Lateral_Movement_Tools": [],
+      "Malware": ["LummaC2", "Rhadamanthys"],
+      "Persistence_Mechanisms": [],
+      "Tools": ["Donut"],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [],
+    "Extracted_Entities": {
+      "Assets": [],
+      "Breach_Types": [],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Huntress"],
+      "Countries": [],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": ["AES"],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["ClickFix", "Windows Update", "steganography", "LummaC2", "Rhadamanthys", "Operation Endgame"],
+      "Malware_Families": ["LummaC2", "Rhadamanthys"],
+      "Malware_Filenames": [],
+      "Patches": [],
+      "Phishing_Infrastructure": [],
+      "Sectors": [],
+      "Software": ["Windows"],
+      "Technologies": ["JavaScript", ".NET", "PowerShell"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": []
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "Fake Windows Update domains used to deliver ClickFix attack payloads.",
+      "Domains": ["fake Windows Update domains"],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": ["fake Windows Update domains"],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Steganography", "Social engineering", "Dynamic evasion tactics"],
+      "Tools": ["Donut"]
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "High",
+    "Threat_Actors": [],
+    "Timestamp": "2025-11-24T15:42:00Z",
+    "Title": "ClickFix Attack Variants Using Fake Windows Update and Steganography",
+    "Tools": ["Donut", "Windows"],
+    "Victim": {
+      "Access_Vectors": ["Social engineering"],
+      "Data_Types_At_Risk": ["Information"],
+      "Description": "Users targeted through social engineering with fake Windows Update animations.",
+      "Geography": "",
+      "Impact_Severity": "High",
+      "Industry": "",
+      "Security_Posture": "",
+      "Targeted_Assets": ["Windows systems"]
+    },
+    "diamond_model_summary": "The ClickFix attack variants involve threat actors using fake Windows Update animations and steganography to deliver malware payloads. The adversaries employ social engineering tactics to trick users into executing malicious commands, leading to the installation of LummaC2 and Rhadamanthys information stealers. The infrastructure includes fake Windows Update domains, and the capability involves advanced evasion techniques such as steganography and dynamic evasion tactics. The victims are primarily Windows users targeted through social engineering.",
+    "doc_summary": "ClickFix attack variants have been observed where threat actors trick users with a realistic-looking Windows Update animation in a full-screen browser page and hide the malicious code inside images. ClickFix is a social-engineering attack where users are convinced to paste and execute in Windows Command Prompt code or commands that lead to running malware on the system. The attack has been widely adopted by cybercriminals across all tiers due to its high effectiveness and has continually evolved, with advanced and deceptive lures. Since October 1st, researchers have observed ClickFix attacks where the pretense for executing dangerous commands was completing the installation of a critical Windows security update and the more common human verification lure. The fake update page instructs victims to press specific keys in a certain sequence, which pastes and executes commands from the attacker that were automatically copied to the clipboard via JavaScript running on the site. A report from managed security services provider Huntress notes that the new ClickFix variants drop the LummaC2 and Rhadamanthys information stealers. In one variant, the hackers use a human verification page, while in another they rely on the fake Windows Update screen. In both cases, though, the threat actors used steganography to encode the final malware payload inside an image. Rather than simply appending malicious data to a file, the malicious code is encoded directly within the pixel data of PNG images, relying on specific colour channels to reconstruct and decrypt the payload in memory. Huntress researchers noticed that the threat actor used a dynamic evasion tactic, commonly referred to as ctrampoline, where the entry point function started calling 10,000 empty functions. The shellcode holding the infostealer samples is extracted from the encrypted image and is packed using the Donut tool that allows executing VBScript, JScript, EXE, DLL files, and .NET assemblies in memory. After unpacking, Huntress researchers were able to retrieve the malware, which in the analyzed attacks was LummaC2 and Rhadamanthys. The Rhadamanthys variant that used the Windows Update lure was by researchers back in October, before Operation Endgame took down parts of its infrastructure. Huntress reports that the law enforcement operation resulted in the payload not being delivered anymore on the fake Windows Update domains, which are still active. To stay safe from this type of ClickFix attacks, the researchers recommend disabling the Windows Run box and monitoring for suspicious process chains such as spawning or PowerShell. Additionally, when investigating a cybersecurity incident, analysts can check the RunMRU registry key to see if the user entered commands in the Windows Run box.",
+    "enrichment": { "processed_at": "2026-02-18T00:37:21.285105+00:00", "source_fields": ["title"], "version": "v1" },
+    "id": "7b1d4e3b693130e050bb219fadfd40da",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The ClickFix attack follows a structured kill chain starting with the delivery of fake Windows Update animations to trick users into executing malicious commands. The weaponization stage involves encoding malware payloads within PNG images using steganography. The exploitation stage sees the execution of these commands, leading to the installation of LummaC2 and Rhadamanthys malware. Command and control are maintained through steganographic communication with C2 servers, and the final stage involves the exfiltration of information.",
+    "operational_tags": ["High Priority", "C2"],
+    "priority_score": 98,
+    "pyramid_of_pain_summary": "The ClickFix attack variants present several indicators across the Pyramid of Pain. The use of steganography and dynamic evasion tactics makes detection challenging. Hash values of the malware, IP addresses of C2 servers, and domain names of fake Windows Update sites are critical indicators. Network host artifacts include unusual PowerShell activity, and tools like Donut are used for payload execution. TTPs involve social engineering and steganography, making this a sophisticated attack.",
+    "relevance_score": 55,
+    "sequence": 18442,
+    "source": "https://www.bleepingcomputer.com/news/security/clickfix-attack-uses-fake-windows-update-screen-to-push-malware/",
+    "slug": "ClickFix_Attack_Variants_Using_Fake_Windows_Update_and_Steganography-018442",
+    "shard": 9
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
+      "Description": "No significant information detected",
+      "Known_Campaigns": [],
+      "Motivation": "",
+      "Sophistication": "",
+      "Strategic_Objectives": "",
+      "TTPs_Employed": []
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Exploitation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Data exfiltration of customer and client data",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to gather data of interest to their goal.",
+            "tactic_id": "TA0009",
+            "tactic_name": "Collection"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Adversaries may search local file systems and databases to find files of interest.",
+            "technique_id": "T1005",
+            "technique_name": "Data from Local System"
+          }
+        ],
+        "Techniques": ["T1005"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": [],
+      "Description": "No significant information detected",
+      "Exploits": [],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": [],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [],
+    "Extracted_Entities": {
+      "Assets": ["Customer Data", "Accounting Records", "Legal Agreements"],
+      "Breach_Types": ["Data Breach"],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["SitusAMC", "Citi", "Morgan Stanley", "JPMorgan Chase"],
+      "Countries": ["United States"],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["data breach", "customer data", "financial services", "real-estate financing"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": [],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Financial Services"],
+      "Software": [],
+      "Technologies": [],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": []
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "No significant information detected",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": [],
+      "Tools": []
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "High",
+    "Threat_Actors": [],
+    "Timestamp": "2025-11-24T12:36:00Z",
+    "Title": "Data Breach at SitusAMC Impacting Customer Data",
+    "Tools": [],
+    "Victim": {
+      "Access_Vectors": [],
+      "Data_Types_At_Risk": ["Customer Data", "Client Data"],
+      "Description": "SitusAMC, a real-estate financing firm providing services to banks and lenders",
+      "Geography": "United States",
+      "Impact_Severity": "High",
+      "Industry": "Financial Services",
+      "Security_Posture": "",
+      "Targeted_Assets": ["Customer Data", "Accounting Records", "Legal Agreements"]
+    },
+    "diamond_model_summary": "The incident involves a data breach at SitusAMC, a financial services company, impacting customer and client data. The adversary's identity and specific capabilities remain unknown, but the breach affected sensitive data, including accounting records and legal agreements. The infrastructure used in the attack is not detailed, and the victim is primarily SitusAMC and its clients in the financial sector.",
+    "doc_summary": "SitusAMC, a real-estate financing firm providing back-end services for banks and lenders, disclosed a data breach impacting customer data. The breach, discovered on November 12, 2025, affected data from clients and their customers, including accounting records and legal agreements. SitusAMC, generating $1 billion in annual revenue from 1,500 clients, including Citi, Morgan Stanley, and JPMorgan Chase, stated that business operations were unaffected, and no encrypting malware was deployed. The company began notifying residential customers on November 16 and confirmed data theft by November 22. The breach's complexity makes it unclear how many customers are impacted. External experts are assisting in the ongoing investigation.",
+    "enrichment": { "processed_at": "2026-02-18T00:37:21.285208+00:00", "source_fields": ["title"], "version": "v1" },
+    "id": "2c9e90508158a749f65b0dd122d1a424",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The data breach at SitusAMC follows a typical kill chain pattern, with the adversary likely conducting reconnaissance to identify valuable data. The breach resulted in the exfiltration of customer and client data, including accounting records and legal agreements. Specific tactics and techniques remain unidentified, but the impact on the financial services sector is significant.",
+    "operational_tags": ["High Priority"],
+    "priority_score": 63,
+    "pyramid_of_pain_summary": "The Pyramid of Pain analysis for the SitusAMC breach is limited due to a lack of specific indicators such as hashes, IP addresses, or domains. The breach primarily involved data exfiltration, impacting customer and client data. Without concrete indicators, the analysis remains high-level, focusing on the breach's impact on the financial services sector.",
+    "relevance_score": 37,
+    "sequence": 18441,
+    "source": "https://www.bleepingcomputer.com/news/security/real-estate-finance-services-giant-situsamc-breach-exposes-client-data/",
+    "slug": "Data_Breach_at_SitusAMC_Impacting_Customer_Data-018441",
+    "shard": 9
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
+      "Description": "The adversary behind the Shai-Hulud campaign is targeting npm packages to exfiltrate developer and CI/CD secrets.",
+      "Known_Campaigns": ["Shai-Hulud"],
+      "Motivation": "Data theft",
+      "Sophistication": "High",
+      "Strategic_Objectives": "Compromise developer environments to steal secrets and credentials.",
+      "TTPs_Employed": ["Supply-chain attack", "Credential theft", "Data exfiltration"]
+    },
+    "Analyses": [
+      {
+        "Description": "The adversary likely identified popular npm packages to target.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [
+          {
+            "tactic_description": "Gathering information to select targets.",
+            "tactic_id": "TA0043",
+            "tactic_name": "Reconnaissance"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Identify popular npm packages for targeting.",
+            "technique_id": "T1592",
+            "technique_name": "Gather Victim Host Information"
+          }
+        ],
+        "Techniques": ["T1592"]
+      },
+      {
+        "Description": "The adversary modified legitimate npm packages to include malicious scripts.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [
+          {
+            "tactic_description": "Developing resources to conduct attacks.",
+            "tactic_id": "TA0042",
+            "tactic_name": "Resource Development"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Create trojanized npm packages.",
+            "technique_id": "T1587.001",
+            "technique_name": "Develop Capabilities: Malware"
+          }
+        ],
+        "Techniques": ["T1587.001"]
+      },
+      {
+        "Description": "The trojanized packages were uploaded to the npm registry.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [
+          {
+            "tactic_description": "Gaining access to victim systems.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Upload malicious packages to npm.",
+            "technique_id": "T1195.002",
+            "technique_name": "Supply Chain Compromise: Compromise Software Dependencies and Development Tools"
+          }
+        ],
+        "Techniques": ["T1195.002"]
+      },
+      {
+        "Description": "Developers unknowingly installed the malicious packages.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "Executing malicious code on victim systems.",
+            "tactic_id": "TA0002",
+            "tactic_name": "Execution"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Execute malicious scripts in npm packages.",
+            "technique_id": "T1059.007",
+            "technique_name": "Command and Scripting Interpreter: JavaScript"
+          }
+        ],
+        "Techniques": ["T1059.007"]
+      },
+      {
+        "Description": "The malware was installed as part of the npm package installation process.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [
+          {
+            "tactic_description": "Maintaining access to victim systems.",
+            "tactic_id": "TA0003",
+            "tactic_name": "Persistence"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Install malware during npm package installation.",
+            "technique_id": "T1546.004",
+            "technique_name": "Event Triggered Execution: Unix Shell Configuration Modification"
+          }
+        ],
+        "Techniques": ["T1546.004"]
+      },
+      {
+        "Description": "The malware exfiltrated secrets to GitHub repositories.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [
+          {
+            "tactic_description": "Communicating with compromised systems.",
+            "tactic_id": "TA0011",
+            "tactic_name": "Command and Control"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exfiltrate data to GitHub.",
+            "technique_id": "T1071.001",
+            "technique_name": "Application Layer Protocol: Web Protocols"
+          }
+        ],
+        "Techniques": ["T1071.001"]
+      },
+      {
+        "Description": "The adversary exfiltrated secrets and potentially overwrote victim directories.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "Gathering data of interest to the adversary.",
+            "tactic_id": "TA0009",
+            "tactic_name": "Collection"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exfiltrate secrets from CI/CD environments.",
+            "technique_id": "T1530",
+            "technique_name": "Data from Cloud Storage Object"
+          }
+        ],
+        "Techniques": ["T1530"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": ["Obfuscation", "Anti-analysis"],
+      "Description": "The adversary has the capability to modify npm packages and exfiltrate secrets using obfuscated malware.",
+      "Exploits": [],
+      "Lateral_Movement_Tools": [],
+      "Malware": ["Shai-Hulud"],
+      "Persistence_Mechanisms": [],
+      "Tools": ["TruffleHog"],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [],
+    "Extracted_Entities": {
+      "Assets": ["developer secrets", "CI/CD tokens"],
+      "Breach_Types": ["Supply-chain compromise"],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Zapier", "ENS Domains", "PostHog", "Postman"],
+      "Countries": [],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["supply-chain attack", "trojanized packages", "secrets exfiltration"],
+      "Malware_Families": ["Shai-Hulud"],
+      "Malware_Filenames": [],
+      "Patches": [],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Technology"],
+      "Software": ["npm", "GitHub"],
+      "Technologies": ["CI/CD", "JavaScript"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": []
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "The infrastructure includes compromised npm packages and GitHub repositories for data exfiltration.",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Supply-chain compromise", "Data exfiltration"],
+      "Tools": ["TruffleHog"]
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "High",
+    "Threat_Actors": ["Shai-Hulud"],
+    "Timestamp": "2025-11-24T09:32:00Z",
+    "Title": "Shai-Hulud Supply-Chain Attack on npm Registry",
+    "Tools": ["TruffleHog", "npm", "GitHub"],
+    "Victim": {
+      "Access_Vectors": ["Compromised npm packages"],
+      "Data_Types_At_Risk": ["Credentials", "Secrets"],
+      "Description": "Developers and organizations using npm packages for CI/CD processes.",
+      "Geography": "Global",
+      "Impact_Severity": "High",
+      "Industry": "Technology",
+      "Security_Posture": "Vulnerable to supply-chain attacks",
+      "Targeted_Assets": ["Developer secrets", "CI/CD tokens"]
+    },
+    "diamond_model_summary": "The Shai-Hulud supply-chain attack on npm registry is a sophisticated campaign targeting developers and CI/CD environments. The adversary employs trojanized npm packages to exfiltrate secrets, using tools like TruffleHog. The infrastructure includes compromised npm packages and GitHub repositories for data exfiltration. Victims are primarily in the technology sector, with a high impact severity due to the potential exposure of sensitive credentials and secrets.",
+    "doc_summary": "The Shai-Hulud supply-chain attack involves trojanized npm packages targeting developers and CI/CD environments. Hundreds of packages, including those from Zapier, ENS Domains, PostHog, and Postman, were compromised to steal secrets. The attack uses TruffleHog for secret exfiltration, posting data to GitHub. Over 27,000 malicious packages and 350 unique maintainer accounts were identified. The malware employs extreme obfuscation and overwrites home directories under certain conditions. Aikido Security and Wiz researchers highlight the scale and impact, urging developers to rotate credentials and disable npm postinstall scripts. GitHub is actively removing malicious repositories.",
+    "enrichment": { "processed_at": "2026-02-18T00:37:21.285086+00:00", "source_fields": ["title"], "version": "v1" },
+    "id": "92cd1ce0ecf8a2a54b7e50b291cd01e7",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The Shai-Hulud attack follows a structured kill chain, starting with reconnaissance to identify popular npm packages. Weaponization involves modifying these packages with malicious scripts. Delivery occurs through the npm registry, leading to exploitation when developers install the packages. Installation embeds the malware, which then exfiltrates secrets to GitHub during the command and control stage. The final actions on objectives include data exfiltration and potential directory overwrites.",
+    "operational_tags": ["High Priority", "Supply Chain", "C2"],
+    "priority_score": 99,
+    "pyramid_of_pain_summary": "The Shai-Hulud attack presents challenges across the Pyramid of Pain. Hash values of trojanized packages are difficult to track due to the volume of compromised packages. Domain names and IP addresses are not explicitly mentioned, but GitHub repositories are used for exfiltration. The use of tools like TruffleHog and obfuscation techniques complicates detection. TTPs include supply-chain compromise and data exfiltration, making this a high-impact attack with significant detection and remediation challenges.",
+    "relevance_score": 69,
+    "sequence": 18440,
+    "source": "https://www.bleepingcomputer.com/news/security/shai-hulud-malware-infects-500-npm-packages-leaks-secrets-on-github/",
+    "slug": "Shai-Hulud_Supply-Chain_Attack_on_npm_Registry-018440",
+    "shard": 9
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
       "Description": "No significant information detected",
       "Known_Campaigns": [],
       "Motivation": "",
@@ -104042,652 +104699,6 @@
     "sequence": 17956,
     "source": "https://gbhackers.com/critical-cisco-ios-and-ios-xe-flaws/",
     "slug": "Critical_SNMP_Vulnerability_in_Cisco_IOS_and_IOS_XE_Software-017956",
-    "shard": 9
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "No significant information detected",
-      "Known_Campaigns": [],
-      "Motivation": "",
-      "Sophistication": "",
-      "Strategic_Objectives": "",
-      "TTPs_Employed": []
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Exploitation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Actions on Objectives",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "No significant information detected",
-      "Exploits": [],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": [],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": [],
-      "Breach_Types": [],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["F5 Networks"],
-      "Countries": [],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["vulnerabilities", "security patches", "CVSS scores"],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Technology"],
-      "Software": ["BIG-IP", "F5OS", "BIG-IP Next"],
-      "Technologies": ["SSL/TLS", "network protocol"],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": ["CVE-2025-61955", "CVE-2025-57780"]
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "No significant information detected",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": [],
-      "Tools": []
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "High",
-    "Threat_Actors": [],
-    "Timestamp": "2025-10-17T05:36:56Z",
-    "Title": "F5 Networks Security Patch Release for Critical Vulnerabilities",
-    "Tools": ["BIG-IP", "F5OS", "BIG-IP Next"],
-    "Victim": {
-      "Access_Vectors": [],
-      "Data_Types_At_Risk": [],
-      "Description": "No significant information detected",
-      "Geography": "Global",
-      "Impact_Severity": "High",
-      "Industry": "Technology",
-      "Security_Posture": "",
-      "Targeted_Assets": []
-    },
-    "diamond_model_summary": "The incident involves F5 Networks releasing security patches for critical vulnerabilities in its product portfolio, including BIG-IP systems and F5OS platforms. The vulnerabilities, identified through a proactive security audit, span various attack vectors such as SSL/TLS protocol weaknesses and network protocol exploitation. The high CVSS scores indicate significant security risks if left unpatched. F5 Networks recommends immediate patch deployment to mitigate potential threats.",
-    "doc_summary": "F5 Networks has released comprehensive security patches addressing multiple critical vulnerabilities across its product portfolio following a recent security incident. The company issued its quarterly security notification on October 15, 2025, documenting numerous high-severity vulnerabilities that could potentially expose enterprise networks to significant security risks. The security advisory identifies over 30 vulnerabilities spanning F5’s entire product ecosystem, with the majority classified as high-severity threats. These vulnerabilities affect core products including BIG-IP systems, F5OS platforms, and the newer BIG-IP Next series. The disclosed vulnerabilities encompass various attack vectors including SSL/TLS protocol weaknesses, network protocol exploitation, and system-level security flaws. The high CVSS scores associated with many disclosed vulnerabilities suggest potential for significant security impact if left unpatched. The timing of this comprehensive patch release suggests F5 conducted an extensive internal security audit following recent security concerns. Industry experts note that such large-scale vulnerability disclosures typically indicate proactive security assessments rather than reactive responses to active exploitation. BIG-IP systems, widely deployed in enterprise environments for application delivery and security services, represent the primary focus of the security updates. Multiple CVEs target different BIG-IP modules, including Application Security Manager (ASM), Advanced Web Application Firewall, SSL Orchestrator, and Access Policy Manager (APM). These components serve critical roles in protecting enterprise applications and managing secure access. F5OS platforms, which provide the underlying operating system for next-generation F5 hardware, also face significant vulnerabilities. Two separate CVEs (CVE-2025-61955 and CVE-2025-57780) affect both F5OS-A and F5OS-C variants, with CVSS scores reaching 8.8 in appliance mode configurations. The security flaws span various technical domains including cryptographic implementations, network protocol handling, and system process management, indicating comprehensive security weaknesses across F5’s technology stack. F5 strongly recommends immediate patch deployment across all affected systems. The company has released updated software versions addressing each identified vulnerability, with fixes available for supported product versions. Organizations using F5 products should prioritize patch deployment based on their specific product configurations and deployment scenarios. The vulnerability disclosure includes detailed version information for affected products and corresponding patch releases. Most critical vulnerabilities affect multiple product versions spanning several years of releases, indicating widespread exposure across F5’s installed base. Security teams should conduct immediate assessments of their F5 deployments and develop prioritized patching schedules.",
-    "enrichment": { "processed_at": "2026-02-18T00:35:59.302393+00:00", "source_fields": ["title"], "version": "v1" },
-    "id": "8e8fe97dae8dd4d2b42ac713e8ae7d30c83be51f",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The incident does not provide specific details on the stages of the cyber kill chain. However, the vulnerabilities identified in F5 Networks' products could potentially be exploited in various stages, including exploitation and actions on objectives. The proactive security measures and patch releases aim to prevent potential exploitation and mitigate risks associated with these vulnerabilities.",
-    "operational_tags": ["High Priority"],
-    "priority_score": 60,
-    "pyramid_of_pain_summary": "The incident does not provide specific indicators of compromise (IOCs) such as hash values, IP addresses, or domain names. However, the vulnerabilities identified in F5 Networks' products represent potential TTPs that could be exploited by adversaries. The comprehensive security patches released by F5 Networks aim to address these vulnerabilities and mitigate potential threats.",
-    "relevance_score": 47,
-    "sequence": 17955,
-    "source": "https://gbhackers.com/f5-issues-security-patches-for-multiple-products/",
-    "slug": "F5_Networks_Security_Patch_Release_for_Critical_Vulnerabilities-017955",
-    "shard": 9
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "The adversary exploited a Jenkins server vulnerability to deploy a rootkit in AWS infrastructure.",
-      "Known_Campaigns": [],
-      "Motivation": "Financial",
-      "Sophistication": "Moderate",
-      "Strategic_Objectives": "Compromise AWS infrastructure for financial gain",
-      "TTPs_Employed": ["Exploitation of Jenkins server", "Deployment of rootkit", "Use of eBPF for concealment"]
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "The adversary weaponized a Docker Hub image with a rootkit and backdoor.",
-        "Detection": "Monitor Docker image downloads and deployments",
-        "Remediation": "Implement strict access controls on Docker Hub",
-        "Stage": "Weaponization",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary used obfuscation techniques to conceal the rootkit.",
-            "tactic_id": "T1027",
-            "tactic_name": "Obfuscated Files or Information"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "The rootkit was packed within a Docker image.",
-            "technique_id": "T1027.002",
-            "technique_name": "Software Packing"
-          }
-        ],
-        "Techniques": ["T1027.002"]
-      },
-      {
-        "Description": "The rootkit was delivered via a malicious Docker Hub image.",
-        "Detection": "Monitor for unusual Docker image deployments",
-        "Remediation": "Patch Jenkins server vulnerabilities",
-        "Stage": "Delivery",
-        "Tactics": [
-          {
-            "tactic_description": "Exploitation of Jenkins server vulnerability for delivery.",
-            "tactic_id": "T1190",
-            "tactic_name": "Exploit Public-Facing Application"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "The adversary exploited CVE-2024-23897.",
-            "technique_id": "T1190",
-            "technique_name": "Exploit Public-Facing Application"
-          }
-        ],
-        "Techniques": ["T1190"]
-      },
-      {
-        "Description": "Exploitation of Jenkins server vulnerability to gain initial access.",
-        "Detection": "Monitor for exploitation attempts on Jenkins server",
-        "Remediation": "Apply security patches to Jenkins server",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "Exploitation of Jenkins server vulnerability.",
-            "tactic_id": "T1190",
-            "tactic_name": "Exploit Public-Facing Application"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "The adversary exploited CVE-2024-23897.",
-            "technique_id": "T1190",
-            "technique_name": "Exploit Public-Facing Application"
-          }
-        ],
-        "Techniques": ["T1190"]
-      },
-      {
-        "Description": "Installation of LinkPro rootkit on compromised systems.",
-        "Detection": "Monitor changes to /etc/ld.so.preload",
-        "Remediation": "Restrict access to critical system files",
-        "Stage": "Installation",
-        "Tactics": [
-          {
-            "tactic_description": "The rootkit is installed to execute upon receiving a magic packet.",
-            "tactic_id": "T1546",
-            "tactic_name": "Event Triggered Execution"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Modification of /etc/ld.so.preload for persistence.",
-            "technique_id": "T1546.004",
-            "technique_name": "Unix Shell Configuration Modification"
-          }
-        ],
-        "Techniques": ["T1546.004"]
-      },
-      {
-        "Description": "LinkPro rootkit establishes command and control using various protocols.",
-        "Detection": "Monitor network traffic for unusual protocol usage",
-        "Remediation": "Implement network segmentation and monitoring",
-        "Stage": "Command and Control",
-        "Tactics": [
-          {
-            "tactic_description": "The rootkit uses multiple protocols for C2 communication.",
-            "tactic_id": "T1071",
-            "tactic_name": "Application Layer Protocol"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "The rootkit uses HTTP for reverse mode communication.",
-            "technique_id": "T1071.001",
-            "technique_name": "Web Protocols"
-          }
-        ],
-        "Techniques": ["T1071.001"]
-      },
-      {
-        "Description": "The rootkit allows execution of commands and data exfiltration.",
-        "Detection": "Monitor for unauthorized command execution",
-        "Remediation": "Implement strict access controls and logging",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "The rootkit can execute shell commands.",
-            "tactic_id": "T1059",
-            "tactic_name": "Command and Scripting Interpreter"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Execution of /bin/bash in a pseudo-terminal.",
-            "technique_id": "T1059.004",
-            "technique_name": "Unix Shell"
-          }
-        ],
-        "Techniques": ["T1059.004"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [
-      "Use of magic packets for activation",
-      "Modification of system files for concealment"
-    ],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": ["Concealment using eBPF", "Magic packet activation"],
-      "Description": "The adversary used a rootkit with advanced concealment and command and control capabilities.",
-      "Exploits": ["CVE-2024-23897"],
-      "Lateral_Movement_Tools": [],
-      "Malware": ["LinkPro", "vShell backdoor"],
-      "Persistence_Mechanisms": ["Modification of /etc/ld.so.preload"],
-      "Tools": ["LinkPro rootkit", "eBPF modules"],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": ["Unusual network traffic patterns", "Unauthorized command execution"],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [
-      "Monitor for changes to /etc/ld.so.preload",
-      "Detect unusual Docker image deployments"
-    ],
-    "Extracted_Entities": {
-      "Assets": ["AWS infrastructure", "Jenkins server", "Kubernetes clusters"],
-      "Breach_Types": [],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["Synacktiv"],
-      "Countries": ["French Republic"],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["LinkPro", "rootkit", "eBPF", "magic packet", "C2 server"],
-      "Malware_Families": ["LinkPro", "vShell"],
-      "Malware_Filenames": [],
-      "Patches": ["CVE-2024-23897"],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Cloud Computing"],
-      "Software": ["Amazon Web Services", "Jenkins", "Docker", "Kubernetes"],
-      "Technologies": ["GNU/Linux", "Golang"],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": ["CVE-2024-23897"]
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": ["HTTP", "WebSocket", "UDP", "TCP", "DNS"],
-      "Description": "The attack targeted AWS-hosted infrastructure using compromised Jenkins server and Docker Hub images.",
-      "Domains": [],
-      "Hosting_Providers": ["Amazon Web Services"],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": ["Patch vulnerable systems", "Enhance network monitoring"],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["Exploitation of Jenkins server", "Use of magic packets", "Concealment using eBPF"],
-      "Tools": ["LinkPro rootkit", "eBPF modules"]
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": ["Network traffic analysis", "File integrity monitoring"],
-    "Severity": "High",
-    "Threat_Actors": [],
-    "Timestamp": "2025-10-15T18:30:00Z",
-    "Title": "Discovery of LinkPro Rootkit in AWS Infrastructure Compromise",
-    "Tools": ["LinkPro rootkit", "eBPF modules", "Amazon Web Services", "Jenkins", "Docker", "Kubernetes"],
-    "Victim": {
-      "Access_Vectors": ["Exposed Jenkins server"],
-      "Data_Types_At_Risk": ["System configurations", "Network traffic"],
-      "Description": "The victim is an AWS-hosted infrastructure, potentially affecting multiple sectors.",
-      "Geography": "Not specified",
-      "Impact_Severity": "High",
-      "Industry": "Cloud Computing",
-      "Security_Posture": "Compromised",
-      "Targeted_Assets": ["Kubernetes clusters", "Jenkins server"]
-    },
-    "diamond_model_summary": "The incident involves a financially motivated adversary exploiting a Jenkins server vulnerability to deploy a rootkit in AWS infrastructure. The rootkit, LinkPro, uses advanced concealment techniques and supports multiple communication protocols for command and control. The attack targets cloud computing assets, posing a high impact severity.",
-    "doc_summary": "An investigation by Synacktiv into a compromised AWS-hosted infrastructure revealed a new GNU/Linux rootkit named LinkPro. The attackers exploited a Jenkins server vulnerability (CVE-2024-23897) to deploy a malicious Docker Hub image on Kubernetes clusters. The image contained a Kali Linux base and a rootkit written in Golang, capable of operating in passive or active modes. LinkPro uses eBPF modules for concealment and can be activated by a magic packet. It modifies system files to hide its presence and supports various communication protocols. The attack is suspected to be financially motivated.",
-    "enrichment": { "processed_at": "2026-02-18T00:36:52.296321+00:00", "source_fields": ["title"], "version": "v1" },
-    "id": "14185365deae25fcdf26d21374e8b01ef0f84e4f4d708b2aa47c1469581ee136",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The attack begins with the exploitation of a Jenkins server vulnerability, followed by the delivery of a malicious Docker image containing the LinkPro rootkit. The rootkit is installed and activated via a magic packet, establishing command and control using various protocols. The adversary can execute commands and exfiltrate data, indicating a high level of sophistication.",
-    "operational_tags": ["High Priority", "C2"],
-    "priority_score": 99,
-    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes the use of specific tools like the LinkPro rootkit and eBPF modules, as well as TTPs such as exploitation of Jenkins server vulnerabilities and concealment techniques. These indicators are challenging to change, making detection and response critical for mitigating the impact of the attack.",
-    "relevance_score": 65,
-    "sequence": 17954,
-    "source": "https://thehackernews.com/2025/10/linkpro-linux-rootkit-uses-ebpf-to-hide.html",
-    "slug": "Discovery_of_LinkPro_Rootkit_in_AWS_Infrastructure_Compromise-017954",
-    "shard": 9
-  },
-  {
-    "Adversary": {
-      "Aliases": ["UNC5142"],
-      "Associated_Groups": [],
-      "Description": "UNC5142 is a financially motivated threat actor known for abusing blockchain technology to distribute malware.",
-      "Known_Campaigns": ["EtherHiding", "CLEARSHORT"],
-      "Motivation": "Financial gain",
-      "Sophistication": "High",
-      "Strategic_Objectives": "Distribute information-stealing malware",
-      "TTPs_Employed": [
-        "Use of blockchain for malware distribution",
-        "Compromised WordPress sites",
-        "Social engineering with ClickFix"
-      ]
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Development of CLEARSHORT JavaScript downloader and smart contracts.",
-        "Detection": "Monitor blockchain transactions for unusual activity.",
-        "Remediation": "Implement blockchain monitoring solutions.",
-        "Stage": "Weaponization",
-        "Tactics": [
-          {
-            "tactic_description": "Obfuscation of malicious code using blockchain.",
-            "tactic_id": "T1027",
-            "tactic_name": "Obfuscated Files or Information"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Using blockchain to obscure malicious payloads.",
-            "technique_id": "T1027.002",
-            "technique_name": "Software Packing"
-          }
-        ],
-        "Techniques": ["T1027.002"]
-      },
-      {
-        "Description": "Injection of JavaScript into compromised WordPress sites.",
-        "Detection": "Monitor web traffic for unusual JavaScript activity.",
-        "Remediation": "Patch and secure WordPress installations.",
-        "Stage": "Delivery",
-        "Tactics": [
-          {
-            "tactic_description": "Exploiting vulnerabilities in WordPress sites.",
-            "tactic_id": "T1203",
-            "tactic_name": "Exploitation for Client Execution"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Using compromised sites to deliver malware.",
-            "technique_id": "T1203",
-            "technique_name": "Exploitation for Client Execution"
-          }
-        ],
-        "Techniques": ["T1203"]
-      },
-      {
-        "Description": "Use of ClickFix social engineering to execute malicious commands.",
-        "Detection": "Monitor for unusual command execution patterns.",
-        "Remediation": "Educate users on phishing tactics.",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "Using social engineering to deceive users.",
-            "tactic_id": "T1566",
-            "tactic_name": "Phishing"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Deceiving users to execute malicious commands.",
-            "technique_id": "T1566.001",
-            "technique_name": "Spearphishing Attachment"
-          }
-        ],
-        "Techniques": ["T1566.001"]
-      },
-      {
-        "Description": "Execution of malware via PowerShell and bash scripts.",
-        "Detection": "Monitor script execution and PowerShell activity.",
-        "Remediation": "Restrict script execution policies.",
-        "Stage": "Installation",
-        "Tactics": [
-          {
-            "tactic_description": "Using scripts to execute malware.",
-            "tactic_id": "T1059",
-            "tactic_name": "Command and Scripting Interpreter"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Using PowerShell to execute malware.",
-            "technique_id": "T1059.001",
-            "technique_name": "PowerShell"
-          }
-        ],
-        "Techniques": ["T1059.001"]
-      },
-      {
-        "Description": "Use of smart contracts for command and control.",
-        "Detection": "Monitor blockchain interactions for C2 activity.",
-        "Remediation": "Implement blockchain monitoring solutions.",
-        "Stage": "Command and Control",
-        "Tactics": [
-          {
-            "tactic_description": "Using smart contracts to transfer tools.",
-            "tactic_id": "T1105",
-            "tactic_name": "Ingress Tool Transfer"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Using blockchain for C2 communication.",
-            "technique_id": "T1105",
-            "technique_name": "Ingress Tool Transfer"
-          }
-        ],
-        "Techniques": ["T1105"]
-      },
-      {
-        "Description": "Execution of information-stealing malware.",
-        "Detection": "Monitor for unusual data access patterns.",
-        "Remediation": "Implement data loss prevention solutions.",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "Stealing information from infected systems.",
-            "tactic_id": "T1005",
-            "tactic_name": "Data from Local System"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exfiltrating data from compromised systems.",
-            "technique_id": "T1005",
-            "technique_name": "Data from Local System"
-          }
-        ],
-        "Techniques": ["T1005"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": ["Use of blockchain for obfuscation", "Social engineering tactics"],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": ["Obfuscation using blockchain", "Social engineering"],
-      "Description": "UNC5142 employs advanced techniques like EtherHiding and uses smart contracts to distribute malware.",
-      "Exploits": ["Compromised WordPress sites"],
-      "Lateral_Movement_Tools": [],
-      "Malware": ["Atomic (AMOS)", "Lumma", "Rhadamanthys (RADTHIEF)", "Vidar"],
-      "Persistence_Mechanisms": [],
-      "Tools": ["CLEARSHORT", "ClickFix"],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": ["Unusual data access patterns", "Unexpected command execution"],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [
-      "Monitor blockchain transactions",
-      "Analyze web traffic for injected JavaScript"
-    ],
-    "Extracted_Entities": {
-      "Assets": ["Web servers", "Personal computers"],
-      "Breach_Types": ["Data theft"],
-      "Command_Lines_Or_Scripts": ["PowerShell script", "bash command"],
-      "Companies": ["Google", "Guardio Labs", "Sekoia"],
-      "Countries": ["United States of America"],
-      "Domains": ["Cloudflare .dev pages"],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["UNC5142", "EtherHiding", "CLEARSHORT", "ClickFix"],
-      "Malware_Families": ["Atomic (AMOS)", "Lumma", "Rhadamanthys (RADTHIEF)", "Vidar"],
-      "Malware_Filenames": [],
-      "Patches": [],
-      "Phishing_Infrastructure": ["ClickFix"],
-      "Sectors": ["Technology"],
-      "Software": ["WordPress", "PowerShell", "bash"],
-      "Technologies": ["BNB Smart Chain", "Cloudflare"],
-      "Threat_Infrastructure": ["Smart contracts"],
-      "Vulnerabilities": ["Compromised WordPress sites"]
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": ["BNB Smart Chain"],
-      "Description": "UNC5142 uses compromised WordPress sites and blockchain smart contracts for malware distribution.",
-      "Domains": ["Cloudflare .dev pages"],
-      "Hosting_Providers": ["MediaFire", "GitHub"],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": ["Educate users on phishing tactics", "Implement data loss prevention solutions"],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": ["Cloudflare .dev pages"],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["Use of blockchain for obfuscation", "Smart contracts for C2"],
-      "Tools": ["CLEARSHORT", "ClickFix"]
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": ["Blockchain monitoring tools", "Web traffic analysis tools"],
-    "Severity": "High",
-    "Threat_Actors": ["UNC5142"],
-    "Timestamp": "2025-10-15T18:30:00Z",
-    "Title": "UNC5142 Exploits Blockchain for Malware Distribution",
-    "Tools": ["CLEARSHORT", "ClickFix", "WordPress", "PowerShell", "bash"],
-    "Victim": {
-      "Access_Vectors": ["Compromised websites", "Social engineering"],
-      "Data_Types_At_Risk": ["Personal information", "Credentials"],
-      "Description": "Targets include users of Windows and macOS systems via compromised WordPress sites.",
-      "Geography": "Global",
-      "Impact_Severity": "High",
-      "Industry": "Technology",
-      "Security_Posture": "Vulnerable",
-      "Targeted_Assets": ["Personal computers", "Web servers"]
-    },
-    "diamond_model_summary": "The Diamond Model analysis of the UNC5142 incident reveals a financially motivated adversary leveraging blockchain technology to distribute malware. The capability involves advanced techniques like EtherHiding and smart contracts, while the infrastructure includes compromised WordPress sites and blockchain networks. Victims are primarily in the technology sector, with a high impact severity due to the widespread use of targeted platforms.",
-    "doc_summary": "A financially motivated threat actor, UNC5142, has been observed abusing blockchain smart contracts to distribute information stealers like Atomic, Lumma, Rhadamanthys, and Vidar, targeting Windows and macOS systems. UNC5142 uses compromised WordPress sites and the EtherHiding technique to obscure malicious code on public blockchains like the BNB Smart Chain. Google Threat Intelligence Group reported 14,000 web pages with injected JavaScript linked to UNC5142. The attack chain involves a multi-stage JavaScript downloader, CLEARSHORT, which retrieves malware via hacked sites. The smart contract fetches a CLEARSHORT landing page using the ClickFix tactic to deceive victims into executing malicious commands. The campaign has evolved to a three-smart contract system for operational agility. The Main infrastructure was created in November 2024, with a Secondary infrastructure funded in February 2025.",
-    "enrichment": { "processed_at": "2026-02-18T00:36:51.195879+00:00", "source_fields": ["title"], "version": "v1" },
-    "id": "215ed63bbed304c68d9b483b0be783fb76b4ca97ee1799f36a6b42d4d906b884",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The MITRE ATT&CK kill chain analysis of the UNC5142 incident highlights the use of blockchain for malware distribution. The delivery stage involves injecting JavaScript into compromised WordPress sites, while exploitation uses social engineering tactics like ClickFix. Installation is achieved through PowerShell and bash scripts, with command and control facilitated by smart contracts. The final objective is data theft from infected systems.",
-    "operational_tags": ["High Priority"],
-    "priority_score": 94,
-    "pyramid_of_pain_summary": "The Pyramid of Pain analysis for the UNC5142 incident identifies several indicators of compromise, including domain names like Cloudflare .dev pages and tools like CLEARSHORT. The use of blockchain for obfuscation and smart contracts for command and control are significant TTPs. These indicators present challenges for detection and remediation, highlighting the need for advanced monitoring solutions.",
-    "relevance_score": 75,
-    "sequence": 17953,
-    "source": "https://thehackernews.com/2025/10/hackers-abuse-blockchain-smart.html",
-    "slug": "UNC5142_Exploits_Blockchain_for_Malware_Distribution-017953",
     "shard": 9
   }
 ]
