@@ -1,0 +1,78 @@
+{
+  "type": "cyber",
+  "date": "2026-11-23",
+  "threatLevel": "",
+  "executiveSummary": "Multiple high-impact OT/ICS advisories and active campaigns increase risk across water/wastewater, energy, manufacturing, and transportation. Priority actions are to remediate exposed management planes (VPN/virtualization), harden OT protocol edges (OPC UA, MQTT, S7comm), and patch or isolate vulnerable ICS components. Active multi-agency warning: adversaries are probing and interacting with Siemens S7 PLCs over S7comm (TCP/102) using AI-assisted tooling and public scanners. Immediate removal of internet exposure and strict control of PUT/GET are advised. CISA Advisory Unpatched MQTT client library flaw (libumqtt) can crash or corrupt memory on MQTT-enabled OT gateways/RTUs; no vendor fix yet-operators must segment MQTT traffic, enforce mutual TLS, and monitor for malformed packets. CISA ICS Advisory OpenPLC Runtime race condition allows unauthenticated creation of multiple admin users enabling controller takeover; update to 4.3.0 and review for rogue accounts. CISA ICS Advisory Advantech industrial gateways (LoRaWAN WISE-6610; EKI-1242 series) suffer remote command execution and unauthenticated control-block management ports, update firmware, and isolate from untrusted networks. CISA Weekly Supporting Weekly Danfoss iC7 drives issue enables unsigned application/firmware uploads-restrict service/update channels, enforce code-signing where possible, and monitor parameter/EEPROM integrity. CISA Weekly Ransomware groups continue to target virtualization/backup planes; recent incident shows full ESXi estates destroyed via legitimate management features-treat vCenter as Tier 0 and harden identity, logging, and SSH posture. View Article Perimeter exposure remains a key vector: SonicWall SSLVPN zero-day is in KEV; router hygiene advisories from CISA/partners cite state-backed exploitation of SNMP/Smart Install. KEV Notice Joint Advisory",
+  "keyFindings": [],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "OT/ICS Cyber Threat Intelligence Brief",
+        "label": "Report Title"
+      },
+      {
+        "value": "",
+        "label": "Overall OT Threat Level"
+      },
+      {
+        "value": "Recent Advisories & Campaigns",
+        "label": "Focus Window"
+      },
+      {
+        "value": "Multiple KEV/Live Ops",
+        "label": "Active Exploitation"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Siemens S7 PLC families; Autonomy Logic OpenPLC Runtime; libumqtt (MQTT); Advantech WISE-6610 & EKI-1242 gateways; Danfoss iC7 drives; VMware vCenter/ESXi; SonicWall SonicOS SSLVPN; NGINX HTTP/2; Eclipse Milo (OPC UA); Zimbra; multiple enterprise platforms in KEV (Cisco Expressway, VMware vCenter, SAP NetWeaver, Apache Roller)."
+    ],
+    "sectors": [
+      "Water and Wastewater Systems",
+      "Energy",
+      "Critical Manufacturing",
+      "Transportation Systems",
+      "Healthcare (adjacent IT)",
+      "Government Facilities"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "Ransomware operations (SafePay, Gunra) continue to exploit VPNs, edge devices, and LOTL tools (Impacket, PsExec), with exfiltration to cloud storage before encryption-impacting IT that supports OT. SafePay Advisory Gunra Advisory",
+        "State-linked campaigns use covert residential/SOHO infrastructure and router misconfigurations to mask operations and pre-position access near critical networks. China-Nexus Advisory Russian Router Hygiene",
+        "Water/Wastewater red-team results demonstrate realistic IT→OT pivots via AD abuse, weak jump-host controls, and cloud identity misconfiguration. CISA Assessment"
+      ]
+    }
+  ],
+  "relevance": "Current threats concentrate on: (1) direct PLC exposure and protocol abuse (S7comm), (2) core industrial messaging (MQTT/OPC UA) stack weaknesses, (3) edge gateway vulnerabilities enabling remote command and configuration changes, and (4) enterprise-to-OT pivot pathways through virtualization, backups, VPNs, and directory services. Safety and process integrity risks are highest where OT assets are internet-exposed or reachable from IT perimeters without robust segmentation and identity controls.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "OPC UA (Eclipse Milo) flaws: authN/Z bypass, diagnostics exposure, and unauth DoS; disable weak Basic128Rsa15, set quotas/rate-limits. CISA Weekly",
+        "NGINX HTTP/2 RCEs (workaround: disable HTTP/2) until fully patched. CERT-FR Alert",
+        "ESXi/vCenter exploitation via legitimate features-treat virtualization as Tier 0, enforce MFA, off-host logs. View Article",
+        "Perimeter KEV: Cisco/VMware/SAP/Apache exploited in the wild-immediate patch & compromise checks. KEV Notice"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Protocol/Device Abuse: S7comm (TCP/102), MQTT (DoS/memory corruption), OPC UA (authN/Z bypass, diagnostics leakage).",
+      "Initial Access: Exploitation of public-facing applications (NGINX HTTP/2, Zimbra XSS), valid accounts via VPN portals (SonicWall), router management abuse (SNMP/Smart Install).",
+      "Execution/Persistence: Abuse of legitimate management features (vCenter/ESXi Host Profiles/SSH), OpenPLC rogue admin creation, gateway RCE on management ports.",
+      "Credential Access/Lateral Movement: Impacket, PsExec/WinRM, AD CS abuse, LSASS/NTLM capture; cloud identity misuse (Entra ID app consents, tokens).",
+      "Exfiltration/Impact: Cloud storage (Mega/OneDrive); destructive encryption of hypervisors and backups; OT risk via controller parameter/firmware manipulation."
+    ],
+    "mitreIds": []
+  },
+  "outlook72h": "Block and/or strictly filter TCP/102 and MQTT ingress/egress at OT perimeters; validate no S7comm exposure from the internet. Emergency review of virtualization/backup planes: confirm MFA on vCenter, disable unnecessary SSH, verify off-host logs, test restores. Implement deny-by-default ACLs to Advantech gateways; schedule firmware updates and rotate credentials. Deploy MQTT/OPC UA IDS signatures; baseline monitored-item creation rates and broker client churn. Run compromise assessment for SonicWall SSLVPN and other KEV-listed platforms; rotate secrets and tokens as needed.",
+  "relatedCves": [
+    "CVE-2026-87867",
+    "CVE-2026-107190"
+  ]
+}
