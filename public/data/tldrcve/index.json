@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T23:45:03.854Z",
+  "generatedAt": "2026-11-23T06:09:24.706Z",
   "upstream": {
     "site": "https://tldrcve.com",
     "list": "https://tldrcve.com/cves/",
@@ -8,14 +8,14 @@
     "scale": "https://tldrcve.com/how-we-rate/"
   },
   "stats": {
-    "cves": 37,
-    "details": 37,
+    "cves": 38,
+    "details": 38,
     "versions": 41,
     "byVerdict": {
       "Patch now": 14,
       "Patch now if…": 20,
-      "Watching": 1,
-      "Next cycle": 2
+      "Next cycle": 3,
+      "Watching": 1
     }
   },
   "scale": [
@@ -3183,7 +3183,7 @@
             "num": "1",
             "title": "Update the kernel and reboot",
             "hint": null,
-            "body": "Install your distro's fixed kernel (listed below), then reboot. Ubuntu 20.04 (5.4.0-247.267) and 18.04 (4.15.0-263.275) fixes are in Ubuntu Pro only. Debian 12's linux-6.12: 6.12.113-1~deb12u1. Cloud and HWE kernels have their own versions. 8,9,10,14 Latest safe versions checked 22 Nov Linux kernel → Debian 13 6.12.117-1 Debian 12 6.1.192-2 Ubuntu 26.04 7.0.0-44.44 Ubuntu 24.04 6.8.0-151.151 Ubuntu 22.04 5.15.0-204.214 RHEL 10.3 6.12.0-264.16.1.el10_3 RHEL 10.2 6.12.0-211.75.1.el10_2 RHEL 9 5.14.0-687.67.1.el9_8 RHEL 8 4.18.0-553.186.1.el8_10 Ubuntu 26.10: 7.3.0-10.10. Cloud and HWE kernels have their own versions.",
+            "body": "Install your distro's fixed kernel (listed below), then reboot. Ubuntu 20.04 (5.4.0-247.267) and 18.04 (4.15.0-263.275) fixes are in Ubuntu Pro only. Debian 12's linux-6.12: 6.12.113-1~deb12u1. Cloud and HWE kernels have their own versions. 8,9,10,14 Latest safe versions checked 23 Nov Linux kernel → Debian 13 6.12.117-1 Debian 12 6.1.192-2 Ubuntu 26.04 7.0.0-44.44 Ubuntu 24.04 6.8.0-151.151 Ubuntu 22.04 5.15.0-204.214 RHEL 10.3 6.12.0-264.16.1.el10_3 RHEL 10.2 6.12.0-211.75.1.el10_2 RHEL 9 5.14.0-687.67.1.el9_8 RHEL 8 4.18.0-553.186.1.el8_10 Ubuntu 26.10: 7.3.0-10.10. Cloud and HWE kernels have their own versions.",
             "code": []
           },
           {
@@ -4213,7 +4213,7 @@
         "name": "Linux SCTP root",
         "verdict": "Patch now if…",
         "verdictHint": "Needs code on the box. No stable kernel fix yet.",
-        "summary": "A bug in the Linux kernel's SCTP code lets any local user, including one inside a container, free the same kernel memory twice and take over the machine. Xint chained it with nginx2root to get root on the host and escape a Docker container. The fix reached the main kernel tree on 19 Nov, but no stable kernel has it yet and almost no distro ships it, so blocking the sctp module is the stopgap.",
+        "summary": "A bug in the Linux kernel's SCTP code lets any local user, including one inside a container, free the same kernel memory twice and take over the machine. Xint chained it with nginx2root to get root on the host and escape a Docker container. The fix reached the main kernel tree on 19 Nov, but no stable kernel has it yet and the only distro kernels we found with it are Gentoo's and an unshipped Fedora Rawhide test build, so blocking the sctp module is the stopgap.",
         "meterLabel": "Check today",
         "meterHint": "Find out if you're affected. If you are, patch.",
         "checklist": [
@@ -4235,7 +4235,7 @@
             "num": "1",
             "title": "Kernel 4.15 or later",
             "hint": "command",
-            "body": "The bug arrived in 4.15 (Jan 2018). The fix was merged into the main kernel tree on 19 Nov, after 7.4-rc3. The newest stable kernels (7.3.5, 6.18.64, 6.12.118, released 17 Nov) don't have it, and on 22 Nov it wasn't queued for the next ones either; the only distro kernels we found carrying it are Gentoo's kernel sources and a Fedora Rawhide test build that hasn't shipped yet. Xint hasn't named the fix, but the commit credits Xint's tool and matches its description. 1,2,3,4,5,6,18,20,21 uname -r",
+            "body": "The bug arrived in 4.15 (Jan 2018). The fix was merged into the main kernel tree on 19 Nov and first came out in 7.4-rc4 (22 Nov), a test release. The newest stable kernels (7.3.5, 6.18.64, 6.12.118, released 17 Nov) don't have it, and on 23 Nov it wasn't queued for the next ones either; the only distro kernels we found carrying it are Gentoo's kernel sources and a Fedora Rawhide test build that hasn't shipped yet. Xint hasn't named the fix, but the commit credits Xint's tool and matches its description. 1,2,3,4,5,6,18,20,21,22 uname -r",
             "code": [
               "uname -r"
             ]
@@ -4271,7 +4271,7 @@
             "num": "2",
             "title": "Update the kernel and reboot",
             "hint": null,
-            "body": "Install your distro's kernel with the fix (\"sctp: do not free a new asoc peeled off while sendmsg slept\") once it ships, then reboot. No stable release has it as of 22 Nov, and it isn't queued for the next stable releases yet; Debian unstable's 7.3.5-1 doesn't have it either. 2,3,4,18,19",
+            "body": "Install your distro's kernel with the fix (\"sctp: do not free a new asoc peeled off while sendmsg slept\") once it ships, then reboot. No stable release has it as of 23 Nov, and it isn't queued for the next stable releases yet; Debian unstable's 7.3.5-1 doesn't have it either. No release date is announced and the fix has no CVE yet; we'll check again by 27 Nov 2026. 2,3,4,18,19,23",
             "code": []
           },
           {
@@ -4387,9 +4387,23 @@
             "url": "https://github.com/torvalds/linux/compare/1e575bda30acc0bf01f799cee798d4a1c100d538...65e4fd942f72",
             "title": "GitHub: snapshot 65e4fd942f72 comes after the fix's merge (1e575bda)",
             "date": null
+          },
+          {
+            "url": "https://github.com/torvalds/linux/compare/1e575bda30acc0bf01f799cee798d4a1c100d538...v7.4-rc4",
+            "title": "GitHub: 7.4-rc4 includes the fix's merge (1e575bda)",
+            "date": null
+          },
+          {
+            "url": "https://git.kernel.org/pub/scm/linux/security/vulns.git/",
+            "title": "Linux kernel CNA: CVE records, none for the SCTP fix on 23 Nov",
+            "date": null
           }
         ],
         "changes": [
+          {
+            "date": "2026-11-23",
+            "text": "Rechecked: the fix is in the 7.4-rc4 test release, but still in no stable kernel or stable queue, and it has no CVE yet. Summary now names the only distro kernels we found with it."
+          },
           {
             "date": "2026-11-22",
             "text": "Rechecked: still no stable kernel with the fix, and it isn't queued for the next stable releases. Gentoo and a Fedora Rawhide test build carry it."
@@ -5753,6 +5767,122 @@
       }
     },
     {
+      "slug": "whatsapp-nov-2026",
+      "name": "WhatsApp Nov fixes",
+      "meta": "WhatsApp · CVE-2026-23871, CVE-2026-102769, CVE-2026-44908",
+      "line": "Real bugs, low risk. Update the app as usual.",
+      "verdict": "Next cycle",
+      "scareLevel": 1.3,
+      "meterLabel": "Keep an eye on it",
+      "disclosed": "2026-11-20",
+      "url": "https://tldrcve.com/whatsapp-nov-2026/",
+      "detail": {
+        "slug": "whatsapp-nov-2026",
+        "kicker": "WhatsApp · CVE-2026-23871 · CVE-2026-102769 · CVE-2026-44908",
+        "name": "WhatsApp Nov fixes",
+        "verdict": "Next cycle",
+        "verdictHint": "Real bugs, low risk. Update the app as usual.",
+        "summary": "WhatsApp disclosed three bugs on 20 Nov 2026. The one reported as abused could reveal your phone's IP address to a scammer who sent a crafted ad-reply message; WhatsApp says it may have been abused with spam, and it's fixed in 2.26.17.4. The other two need you to tap a message sent from an unofficial app, or an attacker inside Meta's own systems, and Meta says it has seen no sign either was exploited.",
+        "meterLabel": "Keep an eye on it",
+        "meterHint": "Patch on schedule. Watch for news.",
+        "checklist": [
+          {
+            "yes": false,
+            "text": "Needs a WhatsApp account to message you; the Meta AI bug instead needs a position inside Meta's infrastructure first 2,3,4"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 2,5,6,7"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 8"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "WhatsApp older than its fix",
+            "hint": null,
+            "body": "The IP address bug (CVE-2026-23871) is in WhatsApp and WhatsApp Business for Android from 2.20.198.3, before 2.26.17.4. The order-message bug (CVE-2026-102769) is in WhatsApp for Android before 2.26.35.74; its description names only WhatsApp for Android, but the same record also lists WhatsApp Business for Android from 2.22.3.7, before 2.26.35.74. The Meta AI bug (CVE-2026-44908) is in WhatsApp for iOS before 2.26.24.72, WhatsApp Business for iOS and WhatsApp for Mac before 2.26.23.72, WhatsApp for Android before 2.26.23.74 and WhatsApp Business for Android before 2.26.23.70. 1,2,3,4",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "An attacker in the right position",
+            "hint": null,
+            "body": "For the IP address bug, that's anyone who can send you a crafted Click to WhatsApp ad-reply message: once it's shown in a chat, your phone can fetch media from the attacker's server and reveal your IP address. For the order-message bug, you have to tap a crafted \"order details\" message sent from an unofficial WhatsApp client; it can delete WhatsApp's own locally stored files, and leak one bit of information about your chat database if you're online when it arrives. For the Meta AI bug, the attacker has to be inside Meta's infrastructure, and Meta says a third-party transparency ledger confirms no exploitation. 2,3,4",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update WhatsApp from the store",
+            "hint": null,
+            "body": "Versions with every fix that applies to each app: WhatsApp for Android 2.26.35.74, WhatsApp for iOS 2.26.24.72, WhatsApp Business for iOS and WhatsApp for Mac 2.26.23.72. For WhatsApp Business for Android, sources conflict: HKCERT gives 2.26.23.70 (the Meta AI fix), but the CVE record for the order-message bug lists Business for Android as affected before 2.26.35.74, so get 2.26.35.74 or later. 1,3,4,7",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Why it isn't Patch now",
+            "hint": null,
+            "body": "Attacks were reported only for the IP address bug, and it only reveals an IP address: Meta rates it 3.5 (Low). WhatsApp says it may have been abused with spam messages, and a spokesperson told SecurityWeek \"we believe a scammer was using it to make their scam message seem more credible\". HKCERT says it is being exploited in scattered cases, while CISA's early assessment in the CVE records says no exploitation for all three. Meta rates the other two 6.8 and 4.8 (Medium), and its score for the order-message bug says working exploit code exists; no source links to public code. None of the three is on CISA's list of exploited bugs. 2,3,4,6,7,8",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.whatsapp.com/security/advisories/2026",
+            "title": "WhatsApp: security advisories 2026, the three CVEs and fixed versions",
+            "date": null
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-23871",
+            "title": "CVE record: CVE-2026-23871, ad-reply IP leak, may have been abused, Meta 3.5, CISA exploitation none",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-102769",
+            "title": "CVE record: CVE-2026-102769, order-details SQL injection, Meta 6.8, no exploitation seen",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-44908",
+            "title": "CVE record: CVE-2026-44908, Meta AI attestation check, Meta 4.8, ledger confirms no exploitation",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://www.facebook.com/security/advisories/cve-2026-23871",
+            "title": "Meta: advisory for CVE-2026-23871",
+            "date": null
+          },
+          {
+            "url": "https://www.securityweek.com/whatsapp-fixes-flaw-uncovered-while-disrupting-scam-campaign/",
+            "title": "SecurityWeek: WhatsApp found the IP bug while disrupting a scam campaign",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://www.hkcert.org/security-bulletin/whatsapp-multiple-vulnerabilities_20261123",
+            "title": "HKCERT: WhatsApp multiple vulnerabilities, Medium risk, scattered exploitation of CVE-2026-23871, update versions",
+            "date": "23 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: none of the three listed",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-23",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/whatsapp-nov-2026/"
+      }
+    },
+    {
       "slug": "mysql-client",
       "name": "MySQL client flaw",
       "meta": "MySQL Server · CVE-2026-114952",
@@ -6510,7 +6640,7 @@
     {
       "slug": "linux-kernel",
       "name": "Linux kernel",
-      "meta": "2 bugs · checked 22 Nov",
+      "meta": "2 bugs · checked 23 Nov",
       "nofix": true,
       "chips": [
         {
