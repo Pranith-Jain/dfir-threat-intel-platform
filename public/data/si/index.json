@@ -1,14 +1,14 @@
 {
   "source": "github.com/SCStelz/security-investigator",
   "license": "MIT",
-  "replicatedAt": "2026-11-16",
+  "replicatedAt": "2026-11-23",
   "counts": {
-    "skills": 28,
+    "skills": 33,
     "queries": 67,
     "automations": 3,
     "docs": 11,
     "referenceData": 14,
-    "routingPromptBytes": 92143,
+    "routingPromptBytes": 95462,
     "scripts": 2
   },
   "skills": [
@@ -220,11 +220,11 @@
       "slug": "detection-authoring",
       "name": "detection-authoring",
       "category": "Tooling",
-      "description": "Create, deploy, update, and manage custom detection rules in Microsoft Defender XDR via the Graph API (/beta/security/rules/detectionRules). Covers query adaptation from Sentinel KQL to custom detection format, deployment via PowerShell (Invoke-MgGraphRequest), manifest-driven batch deployment, and lifecycle management (list, enable/disable, delete). Companion script: Deploy-CustomDetections.ps1.",
+      "description": "Create, deploy, update, and manage custom detection rules in Microsoft Defender XDR via the Graph API (/beta/security/rules/detectionRules), or hand the analyst a prefilled Detection Wizard link to review and Save. Covers query adaptation from Sentinel KQL to custom detection format, deployment via PowerShell (Invoke-MgGraphRequest), manifest-driven batch deployment, wizard-link generation/validation (wizard_link.py), and lifecycle management (list, enable/disable, delete). Companion scripts: Deploy-CustomDetections.ps1, wizard_link.py.",
       "triggerKeywords": [],
       "hasAssets": true,
       "hasSvgWidgets": false,
-      "sizeBytes": 67701
+      "sizeBytes": 76726
     },
     {
       "slug": "email-threat-posture",
@@ -434,6 +434,56 @@
       "hasAssets": true,
       "hasSvgWidgets": true,
       "sizeBytes": 39858
+    },
+    {
+      "slug": "perception-extract-threat-intel",
+      "name": "perception-extract-threat-intel",
+      "category": "Other",
+      "description": "Find, read and (on request) request Microsoft Perception threat-intelligence reports through the Perception MCP. Reuses what Perception has ALREADY produced first (Threat Intelligence Agent output from analyze-article, proactive-protection or detect-emerging-threats runs; free): answers \"what threat-intelligence articles were analyzed recently?\" and \"has any article covering <topic> been analyzed?\" from a local session cache (the MCP cannot search sessions), then presents the chosen report (TTPs with detection opportunities, indicators, TI-platform coverage gaps, hunting queries, recommended actions), optionally verifies Perception''s hunting queries in Advanced Hunting, and hands TTPs to kql-query-authoring / detection-authoring (wizard link), threat-intel-campaign and ioc-investigation. Accepts a topic, article title, Threat Analytics portal link, session ID, or any article/advisory URL. Starts a NEW analyze-article run (about 4 minutes, about $3.89-$6.80 of Perception spend) only on explicit confirmation: a Threat Analytics article is reliable, a free-form URL is best-effort. Requires the Perception MCP; stops politely if it is not configured. Trigger keywords: \"perception threat intel\", \"analyzed threat intelligence articles\", \"what articles has perception analyzed\", \"has perception analyzed\", \"perception extract intelligence from this URL\", \"analyze this article with perception\", \"get perception threat intelligence report\".",
+      "triggerKeywords": [],
+      "hasAssets": false,
+      "hasSvgWidgets": false,
+      "sizeBytes": 16179
+    },
+    {
+      "slug": "perception-investigate-attack",
+      "name": "perception-investigate-attack",
+      "category": "Other",
+      "description": "Investigate a Defender/Sentinel incident with Microsoft Perception (Attack Investigation Agent via the Perception MCP). Checks whether a Perception investigation already exists and reuses it, otherwise (after confirmation) starts the investigate-incident playbook asynchronously, polls it, validates the result, and presents the verdict, timeline, entities and visibility limits tagged as Perception output. Optionally compares against this repo''s own incident-investigation verdict and shows only the deltas. Requires the Perception MCP; stops politely if it is not configured. Trigger keywords: \"perception investigate incident\", \"perception incident investigation\", \"ask perception about incident\", \"did perception already investigate\", \"perception session for incident\".",
+      "triggerKeywords": [],
+      "hasAssets": false,
+      "hasSvgWidgets": false,
+      "sizeBytes": 9327
+    },
+    {
+      "slug": "perception-protect-against-threat",
+      "name": "perception-protect-against-threat",
+      "category": "Other",
+      "description": "Run (or reuse) Microsoft Perception''s \"Protect against a threat\" playbook for a threat-intelligence article via the Perception MCP. The multi-agent run (Threat Intelligence, Recon, Detection Authoring, Posture Prioritization; about an hour) produces extracted threat intel with a threat-intel-platform gap table, tenant-aware detection proposals marked ready-to-deploy or requires-tuning, and threat-contextualised posture priorities. Validates the run (a failed session still ends Idle), presents results, and hands detections that need tuning to perception-tune-detection. Requires the Perception MCP; stops politely if it is not configured. Trigger keywords: \"perception protect against a threat\", \"protect against this threat with perception\", \"perception proactive protection\", \"perception detections for article\", \"perception threat article\".",
+      "triggerKeywords": [],
+      "hasAssets": false,
+      "hasSvgWidgets": false,
+      "sizeBytes": 10636
+    },
+    {
+      "slug": "perception-triage-alert",
+      "name": "perception-triage-alert",
+      "category": "Other",
+      "description": "Triage a Defender alert with Microsoft Perception (Triage Agent via the Perception MCP). Checks the alert and whether its type is on Microsoft''s documented Triage Agent list (warns, never silently refuses, when it is not), reuses an existing Perception triage session for that alert if one exists (manual or automatic), otherwise (after confirmation) starts the Triage alert playbook, polls it, validates the result (a \"Not set\" classification is inconclusive, not clean), and presents the verdict and reasoning tagged as Perception output next to Defender''s current classification of the alert, flagging disagreements for a human. Optionally compares with this repo''s own incident investigation and verifies Perception''s claims. Requires the Perception MCP; stops politely if it is not configured. Trigger keywords: \"perception triage alert\", \"triage this alert with perception\", \"perception triage verdict\", \"did perception triage this alert\", \"is this alert a false positive perception\", \"perception alert verdict\".",
+      "triggerKeywords": [],
+      "hasAssets": true,
+      "hasSvgWidgets": false,
+      "sizeBytes": 15958
+    },
+    {
+      "slug": "perception-tune-detection",
+      "name": "perception-tune-detection",
+      "category": "Other",
+      "description": "Human-in-the-loop tuning of custom-detection proposals from a Microsoft Perception session (Detection Authoring Agent). Decodes the report''s \"Open in Wizard\" link to get the exact KQL and rule metadata, replays it against tenant history with Advanced Hunting (up to 30 days) or Sentinel Data Lake (longer lookbacks), slices the hits to find the noise, proposes and (with the analyst''s approval) applies tuning, proves the tuned rule (longer lookback, indicator sweep, synthetic positive/negative check), and re-encodes a verified Detection Wizard link with the tuned query. Never deploys; the analyst opens the link and saves the rule. Works on any finished Perception detection report, typically those marked requires-tuning. Trigger keywords: \"tune perception detection\", \"tune the proposed detection\", \"perception detection noisy\", \"requires tuning\", \"re-encode wizard link\", \"tune custom detection from perception\".",
+      "triggerKeywords": [],
+      "hasAssets": false,
+      "hasSvgWidgets": false,
+      "sizeBytes": 14782
     },
     {
       "slug": "sentinel-ingestion-report",
