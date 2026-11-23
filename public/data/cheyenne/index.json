@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-11-19T06:28:09.815Z",
+  "generatedAt": "2026-11-23T13:44:07.376Z",
   "source": {
     "name": "cheyenne",
     "fullName": "MJCruickshank/cheyenne",
     "url": "https://github.com/MJCruickshank/cheyenne",
     "description": "OSINT dashboard for satellite imagery acquisition and social media intel geolocation",
-    "stars": 45,
+    "stars": 50,
     "forks": 2,
-    "pushedAt": "2026-11-17T16:43:22Z",
+    "pushedAt": "2026-11-19T21:35:39Z",
     "license": null,
     "readmeUrl": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/README.md",
     "catalogUrl": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/web/catalog.json"
   },
-  "overview": "An earth-observation tracking board for open-source investigators of conflict, humanitarian crises and natural disasters. An interactive globe shows where imaging satellites are right now, what they have already imaged over a place, and what they are scheduled to image next. Free imagery can be drawn on the globe or saved to disk, and live fire detections, ship positions, weather imagery and Telegram reports can be laid over the same map. It runs on your own machine: a small Python server and a browser tab. There is nothing to build, and the core features need no accounts or API keys.",
+  "overview": "An earth-observation tracking board for open-source investigators of conflict, humanitarian crises and natural disasters. An interactive globe shows where imaging satellites are right now, what they have already imaged over a place, and what they are scheduled to image next. Free imagery, from Sentinel and Landsat to the sub-metre disaster releases of Vantor and Planet, can be drawn on the globe, turned into a time-lapse or saved to disk, and live fire detections, ship positions, weather imagery and Telegram reports can be laid over the same map. It runs on your own machine: a small Python server and a browser tab. There is nothing to build, and the core features need no accounts or API keys.",
   "features": [
     {
       "title": "Live satellite tracking",
@@ -20,7 +20,15 @@
     },
     {
       "title": "Archive search",
-      "body": "For Sentinel-2, Sentinel-1 and Landsat 8/9, footprints of every scene taken over a place in a chosen period, on the globe and on a timeline."
+      "body": "For Sentinel-2, Sentinel-1, Landsat 8/9 and NISAR, footprints of every scene taken over a place in a chosen period, on the globe and on a timeline."
+    },
+    {
+      "title": "Free very-high-resolution releases",
+      "body": "The 30 to 80 cm imagery that Vantor (formerly Maxar) and Planet release free for major disasters, from 2017 onwards, listed by event and drawn on the globe at full resolution."
+    },
+    {
+      "title": "Time-lapse GIFs",
+      "body": "An animated GIF of one place through every Sentinel-2, Sentinel-1 or Landsat scene in the search window, one frame per date, stamped with date, sensor and credit."
     },
     {
       "title": "Future passes",
@@ -56,7 +64,7 @@
     },
     {
       "title": "Intel",
-      "body": "Follows public Telegram channels, places each post on the map with an icon for the kind of event, and raises an alert when a new located report arrives."
+      "body": "Follows public Telegram channels, places each post on the map with an icon for the kind of event, and raises an alert when a new located report arrives. Ten ready-made groups of ten channels cover the main regions of conflict and crisis, plus cyber security."
     },
     {
       "title": "Shareable views",
@@ -85,6 +93,14 @@
       "url": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/docs/screenshots/live.png"
     },
     {
+      "alt": "A Vantor Legion image of the Bhote Koshi valley after the August 2026 flood",
+      "url": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/docs/screenshots/releases.png"
+    },
+    {
+      "alt": "A Sentinel-2 time-lapse of Khartoum being built in the mission panel",
+      "url": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/docs/screenshots/timelapse.png"
+    },
+    {
       "alt": "Live AIS positions off the Netherlands with one ship's details open",
       "url": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/docs/screenshots/ais.png"
     },
@@ -95,6 +111,10 @@
     {
       "alt": "The Intel tab: located reports over Ukraine with one report card open",
       "url": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/docs/screenshots/intel.png"
+    },
+    {
+      "alt": "The channel-group prompt shown when the board opens",
+      "url": "https://raw.githubusercontent.com/MJCruickshank/cheyenne/main/docs/screenshots/intel-groups.png"
     }
   ],
   "groups": [
@@ -211,27 +231,27 @@
     {
       "id": "nisar",
       "name": "NISAR",
-      "group": "opentrack",
+      "group": "open",
       "operator": "NASA / ISRO",
       "sensor": "sar",
       "instrument": "L-BAND + S-BAND SAR",
       "gsd": "3-10 M",
       "revisit": "12 D",
       "color": "#ff9ec4",
-      "access": "OPEN VIA ALASKA SATELLITE FACILITY (EARTHDATA LOGIN)",
+      "access": "OPEN. GEOCODED L-BAND BACKSCATTER (GCOV) VIA THE ALASKA SATELLITE FACILITY; BROWSE IMAGES FREE, FULL PRODUCTS NEED A FREE EARTHDATA LOGIN",
       "defaultVisible": true
     },
     {
       "id": "maxar",
-      "name": "MAXAR WORLDVIEW / LEGION",
+      "name": "VANTOR WORLDVIEW / LEGION",
       "group": "vhr",
-      "operator": "VANTOR (MAXAR)",
+      "operator": "VANTOR (FORMERLY MAXAR)",
       "sensor": "optical",
       "instrument": "PAN + MULTISPECTRAL VHR",
       "gsd": "0.3-0.5 M",
       "revisit": "INTRADAY (TASKED)",
       "color": "#f4f1de",
-      "access": "COMMERCIAL. FREE RELEASES FOR MAJOR DISASTERS VIA OPEN DATA PROGRAM",
+      "access": "COMMERCIAL. FREE 30-60 CM IMAGERY OF MAJOR DISASTERS IS RELEASED THROUGH THE VANTOR OPEN DATA PROGRAM (AND THE MAXAR ARCHIVE BEFORE IT), CC BY-NC 4.0",
       "defaultVisible": true
     },
     {
@@ -257,7 +277,7 @@
       "gsd": "0.3-0.5 M",
       "revisit": "INTRADAY (TASKED)",
       "color": "#9fe8ff",
-      "access": "COMMERCIAL. SELECTED DISASTER DATA RELEASED TO RESPONDERS",
+      "access": "COMMERCIAL. SELECTED DISASTER IMAGERY (SKYSAT, PELICAN AND PLANETSCOPE) IS RELEASED THROUGH THE CRISIS RESPONSE PROGRAM, CC BY-NC 4.0",
       "defaultVisible": false
     },
     {
@@ -437,8 +457,18 @@
       "url": null
     },
     {
-      "data": "Acquired scenes, tiles, downloads",
+      "data": "Acquired scenes, tiles, downloads, time-lapse frames",
       "source": "Microsoft Planetary Computer (Sentinel-2 L2A, Sentinel-1 GRD, Landsat C2 L2)",
+      "url": null
+    },
+    {
+      "data": "NISAR",
+      "source": "Alaska Satellite Facility DAAC search API (L2 GCOV); browse images free, products need a NASA Earthdata login",
+      "url": null
+    },
+    {
+      "data": "Free very-high-resolution releases",
+      "source": "Vantor Open Data Program and Maxar Open Data Program (AWS Open Data), Planet Crisis Response (Source Cooperative); CC BY-NC 4.0",
       "url": null
     },
     {
@@ -488,7 +518,7 @@
     },
     {
       "data": "Intel place names",
-      "source": "GeoNames (CC BY 4.0): every place in 20 countries around the two conflicts, towns over 500 people elsewhere",
+      "source": "GeoNames (CC BY 4.0): every place in 35 countries of conflict or crisis, towns over 500 people elsewhere",
       "url": null
     },
     {
@@ -548,7 +578,9 @@
     "Predicted passes for commercial satellites show when a satellite could image a place, not whether it will.",
     "Live view. GEOCOLOUR has colour imagery over the Americas, Atlantic, Europe and Africa; Asia and the western Pacific show infrared. The whole-globe mosaics update every 3 hours.",
     "The 7-day FIRMS window downloads about 60 MB on first use and shows the 150,000 strongest detections in view; zoom in to see them all.",
-    "Downloads are large. A Sentinel-1 polarisation is roughly 600 MB to 1 GB.",
+    "Downloads are large. A Sentinel-1 polarisation is roughly 600 MB to 1 GB, and a single Vantor or Planet image up to 1.5 GB.",
+    "Free releases cover disasters only. Vantor and Planet release imagery of selected natural disasters and humanitarian crises, not of armed conflicts, and only for the area and dates they choose.",
+    "Time-lapses take one frame per date from the scan's results, up to 60 frames, and are encoded in the browser; a 720-pixel GIF of 20 to 30 frames is about 10 MB.",
     "Local use. The server has no user accounts or access control. It binds to 127.0.0.1 by default; do not expose it to the internet."
   ],
   "credits": [
@@ -563,6 +595,11 @@
       "licence": "MIT"
     },
     {
+      "component": "gifenc 1.0.3",
+      "url": "https://github.com/mattdesl/gifenc",
+      "licence": "MIT"
+    },
+    {
       "component": "IBM Plex Mono",
       "url": null,
       "licence": "SIL Open Font License 1.1"
@@ -573,7 +610,7 @@
       "licence": "SIL Open Font License 1.1"
     }
   ],
-  "creditsNote": "Cheyenne bundles these third-party components; their licence texts are in web/vendor/licenses/: Data is provided by CelesTrak, ESA and the Copernicus programme, USGS, the Microsoft Planetary Computer, NASA (GIBS and FIRMS), NOAA, EUMETSAT, OpenFreeMap and OpenStreetMap contributors, Esri, GeoNames, aisstream.io, Fintraffic, Open Waters, BarentsWatch and the Norwegian Coastal Administration (Kystverket), and Pelyr. Each provider's own terms apply to its data; the board shows the credits each AIS feed requires while that feed is in use. Cheyenne is not affiliated with or endorsed by any of these providers, or by Telegram or Anthropic.",
+  "creditsNote": "Cheyenne bundles these third-party components; their licence texts are in web/vendor/licenses/: Data is provided by CelesTrak, ESA and the Copernicus programme, USGS, the Microsoft Planetary Computer, NASA (GIBS and FIRMS), NOAA, EUMETSAT, OpenFreeMap and OpenStreetMap contributors, Esri, GeoNames, aisstream.io, Fintraffic, Open Waters, BarentsWatch and the Norwegian Coastal Administration (Kystverket), Pelyr, NASA/JPL and ISRO through the Alaska Satellite Facility, Vantor (formerly Maxar), and Planet Labs PBC. Each provider's own terms apply to its data; the board shows the credits each AIS feed requires while that feed is in use. Cheyenne is not affiliated with or endorsed by any of these providers, or by Telegram or Anthropic.",
   "install": {
     "requirements": [
       "Python 3.9 or newer (3.10 or newer for the optional extras)",
