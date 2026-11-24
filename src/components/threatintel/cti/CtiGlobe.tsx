@@ -52,6 +52,8 @@ interface CtiGlobeProps {
   onPointClick?: (point: CtiPoint) => void;
   onPointHover?: (point: CtiPoint | null) => void;
   autoRotate?: boolean;
+  /** Render points as flat surface dots (no raised cylinders/rings) for map-style views. */
+  flatPoints?: boolean;
 }
 
 /* ─── Component ─────────────────────────────────────────────────────────── */
@@ -63,6 +65,7 @@ export default function CtiGlobe({
   onPointClick,
   onPointHover,
   autoRotate = false,
+  flatPoints = false,
 }: CtiGlobeProps): JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
   const reduceMotion = useReduceMotion();
@@ -79,7 +82,9 @@ export default function CtiGlobe({
   // Ring data for critical/high severity points
   const ringData: RingDatum[] = useMemo(
     () =>
-      points
+      flatPoints
+        ? []
+        : points
         .filter((p) => p.severity === 'critical' || p.severity === 'high')
         .slice(0, 80)
         .map((p) => ({
@@ -88,7 +93,7 @@ export default function CtiGlobe({
           size: p.severity === 'critical' ? 4.0 : 2.8,
           color: severityColor(p.severity),
         })),
-    [points]
+    [points, flatPoints]
   );
 
   // Initialize globe
@@ -123,6 +128,7 @@ export default function CtiGlobe({
           return d.kind ? kindColor(d.kind) : severityColor(d.severity);
         })
         .pointAltitude((p: object) => {
+          if (flatPoints) return 0.001;
           const alts: Record<string, number> = {
             critical: 0.15,
             high: 0.09,
@@ -133,6 +139,7 @@ export default function CtiGlobe({
           return alts[datum<CtiPointDatum>(p).severity] ?? 0.035;
         })
         .pointRadius((p: object) => {
+          if (flatPoints) return 0.45;
           const sizes: Record<string, number> = {
             critical: 2.0,
             high: 1.5,

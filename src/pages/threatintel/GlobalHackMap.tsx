@@ -226,19 +226,34 @@ export default function GlobalHackMap(): JSX.Element {
 
   const outageFeed = useMemo<GhmFeedRow[]>(() => {
     const rows = (maritime?.incidents ?? []).slice(0, 20);
-    return rows.map((raw, index) => {
-      const record = raw as Record<string, unknown>;
-      const str = (key: string) => String(record[key] ?? '');
-      return {
-        id: str('id') || str('reference') || `ukmto-${index}`,
-        title: str('title') || str('description') || 'Maritime incident',
-        description: str('description') || str('advice') || 'Maritime security incident from the UKMTO feed.',
-        source: 'UKMTO',
-        timestamp: str('date') || str('timestamp') || str('published') || '',
-        url: str('url') || undefined,
-      };
-    });
-  }, [maritime]);
+    if (rows.length) {
+      return rows.map((raw, index) => {
+        const record = raw as Record<string, unknown>;
+        const str = (key: string) => String(record[key] ?? '');
+        return {
+          id: str('id') || str('reference') || `ukmto-${index}`,
+          title: str('title') || str('description') || 'Maritime incident',
+          description: str('description') || str('advice') || 'Maritime security incident from the UKMTO feed.',
+          source: 'UKMTO',
+          timestamp: str('date') || str('timestamp') || str('published') || '',
+          url: str('url') || undefined,
+        };
+      });
+    }
+    // UKMTO is often empty. Fall back to the connectivity / maritime / disaster
+    // layers already present in Global Pulse so the tab is honest, not blank.
+    return windowEvents
+      .filter((e) => /firm|maritime|earthquake|outage|disaster/i.test(`${e.kind} ${e.title}`))
+      .slice(0, 20)
+      .map((e) => ({
+        id: e.id,
+        title: e.title,
+        description: e.description,
+        source: e.source,
+        timestamp: e.timestamp,
+        url: e.url,
+      }));
+  }, [maritime, windowEvents]);
 
   const selectedEvent = useMemo(() => events.find((e) => e.id === selectedId) ?? null, [events, selectedId]);
   const selectedCve = selectedCveId ? cveIndex.get(selectedCveId) ?? null : null;
@@ -422,6 +437,7 @@ export default function GlobalHackMap(): JSX.Element {
               points={points}
               focus={null}
               autoRotate
+              flatPoints
               onPointClick={(p) => {
                 const incident = incidents.find((i) => p.label.startsWith(`${i.victim} ·`));
                 if (incident) {
