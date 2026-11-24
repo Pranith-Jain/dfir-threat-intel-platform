@@ -50,8 +50,14 @@ describe('IOC Scoring Engine', () => {
     });
 
     it('applies time decay to old observations', () => {
-      const recent: IocObservation[] = [{ source: 'virustotal', observedAt: '2026-05-31T10:00:00Z', sourceScore: 80 }];
-      const old: IocObservation[] = [{ source: 'virustotal', observedAt: '2026-05-01T10:00:00Z', sourceScore: 80 }];
+      // Both timestamps must stay inside the 30-day decay window. Hardcoded
+      // calendar dates eventually both hit the floor and the assertion fails.
+      const recent: IocObservation[] = [
+        { source: 'virustotal', observedAt: new Date(Date.now() - 2 * 86_400_000).toISOString(), sourceScore: 80 },
+      ];
+      const old: IocObservation[] = [
+        { source: 'virustotal', observedAt: new Date(Date.now() - 25 * 86_400_000).toISOString(), sourceScore: 80 },
+      ];
 
       const recentResult = scoreIoc(recent, 30);
       const oldResult = scoreIoc(old, 30);
