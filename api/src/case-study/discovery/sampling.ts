@@ -51,3 +51,44 @@ export function weightedSampleByScore(cands: Candidate[], k: number, rand: () =>
   }
   return chosen;
 }
+
+/**
+ * Order candidates round-robin by topic, optionally capped at `limit`.
+ *
+ * Types are ranked by their best candidate, items within a type stay
+ * score-ordered, and the output takes one item from each type per round.
+ * The round-robin preserves relative quality (the global top item is still
+ * first) while guaranteeing every represented topic appears before any
+ * topic repeats. `limit` is applied DURING the interleave — a plain
+ * `slice()` after a global score sort would hand every slot to the
+ * highest-scoring type (in practice, KEV CVEs) and undo the diversity.
+ *
+ * Shared by the discovery orchestrator (final daily cap) and the admin
+ * pending list (display order).
+ */
+export function interleaveByType(cands: Candidate[], limit?: number): Candidate[] {
+  const cap = limit === undefined ? Number.POSITIVE_INFINITY : Math.max(0, Math.floor(limit));
+  if (cap === 0) return [];
+
+  const byType = new Map<Candidate['type'], Candidate[]>();
+  for (const c of cands) {
+    const list = byType.get(c.type);
+    if (list) list.push(c);
+    else byType.set(c.type, [c]);
+  }
+  const groups = [...byType.values()];
+  for (const g of groups) g.sort((a, b) => b.score - a.score);
+  groups.sort((a, b) => (b[0]?.score ?? 0) - (a[0]?.score ?? 0));
+
+  const out: Candidate[] = [];
+  const max = groups.reduce((m, g) => Math.max(m, g.length), 0);
+  outer: for (let i = 0; i < max; i++) {
+    for (const g of groups) {
+      const item = g[i];
+      if (!item) continue;
+      if (out.length >= cap) break outer;
+      out.push(item);
+    }
+  }
+  return out;
+}
