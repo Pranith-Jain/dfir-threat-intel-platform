@@ -57,6 +57,7 @@ export const routePreloaders: Record<string, Preloader> = {
   // Warming these on hover/focus removes the chunk-load round-trip the user
   // would otherwise see between click and first paint.
   '/threatintel/predictive/global-pulse': () => import('../pages/threatintel/GlobalPulse'),
+  '/threatintel/global-hack-map': () => import('../pages/threatintel/GlobalHackMap'),
   '/threatintel/detections/detections': () => import('../pages/threatintel/Detections'),
   // /threatintel/briefings reuses the DFIR Briefings component, so its
   // lazy chunk lives in pages/dfir/. Warm that chunk on hover.

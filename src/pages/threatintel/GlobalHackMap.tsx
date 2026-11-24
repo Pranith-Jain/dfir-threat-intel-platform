@@ -1,0 +1,409 @@
+/**
+ * Global Hack Map — full-screen situation room.
+ *
+ * Re-implements the layout and information architecture of
+ * globalhackmap.vercel.app (globe + top ticker + live HUD + patch dock +
+ * dossier + check/brief/agents) with this platform's design tokens and live
+ * APIs. No upstream code or prose is vendored.
+ */
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type JSX } from 'react';
+import { errMessage } from '../../lib/log';
+import { useDataFetch } from '../../hooks/useDataFetch';
+import { synthesizeArcs, type CtiPoint } from '../../components/threatintel/cti/geo';
+import { ThreatAnalysisPanel } from '../../components/threatintel/ThreatAnalysisPanel';
+import { PageMeta } from '../../components/PageMeta';
+import type { GlobalPulseResponse, PulseEvent } from './global-pulse-types';
+import { EVIDENCE_STATUSES, incidentStatus, type EvidenceStatus } from '../../lib/pulse-status';
+import {
+  AgentsPanel,
+  BriefPanel,
+  CheckPanel,
+  DetailPanel,
+  MobileSidebarToggle,
+  PatchDock,
+  StorySidebar,
+  TopBar,
+} from './global-hack-map/Panels';
+import { WINDOW_MS, type GhmCve, type GhmCveFeed, type GhmTab, type GhmTrending, type GhmWindow } from './global-hack-map/types';
+
+const CtiGlobe = lazy(() => import('../../components/threatintel/cti/CtiGlobe'));
+
+const SIDEBAR_W = 380;
+const PANEL_W = 380;
+
+/** Merge the live CVE feed with the Bluesky-attention mirror, once by id. */
+function mergeCves(feed: GhmCveFeed | null, trending: GhmTrending | null): GhmCve[] {
+  const out: GhmCve[] = [...(feed?.cves ?? [])];
+  const seen = new Set(out.map((c) => c.id));
+  for (const item of trending?.items ?? []) {
+    if (seen.has(item.id)) continue;
+    seen.add(item.id);
+    out.push({
+      id: item.id,
+      published: item.lastPostedAt ?? new Date().toISOString(),
+      description: item.title,
+      severity: item.severity === 'UNKNOWN' ? 'UNKNOWN' : (item.severity as GhmCve['severity']),
+      score: item.cvss,
+      kev: item.exploited,
+      kev_ransomware: false,
+      has_exploit: false,
+      origin: 'vulntracker',
+      listed_by_count: 1,
+      epss: undefined,
+    });
+  }
+  return out;
+}
+
+function loadStack(): string[] {
+  try {
+    const raw = localStorage.getItem('ghm:stack');
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === 'string').slice(0, 20) : [];
+  } catch {
+    return [];
+  }
+}
+
+export default function GlobalHackMap(): JSX.Element {
+  const { data: pulse, error } = useDataFetch<GlobalPulseResponse>({ url: '/api/v1/global-pulse', ttl: 60_000 });
+  const { data: cveFeed } = useDataFetch<GhmCveFeed>({ url: '/api/v1/cve-recent?limit=150', ttl: 5 * 60_000 });
+  const { data: trending } = useDataFetch<GhmTrending>({ url: '/data/cve-intel/vulntracker-trending.json', ttl: 10 * 60_000 });
+
+  const [timeWindow, setTimeWindow] = useState<GhmWindow>('24h');
+  const [statusFilter, setStatusFilter] = useState<Set<EvidenceStatus>>(new Set(EVIDENCE_STATUSES));
+  const [query, setQuery] = useState('');
+  const [tab, setTab] = useState<GhmTab>('cves');
+  const [stack, setStack] = useState<string[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedCveId, setSelectedCveId] = useState<string | null>(null);
+  const [checkOpen, setCheckOpen] = useState(false);
+  const [briefOpen, setBriefOpen] = useState(false);
+  const [agentsOpen, setAgentsOpen] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const [patchOpen, setPatchOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobile, setMobile] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // Stack is the only visitor state we keep — locally, never uploaded.
+  useEffect(() => {
+    setStack(loadStack());
+    const mq = window.matchMedia('(max-width: 767px)');
+    const update = () => setMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem('ghm:stack', JSON.stringify(stack));
+    } catch (e) {
+      errMessage(e);
+    }
+  }, [stack]);
+
+  const cves = useMemo(() => mergeCves(cveFeed, trending), [cveFeed, trending]);
+  const cveIndex = useMemo(() => new Map(cves.map((c) => [c.id, c])), [cves]);
+
+  const windowEvents = useMemo(() => {
+    const now = Date.now();
+    const all = pulse?.events ?? [];
+    return all.filter((e) => now - Date.parse(e.timestamp) <= WINDOW_MS[timeWindow]);
+  }, [pulse, timeWindow]);
+
+  const events = useMemo(
+    () => windowEvents.filter((e) => {
+      const status = incidentStatus(e);
+      return !status || statusFilter.has(status);
+    }),
+    [windowEvents, statusFilter]
+  );
+
+  const statusCounts = useMemo(() => {
+    const counts = {} as Record<EvidenceStatus, number>;
+    for (const status of EVIDENCE_STATUSES) counts[status] = 0;
+    for (const e of windowEvents) {
+      const status = incidentStatus(e);
+      if (status) counts[status]++;
+    }
+    return counts;
+  }, [windowEvents]);
+
+  const fresh = useMemo(
+    () =>
+      [...cves]
+        .filter((c) => c.kev || c.has_exploit || (c.score ?? 0) >= 9)
+        .sort((a, b) => Number(b.kev) - Number(a.kev) || (b.score ?? 0) - (a.score ?? 0))
+        .slice(0, 24),
+    [cves]
+  );
+  const patchNow = useMemo(
+    () => fresh.filter((c) => c.kev || c.has_exploit).slice(0, 8),
+    [fresh]
+  );
+
+  const selectedEvent = useMemo(() => events.find((e) => e.id === selectedId) ?? null, [events, selectedId]);
+  const selectedCve = selectedCveId ? cveIndex.get(selectedCveId) ?? null : null;
+
+  const points: CtiPoint[] = useMemo(
+    () =>
+      events
+        .filter((e) => e.lat !== 0 || e.lng !== 0)
+        .slice(0, 400)
+        .map((e) => ({
+          lat: e.lat,
+          lng: e.lng,
+          severity: e.severity,
+          count: 1,
+          label: e.title,
+          countryCode: e.country ?? '',
+          kind: e.kind,
+          source: e.source,
+          description: e.description,
+          magnitude: e.magnitude,
+        })),
+    [events]
+  );
+  const arcs = useMemo(() => synthesizeArcs(points), [points]);
+
+  const briefItems = useMemo(
+    () => [
+      ...events.slice(0, 12).map((e) => ({ title: e.title, body: e.description, source: e.source })),
+      ...fresh.slice(0, 8).map((c) => ({ title: c.id, body: c.description, source: c.kev ? 'CISA KEV' : 'CVE feed' })),
+    ],
+    [events, fresh]
+  );
+  const dayKey = pulse?.generated_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10);
+
+  const toggleStatus = useCallback((status: EvidenceStatus) => {
+    setStatusFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(status)) next.delete(status);
+      else next.add(status);
+      return next.size ? next : new Set(EVIDENCE_STATUSES);
+    });
+  }, []);
+
+  const selectEvent = useCallback((event: PulseEvent) => {
+    setSelectedId(event.id);
+    setSelectedCveId(null);
+    setShowAnalysis(false);
+  }, []);
+  const selectCve = useCallback((id: string) => {
+    setSelectedCveId(id);
+    setSelectedId(null);
+    setShowAnalysis(false);
+  }, []);
+  const closeDossier = useCallback(() => {
+    setSelectedId(null);
+    setSelectedCveId(null);
+    setShowAnalysis(false);
+  }, []);
+
+  // Deep links: ?i=<event> and ?cve=<id> open the same dossier the UI does.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const cve = params.get('cve');
+    const incident = params.get('i');
+    if (cve) setSelectedCveId(cve.toUpperCase());
+    else if (incident) setSelectedId(incident);
+  }, []);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.delete('cve');
+    params.delete('i');
+    if (selectedCveId) params.set('cve', selectedCveId);
+    else if (selectedId) params.set('i', selectedId);
+    const qs = params.toString();
+    const url = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
+    if (url !== `${window.location.pathname}${window.location.search}`) window.history.replaceState(null, '', url);
+  }, [selectedCveId, selectedId]);
+
+  // Keyboard: ⌘K // focuses search, Esc closes, j/k steps incidents.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setSidebarOpen(true);
+        requestAnimationFrame(() => searchRef.current?.focus());
+        return;
+      }
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      if (event.key === '/') {
+        event.preventDefault();
+        setSidebarOpen(true);
+        requestAnimationFrame(() => searchRef.current?.focus());
+      } else if (event.key === 'Escape') {
+        if (checkOpen) setCheckOpen(false);
+        else if (briefOpen) setBriefOpen(false);
+        else if (agentsOpen) setAgentsOpen(false);
+        else closeDossier();
+      } else if ((event.key === 'j' || event.key === 'k') && events.length) {
+        const index = events.findIndex((e) => e.id === selectedId);
+        const step = event.key === 'j' ? 1 : -1;
+        selectEvent(events[(index + step + events.length) % events.length]!);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [events, selectedId, checkOpen, briefOpen, agentsOpen, closeDossier, selectEvent]);
+
+  const panelOpen = Boolean(selectedEvent || selectedCve);
+  const globeStyle: React.CSSProperties = mobile
+    ? { left: 0, right: 0, top: 72, bottom: patchOpen && panelOpen ? 210 : 64 }
+    : {
+        left: sidebarOpen ? SIDEBAR_W : 0,
+        right: panelOpen ? PANEL_W : 0,
+        top: 80,
+        bottom: patchOpen ? 196 : 56,
+      };
+
+  return (
+    <main className="relative h-dvh w-full overflow-hidden bg-surface-300 dark:bg-[#080c14]" aria-label="Global Hack Map situation room">
+      <PageMeta
+        title="Global Hack Map"
+        description="Live exploits, breaches and vulnerabilities on one globe - honest evidence statuses, patch-now cards, one-click agent fixes and an opt-in AI brief."
+        section="Threat Intel"
+        canonicalPath="/threatintel/global-hack-map"
+      />
+      {/* Globe fills the space left between the HUD panels. */}
+      <div className="absolute transition-[left,right] duration-300" style={globeStyle}>
+        {points.length ? (
+          <Suspense
+            fallback={
+              <div className="flex h-full items-center justify-center">
+                <div className="h-16 w-16 animate-pulse rounded-full border border-line-1 bg-surface-100/40" />
+              </div>
+            }
+          >
+            <CtiGlobe
+              arcs={arcs}
+              points={points}
+              focus={null}
+              autoRotate
+              onPointClick={(p) => {
+                const event = events.find((e) => e.title === p.label);
+                if (event) selectEvent(event);
+              }}
+            />
+          </Suspense>
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <div className="max-w-sm rounded-2xl border border-line-1 bg-surface-100/70 px-8 py-6 text-center">
+              <p className="text-sm font-semibold text-heading">
+                {error ? 'The live picture is unavailable' : 'No geolocated events in this window'}
+              </p>
+              <p className="mt-1 text-mini text-muted">
+                {error ?? 'Widen the time window or clear the status filters — an empty map is a fact, not a guarantee.'}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <TopBar
+        generatedAt={pulse?.generated_at ?? null}
+        fresh={fresh}
+        onSelectCve={selectCve}
+        onCheck={() => setCheckOpen(true)}
+        onBrief={() => setBriefOpen(true)}
+        onAgents={() => setAgentsOpen(true)}
+        onMap={closeDossier}
+      />
+
+      {sidebarOpen && !mobile && (
+        <div className="pointer-events-none absolute bottom-0 left-0 top-[72px] z-20 w-[380px] pt-2 pl-2 pb-2">
+          <div className="pointer-events-auto h-full rounded-r-2xl overflow-hidden">
+            <StorySidebar
+              events={events}
+              cves={cves}
+              generatedAt={pulse?.generated_at ?? null}
+              window={timeWindow}
+              onWindow={setTimeWindow}
+              statusFilter={statusFilter}
+              onToggleStatus={toggleStatus}
+              statusCounts={statusCounts}
+              query={query}
+              onQuery={setQuery}
+              tab={tab}
+              onTab={setTab}
+              stack={stack}
+              onStack={setStack}
+              onSelectEvent={selectEvent}
+              onSelectCve={selectCve}
+              onCheck={() => setCheckOpen(true)}
+              onBrief={() => setBriefOpen(true)}
+              searchRef={searchRef}
+            />
+          </div>
+        </div>
+      )}
+
+      {mobile && sidebarOpen && (
+        <div className="pointer-events-auto absolute inset-x-2 bottom-12 top-[112px] z-20 overflow-hidden rounded-2xl">
+          <StorySidebar
+            events={events}
+            cves={cves}
+            generatedAt={pulse?.generated_at ?? null}
+            window={timeWindow}
+            onWindow={setTimeWindow}
+            statusFilter={statusFilter}
+            onToggleStatus={toggleStatus}
+            statusCounts={statusCounts}
+            query={query}
+            onQuery={setQuery}
+            tab={tab}
+            onTab={setTab}
+            stack={stack}
+            onStack={setStack}
+            onSelectEvent={(e) => { selectEvent(e); setSidebarOpen(false); }}
+            onSelectCve={(id) => { selectCve(id); setSidebarOpen(false); }}
+            onCheck={() => setCheckOpen(true)}
+            onBrief={() => setBriefOpen(true)}
+            searchRef={searchRef}
+          />
+        </div>
+      )}
+      <MobileSidebarToggle open={sidebarOpen} onClick={() => setSidebarOpen((o) => !o)} />
+
+      {panelOpen && !mobile && (
+        <div className="pointer-events-none absolute bottom-0 right-0 top-[72px] z-20 w-[380px] pb-2 pr-2 pt-2">
+          <div className="pointer-events-auto h-full overflow-hidden rounded-l-2xl">
+            <DetailPanel event={selectedEvent} cve={selectedCve} onClose={closeDossier} onAnalyze={() => setShowAnalysis((v) => !v)} />
+          </div>
+        </div>
+      )}
+      {panelOpen && mobile && (
+        <div className="pointer-events-auto absolute inset-x-2 bottom-12 top-[112px] z-30 overflow-hidden rounded-2xl">
+          <DetailPanel event={selectedEvent} cve={selectedCve} onClose={closeDossier} onAnalyze={() => setShowAnalysis((v) => !v)} />
+        </div>
+      )}
+
+      <PatchDock cves={patchNow} onSelectCve={selectCve} open={patchOpen} onOpenChange={setPatchOpen} />
+
+      {showAnalysis && (selectedEvent || selectedCve) && (
+        <div className="pointer-events-auto absolute bottom-4 right-4 z-30 w-[min(420px,calc(100%-2rem))]">
+          <ThreatAnalysisPanel
+            type="event"
+            title={selectedCve?.id ?? selectedEvent!.title}
+            description={selectedCve?.description ?? selectedEvent!.description}
+            country={selectedEvent?.country}
+            severity={selectedCve?.severity?.toLowerCase() === 'critical' ? 'critical' : selectedEvent?.severity}
+            kind={selectedEvent?.kind ?? 'cve'}
+            source={selectedCve?.kev ? 'CISA KEV' : selectedEvent?.source ?? 'CVE feed'}
+            onClose={() => setShowAnalysis(false)}
+          />
+        </div>
+      )}
+
+      {checkOpen && (
+        <CheckPanel cves={cves} events={windowEvents} stack={stack} onStack={setStack} onSelectCve={selectCve} onClose={() => setCheckOpen(false)} />
+      )}
+      {briefOpen && <BriefPanel items={briefItems} dayKey={dayKey} onClose={() => setBriefOpen(false)} />}
+      {agentsOpen && <AgentsPanel onClose={() => setAgentsOpen(false)} />}
+    </main>
+  );
+}

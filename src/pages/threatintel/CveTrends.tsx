@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Flame, ExternalLink, RefreshCw, Search, TrendingUp, ShieldAlert, Activity } from 'lucide-react';
+import { Flame, ExternalLink, RefreshCw, Search, TrendingUp, ShieldAlert, Activity, Users } from 'lucide-react';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { relativeAgo } from '../../lib/relativeTime';
@@ -55,6 +55,19 @@ interface TrendsResponse {
 }
 
 type Filter = 'all' | 'before-kev' | 'kev' | 'poc';
+
+/** /data/cve-intel/vulntracker-trending.json — Bluesky post counts, 24h window. */
+interface VulnTrackerTrending {
+  generatedAt: string;
+  window: string;
+  upstream: { site: string; url: string; attribution: string };
+  count: number;
+  items: Array<{
+    id: string; rank: number; title: string; severity: string; cvss: number | null;
+    exploited: boolean; people: number; posts: number; lastPostedAt: string | null;
+    published: string | null; url: string;
+  }>;
+}
 
 /** Subset of /data/cve-intel/index.json used by the cves.io pulse panel. */
 interface CvesIoPulse {
@@ -121,6 +134,11 @@ export default function CveTrends(): JSX.Element {
     url: '/data/cve-intel/pulse.json',
     ttl: 10 * 60_000,
   });
+  // Third attention feed: public Bluesky posts over 24h, mirrored every 30m.
+  const { data: vulnTracker } = useDataFetch<VulnTrackerTrending>({
+    url: '/data/cve-intel/vulntracker-trending.json',
+    ttl: 10 * 60_000,
+  });
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
 
@@ -140,16 +158,21 @@ export default function CveTrends(): JSX.Element {
     });
   }, [data, query, filter]);
 
-  // Summarize the filtered trending rows the user is actually looking at.
-  const summaryItems = useMemo<Array<{ title: string; body?: string; source?: string }>>(
-    () =>
-      rows.slice(0, 20).map((c) => ({
-        title: c.id || `CVE #${c.rank}`,
-        body: c.description ?? '',
-        source: data?.source?.id || 'cvemon.intruder.io',
-      })),
-    [rows, data]
-  );
+  // Summarize the visible rows plus any VulnTracker-only CVEs, deduped by id.
+  const summaryItems = useMemo<Array<{ title: string; body?: string; source?: string }>>(() => {
+    const out = rows.slice(0, 20).map((c) => ({
+      title: c.id || `CVE #${c.rank}`,
+      body: c.description ?? '',
+      source: data?.source?.id || 'cvemon.intruder.io',
+    }));
+    const seen = new Set(out.map((i) => i.title));
+    for (const item of (vulnTracker?.items ?? []).slice(0, 12)) {
+      if (seen.has(item.id)) continue;
+      seen.add(item.id);
+      out.push({ title: item.id, body: item.title, source: 'vulntracker.io' });
+    }
+    return out;
+  }, [rows, data, vulnTracker]);
 
   const summaryDayKey = data?.generated_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10);
 
@@ -162,7 +185,7 @@ export default function CveTrends(): JSX.Element {
       backTo="/threatintel"
       icon={<Flame className="h-5 w-5 text-orange-500" />}
       title="Trending CVEs"
-      description="What practitioners are reading about right now, ranked by social discussion volume (Intruder cvemon) — not by severity. The gap between the two is the signal. Updated every 30 minutes."
+      description="What practitioners are talking about right now — social discussion (cvemon), cross-source attention (cves.io) and public Bluesky posts (VulnTracker) — not severity. The gap between attention and confirmed exploitation is the signal."
     >
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -282,6 +305,52 @@ export default function CveTrends(): JSX.Element {
                 cves.io
               </a>
             </p>
+          </section>
+        )}
+
+        {vulnTracker && vulnTracker.items.length > 0 && (
+          <section className="surface-card rounded-lg border border-line-1 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="flex items-center gap-1.5 text-sm font-semibold text-heading">
+                <Users className="h-4 w-4 text-sky-500" />
+                VulnTracker — Bluesky attention
+                <span className="rounded border border-line-1 bg-surface-100 px-1.5 py-0.5 text-[10px] font-mono font-normal text-muted">24h</span>
+              </h2>
+              <a href={sanitizeUrl(vulnTracker.upstream.url)} target="_blank" rel="noopener noreferrer" className="text-[11px] text-muted underline hover:text-accent">
+                source: vulntracker.io
+              </a>
+            </div>
+            <p className="mt-1 text-[11px] text-muted">
+              {vulnTracker.upstream.attribution} Ranking is by distinct people, not CVSS — attention is not confirmation.
+            </p>
+            <ol className="mt-2 grid gap-1.5 sm:grid-cols-2">
+              {vulnTracker.items.slice(0, 10).map((c) => (
+                <li key={c.id} className="rounded border border-line-1 bg-surface-100 px-2 py-1.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="w-4 shrink-0 font-mono text-[10px] text-muted">{c.rank}</span>
+                    <Link to={`/threatintel/cve-list?q=${encodeURIComponent(c.id)}`} className="shrink-0 font-mono text-xs font-semibold text-sky-600 hover:underline dark:text-sky-400">{c.id}</Link>
+                    {c.severity !== 'UNKNOWN' && (
+                      <span className={`shrink-0 rounded border px-1 py-0.5 text-[9px] font-mono ${toneFor(c.severity)}`}>
+                        {c.severity.slice(0, 4)}{c.cvss != null ? ` ${c.cvss}` : ''}
+                      </span>
+                    )}
+                    {c.exploited && <span className="shrink-0 font-mono text-[9px] font-semibold text-rose-600 dark:text-rose-400">EXPLOITED</span>}
+                    <span className="ml-auto shrink-0 font-mono text-[10px] text-muted" title={`${c.posts} posts · last post ${c.lastPostedAt ? relativeAgo(c.lastPostedAt) : 'unknown'}`}>
+                      {c.people} talking · {c.posts} posts
+                    </span>
+                  </div>
+                  <p className="mt-1 line-clamp-2 text-[11px] text-body" title={c.title}>{c.title}</p>
+                  <div className="mt-1 flex items-center gap-3 text-[10px] text-muted">
+                    <PostAnalysisButton compact title={c.id} description={c.title} source="vulntracker.io" />
+                    <a href={sanitizeUrl(c.url)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-accent">
+                      upstream <ExternalLink className="h-3 w-3" />
+                    </a>
+                    {c.lastPostedAt && <span className="ml-auto">last post {relativeAgo(c.lastPostedAt)}</span>}
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-2 text-[10px] text-muted">Snapshot {relativeAgo(vulnTracker.generatedAt)} · {vulnTracker.count} CVEs in the 24-hour window</p>
           </section>
         )}
 

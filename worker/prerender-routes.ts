@@ -48,6 +48,7 @@ export const PRERENDERED_ROUTES = new Map<string, string>([
   ['/threatintel/darkweb/recon', '/__prerendered/threatintel__darkweb__recon'],
   ['/threatintel/predictive/dashboard', '/__prerendered/threatintel__predictive__dashboard'],
   ['/threatintel/predictive/global-pulse', '/__prerendered/threatintel__predictive__global-pulse'],
+  ['/threatintel/global-hack-map', '/__prerendered/threatintel__global-hack-map'],
   ['/threatintel/predictive/threat-pulse', '/__prerendered/threatintel__predictive__threat-pulse'],
   ['/threatintel/predictive/certstream', '/__prerendered/threatintel__predictive__certstream'],
   ['/threatintel/predictive/metrics', '/__prerendered/threatintel__predictive__metrics'],

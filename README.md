@@ -119,7 +119,7 @@ A 446-tool MCP (Model Context Protocol) server runs on the same Worker, exposing
 | Layer           | Choice                                                                                                               |
 | --------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Frontend        | React 19 + Vite + TypeScript + Tailwind                                                                              |
-| Routing         | React Router v7, lazy-loaded (318 route components)                                                                  |
+| Routing         | React Router v7, lazy-loaded (319 route components)                                                                  |
 | SSR             | Prerendered routes for instant first paint                                                                           |
 | Backend         | Cloudflare Workers + Hono                                                                                            |
 | Storage         | KV (briefings, dedup, rate-limit), Cache API (provider/feed results), D1 (briefings DB), Vectorize (semantic search) |

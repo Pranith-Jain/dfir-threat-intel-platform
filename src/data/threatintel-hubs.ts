@@ -1475,6 +1475,15 @@ export const HUB_META: readonly HubMeta[] = [
         badge: 'live',
       },
       {
+        path: '/threatintel/global-hack-map',
+        tabId: 'global-hack-map',
+        label: 'Global Hack Map',
+        desc: 'Full-screen situation room - honest evidence statuses, patch now, agent fixes.',
+        compVar: 'GlobalHackMap',
+        badge: 'new',
+        keywords: ['hack map', 'globe', 'breach', 'exploit', 'patch now', 'am i affected'],
+      },
+      {
         path: '/threatintel/cyberpulse',
         tabId: 'cyberpulse',
         label: 'CyberPulse',

@@ -128,6 +128,7 @@ const ROUTES = [
   '/threatintel/predictive/certstream',
   '/threatintel/predictive/dashboard',
   '/threatintel/predictive/global-pulse',
+  '/threatintel/global-hack-map',
   '/threatintel/predictive/metrics',
   '/threatintel/predictive/predictions',
   '/threatintel/predictive/predictive',

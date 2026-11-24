@@ -3242,6 +3242,14 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     group: 'threatintel',
   },
   {
+    path: '/threatintel/global-hack-map',
+    label: 'Global Hack Map',
+    description: 'Full-screen situation room: live exploits, breaches and one-click fixes on a globe.',
+    sectionLabel: 'Threat Intel · Predictive',
+    group: 'threatintel',
+    keywords: ['hack', 'map', 'globe', 'breach', 'exploit', 'patch', 'status'],
+  },
+  {
     path: '/threatintel/predictive/threat-pulse',
     label: 'Threat Pulse',
     description: 'Live intel pulse - minute-by-minute indicator deltas and trending clusters.',

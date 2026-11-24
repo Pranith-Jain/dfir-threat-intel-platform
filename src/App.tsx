@@ -277,6 +277,7 @@ const TiMindmap = lazy(() => import('./pages/threatintel/TiMindmap'));
 
 const GithubAdvisories = lazy(() => import('./pages/threatintel/GithubAdvisories'));
 const GlobalPulse = lazy(() => import('./pages/threatintel/GlobalPulse'));
+const GlobalHackMap = lazy(() => import('./pages/threatintel/GlobalHackMap'));
 const Infostealer = lazy(() => import('./pages/threatintel/Infostealer'));
 const InfraIntel = lazy(() => import('./pages/threatintel/InfraIntel'));
 const InsiderThreatMatrix = lazy(() => import('./pages/threatintel/InsiderThreatMatrix'));
@@ -609,6 +610,7 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/onion-watch', Component: OnionWatch },
   { path: '/threatintel/predictive/dashboard', Component: IntelDashboard },
   { path: '/threatintel/predictive/global-pulse', Component: GlobalPulse },
+  { path: '/threatintel/global-hack-map', Component: GlobalHackMap },
   { path: '/threatintel/predictive/threat-pulse', Component: ThreatPulse },
   { path: '/threatintel/predictive/certstream', Component: CertStreamLive },
   { path: '/threatintel/predictive/metrics', Component: Metrics },
