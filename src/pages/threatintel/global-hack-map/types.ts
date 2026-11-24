@@ -124,6 +124,16 @@ export interface GhmIncidentFeed {
   incidents: GhmIncident[];
 }
 
+/** Flat row for the Malware / Outages live lists. */
+export interface GhmFeedRow {
+  id: string;
+  title: string;
+  description: string;
+  source: string;
+  timestamp: string;
+  url?: string;
+}
+
 export interface GhmSelection {
   event: PulseEvent | null;
   cve: GhmCve | null;

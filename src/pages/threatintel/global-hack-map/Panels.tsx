@@ -39,6 +39,7 @@ import {
   productLabel,
   severityTone,
   type GhmCve,
+  type GhmFeedRow,
   type GhmIncident,
   type GhmTab,
   type GhmWindow,
@@ -184,6 +185,8 @@ export function TopBar({
 export function StorySidebar({
   events,
   incidents,
+  malwareRows,
+  outageRows,
   orgCount,
   dayBars,
   onSelectIncident,
@@ -208,6 +211,8 @@ export function StorySidebar({
 }: {
   events: PulseEvent[];
   incidents: GhmIncident[];
+  malwareRows: GhmFeedRow[];
+  outageRows: GhmFeedRow[];
   orgCount: number;
   dayBars: Array<{ date: string; count: number }>;
   onSelectIncident: (incident: GhmIncident) => void;
@@ -236,11 +241,16 @@ export function StorySidebar({
   const cveRows = useMemo(
     () =>
       cves
+        // Telegram/cvefeed gap-filler rows are raw feed text without a vendor
+        // or severity — GHM's list is curated advisories and exploitation.
+        .filter((c) => !/^\[(cvenotify|tg|dbugs|cvefeed)\]/i.test(c.description))
+        .filter((c) => c.kev || c.has_exploit || c.origin === 'vulntracker' || (c.score ?? 0) >= 7)
         .filter((c) =>
           stack.length === 0 ||
           stack.some((s) => `${c.vendor ?? ''} ${c.product ?? ''} ${c.description}`.toLowerCase().includes(s.toLowerCase()))
         )
         .filter((c) => !q || `${c.id} ${c.description} ${c.vendor ?? ''} ${c.product ?? ''}`.toLowerCase().includes(q))
+        .sort((a, b) => Number(b.kev) - Number(a.kev) || (b.score ?? 0) - (a.score ?? 0))
         .slice(0, 60),
     [cves, q, stack]
   );
@@ -251,8 +261,6 @@ export function StorySidebar({
         .slice(0, 60),
     [events, q]
   );
-  const malwareRows = eventRows.filter((e) => /malware|infostealer|malicious_package|scam/.test(e.kind));
-  const outageRows = eventRows.filter((e) => /firm|maritime|earthquake/.test(e.kind));
   const tabCounts: Record<GhmTab, number> = {
     cves: cveRows.length,
     breaches: incidents.length || eventRows.length,
@@ -522,8 +530,8 @@ export function StorySidebar({
             <EmptyList label="No incidents in this window. That is a fact, not a guarantee." />
           ))}
 
-        {tab === 'malware' && (malwareRows.length ? <EventMiniList rows={malwareRows} onSelect={onSelectEvent} /> : <EmptyList label="No malware rows in this window." />)}
-        {tab === 'outages' && (outageRows.length ? <EventMiniList rows={outageRows} onSelect={onSelectEvent} /> : <EmptyList label="No connectivity or maritime rows in this window." />)}
+        {tab === 'malware' && (malwareRows.length ? <FeedRowList rows={malwareRows} /> : <EmptyList label="Malware feeds did not answer — cross-check the source directly." />)}
+        {tab === 'outages' && (outageRows.length ? <FeedRowList rows={outageRows} /> : <EmptyList label="No maritime or connectivity rows in this window." />)}
       </div>
 
       <div className="flex shrink-0 items-center justify-between border-t border-line-1 px-3 py-2 text-micro text-muted/70">
@@ -598,19 +606,23 @@ function EmptyList({ label }: { label: string }): JSX.Element {
   return <p className="py-8 text-center text-mini text-muted">{label}</p>;
 }
 
-function EventMiniList({ rows, onSelect }: { rows: PulseEvent[]; onSelect: (e: PulseEvent) => void }): JSX.Element {
+/** Feed rows from MalwareBazaar / OpenSSF / UKMTO — link out to the source. */
+function FeedRowList({ rows }: { rows: GhmFeedRow[] }): JSX.Element {
   return (
     <ul className="space-y-1">
-      {rows.map((e) => (
-        <li key={e.id}>
-          <button
-            type="button"
-            onClick={() => onSelect(e)}
-            className="w-full rounded-lg border border-line-1 bg-surface px-2 py-1.5 text-left hover:border-rose-500/40"
-          >
-            <p className="line-clamp-1 text-mini text-heading">{e.title}</p>
-            <p className="font-mono text-micro text-muted">{e.source} · {relativeAgo(e.timestamp)}</p>
-          </button>
+      {rows.map((row) => (
+        <li key={row.id} className="rounded-lg border border-line-1 bg-surface px-2 py-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="font-mono text-micro uppercase tracking-wider text-muted">{row.source}</span>
+            <span className="ml-auto font-mono text-micro text-muted/70">{row.timestamp ? relativeAgo(row.timestamp) : ''}</span>
+          </div>
+          <p className="mt-0.5 line-clamp-1 text-mini text-heading">{row.title}</p>
+          <p className="line-clamp-2 text-micro text-muted">{row.description}</p>
+          {row.url && (
+            <a href={sanitizeUrl(row.url) || undefined} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1 font-mono text-micro text-muted hover:text-heading">
+              source <ExternalLink size={9} />
+            </a>
+          )}
         </li>
       ))}
     </ul>

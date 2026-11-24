@@ -9,7 +9,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type JSX } from 'react';
 import { errMessage } from '../../lib/log';
 import { useDataFetch } from '../../hooks/useDataFetch';
-import { synthesizeArcs, type CtiPoint } from '../../components/threatintel/cti/geo';
+import type { CtiPoint } from '../../components/threatintel/cti/geo';
 import { ThreatAnalysisPanel } from '../../components/threatintel/ThreatAnalysisPanel';
 import { PageMeta } from '../../components/PageMeta';
 import type { GlobalPulseResponse, PulseEvent } from './global-pulse-types';
@@ -30,6 +30,7 @@ import {
   type GhmCveFeed,
   type GhmIncident,
   type GhmIncidentFeed,
+  type GhmFeedRow,
   type GhmTab,
   type GhmTrending,
   type GhmWindow,
@@ -79,8 +80,21 @@ export default function GlobalHackMap(): JSX.Element {
   const { data: cveFeed } = useDataFetch<GhmCveFeed>({ url: '/api/v1/cve-recent?limit=150', ttl: 5 * 60_000 });
   const { data: trending } = useDataFetch<GhmTrending>({ url: '/data/cve-intel/vulntracker-trending.json', ttl: 10 * 60_000 });
   const { data: incidentFeed } = useDataFetch<GhmIncidentFeed>({ url: '/data/global-hack-map/incidents.json', ttl: 10 * 60_000 });
+  const { data: malwarePkgs } = useDataFetch<{
+    generated_at: string;
+    packages: Array<{ name: string; ecosystem: string; ossf_url: string }>;
+  }>({ url: '/api/v1/malicious-packages?ecosystem=npm', ttl: 15 * 60_000 });
+  const { data: malwareSamples } = useDataFetch<{
+    generated_at: string;
+    samples: Array<{ sha256: string; first_seen: string; signature: string; file_type: string; tags: string[]; bazaar_url: string }>;
+  }>({ url: '/api/v1/malware-samples', ttl: 15 * 60_000 });
+  const { data: maritime } = useDataFetch<{ incidents: Array<Record<string, unknown>> }>({
+    url: '/api/v1/ukmto-incidents',
+    ttl: 15 * 60_000,
+  });
 
-  const [timeWindow, setTimeWindow] = useState<GhmWindow>('24h');
+  // GHM opens on 7d — 24h is too narrow for incident feeds and leaves the map sparse.
+  const [timeWindow, setTimeWindow] = useState<GhmWindow>('7d');
   const [statusFilter, setStatusFilter] = useState<Set<EvidenceStatus>>(new Set(EVIDENCE_STATUSES));
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState<GhmTab>('cves');
@@ -147,9 +161,12 @@ export default function GlobalHackMap(): JSX.Element {
     const counts = {} as Record<EvidenceStatus, number>;
     for (const status of EVIDENCE_STATUSES) counts[status] = 0;
     for (const i of windowIncidents) counts[i.status]++;
-    for (const e of windowEvents) {
-      const status = incidentStatus(e);
-      if (status) counts[status]++;
+    // Only fall back to pulse-derived statuses when the incident feed is empty.
+    if (!windowIncidents.length) {
+      for (const e of windowEvents) {
+        const status = incidentStatus(e);
+        if (status) counts[status]++;
+      }
     }
     return counts;
   }, [windowIncidents, windowEvents]);
@@ -185,6 +202,44 @@ export default function GlobalHackMap(): JSX.Element {
     [fresh]
   );
 
+  // Malware + "outages" (maritime/connectivity) are their own live feeds —
+  // they must not be derived from the CVE/incident rows, or the tabs stay empty.
+  const malwareFeed = useMemo<GhmFeedRow[]>(() => {
+    const samples: GhmFeedRow[] = (malwareSamples?.samples ?? []).slice(0, 25).map((s) => ({
+      id: s.sha256,
+      title: s.signature || s.tags?.[0] || 'Unnamed malware sample',
+      description: `${s.file_type} · ${s.tags?.slice(0, 3).join(', ') || 'no family tag'} · SHA-256 ${s.sha256.slice(0, 16)}…`,
+      source: 'MalwareBazaar',
+      timestamp: s.first_seen,
+      url: s.bazaar_url,
+    }));
+    const packages: GhmFeedRow[] = (malwarePkgs?.packages ?? []).slice(0, 25).map((p) => ({
+      id: `${p.ecosystem}:${p.name}`,
+      title: `${p.name} (${p.ecosystem})`,
+      description: 'Malicious package published in the OpenSSF curated database.',
+      source: 'OpenSSF',
+      timestamp: malwarePkgs?.generated_at ?? '',
+      url: p.ossf_url,
+    }));
+    return [...samples, ...packages];
+  }, [malwareSamples, malwarePkgs]);
+
+  const outageFeed = useMemo<GhmFeedRow[]>(() => {
+    const rows = (maritime?.incidents ?? []).slice(0, 20);
+    return rows.map((raw, index) => {
+      const record = raw as Record<string, unknown>;
+      const str = (key: string) => String(record[key] ?? '');
+      return {
+        id: str('id') || str('reference') || `ukmto-${index}`,
+        title: str('title') || str('description') || 'Maritime incident',
+        description: str('description') || str('advice') || 'Maritime security incident from the UKMTO feed.',
+        source: 'UKMTO',
+        timestamp: str('date') || str('timestamp') || str('published') || '',
+        url: str('url') || undefined,
+      };
+    });
+  }, [maritime]);
+
   const selectedEvent = useMemo(() => events.find((e) => e.id === selectedId) ?? null, [events, selectedId]);
   const selectedCve = selectedCveId ? cveIndex.get(selectedCveId) ?? null : null;
   const selectedIncident = useMemo(
@@ -198,7 +253,10 @@ export default function GlobalHackMap(): JSX.Element {
       .map((i) => ({
         lat: i.lat,
         lng: i.lng,
-        severity: (i.status === 'confirmed' ? 'high' : i.status === 'claimed' ? 'medium' : 'low') as CtiPoint['severity'],
+        // Keep severity 'low': CtiGlobe draws a large animated ring for every
+        // critical/high point, which turns a dense map into red blocks. Colour
+        // still comes from kindColor(), so the dots stay meaningful.
+        severity: 'low' as CtiPoint['severity'],
         count: 1,
         label: `${i.victim} · ${STATUS_META[i.status].label}`,
         countryCode: i.country ?? '',
@@ -212,7 +270,7 @@ export default function GlobalHackMap(): JSX.Element {
       .map((e) => ({
         lat: e.lat,
         lng: e.lng,
-        severity: e.severity,
+        severity: 'low' as CtiPoint['severity'],
         count: 1,
         label: e.title,
         countryCode: e.country ?? '',
@@ -223,7 +281,9 @@ export default function GlobalHackMap(): JSX.Element {
       }));
     return [...fromIncidents, ...fromEvents].slice(0, 400);
   }, [incidents, events]);
-  const arcs = useMemo(() => synthesizeArcs(points), [points]);
+  // No arcs: synthesizeArcs() draws every point to one fixed focal node, which
+  // reads as a red starburst rather than a real incident globe.
+  const arcs: never[] = [];
 
   const briefItems = useMemo(
     () => [
@@ -403,6 +463,8 @@ export default function GlobalHackMap(): JSX.Element {
             <StorySidebar
               events={events}
               incidents={incidents}
+              malwareRows={malwareFeed}
+              outageRows={outageFeed}
               orgCount={orgCount}
               dayBars={dayBars}
               onSelectIncident={selectIncident}
@@ -434,6 +496,8 @@ export default function GlobalHackMap(): JSX.Element {
           <StorySidebar
             events={events}
             incidents={incidents}
+            malwareRows={malwareFeed}
+            outageRows={outageFeed}
             orgCount={orgCount}
             dayBars={dayBars}
             onSelectIncident={selectIncident}
