@@ -98,6 +98,32 @@ export function epssPercent(value?: number): string {
   return value == null ? '' : `${(value * 100).toFixed(1)}%`;
 }
 
+/** Mirror of public/data/global-hack-map/incidents.json (GHM RSS feed). */
+export interface GhmIncident {
+  id: string;
+  victim: string;
+  title: string;
+  description: string;
+  status: 'confirmed' | 'reported' | 'claimed' | 'precautionary' | 'disputed';
+  type: string;
+  actor: string | null;
+  records: number | null;
+  place: string | null;
+  country: string | null;
+  lat: number;
+  lng: number;
+  published: string;
+  url: string;
+}
+
+export interface GhmIncidentFeed {
+  generatedAt: string;
+  upstream: { site: string; feed: string; note: string };
+  count: number;
+  byStatus: Record<string, number>;
+  incidents: GhmIncident[];
+}
+
 export interface GhmSelection {
   event: PulseEvent | null;
   cve: GhmCve | null;

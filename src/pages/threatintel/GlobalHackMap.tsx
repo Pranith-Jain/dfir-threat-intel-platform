@@ -13,7 +13,7 @@ import { synthesizeArcs, type CtiPoint } from '../../components/threatintel/cti/
 import { ThreatAnalysisPanel } from '../../components/threatintel/ThreatAnalysisPanel';
 import { PageMeta } from '../../components/PageMeta';
 import type { GlobalPulseResponse, PulseEvent } from './global-pulse-types';
-import { EVIDENCE_STATUSES, incidentStatus, type EvidenceStatus } from '../../lib/pulse-status';
+import { EVIDENCE_STATUSES, STATUS_META, incidentStatus, type EvidenceStatus } from '../../lib/pulse-status';
 import {
   AgentsPanel,
   BriefPanel,
@@ -24,7 +24,16 @@ import {
   StorySidebar,
   TopBar,
 } from './global-hack-map/Panels';
-import { WINDOW_MS, type GhmCve, type GhmCveFeed, type GhmTab, type GhmTrending, type GhmWindow } from './global-hack-map/types';
+import {
+  WINDOW_MS,
+  type GhmCve,
+  type GhmCveFeed,
+  type GhmIncident,
+  type GhmIncidentFeed,
+  type GhmTab,
+  type GhmTrending,
+  type GhmWindow,
+} from './global-hack-map/types';
 
 const CtiGlobe = lazy(() => import('../../components/threatintel/cti/CtiGlobe'));
 
@@ -69,6 +78,7 @@ export default function GlobalHackMap(): JSX.Element {
   const { data: pulse, error } = useDataFetch<GlobalPulseResponse>({ url: '/api/v1/global-pulse', ttl: 60_000 });
   const { data: cveFeed } = useDataFetch<GhmCveFeed>({ url: '/api/v1/cve-recent?limit=150', ttl: 5 * 60_000 });
   const { data: trending } = useDataFetch<GhmTrending>({ url: '/data/cve-intel/vulntracker-trending.json', ttl: 10 * 60_000 });
+  const { data: incidentFeed } = useDataFetch<GhmIncidentFeed>({ url: '/data/global-hack-map/incidents.json', ttl: 10 * 60_000 });
 
   const [timeWindow, setTimeWindow] = useState<GhmWindow>('24h');
   const [statusFilter, setStatusFilter] = useState<Set<EvidenceStatus>>(new Set(EVIDENCE_STATUSES));
@@ -77,6 +87,7 @@ export default function GlobalHackMap(): JSX.Element {
   const [stack, setStack] = useState<string[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedCveId, setSelectedCveId] = useState<string | null>(null);
+  const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null);
   const [checkOpen, setCheckOpen] = useState(false);
   const [briefOpen, setBriefOpen] = useState(false);
   const [agentsOpen, setAgentsOpen] = useState(false);
@@ -120,15 +131,46 @@ export default function GlobalHackMap(): JSX.Element {
     [windowEvents, statusFilter]
   );
 
+  // GHM's own incident dataset (RSS mirror) is the backbone: real victims,
+  // honest statuses, records and locations. Global Pulse events supplement it.
+  const windowIncidents = useMemo(() => {
+    const now = Date.now();
+    return (incidentFeed?.incidents ?? []).filter((i) => now - Date.parse(i.published) <= WINDOW_MS[timeWindow]);
+  }, [incidentFeed, timeWindow]);
+  const incidents = useMemo(
+    () => windowIncidents.filter((i) => statusFilter.has(i.status)),
+    [windowIncidents, statusFilter]
+  );
+  const orgCount = useMemo(() => new Set(incidents.map((i) => i.victim.toLowerCase())).size, [incidents]);
+
   const statusCounts = useMemo(() => {
     const counts = {} as Record<EvidenceStatus, number>;
     for (const status of EVIDENCE_STATUSES) counts[status] = 0;
+    for (const i of windowIncidents) counts[i.status]++;
     for (const e of windowEvents) {
       const status = incidentStatus(e);
       if (status) counts[status]++;
     }
     return counts;
-  }, [windowEvents]);
+  }, [windowIncidents, windowEvents]);
+
+  // Distinct organisations per 24h over the last 14 days — GHM's day bars.
+  const dayBars = useMemo(() => {
+    const DAY = 86_400_000;
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    return Array.from({ length: 14 }, (_, index) => {
+      const start = today.getTime() - (13 - index) * DAY;
+      const end = start + DAY;
+      const victims = new Set(
+        windowIncidents.filter((i) => {
+          const t = Date.parse(i.published);
+          return t >= start && t < end;
+        }).map((i) => i.victim.toLowerCase())
+      );
+      return { date: new Date(start).toISOString().slice(0, 10), count: victims.size };
+    });
+  }, [windowIncidents]);
 
   const fresh = useMemo(
     () =>
@@ -145,34 +187,51 @@ export default function GlobalHackMap(): JSX.Element {
 
   const selectedEvent = useMemo(() => events.find((e) => e.id === selectedId) ?? null, [events, selectedId]);
   const selectedCve = selectedCveId ? cveIndex.get(selectedCveId) ?? null : null;
-
-  const points: CtiPoint[] = useMemo(
-    () =>
-      events
-        .filter((e) => e.lat !== 0 || e.lng !== 0)
-        .slice(0, 400)
-        .map((e) => ({
-          lat: e.lat,
-          lng: e.lng,
-          severity: e.severity,
-          count: 1,
-          label: e.title,
-          countryCode: e.country ?? '',
-          kind: e.kind,
-          source: e.source,
-          description: e.description,
-          magnitude: e.magnitude,
-        })),
-    [events]
+  const selectedIncident = useMemo(
+    () => incidents.find((i) => i.id === selectedIncidentId) ?? null,
+    [incidents, selectedIncidentId]
   );
+
+  const points: CtiPoint[] = useMemo(() => {
+    const fromIncidents = incidents
+      .filter((i) => i.lat !== 0 || i.lng !== 0)
+      .map((i) => ({
+        lat: i.lat,
+        lng: i.lng,
+        severity: (i.status === 'confirmed' ? 'high' : i.status === 'claimed' ? 'medium' : 'low') as CtiPoint['severity'],
+        count: 1,
+        label: `${i.victim} · ${STATUS_META[i.status].label}`,
+        countryCode: i.country ?? '',
+        kind: 'breach',
+        source: i.url,
+        description: `${i.description.slice(0, 180)}${i.records ? ` · ${i.records.toLocaleString()} records` : ''}`,
+      }));
+    const fromEvents = events
+      .filter((e) => e.lat !== 0 || e.lng !== 0)
+      .slice(0, 300)
+      .map((e) => ({
+        lat: e.lat,
+        lng: e.lng,
+        severity: e.severity,
+        count: 1,
+        label: e.title,
+        countryCode: e.country ?? '',
+        kind: e.kind,
+        source: e.source,
+        description: e.description,
+        magnitude: e.magnitude,
+      }));
+    return [...fromIncidents, ...fromEvents].slice(0, 400);
+  }, [incidents, events]);
   const arcs = useMemo(() => synthesizeArcs(points), [points]);
 
   const briefItems = useMemo(
     () => [
-      ...events.slice(0, 12).map((e) => ({ title: e.title, body: e.description, source: e.source })),
+      ...incidents.slice(0, 12).map((i) => ({ title: `${i.victim}: ${STATUS_META[i.status].label} ${i.type}`, body: i.description, source: 'Global Hack Map feed' })),
+      ...events.slice(0, 8).map((e) => ({ title: e.title, body: e.description, source: e.source })),
       ...fresh.slice(0, 8).map((c) => ({ title: c.id, body: c.description, source: c.kev ? 'CISA KEV' : 'CVE feed' })),
     ],
-    [events, fresh]
+    [incidents, events, fresh]
   );
   const dayKey = pulse?.generated_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10);
 
@@ -188,37 +247,56 @@ export default function GlobalHackMap(): JSX.Element {
   const selectEvent = useCallback((event: PulseEvent) => {
     setSelectedId(event.id);
     setSelectedCveId(null);
+    setSelectedIncidentId(null);
     setShowAnalysis(false);
   }, []);
   const selectCve = useCallback((id: string) => {
     setSelectedCveId(id);
     setSelectedId(null);
+    setSelectedIncidentId(null);
+    setShowAnalysis(false);
+  }, []);
+  const selectIncident = useCallback((incident: GhmIncident) => {
+    setSelectedIncidentId(incident.id);
+    setSelectedId(null);
+    setSelectedCveId(null);
     setShowAnalysis(false);
   }, []);
   const closeDossier = useCallback(() => {
     setSelectedId(null);
     setSelectedCveId(null);
+    setSelectedIncidentId(null);
     setShowAnalysis(false);
   }, []);
 
-  // Deep links: ?i=<event> and ?cve=<id> open the same dossier the UI does.
+  // Deep links: ?i=<incident/event> and ?cve=<id> open the same dossier the UI does.
+  const allIncidents = useMemo(() => incidentFeed?.incidents ?? [], [incidentFeed]);
+  const deepLinkApplied = useRef(false);
   useEffect(() => {
+    if (deepLinkApplied.current) return;
     const params = new URLSearchParams(window.location.search);
     const cve = params.get('cve');
     const incident = params.get('i');
+    if (!cve && !incident) return;
+    deepLinkApplied.current = true;
     if (cve) setSelectedCveId(cve.toUpperCase());
-    else if (incident) setSelectedId(incident);
-  }, []);
+    else if (incident) {
+      const match = allIncidents.find((i) => i.id === incident);
+      if (match) setSelectedIncidentId(match.id);
+      else setSelectedId(incident);
+    }
+  }, [allIncidents]);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     params.delete('cve');
     params.delete('i');
     if (selectedCveId) params.set('cve', selectedCveId);
+    else if (selectedIncidentId) params.set('i', selectedIncidentId);
     else if (selectedId) params.set('i', selectedId);
     const qs = params.toString();
     const url = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
     if (url !== `${window.location.pathname}${window.location.search}`) window.history.replaceState(null, '', url);
-  }, [selectedCveId, selectedId]);
+  }, [selectedCveId, selectedId, selectedIncidentId]);
 
   // Keyboard: ⌘K // focuses search, Esc closes, j/k steps incidents.
   useEffect(() => {
@@ -251,7 +329,7 @@ export default function GlobalHackMap(): JSX.Element {
     return () => window.removeEventListener('keydown', onKey);
   }, [events, selectedId, checkOpen, briefOpen, agentsOpen, closeDossier, selectEvent]);
 
-  const panelOpen = Boolean(selectedEvent || selectedCve);
+  const panelOpen = Boolean(selectedEvent || selectedCve || selectedIncident);
   const globeStyle: React.CSSProperties = mobile
     ? { left: 0, right: 0, top: 72, bottom: patchOpen && panelOpen ? 210 : 64 }
     : {
@@ -285,6 +363,11 @@ export default function GlobalHackMap(): JSX.Element {
               focus={null}
               autoRotate
               onPointClick={(p) => {
+                const incident = incidents.find((i) => p.label.startsWith(`${i.victim} ·`));
+                if (incident) {
+                  selectIncident(incident);
+                  return;
+                }
                 const event = events.find((e) => e.title === p.label);
                 if (event) selectEvent(event);
               }}
@@ -319,6 +402,10 @@ export default function GlobalHackMap(): JSX.Element {
           <div className="pointer-events-auto h-full rounded-r-2xl overflow-hidden">
             <StorySidebar
               events={events}
+              incidents={incidents}
+              orgCount={orgCount}
+              dayBars={dayBars}
+              onSelectIncident={selectIncident}
               cves={cves}
               generatedAt={pulse?.generated_at ?? null}
               window={timeWindow}
@@ -346,6 +433,10 @@ export default function GlobalHackMap(): JSX.Element {
         <div className="pointer-events-auto absolute inset-x-2 bottom-12 top-[112px] z-20 overflow-hidden rounded-2xl">
           <StorySidebar
             events={events}
+            incidents={incidents}
+            orgCount={orgCount}
+            dayBars={dayBars}
+            onSelectIncident={selectIncident}
             cves={cves}
             generatedAt={pulse?.generated_at ?? null}
             window={timeWindow}
@@ -372,28 +463,40 @@ export default function GlobalHackMap(): JSX.Element {
       {panelOpen && !mobile && (
         <div className="pointer-events-none absolute bottom-0 right-0 top-[72px] z-20 w-[380px] pb-2 pr-2 pt-2">
           <div className="pointer-events-auto h-full overflow-hidden rounded-l-2xl">
-            <DetailPanel event={selectedEvent} cve={selectedCve} onClose={closeDossier} onAnalyze={() => setShowAnalysis((v) => !v)} />
+            <DetailPanel
+              event={selectedEvent}
+              cve={selectedCve}
+              incident={selectedIncident}
+              onClose={closeDossier}
+              onAnalyze={() => setShowAnalysis((v) => !v)}
+            />
           </div>
         </div>
       )}
       {panelOpen && mobile && (
         <div className="pointer-events-auto absolute inset-x-2 bottom-12 top-[112px] z-30 overflow-hidden rounded-2xl">
-          <DetailPanel event={selectedEvent} cve={selectedCve} onClose={closeDossier} onAnalyze={() => setShowAnalysis((v) => !v)} />
+          <DetailPanel
+            event={selectedEvent}
+            cve={selectedCve}
+            incident={selectedIncident}
+            onClose={closeDossier}
+            onAnalyze={() => setShowAnalysis((v) => !v)}
+          />
         </div>
       )}
 
       <PatchDock cves={patchNow} onSelectCve={selectCve} open={patchOpen} onOpenChange={setPatchOpen} />
 
-      {showAnalysis && (selectedEvent || selectedCve) && (
+      {showAnalysis && (selectedEvent || selectedCve || selectedIncident) && (
         <div className="pointer-events-auto absolute bottom-4 right-4 z-30 w-[min(420px,calc(100%-2rem))]">
           <ThreatAnalysisPanel
             type="event"
-            title={selectedCve?.id ?? selectedEvent!.title}
-            description={selectedCve?.description ?? selectedEvent!.description}
-            country={selectedEvent?.country}
-            severity={selectedCve?.severity?.toLowerCase() === 'critical' ? 'critical' : selectedEvent?.severity}
-            kind={selectedEvent?.kind ?? 'cve'}
-            source={selectedCve?.kev ? 'CISA KEV' : selectedEvent?.source ?? 'CVE feed'}
+            title={selectedCve?.id ?? selectedIncident?.title ?? selectedEvent!.title}
+            description={selectedCve?.description ?? selectedIncident?.description ?? selectedEvent!.description}
+            country={selectedIncident?.country ?? selectedEvent?.country}
+            severity={selectedCve?.severity?.toLowerCase() === 'critical' ? 'critical' : selectedEvent?.severity ?? (selectedIncident?.status === 'confirmed' ? 'high' : 'medium')}
+            kind={selectedEvent?.kind ?? 'breach'}
+            source={selectedCve?.kev ? 'CISA KEV' : selectedIncident ? 'Global Hack Map feed' : selectedEvent?.source ?? 'CVE feed'}
             onClose={() => setShowAnalysis(false)}
           />
         </div>

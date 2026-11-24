@@ -39,6 +39,7 @@ import {
   productLabel,
   severityTone,
   type GhmCve,
+  type GhmIncident,
   type GhmTab,
   type GhmWindow,
 } from './types';
@@ -63,6 +64,14 @@ const STATUS_DOT: Record<EvidenceStatus, string> = {
   claimed: 'bg-amber-500',
   precautionary: 'bg-violet-500',
   disputed: 'bg-rose-500',
+};
+
+const STATUS_TONE_INLINE: Record<EvidenceStatus, string> = {
+  confirmed: 'text-emerald-600 dark:text-emerald-400',
+  reported: 'text-sky-600 dark:text-sky-400',
+  claimed: 'text-amber-600 dark:text-amber-400',
+  precautionary: 'text-violet-600 dark:text-violet-400',
+  disputed: 'text-rose-600 dark:text-rose-400',
 };
 
 function Eyebrow({ children, className = '' }: { children: ReactNode; className?: string }): JSX.Element {
@@ -174,6 +183,10 @@ export function TopBar({
 
 export function StorySidebar({
   events,
+  incidents,
+  orgCount,
+  dayBars,
+  onSelectIncident,
   cves,
   generatedAt,
   window,
@@ -194,6 +207,10 @@ export function StorySidebar({
   searchRef,
 }: {
   events: PulseEvent[];
+  incidents: GhmIncident[];
+  orgCount: number;
+  dayBars: Array<{ date: string; count: number }>;
+  onSelectIncident: (incident: GhmIncident) => void;
   cves: GhmCve[];
   generatedAt: string | null;
   window: GhmWindow;
@@ -238,7 +255,7 @@ export function StorySidebar({
   const outageRows = eventRows.filter((e) => /firm|maritime|earthquake/.test(e.kind));
   const tabCounts: Record<GhmTab, number> = {
     cves: cveRows.length,
-    breaches: eventRows.length,
+    breaches: incidents.length || eventRows.length,
     malware: malwareRows.length,
     outages: outageRows.length,
   };
@@ -287,10 +304,15 @@ export function StorySidebar({
             <Eyebrow>Sourced incidents</Eyebrow>
             <Eyebrow>{window} window</Eyebrow>
           </div>
-          <div className="mt-1 text-4xl font-semibold leading-none tracking-tight text-heading tabular-nums">{events.length}</div>
-          <p className="mt-1.5 text-micro text-muted">
-            {cves.length} CVEs · {cves.filter((c) => c.kev).length} known exploited · {stack.length ? `${stack.length} in your stack` : 'add what you run below'}
-          </p>
+          <div className="mt-1 flex items-end justify-between gap-2">
+            <div>
+              <div className="text-4xl font-semibold leading-none tracking-tight text-heading tabular-nums">{orgCount}</div>
+              <p className="mt-1.5 text-micro text-muted">
+                {incidents.length} sourced incidents · {cves.filter((c) => c.kev).length} known exploited
+              </p>
+            </div>
+            <DayBars days={dayBars} />
+          </div>
           <div className="mt-2.5 grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-line-1 bg-line-1">
             {(['confirmed', 'reported', 'claimed'] as const).map((status) => (
               <button
@@ -430,36 +452,50 @@ export function StorySidebar({
       <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar px-2 py-2" role="tabpanel">
         {tab === 'cves' &&
           (cveRows.length ? (
-            <ul className="space-y-1">
-              {cveRows.map((cve) => {
-                const signal = cveSignal(cve);
-                return (
-                  <li key={cve.id}>
-                    <button
-                      type="button"
-                      onClick={() => onSelectCve(cve.id)}
-                      className="w-full rounded-lg border border-line-1 bg-surface px-2 py-1.5 text-left transition-colors hover:border-rose-500/40"
-                    >
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className={`font-mono text-micro font-semibold ${SIGNAL_TONE[signal]}`}>{SIGNAL_LABEL[signal]}</span>
-                        <span className="font-mono text-mini font-semibold text-heading">{cve.id}</span>
-                        {cve.score != null && <span className={`rounded border px-1 font-mono text-micro ${severityTone(cve.severity)}`}>{cve.score.toFixed(1)}</span>}
-                        {(cve.epss ?? 0) > 0.01 && <span className="font-mono text-micro text-muted">EPSS {epssPercent(cve.epss)}</span>}
-                        <span className="ml-auto font-mono text-micro text-muted/70">{relativeAgo(cve.published)}</span>
-                      </div>
-                      <p className="mt-0.5 line-clamp-1 text-mini text-body">{productLabel(cve)}</p>
-                      <p className="line-clamp-2 text-micro text-muted">{cve.description}</p>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="space-y-3">
+              <CveList
+                heading="Exploited or in the news"
+                rows={cveRows.filter((c) => c.kev || c.has_exploit || c.origin === 'vulntracker').slice(0, 20)}
+                onSelect={onSelectCve}
+              />
+              <CveList
+                heading="Advisories to review"
+                rows={cveRows.filter((c) => !c.kev && !c.has_exploit && c.origin !== 'vulntracker').slice(0, 30)}
+                onSelect={onSelectCve}
+              />
+            </div>
           ) : (
             <EmptyList label="No CVEs match this search or stack." />
           ))}
 
         {tab === 'breaches' &&
-          (eventRows.length ? (
+          (incidents.length ? (
+            <ul className="space-y-1">
+              {incidents.map((i) => (
+                <li key={i.id}>
+                  <button
+                    type="button"
+                    onClick={() => onSelectIncident(i)}
+                    className="w-full rounded-lg border border-line-1 bg-surface px-2 py-1.5 text-left transition-colors hover:border-rose-500/40"
+                  >
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${STATUS_DOT[i.status]}`} />
+                      <span className="font-mono text-micro uppercase tracking-wider text-muted">{i.type}</span>
+                      {i.records != null && <span className="font-mono text-micro text-muted/70">{i.records.toLocaleString()} records</span>}
+                      <span className="ml-auto font-mono text-micro text-muted/70">{relativeAgo(i.published)}</span>
+                    </div>
+                    <p className="mt-0.5 line-clamp-1 text-mini text-heading">{i.victim}</p>
+                    <p className="line-clamp-2 text-micro text-muted">{i.description}</p>
+                    <div className="mt-1 flex flex-wrap gap-1.5 font-mono text-micro">
+                      <span className={STATUS_TONE_INLINE[i.status]}>{STATUS_META[i.status].label}</span>
+                      {i.country && <span className="text-muted">{i.country}</span>}
+                      {i.actor && <span className="text-amber-600 dark:text-amber-400">{i.actor}</span>}
+                    </div>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : eventRows.length ? (
             <ul className="space-y-1">
               {eventRows.map((e) => {
                 const status = incidentStatus(e);
@@ -498,6 +534,66 @@ export function StorySidebar({
   );
 }
 
+/** One section of the CVE list — GHM splits advisories from confirmed exploitation. */
+function CveList({ heading, rows, onSelect }: { heading: string; rows: GhmCve[]; onSelect: (id: string) => void }): JSX.Element | null {
+  if (!rows.length) return null;
+  return (
+    <section>
+      <Eyebrow className="mb-1.5 block px-1">{heading}</Eyebrow>
+      <ul className="space-y-1">
+        {rows.map((cve) => {
+          const signal = cveSignal(cve);
+          return (
+            <li key={cve.id}>
+              <button
+                type="button"
+                onClick={() => onSelect(cve.id)}
+                className="w-full rounded-lg border border-line-1 bg-surface px-2 py-1.5 text-left transition-colors hover:border-rose-500/40"
+              >
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className={`font-mono text-micro font-semibold ${SIGNAL_TONE[signal]}`}>{SIGNAL_LABEL[signal]}</span>
+                  <span className="font-mono text-mini font-semibold text-heading">{cve.id}</span>
+                  {cve.score != null && <span className={`rounded border px-1 font-mono text-micro ${severityTone(cve.severity)}`}>{cve.score.toFixed(1)}</span>}
+                  <span className="ml-auto font-mono text-micro text-muted/70">{relativeAgo(cve.published)}</span>
+                </div>
+                <p className="mt-0.5 line-clamp-1 text-mini text-body">{productLabel(cve)}</p>
+                <p className="line-clamp-2 text-micro text-muted">{cve.description}</p>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+/** Distinct organisations per rolling 24h over the last 14 days. */
+function DayBars({ days }: { days: Array<{ date: string; count: number }> }): JSX.Element {
+  const max = Math.max(1, ...days.map((d) => d.count));
+  return (
+    <div
+      className="w-[min(45%,150px)] shrink-0"
+      role="img"
+      aria-label={`Organisations per 24-hour period over the last 14 days: ${days.map((d) => d.count).join(', ')}`}
+    >
+      <div className="flex h-11 items-end gap-[3px]">
+        {days.map((d, index) => (
+          <span
+            key={d.date}
+            title={`${d.date}: ${d.count} organisations`}
+            className={`flex-1 rounded-[2px] ${index === days.length - 1 ? 'bg-heading' : 'bg-surface-300'}`}
+            style={{ height: `${Math.max(3, (d.count / max) * 44)}px` }}
+          />
+        ))}
+      </div>
+      <div className="mt-1 flex justify-between font-mono text-micro text-muted/70">
+        <span>14d ago</span>
+        <span>last 24h</span>
+      </div>
+    </div>
+  );
+}
+
 function EmptyList({ label }: { label: string }): JSX.Element {
   return <p className="py-8 text-center text-mini text-muted">{label}</p>;
 }
@@ -526,17 +622,19 @@ function EventMiniList({ rows, onSelect }: { rows: PulseEvent[]; onSelect: (e: P
 export function DetailPanel({
   event,
   cve,
+  incident,
   onClose,
   onAnalyze,
 }: {
   event: PulseEvent | null;
   cve: GhmCve | null;
+  incident: GhmIncident | null;
   onClose: () => void;
   onAnalyze: () => void;
 }): JSX.Element | null {
-  if (!event && !cve) return null;
-  const status = event ? incidentStatus(event) : null;
-  const id = cve?.id ?? (cveFromText(event?.title ?? '') || event?.id || 'detail');
+  if (!event && !cve && !incident) return null;
+  const status = incident?.status ?? (event ? incidentStatus(event) : null);
+  const id = cve?.id ?? (cveFromText(incident?.description ?? '') || cveFromText(event?.title ?? '') || event?.id || incident?.id || 'detail');
   return (
     <aside className="pointer-events-auto flex h-full w-full flex-col overflow-y-auto custom-scrollbar rounded-l-2xl border-l border-line-1 bg-surface-100/95 shadow-xl backdrop-blur-md" aria-label="Dossier">
       <div className="flex items-center justify-between border-b border-line-1 px-3 py-2">
@@ -547,7 +645,15 @@ export function DetailPanel({
       </div>
       <div className="flex-1 p-3">
         <div className="flex flex-wrap items-center gap-1.5">
-          {cve ? (
+          {incident ? (
+            <>
+              <ShieldAlert size={14} className="text-rose-500" aria-hidden />
+              <h2 className="text-sm font-semibold leading-snug text-heading">{incident.victim}</h2>
+              <span className={`rounded border px-1.5 py-0.5 font-mono text-micro ${STATUS_TONE_INLINE[incident.status]}`}>
+                {STATUS_META[incident.status].label}
+              </span>
+            </>
+          ) : cve ? (
             <>
               <Flame size={14} className="text-rose-500" aria-hidden />
               <h2 className="font-mono text-sm font-semibold text-heading">{cve.id}</h2>
@@ -560,7 +666,24 @@ export function DetailPanel({
           )}
         </div>
 
-        {cve ? (
+        {incident ? (
+          <>
+            <h3 className="mt-1 text-mini font-medium text-heading">{incident.title}</h3>
+            <p className="mt-2 text-mini leading-relaxed text-body">{incident.description}</p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <Fact label="Type" value={incident.type} />
+              <Fact label="Reported" value={relativeAgo(incident.published) || '—'} />
+              {incident.records != null && <Fact label="Records" value={incident.records.toLocaleString()} />}
+              {incident.actor && <Fact label="Actor" value={incident.actor} />}
+              {incident.country && <Fact label="Country" value={incident.country} />}
+              {incident.place && <Fact label="Location" value={incident.place} />}
+            </div>
+            <p className="mt-3 text-micro leading-snug text-muted">
+              {STATUS_META[incident.status].description}. If you use this organisation, check its own advisory and rotate
+              anything exposed. An absent result is never proof you are unaffected.
+            </p>
+          </>
+        ) : cve ? (
           <>
             <p className="mt-2 text-mini leading-relaxed text-body">{cve.description}</p>
             <div className="mt-3 grid grid-cols-2 gap-2">
@@ -595,6 +718,11 @@ export function DetailPanel({
         )}
 
         <div className="mt-3 flex flex-wrap items-center gap-2 text-mini">
+          {incident && (
+            <a href={sanitizeUrl(incident.url) || undefined} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-muted hover:text-heading">
+              Original incident <ExternalLink size={10} />
+            </a>
+          )}
           {cve && (
             <a
               href={sanitizeUrl(`https://nvd.nist.gov/vuln/detail/${cve.id}`)}
@@ -808,12 +936,55 @@ export function CheckPanel({
 }
 
 export function BriefPanel({ items, dayKey, onClose }: { items: Array<{ title: string; body?: string; source?: string }>; dayKey: string; onClose: () => void }): JSX.Element {
+  const confirmed = items.filter((i) => /Confirmed/i.test(i.title)).length;
+  const claimed = items.filter((i) => /Claimed/i.test(i.title)).length;
+  const kev = items.filter((i) => /CVE-\d{4}-\d+/i.test(i.title)).length;
   return (
     <Modal title="Today's brief" onClose={onClose}>
-      <p className="mb-2 text-mini text-muted">
-        An AI summary of the live picture — generated on demand and cached for an hour. Cross-check every claim against the linked sources.
+      <p className="text-micro font-mono uppercase tracking-wider text-muted">Daily brief · {dayKey}</p>
+      <h3 className="mt-1 text-lg font-semibold leading-snug text-heading">Everything that broke in the last 48 hours</h3>
+      <p className="mt-1 text-mini text-muted">
+        A live briefing built from the incident feed, confirmed-exploitation list and AI summary. Counts are live; every item links to its source.
       </p>
-      <AiSummaryCard surface="Global Hack Map" items={items} dayKey={dayKey} requireAdmin={false} autoFetch={false} />
+
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <Fact label="Items" value={String(items.length)} />
+        <Fact label="Confirmed" value={String(confirmed)} />
+        <Fact label="Claims" value={String(claimed)} />
+        <Fact label="CVEs" value={String(kev)} />
+      </div>
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <section>
+          <Eyebrow className="mb-1.5 block">Critical · act now</Eyebrow>
+          <ul className="space-y-1">
+            {items.filter((i) => /Confirmed|CISA KEV/i.test(i.title)).slice(0, 6).map((i, index) => (
+              <li key={`${i.title}-${index}`} className="rounded-lg border border-line-1 bg-surface px-2 py-1.5">
+                <p className="line-clamp-2 text-mini text-heading">{i.title}</p>
+                <p className="mt-0.5 line-clamp-2 text-micro text-muted">{i.body}</p>
+                <p className="mt-1 text-micro font-mono text-rose-600 dark:text-rose-400">What to do · verify the vendor advisory, patch and hunt for pre-patch compromise.</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+        <section>
+          <Eyebrow className="mb-1.5 block">Watch · claims &amp; reports</Eyebrow>
+          <ul className="space-y-1">
+            {items.filter((i) => !/Confirmed|CISA KEV/i.test(i.title)).slice(0, 6).map((i, index) => (
+              <li key={`${i.title}-${index}`} className="rounded-lg border border-line-1 bg-surface px-2 py-1.5">
+                <p className="line-clamp-2 text-mini text-heading">{i.title}</p>
+                <p className="mt-0.5 line-clamp-2 text-micro text-muted">{i.body}</p>
+                <p className="mt-1 text-micro font-mono text-amber-600 dark:text-amber-400">What to do · treat as unconfirmed until the organisation or a regulator says so.</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+
+      <div className="mt-3 border-t border-line-1 pt-3">
+        <Eyebrow className="mb-1.5 block">AI summary · on demand</Eyebrow>
+        <AiSummaryCard surface="Global Hack Map" items={items} dayKey={dayKey} requireAdmin={false} autoFetch={false} />
+      </div>
       <p className="mt-3 text-micro text-muted/70">
         Prefer per-event analysis? Click <Sparkles size={9} className="inline" /> AI analysis in any dossier.
       </p>
