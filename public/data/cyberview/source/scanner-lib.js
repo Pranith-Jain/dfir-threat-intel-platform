@@ -159,7 +159,7 @@
   /* ---- links: https only, to hosts the scanner itself emits ---- */
   // The scanner's links come from CyberView's own site (DEFAULT_SOURCE in scanner/lib/data.mjs) and from workbench.json
   // (vendor advisories, CISA's references, hunt files). The page adds the hosts found in the site's own data/workbench.json.
-  V.BASE_HOSTS = ["xanderhutch.github.io", "www.cisa.gov", "nvd.nist.gov", "www.cve.org", "github.com"];
+  V.BASE_HOSTS = ["xanderhutch.github.io", "cyberview.tools", "www.cisa.gov", "nvd.nist.gov", "www.cve.org", "github.com"];
   /** Every https host named in a JSON value (the site's own workbench.json), capped. */
   V.hostsIn = function (value) {
     var out = {}, n = 0, stack = [value], seen = 0;

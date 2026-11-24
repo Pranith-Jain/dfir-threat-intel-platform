@@ -3,6 +3,9 @@
 // A button press is required so that email security scanners that follow links do not unsubscribe people.
 (function () {
   "use strict";
+  // not framed by another site (pen test 2026-11-23): GitHub Pages cannot send frame-ancestors, so a framed copy hides
+  // itself and tries to take over the top window; this blocks clickjacking of the list and account controls
+  if (window.top !== window.self) { document.documentElement.style.display = "none"; try { window.top.location = window.self.location.href; } catch (e) {} return; }
   var $ = function (id) { return document.getElementById(id); };
   var meta = function (n) { var m = document.querySelector('meta[name="' + n + '"]'); return m ? m.getAttribute("content") || "" : ""; };
   var token = new URLSearchParams(location.search).get("t") || "";

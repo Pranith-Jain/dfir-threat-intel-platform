@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T06:09:24.706Z",
+  "generatedAt": "2026-11-24T04:13:27.943Z",
   "upstream": {
     "site": "https://tldrcve.com",
     "list": "https://tldrcve.com/cves/",
@@ -8,11 +8,11 @@
     "scale": "https://tldrcve.com/how-we-rate/"
   },
   "stats": {
-    "cves": 38,
-    "details": 38,
-    "versions": 41,
+    "cves": 41,
+    "details": 41,
+    "versions": 42,
     "byVerdict": {
-      "Patch now": 14,
+      "Patch now": 17,
       "Patch now if…": 20,
       "Next cycle": 3,
       "Watching": 1
@@ -614,7 +614,7 @@
           },
           {
             "yes": true,
-            "text": "✓ On CISA's exploited list (fix by 23 Nov) 9"
+            "text": "✓ On CISA's exploited list (since 20 Nov) 9"
           }
         ],
         "affected": [
@@ -775,7 +775,7 @@
           },
           {
             "yes": true,
-            "text": "✓ On CISA's exploited list (fix by 23 Nov) 3"
+            "text": "✓ On CISA's exploited list (since 20 Nov) 3"
           }
         ],
         "affected": [
@@ -1541,6 +1541,150 @@
       }
     },
     {
+      "slug": "cisco-expressway",
+      "name": "Cisco Expressway",
+      "meta": "Cisco Expressway · CVE-2026-76466",
+      "line": "Exploited for root on clustered systems. Patch now.",
+      "verdict": "Patch now",
+      "scareLevel": 3.4,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-10-21",
+      "url": "https://tldrcve.com/cisco-expressway/",
+      "detail": {
+        "slug": "cisco-expressway",
+        "kicker": "Cisco Expressway · CVE-2026-76466",
+        "name": "Cisco Expressway",
+        "verdict": "Patch now",
+        "verdictHint": "Exploited for root on clustered systems. Patch now.",
+        "summary": "Cisco Expressway's cluster database accepts a secret that is built into the software, so anyone who can reach a clustered Expressway-C or Expressway-E over the network can run commands on it as root, with no login. Exploit code has been public since 5 Nov 2026, F6 reported attackers exploiting it against a company in Russia on 18 Nov, and on 20 Nov CISA added it to its exploited list with a 3-day deadline for US federal civilian agencies. Cisco fixed it in X15.5.20 on 21 Oct 2026 and gives no workaround.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1,5"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 4,3"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 3,2"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (since 20 Nov) 2,10"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Expressway before X15.5.20",
+            "hint": null,
+            "body": "Expressway-C or Expressway-E, virtual or appliance, on X15.5.3 or earlier. X14 and earlier get no fix of their own: Cisco says to migrate to a fixed release. 1",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Set up as a cluster",
+            "hint": null,
+            "body": "Cisco lists only clustered systems as affected; cluster peers are set under System > Clustering. Sources differ on the TLS verification setting: Cisco says client certificates aren't checked when TLS Verify Mode is set to Enabled, while the public exploit was tested in Permissive mode, the default, and not in Enforce mode. Cisco doesn't name the setting as a condition, so treat every clustered system as affected. 1,4,9",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "An attacker can reach it",
+            "hint": null,
+            "body": "Network access to the cluster database is enough; no login is needed. The public exploit connects on TCP port 4372, and F6 says to restrict TCP 4371–4372. In the attack F6 investigated, attackers first broke into two internet-facing Expressways on X15.5.3, then used one of them to reach two more cluster nodes on the internal network. 1,3,4",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Upgrade now",
+            "hint": null,
+            "body": "Go to X15.5.20 or later; X14 and earlier must migrate to a fixed release. Cisco gives no workaround. CISA gave US federal civilian agencies 3 days, until 23 Nov 2026, plus a check for a break-in. That deadline binds only those agencies, under BOD 26-04; for everyone else, the listing means it's being exploited. Before upgrading a cluster: X15.5.20 supports clusters only with TLS verification set to Enforcing, and its upgrade check stops if a peer's certificate lacks its FQDN in the SAN or peers mix IP addresses and FQDNs, so switch to Enforcing and fix certificates first. The same release fixes eight more CVEs (CVE-2026-76490 to CVE-2026-76497) for groups of bugs Cisco found itself, which it says aren't known to be exploited. 1,2,6,7,8 Latest safe versions checked 23 Nov Cisco Expressway → X15.5 X15.5.22 Earlier X15 releases upgrade to X15.5. For X14 and earlier, Cisco says to migrate to a fixed release.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Can't upgrade yet? Limit the ports",
+            "hint": null,
+            "body": "As a stopgap, F6 recommends a firewall rule that allows TCP 4371–4372 only from your other cluster nodes. Cisco lists no workaround, so this adds protection; it doesn't replace the upgrade. 3,1",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Check for a break-in",
+            "hint": null,
+            "body": "Upgrading doesn't remove attackers who are already in, and CISA flags this one for forensic triage. F6's signs: the entry nodeup,'wombat@127.0.0.1' in Expressway's Erlang log ( erlang.log ), Python files matching /mnt/harddisk/i{0-9}{4}[a-zA-Z]?/*.py , and the addresses 66.179.31.32 and 18.130.47.116 . If you find the log entry, F6 says to check other logs and artifacts to confirm. In its case the attackers went on to scan the network, find open file shares, work with SQL Server and WinRM, and search GitLab repositories for credentials. Sources differ on whether it is exploited: Cisco's advisory (21 Oct, not updated since) says Cisco knows of no malicious use, while CISA and F6 say it is being exploited. 1,2,3",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-vcs-static-cred-hr7EWZ8t",
+            "title": "Cisco advisory cisco-sa-vcs-static-cred-hr7EWZ8t: clustered systems, X15.5.20, no workaround, TLS Verify Mode",
+            "date": "21 Oct"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2026-76466",
+            "title": "CISA KEV catalog: CVE-2026-76466 added 20 Nov, due 23 Nov, forensic triage",
+            "date": null
+          },
+          {
+            "url": "https://www.f6.ru/media-center/press-releases/cisco-cve-2026-76466/",
+            "title": "F6: first exploitation, Russian company, X15.5.3, indicators, ports 4371–4372",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://github.com/dinosn/cve-2026-76466",
+            "title": "dinosn: public exploit code, port 4372, tested on X15.3.2 in Permissive mode",
+            "date": "5 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-76466",
+            "title": "CVE record: CVE-2026-76466, CVSS 9.8, no login, CISA: exploitation active",
+            "date": "21 Oct"
+          },
+          {
+            "url": "https://www.cisa.gov/news-events/directives/bod-26-04-prioritizing-security-updates-based-risk",
+            "title": "CISA BOD 26-04: KEV deadlines bind federal civilian agencies, 3 days plus forensic triage",
+            "date": "10 Jun"
+          },
+          {
+            "url": "https://www.cisco.com/c/dam/en/us/td/docs/voice_ip_comm/expressway/release_note/X15-5-x/Cisco-Expressway-and-Cisco-Expressway-Select-Release-Note-X15-5-x.pdf",
+            "title": "Cisco: Expressway X15.5.x release note, X15.5.22 newest, clusters need Enforcing, upgrade check needs FQDN certificates",
+            "date": "16 Nov"
+          },
+          {
+            "url": "https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-exwy-hardening-FhcqBVcs",
+            "title": "Cisco: Expressway hardening release, eight more CVEs for bug groups, not known to be exploited",
+            "date": "21 Oct"
+          },
+          {
+            "url": "https://www.cisco.com/c/en/us/support/docs/unified-communications/expressway/217230-what-is-expressway-cluster-and-how-it-wo.html",
+            "title": "Cisco: Expressway clustering, System > Clustering, Permissive is the default",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/news-events/alerts/2026/11/20/cisa-adds-four-known-exploited-vulnerabilities-catalog",
+            "title": "CISA alert: four exploited vulnerabilities added, including CVE-2026-76466",
+            "date": "20 Nov"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-23",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/cisco-expressway/"
+      }
+    },
+    {
       "slug": "sshole",
       "name": "SSHole",
       "meta": "OpenSSH (Alpine) · CVE-2026-123158",
@@ -1862,6 +2006,282 @@
           }
         ],
         "url": "https://tldrcve.com/synology-dsm/"
+      }
+    },
+    {
+      "slug": "azure-apim-secrets",
+      "name": "Azure APIM secrets",
+      "meta": "Azure API Management ·",
+      "line": "On APIM Classic? Rotate the secrets it stored.",
+      "verdict": "Patch now",
+      "scareLevel": 3.1,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-11-20",
+      "url": "https://tldrcve.com/azure-apim-secrets/",
+      "detail": {
+        "slug": "azure-apim-secrets",
+        "kicker": "Azure API Management",
+        "name": "Azure APIM secrets",
+        "verdict": "Patch now",
+        "verdictHint": "On APIM Classic? Rotate the secrets it stored.",
+        "summary": "Microsoft says a flaw in Azure API Management Classic tiers let an unauthorized party reach admin functions and read secrets stored in customers' instances before it found the flaw on 18 Nov 2026; it blocked that access the next day. Norway's NSM links it to attacks on Equinor and Skagerak Energi (Skagerak calls its case an attempt with no impact), and says it affects several sectors in Norway and beyond. Microsoft's fix doesn't cancel credentials that were already taken, so Classic customers need to rotate what APIM held and check the systems behind it.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": false,
+            "text": "No public exploit 1,2,3"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 1,2,3,4"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 8"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "You run an APIM Classic tier",
+            "hint": null,
+            "body": "Microsoft says Classic tiers were affected and v2 tiers were not; Microsoft's docs list the Classic tiers as Developer, Basic, Standard and Premium, with Consumption separate. NSM says v2 and Consumption tier instances aren't vulnerable. Customers told The Register that forgotten development and test instances could leave more organisations exposed. 1,2,3,9",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Not locked down before 19 Nov",
+            "hint": null,
+            "body": "Microsoft says exposure was tied to Classic instances that didn't follow its network security guidance or that stored secrets directly in APIM instead of referencing Azure Key Vault. A researcher's write-up says instances whose endpoints couldn't be reached from the internet (a private endpoint, or an internal virtual network with public access off) weren't exposed to this route; a firewall in front only helps if attackers couldn't reach APIM directly. NSM makes no such exception: it tells everyone with APIM to assume their secrets and named values are exposed, and Kristiansen notes Key Vault references don't protect a value from someone who can edit policies or use tracing. 1,2,3,6,7",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Check your instance got the fix",
+            "hint": "command",
+            "body": "NSM's check: open this address on your gateway, from a network that can reach it, and read RuntimeVersion . On 0.52.x you're patched if the last number is 31936 or higher, on 0.53.x if it's 31938 or higher. Other patterns (such as 0.53.4608.0 ) are v2 or Consumption tier and not vulnerable. If yours is lower, NSM says to contact your provider directly. Microsoft says its own fix needed no customer action; it's unclear whether NSM's version thresholds and that fix are the same thing. 1,2 curl -s https://<your-gateway-hostname>/internal-status-0123456789abcdef",
+            "code": [
+              "curl -s https://<your-gateway-hostname>/internal-status-0123456789abcdef"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "Rotate what APIM stored",
+            "hint": null,
+            "body": "Microsoft lists what may have been exposed: secrets in named values, client secrets for identity providers and OpenID Connect providers, subscription keys, and tokens for the direct management API. Its fix \"does not automatically invalidate credentials that may have been accessed before the fix was deployed\". NSM says to assume secrets and named values are out and rotate all tokens and secrets. Anders Kristiansen's write-up adds backend credentials, app registration secrets, the Key Vault secrets APIM references and the tenant access keys. 1,2,7",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Check what sits behind APIM",
+            "hint": null,
+            "body": "A stolen credential may work directly against the service it protects, outside APIM. NSM says to map what information sits behind each instance; Microsoft says to look for suspicious activity in systems those credentials reach and to review your logs. An admin's Reddit post, cited by BleepingComputer, says attackers logged in to their Key Vaults with a valid administrator token; BleepingComputer hasn't verified it. 1,2,7",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Turn off the old management API",
+            "hint": null,
+            "body": "Each instance has a direct management API at https://<service-name>.management.azure-api.net . Microsoft retired it on 15 March 2025 and says to disable it if it's on. In the portal that's Management API, Enable Management REST API: No. Two researchers' write-ups say it bypasses Entra ID and Azure role checks and its calls don't show in the Activity log; msandbu's write-up names it as the attack route and says it was still active even when set to No. The Reddit admin quoted by BleepingComputer says attackers used an authentication bypass in \"a deprecated legacy API\" (not verified). Microsoft hasn't confirmed how the attacker got in. 2,3,5,6,7",
+            "code": []
+          },
+          {
+            "num": "5",
+            "title": "Microsoft hasn't published details",
+            "hint": null,
+            "body": "Microsoft's advisory (Azure Service Health, tracking ID MZK9-GH0) went to customers and isn't public; there's no CVE yet, and it isn't on CISA's list of exploited bugs. NSM says it's still unclear how widely the flaw was exploited. We'll check again by 1 Dec 2026. 1,2,3,8",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://nsm.no/aktuelt/nsm-deler-tiltak-mot-sarbarhet-i-azure-api-management",
+            "title": "NSM (Norway's National Security Authority): Azure API Management vulnerability, Equinor and Skagerak hit, rotate secrets, runtime version check",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://www.bleepingcomputer.com/news/security/microsoft-azure-flaw-exploited-to-steal-customers-api-credentials/",
+            "title": "BleepingComputer: Microsoft's Service Health advisory MZK9-GH0, Classic tiers, exposed secrets, fixed 19 Nov, Reddit admin's claims",
+            "date": "23 Nov"
+          },
+          {
+            "url": "https://www.theregister.com/security/2026/11/23/norway-links-energy-firm-cyberattacks-to-critical-azure-api-management-flaw/5311598",
+            "title": "The Register: Microsoft's advisory, Classic not v2, exposure tied to configuration, forgotten dev and test instances",
+            "date": "23 Nov"
+          },
+          {
+            "url": "https://www.equinor.com/news/20261711-equinor-detected-cyber-attack",
+            "title": "Equinor: cyber-attack detected 17 Nov, stopped 20 Nov, no sign data was stolen or altered",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://learn.microsoft.com/en-us/azure/api-management/breaking-changes/direct-management-api-retirement-march-2025",
+            "title": "Microsoft Learn: direct management API retired 15 March 2025, disable it if enabled",
+            "date": null
+          },
+          {
+            "url": "https://msandbu.org/azure-apim-vulnerabilty/",
+            "title": "msandbu.org: the direct management API, who isn't affected, how to check for the upgrade",
+            "date": null
+          },
+          {
+            "url": "https://anderskristiansen.com/post/2026/apim-legacy-access/",
+            "title": "Anders Kristiansen: what to rotate, the old management API, how to hunt in logs",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          },
+          {
+            "url": "https://learn.microsoft.com/en-us/azure/api-management/v2-service-tiers-overview",
+            "title": "Microsoft Learn: v2 tiers overview, the classic tiers are Developer, Basic, Standard and Premium; Consumption listed separately",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-24",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/azure-apim-secrets/"
+      }
+    },
+    {
+      "slug": "sap-portal-jndi",
+      "name": "SAP Portal JNDI",
+      "meta": "SAP Enterprise Portal · CVE-2025-42884",
+      "line": "Exploited, on CISA's list. Fix out since Nov 2025.",
+      "verdict": "Patch now",
+      "scareLevel": 3.1,
+      "meterLabel": "Drop everything",
+      "disclosed": "2025-11-11",
+      "url": "https://tldrcve.com/sap-portal-jndi/",
+      "detail": {
+        "slug": "sap-portal-jndi",
+        "kicker": "SAP Enterprise Portal · CVE-2025-42884",
+        "name": "SAP Portal JNDI",
+        "verdict": "Patch now",
+        "verdictHint": "Exploited, on CISA's list. Fix out since Nov 2025.",
+        "summary": "A bug in SAP NetWeaver Enterprise Portal lets an attacker with no login point the server's JNDI lookups (how Java finds named resources) at a provider of their choosing, to read or change information about the server. SAP rates it Medium (6.5) and fixed it on 11 Nov 2025. Onapsis, who found it, rated it 10.0 (Critical) when reporting it to SAP, and says it can also lead to running code on the server if a usable Java deserialization gadget chain is there. CISA added it to its exploited list on 20 Nov 2026 and gave US federal civilian agencies three days to fix it; no one has published who is attacking or how.",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 4,5"
+          },
+          {
+            "yes": false,
+            "text": "No public exploit 5,9"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 1,2,4"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (since 20 Nov) 1"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Portal 7.50 without Note 3660969",
+            "hint": null,
+            "body": "SAP lists Enterprise Portal components EP-BASIS 7.50 and EP-RUNTIME 7.50, which run on NetWeaver AS Java. SAP Note 3660969 (11 Nov 2025) ships patched versions of them; its fixed patch levels are behind an SAP login, so check in the SAP Support Portal whether the note is implemented on each Portal system. 3,4,5,9",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Attackers can reach the Portal",
+            "hint": null,
+            "body": "The attack uses unprotected SOAP operations on an AS Java endpoint, which Onapsis hasn't named. No login or user action is needed. 4,5",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Apply SAP Note 3660969 now",
+            "hint": null,
+            "body": "The fix has been out since 11 Nov 2025, so unpatched Portals are the ones at risk. CISA gave US federal civilian agencies until 23 Nov 2026, three days after listing it. That date binds only those agencies, under CISA's BOD 26-04 (which replaced BOD 22-01 on 10 Jun 2026); CISA listed the bug on evidence of active exploitation and encourages all organizations to prioritize fixing listed bugs. 3,1,7,2",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Also apply Note 3660659",
+            "hint": null,
+            "body": "Onapsis recommends SAP's October 2025 hardening note against insecure deserialization in AS Java (Note 3660659, for CVE-2025-42944) as well. Onapsis says running code through this bug depends on Java deserialization not being blocked. 5,3",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "No attack signs published yet",
+            "hint": null,
+            "body": "CISA hasn't described the attacks, and no public report names the attackers or gives indicators. If an unpatched Portal was reachable from untrusted networks, check it for changes you didn't make. 8,9",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2025-42884",
+            "title": "CISA KEV catalog: CVE-2025-42884 added 20 Nov, due 23 Nov",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/news-events/alerts/2026/11/20/cisa-adds-four-known-exploited-vulnerabilities-catalog",
+            "title": "CISA: four KEVs added on evidence of active exploitation, all organizations encouraged to prioritize them",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://support.sap.com/en/my-support/knowledge-base/security-notes-news/bulletin-2025.html",
+            "title": "SAP: 2025 Patch Day bulletin, Note 3660969 (November, Medium, 6.5, EP-BASIS/EP-RUNTIME 7.50) and Note 3660659 (October)",
+            "date": "11 Nov 2025"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2025-42884",
+            "title": "CVE record: SAP's description, CVSS 6.5, no login; CISA SSVC exploitation active, KEV 20 Nov",
+            "date": "11 Nov 2025"
+          },
+          {
+            "url": "https://onapsis.com/security-advisories/sap-netweaver-java-unauthenticated-jndi-injection-in-sap-netweaver-enterprise-portal/",
+            "title": "Onapsis: advisory ONAPSIS-2026-0100, reported 18 Aug 2025 as CVSS 10, SOAP endpoint, code execution via deserialization, Note 3660659",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://onapsis.com/blog/sap-security-patch-day-november-2025/",
+            "title": "Onapsis: November 2025 Patch Day, Onapsis Research Labs found it",
+            "date": "11 Nov 2025"
+          },
+          {
+            "url": "https://www.cisa.gov/news-events/directives/bod-26-04-prioritizing-security-updates-based-risk",
+            "title": "CISA BOD 26-04: KEV deadlines for federal civilian agencies, replaces BOD 22-01",
+            "date": "10 Jun"
+          },
+          {
+            "url": "https://securityaffairs.com/203639/security/u-s-cisa-adds-cisco-expressway-sap-netweaver-broadcom-vmware-vcenter-and-apache-roller-flaws-to-its-known-exploited-vulnerabilities-catalog.html",
+            "title": "Security Affairs: no public reports identify the attackers",
+            "date": "21 Nov"
+          },
+          {
+            "url": "https://www.rescana.com/post/sap-netweaver-enterprise-portal-cve-2025-42884-jndi-injection-kev-patch-now",
+            "title": "Rescana: no public proof of concept or indicators found; check the note is implemented",
+            "date": "21 Nov"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-23",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/sap-portal-jndi/"
       }
     },
     {
@@ -6493,6 +6913,19 @@
         }
       ],
       "url": "https://tldrcve.com/versions/chrome/"
+    },
+    {
+      "slug": "cisco-expressway",
+      "name": "Cisco Expressway",
+      "meta": "1 bug · checked 23 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "X15.5",
+          "version": "X15.5.22"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/cisco-expressway/"
     },
     {
       "slug": "chromium-browsers",

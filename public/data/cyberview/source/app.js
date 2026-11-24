@@ -71,7 +71,7 @@ var BASIS={stated:"stated by the source",inferred:"inferred by "+AI_BY,keyword:"
 function basisNote(list,k){var b=k==="layer"?"layerBasis":"secgBasis",c={stated:0,inferred:0,keyword:0};list.forEach(function(e){if(own(c,e[b]))c[e[b]]++;});
   return (k==="layer"?"Attack surface":"Sector")+": "+c.stated+" "+BASIS.stated+", "+c.inferred+" "+BASIS.inferred+", "+c.keyword+" keyword-assigned from the wording (can be wrong).";}
 function basisEl(list,k){var p=el("p","cav basis",basisNote(list,k));p.dataset.basis=k;return p;}
-var BUILD={version:"1.69",date:"2026-11-22"};
+var BUILD={version:"1.75",date:"2026-11-24"};
 var viz={lane:"layer",mat:"layer"};
 var kev=[],ripples=null;
 function own(o,k){return typeof k==="string"&&Object.prototype.hasOwnProperty.call(o,k);}
@@ -259,7 +259,7 @@ var LEAK_HOST=/(^|\.)(onion|ransomware\.live|ransomlook\.io|ransomwatch\.telemet
 function cleanClaimCheck(c){
   if(!c||typeof c!=="object"||!own(CLAIM_DEC,str(c.decision,24)))return null;
   var group=str(c.group,60).trim(),by=str(c.confirmed_by,120).trim(),d=str(c.claimed_at,10);if(!group||(c.decision==="confirmed_by_victim"&&!by))return null;
-  var u=gnLink(c.url);if(u){try{if(LEAK_HOST.test(new URL(u).hostname.toLowerCase()))u="";}catch(e){u="";}}
+  var u=gnLink(c.url);if(u){try{if(LEAK_HOST.test(new URL(u).hostname.toLowerCase().replace(/\.$/,"")))u="";}catch(e){u="";}}
   return {decision:c.decision,summary:str(c.summary,300).trim(),group:group,claimed:isDay(d)?d:"",by:by,url:u,at:str(c.at,30),ai:AI_BY};
 }
 function claimLabel(c){
@@ -2930,8 +2930,9 @@ var STORE_URL="data/bundle.json",POLL_MS=5*60*1000;
 // Error reports open a pre-filled GitHub issue (label event-report) that the verify and watchdog jobs read.
 var REPORT_URL="https://github.com/xanderhutch/CyberView/issues/new";
 function sendReport(p){
-  var body="Event: "+p.title+"\nEvent id: "+p.event_id+"\nReported at: "+p.at+"\n\nWhat is wrong, and what should it say:\n"+p.note+"\n";
-  var u=REPORT_URL+"?labels=event-report&title="+encodeURIComponent("Error report: "+String(p.title).slice(0,90))+"&body="+encodeURIComponent(body);
+  // the issue form (.github/ISSUE_TEMPLATE/event-report.yml) labels the report event-report for everyone; a bare
+  // ?labels= is ignored for visitors without triage rights, so reports used to arrive unlabelled
+  var u=REPORT_URL+"?template=event-report.yml&title="+encodeURIComponent("Error report: "+String(p.title).slice(0,90))+"&event="+encodeURIComponent(String(p.title).slice(0,120)+" ("+p.event_id+")")+"&problem="+encodeURIComponent(String(p.note||""));
   var w=null;try{w=window.open(u,"_blank");if(w)w.opener=null;}catch(x){w=null;}
   return w?Promise.resolve():Promise.reject(new Error("popup blocked"));
 }

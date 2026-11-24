@@ -6,7 +6,7 @@
   var MAX_ITEMS = 5000;
   function txt(v, n) { return String(v == null ? "" : v).replace(/[\u0000-\u001f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, n || 120); }
   function norm(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); }
-  function isVer(s) { return /^v?\d+([.\-_+~:]\w+)*$/i.test(s) && /\d/.test(s) && s.length <= 40; }
+  function isVer(s) { return String(s).length <= 40 && /^v?\d+(?:[.\-_+~:][A-Za-z0-9]+)*$/i.test(s) && /\d/.test(s); }   // separators and parts never overlap: no catastrophic backtracking
   L.norm = norm;
 
   /* ---- versions ---- */

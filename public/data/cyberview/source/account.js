@@ -6,6 +6,9 @@
 //   - export and deletion are self-service. No HTML string sinks: every node is built and filled with textContent.
 (function () {
   "use strict";
+  // not framed by another site (pen test 2026-11-23): GitHub Pages cannot send frame-ancestors, so a framed copy hides
+  // itself and tries to take over the top window; this blocks clickjacking of the list and account controls
+  if (window.top !== window.self) { document.documentElement.style.display = "none"; try { window.top.location = window.self.location.href; } catch (e) {} return; }
   var $ = function (id) { return document.getElementById(id); };
   var meta = function (n) { var m = document.querySelector('meta[name="' + n + '"]'); return m ? m.getAttribute("content") || "" : ""; };
   var URL_ = meta("cv-supabase-url"), KEY = meta("cv-supabase-key");
@@ -26,7 +29,18 @@
   function localTerms() { try { return cleanTerms(JSON.parse(lsGet(WL_KEY) || "[]")); } catch (e) { return []; } }
 
   if (!URL_ || !KEY || !window.supabase || !window.crypto || !crypto.subtle) { show("offline", true); return; }
-  var sb = window.supabase.createClient(URL_, KEY, { auth: { flowType: "pkce", persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+  // Where the sign-in lives (pen test, 2026-11-24): the session (with its refresh token) is kept in this tab's
+  // sessionStorage and ends when the tab closes, so other pages served from the same github.io origin cannot read a
+  // long-lived token from localStorage. Only the one-time PKCE code verifier goes to localStorage, because an email
+  // sign-in link opens in a new tab that must find it; it is removed as soon as the sign-in completes.
+  var authStore = {
+    pick: function (k) { return /code-verifier$/.test(k) ? window.localStorage : window.sessionStorage; },
+    getItem: function (k) { try { return authStore.pick(k).getItem(k); } catch (e) { return null; } },
+    setItem: function (k, v) { try { authStore.pick(k).setItem(k, v); } catch (e) {} },
+    removeItem: function (k) { try { authStore.pick(k).removeItem(k); } catch (e) {} }
+  };
+  try { Object.keys(window.localStorage).forEach(function (k) { if (/^sb-.*-auth-token$/.test(k)) window.localStorage.removeItem(k); }); } catch (e) {}   // an older long-lived copy
+  var sb = window.supabase.createClient(URL_, KEY, { auth: { flowType: "pkce", persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: authStore } });
   var user = null;
 
   // ---------- encryption ----------

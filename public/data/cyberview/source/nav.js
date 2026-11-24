@@ -2,6 +2,9 @@
 // Esc, a click outside or choosing a link closes it; focus moves into the sheet and back to the button.
 (function () {
   "use strict";
+  // not framed by another site (pen test 2026-11-23): GitHub Pages cannot send frame-ancestors, so a framed copy hides
+  // itself and tries to take over the top window; this blocks clickjacking of the list and account controls
+  if (window.top !== window.self) { document.documentElement.style.display = "none"; try { window.top.location = window.self.location.href; } catch (e) {} return; }
   // offline copy (sw.js): if the site cannot be reached, the last good pages and data are shown instead of an error
   try { if ("serviceWorker" in navigator && /^https:$|^http:$/.test(location.protocol)) navigator.serviceWorker.register("sw.js").catch(function () {}); } catch (e) {}
   // tables with class "stack" turn into cards on phones; each cell needs its column name (CSS reads data-label)
