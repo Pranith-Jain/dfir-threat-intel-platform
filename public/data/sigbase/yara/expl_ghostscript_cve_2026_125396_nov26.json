@@ -1,0 +1,22 @@
+{
+  "slug": "expl_ghostscript_cve_2026_125396_nov26",
+  "filename": "expl_ghostscript_cve_2026_125396_nov26.yar",
+  "source": "github.com/Neo23x0/signature-base",
+  "license": "Detection Rule License 1.1",
+  "headerComment": "",
+  "rules": [
+    {
+      "name": "EXPL_Ghostscript_CVE_2026_125396_POC_Nov26",
+      "meta": {
+        "description": "Detects the public proof-of-concept exploit for CVE-2026-125396 (Upload2Shell), a use-after-free in the Ghostscript font loader that lets a crafted document bypass the -dSAFER sandbox and run commands as the rendering process",
+        "author": "Florian Roth",
+        "date": "2026-11-21",
+        "reference": "https://pwn.ai/upload2shell/research.html",
+        "hash": "7685dc0e5608a7da449937e476dc4b43cf7e481a0b5c396936a9a3585fc5b25c",
+        "score": "80",
+        "id": "aa4ccc7b-1e41-552f-8302-6bd92bf866af"
+      }
+    }
+  ],
+  "body": "rule EXPL_Ghostscript_CVE_2026_125396_POC_Nov26 {\n   meta:\n      description = \"Detects the public proof-of-concept exploit for CVE-2026-125396 (Upload2Shell), a use-after-free in the Ghostscript font loader that lets a crafted document bypass the -dSAFER sandbox and run commands as the rendering process\"\n      author = \"Florian Roth\"\n      date = \"2026-11-21\"\n      reference = \"https://pwn.ai/upload2shell/research.html\"\n      hash = \"7685dc0e5608a7da449937e476dc4b43cf7e481a0b5c396936a9a3585fc5b25c\"\n      score = 80\n      id = \"aa4ccc7b-1e41-552f-8302-6bd92bf866af\"\n   strings:\n      // core: handler, stack, type\n      $sa1 = \"errordict /typecheck {\" ascii\n      $sa2 = \"count array astore\" ascii\n      $sa3 = \"get type /stringtype eq\" ascii\n\n      // context\n      $sb1 = \"Fontmap\" ascii fullword\n      $sb2 = \"setglobal\" ascii fullword\n      $sb3 = \"/FontType 1 def\" ascii\n\n      // parts that vary between variants\n      $sc1 = \" (%ram%\" ascii\n      $sc2 = \" (%!PS-AdobeFont-1.0: \" ascii\n   condition:\n      all of them\n}\n"
+}
