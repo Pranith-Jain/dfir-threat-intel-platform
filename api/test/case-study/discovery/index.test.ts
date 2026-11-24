@@ -82,6 +82,68 @@ describe('runDiscovery', () => {
     expect(result.ids).toEqual(['cve-1', 'actor-1']);
   });
 
+  it('caps round-robin so one high-scoring topic cannot fill the queue', async () => {
+    const env = {
+      runners: {
+        cve: async () => [1, 2, 3, 4, 5].map((n) => sampleC(`cve-${n}`, 'cve', 1)),
+        actor: async () => [sampleC('actor-1', 'actor', 0.9)],
+        malware: async () => [sampleC('mal-1', 'malware', 0.8)],
+      },
+      putCandidate: async () => {},
+      commitDedup: async () => {},
+      now: new Date('2026-05-14T06:00:00Z'),
+      limit: 4,
+    };
+    const result = await runDiscovery(env as any);
+    expect(result.byTopic).toEqual({ cve: 2, actor: 1, malware: 1 });
+    expect(result.ids.slice(0, 3)).toEqual(['cve-1', 'actor-1', 'mal-1']);
+  });
+
+  it('persists the whole kept set through the batch seam', async () => {
+    // Regression guard for the concurrent read-modify-write that stored only
+    // the last candidate per type. The orchestrator must hand the full kept
+    // set to putCandidates in ONE call, never fan out per-candidate puts.
+    const batches: Candidate[][] = [];
+    const env = {
+      runners: {
+        cve: async () => [1, 2, 3, 4, 5].map((n) => sampleC(`cve-${n}`, 'cve', 0.9)),
+        actor: async () => [sampleC('actor-1', 'actor', 0.8)],
+      },
+      putCandidate: async () => {
+        throw new Error('putCandidate must not be used when putCandidates is set');
+      },
+      putCandidates: async (cs: Candidate[]) => {
+        batches.push(cs);
+      },
+      commitDedup: async () => {},
+      now: new Date('2026-05-14T06:00:00Z'),
+      perTopic: 5,
+      limit: 10,
+    };
+    const result = await runDiscovery(env as any);
+    expect(result.kept).toBe(6);
+    expect(batches).toHaveLength(1);
+    expect(batches[0]).toHaveLength(6);
+  });
+
+  it('reports per-runner errors and yields for diagnostics', async () => {
+    const env = {
+      runners: {
+        cve: async () => {
+          throw new Error('feed down');
+        },
+        actor: async () => [sampleC('actor-1', 'actor', 0.9), sampleC('actor-2', 'actor', 0.8)],
+      },
+      putCandidate: async () => {},
+      commitDedup: async () => {},
+      now: new Date('2026-05-14T06:00:00Z'),
+      isSuppressed: (k: string) => k === 'actor-2',
+    };
+    const result = await runDiscovery(env as any);
+    expect(result.runnerStats.cve?.error).toBe('feed down');
+    expect(result.runnerStats.actor).toMatchObject({ returned: 2, selected: 1, suppressed: 1 });
+  });
+
   it('one failing runner does not block the others', async () => {
     const writes: Candidate[] = [];
     const env = {
@@ -102,6 +164,29 @@ describe('runDiscovery', () => {
     const result = await runDiscovery(env as any);
     expect(result.byTopic.cve).toBe(0);
     expect(new Set(writes.map((w) => w.type))).toEqual(new Set(['actor', 'malware', 'ransom']));
+  });
+
+  it('keeps the highest-scored candidate when two runners surface the same URL', async () => {
+    const writes: Candidate[] = [];
+    const env = {
+      runners: {
+        // The RSS runner is iterated first but scores lower; the richer
+        // Living Threat candidate for the same article must survive.
+        intel: async () => [{ ...sampleC('rss-story', 'intel', 0.5), evidence: { url: 'https://example.com/story' } }],
+        livingThreat: async () => [
+          { ...sampleC('lt-story', 'analysis', 0.9), evidence: { url: 'https://example.com/story' } },
+        ],
+      },
+      putCandidate: async (c: Candidate) => {
+        writes.push(c);
+      },
+      commitDedup: async () => {},
+      now: new Date('2026-05-14T06:00:00Z'),
+    };
+    const result = await runDiscovery(env as any);
+    expect(result.deduped).toBe(1);
+    expect(result.ids).toEqual(['lt-story']);
+    expect(writes.map((w) => w.key)).toEqual(['lt-story']);
   });
 
   it('drops candidates from a barred source and counts them', async () => {

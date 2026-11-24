@@ -218,6 +218,11 @@ export async function executeCronJob(
           // queue came from the top-up pass rather than fresh finds — a number
           // that stays high every day means the runners, not the gate, are the
           // limit worth fixing next.
+          const runnerErrors = Object.fromEntries(
+            Object.entries(d.runnerStats ?? {})
+              .filter(([, stat]) => stat.error)
+              .map(([name, stat]) => [name, stat.error])
+          );
           console.log(
             JSON.stringify({
               job: 'discovery',
@@ -227,6 +232,10 @@ export async function executeCronJob(
               blocked: d.blocked,
               filled: d.filledFromSuppressed,
               byTopic: d.byTopic,
+              byTopicSelected: d.byTopicSelected,
+              // Only present when a source actually failed, so a broken feed
+              // is visible in cron logs instead of just shrinking the mix.
+              runnerErrors: Object.keys(runnerErrors).length > 0 ? runnerErrors : undefined,
             })
           );
         } catch (e) {

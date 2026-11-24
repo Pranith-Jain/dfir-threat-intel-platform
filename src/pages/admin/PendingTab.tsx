@@ -93,7 +93,7 @@ function linkStatusFor(ev: Record<string, unknown>, url: string): LinkStatus {
   return 'unchecked';
 }
 
-export default function PendingTab() {
+export default function PendingTab({ refreshToken = 0 }: { refreshToken?: number }) {
   const [pending, setPending] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,7 +115,7 @@ export default function PendingTab() {
 
   useEffect(() => {
     void load();
-  }, [load]);
+  }, [load, refreshToken]);
 
   async function approve(id: string, type: string) {
     setActionMsg(null);
