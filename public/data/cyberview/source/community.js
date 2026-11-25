@@ -33,14 +33,54 @@
   }
 
   var posts = [], scope = "";
+  function hay(p) { return (p.author + " " + p.text + " " + p.event + " " + KIND[p.kind] + " " + p.note).toLowerCase(); }
+  function query() { return ($("q").value || "").trim().toLowerCase().slice(0, 80); }
+  function plural(n, w) { return n + " " + w + (n === 1 ? "" : "s"); }
+
+  // the situation band: what is in the feed and how lively it is; a tile with a filter behind it applies that filter
+  function kpis() {
+    var kb = $("kpis"); kb.textContent = "";
+    if (!posts.length) { kb.hidden = true; return; }
+    function kpi(lbl, val, sub, act, title) {
+      var k = el(act ? "button" : "div", "kpi" + (act ? " go" : "")); k.setAttribute("role", "listitem");
+      if (act) { k.type = "button"; k.title = title; k.addEventListener("click", act); }
+      k.appendChild(el("div", "kl", lbl)); k.appendChild(el("div", "kv", val)); if (sub) k.appendChild(el("span", "kd flat", sub)); kb.appendChild(k);
+    }
+    function count(k) { return posts.filter(function (p) { return p.kind === k; }).length; }
+    function show(k) { return function () { setKind(k); try { $("cmFeedH").scrollIntoView({ block: "start", behavior: "smooth" }); } catch (e) {} }; }
+    var week = Date.now() - 7 * 864e5, wk = posts.filter(function (p) { return Date.parse(p.at) >= week; }).length;
+    var evs = {}, people = {}; posts.forEach(function (p) { if (p.event) evs[p.event] = 1; people[p.author] = 1; });
+    var newest = posts.reduce(function (m, p) { return p.at > m ? p.at : m; }, "");
+    kpi("Reviewed posts", String(posts.length), plural(Object.keys(people).length, "author"));
+    kpi("This week", String(wk), newest ? "newest " + ago(newest) : "");
+    kpi("Tips", String(count("tip")), "show only tips", show("tip"), "Show only tips");
+    kpi("Questions", String(count("question")), "show only questions", show("question"), "Show only questions");
+    kpi("Comments", String(count("comment")), "show only comments", show("comment"), "Show only comments");
+    kpi("Events discussed", String(Object.keys(evs).length), "posts linked to a map event");
+    kb.hidden = false;
+  }
+  function setKind(k) {
+    $("cmShow").value = k || "";
+    Array.prototype.forEach.call(document.querySelectorAll("#cmSeg button"), function (b) { b.setAttribute("aria-pressed", String((b.getAttribute("data-k") || "") === (k || ""))); });
+    render();
+  }
+
   function render() {
-    var kind = $("cmShow").value, list = posts.filter(function (p) { return (!kind || p.kind === kind) && (!scope || p.event === scope); }), box = $("cmList"); box.textContent = "";
-    $("cmSummary").textContent = posts.length ? posts.length + " reviewed post" + (posts.length === 1 ? "" : "s") + ", newest first." : "No posts yet. Be the first: share what you are seeing.";
+    var kind = $("cmShow").value, q = query(), box = $("cmList"); box.textContent = "";
+    var base = posts.filter(function (p) { return (!kind || p.kind === kind) && (!scope || p.event === scope); });
+    var list = q ? base.filter(function (p) { return hay(p).indexOf(q) >= 0; }) : base;
+    $("cmSummary").textContent = posts.length ? plural(posts.length, "reviewed post") + ", newest first. Every one was checked before it appeared." : "No posts yet. Be the first: share what you are seeing.";
     $("cmScope").textContent = scope ? "About event " + scope : ""; $("cmClear").hidden = !scope;
-    if (!list.length && posts.length) { box.appendChild(el("li", "empty", "No posts match.")); return; }
+    var qc = $("qcount");
+    if (q) { qc.hidden = false; qc.textContent = list.length ? plural(list.length, "post") + (list.length === 1 ? " mentions" : " mention") + " \u201c" + q + "\u201d." : "No post mentions \u201c" + q + "\u201d. Clear the search to see everything."; }
+    else qc.hidden = true;
+    kpis();
+    if (!list.length && posts.length) { box.appendChild(el("li", "empty", q ? "No posts match the search." : "No posts match.")); return; }
+    if (!posts.length) { box.appendChild(el("li", "empty", "Nothing has been posted yet. The form beside the feed is the way in.")); return; }
     list.forEach(function (p) {
-      var li = el("li", "cmpost"); li.id = "post-" + p.id;
-      var head = el("div", "cmhead"); head.appendChild(el("b", null, p.author)); head.appendChild(el("span", "badge info", KIND[p.kind]));
+      var li = el("li", "cmpost k-" + p.kind); li.id = "post-" + p.id;
+      var head = el("div", "cmhead"), av = el("span", "cmav", p.author.charAt(0).toUpperCase()); av.setAttribute("aria-hidden", "true"); head.appendChild(av);
+      head.appendChild(el("b", null, p.author)); head.appendChild(el("span", "badge info", KIND[p.kind]));
       var when = el("span", "note", ago(p.at)); when.title = p.at; head.appendChild(when);
       head.appendChild(el("span", "note cmrev", "Reviewed")); li.appendChild(head);
       li.appendChild(body(p));
@@ -50,6 +90,7 @@
       var rp = el("a", null, "Report #" + p.id); rp.href = "https://github.com/xanderhutch/CyberView/issues/new?template=chat-report.yml&post=" + encodeURIComponent(String(p.id)) + "&title=" + encodeURIComponent("Report community post " + p.id);
       rp.target = "_blank"; rp.rel = "noopener noreferrer"; foot.appendChild(rp);
       li.appendChild(foot); box.appendChild(li);
+      if (q) li.classList.add("qhit");
     });
   }
   function load() {
@@ -69,7 +110,10 @@
     return "";
   }
   var text = $("cmText");
-  text.addEventListener("input", function () { $("cmCount").textContent = text.value.length + " / 600"; $("cmWarn").hidden = true; });
+  text.addEventListener("input", function () {
+    var n = text.value.length; $("cmCount").textContent = n + " / 600"; $("cmWarn").hidden = true;
+    var m = $("cmMeter"); m.style.width = Math.min(100, n / 6) + "%"; m.className = n > 540 ? "near" : "";
+  });
   $("cmPost").addEventListener("click", function () {
     var t = text.value.replace(/\s+/g, " ").trim(), bad = precheck(t), w = $("cmWarn");
     if (bad) { w.textContent = bad; w.hidden = false; text.focus(); return; }
@@ -78,7 +122,14 @@
     var win = null; try { win = window.open(u, "_blank"); if (win) win.opener = null; } catch (e) { win = null; }
     w.textContent = win ? "GitHub opened in a new tab: press Submit there to send your post for review." : "The new tab was blocked. Allow pop-ups for this site and try again."; w.hidden = false; w.classList.toggle("bad", !win);
   });
-  $("cmShow").addEventListener("change", render);
+  $("cmShow").addEventListener("change", function () { setKind($("cmShow").value); });
+  Array.prototype.forEach.call(document.querySelectorAll("#cmSeg button"), function (b) { b.addEventListener("click", function () { setKind(b.getAttribute("data-k") || ""); }); });
+  (function wireSearch() {
+    var t = null;
+    $("qform").addEventListener("submit", function (e) { e.preventDefault(); render(); });
+    $("q").addEventListener("input", function () { clearTimeout(t); t = setTimeout(render, 120); });
+    document.addEventListener("keydown", function (e) { var a = document.activeElement; if (e.key === "/" && !(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) { e.preventDefault(); $("q").focus(); } });
+  })();
   $("cmClear").addEventListener("click", function () { scope = ""; try { history.replaceState(null, "", location.pathname); } catch (e) {} render(); });
   var h = location.hash.match(/^#e=([a-z0-9-]+)$/); if (h && isId(h[1])) { scope = h[1]; $("cmEvent").value = h[1]; }
   load(); setInterval(function () { if (!document.hidden) load(); }, 5 * 60 * 1000);

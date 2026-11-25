@@ -22,11 +22,12 @@
 </header>
 <div class="navsheet" id="navSheet" hidden role="dialog" aria-modal="true" aria-label="Menu"><div class="sheethead">CyberView<button type="button" class="sheetclose" id="navClose" aria-label="Close menu">&times;</button></div><nav class="sheetnav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html" aria-current="page">Vulnerabilities</a><a href="tools.html">Tools</a><a href="archive.html">Archive</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html">Community</a><a href="status.html">Status</a><a href="about.html">About</a></nav></div>
 <main class="wb">
-  <section class="intro">
-    <h1>Vulnerabilities</h1>
-    <p id="wbSummary" aria-live="polite">Loading exploited flaws</p>
-  </section>
-  <div class="wbtabs" role="tablist" aria-label="Vulnerabilities">
+  <section class="intro vtop">
+    <div class="vtt">
+      <h1>Vulnerabilities</h1>
+      <p id="wbSummary" aria-live="polite">Loading exploited flaws</p>
+    </div>
+    <div class="wbtabs" role="tablist" aria-label="Vulnerabilities">
     <button type="button" role="tab" id="wbt-queue" aria-selected="true" aria-controls="wbp-queue">Known exploited <span class="n" id="wbnQueue"></span></button>
     <button type="button" role="tab" id="wbt-all" aria-selected="false" aria-controls="wbp-all">All CVEs <span class="n" id="wbnAll"></span></button>
     <button type="button" role="tab" id="wbt-inv" aria-selected="false" aria-controls="wbp-inv">My software <span class="n" id="wbnInv"></span></button>
@@ -37,8 +38,11 @@
     <label class="grow">Search<input type="search" id="wbQ" placeholder="CVE, vendor or product" autocomplete="off" maxlength="120"></label>
     <p class="note" id="wbSearchHint">Filters the list below. Nothing you type is sent anywhere.</p>
   </div>
+  </section>
 
-  <section id="wbp-queue" role="tabpanel" aria-labelledby="wbt-queue">
+  <section id="wbp-queue" class="vpanel" role="tabpanel" aria-labelledby="wbt-queue">
+    <div class="vgrid">
+    <div class="vrail">
     <div class="panel wbdl" id="wbDl">
       <h2>How long do we have to patch?</h2>
       <p class="note">Flaws CISA confirms attackers are using, measured from today. A bar to the right is time left before the US federal deadline; a bar to the left is how long ago it passed. Use the deadline as an upper limit for your own patching.</p>
@@ -56,19 +60,28 @@
       <p>The patch queue is ordered by points, up to 100, and every point is listed on its row. The points only order this list; they are not a CVSS score or the CyberView rating, which are shown in All CVEs. Points: known exploited per CISA 35 (or 15 if only rated high severity) · used by ransomware groups 10 · EPSS, the estimated chance of exploitation in 30 days, up to 15 · public exploit code 5 · internet-facing 10 · federal deadline passed 5, within 7 days 3 · you run an affected version 20, or you run the product and the version needs checking 10.</p>
       <p>"Internet-facing" comes from the vendor advisory when a fix guide exists; otherwise it is a guess from the product name and is labelled as one. Version ranges come from NIST's NVD and can lag or be incomplete: treat "not affected" as a prompt to confirm against the vendor advisory, not as proof.</p>
     </details>
+    </div>
+    <div class="vlist" tabindex="-1">
     <p class="count" id="wbCount"></p>
     <ol class="wblist" id="wbList"></ol>
+    </div>
+      <aside class="vdet" id="wbPane" aria-label="Flaw details">
+        <div class="vdbar"><span class="vdtitle"></span><button type="button" class="vdclose" aria-label="Close the details">Close</button></div>
+        <p class="vdempty">Select a flaw in the list to see why it ranks where it does, which of your versions are affected, the vendor fix and the deadline.</p>
+        <div class="vdc" id="wbDet"></div>
+      </aside>
+    </div>
   </section>
 
-  <section id="wbp-all" role="tabpanel" aria-labelledby="wbt-all" hidden>
+  <section id="wbp-all" class="vpanel" role="tabpanel" aria-labelledby="wbt-all" hidden>
     <div id="cvStatus" class="caveat" hidden></div>
-    <div id="cvMain" hidden>
+    <div id="cvMain" class="vgrid" hidden>
+    <div class="vrail">
       <p class="note" id="cvSummary" aria-live="polite"></p>
       <div class="panel">
         <h2>Look up one CVE</h2>
         <p class="note">Type an id in the search box above, for example CVE-2024-3400, then press Enter or choose Look up. Only the one data file that holds it is loaded.</p>
         <div class="wbacts"><button type="button" class="btn primary" id="cvLookup">Look up</button><span class="note" id="cvLookMsg" aria-live="polite"></span></div>
-        <div id="cvResult"></div>
       </div>
       <div class="panel">
         <h2>Browse</h2>
@@ -88,9 +101,6 @@
         <label>Sort<select id="cvSort"><option value="priority">Priority (CISA SSVC), then CyberView rating</option><option value="score">CyberView rating, then priority</option><option value="pub">Newest published</option><option value="upd">Recently changed</option><option value="cvss">Highest CVSS</option><option value="epss">Highest EPSS</option><option value="old">Oldest published</option><option value="id">CVE id</option></select></label>
         <label class="check"><input type="checkbox" id="cvKev"> Known exploited only</label>
       </div>
-      <p class="count" id="cvCount" aria-live="polite"></p>
-      <ol class="wblist cvlist" id="cvList"></ol>
-      <div class="wbacts" id="cvPager" hidden><button type="button" class="btn" id="cvPrev">Previous</button><span class="note" id="cvPage"></span><button type="button" class="btn" id="cvNext">Next</button></div>
       <details class="wbhow" id="cvVendorDir" hidden><summary>Vendors in what is loaded</summary>
         <p class="note">The most common vendors in the loaded CVEs. Choosing one sets the vendor filter.</p>
         <div class="cvvendors" id="cvVendorList"></div>
@@ -107,9 +117,22 @@
         <p class="note">Sources: <a href="https://www.cisa.gov/stakeholder-specific-vulnerability-categorization-ssvc" rel="noopener">CISA SSVC</a> · <a href="https://github.com/CERTCC/SSVC" rel="noopener">CERT/CC SSVC decision tables</a> · <a href="https://www.cisa.gov/news-events/directives/bod-26-04-prioritizing-security-updates-based-risk" rel="noopener">CISA BOD 26-04</a> · <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" rel="noopener">CISA KEV catalog</a> · <a href="https://www.first.org/cvss/v3.1/specification-document" rel="noopener">FIRST CVSS v3.1 specification</a> · <a href="https://www.first.org/epss/using-epss" rel="noopener">FIRST: using EPSS</a> · <a href="https://www.ncsc.gov.uk/collection/vulnerability-management/guidance/policy-update-by-default" rel="noopener">NCSC update by default</a> · <a href="https://csrc.nist.gov/pubs/sp/800/40/r4/final" rel="noopener">NIST SP 800-40 Rev. 4</a></p>
       </details>
     </div>
+    <div class="vlist" tabindex="-1">
+      <p class="count" id="cvCount" aria-live="polite"></p>
+      <ol class="wblist cvlist" id="cvList"></ol>
+      <div class="cvyears" id="cvYears" hidden></div>
+      <div class="wbacts" id="cvPager" hidden><button type="button" class="btn" id="cvPrev">Previous</button><span class="note" id="cvPage"></span><button type="button" class="btn" id="cvNext">Next</button></div>
+    </div>
+      <aside class="vdet" id="cvPane" aria-label="CVE details">
+        <div class="vdbar"><span class="vdtitle"></span><button type="button" class="vdclose" aria-label="Close the details">Close</button></div>
+        <p class="vdempty">Select a CVE in the list, or look one up by its id, to see its rating, its priority, the fix-by date and every source.</p>
+        <div class="vdc" id="cvResult"></div>
+        <div class="vdc" id="cvDet"></div>
+      </aside>
+    </div>
   </section>
 
-  <section id="wbp-inv" role="tabpanel" aria-labelledby="wbt-inv" hidden>
+  <section id="wbp-inv" class="vflow" role="tabpanel" aria-labelledby="wbt-inv" hidden>
     <div class="panel">
       <h2>Your software list</h2>
       <p class="note">It is read and matched here, in this browser, and saved only on this device. Nothing is uploaded. Clear it at any time.</p>
@@ -125,7 +148,7 @@
     <div class="panel"><h2 id="wbInvHead">Nothing loaded yet</h2><div class="tablewrap"><table class="wbtable stack" id="wbInvTable"></table></div></div>
   </section>
 
-  <section id="wbp-hunt" role="tabpanel" aria-labelledby="wbt-hunt" hidden>
+  <section id="wbp-hunt" class="vflow" role="tabpanel" aria-labelledby="wbt-hunt" hidden>
     <p class="note">Patching closes the hole; hunting checks whether someone came through it first. One card for each flaw being exploited and each reported campaign, most urgent first: what the vendor says to look for, where to look in your logs, and the detection rules and indicator files the publishers released. CyberView links to those files and never copies indicators, so you always get the publisher's current version.</p>
     <div class="filters wbfilters">
       <label id="wbHuntMineL" class="check"><input type="checkbox" id="wbHuntMine"> Only flaws on my software list</label>
@@ -137,9 +160,10 @@
     <button type="button" class="btn ghost more" id="wbHuntMore" hidden>Show more</button>
   </section>
 
-  <section id="wbp-ot" role="tabpanel" aria-labelledby="wbt-ot" hidden>
+  <section id="wbp-ot" class="vpanel" role="tabpanel" aria-labelledby="wbt-ot" hidden>
     <div id="otStatus" class="caveat" hidden></div>
-    <div id="otMain" hidden>
+    <div id="otMain" class="vgrid" hidden>
+    <div class="vrail">
       <p class="note" id="otSummary" aria-live="polite"></p>
       <div class="filters wbfilters" role="search">
         <label class="grow">Search<input type="search" id="otQ" placeholder="Advisory, vendor, product, CVE or sector" autocomplete="off" maxlength="120"></label>
@@ -152,10 +176,18 @@
         <p>Rank points only order this list; they are not a CVSS score or the CyberView rating, and every point is listed on the row. Points: known exploited (a CVE the advisory names is in CISA's KEV catalog) 40, or exploited as the advisory states 30, or public exploit code as the advisory states 10 · CVSS 9.0 or higher 25, 7.0 to 8.9 15, 4.0 to 6.9 5 (the highest base score in the advisory) · deployed in a lifeline sector named by CISA (energy, water, healthcare, transportation, communications and others) 10 · no vendor fix for at least one product 5 · names a product on your software list 20 · published in the last 14 days 5. At most 100. An advisory in which the vendor states its products are not affected gets no points.</p>
         <p>Mitigations and fixes are in each advisory, linked on its row, written by CISA or by the vendor itself: CyberView does not rewrite them. The software list match is by product name only and runs in this browser.</p>
       </details>
+    </div>
+    <div class="vlist" tabindex="-1">
       <p class="count" id="otCount" aria-live="polite"></p>
       <ol class="wblist" id="otList"></ol>
       <button type="button" class="btn ghost more" id="otMore" hidden>Show more</button>
       <p class="caveat" id="otCaveat"></p>
+    </div>
+      <aside class="vdet" id="otPane" aria-label="Advisory details">
+        <div class="vdbar"><span class="vdtitle"></span><button type="button" class="vdclose" aria-label="Close the details">Close</button></div>
+        <p class="vdempty">Select an advisory in the list to see its points, the products it names, the sectors and the vendor's own fix.</p>
+        <div class="vdc" id="otDet"></div>
+      </aside>
     </div>
   </section>
 </main>

@@ -23,44 +23,72 @@
   <button type="button" class="navbtn" id="navBtn" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 </header>
 <div class="navsheet" id="navSheet" hidden role="dialog" aria-modal="true" aria-label="Menu"><div class="sheethead">CyberView<button type="button" class="sheetclose" id="navClose" aria-label="Close menu">&times;</button></div><nav class="sheetnav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="tools.html">Tools</a><a href="archive.html" aria-current="page">Archive</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html">Community</a><a href="status.html">Status</a><a href="about.html">About</a></nav></div>
-<main>
-  <section class="intro">
-    <h1>Every event on file</h1>
-    <p id="summary" aria-live="polite">Loading the archive</p>
+<main class="ar">
+  <div class="arview">
+  <section class="intro phead">
+    <div>
+      <h1>Every event on file</h1>
+      <p id="summary" class="sub" aria-live="polite">Loading the archive</p>
+    </div>
+    <span class="hl"></span>
+    <form class="psearch" id="qform" role="search"><label><span class="sr-only">Search the archive</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Organisation, actor, CVE, country, tag" autocomplete="off" spellcheck="false"><kbd>/</kbd></label></form>
   </section>
+  <div class="kpis" id="kpis" role="list" aria-label="The archive at a glance" hidden></div>
+  <div class="vgrid argrid" id="arGrid">
+    <div class="vrail">
+      <form class="filters" id="filters" aria-label="Filter the archive">
+        <label><span>Month</span><select id="month"><option value="">All months</option></select></label>
+        <label><span>Category</span><select id="cat">
+          <option value="">All categories</option>
+          <option value="incident">Incidents</option>
+          <option value="vuln">Patches and advisories</option>
+          <option value="report">Threat reports</option>
+          <option value="policy">Law and policy</option>
+          <option value="enforcement">Law enforcement</option>
+          <option value="investment">Investment and vendors</option>
+          <option value="outage">Outages</option>
+        </select></label>
+        <label><span>Severity</span><select id="sev">
+          <option value="">Any severity</option>
+          <option value="3">High</option>
+          <option value="2">Medium and high</option>
+        </select></label>
+        <label class="check"><input id="claims" type="checkbox"> Include unverified claims</label>
+        <button type="button" class="btn ghost" id="clear" hidden>Clear filters</button>
+      </form>
+      <section class="panel armonths" id="arMonths" hidden aria-labelledby="arMonthsHead">
+        <h2 id="arMonthsHead">How many events happened each month?</h2>
+        <div id="monthBars" role="group" aria-label="Events per month; pick one to show only that month"></div>
+        <p class="note">Checked events by the day they happened, with the filters above applied (except the month). Months before CyberView began are thin: only events found later are filed there.</p>
+      </section>
+    </div>
+    <div class="vlist" tabindex="-1">
+      <p class="count" id="count"></p>
+      <ol class="list" id="list"></ol>
+      <button type="button" class="btn ghost more" id="more" hidden>Show more</button>
+    </div>
+    <aside class="vdet" id="arPane" aria-label="Event details">
+      <div class="vdbar"><span class="vdtitle"></span><button type="button" class="vdclose" aria-label="Close the details">Close</button></div>
+      <p class="vdempty">Pick an event to read what happened, what to do and the sources it was checked against.</p>
+      <div class="vdc more-info" id="arDet"></div>
+    </aside>
+  </div>
+  </div>
   <section class="recent" id="recent" hidden aria-labelledby="recentHead">
     <h2 id="recentHead">Recently filed</h2>
     <p class="cap">Events that research added in the last 48 hours but that happened earlier. The map's "Just added" list shows only new events, so these are filed here, each with the day it happened and when CyberView filed it.</p>
     <ol class="list" id="recentList"></ol>
     <button type="button" class="btn ghost more" id="recentAll" hidden>Show all</button>
   </section>
-  <form class="filters" id="filters" role="search">
-    <label class="grow"><span>Search</span><input id="q" type="search" placeholder="Organisation, actor, CVE, country, tag" autocomplete="off"></label>
-    <label><span>Month</span><select id="month"><option value="">All months</option></select></label>
-    <label><span>Category</span><select id="cat">
-      <option value="">All categories</option>
-      <option value="incident">Incidents</option>
-      <option value="vuln">Patches and advisories</option>
-      <option value="report">Threat reports</option>
-      <option value="policy">Law and policy</option>
-      <option value="enforcement">Law enforcement</option>
-      <option value="investment">Investment and vendors</option>
-      <option value="outage">Outages</option>
-    </select></label>
-    <label><span>Severity</span><select id="sev">
-      <option value="">Any severity</option>
-      <option value="3">High</option>
-      <option value="2">Medium and high</option>
-    </select></label>
-    <label class="check"><input id="claims" type="checkbox"> Include unverified claims</label>
-  </form>
-  <p class="count" id="count"></p>
-  <ol class="list" id="list"></ol>
-  <button type="button" class="btn ghost more" id="more" hidden>Show more</button>
   <section class="downloads">
-    <h2>Download the data</h2>
-    <p>The full history in open formats, rebuilt on every update: <a href="data/archive/events.jsonl" download>every event (JSON Lines)</a>, <a href="data/archive/kev.json" download>every known-exploited entry (JSON)</a>, <a href="data/archive/index.json">monthly index (JSON)</a>.</p>
-    <p>Subscribe to high-severity and known-exploited events as they are added: <a href="data/feed.xml">RSS feed</a> or <a href="data/feed.json">JSON Feed</a>. Unverified claims are left out.</p>
+    <div>
+      <h2>Download the data</h2>
+      <p>The full history in open formats, rebuilt on every update: <a href="data/archive/events.jsonl" download>every event (JSON Lines)</a>, <a href="data/archive/kev.json" download>every known-exploited entry (JSON)</a>, <a href="data/archive/index.json">monthly index (JSON)</a>.</p>
+    </div>
+    <div>
+      <h2>Subscribe</h2>
+      <p>High-severity and known-exploited events as they are added: <a href="data/feed.xml">RSS feed</a> or <a href="data/feed.json">JSON Feed</a>. Unverified claims are left out.</p>
+    </div>
   </section>
 </main>
 <footer class="foot"><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="about.html#corrections">Corrections</a><a href="about.html#security">Report a security issue</a><a href="account.html">Account</a></footer>

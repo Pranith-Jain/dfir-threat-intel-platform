@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-25T00:01:02.064Z",
+  "generatedAt": "2026-11-25T08:59:39.872Z",
   "upstream": {
     "site": "https://tldrcve.com",
     "list": "https://tldrcve.com/cves/",
@@ -8,12 +8,12 @@
     "scale": "https://tldrcve.com/how-we-rate/"
   },
   "stats": {
-    "cves": 44,
-    "details": 44,
-    "versions": 43,
+    "cves": 45,
+    "details": 45,
+    "versions": 45,
     "byVerdict": {
       "Patch now": 17,
-      "Patch now if…": 23,
+      "Patch now if…": 24,
       "Next cycle": 4
     }
   },
@@ -1407,7 +1407,7 @@
           },
           {
             "yes": true,
-            "text": "✓ On CISA's exploited list (fix by 24 Nov) 5"
+            "text": "✓ On CISA's exploited list (since 10 Nov) 5"
           }
         ],
         "affected": [
@@ -2084,150 +2084,6 @@
       }
     },
     {
-      "slug": "azure-apim-secrets",
-      "name": "Azure APIM secrets",
-      "meta": "Azure API Management · No CVE yet",
-      "line": "Stolen secrets stay valid after Microsoft's fix.",
-      "verdict": "Patch now",
-      "scareLevel": 3.1,
-      "meterLabel": "Drop everything",
-      "disclosed": "2026-11-20",
-      "url": "https://tldrcve.com/azure-apim-secrets/",
-      "detail": {
-        "slug": "azure-apim-secrets",
-        "kicker": "Azure API Management",
-        "name": "Azure APIM secrets",
-        "verdict": "Patch now",
-        "verdictHint": "Stolen secrets stay valid after Microsoft's fix.",
-        "summary": "",
-        "meterLabel": "Drop everything",
-        "meterHint": "Attackers are already on it. Patch now.",
-        "checklist": [
-          {
-            "yes": false,
-            "text": "No public exploit 1,2,3"
-          },
-          {
-            "yes": true,
-            "text": "✓ Attacks seen in the wild 1,2,3,4"
-          },
-          {
-            "yes": false,
-            "text": "Not on CISA's exploited list 8"
-          }
-        ],
-        "affected": [
-          {
-            "num": "1",
-            "title": "You run an APIM Classic tier",
-            "hint": null,
-            "body": "Microsoft says Classic tiers were affected and v2 tiers were not; Microsoft's docs list the Classic tiers as Developer, Basic, Standard and Premium, with Consumption separate. NSM says v2 and Consumption tier instances aren't vulnerable. Customers told The Register that forgotten development and test instances could leave more organisations exposed. 1,2,3,9",
-            "code": []
-          },
-          {
-            "num": "2",
-            "title": "Not locked down before 19 Nov",
-            "hint": null,
-            "body": "Microsoft says exposure was tied to Classic instances that didn't follow its network security guidance or that stored secrets directly in APIM instead of referencing Azure Key Vault. A researcher's write-up says instances whose endpoints couldn't be reached from the internet (a private endpoint, or an internal virtual network with public access off) weren't exposed to this route; a firewall in front only helps if attackers couldn't reach APIM directly. NSM makes no such exception: it tells everyone with APIM to assume their secrets and named values are exposed, and Kristiansen notes Key Vault references don't protect a value from someone who can edit policies or use tracing. 1,2,3,6,7",
-            "code": []
-          }
-        ],
-        "actions": [
-          {
-            "num": "1",
-            "title": "Check your instance got the fix",
-            "hint": "command",
-            "body": "NSM's check: open this address on your gateway, from a network that can reach it, and read RuntimeVersion . On 0.52.x you're patched if the last number is 31936 or higher, on 0.53.x if it's 31938 or higher. Other patterns (such as 0.53.4608.0 ) are v2 or Consumption tier and not vulnerable. If yours is lower, NSM says to contact your provider directly. Microsoft says its own fix needed no customer action; it's unclear whether NSM's version thresholds and that fix are the same thing. 1,2 curl -s https://<your-gateway-hostname>/internal-status-0123456789abcdef",
-            "code": [
-              "curl -s https://<your-gateway-hostname>/internal-status-0123456789abcdef"
-            ]
-          },
-          {
-            "num": "2",
-            "title": "Rotate what APIM stored",
-            "hint": null,
-            "body": "Microsoft lists what may have been exposed: secrets in named values, client secrets for identity providers and OpenID Connect providers, subscription keys, and tokens for the direct management API. Its fix \"does not automatically invalidate credentials that may have been accessed before the fix was deployed\". NSM says to assume secrets and named values are out and rotate all tokens and secrets. Anders Kristiansen's write-up adds backend credentials, app registration secrets, the Key Vault secrets APIM references and the tenant access keys. 1,2,7",
-            "code": []
-          },
-          {
-            "num": "3",
-            "title": "Check what sits behind APIM",
-            "hint": null,
-            "body": "A stolen credential may work directly against the service it protects, outside APIM. NSM says to map what information sits behind each instance; Microsoft says to look for suspicious activity in systems those credentials reach and to review your logs. An admin's Reddit post, cited by BleepingComputer, says attackers logged in to their Key Vaults with a valid administrator token; BleepingComputer hasn't verified it. 1,2,7",
-            "code": []
-          },
-          {
-            "num": "4",
-            "title": "Turn off the old management API",
-            "hint": null,
-            "body": "Each instance has a direct management API at https://<service-name>.management.azure-api.net . Microsoft retired it on 15 March 2025 and says to disable it if it's on. In the portal that's Management API, Enable Management REST API: No. Two researchers' write-ups say it bypasses Entra ID and Azure role checks and its calls don't show in the Activity log; msandbu's write-up names it as the attack route and says it was still active even when set to No. The Reddit admin quoted by BleepingComputer says attackers used an authentication bypass in \"a deprecated legacy API\" (not verified). Microsoft hasn't confirmed how the attacker got in. 2,3,5,6,7",
-            "code": []
-          },
-          {
-            "num": "5",
-            "title": "Microsoft hasn't published details",
-            "hint": null,
-            "body": "Microsoft's advisory (Azure Service Health, tracking ID MZK9-GH0) went to customers and isn't public; there's no CVE yet, and it isn't on CISA's list of exploited bugs. NSM says it's still unclear how widely the flaw was exploited. We'll check again by 1 Dec 2026. 1,2,3,8",
-            "code": []
-          }
-        ],
-        "sources": [
-          {
-            "url": "https://nsm.no/aktuelt/nsm-deler-tiltak-mot-sarbarhet-i-azure-api-management",
-            "title": "NSM (Norway's National Security Authority): Azure API Management vulnerability, Equinor and Skagerak hit, rotate secrets, runtime version check",
-            "date": "20 Nov"
-          },
-          {
-            "url": "https://www.bleepingcomputer.com/news/security/microsoft-azure-flaw-exploited-to-steal-customers-api-credentials/",
-            "title": "BleepingComputer: Microsoft's Service Health advisory MZK9-GH0, Classic tiers, exposed secrets, fixed 19 Nov, Reddit admin's claims",
-            "date": "23 Nov"
-          },
-          {
-            "url": "https://www.theregister.com/security/2026/11/23/norway-links-energy-firm-cyberattacks-to-critical-azure-api-management-flaw/5311598",
-            "title": "The Register: Microsoft's advisory, Classic not v2, exposure tied to configuration, forgotten dev and test instances",
-            "date": "23 Nov"
-          },
-          {
-            "url": "https://www.equinor.com/news/20261711-equinor-detected-cyber-attack",
-            "title": "Equinor: cyber-attack detected 17 Nov, stopped 20 Nov, no sign data was stolen or altered",
-            "date": "20 Nov"
-          },
-          {
-            "url": "https://learn.microsoft.com/en-us/azure/api-management/breaking-changes/direct-management-api-retirement-march-2025",
-            "title": "Microsoft Learn: direct management API retired 15 March 2025, disable it if enabled",
-            "date": null
-          },
-          {
-            "url": "https://msandbu.org/azure-apim-vulnerabilty/",
-            "title": "msandbu.org: the direct management API, who isn't affected, how to check for the upgrade",
-            "date": null
-          },
-          {
-            "url": "https://anderskristiansen.com/post/2026/apim-legacy-access/",
-            "title": "Anders Kristiansen: what to rotate, the old management API, how to hunt in logs",
-            "date": null
-          },
-          {
-            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
-            "title": "CISA KEV catalog: not listed",
-            "date": null
-          },
-          {
-            "url": "https://learn.microsoft.com/en-us/azure/api-management/v2-service-tiers-overview",
-            "title": "Microsoft Learn: v2 tiers overview, the classic tiers are Developer, Basic, Standard and Premium; Consumption listed separately",
-            "date": null
-          }
-        ],
-        "changes": [
-          {
-            "date": "2026-11-24",
-            "text": "Published."
-          }
-        ],
-        "url": "https://tldrcve.com/azure-apim-secrets/"
-      }
-    },
-    {
       "slug": "sap-portal-jndi",
       "name": "SAP Portal JNDI",
       "meta": "SAP Enterprise Portal · CVE-2025-42884",
@@ -2357,6 +2213,183 @@
           }
         ],
         "url": "https://tldrcve.com/sap-portal-jndi/"
+      }
+    },
+    {
+      "slug": "drupal-installer",
+      "name": "Drupal installer",
+      "meta": "Drupal core · CVE-2026-132165",
+      "line": "Exploited via install.php, no login. In CISA KEV.",
+      "verdict": "Patch now",
+      "scareLevel": 3,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-11-18",
+      "url": "https://tldrcve.com/drupal-installer/",
+      "detail": {
+        "slug": "drupal-installer",
+        "kicker": "Drupal core · CVE-2026-132165",
+        "name": "Drupal installer",
+        "verdict": "Patch now",
+        "verdictHint": "Exploited via install.php, no login. In CISA KEV.",
+        "summary": "",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1,2,4"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 6"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 1,2"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (fix by 27 Nov) 2"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Drupal core, not updated",
+            "hint": "command",
+            "body": "Drupal's affected range: before 10.6.22, 11.0.0 up to 11.3.21, and 11.4.0 up to 11.4.12; 11.3.22, 11.4.13 and 10.6.22 are fixed. Drupal 11.2 and below, 10.5 and below, and Drupal 8 and 9 are end-of-life and get no fix. The command prints your version. 1,4,11 drush status --field=drupal-version",
+            "code": [
+              "drush status --field=drupal-version"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "An attacker can reach install.php",
+            "hint": "command",
+            "body": "Attacks go through the installer at /core/install.php , which stays reachable after installation unless you block it. Horizon3 notes this isn't only about internet-facing sites: internal and staging sites count if an attacker can reach them. Drupal's check: each of these URLs on your site should end with 403 or 404 ; a 200 means the installer isn't blocked. Also try /core/install.php/foo and, following redirects ( curl -IL ), /install.php . 1,3,4 curl -I https://example.com/core/install.php",
+            "code": [
+              "curl -I https://example.com/core/install.php"
+            ]
+          },
+          {
+            "num": "3",
+            "title": "A setup Drupal calls uncommon",
+            "hint": null,
+            "body": "Drupal says only uncommon module configurations are exploitable and doesn't list them. A related, older hole is public: on Drupal's issue 3455853, a site whose translation import was left pending or failed lets install.php run again and replace the admin account. Drupal release manager catch says this fix closes it \"as a by-product\", and a later comment there lists it apart from the advisory's own attack vectors. A 2025 report of install.php offering to reinstall a finished site, not translation-related, was closed by catch, who said the fix \"should have resolved this issue too\". The proof of concept plants a similar unfinished installer state by hand. If the web server can't write to or change permissions on settings.php , some exploit paths are blocked, but not all. 1,12,14,13,6",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update Drupal",
+            "hint": null,
+            "body": "11.4.13, 11.3.22 or 10.6.22 (18 Nov 2026), security-only releases. 11.3 and 10.6 get security fixes only until Drupal 11.5.0 comes out in December 2026; on 11.2, 10.5 or older, move to a supported line. Known issue: these releases broke the theme registry for some modules, Search API among them (\"Theme hook field not found\"). Drupal says it \"will be fixed in Drupal 11.4.14\", which isn't out as of 25 Nov 2026, and that affected sites on 11.3.22 or 10.6.22 should move to 11.4 now so they can take that release. 1,8,9,10 Latest safe versions checked 25 Nov Drupal core → 11.4 11.4.13 11.3 11.3.22 10.6 10.6.22 Drupal 11.2 and below, 10.5 and below, and Drupal 8 and 9 are end-of-life and get no security fixes: move to a supported line.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Block install.php, even after updating",
+            "hint": "command",
+            "body": "Drupal recommends blocking the installer in the web server, which survives core updates. nginx: add the block below to the HTTPS server block; Drupal says to use ^~ , not an exact match ( = ), which on some servers doesn't block /core/install.php/foo . Apache: in the virtual host, <Location \"/core/install.php\"> with Require all denied . Apache without access to the virtual host: Drupal's docs also give an .htaccess rule ( <Files \"install.php\"> with Require all denied ), but Composer overwrites .htaccess , so lines added by hand are lost. Test with nginx -t or apachectl configtest before reloading, then rerun the check above. Drupal Steward sites are already protected from the known attack paths, but should still update. 3,1 location ^~ /core/install.php { return 404; }",
+            "code": [
+              "location ^~ /core/install.php { return 404; }"
+            ]
+          },
+          {
+            "num": "3",
+            "title": "Check for a takeover",
+            "hint": null,
+            "body": "The public proof of concept replaces user 1, the site's first admin account, with a new name, email and password, so the old admin password stops working; content is left in place. Anonymous POST requests to /core/install.php in your web logs after the site went live deserve a look. If you find signs, assume the attacker had admin rights and may have run code on the server. US federal agencies must also do CISA's forensic triage. 6,1,2",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Why it's Patch now",
+            "hint": null,
+            "body": "Drupal rates the setups that are exploitable as uncommon ( TD:Uncommon ) but doesn't list them, so you can't rule your site out. install.php stays reachable unless you block it, attacks on live sites are reported, and it's in CISA KEV. A related, older hole in the installer, which this fix also closes, was already being probed: on 28 Oct 2025 someone on Drupal's issue 3455853 reported automated requests trying to exploit it. The fix is a security-only release and the workaround is one web server rule. 1,5,12,3,2",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.drupal.org/sa-core-2026-017",
+            "title": "Drupal SA-CORE-2026-017: affected versions, fixes, exploited on live sites from 19 Nov 2026 19:00 UTC, settings.php note",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: added 24 Nov 2026, due 27 Nov, forensic triage required",
+            "date": "24 Nov"
+          },
+          {
+            "url": "https://www.drupal.org/docs/administering-a-drupal-site/security-in-drupal/securing-the-installer-installphp",
+            "title": "Drupal docs: securing the installer, web server rules and checks",
+            "date": "21 Nov"
+          },
+          {
+            "url": "https://horizon3.ai/attack-research/vulnerabilities/cve-2026-132165/",
+            "title": "Horizon3: affected range, reachable install.php, no exploitation reported at the time",
+            "date": null
+          },
+          {
+            "url": "https://www.drupal.org/drupal-security-team/security-risk-levels-defined",
+            "title": "Drupal Security Team: risk levels, \"Uncommon\" and \"Complex\" defined",
+            "date": null
+          },
+          {
+            "url": "https://github.com/abraxas/drupal-install-takeover",
+            "title": "Abraxas Labs: public proof of concept, admin takeover on 11.4.12 with a planted installer state",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://github.com/drupal/core/commit/e301840e6164301a71d83005bad312dc4daa2d7a",
+            "title": "Drupal core: the SA-CORE-2026-017 fix",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.drupal.org/project/drupal/releases/11.4.13",
+            "title": "Drupal 11.4.13 release: security-only, installer no longer fixes settings.php permissions, known theme issue",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.drupal.org/project/drupal/releases/11.3.22",
+            "title": "Drupal 11.3.22 release: security coverage until Drupal 11.5.0, move to 11.4 if hit by the theme issue",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.drupal.org/project/drupal/releases/10.6.22",
+            "title": "Drupal 10.6.22 release: security coverage until Drupal 11.5.0",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.drush.org/13.x/commands/core_status/",
+            "title": "Drush docs: core:status and its drupal-version field",
+            "date": null
+          },
+          {
+            "url": "https://www.drupal.org/project/drupal/issues/3455853",
+            "title": "Drupal core issue 3455853: a related, older hole (pending or failed translation imports let install.php rerun and replace the admin), automated attempts reported 28 Oct 2025, SA-CORE-2026-017 \"fixes this as a by-product\"",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.drupal.org/project/drupal/issues/3504327",
+            "title": "Drupal core issue 3504327: install.php offered to reinstall an installed site (2025, not translation-related), closed by catch, who said the SA fix \"should have resolved this issue too\"",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/drupal/drupal/blob/11.x/core/MAINTAINERS.txt",
+            "title": "Drupal core MAINTAINERS.txt: catch is a core release manager",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-25",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/drupal-installer/"
       }
     },
     {
@@ -2595,7 +2628,7 @@
           },
           {
             "yes": true,
-            "text": "✓ On CISA's exploited list (fix by 24 Nov) 3"
+            "text": "✓ On CISA's exploited list (since 10 Nov) 3"
           }
         ],
         "affected": [
@@ -5587,6 +5620,165 @@
       }
     },
     {
+      "slug": "grafana-2026-11-24",
+      "name": "Grafana Nov fixes",
+      "meta": "Grafana · CVE-2026-107561, CVE-2026-88943, CVE-2026-88960",
+      "line": "Login page decrypts leaked secrets; needs a stolen copy.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2,
+      "meterLabel": "Check today",
+      "disclosed": "2026-11-24",
+      "url": "https://tldrcve.com/grafana-2026-11-24/",
+      "detail": {
+        "slug": "grafana-2026-11-24",
+        "kicker": "Grafana · CVE-2026-107561 · CVE-2026-88943 · CVE-2026-88960",
+        "name": "Grafana Nov fixes",
+        "verdict": "Patch now if…",
+        "verdictHint": "Login page decrypts leaked secrets; needs a stolen copy.",
+        "summary": "",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": false,
+            "text": "No public exploit 1,2"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 1,2"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 6"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Grafana before the 24 Nov 2026 release",
+            "hint": null,
+            "body": "Self-managed Grafana OSS or Enterprise below 13.3.2, 13.2.7, 13.1.11, 13.0.14 or 12.4.16. Lines 12.3 and older are out of support and get no fix. The code doesn't say whether Grafana Cloud was affected. This checklist covers the worst bug, on the login page; the other two are under What to do. 1,5",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "An attacker can reach the login page",
+            "hint": null,
+            "body": "GET /login needs no login. The page decrypted the login_error cookie before it tried OAuth auto-login, and the decryption doesn't need OAuth to be set up. 10,2",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "They already have Grafana's encrypted data",
+            "hint": null,
+            "body": "The bug only turns ciphertext the instance produced back into plaintext: for example data source passwords and contact point credentials. On its own it reveals nothing, so it matters where a database copy, backup or leaked row is in someone else's hands. 2,9",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update Grafana",
+            "hint": null,
+            "body": "Update to 13.3.2, 13.2.7, 13.1.11, 13.0.14 or 12.4.16 (24 Nov 2026), which fix all three bugs. On 12.3 or older, move to a supported line. 1,5 Latest safe versions checked 25 Nov Grafana → 13.3 13.3.2 13.2 13.2.7 13.1 13.1.11 13.0 13.0.14 12.4 12.4.16 Grafana supports each minor release for 9 months, and the last minor release of a major version (12.4) for 15 months. Older lines, such as 12.3, get no more patches: upgrade to a supported line.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Our precaution: rotate secrets",
+            "hint": null,
+            "body": "Grafana hasn't said to rotate anything; this is our advice. If a copy of Grafana's database or a backup has ever left your control, we'd rotate the data source and contact point credentials stored in Grafana, because the login bug could have turned them into plaintext. If Editors you don't fully trust could test contact points, we'd rotate contact point credentials too, because the contact point bug could have sent them to their own URL. 1,2",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "The other two fixes",
+            "hint": null,
+            "body": "These matter if someone you don't fully trust has Editor access. Contact point tests: an Editor could test an existing contact point under a different schema version or type, point it at their own URL and have its stored secrets sent there; secrets echoed in notifier errors also came back to the caller. Snapshots (12.4 to 13.2): the newer snapshot API checked only the delete permission Editors have, not \"creator or can edit the dashboard\" like the old API. The 24 Nov releases add that check; 13.3 fixed it in 13.3.0. 2,3,11,4,7,8",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Which CVE is which",
+            "hint": null,
+            "body": "Grafana hasn't published advisories or CVE records yet. Our reading of the code: the snapshot fix matches CVE-2026-88943, the one ID missing from 13.3.2's notes; the login and contact point fixes are CVE-2026-107561 and CVE-2026-88960, in an order Grafana hasn't said. We'll check again for Grafana's advisory by 2 Dec 2026. 1,2",
+            "code": []
+          },
+          {
+            "num": "5",
+            "title": "Why it isn't Patch now",
+            "hint": null,
+            "body": "No exploit or attacks are known, it isn't on CISA's exploited list, the login bug needs data the attacker would already have to have stolen, and the other two need an Editor login. We'd raise it if an exploit appears or attacks are reported. 1,2,6",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://github.com/grafana/grafana/releases",
+            "title": "GitHub: Grafana releases 13.3.2, 13.2.7, 13.1.11, 13.0.14 and 12.4.16 (24 Nov), \"Security: Fix CVE-…\" notes",
+            "date": "24 Nov"
+          },
+          {
+            "url": "https://github.com/grafana/grafana/commit/b8e90ef2a9",
+            "title": "GitHub: 13.3.2 release commit, the login cookie fix (\"decryption oracle\") and the contact point test checks",
+            "date": "24 Nov"
+          },
+          {
+            "url": "https://github.com/grafana/grafana/commit/1f855f700a",
+            "title": "GitHub: 12.4.16 release commit, adds the snapshot delete check",
+            "date": "24 Nov"
+          },
+          {
+            "url": "https://github.com/grafana/grafana/pull/134745",
+            "title": "GitHub: PR 134745, Snapshots: align API access with legacy snapshot policy (in 13.3.0)",
+            "date": "12 Oct"
+          },
+          {
+            "url": "https://grafana.com/docs/grafana/latest/upgrade-guide/when-to-upgrade/",
+            "title": "Grafana docs: support policy, which lines get patches",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: none of the three listed",
+            "date": null
+          },
+          {
+            "url": "https://github.com/grafana/grafana/blob/v13.3.1/pkg/services/ngalert/accesscontrol/roles.go",
+            "title": "Grafana source (v13.3.1): alerting roles, Editors can test contact points, only Admins change protected fields",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://github.com/grafana/grafana/blob/v12.4.15/pkg/api/accesscontrol.go",
+            "title": "Grafana source (v12.4.15): snapshot roles, Editors get the delete permission",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://github.com/grafana/grafana/blob/v13.3.1/pkg/services/secrets/kvstore/sql.go",
+            "title": "Grafana source (v13.3.1): data source secrets are stored encrypted with the secrets service",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://github.com/grafana/grafana/blob/v13.3.1/pkg/api/login.go",
+            "title": "Grafana source (v13.3.1): the login page decrypts the login_error cookie before trying OAuth auto-login",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://github.com/grafana/grafana/commit/19c0190bc45d13529e1a986a20247c832d469895",
+            "title": "GitHub: 13.2.7 release commit, adds the snapshot delete check, also on the delete key lookup",
+            "date": "24 Nov"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-25",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/grafana-2026-11-24/"
+      }
+    },
+    {
       "slug": "mysql-client",
       "name": "MySQL client flaw",
       "meta": "MySQL Server · CVE-2026-114952",
@@ -7586,6 +7778,27 @@
       "url": "https://tldrcve.com/versions/cisco-expressway/"
     },
     {
+      "slug": "drupal",
+      "name": "Drupal core",
+      "meta": "1 bug · checked 25 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "11.4",
+          "version": "11.4.13"
+        },
+        {
+          "line": "11.3",
+          "version": "11.3.22"
+        },
+        {
+          "line": "10.6",
+          "version": "10.6.22"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/drupal/"
+    },
+    {
       "slug": "chromium-browsers",
       "name": "Edge, Brave and Opera",
       "meta": "1 bug · checked 20 Nov",
@@ -7668,6 +7881,35 @@
         }
       ],
       "url": "https://tldrcve.com/versions/ghostscript/"
+    },
+    {
+      "slug": "grafana",
+      "name": "Grafana",
+      "meta": "1 bug · checked 25 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "13.3",
+          "version": "13.3.2"
+        },
+        {
+          "line": "13.2",
+          "version": "13.2.7"
+        },
+        {
+          "line": "13.1",
+          "version": "13.1.11"
+        },
+        {
+          "line": "13.0",
+          "version": "13.0.14"
+        },
+        {
+          "line": "12.4",
+          "version": "12.4.16"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/grafana/"
     },
     {
       "slug": "istio",

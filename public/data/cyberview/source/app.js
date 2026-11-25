@@ -71,7 +71,7 @@ var BASIS={stated:"stated by the source",inferred:"inferred by "+AI_BY,keyword:"
 function basisNote(list,k){var b=k==="layer"?"layerBasis":"secgBasis",c={stated:0,inferred:0,keyword:0};list.forEach(function(e){if(own(c,e[b]))c[e[b]]++;});
   return (k==="layer"?"Attack surface":"Sector")+": "+c.stated+" "+BASIS.stated+", "+c.inferred+" "+BASIS.inferred+", "+c.keyword+" keyword-assigned from the wording (can be wrong).";}
 function basisEl(list,k){var p=el("p","cav basis",basisNote(list,k));p.dataset.basis=k;return p;}
-var BUILD={version:"1.76",date:"2026-11-24"};
+var BUILD={version:"1.77",date:"2026-11-25"};
 var viz={lane:"layer",mat:"layer"};
 var kev=[],ripples=null;
 function own(o,k){return typeof k==="string"&&Object.prototype.hasOwnProperty.call(o,k);}

@@ -629,7 +629,8 @@
 
   // the attention list is sorted worst-first and capped: the page has a hard 3,000 px budget (tests/test_all.py) and
   // pipecheck's problems feed this list, so it must not grow without bound as more checks are added.
-  var ATTN_MAX = 12;
+  // phones get the top six routine warnings (the rest are counted and live in the details below); wider screens twelve
+  var ATTN_MAX = (window.matchMedia && window.matchMedia("(max-width:560px)").matches) ? 6 : 12;
   function renderAttention(h, attn) {
     if (h && h.backlog && h.backlog.waiting) attn.push({ cls: h.backlog.waiting > 60 || h.backlog.oldest_incident_hours > 2 ? "warn" : "info", badge: "Waiting", text: plural(h.backlog.waiting, "report") + " in the research queue waiting for a decision; oldest " + h.backlog.oldest_hours + " h", jump: "dQueue" });
     if (h && h.grid_waiting && h.grid_waiting.count) attn.push({ cls: h.grid_waiting.oldest_min > 120 ? "warn" : "info", badge: "Waiting", text: plural(h.grid_waiting.count, "grid outage") + " waiting for a cause check", jump: "gridSrcBox" });
@@ -661,6 +662,76 @@
     return attn.length;
   }
 
+  /* ---------------- at a glance: the KPI band ---------------- */
+
+  function openAndGo(id) {
+    var d = $(id); if (!d) return;
+    if (d.tagName === "DETAILS") d.open = true;
+    d.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function renderKpis(e, ops, m, counts, nAttn) {
+    var box = $("kpis"); if (!box) return; box.textContent = "";
+    var F = e && !e.error && e.flow && !e.flow.error ? e.flow : null, st = {};
+    flowStages(F, ops, m).forEach(function (s) { st[s.key] = s; });
+    function kpi(lbl, val, sub, tone, go, title) {
+      var k = el(go ? "button" : "div", "kpi" + (go ? " go" : "")); k.setAttribute("role", "listitem");
+      if (go) { k.type = "button"; k.title = title; k.addEventListener("click", function () { openAndGo(go); }); }
+      k.appendChild(el("div", "kl", lbl)); k.appendChild(el("div", "kv" + (tone ? " " + tone : ""), val));
+      if (sub) k.appendChild(el("span", "kd flat", sub)); box.appendChild(k);
+    }
+    var tot = checks.ok + checks.bad;
+    kpi("Health checks", tot ? checks.ok + " of " + tot + " OK" : "—", checks.bad ? plural(checks.bad, "check") + " need a look" : tot ? "everything on time" : "not loaded", checks.bad ? "bad" : tot ? "good" : "", "secHealth", "Go to the health checks");
+    kpi("Needs attention", String(nAttn), nAttn ? "worst first" : "nothing right now", nAttn ? "bad" : "good", "secAttention", "Go to what needs attention");
+    kpi("Routines on time", counts ? counts.ok + " of " + counts.active : "—", "active routines", counts && counts.ok < counts.active ? "bad" : "", "dRoutines", "Open the routines");
+    if (st.published) kpi("Published, 24 h", st.published.fig, st.published.sub || "", "", "secFlow", "Go to how the data flows");
+    if (st.review) kpi("Second-reviewed, 24 h", st.review.fig, st.review.share || st.review.sub || "", "", "dAccuracy", "Open the accuracy details");
+    if (st.map) kpi("On the map", st.map.fig, st.map.sub || "checked events, 7 days", "", "", "");
+    box.hidden = false;
+  }
+
+  /* ---------------- page search: filters checks, attention items and every details table and list ---------------- */
+
+  function wireSearch() {
+    var q = $("q"), form = $("qform"), out = $("qcount"); if (!q || !form) return;
+    var wasOpen = null;
+    function items(scope) { return Array.prototype.filter.call(scope.querySelectorAll("tbody tr, ul > li, ol.how > li"), function (n) { return !n.parentNode.closest("tr"); }); }
+    function run() {
+      var t = q.value.trim().toLowerCase(), main = document.querySelector("main.st");
+      main.querySelectorAll("[data-qhide]").forEach(function (n) { n.removeAttribute("data-qhide"); });
+      var dets = Array.prototype.slice.call(main.querySelectorAll("details.dpanel"));
+      if (!t) {
+        if (wasOpen) { dets.forEach(function (d, i) { d.open = wasOpen[i]; }); wasOpen = null; }
+        out.hidden = true; return;
+      }
+      if (!wasOpen) wasOpen = dets.map(function (d) { return d.open; });
+      var n = 0;
+      [$("health"), $("attention")].forEach(function (ul) {
+        if (!ul) return;
+        items(ul).forEach(function (li) { if (li.textContent.toLowerCase().indexOf(t) < 0) li.setAttribute("data-qhide", ""); else n++; });
+      });
+      dets.forEach(function (d) {
+        var hit = 0, head = d.querySelector("summary").textContent.toLowerCase().indexOf(t) >= 0;
+        items(d).forEach(function (r) {
+          if (r.textContent.toLowerCase().indexOf(t) < 0) { if (!head) r.setAttribute("data-qhide", ""); }
+          else if (!r.closest("[hidden]")) hit++;
+        });
+        d.querySelectorAll("details.inner").forEach(function (x) { if (!x.hidden && x.querySelector("tbody tr:not([data-qhide]), li:not([data-qhide])")) x.open = true; });
+        if (hit || head) { d.open = true; n += hit; } else d.setAttribute("data-qhide", "");
+      });
+      out.textContent = n ? plural(n, "match", "matches") + " for “" + q.value.trim() + "”; clear the search to see everything." : "Nothing on this page matches “" + q.value.trim() + "”.";
+      out.hidden = false;
+    }
+    var tm = 0;
+    q.addEventListener("input", function () { clearTimeout(tm); tm = setTimeout(run, 120); });
+    form.addEventListener("submit", function (ev) { ev.preventDefault(); run(); });
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key !== "/" || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+      var a = document.activeElement, tag = a && a.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (a && a.isContentEditable)) return;
+      ev.preventDefault(); q.focus();
+    });
+  }
+
   /* ---------------- load ---------------- */
 
   function get(f, bust) { return fetch("data/" + f + (bust ? "?t=" + Date.now() : ""), { cache: bust ? "no-store" : "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); }
@@ -688,6 +759,8 @@
         (counts ? "; " + counts.ok + " of " + counts.active + " active routines on time" : "") + (nAttn ? "; " + plural(nAttn, "item") + " need" + (nAttn === 1 ? "s" : "") + " attention" : "") +
         ". Data built " + (ops.built_at ? ago(ops.built_at) : "at an unknown time") + (old ? ", so this page may be out of date" : "") + ".";
     });
+    safe(function () { renderKpis(e, ops, m, counts, nAttn); });
+    safe(wireSearch);
     safe(openFromHash);
   });
 })();
