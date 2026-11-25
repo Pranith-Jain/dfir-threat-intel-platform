@@ -3,12 +3,12 @@
   "repo": "berylliumsec/nebula",
   "category": "agent",
   "scope": ["network", "recon"],
-  "stars": 1166,
+  "stars": 1167,
   "description": "Cybersecurity Harness",
   "homepage": "https://www.berylliumsec.com",
   "added": "2026-09-12",
-  "checkedAt": "2026-11-24T03:17:36Z",
-  "pushedAt": "2026-11-23",
+  "checkedAt": "2026-11-25T03:17:43Z",
+  "pushedAt": "2026-11-24",
   "daysIdle": 1,
   "archived": false,
   "license": "BSD-2-Clause",
@@ -23,28 +23,28 @@
       "description": "A desktop workspace holding the terminal, notes, findings and report in one place, with an approval pause between what the model proposes and what actually runs."
     },
     "derived": {
-      "checked_at": "2026-11-24T03:17:36Z",
+      "checked_at": "2026-11-25T03:17:43Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-11-23",
+        "pushed_at": "2026-11-24",
         "days_since_push": 1,
-        "total_commits": 2728,
-        "last100_span_days": 4,
+        "total_commits": 2730,
+        "last100_span_days": 5,
         "last100_authors": 3,
-        "last_commit_sha": "6f6bb82",
-        "last_commit_message": "Show inherited Work stages on subproject chats and in the Subprojects list (#1314)\n\n* Show inherited Work stages on subproject chats and in the Subprojects list\n\nRunning goal chats in research subprojects showed no Work stage after\n#1313. Two defects:\n\n- chat_work_stage labelled a stage only from the item's own project's\n  work_stages. Subprojects define none and inherit their nearest\n  ancestor's (WorkService.effective_stages, the Work page), so a valid\n  inherited key such as \"recon\" was dropped. The join now walks parents,\n  one ancestry level per query, and a project's own stages still win.\n- The parent's Subprojects list (GET /chat/projects/{id}/linked-chats)\n  never joined the stage, and ChildProjectConversations never rendered\n  it. Core now adds metadata.work_stage there, and the row shows the\n  Work stage label with the stage in the link's accessible name.\n\nNothing is stored, so existing chats pick it up on the next read. Product\nhelp notes the inheritance and the Subprojects list.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* Refresh the test-selection digest\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: berylliumsec-handler <41898282+github-actions[bot]@users.noreply.github.com>\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
-        "last_commit_at": "2026-11-23",
+        "last_commit_sha": "d0f987d",
+        "last_commit_message": "Filter the Butler board by Work stage (#1317)\n\nThe Butler board (All projects goal view) gains a Stage control beside\nGroup. The operator ticks one or more Work stage labels, or No stage, and\nthe board shows only goal chats in those stages. Each choice shows its\ngoal chat count.\n\nCore: GET /butler/board accepts repeatable stage=<label> and\nno_stage=true. Labels match case-insensitively across projects, and\nsubprojects use their nearest parent's stages (chat_work_stage). The\nfilter narrows items, section counts, project counts, Completed pages and\nidle pages. The body adds stages (per-label section counts, in the\nprojects' stage order) and no_stage. These counts follow the search and\nignore the stage filter. The header's states stay unfiltered, so a filter\nnever hides a chat that waits on the operator. Active is filtered after\nits turn states are counted.\n\nUI: the device remembers the filter, like the grouping. A status line\nnames the filter, and Clear stage filter or Show all stages removes it. A\nremembered stage that no chat has stays listed with 0. While a filter is\non, the bulk actions act only on the filtered set and say so: \"Hold\nactive in Recon\" holds the filtered running chats by name, and \"Resume\nidle in Recon\" reads only that stage's idle goals and says other stages\nare not resumed. A filter change drops the old board until Core answers.\n\nProduct help, the Butler mode destination guide and aliases cover the\nfilter. ui/playwright.config.ts restores butler-mode.spec.ts to the\nassistant-real projects' testMatch (dropped in #1207), so area:butler-mode\ncollects again; its real-Core journey gains a stage-filter step.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+        "last_commit_at": "2026-11-24",
         "releases": 26,
         "latest_release_at": "2026-11-09",
-        "days_since_release": 15,
+        "days_since_release": 16,
         "days_idle": 1,
         "relocated": false
       },
       "identity": {
         "canonical_repo": "berylliumsec/nebula",
-        "stars": 1166,
-        "forks": 181,
+        "stars": 1167,
+        "forks": 182,
         "created_at": "2023-09-30",
         "is_fork": false,
         "contributors": 10,
@@ -69,9 +69,9 @@
       },
       "licence": { "file": "BSD-2", "api_spdx": "BSD-2-Clause", "readme_claim": null, "conflict": null },
       "shape": {
-        "loc": 812124,
-        "code_files": 1917,
-        "files": 2525,
+        "loc": 818025,
+        "code_files": 1926,
+        "files": 2535,
         "has_ci": true,
         "has_tests": true,
         "has_dockerfile": true,
@@ -86,7 +86,7 @@
       "substrate": { "bundled": [], "manifests": [] },
       "rebadge": [],
       "risk": { "licence": false, "install": false, "phones_home": true, "opaque": false, "host_access": false },
-      "risk_where": { "phones_home": "scripts/build_nebula_core.py:261" }
+      "risk_where": { "phones_home": "ui/src/components/NebulaVoice.tsx:206" }
     }
   }
 }
