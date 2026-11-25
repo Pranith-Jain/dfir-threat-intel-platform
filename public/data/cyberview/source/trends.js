@@ -132,17 +132,28 @@
   function dim(k, rows, complete) {
     var sec = el("section", "mcard");
     var hd = el("header", "mhead"); hd.appendChild(el("h3", null, TITLES[k])); hd.appendChild(el("span", "mq", Q.ask[k])); sec.appendChild(hd);
-    var all = rows.slice().sort(byCur), max = Math.max(1, all[0] ? all[0].cur : 1);
+    var all = rows.slice().sort(byCur), max = 1;
+    all.forEach(function (r) { max = Math.max(max, r.cur, r.prev); });
+    // the card's answer first: what rose and what fell most, in words
+    var up = null, dn = null;
+    all.forEach(function (r) { var d = r.cur - r.prev; if (d > 0 && (!up || d > up.d)) up = { r: r, d: d }; if (d < 0 && (!dn || d < dn.d)) dn = { r: r, d: d }; });
+    var lead = el("p", "mlead");
+    if (up) { lead.appendChild(el("span", "mdl " + (complete ? "up" : "flat"), "\u25B2 " + label(k, up.r))); lead.appendChild(document.createTextNode(" +" + up.d + (up.r.prev ? "" : ", new this week"))); }
+    if (dn) { if (up) lead.appendChild(document.createTextNode("  \u00B7  ")); lead.appendChild(el("span", "mdl " + (complete ? "down" : "flat"), "\u25BC " + label(k, dn.r))); lead.appendChild(document.createTextNode(" \u2212" + (-dn.d))); }
+    if (!up && !dn) lead.appendChild(document.createTextNode("No change on the week before."));
+    if (!complete) lead.appendChild(el("span", "mq", "The week before is partial, so read changes as rough."));
+    sec.appendChild(lead);
     var tb = el("table", "mtab"), cg = el("colgroup");
     if (k === "category") cg.appendChild(el("col", "c-sh"));
-    ["c-nm", "c-sha", "c-ct", "c-dl"].forEach(function (c) { cg.appendChild(el("col", c)); });
+    ["c-nm", "c-ct", "c-dl"].forEach(function (c) { cg.appendChild(el("col", c)); });
     tb.appendChild(cg);
     var th = el("thead"), tr = el("tr");
-    var heads = (k === "category" ? [["", ""]] : []).concat([["Name", ""], ["Share", ""], ["This wk", "num"], [complete ? "vs last" : "vs last*", "num"]]);
-    heads.forEach(function (h, i) { var c = el("th", h[1], h[0]); c.scope = "col"; if (!h[0]) c.appendChild(el("span", "sr-only", "Type")); if (h[0] === "vs last*") c.title = "The week before is partial, so read the change as rough"; tr.appendChild(c); void i; });
+    var heads = (k === "category" ? [["", ""]] : []).concat([["Name", ""], ["This wk", "num"], [complete ? "Change" : "Change*", "num"]]);
+    heads.forEach(function (h) { var c = el("th", h[1], h[0]); c.scope = "col"; if (!h[0]) c.appendChild(el("span", "sr-only", "Type")); if (h[0] === "Change*") c.title = "The week before is partial, so read the change as rough"; tr.appendChild(c); });
     th.appendChild(tr); tb.appendChild(th);
     var body = el("tbody"); tb.appendChild(body); sec.appendChild(tb);
     var none = el("p", "pnone", "No match in this card."); none.hidden = true; sec.appendChild(none);
+    sec.appendChild(el("p", "note mkey", "Bar: events this week. Tick: the week before."));
     function fill(q) {
       while (body.firstChild) body.removeChild(body.firstChild);
       var shown = (q ? all.filter(function (r) { return label(k, r).toLowerCase().indexOf(q) >= 0; }) : all.filter(function (r) { return r.cur > 0 || r.prev > 0; })).slice(0, 8);
@@ -150,13 +161,17 @@
         var row = el("tr"), name = label(k, r);
         row.title = name + ": " + r.cur + " this week, " + r.prev + " the week before" + (complete ? "" : " (partial)");
         if (k === "category") { var sh = el("td"); sh.appendChild(glyph(r.k)); row.appendChild(sh); }
-        var nm = el("td"), a = el("a", null, name);
+        var nm = el("td", "mnm"), a = el("a", null, name);
         a.href = "archive.html#q=" + encodeURIComponent(k === "category" ? "" : r.k) + (k === "category" ? "&cat=" + encodeURIComponent(r.k) : "");
-        nm.appendChild(a); row.appendChild(nm);
-        var sc = el("td"), mb = el("span", "mbar"), mi = el("i"); mi.style.width = Math.max(r.cur ? 3 : 0, Math.round((r.cur / max) * 100)) + "%"; mb.appendChild(mi); mb.style.display = "block"; sc.appendChild(mb); row.appendChild(sc);
+        nm.appendChild(a);
+        var mb = el("span", "mbar"), mi = el("i"), tk = el("b");
+        mi.style.width = Math.max(r.cur ? 2 : 0, Math.round((r.cur / max) * 100)) + "%";
+        tk.style.left = Math.min(99, Math.round((r.prev / max) * 100)) + "%"; if (!r.prev) tk.hidden = true;
+        mb.appendChild(mi); mb.appendChild(tk); nm.appendChild(mb); row.appendChild(nm);
         row.appendChild(el("td", "num mct", String(r.cur)));
         var d = r.cur - r.prev, ch = el("td", "num mdl " + (complete ? (d > 0 ? "up" : d < 0 ? "down" : "flat") : "flat"));
-        ch.textContent = r.prev === 0 && r.cur > 0 ? "new" : (d > 0 ? "+" : "") + d;
+        ch.textContent = r.prev === 0 && r.cur > 0 ? "new" : d > 0 ? "\u25B2 " + d : d < 0 ? "\u25BC " + (-d) : "\u2013";
+        ch.setAttribute("aria-label", r.prev === 0 && r.cur > 0 ? "new this week" : d === 0 ? "no change" : (d > 0 ? "up " : "down ") + Math.abs(d) + " on the week before");
         row.appendChild(ch);
         row.addEventListener("click", function (e) { if (e.target !== a) a.click(); });
         body.appendChild(row);

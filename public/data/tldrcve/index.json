@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-25T08:59:39.872Z",
+  "generatedAt": "2026-11-25T19:08:07.160Z",
   "upstream": {
     "site": "https://tldrcve.com",
     "list": "https://tldrcve.com/cves/",
@@ -8,12 +8,12 @@
     "scale": "https://tldrcve.com/how-we-rate/"
   },
   "stats": {
-    "cves": 45,
-    "details": 45,
-    "versions": 45,
+    "cves": 46,
+    "details": 46,
+    "versions": 46,
     "byVerdict": {
-      "Patch now": 17,
-      "Patch now if…": 24,
+      "Patch now": 19,
+      "Patch now if…": 23,
       "Next cycle": 4
     }
   },
@@ -1378,6 +1378,179 @@
       }
     },
     {
+      "slug": "checkpoint-gt13",
+      "name": "Check Point Mgmt",
+      "meta": "Check Point Management · CVE-2026-16232, CVE-2026-93616",
+      "line": "Two bugs exploited, no login, public exploit. In KEV.",
+      "verdict": "Patch now",
+      "scareLevel": 3.4,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-07-22",
+      "url": "https://tldrcve.com/checkpoint-gt13/",
+      "detail": {
+        "slug": "checkpoint-gt13",
+        "kicker": "Check Point Management · CVE-2026-16232 · CVE-2026-93616",
+        "name": "Check Point Mgmt",
+        "verdict": "Patch now",
+        "verdictHint": "Two bugs exploited, no login, public exploit. In KEV.",
+        "summary": "",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 3,13"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 9,10"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 2,12,5,6"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (since 22 Jul) 4"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Management server without the latest fix",
+            "hint": null,
+            "body": "Security Management Server or Multi-Domain Security Management (MDS) on R82.20 without its Security Hotfix or Jumbo Hotfix Take 10, or below R82.10 Take 45, R82 Take 127 or R81.20 Take 170 (the CVE-2026-93616 record lists only R82.20 with no Jumbo Hotfix as affected); Log Server, Multi-Domain Log Server and SmartEvent have CVE-2026-93616 too; CVE-2026-16232's advisory doesn't list R82.20. R81.10 Take 192 fixes only CVE-2026-93616. No fix is listed for R81, R80.40, R80.30, R80.20, R80.10, R80 or R77.30: CVE-2026-16232 affects R77.30, R80, R80.10, R80.20, R80.30, R81 and R81.10, and CVE-2026-93616 affects R80 to R81.10, R80.40 included. Check Point says Smart-1 Cloud is already protected from both. 1,11,3,13,7,2",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Attacker can reach it over the network",
+            "hint": null,
+            "body": "No login is needed for either bug. CVE-2026-93616 is in the management web service, and Check Point's fix-in-the-meantime is to allow TCP 19009 only from trusted IPs. CVE-2026-16232 needs internet access to the server's IP and Trusted Clients (GUI clients) that aren't restricted to trusted addresses; Rapid7 found that was the default in its testing. The Metasploit module for it uses TCP 18190 and 19009. 11,12,1,8,9",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Why it's Patch now",
+            "hint": null,
+            "body": "Both bugs are exploited, need no login and sit on the same server. For CVE-2026-93616, Check Point names no setting that blocks it, only limiting who can reach the server, and TCP 19009 is the management web service SmartConsole connects to for login, so we'd expect it on every management server. For CVE-2026-16232, the Trusted Clients setting it needs was the default in Rapid7's tests. So we treat any unpatched management server an attacker can reach as exposed. 11,12,1,8",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Install the latest Jumbo Hotfix",
+            "hint": null,
+            "body": "Rapid7 says customers \"should install the latest Jumbo Hotfix on an emergency basis\". The first takes that fix both bugs are R82.20 Take 10 (or the R82.20 Security Hotfix, no reboot), R82.10 Take 45, R82 Take 127 and R81.20 Take 170; Check Point says LivePatch Take 28/29 doesn't fix CVE-2026-93616. On R81.10, Take 192 fixes CVE-2026-93616 but Check Point lists no fix for CVE-2026-16232, and older versions get neither, so the only full fix is moving to a supported version. 7,11,1,12 Latest safe versions checked 25 Nov Check Point Security Management → R82.20 R82.20 Take 10 R82.10 R82.10 Take 45 R82 R82 Take 127 R81.20 R81.20 Take 170 Check Point says Smart-1 Cloud is already protected.",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Limit who can reach it",
+            "hint": null,
+            "body": "In SmartConsole, under Manage & Settings > Permissions & Administrators > Trusted Clients, allow only specific trusted IPs or subnets, never the Type \"Any\". Allow TCP 19009 only from trusted IPs, put the management server behind a firewall, and if implied rules for control connections are on, keep Trusted Clients to trusted internal addresses. For CVE-2026-16232, Check Point also says to make sure implied rules for control connections are enabled. Rapid7 notes this lowers exposure but doesn't fix the bugs. 1,11,2,7",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Check the logs for both bugs",
+            "hint": null,
+            "body": "CVE-2026-16232: in SmartConsole's Audit Logs (Logs & Monitor, or Logs & Events), search for Authentication method: application token and Authentication method: Password based application token ; Check Point says to treat any hit as suspicious and check for admin names or IPs you don't know, and lists attacker IPs for events before 23 Jul 2026. CVE-2026-93616: in Expert mode, search the cpm.elg* logs under $MDS_FWDIR/log for login requests with usernames over 1,000 characters (then look for FWM or MDS core dumps from the same time in /var/log/dump/usermode/ ), and for \"Invoking method\", \"Uploading file\" or \"The path to the jars\" entries with ../ or encoded traversal. Check Point says a match isn't proof. Rapid7 says to check even after patching if the server was reachable. 1,11,7",
+            "code": []
+          },
+          {
+            "num": "5",
+            "title": "Look for GT13's traces",
+            "hint": null,
+            "body": "GreyNoise's signs: a preload entry for /usr/lib/.libproc.so in /etc/ld.so.preload (it says this may mean an implant), a certificate named pivot.p12 , and unexpected policy unloads. It also lists GT13's domain newpayapp[.]com and its subdomains, and the IPs it used, \"either egresses through ExpressVPN or compromised victim Check Point devices\". 5",
+            "code": []
+          },
+          {
+            "num": "6",
+            "title": "If you find signs",
+            "hint": null,
+            "body": "Neither Check Point nor GreyNoise gives clean-up steps; Check Point points to its support team for help. GT13 copied firewall databases and the Internal CA and made a new certificate ( pivot.p12 ), so we would treat the firewall configuration, admin credentials and Internal CA as stolen: rotate admin credentials, remove admins and certificates you don't recognise, and make sure your security policies are installed again. 2,5",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://support.checkpoint.com/results/sk/sk185169/",
+            "title": "Check Point sk185169: CVE-2026-16232 versions, fixed takes, Trusted Clients, audit log checks",
+            "date": "24 Sep"
+          },
+          {
+            "url": "https://blog.checkpoint.com/security/security-advisory-action-required-active-exploitation-of-check-point-smartconsole-authentication-bypass-cve-2026-16232",
+            "title": "Check Point: CVE-2026-16232 advisory, \"a handful of customers\", Smart-1 Cloud protected",
+            "date": "22 Jul"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-16232",
+            "title": "CVE record (Check Point): CVE-2026-16232 affected versions",
+            "date": "22 Jul"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV: CVE-2026-16232 added 22 Jul (due 25 Jul), CVE-2026-93616 added 22 Sep (due 25 Sep)",
+            "date": "22 Sep"
+          },
+          {
+            "url": "https://www.greynoise.io/blog/check-point-security-management-servers-intrusion-campaign",
+            "title": "GreyNoise: GT13 campaign, 24 servers, 22 organisations, indicators",
+            "date": "23 Nov"
+          },
+          {
+            "url": "https://www.bleepingcomputer.com/news/security/hackers-compromise-check-point-servers-in-22-organizations/",
+            "title": "BleepingComputer: Check Point statement on the GT13 campaign (added 25 Nov)",
+            "date": "25 Nov"
+          },
+          {
+            "url": "https://www.rapid7.com/blog/post/etr-cve-2026-16232-critical-check-point-smartconsole-authentication-bypass-exploited-in-the-wild/",
+            "title": "Rapid7: \"install the latest Jumbo Hotfix on an emergency basis\", fixed takes",
+            "date": "23 Jul"
+          },
+          {
+            "url": "https://www.rapid7.com/blog/post/ra-check-point-smartconsole-authentication-bypass-technical-analysis-cve-2026-16232/",
+            "title": "Rapid7: CVE-2026-16232 technical analysis, exploitable by default in its tests",
+            "date": "28 Jul"
+          },
+          {
+            "url": "https://github.com/rapid7/metasploit-framework/blob/master/modules/exploits/linux/misc/checkpoint_smartconsole_cve_2026_16232_rce.rb",
+            "title": "Metasploit: public CVE-2026-16232 module, ports 18190 and 19009",
+            "date": "25 Aug"
+          },
+          {
+            "url": "https://github.com/sfewer-r7/CVE-2026-16232",
+            "title": "Rapid7: public CVE-2026-16232 proof-of-concept code",
+            "date": "28 Jul"
+          },
+          {
+            "url": "https://support.checkpoint.com/results/sk/sk1000171",
+            "title": "Check Point sk1000171: CVE-2026-93616 versions, fixed takes, TCP 19009, log checks",
+            "date": "13 Oct"
+          },
+          {
+            "url": "https://blog.checkpoint.com/security/security-advisory-action-required-active-exploitation-of-cve-2026-85102-and-a-management-pre-authentication-vulnerability-cve-2026-93616/",
+            "title": "Check Point: CVE-2026-93616 advisory, attacks seen 23 Jul, LivePatch doesn't fix it",
+            "date": "22 Sep"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-93616",
+            "title": "CVE record (Check Point): CVE-2026-93616 affected versions",
+            "date": "22 Sep"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-25",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/checkpoint-gt13/"
+      }
+    },
+    {
       "slug": "chrome-zero-day",
       "name": "Chrome zero-day",
       "meta": "Chrome (Edge +4 more) · CVE-2026-125350",
@@ -1932,6 +2105,148 @@
           }
         ],
         "url": "https://tldrcve.com/sshole/"
+      }
+    },
+    {
+      "slug": "vmsa-2026-0011",
+      "name": "VMware Nov fixes",
+      "meta": "VMware vCenter / ESX · 23 CVEs",
+      "line": "No-login vCenter bypass, public exploit. No attacks yet.",
+      "verdict": "Patch now",
+      "scareLevel": 3.3,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-11-24",
+      "url": "https://tldrcve.com/vmsa-2026-0011/",
+      "detail": {
+        "slug": "vmsa-2026-0011",
+        "kicker": "VMware vCenter / ESX · Release roundup · 23 CVEs",
+        "name": "VMware Nov fixes",
+        "verdict": "Patch now",
+        "verdictHint": "No-login vCenter bypass, public exploit. No attacks yet.",
+        "summary": "",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 7"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 1,2"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 4"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "An unpatched vSphere system",
+            "hint": "command",
+            "body": "vCenter below 9.1.2, 9.0.2.0300 or 8.0 U3m; ESX below 9.1.2, 9.0.2.0200 or 8.0 U3m (ESXi80U3m-25926933); ESX 8.0 U3m came out on 19 Nov 2026, so an ESX 8 host already on that build is fixed. If you installed vCenter 8.0 U3m for VMSA-2026-0009 (19 Nov 2026), vCenter is already fixed, but ESX wasn't part of that advisory. vSphere 7.0 is affected, with fixes only for extended-support customers, and Broadcom says to presume 6.5 and 6.7 are too. VMware Cloud Foundation 5.x is fixed in 5.2.5. vCenter shows its build on the vSphere Client's Summary tab; the command lists your ESX hosts' builds. 1,2,6 Get-VMHost | Select-Object Name, Version, Build",
+            "code": [
+              "Get-VMHost | Select-Object Name, Version, Build"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "An attacker can reach that system",
+            "hint": "command",
+            "body": "The vCenter bypass needs network access to vCenter (Broadcom doesn't say which port; the public exploit talks to its directory service on LDAP port 389, or 636 with TLS); the ESX bugs need network access to the host's I/O filter service (the IOFilterVP firewall rule, port 9080 on ESX 8). No login, no user action and no VM access are needed. On ESX 8, the command lists which addresses may reach that service; Broadcom's KB uses it to check the restriction. 1,2,3,7 esxcli network firewall ruleset allowedip list -r iofiltervp",
+            "code": [
+              "esxcli network firewall ruleset allowedip list -r iofiltervp"
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Patch vCenter and ESX",
+            "hint": null,
+            "body": "vCenter: 9.1.2, 9.0.2.0300 or 8.0 U3m. ESX: 9.1.2 (ESXi-9.1.2.0-25946735), 9.0.2.0200 (ESXi-9.0.2.0200-25953133) or 8.0 U3m (ESXi80U3m-25926933), including vSAN Witness Appliances. VMware Cloud Foundation 5.x applies vCenter and ESX 8.0 U3m through Broadcom's asynchronous patching guide (KB 88287). Updating ESX 9.1 or 8.0 restarts each host, and the vCenter updates can't use Quick Patch. Broadcom's Q&A says no ESX update here can be live-patched, but the ESX 9.0.2.0200 release notes call it live-patchable with no reboot. On ESX 9.0, two moderate bugs (CVE-2026-123914 and CVE-2026-123915) are still waiting for a patch. Broadcom's advisory gives no order; we'd patch vCenter first: its bypass has public exploit code, and Broadcom lists no workaround for it; its Q&A leaves firewall limits to you. Then ESX, starting with hosts that untrusted networks or many machines can reach. After patching, we'd also check the Administrators group in vCenter's single sign-on domain for accounts you don't recognise, since the public exploit can add one there. 1,2,5,7 Latest safe versions checked 24 Nov VMware vCenter → 9.1 9.1.2 9.0 9.0.2.0300 8.0 8.0 U3m VMware Cloud Foundation 5.x: patch vCenter to 8.0 U3m, or move to VCF 5.2.5, which includes it.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Can't patch ESX 8 yet? Limit port 9080",
+            "hint": null,
+            "body": "Broadcom's KB 463535 says to let only vCenter's address reach the IOFilterVP service on ESX 8: esxcli network firewall ruleset set -r iofiltervp --allowed-all false , then esxcli network firewall ruleset allowedip add -r iofiltervp -i <vCenter-IP> . Its Q&A warns that limiting this service covers only part of the advisory and may affect the cluster and workload availability, so patch anyway. 3,2",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Also update Workstation, Fusion, Tools and Avi",
+            "hint": null,
+            "body": "Workstation and Fusion 26H1u1 fix the VM escape (CVE-2026-123912). VMware Tools 13.1.10 or 12.5.6 fixes a denial of service in the VGAuth service; updating ESX doesn't update Tools inside VMs. Avi Load Balancer 32.1.4 fixes all eight Avi bugs, each of which needs an Avi login, most of them admin rights. 1,2",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Why it's Patch now",
+            "hint": null,
+            "body": "Exploit code for the vCenter bypass has been public on GitHub since 24 Nov 2026. It needs only network access to vCenter and no password; the account it names by default, administrator@vsphere.local , is one Broadcom advises keeping. Broadcom says the bug is in vCenter itself, whether or not you use Enhanced Linked Mode, and lists no workaround. Broadcom's advisory and Q&A still mention no exploitation, and none of the 23 bugs is on CISA's exploited list (catalog of 24 Nov 2026). We found no public exploit for the ESX bugs, and no independent confirmation yet that the vCenter one works. 7,8,2,1,4",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/39626",
+            "title": "Broadcom VMSA-2026-0011: 23 CVEs, scores, fixed versions, workarounds, acknowledgments",
+            "date": "24 Nov"
+          },
+          {
+            "url": "https://github.com/vmware/vcf-security-and-compliance-guidelines/blob/main/security-advisories/vmsa-2026-0011/README.md",
+            "title": "Broadcom: VMSA-2026-0011 Q&A, scope, 8.0 U3m already fixes vCenter, ESX needs this update, no exploitation stated",
+            "date": "24 Nov"
+          },
+          {
+            "url": "https://knowledge.broadcom.com/external/article/463535",
+            "title": "Broadcom KB 463535: interim ESX 8 workaround, IOFilterVP on port 9080",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: none of the 23 listed (catalog 2026.11.24)",
+            "date": null
+          },
+          {
+            "url": "https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/release-notes/patch-releases-9-0-0-x/vsphere/esx/esx-9-0-2-0200-release-notes.html",
+            "title": "Broadcom: ESX 9.0.2.0200 release notes, live-patchable, no reboot",
+            "date": "24 Nov"
+          },
+          {
+            "url": "https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/release-notes/esxi-update-and-patch-release-notes/vsphere-esxi-80u3m-release-notes.html",
+            "title": "Broadcom: ESXi 8.0 U3m release notes, 19 Nov 2026, build 25926933",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/dinosn/CVE-2026-123903",
+            "title": "dinosn on GitHub: CVE-2026-123903 exploit code, failed SASL bind, claims administrator@vsphere.local, adds an admin account",
+            "date": "24 Nov"
+          },
+          {
+            "url": "https://knowledge.broadcom.com/external/article/446352",
+            "title": "Broadcom KB 446352: keep the administrator@vsphere.local account",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-25",
+            "text": "Exploit code for the vCenter login bypass (CVE-2026-123903) was posted on GitHub on 24 Nov 2026. Raised to Patch now, scare 2.9 to 3.3; patch vCenter first. Still no attacks reported and none of the 23 on CISA's exploited list."
+          },
+          {
+            "date": "2026-11-24",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/vmsa-2026-0011/"
       }
     },
     {
@@ -3118,134 +3433,6 @@
           }
         ],
         "url": "https://tldrcve.com/upload2shell/"
-      }
-    },
-    {
-      "slug": "vmsa-2026-0011",
-      "name": "VMware Nov fixes",
-      "meta": "VMware vCenter / ESX · 23 CVEs",
-      "line": "No-login vCenter bypass, ESX takeover. No attacks yet.",
-      "verdict": "Patch now if…",
-      "scareLevel": 2.9,
-      "meterLabel": "Check today",
-      "disclosed": "2026-11-24",
-      "url": "https://tldrcve.com/vmsa-2026-0011/",
-      "detail": {
-        "slug": "vmsa-2026-0011",
-        "kicker": "VMware vCenter / ESX · Release roundup · 23 CVEs",
-        "name": "VMware Nov fixes",
-        "verdict": "Patch now if…",
-        "verdictHint": "No-login vCenter bypass, ESX takeover. No attacks yet.",
-        "summary": "",
-        "meterLabel": "Check today",
-        "meterHint": "Find out if you're affected. If you are, patch.",
-        "checklist": [
-          {
-            "yes": true,
-            "text": "✓ Works without logging in 1"
-          },
-          {
-            "yes": false,
-            "text": "No public exploit 1,2"
-          },
-          {
-            "yes": false,
-            "text": "No attacks seen yet 1,2"
-          },
-          {
-            "yes": false,
-            "text": "Not on CISA's exploited list 4"
-          }
-        ],
-        "affected": [
-          {
-            "num": "1",
-            "title": "An unpatched vSphere system",
-            "hint": "command",
-            "body": "vCenter below 9.1.2, 9.0.2.0300 or 8.0 U3m; ESX below 9.1.2, 9.0.2.0200 or 8.0 U3m (ESXi80U3m-25926933); ESX 8.0 U3m came out on 19 Nov 2026, so an ESX 8 host already on that build is fixed. If you installed vCenter 8.0 U3m for VMSA-2026-0009 (19 Nov 2026), vCenter is already fixed, but ESX wasn't part of that advisory. vSphere 7.0 is affected, with fixes only for extended-support customers, and Broadcom says to presume 6.5 and 6.7 are too. VMware Cloud Foundation 5.x is fixed in 5.2.5. vCenter shows its build on the vSphere Client's Summary tab; the command lists your ESX hosts' builds. 1,2,6 Get-VMHost | Select-Object Name, Version, Build",
-            "code": [
-              "Get-VMHost | Select-Object Name, Version, Build"
-            ]
-          },
-          {
-            "num": "2",
-            "title": "An attacker can reach that system",
-            "hint": "command",
-            "body": "The vCenter bypass needs network access to vCenter; the ESX bugs need network access to the host's I/O filter service (the IOFilterVP firewall rule, port 9080 on ESX 8). No login, no user action and no VM access are needed. On ESX 8, the command lists which addresses may reach that service; Broadcom's KB uses it to check the restriction. 1,2,3 esxcli network firewall ruleset allowedip list -r iofiltervp",
-            "code": [
-              "esxcli network firewall ruleset allowedip list -r iofiltervp"
-            ]
-          }
-        ],
-        "actions": [
-          {
-            "num": "1",
-            "title": "Patch vCenter and ESX",
-            "hint": null,
-            "body": "vCenter: 9.1.2, 9.0.2.0300 or 8.0 U3m. ESX: 9.1.2 (ESXi-9.1.2.0-25946735), 9.0.2.0200 (ESXi-9.0.2.0200-25953133) or 8.0 U3m (ESXi80U3m-25926933), including vSAN Witness Appliances. VMware Cloud Foundation 5.x applies vCenter and ESX 8.0 U3m through Broadcom's asynchronous patching guide (KB 88287). Updating ESX 9.1 or 8.0 restarts each host, and the vCenter updates can't use Quick Patch. Broadcom's Q&A says no ESX update here can be live-patched, but the ESX 9.0.2.0200 release notes call it live-patchable with no reboot. On ESX 9.0, two moderate bugs (CVE-2026-123914 and CVE-2026-123915) are still waiting for a patch. Start with any vCenter or ESX that untrusted networks or many machines can reach. 1,2,5 Latest safe versions checked 24 Nov VMware vCenter → 9.1 9.1.2 9.0 9.0.2.0300 8.0 8.0 U3m VMware Cloud Foundation 5.x: patch vCenter to 8.0 U3m, or move to VCF 5.2.5, which includes it.",
-            "code": []
-          },
-          {
-            "num": "2",
-            "title": "Can't patch ESX 8 yet? Limit port 9080",
-            "hint": null,
-            "body": "Broadcom's KB 463535 says to let only vCenter's address reach the IOFilterVP service on ESX 8: esxcli network firewall ruleset set -r iofiltervp --allowed-all false , then esxcli network firewall ruleset allowedip add -r iofiltervp -i <vCenter-IP> . Its Q&A warns that limiting this service covers only part of the advisory and may affect the cluster and workload availability, so patch anyway. 3,2",
-            "code": []
-          },
-          {
-            "num": "3",
-            "title": "Also update Workstation, Fusion, Tools and Avi",
-            "hint": null,
-            "body": "Workstation and Fusion 26H1u1 fix the VM escape (CVE-2026-123912). VMware Tools 13.1.10 or 12.5.6 fixes a denial of service in the VGAuth service; updating ESX doesn't update Tools inside VMs. Avi Load Balancer 32.1.4 fixes all eight Avi bugs, each of which needs an Avi login, most of them admin rights. 1,2",
-            "code": []
-          },
-          {
-            "num": "4",
-            "title": "Why it isn't Patch now",
-            "hint": null,
-            "body": "Broadcom's advisory and Q&A mention no exploitation, no exploit code is public, and it isn't on CISA's exploited list (catalog of 23 Nov 2026). But the vCenter bug sits in the same service as the zero-day exploited since early September, and both critical paths need nothing but network access. We'll move it to Patch now if an exploit or attacks appear. 1,2,4",
-            "code": []
-          }
-        ],
-        "sources": [
-          {
-            "url": "https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/39626",
-            "title": "Broadcom VMSA-2026-0011: 23 CVEs, scores, fixed versions, workarounds, acknowledgments",
-            "date": "24 Nov"
-          },
-          {
-            "url": "https://github.com/vmware/vcf-security-and-compliance-guidelines/blob/main/security-advisories/vmsa-2026-0011/README.md",
-            "title": "Broadcom: VMSA-2026-0011 Q&A, scope, 8.0 U3m already fixes vCenter, ESX needs this update, no exploitation stated",
-            "date": "24 Nov"
-          },
-          {
-            "url": "https://knowledge.broadcom.com/external/article/463535",
-            "title": "Broadcom KB 463535: interim ESX 8 workaround, IOFilterVP on port 9080",
-            "date": null
-          },
-          {
-            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
-            "title": "CISA KEV catalog: none of the 23 listed (catalog 2026.11.23)",
-            "date": null
-          },
-          {
-            "url": "https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vcf-9-0-and-later/9-0/release-notes/patch-releases-9-0-0-x/vsphere/esx/esx-9-0-2-0200-release-notes.html",
-            "title": "Broadcom: ESX 9.0.2.0200 release notes, live-patchable, no reboot",
-            "date": "24 Nov"
-          },
-          {
-            "url": "https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/release-notes/esxi-update-and-patch-release-notes/vsphere-esxi-80u3m-release-notes.html",
-            "title": "Broadcom: ESXi 8.0 U3m release notes, 19 Nov 2026, build 25926933",
-            "date": "19 Nov"
-          }
-        ],
-        "changes": [
-          {
-            "date": "2026-11-24",
-            "text": "Published."
-          }
-        ],
-        "url": "https://tldrcve.com/vmsa-2026-0011/"
       }
     },
     {
@@ -7738,6 +7925,31 @@
         }
       ],
       "url": "https://tldrcve.com/versions/brotli-python/"
+    },
+    {
+      "slug": "checkpoint",
+      "name": "Check Point Security Management",
+      "meta": "1 bug · checked 25 Nov",
+      "nofix": true,
+      "chips": [
+        {
+          "line": "R82.20",
+          "version": "R82.20 Take 10"
+        },
+        {
+          "line": "R82.10",
+          "version": "R82.10 Take 45"
+        },
+        {
+          "line": "R82",
+          "version": "R82 Take 127"
+        },
+        {
+          "line": "R81.20",
+          "version": "R81.20 Take 170"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/checkpoint/"
     },
     {
       "slug": "chrome",

@@ -258,10 +258,11 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   table.stack td:first-child{display:block;font-size:15px;padding-bottom:6px}
   table.stack td:first-child::before{display:none}
   th.num{white-space:normal}
-  .filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .filters label.grow,.filters label.check{grid-column:1/-1}
   .filters select{width:100%;min-width:0;padding-left:8px;padding-right:24px;background-position:right 7px center}
-  .wbtabs{overflow-x:visible;gap:2px}.wbtabs button{flex:1 1 0;min-width:0;padding:10px 4px;text-align:center;white-space:normal;font-size:14px;line-height:1.2}
+  .wbtabs{display:flex;overflow-x:auto;gap:2px;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}
+  .wbtabs [role=tab]{flex:none;padding:9px 13px;font-size:14px;line-height:1.2;scroll-snap-align:start}
   .ttclock{position:sticky;top:var(--barh,56px);z-index:1;padding:8px 0;background:var(--panel)}
 }
 .wbrow,.ttinj>li,#list>li{scroll-margin-top:calc(var(--barh,56px) + 8px)}
@@ -497,7 +498,7 @@ tbody tr:hover{background:rgba(255,255,255,.05)}
 .kd .kn{color:var(--faint);font-weight:400}
 .kd .ar{font-size:9px}
 @media (max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.kpi:nth-child(3n){border-right:0}.kpi:nth-child(n+4){border-top:1px solid rgba(255,255,255,.1)}}
-@media (max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi:nth-child(3n){border-right:1px solid rgba(255,255,255,.1)}.kpi:nth-child(2n){border-right:0}.kpi:nth-child(n+3){border-top:1px solid rgba(255,255,255,.1)}.kpi .kv{font-size:19px}}
+@media (max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi:nth-child(3n){border-right:1px solid rgba(255,255,255,.1)}.kpi:nth-child(2n){border-right:0}.kpi:nth-child(n+3){border-top:1px solid rgba(255,255,255,.1)}.kpi .kv{font-size:19px;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}.kpi{padding:14px 16px}.kpi.go{padding:14px 16px}}
 /* section heading: the question first, how to read it after */
 .sec{margin:28px 0 12px;display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap}
 .sec h2{margin:0;font:600 16px var(--font-display)}
@@ -538,15 +539,23 @@ main.tr .days .lab{display:none}
 .mtab tr:last-child td{border-bottom:0}
 .mtab th:first-child,.mtab td:first-child{padding-left:16px}
 .mtab th:last-child,.mtab td:last-child{padding-right:16px}
-.mtab col.c-sh{width:30px}.mtab col.c-sha{width:22%}.mtab col.c-ct{width:62px}.mtab col.c-dl{width:66px}
+.mtab col.c-sh{width:30px}.mtab col.c-ct{width:64px}.mtab col.c-dl{width:72px}
+.mtab th.num{white-space:nowrap}
+.mtab td.mnm{padding-top:9px;padding-bottom:9px}
+.mtab td.mnm .mbar{margin-top:6px}
 .mtab tbody tr{cursor:pointer}
 .mtab tbody tr:hover{background:rgba(255,255,255,.08)}
 .mtab td a{color:var(--ink);text-decoration:none;font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mtab td a:hover{color:var(--accent)}
 .mtab td a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
-.mbar{height:7px;border-radius:999px;background:var(--bar-bg);position:relative;overflow:hidden}
+.mbar{display:block;height:6px;border-radius:999px;background:var(--bar-bg);position:relative}
 .mbar i{position:absolute;left:0;top:0;bottom:0;background:var(--bar);border-radius:999px}
-.mct{font:600 13px var(--mono);font-variant-numeric:tabular-nums}
+.mbar b{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink);border-radius:1px;opacity:.75}
+.mct{font:600 15px var(--mono);font-variant-numeric:tabular-nums}
+.mlead{margin:0;padding:10px 16px;font-size:13px;line-height:1.45;border-bottom:1px solid rgba(255,255,255,.08);overflow-wrap:anywhere}
+.mlead .mdl{font-size:13px}
+.mlead .mq{display:block;font-size:11.5px;color:var(--faint);margin-top:2px}
+.mcard>.note.mkey{margin-top:auto}
 .mdl{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
 .mtab .muted{color:var(--faint)}
 .mcard>.note{margin:0;padding:9px 16px 12px;font-size:11.5px;border-top:1px solid rgba(255,255,255,.08)}
@@ -557,7 +566,7 @@ main.tr .days .lab{display:none}
 .shp.bar2{border-radius:1px;height:5px;width:11px}
 .shp.plus{border-radius:0;background:linear-gradient(var(--d) 0 0) center/100% 3px no-repeat,linear-gradient(var(--d) 0 0) center/3px 100% no-repeat;background-color:transparent}
 main.tr #grid{margin-top:28px}
-@media (max-width:560px){.mtab col.c-sha{width:0}.mtab th:nth-child(3),.mtab td:nth-child(3){display:none}.yax{width:24px}.axis{margin-left:32px}}
+@media (max-width:560px){.mtab col.c-sh{width:26px}.mtab col.c-ct{width:56px}.mtab col.c-dl{width:62px}.mtab th,.mtab td{padding-left:6px;padding-right:6px}.mtab th:first-child,.mtab td:first-child{padding-left:14px}.mtab th:last-child,.mtab td:last-child{padding-right:14px}.yax{width:24px}.axis{margin-left:32px}}
 
 /* ---- Vulnerabilities v2: a three-pane database. Rail of filters, a list that scrolls inside itself, and the open
    item's details beside it. On a wide screen the whole view is one screen tall; narrower, the panes stack and the
@@ -649,7 +658,8 @@ main.ar .kpis{margin:16px 0 0}
 .kpi.go:last-child{border-right:0}
 .kpi.go:hover{background:rgba(255,255,255,.07)}
 .kpi.go:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:22px}
-.kpi.go .kd::after{content:"  \203A";color:var(--accent)}
+.kpi.go .kd{display:block}
+.kpi.go .kd::after{content:"\00A0\203A";color:var(--accent);font-size:14px;line-height:1}
 main.ar .recent{margin:16px 0 0;padding:16px 18px;border-radius:22px;background:var(--sheen),var(--glass);border:1px solid var(--glass-brd);-webkit-backdrop-filter:blur(30px) saturate(190%);backdrop-filter:blur(30px) saturate(190%);box-shadow:var(--shadow),var(--hl)}
 .argrid{margin-top:16px}
 main.ar .vrail .filters{padding:16px;gap:12px}
@@ -850,3 +860,11 @@ mark.qm{background:rgba(108,182,255,.32);color:inherit;border-radius:4px;padding
 @media print{.docrail,.psearch,.qcount{display:none!important}.docgrid,.docbody{display:block}.docbody .wide{columns:auto}}
 .docbody #dev{grid-column:1/-1}
 .docbody .panel .toolcards{padding:0;margin-left:0}
+
+/* checkboxes: one glass box on every platform (iOS draws the native one as a black square in dark mode) */
+.filters input[type=checkbox],.panel label.check input[type=checkbox],.ttrev input[type=checkbox]{-webkit-appearance:none;appearance:none;margin:0;width:22px;height:22px;flex:none;border-radius:7px;border:1.5px solid rgba(255,255,255,.38);background:rgba(255,255,255,.08);display:inline-grid;place-content:center;cursor:pointer;transition:background .15s,border-color .15s}
+.filters input[type=checkbox]::before,.panel label.check input[type=checkbox]::before,.ttrev input[type=checkbox]::before{content:"";width:11px;height:6px;border-left:2.5px solid #fff;border-bottom:2.5px solid #fff;transform:translateY(-2px) rotate(-45deg) scale(0);transition:transform .12s}
+.filters input[type=checkbox]:checked,.panel label.check input[type=checkbox]:checked,.ttrev input[type=checkbox]:checked{background:var(--accent);border-color:var(--accent)}
+.filters input[type=checkbox]:checked::before,.panel label.check input[type=checkbox]:checked::before,.ttrev input[type=checkbox]:checked::before{transform:translateY(-2px) rotate(-45deg) scale(1)}
+.filters input[type=checkbox]:focus-visible,.panel label.check input[type=checkbox]:focus-visible,.ttrev input[type=checkbox]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (forced-colors:active){.filters input[type=checkbox],.panel label.check input[type=checkbox],.ttrev input[type=checkbox]{-webkit-appearance:auto;appearance:auto}}

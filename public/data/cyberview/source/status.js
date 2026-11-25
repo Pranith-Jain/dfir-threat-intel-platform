@@ -34,6 +34,9 @@
   function big(n) { return n === null ? "not logged" : n >= 1e9 ? (n / 1e9).toFixed(1) + " bn" : n >= 1e6 ? (n / 1e6).toFixed(1) + " M" : n >= 1e3 ? Math.round(n / 1e3) + " k" : String(Math.round(n)); }
   function badge(cls, text) { return el("span", "badge " + cls, text); }
   function link(href, text) { var a = el("a", null, text); a.href = safeUrl(href); a.target = "_blank"; a.rel = "noopener noreferrer"; return a; }
+  // the ORKL library and its archive are the only off-github hosts this page links to; a suffix trick like orkl.eu.evil.com cannot match
+  function orklUrl(u) { u = String(u || ""); return /^https:\/\/(archive\.)?orkl\.eu\//.test(u) ? u : ""; }
+  function orklLink(href, text) { if (!orklUrl(href)) return el("span", null, text); var a = el("a", null, text); a.href = orklUrl(href); a.target = "_blank"; a.rel = "noopener noreferrer"; return a; }
   // a link to one of the collapsed details on this page: opens it and scrolls to it
   function jump(id, text) { var a = el("a", null, text); a.href = "#" + id; a.dataset.open = id; return a; }
   document.addEventListener("click", function (ev) {
@@ -732,10 +735,53 @@
     });
   }
 
+  /* ---------------- D. ORKL threat-report library mirror ---------------- */
+
+  /** site/data/orkl.json (scripts/orkl.mjs via build): totals, languages, most-named actors and a recent sample — metadata and links only, never a report body. */
+  function cleanOrkl(d) {
+    d = obj(d); if (!d) return null;
+    var top = arr(d.top_actors, 30).map(function (t) { t = obj(t); return t ? { name: txt(t.name, 120), count: int0(t.count) } : null; }).filter(function (t) { return t && t.name; });
+    var recent = arr(d.recent, 30).map(function (r) {
+      r = obj(r); if (!r) return null;
+      return { title: txt(r.title, 300), lang: txt(r.lang, 12), created: txt(r.created, 40), actors: arr(r.actors, 4).map(function (a) { return txt(a, 120); }).filter(Boolean), url: orklUrl(r.url), pdf: orklUrl(r.pdf) };
+    }).filter(function (r) { return r && r.title; });
+    var langs = obj(d.languages) || {};
+    var langList = Object.keys(langs).filter(function (k) { return /^[a-z-]{1,12}$/.test(k); }).map(function (k) { return { lang: k, n: int0(langs[k]) }; }).filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n; }).slice(0, 12);
+    return { built_at: isoOk(d.built_at), updated_at: isoOk(d.updated_at), version: int0(d.library_version), backfill_done: d.backfill_done === true, reports: int0(d.reports), actors: int0(d.actors), top: top, recent: recent, langs: langList };
+  }
+
+  function renderOrkl(raw) {
+    var box = $("dOrkl"); if (!box) return;
+    var d = cleanOrkl(raw);
+    if (!d || !d.reports) { $("orklSum").textContent = "not yet collected"; return; }
+    box.hidden = false;
+    var langStr = d.langs.slice(0, 6).map(function (x) { return x.lang.toUpperCase() + " " + big(x.n); }).join(", ");
+    $("orklBig").textContent = big(d.reports) + " reports, " + big(d.actors) + " threat actors on file.";
+    $("orklNote").textContent = (d.backfill_done ? "The full library has been mirrored; " : "Still backfilling the library, newest first; ") +
+      (d.updated_at ? "updated " + ago(d.updated_at) + ". " : "") + (langStr ? "Most reports are in " + langStr + "." : "");
+    var ua = $("orklActors"); ua.textContent = "";
+    if (d.top.length) d.top.slice(0, 20).forEach(function (t) {
+      var li = el("li"); li.appendChild(el("strong", null, t.name)); li.appendChild(document.createTextNode(" — " + plural(t.count, "report"))); ua.appendChild(li);
+    }); else ua.appendChild(el("li", "muted", "No actors named yet."));
+    var ur = $("orklRecent"); ur.textContent = "";
+    if (d.recent.length) d.recent.slice(0, 20).forEach(function (r) {
+      var li = el("li");
+      li.appendChild(r.url ? orklLink(r.url, r.title) : el("span", null, r.title));
+      var sub = [];
+      if (r.actors.length) sub.push(r.actors.join(", "));
+      if (r.lang) sub.push(r.lang.toUpperCase());
+      if (r.created) sub.push(String(r.created).slice(0, 10));
+      if (sub.length) { li.appendChild(document.createElement("br")); li.appendChild(el("span", "sub2", sub.join(" · "))); }
+      if (r.pdf) { li.appendChild(document.createTextNode(" · ")); li.appendChild(orklLink(r.pdf, "PDF")); }
+      ur.appendChild(li);
+    }); else ur.appendChild(el("li", "muted", "No reports on file yet."));
+    $("orklSum").textContent = big(d.reports) + " reports · " + big(d.actors) + " actors" + (d.backfill_done ? "" : " · backfilling");
+  }
+
   /* ---------------- load ---------------- */
 
   function get(f, bust) { return fetch("data/" + f + (bust ? "?t=" + Date.now() : ""), { cache: bust ? "no-store" : "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); }
-  Promise.all([get("ops.json"), get("health.json", true), get("manifest.json", true), get("efficiency.json")]).then(function (a) {
+  Promise.all([get("ops.json"), get("health.json", true), get("manifest.json", true), get("efficiency.json"), get("orkl.json")]).then(function (a) {
     var ops = null, h = null, e = null, m = obj(a[2]), attn = [], counts = null, nAttn = 0;
     safe(function () { ops = cleanOps(a[0]); }); safe(function () { h = cleanHealth(a[1]); }); safe(function () { e = cleanEff(a[3]); });
     safe(function () { renderHealth(h, m); });
@@ -751,6 +797,7 @@
     safe(function () { renderImprove(ops && ops.improve); });
     safe(function () { renderQueue(ops); });
     safe(function () { renderRuns(ops); });
+    safe(function () { renderOrkl(a[4]); });
     safe(function () { nAttn = renderAttention(h, attn); });
     safe(function () {
       if (!ops) { $("summary").textContent = "Status can't be loaded right now. Try again in a minute."; return; }

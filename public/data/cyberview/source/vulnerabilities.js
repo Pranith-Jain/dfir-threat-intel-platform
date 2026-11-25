@@ -880,6 +880,8 @@
   function tab(t, keepHash) {
     cur = t;
     VIEWS.forEach(function (k) { $("wbt-" + k).setAttribute("aria-selected", k === t ? "true" : "false"); $("wbp-" + k).hidden = k !== t; });
+    var tb = $("wbt-" + t), bar = tb && tb.parentNode; // phones: the tab bar scrolls sideways; bring the chosen tab into it without moving the page
+    if (bar && bar.scrollWidth > bar.clientWidth) bar.scrollLeft = Math.max(0, tb.offsetLeft - (bar.clientWidth - tb.offsetWidth) / 2);
     $("wbSearchBar").hidden = t !== "queue" && t !== "all";
     ["wbPane", "cvPane", "otPane"].forEach(paneSync);
     $("wbSearchHint").textContent = t === "all" ? "Filters the years you have loaded. To look up one CVE, type its id and press Enter. Nothing you type is sent anywhere." : "Filters the list below. Nothing you type is sent anywhere.";
