@@ -825,7 +825,7 @@
   $("otMore").addEventListener("click", function () { OT.shown += 40; renderOt(); });
 
   /* ---- tabs, links and wiring ---- */
-  var VIEWS = ["queue", "all", "inv", "hunt", "ot"], HASH = { known: "queue", queue: "queue", all: "all", inv: "inv", hunt: "hunt", ot: "ot", industrial: "ot", scanner: "inv" }, cur = "queue";
+  var VIEWS = ["queue", "all", "inv", "hunt", "ot"], HASH = { known: "queue", queue: "queue", all: "all", inv: "inv", hunt: "hunt", ot: "ot", industrial: "ot" }, cur = "queue";
   function tab(t, keepHash) {
     cur = t;
     VIEWS.forEach(function (k) { $("wbt-" + k).setAttribute("aria-selected", k === t ? "true" : "false"); $("wbp-" + k).hidden = k !== t; });
@@ -846,7 +846,6 @@
       $("wbQ").value = h; tab("all", true); lookup(); return;
     }
     tab(HASH[h] || "queue", true);
-    if (h === "scanner") { var sc = $("scanner"); if (sc) try { sc.scrollIntoView({ block: "start" }); } catch (e) {} }
   }
   VIEWS.forEach(function (k) { $("wbt-" + k).addEventListener("click", function () { tab(k); }); });
   $("wbGoInv").addEventListener("click", function () { tab("inv"); $("wbText").focus(); });
