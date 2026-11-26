@@ -174,7 +174,7 @@ function BlufPanel({ header }: { header: NonNullable<ReportActionCard['reportHea
           {header.posture}
         </span>
         {header.time_to_act && (
-          <span className="px-1.5 py-0.5 rounded text-micro font-mono font-bold bg-surface-100 text-white dark:bg-surface-300 dark:text-heading inline-flex items-center gap-1">
+          <span className="px-1.5 py-0.5 rounded text-micro font-mono font-bold bg-surface-300 text-heading inline-flex items-center gap-1">
             <Clock size={9} /> Time to act: {header.time_to_act}
           </span>
         )}

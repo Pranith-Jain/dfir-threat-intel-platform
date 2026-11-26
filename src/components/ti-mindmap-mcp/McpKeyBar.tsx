@@ -100,7 +100,7 @@ export function McpKeyBar({ className = '' }: { className?: string }): JSX.Eleme
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className={`inline-flex min-w-[10ch] items-center justify-center gap-1.5 whitespace-nowrap rounded border ${tone} px-2 py-1 text-xs font-mono transition hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500`}
+        className={`inline-flex min-w-[8ch] sm:min-w-[10ch] items-center justify-center gap-1.5 whitespace-nowrap rounded border ${tone} px-1.5 sm:px-2 py-1 min-h-11 sm:min-h-0 text-xs font-mono transition hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring`}
         aria-expanded={open}
         aria-label="TI-Mindmap-Hub MCP connection settings"
         title={status === 'error' ? statusMsg || 'Connection failed' : 'TI-Mindmap-Hub MCP settings'}

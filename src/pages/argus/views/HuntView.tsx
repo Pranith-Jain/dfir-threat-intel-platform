@@ -599,8 +599,8 @@ function IOCTab({ actors, search }: { actors: Actor[]; search: string }) {
       </div>
 
       {/* IOC table */}
-      <div className="surface-card overflow-hidden">
-        <table className="w-full text-meta">
+      <div className="surface-card overflow-x-auto">
+        <table className="w-full min-w-[720px] text-meta">
           <thead>
             <tr className="border-b border-line-1">
               <th className="text-left p-2.5 text-muted font-medium">Actor</th>

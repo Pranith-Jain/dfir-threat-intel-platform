@@ -135,7 +135,7 @@ export function TopBar({
         <button
           type="button"
           onClick={openPalette}
-          className="group flex-1 flex items-center gap-2 sm:gap-2.5 min-w-0 rounded border border-line-1 bg-surface-200 px-3 py-2 sm:px-3 sm:py-1.5 min-h-[44px] sm:min-h-0 text-left text-sm text-muted transition-colors hover:border-line-2 hover:bg-surface-100 dark:hover:bg-surface-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+          className="group flex-1 flex items-center gap-2 sm:gap-2.5 min-w-10 min-[360px]:min-w-11 sm:min-w-0 rounded border border-line-1 bg-surface-200 px-3 py-2 sm:px-3 sm:py-1.5 min-h-[44px] sm:min-h-0 text-left text-sm text-muted transition-colors hover:border-line-2 hover:bg-surface-100 dark:hover:bg-surface-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2"
           aria-label="Open search (press Cmd+K or Ctrl+K)"
         >
           <Search
