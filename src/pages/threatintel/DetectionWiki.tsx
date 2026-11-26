@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { Search, ExternalLink, Database, Shield, FlaskConical, BarChart3, Globe, Layers, Server } from 'lucide-react';
+import { DetectionAiBriefing } from '../../components/threatintel/DetectionAiBriefing';
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -359,6 +360,16 @@ export default function DetectionWiki(): JSX.Element {
     return labs.filter((l) => `${l.title} ${l.description} ${l.techniques.join(' ')}`.toLowerCase().includes(q));
   }, [labs, search]);
 
+  const briefingItems = useMemo(
+    () =>
+      (techData?.all ?? []).slice(0, 50).map((t) => ({
+        title: `${t.id} ${t.name}`,
+        body: `${t.tactic} · ${t.ruleCount} detection rules${t.isSubtechnique ? ' (sub-technique)' : ''}.`,
+        source: `https://attack.mitre.org/techniques/${t.id.split('.').join('/')}/`,
+      })),
+    [techData]
+  );
+
   return (
     <DataPageLayout
       backTo="/threatintel"
@@ -421,6 +432,14 @@ export default function DetectionWiki(): JSX.Element {
           </button>
         ))}
       </div>
+
+      <DetectionAiBriefing
+        surface="Detection Wiki"
+        source="detection-wiki"
+        items={briefingItems}
+        dayKey={techData?.generatedAt?.slice(0, 10) ?? index?.generatedAt?.slice(0, 10)}
+        label="ATT&CK techniques"
+      />
 
       {/* Search + filters */}
       <div className="surface-card p-3 mb-4">

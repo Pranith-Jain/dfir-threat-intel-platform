@@ -8,6 +8,7 @@ import { IocChip } from '../../components/dfir/IocChip';
 import { ShieldAlert, RefreshCw, Search, FlaskConical, ChevronRight, Flame, FileDown, Loader2 } from 'lucide-react';
 import { DataState } from '../../components/DataState';
 import { SEVERITY_TONE } from '../../components/severity';
+import { DetectionAiBriefing } from '../../components/threatintel/DetectionAiBriefing';
 
 /**
  * Hand-authored interpretation per rule. The detections list shows what
@@ -444,6 +445,18 @@ export default function Detections(): JSX.Element {
             </section>
           );
         })()}
+
+      <DetectionAiBriefing
+        surface="Detection Rules"
+        source="detections"
+        label="rule fires"
+        dayKey={data?.generated_at?.slice(0, 10)}
+        items={filtered.map((d) => ({
+          title: d.rule_name,
+          body: `${d.severity} · ${d.match_count} matches · ${d.description ?? narrativeFor(d).what}`,
+          source: d.rule_id,
+        }))}
+      />
 
       <section className="surface-card p-4 mb-4">
         <div className="flex items-center gap-3">

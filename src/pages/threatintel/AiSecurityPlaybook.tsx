@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { ExternalLink, Layers, ListTree, ShieldQuestion, Tag } from 'lucide-react';
+import { DetectionAiBriefing } from '../../components/threatintel/DetectionAiBriefing';
 
 /**
  * AI Security Playbook — taxonomy layer from aisecurity.zone.
@@ -97,6 +98,16 @@ export default function AiSecurityPlaybook(): JSX.Element {
     return byScheme;
   }, [riskIds]);
 
+  const briefingItems = useMemo(
+    () =>
+      (index.data?.riskIds ?? []).slice(0, 50).map((r) => ({
+        title: `${r.id} ${r.name}`,
+        body: `${SCHEME_LABEL[r.scheme] ?? r.scheme} · division ${r.layer}${r.layerName ? ` (${r.layerName})` : ''}`,
+        source: r.url,
+      })),
+    [index.data]
+  );
+
   return (
     <DataPageLayout
       backTo="/threatintel"
@@ -127,6 +138,14 @@ export default function AiSecurityPlaybook(): JSX.Element {
               Read the original ({index.data.author}) <ExternalLink size={12} />
             </a>
           </div>
+
+          <DetectionAiBriefing
+            surface="AI Security Playbook"
+            source="ai-playbook"
+            items={briefingItems}
+            dayKey={index.data?.replicatedAt?.slice(0, 10)}
+            label="risk identifiers"
+          />
 
           {/* Counts */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">

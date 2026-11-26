@@ -4,6 +4,7 @@ import { Modal } from '../../components/ui/Modal';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { api } from '../../lib/api-client';
 import { Activity, ExternalLink, FlaskConical, Search, Target } from 'lucide-react';
+import { DetectionAiBriefing } from '../../components/threatintel/DetectionAiBriefing';
 
 /**
  * Atomic Red Team — the public ATT&CK test catalog behind atomicredteam.io,
@@ -104,6 +105,18 @@ export default function AtomicRedTeam(): JSX.Element {
     });
   }, [data, q, platform, executor, sub]);
 
+  const briefingItems = useMemo(
+    () =>
+      (data?.techniques ?? []).slice(0, 50).map((t) => ({
+        title: `${t.id} ${t.displayName}`,
+        body: `${t.testCount} atomic tests · platforms: ${t.platforms.join(', ') || 'n/a'} · executors: ${
+          t.executors.join(', ') || 'n/a'
+        }${t.subtechnique ? ' · sub-technique' : ''}`,
+        source: t.upstreamUrl || data?.sourceUrl || 'atomic-red-team',
+      })),
+    [data]
+  );
+
   async function open(id: string) {
     setBodyLoading(true);
     setBody(null);
@@ -160,6 +173,14 @@ export default function AtomicRedTeam(): JSX.Element {
           </button>
         ))}
       </div>
+
+      <DetectionAiBriefing
+        surface="Atomic Red Team"
+        source="art"
+        items={briefingItems}
+        dayKey={data?.generatedAt?.slice(0, 10)}
+        label="techniques"
+      />
 
       {tab === 'techniques' && (
         <>

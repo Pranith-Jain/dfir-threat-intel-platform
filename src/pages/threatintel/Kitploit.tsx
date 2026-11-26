@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { ExternalLink, Filter, Github, Rss, Search, Shield, Wrench } from 'lucide-react';
+import { DetectionAiBriefing } from '../../components/threatintel/DetectionAiBriefing';
 
 /**
  * Kitploit directory replication — newest tools, CVE evidence cards and the
@@ -129,6 +130,27 @@ export default function Kitploit(): JSX.Element {
     });
   }, [data, exploitQ, severity]);
 
+  const briefingItems = useMemo(
+    () =>
+      [
+        ...(data?.tools ?? []).map((t) => ({
+          title: t.title,
+          body: `${t.categories.join(', ') || 'uncategorized'}${
+            t.description ? ` — ${t.description.slice(0, 220)}` : ''
+          }${t.provider ? ` · ${t.provider}` : ''}`,
+          source: t.url,
+        })),
+        ...(data?.exploits ?? []).map((e) => ({
+          title: e.cve ?? e.title,
+          body: `${e.title}${e.cvssSeverity ? ` · CVSS ${e.cvssScore} ${e.cvssSeverity}` : ''}${
+            e.epss ? ` · EPSS ${e.epss}` : ''
+          }${e.evidence ? ` — ${e.evidence.slice(0, 200)}` : ''}`,
+          source: e.url,
+        })),
+      ].slice(0, 50),
+    [data]
+  );
+
   const categories = Object.entries(data?.stats.byCategory ?? {})
     .sort((a, b) => b[1] - a[1])
     .slice(0, 30);
@@ -181,6 +203,14 @@ export default function Kitploit(): JSX.Element {
           </button>
         ))}
       </div>
+
+      <DetectionAiBriefing
+        surface="Kitploit Directory"
+        source="kitploit"
+        items={briefingItems}
+        dayKey={data?.builtAt?.slice(0, 10)}
+        label="tools and CVE cards"
+      />
 
       {tab === 'tools' && (
         <>
