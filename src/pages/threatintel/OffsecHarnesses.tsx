@@ -4,6 +4,7 @@ import { Modal } from '../../components/ui/Modal';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { api } from '../../lib/api-client';
 import { ExternalLink, Filter, Github, Loader2, Search, ShieldCheck, Terminal, Users } from 'lucide-react';
+import { DetectionAiBriefing } from '../../components/threatintel/DetectionAiBriefing';
 
 /**
  * Offsec Harness Index — open-source offensive-AI agent harnesses tracked on
@@ -150,6 +151,18 @@ export default function OffsecHarnesses(): JSX.Element {
     });
   }, [data, tab, tier, useTag, actor, q]);
 
+  const briefingItems = useMemo(
+    () =>
+      (data?.harnesses ?? []).slice(0, 50).map((h) => ({
+        title: h.name,
+        body: `${h.tier ?? 'untiered'}${h.description ? ` — ${h.description.slice(0, 220)}` : ''}${
+          h.actors.length ? ` · actors: ${h.actors.map((a) => a.name).join(', ')}` : ''
+        }${h.useTags.length ? ` · uses: ${h.useTags.join(', ')}` : ''}`,
+        source: h.url || data?.sourceUrl || 'offsecharnesses.ai',
+      })),
+    [data]
+  );
+
   const actorOptions = data?.stats.actors ?? [];
   const tabs: Array<{ id: Tab; label: string }> = [
     { id: 'evidence', label: `In the wild (${data?.counts.inTheWild ?? '…'})` },
@@ -212,6 +225,14 @@ export default function OffsecHarnesses(): JSX.Element {
           </button>
         ))}
       </div>
+
+      <DetectionAiBriefing
+        surface="Offsec Harness Index"
+        source="offsec-harnesses"
+        items={briefingItems}
+        dayKey={data?.builtAt?.slice(0, 10)}
+        label="harnesses"
+      />
 
       {(tab === 'evidence' || tab === 'field') && (
         <>

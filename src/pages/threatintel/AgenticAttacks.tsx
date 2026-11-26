@@ -4,6 +4,7 @@ import { Modal } from '../../components/ui/Modal';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { api } from '../../lib/api-client';
 import { Crosshair, ExternalLink, Fingerprint, Radar, Search, ShieldAlert, Target } from 'lucide-react';
+import { DetectionAiBriefing } from '../../components/threatintel/DetectionAiBriefing';
 
 /**
  * Agentic Attack Detections — ThreatDefence's open detection corpus for
@@ -118,6 +119,16 @@ export default function AgenticAttacks(): JSX.Element {
     );
   }, [data, q]);
 
+  const briefingItems = useMemo(
+    () =>
+      (data?.frameworks ?? []).slice(0, 50).map((f) => ({
+        title: f.name,
+        body: `${f.description || f.seenIn || 'AI-agent attack framework'} · ${f.techniqueCount} ATT&CK techniques · ${f.counts.indicators} indicators · ${f.counts.kqlHunts} KQL hunts`,
+        source: data?.sourceUrl ?? 'agentic-attack-detections',
+      })),
+    [data]
+  );
+
   async function open(slug: string) {
     setBodyLoading(true);
     setBody(null);
@@ -193,6 +204,14 @@ export default function AgenticAttacks(): JSX.Element {
           </button>
         ))}
       </div>
+
+      <DetectionAiBriefing
+        surface="Agentic Attack Detections"
+        source="aad"
+        items={briefingItems}
+        dayKey={data?.generatedAt?.slice(0, 10)}
+        label="frameworks"
+      />
 
       {tab === 'frameworks' && (
         <>

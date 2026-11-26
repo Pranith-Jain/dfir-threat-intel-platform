@@ -34,6 +34,7 @@ import { Tabs } from '../../components/ui/Tabs';
 import { api, ApiError } from '../../lib/api-client';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { errMessage } from '../../lib/log';
+import { DetectionAiBriefing } from '../../components/threatintel/DetectionAiBriefing';
 
 /* ─── Types (mirror of worker/lib/promptintel-manifest.ts) ─────────────── */
 
@@ -953,6 +954,16 @@ export function PromptIntel(): JSX.Element {
   const index = useDataFetch<PiIndex>({ url: '/api/v1/promptintel/taxonomy', ttl: 30 * 60_000 });
   const stats = useDataFetch<PiStats>({ url: '/api/v1/promptintel/stats', ttl: 10 * 60_000 });
 
+  const briefingItems = useMemo(
+    () =>
+      (index.data?.entries ?? []).slice(0, 50).map((e) => ({
+        title: `${e.id} ${e.name}`,
+        body: `${e.domainName} · ${e.summary}${e.frameworks.length ? ` · mapped to ${e.frameworks.join(', ')}` : ''}`,
+        source: e.url,
+      })),
+    [index.data]
+  );
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
       <PageMeta
@@ -1032,6 +1043,14 @@ export function PromptIntel(): JSX.Element {
 
       {index.data && (
         <>
+          <DetectionAiBriefing
+            surface="PromptIntel IoPC"
+            source="promptintel"
+            items={briefingItems}
+            dayKey={index.data.syncedAt.slice(0, 10)}
+            label="IoPC techniques"
+          />
+
           <Tabs tabs={TABS} active={tab} onChange={setTab} variant="underline" className="mb-4">
             {(active) =>
               active === 'taxonomy' ? (

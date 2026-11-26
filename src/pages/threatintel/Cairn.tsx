@@ -6,6 +6,7 @@ import { api } from '../../lib/api-client';
 import { renderMarkdown } from '../../components/dfir/report-view-helpers';
 import { BrainCircuit, ExternalLink, Loader2, ScanSearch, Search } from 'lucide-react';
 import { errMessage } from '../../lib/log';
+import { DetectionAiBriefing } from '../../components/threatintel/DetectionAiBriefing';
 
 /**
  * CAIRN — Cisco-Talos Cognitive Artifact Intelligence Research Network (MIT).
@@ -159,6 +160,18 @@ export default function Cairn(): JSX.Element {
     });
   }, [data, q]);
 
+  const briefingItems = useMemo(
+    () =>
+      (data?.rules ?? []).slice(0, 50).map((r) => ({
+        title: r.name,
+        body: `${r.tier} · ${r.artifactClass} · confidence ${r.confidence} · ${r.stringCount} strings${
+          r.description ? ` — ${r.description.slice(0, 240)}` : ''
+        }`,
+        source: data?.sourceUrl ?? 'cairn',
+      })),
+    [data]
+  );
+
   async function openRule(name: string) {
     setRuleLoading(true);
     try {
@@ -228,6 +241,14 @@ export default function Cairn(): JSX.Element {
           </button>
         ))}
       </div>
+
+      <DetectionAiBriefing
+        surface="CAIRN AI-Malware Rules"
+        source="cairn"
+        items={briefingItems}
+        dayKey={data?.replicatedAt?.slice(0, 10)}
+        label="rules"
+      />
 
       {tab !== 'archetypes' && tab !== 'scanner' && (
         <div className="flex flex-col sm:flex-row gap-2 mb-4">

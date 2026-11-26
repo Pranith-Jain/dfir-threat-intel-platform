@@ -5,6 +5,7 @@ import { useDataFetch } from '../../hooks/useDataFetch';
 import { api } from '../../lib/api-client';
 import { Loader2, ScanSearch, Search, MessageSquareWarning } from 'lucide-react';
 import { errMessage } from '../../lib/log';
+import { DetectionAiBriefing } from '../../components/threatintel/DetectionAiBriefing';
 
 /**
  * NOVA — prompt pattern matching (Nova-Hunting, MIT).
@@ -115,6 +116,18 @@ export default function Nova(): JSX.Element {
     });
   }, [data, severity, q, kwOnly]);
 
+  const briefingItems = useMemo(
+    () =>
+      (data?.rules ?? []).slice(0, 50).map((r) => ({
+        title: r.name,
+        body: `${r.severity ?? 'unrated'} · ${r.category ?? 'uncategorized'} · keywords ${r.keywordCount} / semantics ${r.semanticCount} / llm ${r.llmCount}${
+          r.description ? ` — ${r.description.slice(0, 220)}` : ''
+        }`,
+        source: r.file || r.name,
+      })),
+    [data]
+  );
+
   async function openRule(name: string) {
     setRuleLoading(true);
     try {
@@ -172,6 +185,14 @@ export default function Nova(): JSX.Element {
           </button>
         ))}
       </div>
+
+      <DetectionAiBriefing
+        surface="NOVA Prompt Rules"
+        source="nova"
+        items={briefingItems}
+        dayKey={data?.replicatedAt?.slice(0, 10)}
+        label="rules"
+      />
 
       {tab === 'rules' && (
         <>

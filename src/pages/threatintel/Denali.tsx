@@ -6,6 +6,7 @@ import { api } from '../../lib/api-client';
 import { renderMarkdown } from '../../components/dfir/report-view-helpers';
 import { ExternalLink, Loader2, ScanSearch, Search, ShieldCheck } from 'lucide-react';
 import { errMessage } from '../../lib/log';
+import { DetectionAiBriefing } from '../../components/threatintel/DetectionAiBriefing';
 
 /**
  * Denali — evidence-led, provider-neutral AI security (transilienceai, Apache-2.0).
@@ -132,6 +133,16 @@ export default function Denali(): JSX.Element {
     });
   }, [docsData, q]);
 
+  const briefingItems = useMemo(
+    () =>
+      (data?.rules ?? []).slice(0, 50).map((r) => ({
+        title: `${r.uid} ${r.title}`,
+        body: `${r.kind === 'issue' ? 'ISSUE' : 'RUNTIME DETECTION'} — ${r.description}`,
+        source: r.uid,
+      })),
+    [data]
+  );
+
   async function openRule(uid: string) {
     setRuleLoading(true);
     try {
@@ -201,6 +212,14 @@ export default function Denali(): JSX.Element {
           </button>
         ))}
       </div>
+
+      <DetectionAiBriefing
+        surface="Denali AI Security Rules"
+        source="denali"
+        items={briefingItems}
+        dayKey={data?.replicatedAt?.slice(0, 10)}
+        label="rules"
+      />
 
       {(tab === 'rules' || tab === 'docs') && (
         <div className="flex flex-col sm:flex-row gap-2 mb-4">

@@ -4,6 +4,7 @@ import { Modal } from '../../components/ui/Modal';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { api } from '../../lib/api-client';
 import { CalendarDays, ExternalLink, Filter, Loader2, Search, ShieldAlert, ShieldCheck, Target } from 'lucide-react';
+import { DetectionAiBriefing } from '../../components/threatintel/DetectionAiBriefing';
 
 /**
  * Hacking Incidents ledger — sourced cyberattacks where AI use is stated or
@@ -174,6 +175,18 @@ export default function HackingIncidents(): JSX.Element {
     return [...map.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1));
   }, [rows]);
 
+  const briefingItems = useMemo(
+    () =>
+      (data?.incidents ?? []).slice(0, 50).map((r) => ({
+        title: r.title,
+        body: `${r.date} · ${r.confidence} evidence${r.actor ? ` · ${r.actor}` : ''}${
+          r.targets ? ` targeting ${r.targets}` : ''
+        } · ${r.aiRole.slice(0, 3).join(', ') || 'AI role unrecorded'}${r.sourceCount ? ` · ${r.sourceCount} sources` : ''}`,
+        source: r.id,
+      })),
+    [data]
+  );
+
   const stats = statsData?.stats ?? data?.stats;
   const tabs: Array<{ id: Tab; label: string }> = [
     { id: 'ledger', label: `Ledger (${data?.counts.records ?? '…'})` },
@@ -233,6 +246,14 @@ export default function HackingIncidents(): JSX.Element {
           </button>
         ))}
       </div>
+
+      <DetectionAiBriefing
+        surface="AI Hacking Incidents"
+        source="hacking-incidents"
+        items={briefingItems}
+        dayKey={data?.builtAt?.slice(0, 10)}
+        label="incidents"
+      />
 
       {tab === 'ledger' && (
         <>

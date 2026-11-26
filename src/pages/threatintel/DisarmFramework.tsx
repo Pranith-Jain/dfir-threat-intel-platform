@@ -3,6 +3,7 @@ import { ExternalLink, Megaphone, Target } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { StixObjectTable, type StixBundle } from '../../components/StixBundleViewer';
 import { errMessage } from '../../lib/log';
+import { DetectionAiBriefing } from '../../components/threatintel/DetectionAiBriefing';
 
 interface ExternalRef {
   source_name: string;
@@ -127,6 +128,18 @@ export default function DisarmFramework(): JSX.Element {
     });
   }, [data, type, query]);
 
+  const briefingItems = useMemo(
+    () =>
+      (data?.entries ?? []).slice(0, 50).map((e) => ({
+        title: `${e.external_id} ${e.name}`.trim(),
+        body: `${typeLabel(e.type)}${e.phases.length ? ` · phases: ${e.phases.join(', ')}` : ''}${
+          e.description ? ` — ${e.description.slice(0, 240)}` : ''
+        }`,
+        source: e.refs.map((r) => safeHref(r.url)).find((h): h is string => Boolean(h)) ?? data?.source_url ?? 'disarm',
+      })),
+    [data]
+  );
+
   const description = (
     <>
       The{' '}
@@ -188,6 +201,14 @@ export default function DisarmFramework(): JSX.Element {
       empty={!loading && !error && !!data && filtered.length === 0}
       emptyMessage="No techniques or tactics match the filter."
     >
+      <DetectionAiBriefing
+        surface="DISARM Framework"
+        source="disarm"
+        items={briefingItems}
+        dayKey={data?.generated_at?.slice(0, 10)}
+        label="techniques and tactics"
+      />
+
       {data && showRaw && <StixObjectTable bundle={data.bundle} />}
 
       <div className="grid gap-3 lg:grid-cols-2">

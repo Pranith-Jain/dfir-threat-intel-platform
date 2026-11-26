@@ -1,9 +1,10 @@
 import { errMessage, logCatch } from '../../lib/log';
-import { useState, useEffect, useCallback, useRef, type FormEvent } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, type FormEvent } from 'react';
 import { Input } from '../../components/ui/Input';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { Search, Loader2, ExternalLink, FileDown, X, FileCode } from 'lucide-react';
 import { downloadBlob } from '../../lib/download';
+import { DetectionAiBriefing } from '../../components/threatintel/DetectionAiBriefing';
 
 interface YaraRuleEntry {
   rule_name: string;
@@ -79,6 +80,18 @@ export default function Yarahub(): JSX.Element {
           (r.description ?? '').toLowerCase().includes(q)
       )
     : rules;
+
+  const briefingItems = useMemo(
+    () =>
+      rules.slice(0, 50).map((r) => ({
+        title: r.rule_name,
+        body: `${r.malware ?? 'unclassified'}${r.author ? ` · by ${r.author}` : ''}${
+          r.description ? ` — ${r.description.slice(0, 220)}` : ''
+        }${r.matches !== undefined ? ` · ${r.matches} matches` : ''}`,
+        source: `https://yaraify.abuse.ch/yarahub/#${r.yarahub_uuid ?? r.rule_name}`,
+      })),
+    [rules]
+  );
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -182,6 +195,8 @@ export default function Yarahub(): JSX.Element {
       error={error}
       onRetry={() => void fetchRules()}
     >
+      <DetectionAiBriefing surface="YARAhub Rules" source="yarahub" items={briefingItems} label="rules" />
+
       {loading && !error && (
         <div className="surface-card p-8 text-center">
           <Loader2 size={20} className="animate-spin mx-auto text-muted mb-2" />

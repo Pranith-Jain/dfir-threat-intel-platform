@@ -5,6 +5,7 @@ import { useDataFetch } from '../../hooks/useDataFetch';
 import { api } from '../../lib/api-client';
 import { renderMarkdown } from '../../components/dfir/report-view-helpers';
 import { Bug, ExternalLink, FolderTree, GitCommitHorizontal, Loader2, Search, Skull } from 'lucide-react';
+import { DetectionAiBriefing } from '../../components/threatintel/DetectionAiBriefing';
 
 /**
  * MMD Toolkit — the shared codes & tools collection of the MalwareMustDie
@@ -134,6 +135,16 @@ export default function MmdToolkit(): JSX.Element {
     return [...s].sort();
   }, [data]);
 
+  const briefingItems = useMemo(
+    () =>
+      (data?.files ?? []).slice(0, 50).map((f) => ({
+        title: f.name || f.path,
+        body: `${f.category} · ${f.kind} · .${f.ext} · ${fmtSize(f.size)} — ${f.path}`,
+        source: `https://github.com/unixfreaxjp/malwaremustdie/blob/master/${f.path}`,
+      })),
+    [data]
+  );
+
   async function openCategory(cat: string) {
     setCatLoading(true);
     setCatBody(null);
@@ -203,6 +214,14 @@ export default function MmdToolkit(): JSX.Element {
           </button>
         ))}
       </div>
+
+      <DetectionAiBriefing
+        surface="MMD Toolkit"
+        source="mmd"
+        items={briefingItems}
+        dayKey={data?.builtAt?.slice(0, 10)}
+        label="files"
+      />
 
       {tab === 'tools' && (
         <div className="flex flex-col sm:flex-row gap-2 mb-4">
