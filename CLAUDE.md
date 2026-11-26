@@ -1003,7 +1003,7 @@ the index stays slim — record id → shard is the id's `YYYY-MM` prefix.
 **Rides** `ai-security-verticals-sync.yml` (Tue 07:30 UTC, PR + auto-merge +
 self-deploy). To rebuild: `node scripts/build-orca-manifest.mjs`.
 
-## Agentic Attack Detections (aad__) + Atomic Red Team (art__)
+## Agentic Attack Detections and Atomic Red Team verticals
 
 Two MIT-licensed detection-reference verticals added 2026-11-26. Both use the
 slim-index + per-slug-shard pattern read through `env.ASSETS`; 8 MCP tools total
