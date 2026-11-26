@@ -56,18 +56,28 @@ const appDfirRoutes = (appSrc.match(/path: '\/dfir[^']*',\s*Component:/g) ?? [])
 const appTotalRoutes = (appSrc.match(/path: '[^']*',\s*Component:/g) ?? []).length;
 
 /**
- * Count the test files across the four trees.
+ * Count tracked test files across the four trees.
  *
- * `find` rather than a directory walk so the count matches what a reader
- * would type to check it, and so it does not need a glob dependency.
+ * This must match what CI sees on a clean checkout. A plain `find` also
+ * counts untracked test files sitting in a developer's working tree, which
+ * makes the claim flap between local and CI even though neither changed.
  */
 function countTestFiles() {
-  const out = execFileSync(
-    'find',
-    ['src', 'api', 'worker', 'scripts', '-name', '*.test.*', '-not', '-path', '*/node_modules/*'],
-    { cwd: ROOT, encoding: 'utf8' }
-  );
-  return out.split('\n').filter((l) => l.trim()).length;
+  try {
+    const out = execFileSync('git', ['ls-files', '-z', '--', 'src', 'api', 'worker', 'scripts'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    });
+    return out.split('\0').filter((p) => /\.test\./.test(p)).length;
+  } catch {
+    // Not a git checkout (e.g. a source tarball): fall back to the filesystem.
+    const out = execFileSync(
+      'find',
+      ['src', 'api', 'worker', 'scripts', '-name', '*.test.*', '-not', '-path', '*/node_modules/*'],
+      { cwd: ROOT, encoding: 'utf8' }
+    );
+    return out.split('\n').filter((l) => l.trim()).length;
+  }
 }
 
 /* ── The claims ────────────────────────────────────────────────────────────── */
