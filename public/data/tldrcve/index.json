@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-26T11:20:10.758Z",
+  "generatedAt": "2026-11-26T20:26:12.081Z",
   "upstream": {
     "site": "https://tldrcve.com",
     "list": "https://tldrcve.com/cves/",
@@ -8,11 +8,11 @@
     "scale": "https://tldrcve.com/how-we-rate/"
   },
   "stats": {
-    "cves": 48,
-    "details": 48,
-    "versions": 47,
+    "cves": 50,
+    "details": 50,
+    "versions": 48,
     "byVerdict": {
-      "Patch now": 20,
+      "Patch now": 22,
       "Patch now if…": 24,
       "Next cycle": 4
     }
@@ -1082,6 +1082,140 @@
       }
     },
     {
+      "slug": "mitel-micollab",
+      "name": "Mitel MiCollab",
+      "meta": "Mitel MiCollab · 5 CVEs",
+      "line": "Exploited before the patch, no login. In CISA KEV.",
+      "verdict": "Patch now",
+      "scareLevel": 3.5,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-11-16",
+      "url": "https://tldrcve.com/mitel-micollab/",
+      "detail": {
+        "slug": "mitel-micollab",
+        "kicker": "Mitel MiCollab · 5 CVEs",
+        "name": "Mitel MiCollab",
+        "verdict": "Patch now",
+        "verdictHint": "Exploited before the patch, no login. In CISA KEV.",
+        "summary": "",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1,2"
+          },
+          {
+            "yes": false,
+            "text": "No public exploit 1,7"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 8,2,3"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (fix by 28 Nov) 2"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "MiCollab, not patched",
+            "hint": null,
+            "body": "Mitel lists MiCollab 10.3 (10.3.0.18) and earlier as affected. The fix is a patch for 10.3.0.18, so 10.3.0.18 without it is still affected. Mitel doesn't consider versions past End of Support. 1,4",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "An attacker can reach AWV",
+            "hint": null,
+            "body": "All five bugs are in the Audio, Web and Video Conferencing (AWV) component and need no login: a blind command injection (CVE-2026-133323, 10.0), command execution through XML injection with content planted in advance (CVE-2026-133303, 9.0), and three medium bugs that upload files, skip a login check or read some sensitive information. Mitel's workaround is to restrict external access to AWV. At Accenture's victim the attack passed through an internet-facing reverse proxy, and Accenture says a MiVoice Border Gateway web proxy shouldn't be assumed to protect AWV. 1,8",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Apply Mitel's patch",
+            "hint": null,
+            "body": "Upgrade to 10.3.0.18 if needed, then apply Mitel's patch from knowledge base article KB000129195, which is restricted: if you can't open it, Mitel says to contact your Mitel Authorized Partner. Mitel also offers upgrading to a later release but names none. Accenture advises taking forensic images of MiCollab and Border Gateway servers before patching or rebuilding them, because that can overwrite evidence, and fixing older MiCollab flaws (MISA-2026-0006) on servers that have fallen behind. 1,8",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Cut outside access to AWV",
+            "hint": null,
+            "body": "Mitel's workaround until you can patch: restrict external access to the AWV component. Accenture adds: include any path a MiVoice Border Gateway web proxy publishes. 1,8",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Check for a break-in",
+            "hint": null,
+            "body": "Accenture says a server that is patched now may already be compromised, because attacks began before the patch existed. Compare MiCollab's logs with your proxy, gateway or WAF logs, since the attacker filtered its requests out of local logs. Look for web shells such as shell.asp under a pictures directory, scripts and .tgz archives in /tmp , round-the-clock HTTPS to unfamiliar hosts, and traffic to 204.76.203.204 or 204.76.203.216 ; Accenture lists more indicators. If you find signs, Accenture says to treat it as an Active Directory compromise: reset MiCollab's LDAP connector account and any Kerberoastable service accounts, and rotate administrator, SIP trunk and file-share credentials the server could reach. Federal Civilian Executive Branch (FCEB) agencies must also do CISA's forensic triage for CVE-2026-133323 and CVE-2026-133303. 8,2,3",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Why it's Patch now",
+            "hint": null,
+            "body": "CISA lists all five as exploited and they need no login. Accenture saw them used before any patch existed and, at one victim, to reach the domain controller. It says MiCollab is commonly internet-facing, and a reverse proxy in front of it didn't protect AWV. 2,3,8",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.mitel.com/support/security-advisories/mitel-product-security-advisory-misa-2026-0012",
+            "title": "Mitel MISA-2026-0012: five no-login AWV bugs, scores, affected 10.3.0.18 and earlier, patch, workaround",
+            "date": "24 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: all five added 25 Nov 2026, due 28 Nov (CVE-2026-133311: 9 Dec), forensic triage for CVE-2026-133323 and CVE-2026-133303",
+            "date": "25 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/news-events/alerts/2026/11/25/cisa-adds-10-known-exploited-vulnerabilities-catalog",
+            "title": "CISA: adds 10 known exploited vulnerabilities, all five MiCollab bugs, \"evidence of active exploitation\"",
+            "date": "25 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-133323",
+            "title": "CVE record CVE-2026-133323: blind command injection in AWV, through 10.3.0.18, 10.0",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-133323",
+            "title": "NVD: CVE-2026-133323, NVD's own score 9.8",
+            "date": null
+          },
+          {
+            "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-133303",
+            "title": "NVD: CVE-2026-133303, NVD's own score 9.8",
+            "date": null
+          },
+          {
+            "url": "https://github.com/cveForge/CVE-2026-133323",
+            "title": "GitHub cveForge: claimed CVE-2026-133323 exploit; our reading: it posts to NuPoint paths, not AWV, and checks for output a blind injection doesn't return",
+            "date": "24 Nov"
+          },
+          {
+            "url": "https://accenture.github.io/cyber-intelligence/micollab-exploitation/",
+            "title": "Accenture APEX Labs: exploited before the patch, from first request to domain controller in 32 minutes, reverse proxy no help, indicators and advice",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-26",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/mitel-micollab/"
+      }
+    },
+    {
       "slug": "redcap-survey-rce",
       "name": "REDCap survey RCE",
       "meta": "REDCap · CVE-2026-90817",
@@ -1606,7 +1740,7 @@
             "num": "1",
             "title": "Update Chrome and relaunch",
             "hint": "command",
-            "body": "Open the About page; Chrome checks for an update, then click Relaunch. Any 157.0.8103.50 or later build is fixed, including Chrome 158. Admins: check the version your fleet actually runs, since rollouts take days or weeks. 1,2 chrome://settings/help Latest safe versions checked 20 Nov Chrome → 158 158.0.8127.36 157 157.0.8103.78 Extended Stable 156 156.0.8078.108 ChromeOS 158.0.8127.65 Chrome for Android: 157.0.8103.50 or later.",
+            "body": "Open the About page; Chrome checks for an update, then click Relaunch. Any 157.0.8103.50 or later build is fixed, including Chrome 158. Admins: check the version your fleet actually runs, since rollouts take days or weeks. 1,2 chrome://settings/help Latest safe versions checked 26 Nov Chrome → 158 158.0.8127.88 157 157.0.8103.78 Extended Stable 156 156.0.8078.114 ChromeOS 158.0.8127.98 Chrome for Android: 157.0.8103.50 or later.",
             "code": [
               "chrome://settings/help"
             ]
@@ -1631,7 +1765,7 @@
             "num": "4",
             "title": "Update Electron apps",
             "hint": null,
-            "body": "Desktop apps built on Electron ship their own Chromium. Electron 45.3.0, 44.11.1 and 43.8.8 (10 Nov) include the fix; their notes don't name the CVE: 45.3.0 moved to a fixed Chromium, and 44.11.1 and 43.8.8 carry the libxslt fix. An app is fixed only once it ships one of these or later, so check with each vendor. 11,12,13,1 Latest safe versions checked 22 Nov Electron → 45 45.4.1 44 44.11.5 43 43.8.12 Apps built on Electron are fixed only once they ship one of these.",
+            "body": "Desktop apps built on Electron ship their own Chromium. Electron 45.3.0, 44.11.1 and 43.8.8 (10 Nov) include the fix; their notes don't name the CVE: 45.3.0 moved to a fixed Chromium, and 44.11.1 and 43.8.8 carry the libxslt fix. An app is fixed only once it ships one of these or later, so check with each vendor. 11,12,13,1 Latest safe versions checked 26 Nov Electron → 45 45.5.0 44 44.11.6 43 43.8.13 Apps built on Electron are fixed only once they ship one of these.",
             "code": []
           }
         ],
@@ -2296,7 +2430,7 @@
     },
     {
       "slug": "vmsa-2026-0011",
-      "name": "VMware Nov fixes",
+      "name": "VMware Nov fixes Roundup",
       "meta": "VMware vCenter / ESX · 23 CVEs",
       "line": "No-login vCenter bypass, public exploit. No attacks yet.",
       "verdict": "Patch now",
@@ -2434,6 +2568,378 @@
           }
         ],
         "url": "https://tldrcve.com/vmsa-2026-0011/"
+      }
+    },
+    {
+      "slug": "drupal-installer",
+      "name": "Drupal installer",
+      "meta": "Drupal core · CVE-2026-132165, CVE-2026-136716",
+      "line": "Both bugs exploited, no login. First in CISA KEV.",
+      "verdict": "Patch now",
+      "scareLevel": 3.2,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-11-18",
+      "url": "https://tldrcve.com/drupal-installer/",
+      "detail": {
+        "slug": "drupal-installer",
+        "kicker": "Drupal core · CVE-2026-132165 · CVE-2026-136716",
+        "name": "Drupal installer",
+        "verdict": "Patch now",
+        "verdictHint": "Both bugs exploited, no login. First in CISA KEV.",
+        "summary": "",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1,15,2,4"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 6"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 1,15,2"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (fix by 27 Nov) 2"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Drupal core, not updated",
+            "hint": "command",
+            "body": "Affected: before 10.6.23, 11.0.0 up to 11.3.22, and 11.4.0 up to 11.4.13; 11.4.14, 11.3.23 and 10.6.23 are fixed. Sites that installed only the 18 Nov releases (11.4.13, 11.3.22 or 10.6.22) are still affected. Drupal 11.2 and below, 10.5 and below, and Drupal 8 and 9 are end-of-life and get no fix. The command prints your version. 15,1,11 drush status --field=drupal-version",
+            "code": [
+              "drush status --field=drupal-version"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "An attacker can reach install.php",
+            "hint": "command",
+            "body": "Attacks go through the installer at /core/install.php , which stays reachable after installation unless you block it. Drupal says sites that have already secured the installer aren't vulnerable to the second bug. Horizon3 notes this isn't only about internet-facing sites: internal and staging sites count if an attacker can reach them. Drupal's check: each of these URLs on your site should end with 403 or 404 ; a 200 means the installer isn't blocked. Also try /core/install.php/foo and, following redirects ( curl -IL ), /install.php . 15,1,3,4 curl -I https://example.com/core/install.php",
+            "code": [
+              "curl -I https://example.com/core/install.php"
+            ]
+          },
+          {
+            "num": "3",
+            "title": "A setup Drupal calls uncommon",
+            "hint": null,
+            "body": "Drupal rates both bugs as needing an uncommon setup ( TD:Uncommon ) and doesn't list which. For the second bug it says sites in \"unusual or incomplete install states\" stayed vulnerable after the first fix, and that you can't tell from the user interface whether yours is one. A related, older hole is public: on Drupal's issue 3455853, a site whose translation import was left pending or failed lets install.php run again and replace the admin account. Drupal release manager catch says the first fix closes it \"as a by-product\". A 2025 report of install.php offering to reinstall a finished site, not translation-related, was closed by catch, who said the first fix \"should have resolved this issue too\". The proof of concept plants a similar unfinished installer state by hand. For the first bug, Drupal says some exploit paths, but not all, are blocked if the web server can't write to or change permissions on settings.php ; the 18 Nov releases stopped the installer fixing those permissions. 15,1,12,14,13,6,8",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Block install.php first",
+            "hint": "command",
+            "body": "Drupal recommends blocking the installer in the web server, which survives core updates, and says sites that have already secured it aren't vulnerable to the second bug. nginx: add the block below to the HTTPS server block; Drupal says to use ^~ , not an exact match ( = ), which on some servers doesn't block /core/install.php/foo . Apache: in the virtual host, <Location \"/core/install.php\"> with Require all denied . Apache without access to the virtual host: Drupal's docs also give an .htaccess rule ( <Files \"install.php\"> with Require all denied ), but Composer overwrites .htaccess , so lines added by hand are lost. Test with nginx -t or apachectl configtest before reloading, then rerun the check above. Drupal Steward sites with its recommended mitigations are already protected from the known attack paths for both bugs, but should still update. 3,15,1 location ^~ /core/install.php { return 404; }",
+            "code": [
+              "location ^~ /core/install.php { return 404; }"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "Check for a takeover, before update.php",
+            "hint": "command",
+            "body": "Drupal's guide says to run its checks before database updates, because the update rewrites the install state they read, and to copy your web server logs somewhere safe now, since some hosts keep them only a few days. The command prints the install state: anything other than done means the site is vulnerable now, but done doesn't prove it's safe, because a successful attack also sets it. Drupal says any site that left its installer reachable after the first fix may still have been compromised, and a site that was taken over may no longer be in the vulnerable state, so a clean-looking site isn't proof. Check your logs for changes to user 1, the site's first admin account, or made by it; make sure user 1's email address is one you control, and consider resetting its password. The public proof of concept replaces user 1's name, email and password, so the old admin password stops working; content is left in place. In your web logs since 18 Nov 2026, an installed site answers every installer request with 200 , so that alone isn't a sign; Drupal says to look into POST requests to /core/install.php that return 302 or 303 , much larger responses, and many installer requests from one address within minutes. If you find signs, follow Drupal's \"Your Drupal site got hacked\" guide and assume the attacker had admin rights and may have run code on the server. Federal Civilian Executive Branch (FCEB) agencies must also do CISA's forensic triage. 20,15,6,1,2 drush state:get install_task",
+            "code": [
+              "drush state:get install_task"
+            ]
+          },
+          {
+            "num": "3",
+            "title": "Update Drupal",
+            "hint": null,
+            "body": "11.4.14, 11.3.23 or 10.6.23 (25 Nov 2026), then run update.php once you've done the checks above. Drupal says the code update closes the hole right away, and the update hook then repairs sites stuck in the vulnerable state. The 25 Nov release notes say they also fix the theme registry bug the 18 Nov releases introduced (\"Theme hook field not found\", seen with Search API), and that a Symfony security update from the same day isn't included, so update Symfony too. 11.3 and 10.6 get security fixes only until Drupal 11.5.0 comes out in December 2026; on 11.2, 10.5 or older, move to a supported line. 15,16,17,18,9,10,20 Latest safe versions checked 26 Nov Drupal core → 11.4 11.4.14 11.3 11.3.23 10.6 10.6.23 Drupal 11.2 and below, 10.5 and below, and Drupal 8 and 9 are end-of-life and get no security fixes: move to a supported line.",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Why it's Patch now",
+            "hint": null,
+            "body": "Drupal rates the exploitable setups as uncommon ( TD:Uncommon ) but doesn't list them, and says the user interface doesn't show whether a site is in the vulnerable state, so you can't rule your site out. install.php stays reachable unless you block it, attacks on live sites are reported for both bugs, and the first is in CISA KEV. A related, older hole in the installer was already being probed: on 28 Oct 2025 someone on Drupal's issue 3455853 reported automated requests trying to exploit it. The workaround is one web server rule. 1,15,5,12,3,2",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://www.drupal.org/sa-core-2026-017",
+            "title": "Drupal SA-CORE-2026-017: first bug, affected versions, exploited on live sites from 19 Nov 2026 19:00 UTC, settings.php note",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: added 24 Nov 2026, due 27 Nov, forensic triage required",
+            "date": "24 Nov"
+          },
+          {
+            "url": "https://www.drupal.org/docs/administering-a-drupal-site/security-in-drupal/securing-the-installer-installphp",
+            "title": "Drupal docs: securing the installer, web server rules and checks",
+            "date": "21 Nov"
+          },
+          {
+            "url": "https://horizon3.ai/attack-research/vulnerabilities/cve-2026-132165/",
+            "title": "Horizon3: affected range, reachable install.php, no exploitation reported at the time",
+            "date": null
+          },
+          {
+            "url": "https://www.drupal.org/drupal-security-team/security-risk-levels-defined",
+            "title": "Drupal Security Team: risk levels, \"Uncommon\" and \"Complex\" defined",
+            "date": null
+          },
+          {
+            "url": "https://github.com/abraxas/drupal-install-takeover",
+            "title": "Abraxas Labs: public proof of concept, admin takeover on 11.4.12 with a planted installer state",
+            "date": "20 Nov"
+          },
+          {
+            "url": "https://github.com/drupal/core/commit/e301840e6164301a71d83005bad312dc4daa2d7a",
+            "title": "Drupal core: the SA-CORE-2026-017 fix",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.drupal.org/project/drupal/releases/11.4.13",
+            "title": "Drupal 11.4.13 release: security-only, installer no longer fixes settings.php permissions, known theme issue",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.drupal.org/project/drupal/releases/11.3.22",
+            "title": "Drupal 11.3.22 release: security coverage until Drupal 11.5.0, move to 11.4 if hit by the theme issue",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.drupal.org/project/drupal/releases/10.6.22",
+            "title": "Drupal 10.6.22 release: security coverage until Drupal 11.5.0",
+            "date": "18 Nov"
+          },
+          {
+            "url": "https://www.drush.org/13.x/commands/core_status/",
+            "title": "Drush docs: core:status and its drupal-version field",
+            "date": null
+          },
+          {
+            "url": "https://www.drupal.org/project/drupal/issues/3455853",
+            "title": "Drupal core issue 3455853: a related, older hole (pending or failed translation imports let install.php rerun and replace the admin), automated attempts reported 28 Oct 2025, SA-CORE-2026-017 \"fixes this as a by-product\"",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://www.drupal.org/project/drupal/issues/3504327",
+            "title": "Drupal core issue 3504327: install.php offered to reinstall an installed site (2025, not translation-related), closed by catch, who said the SA fix \"should have resolved this issue too\"",
+            "date": "19 Nov"
+          },
+          {
+            "url": "https://github.com/drupal/drupal/blob/11.x/core/MAINTAINERS.txt",
+            "title": "Drupal core MAINTAINERS.txt: catch is a core release manager",
+            "date": null
+          },
+          {
+            "url": "https://www.drupal.org/sa-core-2026-019",
+            "title": "Drupal SA-CORE-2026-019: incomplete fix, exploited, fixed in 11.4.14, 11.3.23 and 10.6.23, run update.php, check user 1",
+            "date": "25 Nov"
+          },
+          {
+            "url": "https://www.drupal.org/project/drupal/releases/11.4.14",
+            "title": "Drupal 11.4.14 release: security release, fixes the theme registry bug from 11.4.13",
+            "date": "25 Nov"
+          },
+          {
+            "url": "https://www.drupal.org/project/drupal/releases/11.3.23",
+            "title": "Drupal 11.3.23 release: security release, fixes the theme registry bug from 11.3.22",
+            "date": "25 Nov"
+          },
+          {
+            "url": "https://www.drupal.org/project/drupal/releases/10.6.23",
+            "title": "Drupal 10.6.23 release: security release",
+            "date": "25 Nov"
+          },
+          {
+            "url": "https://github.com/drupal/core/commit/f3d7b16d09a0119afe845907cb67163fb9d86951",
+            "title": "Drupal core: the SA-CORE-2026-019 fix, session token check and update hook",
+            "date": "25 Nov"
+          },
+          {
+            "url": "https://www.drupal.org/docs/administering-a-drupal-site/security-in-drupal/checking-whether-your-site-was-compromised-through-the-installer",
+            "title": "Drupal docs: checking whether your site was compromised through the installer, run the checks before database updates",
+            "date": "26 Nov"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-26",
+            "text": "Drupal's 18 Nov fix was incomplete: a second bug (CVE-2026-136716, SA-CORE-2026-019) is also exploited. The fix is now 11.4.14, 11.3.23 or 10.6.23 plus running update.php , after Drupal's checks for a takeover, which the update would disturb."
+          },
+          {
+            "date": "2026-11-25",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/drupal-installer/"
+      }
+    },
+    {
+      "slug": "juniper-ssr-conductor",
+      "name": "Juniper Conductor",
+      "meta": "Juniper SSR Conductor · CVE-2026-103406",
+      "line": "Exploited, no login, runs as root. In CISA KEV.",
+      "verdict": "Patch now",
+      "scareLevel": 3.2,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-10-28",
+      "url": "https://tldrcve.com/juniper-ssr-conductor/",
+      "detail": {
+        "slug": "juniper-ssr-conductor",
+        "kicker": "Juniper SSR Conductor · CVE-2026-103406",
+        "name": "Juniper Conductor",
+        "verdict": "Patch now",
+        "verdictHint": "Exploited, no login, runs as root. In CISA KEV.",
+        "summary": "",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1,3"
+          },
+          {
+            "yes": false,
+            "text": "No public exploit 1,3"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 1,2,3"
+          },
+          {
+            "yes": true,
+            "text": "✓ On CISA's exploited list (fix by 28 Nov) 2"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "You run a Session Smart Conductor",
+            "hint": null,
+            "body": "The CVE record and the bulletin's entry for this bug name only the Conductor. Sources disagree on routers: the bulletin's header says these issues affect all versions of both Session Smart Router and Conductor, and CISA's KEV entry names both. Routers need the same update anyway: the bulletin fixes 17 other bugs, among them CVE-2026-103409 (9.8), admin rights with no login on a Session Smart Router that isn't yet onboarded to Mist or a Conductor. 3,1,2,11",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Not on a fixed release",
+            "hint": null,
+            "body": "Affected: before 7.0.5, 7.1.0 up to 7.1.6, and 7.2 before 7.2.3. Fixed: 7.0.5, 7.1.7, 7.2.3 and every later release. The 6.x lines get no fix: 6.2 is still supported until 6 Mar 2027 but past End of Engineering, and Juniper doesn't evaluate releases past End of Engineering or End of Life. 3,1,4,12",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update the Conductor",
+            "hint": null,
+            "body": "7.0.5-14-lts, 7.1.7-15-sts, 7.2.3-8r2 or any later release. All three came out between 20 Aug and 29 Sep 2026, before the bug was disclosed. On 6.2 or 6.3, move to 7.0.5 or later. Update routers to a fixed release too, for the other bugs in the same bulletin. 8,9,10,12,1 Latest safe versions checked 26 Nov Juniper Session Smart Router and Conductor → 7.2 7.2.5-9r2 7.1 7.1.8-9-sts 7.0 7.0.7-2-lts",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Limit who can reach it",
+            "hint": null,
+            "body": "Juniper says there's no workaround, but tells customers to \"take steps to mitigate\" until they upgrade, without saying which. Our advice: allow only your routers to reach the Conductor. Juniper's own deployment guide already says to restrict public-facing inbound access to 4505/TCP, 4506/TCP and 930/TCP, the ports routers use; Juniper doesn't say which port the attack uses, so this narrows exposure but doesn't close the hole. 1,7,5,6",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Check for a break-in",
+            "hint": null,
+            "body": "A successful attack runs commands as root on the system that manages your routers. Juniper's bulletin gives no signs of attack to look for. Our advice: if an unpatched Conductor was reachable from the internet, treat it as possibly compromised and check it before trusting it again. Federal Civilian Executive Branch (FCEB) agencies must do CISA's forensic triage. 3,1,2,13",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Why it's Patch now",
+            "hint": null,
+            "body": "Juniper has a report of it being exploited and it's in CISA KEV. It needs no login and gives root. Juniper names no setting that blocks it, no workaround and no port, so you can't rule out a reachable Conductor. 1,2,3",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://supportportal.juniper.net/JSA112183",
+            "title": "Juniper JSA112183: 18 Session Smart bugs, affected and fixed releases, exploitation reported 24 Nov, no workaround, found internally",
+            "date": "24 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: CVE-2026-103406 added 25 Nov 2026, due 28 Nov, forensic triage required, lists Conductor and Router",
+            "date": "25 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-103406",
+            "title": "CVE record CVE-2026-103406: AutomatedProvisioner, crafted salt minion ID, root, Conductor only, CVSS 9.8",
+            "date": "24 Nov"
+          },
+          {
+            "url": "https://nvd.nist.gov/vuln/detail/CVE-2026-103406",
+            "title": "NVD: CVE-2026-103406, affected Conductor releases",
+            "date": null
+          },
+          {
+            "url": "https://networkingdocs.hpe.com/documentation/us/en/software/session-smart-router/docs/config_firewall_ports/index.html",
+            "title": "Juniper docs: firewall ports, routers reach the Conductor on 930, 4505 and 4506/TCP",
+            "date": null
+          },
+          {
+            "url": "https://networkingdocs.hpe.com/documentation/us/en/software/session-smart-router/docs/concepts_machine_communication/index.html",
+            "title": "Juniper docs: router salt-minion talks to the Conductor's salt-master on 4505-4506/TCP",
+            "date": null
+          },
+          {
+            "url": "https://networkingdocs.hpe.com/documentation/us/en/software/session-smart-router/docs/bcp_conductor_deployment/index.html",
+            "title": "Juniper docs: Conductor deployment best practices, restrict public-facing inbound access",
+            "date": null
+          },
+          {
+            "url": "https://networkingdocs.hpe.com/documentation/us/en/software/session-smart-router/docs/release_notes_128t_7.0/",
+            "title": "Juniper: SSR 7.0 release notes, 7.0.5-14-lts (20 Aug 2026) fixes CVE-2026-103406",
+            "date": null
+          },
+          {
+            "url": "https://networkingdocs.hpe.com/documentation/us/en/software/session-smart-router/docs/release_notes_128t_7.1/",
+            "title": "Juniper: SSR 7.1 release notes, 7.1.7-15-sts (17 Sep 2026) fixes CVE-2026-103406",
+            "date": null
+          },
+          {
+            "url": "https://networkingdocs.hpe.com/documentation/us/en/software/session-smart-router/docs/release_notes_128t_7.2/",
+            "title": "Juniper: SSR 7.2 release notes, 7.2.3-8r2 (29 Sep 2026) fixes CVE-2026-103406",
+            "date": null
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-103409",
+            "title": "CVE record CVE-2026-103409: Session Smart Router admin rights with no login, only before the router is onboarded to Mist or a Conductor",
+            "date": "28 Oct"
+          },
+          {
+            "url": "https://networkingdocs.hpe.com/documentation/us/en/software/session-smart-router/docs/about_releases/index.html",
+            "title": "Juniper docs: Session Smart releases, 6.2 LTS End of Engineering 6 Sep 2026, End of Support 6 Mar 2027",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/news-events/alerts/2026/11/25/cisa-adds-10-known-exploited-vulnerabilities-catalog",
+            "title": "CISA: adds 10 known exploited vulnerabilities, including CVE-2026-103406; BOD 26-04 applies only to FCEB agencies",
+            "date": "25 Nov"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-26",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/juniper-ssr-conductor/"
       }
     },
     {
@@ -2718,183 +3224,6 @@
       }
     },
     {
-      "slug": "drupal-installer",
-      "name": "Drupal installer",
-      "meta": "Drupal core · CVE-2026-132165",
-      "line": "Exploited via install.php, no login. In CISA KEV.",
-      "verdict": "Patch now",
-      "scareLevel": 3,
-      "meterLabel": "Drop everything",
-      "disclosed": "2026-11-18",
-      "url": "https://tldrcve.com/drupal-installer/",
-      "detail": {
-        "slug": "drupal-installer",
-        "kicker": "Drupal core · CVE-2026-132165",
-        "name": "Drupal installer",
-        "verdict": "Patch now",
-        "verdictHint": "Exploited via install.php, no login. In CISA KEV.",
-        "summary": "",
-        "meterLabel": "Drop everything",
-        "meterHint": "Attackers are already on it. Patch now.",
-        "checklist": [
-          {
-            "yes": true,
-            "text": "✓ Works without logging in 1,2,4"
-          },
-          {
-            "yes": true,
-            "text": "✓ Public exploit code is out 6"
-          },
-          {
-            "yes": true,
-            "text": "✓ Attacks seen in the wild 1,2"
-          },
-          {
-            "yes": true,
-            "text": "✓ On CISA's exploited list (fix by 27 Nov) 2"
-          }
-        ],
-        "affected": [
-          {
-            "num": "1",
-            "title": "Drupal core, not updated",
-            "hint": "command",
-            "body": "Drupal's affected range: before 10.6.22, 11.0.0 up to 11.3.21, and 11.4.0 up to 11.4.12; 11.3.22, 11.4.13 and 10.6.22 are fixed. Drupal 11.2 and below, 10.5 and below, and Drupal 8 and 9 are end-of-life and get no fix. The command prints your version. 1,4,11 drush status --field=drupal-version",
-            "code": [
-              "drush status --field=drupal-version"
-            ]
-          },
-          {
-            "num": "2",
-            "title": "An attacker can reach install.php",
-            "hint": "command",
-            "body": "Attacks go through the installer at /core/install.php , which stays reachable after installation unless you block it. Horizon3 notes this isn't only about internet-facing sites: internal and staging sites count if an attacker can reach them. Drupal's check: each of these URLs on your site should end with 403 or 404 ; a 200 means the installer isn't blocked. Also try /core/install.php/foo and, following redirects ( curl -IL ), /install.php . 1,3,4 curl -I https://example.com/core/install.php",
-            "code": [
-              "curl -I https://example.com/core/install.php"
-            ]
-          },
-          {
-            "num": "3",
-            "title": "A setup Drupal calls uncommon",
-            "hint": null,
-            "body": "Drupal says only uncommon module configurations are exploitable and doesn't list them. A related, older hole is public: on Drupal's issue 3455853, a site whose translation import was left pending or failed lets install.php run again and replace the admin account. Drupal release manager catch says this fix closes it \"as a by-product\", and a later comment there lists it apart from the advisory's own attack vectors. A 2025 report of install.php offering to reinstall a finished site, not translation-related, was closed by catch, who said the fix \"should have resolved this issue too\". The proof of concept plants a similar unfinished installer state by hand. If the web server can't write to or change permissions on settings.php , some exploit paths are blocked, but not all. 1,12,14,13,6",
-            "code": []
-          }
-        ],
-        "actions": [
-          {
-            "num": "1",
-            "title": "Update Drupal",
-            "hint": null,
-            "body": "11.4.13, 11.3.22 or 10.6.22 (18 Nov 2026), security-only releases. 11.3 and 10.6 get security fixes only until Drupal 11.5.0 comes out in December 2026; on 11.2, 10.5 or older, move to a supported line. Known issue: these releases broke the theme registry for some modules, Search API among them (\"Theme hook field not found\"). Drupal says it \"will be fixed in Drupal 11.4.14\", which isn't out as of 25 Nov 2026, and that affected sites on 11.3.22 or 10.6.22 should move to 11.4 now so they can take that release. 1,8,9,10 Latest safe versions checked 25 Nov Drupal core → 11.4 11.4.13 11.3 11.3.22 10.6 10.6.22 Drupal 11.2 and below, 10.5 and below, and Drupal 8 and 9 are end-of-life and get no security fixes: move to a supported line.",
-            "code": []
-          },
-          {
-            "num": "2",
-            "title": "Block install.php, even after updating",
-            "hint": "command",
-            "body": "Drupal recommends blocking the installer in the web server, which survives core updates. nginx: add the block below to the HTTPS server block; Drupal says to use ^~ , not an exact match ( = ), which on some servers doesn't block /core/install.php/foo . Apache: in the virtual host, <Location \"/core/install.php\"> with Require all denied . Apache without access to the virtual host: Drupal's docs also give an .htaccess rule ( <Files \"install.php\"> with Require all denied ), but Composer overwrites .htaccess , so lines added by hand are lost. Test with nginx -t or apachectl configtest before reloading, then rerun the check above. Drupal Steward sites are already protected from the known attack paths, but should still update. 3,1 location ^~ /core/install.php { return 404; }",
-            "code": [
-              "location ^~ /core/install.php { return 404; }"
-            ]
-          },
-          {
-            "num": "3",
-            "title": "Check for a takeover",
-            "hint": null,
-            "body": "The public proof of concept replaces user 1, the site's first admin account, with a new name, email and password, so the old admin password stops working; content is left in place. Anonymous POST requests to /core/install.php in your web logs after the site went live deserve a look. If you find signs, assume the attacker had admin rights and may have run code on the server. US federal agencies must also do CISA's forensic triage. 6,1,2",
-            "code": []
-          },
-          {
-            "num": "4",
-            "title": "Why it's Patch now",
-            "hint": null,
-            "body": "Drupal rates the setups that are exploitable as uncommon ( TD:Uncommon ) but doesn't list them, so you can't rule your site out. install.php stays reachable unless you block it, attacks on live sites are reported, and it's in CISA KEV. A related, older hole in the installer, which this fix also closes, was already being probed: on 28 Oct 2025 someone on Drupal's issue 3455853 reported automated requests trying to exploit it. The fix is a security-only release and the workaround is one web server rule. 1,5,12,3,2",
-            "code": []
-          }
-        ],
-        "sources": [
-          {
-            "url": "https://www.drupal.org/sa-core-2026-017",
-            "title": "Drupal SA-CORE-2026-017: affected versions, fixes, exploited on live sites from 19 Nov 2026 19:00 UTC, settings.php note",
-            "date": "18 Nov"
-          },
-          {
-            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
-            "title": "CISA KEV catalog: added 24 Nov 2026, due 27 Nov, forensic triage required",
-            "date": "24 Nov"
-          },
-          {
-            "url": "https://www.drupal.org/docs/administering-a-drupal-site/security-in-drupal/securing-the-installer-installphp",
-            "title": "Drupal docs: securing the installer, web server rules and checks",
-            "date": "21 Nov"
-          },
-          {
-            "url": "https://horizon3.ai/attack-research/vulnerabilities/cve-2026-132165/",
-            "title": "Horizon3: affected range, reachable install.php, no exploitation reported at the time",
-            "date": null
-          },
-          {
-            "url": "https://www.drupal.org/drupal-security-team/security-risk-levels-defined",
-            "title": "Drupal Security Team: risk levels, \"Uncommon\" and \"Complex\" defined",
-            "date": null
-          },
-          {
-            "url": "https://github.com/abraxas/drupal-install-takeover",
-            "title": "Abraxas Labs: public proof of concept, admin takeover on 11.4.12 with a planted installer state",
-            "date": "20 Nov"
-          },
-          {
-            "url": "https://github.com/drupal/core/commit/e301840e6164301a71d83005bad312dc4daa2d7a",
-            "title": "Drupal core: the SA-CORE-2026-017 fix",
-            "date": "18 Nov"
-          },
-          {
-            "url": "https://www.drupal.org/project/drupal/releases/11.4.13",
-            "title": "Drupal 11.4.13 release: security-only, installer no longer fixes settings.php permissions, known theme issue",
-            "date": "18 Nov"
-          },
-          {
-            "url": "https://www.drupal.org/project/drupal/releases/11.3.22",
-            "title": "Drupal 11.3.22 release: security coverage until Drupal 11.5.0, move to 11.4 if hit by the theme issue",
-            "date": "18 Nov"
-          },
-          {
-            "url": "https://www.drupal.org/project/drupal/releases/10.6.22",
-            "title": "Drupal 10.6.22 release: security coverage until Drupal 11.5.0",
-            "date": "18 Nov"
-          },
-          {
-            "url": "https://www.drush.org/13.x/commands/core_status/",
-            "title": "Drush docs: core:status and its drupal-version field",
-            "date": null
-          },
-          {
-            "url": "https://www.drupal.org/project/drupal/issues/3455853",
-            "title": "Drupal core issue 3455853: a related, older hole (pending or failed translation imports let install.php rerun and replace the admin), automated attempts reported 28 Oct 2025, SA-CORE-2026-017 \"fixes this as a by-product\"",
-            "date": "19 Nov"
-          },
-          {
-            "url": "https://www.drupal.org/project/drupal/issues/3504327",
-            "title": "Drupal core issue 3504327: install.php offered to reinstall an installed site (2025, not translation-related), closed by catch, who said the SA fix \"should have resolved this issue too\"",
-            "date": "19 Nov"
-          },
-          {
-            "url": "https://github.com/drupal/drupal/blob/11.x/core/MAINTAINERS.txt",
-            "title": "Drupal core MAINTAINERS.txt: catch is a core release manager",
-            "date": null
-          }
-        ],
-        "changes": [
-          {
-            "date": "2026-11-25",
-            "text": "Published."
-          }
-        ],
-        "url": "https://tldrcve.com/drupal-installer/"
-      }
-    },
-    {
       "slug": "litellm",
       "name": "LiteLLM RCE",
       "meta": "BerriAI LiteLLM proxy · CVE-2026-40217",
@@ -2963,7 +3292,7 @@
             "num": "1",
             "title": "Upgrade to the newest on your line",
             "hint": null,
-            "body": "1.83.11 fixed this sandbox escape, but later releases had their own admin-takeover bugs. Use at least 1.106.9, 1.108.6 or 1.109.1 (listed below). These also cover the older LiteLLM KEV entries CVE-2026-42208 and CVE-2026-42271 (fixed 1.83.7) and CVE-2026-59822 (fixed 1.84.0). 3,11,12,16,14,15,10 Latest safe versions checked 22 Nov LiteLLM → 1.110 1.110.2 1.109 1.109.3 1.108 (LTS) 1.108.15 1.106 1.106.12 Releases older than 1.106 have no fix: move up.",
+            "body": "1.83.11 fixed this sandbox escape, but later releases had their own admin-takeover bugs. Use at least 1.106.9, 1.108.6 or 1.109.1 (listed below). These also cover the older LiteLLM KEV entries CVE-2026-42208 and CVE-2026-42271 (fixed 1.83.7) and CVE-2026-59822 (fixed 1.84.0). 3,11,12,16,14,15,10 Latest safe versions checked 26 Nov LiteLLM → 1.111 1.111.0 1.110 1.110.4 1.109 1.109.5 1.108 (LTS) 1.108.18 1.106 1.106.12 Releases older than 1.106 have no fix: move up.",
             "code": []
           },
           {
@@ -3790,7 +4119,7 @@
     },
     {
       "slug": "nginx2root",
-      "name": "nginx2root",
+      "name": "nginx2root Roundup",
       "meta": "nginx · 10 CVEs",
       "line": "Public exploit for HTTP/2. Same fix covers 9 more bugs.",
       "verdict": "Patch now if…",
@@ -4235,7 +4564,7 @@
             "num": "1",
             "title": "Update the kernel and reboot",
             "hint": null,
-            "body": "Install your distro's fixed kernel (listed below), then reboot. Ubuntu 20.04 (5.4.0-247.267) and 18.04 (4.15.0-263.275) fixes are in Ubuntu Pro only. Debian 12's linux-6.12: 6.12.113-1~deb12u1. Cloud and HWE kernels have their own versions. 8,9,10,14 Latest safe versions checked 24 Nov Linux kernel → Debian 13 6.12.118-1 Debian 12 6.1.192-2 Ubuntu 26.04 7.0.0-44.44 Ubuntu 24.04 6.8.0-151.151 Ubuntu 22.04 5.15.0-204.214 RHEL 10.3 6.12.0-264.20.1.el10_3 RHEL 10.2 6.12.0-211.76.1.el10_2 RHEL 9 5.14.0-687.67.1.el9_8 RHEL 8 4.18.0-553.189.1.el8_10 Ubuntu 26.10: 7.3.0-10.10. Cloud and HWE kernels have their own versions.",
+            "body": "Install your distro's fixed kernel (listed below), then reboot. Ubuntu 20.04 (5.4.0-247.267) and 18.04 (4.15.0-263.275) fixes are in Ubuntu Pro only. Debian 12's linux-6.12: 6.12.113-1~deb12u1. Cloud and HWE kernels have their own versions. 8,9,10,14 Latest safe versions checked 26 Nov Linux kernel → Debian 13 6.12.118-1 Debian 12 6.1.192-2 Ubuntu 26.04 7.0.0-44.44 Ubuntu 24.04 6.8.0-151.151 Ubuntu 22.04 5.15.0-204.214 RHEL 10.3 6.12.0-264.21.1.el10_3 RHEL 10.2 6.12.0-211.76.1.el10_2 RHEL 9 5.14.0-741.27.1.el9_9 RHEL 8 4.18.0-553.189.1.el8_10 Ubuntu 26.10: 7.3.0-10.10. Cloud and HWE kernels have their own versions.",
             "code": []
           },
           {
@@ -4449,7 +4778,7 @@
             "num": "1",
             "title": "Update the kernel and reboot",
             "hint": null,
-            "body": "Fixed so far: Debian 13 in 6.12.117-1, and Debian 12's optional linux-6.12 kernel in 6.12.117-1~deb12u1. Debian 12's default 6.1 kernel is still listed as vulnerable, although upstream fixed 6.1 in 6.1.193 on 23 Nov. Ubuntu lists its main kernel as vulnerable on every release from 16.04 to 26.10, with fixes in progress for 26.04 (7.0.0-45.45) and 26.10 (7.3.0-12.13); Ubuntu gives no date for them. Red Hat lists RHEL 6 to 10 as affected with no fix yet. On other distros, OpenSec's advice is to install the kernel update that lists CVE-2026-99362. 11,10,9,8,2,1 Latest safe versions checked 24 Nov Linux kernel → Debian 13 6.12.118-1 Debian 12 6.1.192-2 Ubuntu 26.04 7.0.0-44.44 Ubuntu 24.04 6.8.0-151.151 Ubuntu 22.04 5.15.0-204.214 RHEL 10.3 6.12.0-264.20.1.el10_3 RHEL 10.2 6.12.0-211.76.1.el10_2 RHEL 9 5.14.0-687.67.1.el9_8 RHEL 8 4.18.0-553.189.1.el8_10 Ubuntu 26.10: 7.3.0-10.10. Cloud and HWE kernels have their own versions.",
+            "body": "Fixed so far: Debian 13 in 6.12.117-1, and Debian 12's optional linux-6.12 kernel in 6.12.117-1~deb12u1. Debian 12's default 6.1 kernel is still listed as vulnerable, although upstream fixed 6.1 in 6.1.193 on 23 Nov. Ubuntu lists its main kernel as vulnerable on every release from 16.04 to 26.10, with fixes in progress for 26.04 (7.0.0-45.45) and 26.10 (7.3.0-12.13); Ubuntu gives no date for them. Red Hat lists RHEL 6 to 10 as affected with no fix yet. On other distros, OpenSec's advice is to install the kernel update that lists CVE-2026-99362. 11,10,9,8,2,1 Latest safe versions checked 26 Nov Linux kernel → Debian 13 6.12.118-1 Debian 12 6.1.192-2 Ubuntu 26.04 7.0.0-44.44 Ubuntu 24.04 6.8.0-151.151 Ubuntu 22.04 5.15.0-204.214 RHEL 10.3 6.12.0-264.21.1.el10_3 RHEL 10.2 6.12.0-211.76.1.el10_2 RHEL 9 5.14.0-741.27.1.el9_9 RHEL 8 4.18.0-553.189.1.el8_10 Ubuntu 26.10: 7.3.0-10.10. Cloud and HWE kernels have their own versions.",
             "code": []
           },
           {
@@ -4806,7 +5135,7 @@
             "num": "1",
             "title": "Update the kernel and reboot",
             "hint": null,
-            "body": "Fixed in the current releases: Debian 12 6.1.192-1, Debian 13 6.12.117-1, RHEL 8 4.18.0-553.189.1.el8_10, RHEL 9.9 5.14.0-741.26.1.el9_9 and RHEL 10.3 6.12.0-264.19.1.el10_3. Older RHEL update streams (such as 8.8, 9.8 and 10.2) have no fixed kernel yet. Ubuntu lists fixes in progress for its main kernel on every release from 16.04 to 26.10; most of its other kernels (cloud, HWE, Raspberry Pi and others) are still listed as vulnerable on the releases they ship for, with no fix in progress yet. On Arm and POWER, a netdev review bot asked for this fix to be backported together with the Linux 9.8 race fix, because without it the crash might still be reachable there; no maintainer has confirmed that, and older stable kernels (5.10 to 6.6) have only this fix so far. 3,4,5,6,12,13,14 Latest safe versions checked 24 Nov Linux kernel → Debian 13 6.12.118-1 Debian 12 6.1.192-2 Ubuntu 26.04 7.0.0-44.44 Ubuntu 24.04 6.8.0-151.151 Ubuntu 22.04 5.15.0-204.214 RHEL 10.3 6.12.0-264.20.1.el10_3 RHEL 10.2 6.12.0-211.76.1.el10_2 RHEL 9 5.14.0-687.67.1.el9_8 RHEL 8 4.18.0-553.189.1.el8_10 Ubuntu 26.10: 7.3.0-10.10. Cloud and HWE kernels have their own versions.",
+            "body": "Fixed in the current releases: Debian 12 6.1.192-1, Debian 13 6.12.117-1, RHEL 8 4.18.0-553.189.1.el8_10, RHEL 9.9 5.14.0-741.26.1.el9_9 and RHEL 10.3 6.12.0-264.19.1.el10_3. Red Hat also fixed RHEL 8.8 for Telecommunications Update Service and SAP customers in 4.18.0-477.181.1.el8_8 (24 Nov 2026); it lists no fix yet for other older update streams, such as 9.8 and 10.2. Ubuntu lists fixes in progress for its main kernel on every release from 16.04 to 26.10; most of its other kernels (cloud, HWE, Raspberry Pi and others) are still listed as vulnerable on the releases they ship for, with no fix in progress yet. On Arm and POWER, a netdev review bot asked for this fix to be backported together with the Linux 9.8 race fix, because without it the crash might still be reachable there; no maintainer has confirmed that, and older stable kernels (5.10 to 6.6) have only this fix so far. 3,4,5,6,12,13,14 Latest safe versions checked 26 Nov Linux kernel → Debian 13 6.12.118-1 Debian 12 6.1.192-2 Ubuntu 26.04 7.0.0-44.44 Ubuntu 24.04 6.8.0-151.151 Ubuntu 22.04 5.15.0-204.214 RHEL 10.3 6.12.0-264.21.1.el10_3 RHEL 10.2 6.12.0-211.76.1.el10_2 RHEL 9 5.14.0-741.27.1.el9_9 RHEL 8 4.18.0-553.189.1.el8_10 Ubuntu 26.10: 7.3.0-10.10. Cloud and HWE kernels have their own versions.",
             "code": []
           },
           {
@@ -4897,6 +5226,10 @@
           }
         ],
         "changes": [
+          {
+            "date": "2026-11-26",
+            "text": "Red Hat released a fix for RHEL 8.8 Telecommunications Update Service and SAP customers (4.18.0-477.181.1.el8_8)."
+          },
           {
             "date": "2026-11-24",
             "text": "Published."
@@ -6537,7 +6870,7 @@
     },
     {
       "slug": "php-2026-11-19",
-      "name": "PHP Nov release",
+      "name": "PHP Nov release Roundup",
       "meta": "PHP · 17 CVEs",
       "line": "17 advisories; criticals need non-default or rare setups.",
       "verdict": "Patch now if…",
@@ -6684,7 +7017,7 @@
     },
     {
       "slug": "wordpress-7-1-5",
-      "name": "WordPress 7.1.5",
+      "name": "WordPress 7.1.5 Roundup",
       "meta": "WordPress · 19 advisories",
       "line": "Worst one needs an admin's click. No exploit, no attacks.",
       "verdict": "Patch now if…",
@@ -6822,7 +7155,7 @@
     },
     {
       "slug": "spring-2026-11-19",
-      "name": "Spring Nov release",
+      "name": "Spring Nov release Roundup",
       "meta": "Spring · 90 CVEs",
       "line": "90 advisories, mostly opt-in. Free Boot fixes on 4.x only.",
       "verdict": "Patch now if…",
@@ -7713,7 +8046,7 @@
     },
     {
       "slug": "tomcat-2026-11-19",
-      "name": "Tomcat Nov release",
+      "name": "Tomcat Nov release Roundup",
       "meta": "Tomcat (Spring Boot) · 11 CVEs",
       "line": "CISA says 9.1, Apache says Low. Off-by-default features.",
       "verdict": "Next cycle",
@@ -7963,7 +8296,7 @@
             "num": "1",
             "title": "Update the kernel as usual",
             "hint": null,
-            "body": "Debian 13 has the fix in 6.12.118-1 (DSA-6652-1). Debian 12, Ubuntu 20.04 to 26.10 and Ubuntu 18.04's 5.4 kernels ( linux-hwe-5.4 and the cloud and Raspberry Pi 5.4 kernels) are still listed as vulnerable, and Red Hat has deferred the fix for RHEL 9 and 10, so take it when your distro ships it. Red Hat, Ubuntu and Debian list no workaround. 4,5,6 Latest safe versions checked 24 Nov Linux kernel → Debian 13 6.12.118-1 Debian 12 6.1.192-2 Ubuntu 26.04 7.0.0-44.44 Ubuntu 24.04 6.8.0-151.151 Ubuntu 22.04 5.15.0-204.214 RHEL 10.3 6.12.0-264.20.1.el10_3 RHEL 10.2 6.12.0-211.76.1.el10_2 RHEL 9 5.14.0-687.67.1.el9_8 RHEL 8 4.18.0-553.189.1.el8_10 Ubuntu 26.10: 7.3.0-10.10. Cloud and HWE kernels have their own versions.",
+            "body": "Debian 13 has the fix in 6.12.118-1 (DSA-6652-1). Debian 12, Ubuntu 20.04 to 26.10 and Ubuntu 18.04's 5.4 kernels ( linux-hwe-5.4 and the cloud and Raspberry Pi 5.4 kernels) are still listed as vulnerable, and Red Hat has deferred the fix for RHEL 9 and 10, so take it when your distro ships it. Red Hat, Ubuntu and Debian list no workaround. 4,5,6 Latest safe versions checked 26 Nov Linux kernel → Debian 13 6.12.118-1 Debian 12 6.1.192-2 Ubuntu 26.04 7.0.0-44.44 Ubuntu 24.04 6.8.0-151.151 Ubuntu 22.04 5.15.0-204.214 RHEL 10.3 6.12.0-264.21.1.el10_3 RHEL 10.2 6.12.0-211.76.1.el10_2 RHEL 9 5.14.0-741.27.1.el9_9 RHEL 8 4.18.0-553.189.1.el8_10 Ubuntu 26.10: 7.3.0-10.10. Cloud and HWE kernels have their own versions.",
             "code": []
           },
           {
@@ -8324,12 +8657,12 @@
     {
       "slug": "chrome",
       "name": "Chrome",
-      "meta": "1 bug · checked 20 Nov",
+      "meta": "1 bug · checked 26 Nov",
       "nofix": false,
       "chips": [
         {
           "line": "158",
-          "version": "158.0.8127.36"
+          "version": "158.0.8127.88"
         },
         {
           "line": "157",
@@ -8337,11 +8670,11 @@
         },
         {
           "line": "Extended Stable 156",
-          "version": "156.0.8078.108"
+          "version": "156.0.8078.114"
         },
         {
           "line": "ChromeOS",
-          "version": "158.0.8127.65"
+          "version": "158.0.8127.98"
         }
       ],
       "url": "https://tldrcve.com/versions/chrome/"
@@ -8362,20 +8695,20 @@
     {
       "slug": "drupal",
       "name": "Drupal core",
-      "meta": "1 bug · checked 25 Nov",
+      "meta": "1 bug · checked 26 Nov",
       "nofix": false,
       "chips": [
         {
           "line": "11.4",
-          "version": "11.4.13"
+          "version": "11.4.14"
         },
         {
           "line": "11.3",
-          "version": "11.3.22"
+          "version": "11.3.23"
         },
         {
           "line": "10.6",
-          "version": "10.6.22"
+          "version": "10.6.23"
         }
       ],
       "url": "https://tldrcve.com/versions/drupal/"
@@ -8404,20 +8737,20 @@
     {
       "slug": "electron",
       "name": "Electron",
-      "meta": "1 bug · checked 22 Nov",
+      "meta": "1 bug · checked 26 Nov",
       "nofix": false,
       "chips": [
         {
           "line": "45",
-          "version": "45.4.1"
+          "version": "45.5.0"
         },
         {
           "line": "44",
-          "version": "44.11.5"
+          "version": "44.11.6"
         },
         {
           "line": "43",
-          "version": "43.8.12"
+          "version": "43.8.13"
         }
       ],
       "url": "https://tldrcve.com/versions/electron/"
@@ -8574,9 +8907,30 @@
       "url": "https://tldrcve.com/versions/java/"
     },
     {
+      "slug": "juniper-ssr",
+      "name": "Juniper Session Smart Router and Conductor",
+      "meta": "1 bug · checked 26 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "7.2",
+          "version": "7.2.5-9r2"
+        },
+        {
+          "line": "7.1",
+          "version": "7.1.8-9-sts"
+        },
+        {
+          "line": "7.0",
+          "version": "7.0.7-2-lts"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/juniper-ssr/"
+    },
+    {
       "slug": "linux-kernel",
       "name": "Linux kernel",
-      "meta": "5 bugs · checked 24 Nov",
+      "meta": "5 bugs · checked 26 Nov",
       "nofix": true,
       "chips": [
         {
@@ -8601,7 +8955,7 @@
         },
         {
           "line": "RHEL 10.3",
-          "version": "6.12.0-264.20.1.el10_3"
+          "version": "6.12.0-264.21.1.el10_3"
         },
         {
           "line": "RHEL 10.2",
@@ -8609,7 +8963,7 @@
         },
         {
           "line": "RHEL 9",
-          "version": "5.14.0-687.67.1.el9_8"
+          "version": "5.14.0-741.27.1.el9_9"
         },
         {
           "line": "RHEL 8",
@@ -8621,20 +8975,24 @@
     {
       "slug": "litellm",
       "name": "LiteLLM",
-      "meta": "1 bug · checked 22 Nov",
+      "meta": "1 bug · checked 26 Nov",
       "nofix": true,
       "chips": [
         {
+          "line": "1.111",
+          "version": "1.111.0"
+        },
+        {
           "line": "1.110",
-          "version": "1.110.2"
+          "version": "1.110.4"
         },
         {
           "line": "1.109",
-          "version": "1.109.3"
+          "version": "1.109.5"
         },
         {
           "line": "1.108 (LTS)",
-          "version": "1.108.15"
+          "version": "1.108.18"
         },
         {
           "line": "1.106",
