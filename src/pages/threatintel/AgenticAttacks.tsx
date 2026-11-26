@@ -81,12 +81,12 @@ interface Index {
 type Tab = 'frameworks' | 'indicators' | 'attack' | 'shared' | 'stats';
 
 const inputCls =
-  'w-full px-3 py-2 bg-white dark:bg-surface-200 border border-line-1 rounded-xl text-sm text-heading placeholder-slate-500 dark:placeholder-slate-600';
-const selectCls = `${inputCls} max-w-xs`;
+  'w-full px-3 py-2 bg-input-200 border border-line-input rounded-control text-sm text-heading placeholder:text-muted';
+const selectCls = `${inputCls} w-full sm:w-auto sm:max-w-xs`;
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-xl border border-line-1 bg-surface-100 dark:bg-surface-100 px-4 py-3">
+    <div className="rounded-xl border border-line-1 bg-surface-100 px-4 py-3">
       <div className="text-2xl font-semibold text-heading">{value}</div>
       <div className="text-xs text-muted mt-1">{label}</div>
     </div>
@@ -166,7 +166,7 @@ export default function AgenticAttacks(): JSX.Element {
             href={data?.sourceUrl ?? 'https://github.com/ThreatDefence/agentic-attack-detections'}
             target="_blank"
             rel="noreferrer"
-            className="text-brand-600 hover:underline inline-flex items-center gap-1"
+            className="text-accent-text hover:underline inline-flex items-center gap-1"
           >
             ThreatDefence <ExternalLink size={12} />
           </a>
@@ -183,9 +183,9 @@ export default function AgenticAttacks(): JSX.Element {
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+            className={`px-4 py-2.5 min-h-11 rounded-full text-sm font-medium border transition-colors ${
               tab === t.id
-                ? 'bg-brand-600 text-white border-brand-600'
+                ? 'bg-brand-600 text-on-fill border-brand-600'
                 : 'text-muted border-line-1 hover:border-brand-400'
             }`}
           >
@@ -210,19 +210,19 @@ export default function AgenticAttacks(): JSX.Element {
               <button
                 key={f.slug}
                 onClick={() => open(f.slug)}
-                className="text-left rounded-xl border border-line-1 bg-surface-100 dark:bg-surface-100 hover:border-brand-400 transition-colors p-4"
+                className="text-left rounded-xl border border-line-1 bg-surface-100 hover:border-brand-400 transition-colors p-4"
               >
                 <div className="font-semibold text-heading">{f.name}</div>
                 <div className="text-xs text-muted mt-1 line-clamp-2">
                   {f.description || f.seenIn || 'Console-level coverage from upstream source review.'}
                 </div>
-                <div className="flex flex-wrap gap-2 mt-3 text-[11px] text-muted">
+                <div className="flex flex-wrap gap-2 mt-3 text-mini text-muted">
                   <span>KQL {f.counts.kqlHunts}</span>
                   <span>Sigma {f.counts.sigma}</span>
                   <span>Suricata {f.counts.suricata}</span>
                   <span>YARA {f.counts.yara}</span>
                   <span>IOCs {f.counts.indicators}</span>
-                  <span className="text-brand-600 dark:text-brand-400">ATT&amp;CK {f.techniqueCount}</span>
+                  <span className="text-accent-text">ATT&amp;CK {f.techniqueCount}</span>
                 </div>
               </button>
             ))}
@@ -264,9 +264,9 @@ export default function AgenticAttacks(): JSX.Element {
             </button>
           </div>
           {iocLoading && <p className="text-sm text-muted">Searching…</p>}
-          <div className="rounded-xl border border-line-1 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-surface-200 dark:bg-surface-200 text-left text-xs text-muted">
+          <div className="rounded-xl border border-line-1 overflow-x-auto">
+            <table className="w-full min-w-[720px] text-sm">
+              <thead className="bg-surface-200 text-left text-xs text-muted">
                 <tr>
                   <th className="px-3 py-2">Type</th>
                   <th className="px-3 py-2">Value</th>
@@ -288,7 +288,7 @@ export default function AgenticAttacks(): JSX.Element {
                           href={it.sourceUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-brand-600 hover:underline inline-flex items-center gap-1"
+                          className="text-accent-text hover:underline inline-flex items-center gap-1"
                         >
                           {it.source} <ExternalLink size={11} />
                         </a>
@@ -308,9 +308,9 @@ export default function AgenticAttacks(): JSX.Element {
       )}
 
       {tab === 'attack' && (
-        <div className="rounded-xl border border-line-1 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-surface-200 dark:bg-surface-200 text-left text-xs text-muted">
+        <div className="rounded-xl border border-line-1 overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead className="bg-surface-200 text-left text-xs text-muted">
               <tr>
                 <th className="px-3 py-2">Technique</th>
                 <th className="px-3 py-2">Rules</th>
@@ -325,7 +325,7 @@ export default function AgenticAttacks(): JSX.Element {
                       href={`https://attack.mitre.org/techniques/${t.id.replace('.', '/')}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-brand-600 hover:underline inline-flex items-center gap-1"
+                      className="text-accent-text hover:underline inline-flex items-center gap-1"
                     >
                       {t.id} <ExternalLink size={11} />
                     </a>
@@ -399,7 +399,7 @@ export default function AgenticAttacks(): JSX.Element {
               <div className="space-y-1 max-h-56 overflow-y-auto">
                 {body.techniques.map((t) => (
                   <div key={t.id} className="text-xs">
-                    <span className="text-brand-600 font-medium">{t.id}</span>{' '}
+                    <span className="text-accent-text font-medium">{t.id}</span>{' '}
                     <span className="text-muted">· {t.score} rules</span> — {t.comment}
                   </div>
                 ))}
@@ -425,7 +425,7 @@ export default function AgenticAttacks(): JSX.Element {
               href={body.upstreamUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 text-brand-600 hover:underline text-xs"
+              className="inline-flex items-center gap-1 text-accent-text hover:underline text-xs"
             >
               View framework rules upstream <ExternalLink size={12} />
             </a>
