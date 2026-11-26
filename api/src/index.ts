@@ -102,7 +102,24 @@ import {
   promptintelHealthHandler,
   promptintelTaxonomyHandler,
   promptintelPromptsHandler,
+  promptintelPromptHandler,
   promptintelEntryHandler,
+  promptintelMappingsHandler,
+  promptintelTranslateHandler,
+  promptintelFrameworksHandler,
+  promptintelStatsHandler,
+  promptintelAgentFeedHandler,
+  promptintelArtifactsHandler,
+  promptintelArtifactLookupHandler,
+  promptintelDetectionRulesHandler,
+  promptintelScansHandler,
+  promptintelScanHandler,
+  promptintelScanPostHandler,
+  promptintelCheckGetHandler,
+  promptintelCheckPostHandler,
+  promptintelReleasesHandler,
+  promptintelChangelogHandler,
+  promptintelQuotaHandler,
 } from './routes/promptintel';
 import { cveThreatMapHandler } from './routes/cve-threat-map';
 import { cvePocScanHandler } from './routes/cve-poc-scan';
@@ -1514,12 +1531,30 @@ app.get('/api/v1/cve-digest/csv', cveDigestCsvHandler);
 // normal API gate — it is the only place a token is handed out.
 app.get('/api/v1/cve-digest/rss', cveDigestRssHandler);
 app.get('/api/v1/cve-digest/feed-url', cveDigestFeedUrlHandler);
-// PromptIntel IoPC registry (NovaHunting) — cached taxonomy/health + live
-// keyed prompt search. Keyed handlers degrade to 501 without the secret.
+// PromptIntel — Indicators of Prompt Compromise (SecurityBreak). The taxonomy
+// is served from the committed mirror (keyless, no quota); everything else is
+// a cached, keyed passthrough because the Community plan is 100 requests/day.
 app.get('/api/v1/promptintel/health', promptintelHealthHandler);
+app.get('/api/v1/promptintel/stats', promptintelStatsHandler);
+app.get('/api/v1/promptintel/frameworks', promptintelFrameworksHandler);
 app.get('/api/v1/promptintel/taxonomy', promptintelTaxonomyHandler);
 app.get('/api/v1/promptintel/taxonomy/entries/:id', promptintelEntryHandler);
+app.get('/api/v1/promptintel/taxonomy/mappings', promptintelMappingsHandler);
+app.get('/api/v1/promptintel/taxonomy/translate', promptintelTranslateHandler);
+app.get('/api/v1/promptintel/taxonomy/releases', promptintelReleasesHandler);
+app.get('/api/v1/promptintel/taxonomy/changelog', promptintelChangelogHandler);
 app.get('/api/v1/promptintel/prompts', promptintelPromptsHandler);
+app.get('/api/v1/promptintel/prompts/:id', promptintelPromptHandler);
+app.get('/api/v1/promptintel/agent-feed', promptintelAgentFeedHandler);
+app.get('/api/v1/promptintel/artifacts', promptintelArtifactsHandler);
+app.get('/api/v1/promptintel/artifacts/lookup', promptintelArtifactLookupHandler);
+app.get('/api/v1/promptintel/detection-rules', promptintelDetectionRulesHandler);
+app.get('/api/v1/promptintel/scans', promptintelScansHandler);
+app.get('/api/v1/promptintel/scans/:hash', promptintelScanHandler);
+app.post('/api/v1/promptintel/scan', promptintelScanPostHandler);
+app.get('/api/v1/promptintel/check', promptintelCheckGetHandler);
+app.post('/api/v1/promptintel/check', promptintelCheckPostHandler);
+app.get('/api/v1/promptintel/quota', promptintelQuotaHandler);
 app.get('/api/v1/cve-threat-map', cveThreatMapHandler);
 app.get('/api/v1/cve-poc-scan', cvePocScanHandler);
 app.get('/api/v1/cve-poc-map', cvePocMapHandler);
@@ -2319,8 +2354,8 @@ app.route('/api/v1', kpRouter);
 // built by scripts/build-mmd-manifest.mjs.
 app.route('/api/v1', mmdRouter);
 
-// AAD — ThreatDefence agentic attack detections (MIT): detection coverage for
-// 100+ AI-agent attack frameworks, 1,800+ sourced indicators and an ATT&CK
+// AAD — Agentic Attack Detections (ThreatDefence, MIT): detection coverage for
+// 82 AI-agent attack frameworks, 1,838 sourced indicators and an ATT&CK
 // layer. ART — Atomic Red Team test catalog (redcanaryco, MIT): 353 ATT&CK
 // techniques with test metadata and upstream deep links. Both ship in
 // public/data/{aad,art}/ built by scripts/build-{aad,art}-manifest.mjs.

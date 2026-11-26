@@ -3504,7 +3504,7 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     path: '/threatintel/agentic-attacks',
     label: 'Agentic Attack Detections',
     description:
-      'ThreatDefence open detection corpus (MIT) for 100+ AI-agent attack frameworks - KQL hunts, Sigma, Suricata, YARA, 1,800+ sourced indicators and a scored ATT&CK navigator layer.',
+      'ThreatDefence open detection corpus (MIT) for 82 AI-agent attack frameworks - KQL hunts, Sigma, Suricata, YARA, 1,838 sourced indicators and a scored ATT&CK navigator layer.',
     sectionLabel: 'Threat Intel · Detection',
     group: 'threatintel',
     keywords: [
@@ -3523,6 +3523,25 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
       'yara',
       'ioc',
       'attack framework',
+    ],
+  },
+  {
+    path: '/threatintel/promptintel',
+    label: 'PromptIntel · IoPC',
+    description:
+      'Indicators of Prompt Compromise (IoPC): 9 domains and 35 techniques mapped to OWASP LLM, OWASP Agentic, MITRE ATLAS, Google SAIF, CSA AARM and NIST AI RMF, plus live adversarial-prompt and agent-protection feeds.',
+    sectionLabel: 'Threat Intel · AI Security',
+    group: 'threatintel',
+    keywords: [
+      'promptintel',
+      'iopc',
+      'indicators of prompt compromise',
+      'prompt injection',
+      'agent attack',
+      'owasp llm',
+      'mitre atlas',
+      'nova rule',
+      'agent scanner',
     ],
   },
   {

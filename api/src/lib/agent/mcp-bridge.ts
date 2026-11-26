@@ -240,6 +240,13 @@ import { torStatus, torFetchOnion, torScrapeOnion, torSearchOnion, torExitNodes,
 // depx (supply-chain malicious packages) — uses REST route, not a lib
 // breach_vip_search — uses REST route
 
+// PromptIntel IoPC taxonomy (mirror-backed)
+import {
+  loadPromptIntelIndex,
+  filterPromptIntelEntries,
+  getPromptIntelEntry,
+  translateAcrossFrameworks,
+} from '../promptintel-manifest';
 type EnvWithAssets = {
   ASSETS?: Fetcher;
   TRACEIX_API_KEY?: string;
@@ -305,6 +312,90 @@ export function bridgeMcpTools(
   // ══════════════════════════════════════════════════════════════════════
   //  THREAT INTEL — ti_* (CVEs, KEV, IOCs, sector briefs, detection lists)
   // ══════════════════════════════════════════════════════════════════════
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  PROMPTINTEL — pi_* (IoPC taxonomy; mirror-backed, no key, no quota)
+  // ══════════════════════════════════════════════════════════════════════
+  //
+  // Only the mirror-backed tools are bridged. The live ones (prompt reads,
+  // indicator checks, scans, hash lookups) spend the PromptIntel account's
+  // daily allowance and stay MCP-only so an agent loop cannot burn it.
+
+  add({
+    name: 'pi_taxonomy',
+    description:
+      'List IoPC (Indicators of Prompt Compromise) techniques from the local PromptIntel mirror: 9 domains, 35 techniques, each mapped to OWASP LLM, OWASP Agentic, MITRE ATLAS, Google SAIF, CSA AARM and NIST AI RMF. Use it to classify an AI-agent attack or to find the technique behind a control. No API key or quota needed.',
+    params: [
+      {
+        name: 'domain',
+        type: 'string',
+        description: 'Domain code, e.g. T1 (Instruction & Input Injection)',
+        required: false,
+      },
+      {
+        name: 'framework',
+        type: 'string',
+        description: 'Only techniques mapped to this framework, e.g. MITRE ATLAS',
+        required: false,
+      },
+      { name: 'maturity', type: 'string', description: 'active, experimental or deprecated', required: false },
+      {
+        name: 'q',
+        type: 'string',
+        description: 'Free-text search over id, name, summary and framework names',
+        required: false,
+      },
+      { name: 'limit', type: 'number', description: 'Max techniques (default 100, max 200)', required: false },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadPromptIntelIndex(assets);
+      return filterPromptIntelEntries(idx.entries, {
+        domain: args.domain as string | undefined,
+        framework: args.framework as string | undefined,
+        maturity: args.maturity as string | undefined,
+        keyword: args.q as string | undefined,
+        limit: (args.limit as number) ?? 100,
+      });
+    },
+  });
+
+  add({
+    name: 'pi_get_entry',
+    description:
+      'Return one IoPC entry (technique IOPC-T1.001 or registry IOPC-R012) with its description, maturity/evidence status and every framework mapping row. Mirror-backed — no key or quota needed.',
+    params: [{ name: 'id', type: 'string', description: 'IoPC entry id, e.g. "IOPC-T1.001"', required: true }],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      return getPromptIntelEntry(assets, args.id as string);
+    },
+  });
+
+  add({
+    name: 'pi_translate',
+    description:
+      'Translate an AI-security framework item into the other frameworks (e.g. OWASP_LLM LLM01 → MITRE ATLAS AML.T0051). The link is derived through the IoPC techniques both items map to, and `via` names them. Mirror-backed — no key or quota needed.',
+    params: [
+      {
+        name: 'framework',
+        type: 'string',
+        description: 'Source framework, e.g. OWASP_LLM, MITRE_ATLAS',
+        required: true,
+      },
+      { name: 'ref', type: 'string', description: 'Item id in that framework, e.g. LLM01', required: true },
+      { name: 'to', type: 'string', description: 'Only return this target framework', required: false },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadPromptIntelIndex(assets);
+      return translateAcrossFrameworks(
+        idx,
+        args.framework as string,
+        args.ref as string,
+        args.to as string | undefined
+      );
+    },
+  });
 
   add({
     name: 'ti_list_cves',

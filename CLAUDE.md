@@ -236,7 +236,7 @@ checkout never needs the folder until someone rebuilds locally.
 
 **Weekly sync**: `.github/workflows/si-upstream-sync.yml` re-runs sync + build every Monday 06:00 UTC; opens a PR if `public/data/si/` changed.
 
-**MCP tool inventory**: 454 tools total across the `DFIR_MCP` Durable Object — DFIR/threat-intel tools (`check_ioc`, `lookup_cve`, `enrich_actor`, `lookup_domain`, etc.) + SI tools (`si_*`) + threat-intel vertical (`ti_*`) + NHI scanner (`nhi_*`) + depx (`depx_*`) + winreg (`winreg_*`) + HudsonRock (`hr_*`) + Telegram (`tg_*`) + workspace/notebook (`ws_*`, `notebook_*`) + passive DNS + IOC watchlist + report analysis + more. Regenerate `public/mcp-manifest.json` + `public/mcp/README.md` + `public/llms-full.txt` with `node scripts/build-mcp-manifest.mjs && node scripts/build-llms-full.mjs`.
+**MCP tool inventory**: 462 tools total across the `DFIR_MCP` Durable Object — DFIR/threat-intel tools (`check_ioc`, `lookup_cve`, `enrich_actor`, `lookup_domain`, etc.) + SI tools (`si_*`) + threat-intel vertical (`ti_*`) + NHI scanner (`nhi_*`) + depx (`depx_*`) + winreg (`winreg_*`) + HudsonRock (`hr_*`) + Telegram (`tg_*`) + workspace/notebook (`ws_*`, `notebook_*`) + passive DNS + IOC watchlist + report analysis + more. Regenerate `public/mcp-manifest.json` + `public/mcp/README.md` + `public/llms-full.txt` with `node scripts/build-mcp-manifest.mjs && node scripts/build-llms-full.mjs`.
 
 ## Threat Intel vertical — CVE/KEV/IOC/sector brief (v1)
 
@@ -550,7 +550,7 @@ Two replicated verticals added 2026-10-17, plus live integrations:
 for the digest) reused; `offseq-radar` RSS entry already in `src/data/rssFeeds.ts`.
 
 **Both verticals ride** `.github/workflows/threat-intel-sync.yml` (sync + build
-steps added) and regenerate `public/mcp-manifest.json` (now 454 tools).
+steps added) and regenerate `public/mcp-manifest.json` (now 462 tools).
 
 ## Content-generation system (/admin)
 
@@ -1010,7 +1010,7 @@ slim-index + per-slug-shard pattern read through `env.ASSETS`; 8 MCP tools total
 (5 `aad_*`, 3 `art_*`).
 
 **AAD** — [ThreatDefence/agentic-attack-detections](https://github.com/ThreatDefence/agentic-attack-detections)
-(MIT): detection coverage for 100+ AI-agent attack frameworks (ARTEX, Cairn,
+(MIT): detection coverage for 82 AI-agent attack frameworks (ARTEX, Cairn,
 PentAGI, HexStrike, …), 1,838 sourced indicators across 16 IOC types, a 124-technique
 ATT&CK Navigator layer, and the shared behavior/general rule inventory. The
 build reads the GitHub tree once + 4 curated raw files (+ per-framework ATT&CK
@@ -1358,3 +1358,54 @@ commits, `categories/<cat>.json`, `commits.json`, `readme.json`)
 **Rides** `cti-verticals-sync.yml` (Mon 07:30 UTC, PR + auto-merge +
 self-deploy, smoke-tested at `/data/mmd/index.json`). To rebuild:
 `node scripts/build-mmd-manifest.mjs`.
+
+## PromptIntel — IoPC taxonomy + prompt/agent intelligence (pi_*)
+
+Upstream is now **SecurityBreak**, not NovaHunting: `api.promptintel.novahunting.ai`
+301-redirects to `api.promptintel.securitybreak.io`. The old base only exposed 4
+of ~40 documented endpoints; the current API is described at
+`https://promptintel.securitybreak.io/docs/api` (`openapi.json`, `llms-full.txt`).
+
+The Community plan allows **100 requests/day**, with 5 full prompt reads, 5
+indicator checks, 10 scans and 20 file-hash lookups a day — all per account.
+Two serving tiers keep that quota intact:
+
+- **Mirror (keyless, no quota, no upstream hop).** `scripts/sync-promptintel.mjs`
+  crawls the public `/taxonomy/` pages (robots `Allow: /`) into
+  `public/data/promptintel/`: 9 domains, 35 techniques, 6 frameworks and a flat
+  308-row `entry → framework:ref` mapping table in `index.json`. Only metadata
+  is mirrored — no attack text, agent-threat prose or NOVA rules. Weekly sync
+  rides `ai-security-verticals-sync.yml`. `stats` compares the mirror version
+  with the public `/iopc/latest.json` so drift is loud, not silent.
+- **Live (keyed, cached).** `PROMPTINTEL_API_KEY` enables 15 passthrough routes.
+  Quota-sensitive answers go through `kvBackedGet/Put` (L1 Cache API + KV/Upstash
+  L2) so the allowance is shared across colos; a repeated question is free.
+  Upstream 429 headers (`retry-after`, `x-ratelimit-reason`) are forwarded;
+  403 `enterprise_required` and 429 bodies are relayed verbatim. The two POST
+  routes and the quota-spending GETs are in `lib/ratelimit.ts` strict buckets.
+  The hourly warm now spends **zero** keyed requests.
+
+**Files**: `api/src/routes/promptintel.ts` (21 routes under `/api/v1/promptintel/*`),
+`worker/lib/promptintel-manifest.ts` (+ `.test.ts`, 15 tests, `api/` symlink),
+`worker/mcp-tools/identity-osint.ts` (10 `pi_*` tools; the 3 mirror-backed ones
+are also in `api/src/lib/agent/mcp-bridge.ts`), `src/pages/threatintel/PromptIntel.tsx`
+at `/threatintel/promptintel` (Taxonomy / Translate / Prompts / Agent feed / Check),
+`api/test/routes/promptintel.test.ts` (12 tests), `scripts/sync-promptintel.test.mjs`
+(7 parser tests). To rebuild: `node scripts/sync-promptintel.mjs`.
+
+## Global Hack Map — patch layer
+
+`GET https://globalhackmap.vercel.app/api/patch` is a **public** feed (REA browser
+capture confirmed the live site fetches it and renders "Patch now"). The mirror
+in `scripts/sync-ghm-feed.mjs` now also writes
+`public/data/global-hack-map/patches.json` — 14 advisories with `who` (affected
+population), concrete `fix`, KEV date, EPSS, CVSS and news count — and the SPA's
+`PatchDock` shows those instead of bare CVE ids. The feed step is optional: a
+transient 5xx warns but never discards the incident mirror.
+
+The other GHM API routes are **not** mirrorable: `/api/research` needs Valyu
+OAuth; `/api/brief`, `/api/check` and `/api/track` are POST-only browser-context
+endpoints (the SPA has local equivalents). Incident-page ld+json omits status /
+type / records / location, so the RSS mirror remains the map's backbone.
+Candidate layers already in this platform's corpora: ThreatCluster victims,
+ransomware-group origins, OffSeq exploitation flags and CTIWatch actors/victims.

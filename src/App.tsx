@@ -107,6 +107,7 @@ const Denali = lazy(() => import('./pages/threatintel/Denali'));
 const OrcaIncidents = lazy(() => import('./pages/threatintel/OrcaIncidents'));
 const AgenticAttacks = lazy(() => import('./pages/threatintel/AgenticAttacks'));
 const AtomicRedTeam = lazy(() => import('./pages/threatintel/AtomicRedTeam'));
+const PromptIntel = lazy(() => import('./pages/threatintel/PromptIntel').then((m) => ({ default: m.PromptIntel })));
 const HackingIncidents = lazy(() => import('./pages/threatintel/HackingIncidents'));
 const OffsecHarnesses = lazy(() => import('./pages/threatintel/OffsecHarnesses'));
 const Kitploit = lazy(() => import('./pages/threatintel/Kitploit'));
@@ -645,6 +646,7 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/threatintel/orca', Component: OrcaIncidents },
   { path: '/threatintel/agentic-attacks', Component: AgenticAttacks },
   { path: '/threatintel/atomic-red-team', Component: AtomicRedTeam },
+  { path: '/threatintel/promptintel', Component: PromptIntel },
   { path: '/threatintel/hacking-incidents', Component: HackingIncidents },
   { path: '/threatintel/offsec-harnesses', Component: OffsecHarnesses },
   { path: '/threatintel/kitploit', Component: Kitploit },

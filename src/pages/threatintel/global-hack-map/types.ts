@@ -124,6 +124,36 @@ export interface GhmIncidentFeed {
   incidents: GhmIncident[];
 }
 
+export interface GhmPatch {
+  key: string;
+  vendor: string | null;
+  product: string | null;
+  cves: string[];
+  exploited: boolean;
+  ransomware: boolean;
+  newsCount: number;
+  kevAdded: string | null;
+  epss: number | null;
+  cvss: number | null;
+  domain: string | null;
+  title: string;
+  who: string;
+  fix: string;
+  explained: boolean;
+  url: string;
+}
+
+/** Mirror of public/data/global-hack-map/patches.json (GHM public /api/patch). */
+export interface GhmPatchFeed {
+  generatedAt: string;
+  upstream: { site: string; endpoint: string; note: string };
+  count: number;
+  exploited: number;
+  ransomware: number;
+  inKev: number;
+  patches: GhmPatch[];
+}
+
 /** Flat row for the Malware / Outages live lists. */
 export interface GhmFeedRow {
   id: string;

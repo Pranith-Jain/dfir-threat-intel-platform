@@ -1,0 +1,1 @@
+../../../worker/lib/promptintel-manifest.ts

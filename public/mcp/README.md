@@ -1,6 +1,6 @@
 # DFIR-ThreatIntel MCP - tool catalog
 
-**454 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
+**462 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
 
 ## Quick start
 
@@ -14,7 +14,7 @@
 
 ## Tools by category
 
-### other (337)
+### other (345)
 
 - `aad_attack_coverage` - Return the consolidated ATT&CK Navigator layer: 124 techniques scored by how many rules name each one, with the rule descriptions in the comments. Identifies which attacker techniques are best covered by agentic attack detections.
 - `aad_get_framework` - Return one agentic attack framework: coverage counts, ATT&CK techniques with rule-count scores, sourced indicators (value, confidence, context, publication) and an upstream deep link. Use aad_list_frameworks first to discover slugs.
@@ -230,8 +230,16 @@
 - `pcm_search_items` - Search items within a PCMedicalist digest body. Filters against the mirrored top-items per layer (capped): filter by layer id, keyword, CVE, or limit.
 - `pcm_stats` - Return cache + manifest stats for the PCMedicalist feed: digest counts, latest date, and LRU body-cache hit/miss ratios.
 - `phone_osint` - Investigate a phone number — E.164 parsing, carrier/line-type detection, country lookup, messaging platform checks (WhatsApp/Telegram), breach exposure, and Google dorks. Returns structured JSON with parsed phone details, lookup URLs, and security flags.
-- `pi_get_entry` - Retrieve a single IoPC taxonomy entry (e.g. IOPC-T1.001 or IOPC-R012) with framework mappings and relationships. Requires server-side PROMPTINTEL_API_KEY.
-- `pi_search_prompts` - Search the PromptIntel Indicators-of-Prompt-Compromise feed: adversarial AI prompts with severity and category filters. Requires server-side PROMPTINTEL_API_KEY.
+- `pi_agent_feed` - The PromptIntel agent-protection feed: curated, approved protections (category, severity, action, IoPC technique) with an expiry and a fingerprint to enforce. Community keys get titles plus a description preview with indicators withheld.
+- `pi_check_indicator` - Check whether a URL, domain, IP, SHA-256, file path or skill/MCP name is a known PromptIntel indicator. COSTLY — Community allows 5 values a day per key; the verdict is cached for 24h. A miss is not a clean result.
+- `pi_get_entry` - Retrieve one IoPC entry (technique IOPC-T1.001 or registry IOPC-R012) with its description, maturity/evidence status and every framework mapping. Served from the local mirror — no key or quota needed.
+- `pi_get_prompt` - Read one PromptIntel prompt in full: attack text, follow-up steps and its NOVA detection rule. COSTLY — the Community plan allows 5 full prompt reads a day per account; the answer is cached for 12h, so a repeat is free.
+- `pi_lookup_file_hashes` - Look up malicious agent files by SHA-256 (SKILL.md bundles, AGENTS.md, CLAUDE.md, .cursorrules, MCP configs). COSTLY — Community allows 20 hash lookups a day; results are cached per hash for 24h. A known hash comes with title/kind/severity only on Community.
+- `pi_quota` - What the PromptIntel key has left today, limit by limit (requests, prompt reads, checks, scans, hash lookups). Never cached — call it after a 429.
+- `pi_scan` - Scan a skill, MCP server or A2A agent for prompt-compromise risk from its address or manifest. COSTLY — Community allows 10 scans a day per key. Send the JSON body documented at promptintel.securitybreak.io/docs/api.
+- `pi_search_prompts` - Search the PromptIntel adversarial-prompt feed (approved prompts with severity, category and IoPC technique filters). The list omits attack text on the Community plan; read one with pi_get_prompt. Requires server-side PROMPTINTEL_API_KEY.
+- `pi_taxonomy` - List IoPC (Indicators of Prompt Compromise) techniques: 35 techniques across 9 domains, mapped to OWASP LLM, OWASP Agentic, MITRE ATLAS, Google SAIF, CSA AARM and NIST AI RMF. Served from the local mirror — no PromptIntel key or quota needed.
+- `pi_translate` - Translate an AI-security framework item into the other frameworks (e.g. OWASP_LLM LLM01 → MITRE ATLAS AML.T0051). The link is derived through the IoPC techniques both items map to, and `via` names them. Also answers the inverse: which IoPC techniques sit behind one framework item.
 - `poc_scan` - Search GitHub for public exploit/PoC repositories for a CVE. Returns repo URLs, star counts, language, age, and whether the repo has actual code. Bypasses GitHub 1000-result limit via monthly pagination.
 - `proc_list_rules` - List learned procedure-extraction rules (analyst corrections promoted to guardrails): technique-grounding, exploit-mapping, provenance. Optionally rank by relevance to a report excerpt. Upstream design: netandneedle/procedure-extraction-pipeline (Apache-2.0).
 - `ransom_group_get` - Return one ransomware group: victim counts, last seen, leak-site mirrors (.onion needs Tor), victim sample, abridged profile meta. Use ransom_groups_list first to discover slugs.
