@@ -71,7 +71,7 @@ var BASIS={stated:"stated by the source",inferred:"inferred by "+AI_BY,keyword:"
 function basisNote(list,k){var b=k==="layer"?"layerBasis":"secgBasis",c={stated:0,inferred:0,keyword:0};list.forEach(function(e){if(own(c,e[b]))c[e[b]]++;});
   return (k==="layer"?"Attack surface":"Sector")+": "+c.stated+" "+BASIS.stated+", "+c.inferred+" "+BASIS.inferred+", "+c.keyword+" keyword-assigned from the wording (can be wrong).";}
 function basisEl(list,k){var p=el("p","cav basis",basisNote(list,k));p.dataset.basis=k;return p;}
-var BUILD={version:"1.79",date:"2026-11-25"};
+var BUILD={version:"1.80",date:"2026-11-25"};
 var viz={lane:"layer",mat:"layer"};
 var kev=[],ripples=null;
 function own(o,k){return typeof k==="string"&&Object.prototype.hasOwnProperty.call(o,k);}
@@ -1095,6 +1095,7 @@ function card(e,open){
       if(r.url){var ra=el("a",null,"Open the report");ra.href=safeUrl(r.url);ra.target="_blank";ra.rel="noopener noreferrer";rv.appendChild(ra);}
       b.appendChild(rv);
     }
+    safe("cve links",function(){var cl=cveLinks(e);if(cl)b.appendChild(cl);});
     var vv=e.val?VAL[e.val.state]:["Not yet checked","v-warn","The validation pass has not reached this event yet."];
     b.appendChild(el("small","aiby","Researched and written by "+AI_BY+" from the sources listed, under CyberView's published rules."));
     if(e.claimCheck)b.appendChild(claimNode(e.claimCheck));
@@ -1138,7 +1139,6 @@ function card(e,open){
     if(rep.id===e.id)b.appendChild(reportForm(e));
     if(e.hunt.length){var hs=el("div","srcs");hs.appendChild(el("span",null,"Detection resources ("+e.hunt.length+"):"));
       e.hunt.forEach(function(x){var l=el("a",null,x.name+" ("+x.fmt+")");l.href=safeUrl(x.url);l.target="_blank";l.rel="noopener noreferrer";hs.appendChild(l);});b.appendChild(hs);}
-    if(e.cves.length&&(e.kev||e.category==="vuln")){var wk=el("p","mono");var wa=el("a",null,"Open on the Vulnerabilities page: am I affected, and how to fix");wa.href="vulnerabilities.html#"+encodeURIComponent(e.cves[0]);wk.appendChild(wa);b.appendChild(wk);}
     if(e.attr){var ab=el("div","todo attr");ab.appendChild(el("h4",null,"Attribution"));
       ab.appendChild(el("p",null,"Attributed to "+e.attr.actor+(e.attr.origin?", said to operate from "+e.attr.origin:"")+", by "+e.attr.by+" ("+(e.attr.byType==="government"?"a government body":"the investigating firm")+")."));
       ab.appendChild(el("p","mono","Attribution is a judgement by the named body, not a CyberView finding, and can be disputed."));
@@ -1152,6 +1152,36 @@ function card(e,open){
     a.appendChild(b);
   }
   li.appendChild(a);return li;
+}
+/* Every CVE a write-up calls out, from its CVE list and from the text itself (title, summary, impact, advice, the reviewed
+   report's findings and recommendations), each with its records: the CVE.org record, the NVD record, CISA's known-exploited
+   catalog when CISA lists it, and CyberView's own "am I affected, how do I fix" check. Ids are validated before any link is
+   built; nothing from the record is used as a URL. */
+var CVE_RE=/\bCVE-\d{4}-\d{4,7}\b/gi;
+function cvesOf(e){
+  var out=[],seen={},from={};
+  function add(c,txt){c=String(c||"").toUpperCase();if(!/^CVE-\d{4}-\d{4,7}$/.test(c)||seen[c])return;seen[c]=1;out.push(c);if(txt)from[c]=1;}
+  e.cves.forEach(function(c){add(c);});e.cveMeta.forEach(function(c){add(c.id);});
+  var r=e.report||{};[e.title,e.summary,e.impact,e.action,e.plain,e.exec].concat(r.findings||[],r.recs||[]).forEach(function(t){(String(t||"").match(CVE_RE)||[]).forEach(function(c){add(c,true);});});
+  return {ids:out.slice(0,12),fromText:from};
+}
+function cveLinks(e){
+  var got=cvesOf(e),ids=got.ids;if(!ids.length)return null;
+  var meta={};e.cveMeta.forEach(function(c){meta[String(c.id).toUpperCase()]=c;});
+  var listed={};kev.forEach(function(k){if(k&&k.cve)listed[String(k.cve).toUpperCase()]=k;});
+  var n=ids.length,box=el("div","todo cvl");box.appendChild(el("h4",null,n===1?"Vulnerability named in this report":"Vulnerabilities named in this report ("+n+")"));
+  ids.forEach(function(c){
+    var row=el("div","cvrow");row.appendChild(el("span","cvid",c));
+    function out(a){a.target="_blank";a.rel="noopener noreferrer";row.appendChild(a);return a;}
+    var a1=el("a",null,"CVE record");a1.href="https://www.cve.org/CVERecord?id="+c;out(a1);
+    var a2=el("a",null,"NVD record");a2.href="https://nvd.nist.gov/vuln/detail/"+c;out(a2);
+    var m=meta[c],k=listed[c];
+    if((m&&m.kev)||k){var a3=el("a",null,"CISA known-exploited entry"+((m&&m.due)?" (due "+fmtDay(m.due)+")":""));a3.href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve="+c;out(a3);}
+    var a4=el("a",null,"Am I affected? How to fix");a4.href="vulnerabilities.html#"+c;row.appendChild(a4);
+    if(got.fromText[c]&&e.cves.indexOf(c)<0)row.appendChild(el("span","cvtxt","named in the text"));
+    box.appendChild(row);
+  });
+  return box;
 }
 function openSource(e){if(!e||!e.sources.length)return;try{window.open(e.sources[0].url,"_blank","noopener,noreferrer");}catch(x){}}
 function reportForm(e){

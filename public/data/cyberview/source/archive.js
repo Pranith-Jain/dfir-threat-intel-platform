@@ -3,8 +3,8 @@
 (function () {
   "use strict";
   var CAT = { incident: "Incident", vuln: "Patch / advisory", report: "Threat report", policy: "Law and policy", enforcement: "Law enforcement", investment: "Investment", outage: "Outage" };
-  var PAGE = 60;
-  var rows = [], shown = PAGE, months = {}, OPEN = "", $ = function (id) { return document.getElementById(id); };
+  var PAGE = 50;
+  var rows = [], page = 0, months = {}, OPEN = "", $ = function (id) { return document.getElementById(id); };
 
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = String(text); return n; }
   function safeUrl(u) { return /^https?:\/\//i.test(String(u || "")) ? String(u) : ""; }
@@ -24,7 +24,7 @@
       readHash(); recent(); render();
       safe("summary figures", kpis);
       $("recentAll").addEventListener("click", function () { recentAll = !recentAll; if (!recentAll && location.hash === "#recent") history.replaceState(null, "", location.pathname + location.search); recent(); });
-      window.addEventListener("hashchange", function () { readHash(); render(); });
+      window.addEventListener("hashchange", function () { readHash(); page = 0; render(); });
       // a link to one event (archive.html#q=<id>) opens it straight away
       var q = $("q").value.trim(), hit = rows.filter(function (r) { return r.id === q; })[0];
       if (hit) openEvent(hit, true);
@@ -44,14 +44,19 @@
   function render() {
     var list = rows.filter(matches), box = $("list");
     box.textContent = "";
-    $("count").textContent = list.length + " event" + (list.length === 1 ? "" : "s") + (list.length > shown ? ", showing " + shown : "");
+    // pages, not "Show more" (owner, 2026-11-25): the same Previous / Page n of N / Next as the Vulnerabilities list
+    var pages = Math.max(1, Math.ceil(list.length / PAGE)); page = Math.min(Math.max(0, page | 0), pages - 1);
+    var items = list.slice(page * PAGE, (page + 1) * PAGE);
+    $("count").textContent = list.length + " event" + (list.length === 1 ? "" : "s") + (pages > 1 ? ", " + (page * PAGE + 1) + "\u2013" + (page * PAGE + items.length) + " shown" : "");
     if (!list.length) { box.appendChild(el("li", "empty", "Nothing matches. Clear a filter or try another word.")); }
-    list.slice(0, shown).forEach(function (r) { box.appendChild(rowEl(r)); });
-    $("more").hidden = list.length <= shown;
+    items.forEach(function (r) { box.appendChild(rowEl(r)); });
+    $("pager").hidden = pages <= 1; $("page").textContent = "Page " + (page + 1) + " of " + pages + " (" + PAGE + " per page)";
+    $("prev").disabled = page === 0; $("next").disabled = page >= pages - 1;
     $("clear").hidden = !($("month").value || $("cat").value || $("sev").value || $("claims").checked || $("q").value.trim());
     safe("months", drawMonths);
   }
-  function changed() { shown = PAGE; render(); writeHash(); var v = document.querySelector(".argrid .vlist"); if (v) v.scrollTop = 0; }
+  function changed() { page = 0; render(); writeHash(); var v = document.querySelector(".argrid .vlist"); if (v) v.scrollTop = 0; }
+  function turn(d) { page += d; render(); var v = document.querySelector(".argrid .vlist"); if (v) v.scrollTop = 0; }
   /* "Recently filed": events research added in the last 48 hours that happened earlier (more than 36 hours before they
      were filed). The map's "Just added" shows only new events; these are routed here instead, with both dates. */
   var FILED_H = 48, LATE_H = 36, RECENT_FEW = 5, recentAll = false;
@@ -134,10 +139,24 @@
     var cc = cleanClaimCheck(e.claim_check); if (cc) box.appendChild(claimNode(cc));
     if (e.action) { var p = el("p", full ? "aract" : null); p.appendChild(el("strong", null, "What to do: ")); p.appendChild(document.createTextNode(e.action)); box.appendChild(p); }
     if (e.actor) box.appendChild(el("p", null, "Actor: " + e.actor));
-    var cves = (r.cves || []).filter(function (c) { return /^CVE-\d{4}-\d{4,7}$/.test(c); });
-    if (full && cves.length) {
-      box.appendChild(el("h3", null, "Vulnerabilities"));
-      var cp = el("p", "arcves"); cves.slice(0, 12).forEach(function (c) { var a = el("a", "pill", c); a.href = "vulnerabilities.html#" + c; cp.appendChild(a); }); box.appendChild(cp);
+    // every CVE the record names (its CVE list and the text), each with its records: CVE.org, NVD, CISA's known-exploited
+    // catalog when the record says CISA lists it, and CyberView's own check. Ids are validated before a link is built.
+    var cves = [], seen = {}, kevd = {};
+    function addCve(c) { c = String(c || "").toUpperCase(); if (/^CVE-\d{4}-\d{4,7}$/.test(c) && !seen[c]) { seen[c] = 1; cves.push(c); } }
+    (r.cves || []).concat(e.cves || []).forEach(addCve);
+    (Array.isArray(e.cve_meta) ? e.cve_meta : []).forEach(function (m) { if (m && typeof m === "object") { addCve(m.id); if (m.kev === true) kevd[String(m.id).toUpperCase()] = 1; } });
+    [e.title, e.summary, e.impact, e.action].forEach(function (t) { (String(t || "").match(/\bCVE-\d{4}-\d{4,7}\b/gi) || []).forEach(addCve); });
+    if (cves.length) {
+      box.appendChild(el("h3", null, cves.length === 1 ? "Vulnerability named" : "Vulnerabilities named (" + cves.length + ")"));
+      cves.slice(0, 12).forEach(function (c) {
+        var row = el("div", "cvrow"); row.appendChild(el("b", null, c));
+        var ln = el("p", "reclinks");
+        var a1 = el("a", null, "CVE record"); a1.href = "https://www.cve.org/CVERecord?id=" + c; a1.target = "_blank"; a1.rel = "noopener noreferrer"; ln.appendChild(a1);
+        var a2 = el("a", null, "NVD record"); a2.href = "https://nvd.nist.gov/vuln/detail/" + c; a2.target = "_blank"; a2.rel = "noopener noreferrer"; ln.appendChild(a2);
+        if (kevd[c]) { var a3 = el("a", null, "CISA known-exploited entry"); a3.href = "https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=" + c; a3.target = "_blank"; a3.rel = "noopener noreferrer"; ln.appendChild(a3); }
+        var a4 = el("a", null, "Am I affected? How to fix"); a4.href = "vulnerabilities.html#" + c; ln.appendChild(a4);
+        row.appendChild(ln); box.appendChild(row);
+      });
     }
     var src = (e.sources || []).filter(function (s) { return s && safeUrl(s.url); });
     if (src.length) {
@@ -257,6 +276,7 @@
     else if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey && !typing) { e.preventDefault(); $("q").focus(); }
   });
   var rz; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(paneSync, 120); });
-  $("more").addEventListener("click", function () { shown += PAGE; render(); });
+  $("prev").addEventListener("click", function () { turn(-1); });
+  $("next").addEventListener("click", function () { turn(1); });
   load();
 })();

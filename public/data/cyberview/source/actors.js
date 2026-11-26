@@ -139,6 +139,8 @@
     var foot = el("p", "afoot");
     if (p.first) foot.appendChild(document.createTextNode("On file " + (p.first === p.last ? fmt(p.first) : fmt(p.first) + " to " + fmt(p.last)) + ". "));
     var aa = el("a", null, "Search the archive for " + p.name); aa.href = "archive.html#q=" + encodeURIComponent(p.name); foot.appendChild(aa);
+    // the same group in the Library's actor catalogue (ORKL: aliases, tools, the reports that name it), found by name or alias
+    var lb = el("a", null, "Its record in the actor catalogue"); lb.href = "library.html#tab=actors&q=" + encodeURIComponent(p.name); foot.appendChild(document.createTextNode(" · ")); foot.appendChild(lb);
     var pl = el("a", "aperm", "Link to this profile"); pl.href = "#a=" + encodeURIComponent(p.id); foot.appendChild(document.createTextNode(" · ")); foot.appendChild(pl);
     body.appendChild(foot);
     return d;

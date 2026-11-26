@@ -16,13 +16,14 @@
 <body>
 <header class="bar">
   <a class="brand" href="./"><img src="logo.svg" alt="" width="26" height="26">CyberView</a>
-  <nav class="sitenav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="tools.html">Tools</a><a href="archive.html">Archive</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html">Community</a><a href="status.html">Status</a><a href="library.html" aria-current="page">Library</a><a href="about.html">About</a></nav>
+  <nav class="sitenav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="tools.html">Tools</a><a href="library.html" aria-current="page">Library</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html">Community</a><a href="status.html">Status</a><a href="about.html">About</a></nav>
   <span class="spacer"></span>
   <button type="button" class="navbtn" id="navBtn" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 </header>
-<div class="navsheet" id="navSheet" hidden role="dialog" aria-modal="true" aria-label="Menu"><div class="sheethead">CyberView<button type="button" class="sheetclose" id="navClose" aria-label="Close menu">&times;</button></div><nav class="sheetnav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="tools.html">Tools</a><a href="archive.html">Archive</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html">Community</a><a href="status.html">Status</a><a href="library.html" aria-current="page">Library</a><a href="about.html">About</a></nav></div>
+<div class="navsheet" id="navSheet" hidden role="dialog" aria-modal="true" aria-label="Menu"><div class="sheethead">CyberView<button type="button" class="sheetclose" id="navClose" aria-label="Close menu">&times;</button></div><nav class="sheetnav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="tools.html">Tools</a><a href="library.html" aria-current="page">Library</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html">Community</a><a href="status.html">Status</a><a href="about.html">About</a></nav></div>
 <main class="ar">
   <div class="arview">
+  <nav class="libnav" id="libnav" aria-label="Library sections"><a href="library.html#tab=reports" id="tabReports" aria-current="page">Reports<span class="n" id="repN"></span></a><a href="library.html#tab=actors" id="tabActors">Actor catalogue<span class="n" id="actN"></span></a><a href="actors.html">Actors in events</a><a href="archive.html">Event archive</a></nav>
   <section class="intro phead">
     <div>
       <h1>The threat-report library</h1>
@@ -31,11 +32,7 @@
     <span class="hl"></span>
     <form class="psearch" id="qform" role="search"><label><span class="sr-only">Search the library</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Report title, actor, alias" autocomplete="off" spellcheck="false"><kbd>/</kbd></label></form>
   </section>
-  <div class="wbtabs" id="tabs" role="tablist" aria-label="Library view">
-    <button type="button" id="tabReports" role="tab" aria-selected="true" aria-controls="repGrid">Reports<span class="n" id="repN"></span></button>
-    <button type="button" id="tabActors" role="tab" aria-selected="false" aria-controls="actView">Threat actors<span class="n" id="actN"></span></button>
-  </div>
-  <div class="vgrid argrid" id="repGrid" role="tabpanel" aria-labelledby="tabReports">
+  <div class="vgrid argrid" id="repGrid">
     <div class="vrail">
       <form class="filters" id="filters" aria-label="Filter the reports">
         <label><span>Source</span><select id="source"><option value="">All sources</option></select></label>
@@ -52,7 +49,7 @@
     <div class="vlist" tabindex="-1">
       <p class="count" id="count"></p>
       <ol class="list" id="list"></ol>
-      <button type="button" class="btn ghost more" id="more" hidden>Show more</button>
+      <div class="wbacts pager" id="repPager" hidden><button type="button" class="btn" id="repPrev">Previous</button><span class="note" id="repPage"></span><button type="button" class="btn" id="repNext">Next</button></div>
     </div>
     <aside class="vdet" id="pane" aria-label="Report details">
       <div class="vdbar"><span class="vdtitle"></span><button type="button" class="vdclose" aria-label="Close the details">Close</button></div>
@@ -60,13 +57,28 @@
       <div class="vdc more-info" id="det"></div>
     </aside>
   </div>
-  <section id="actView" role="tabpanel" aria-labelledby="tabActors" hidden>
-    <div class="vlist actvlist" tabindex="-1">
+  <div class="vgrid argrid" id="actView" hidden>
+    <div class="vrail">
+      <form class="filters" id="actFilters" aria-label="Filter the actors">
+        <label><span>Catalogue</span><select id="actSrc"><option value="">All catalogues</option></select></label>
+        <label class="check"><input id="actHas" type="checkbox"> Only actors with reports in the library</label>
+      </form>
+      <section class="panel" aria-labelledby="actAboutHead">
+        <h2 id="actAboutHead">About the actor catalogue</h2>
+        <p class="note">Threat-actor entries ORKL keeps from MITRE ATT&amp;CK, ETDA, MISP Galaxy and Secureworks, with their aliases and tools. Open an actor to see its record, the reports in the library that name it and its ORKL profile.</p>
+      </section>
+    </div>
+    <div class="vlist" tabindex="-1">
       <p class="count" id="actCount"></p>
       <ol class="list" id="actList"></ol>
-      <button type="button" class="btn ghost more" id="actMore" hidden>Show more</button>
+      <div class="wbacts pager" id="actPager" hidden><button type="button" class="btn" id="actPrev">Previous</button><span class="note" id="actPage"></span><button type="button" class="btn" id="actNext">Next</button></div>
     </div>
-  </section>
+    <aside class="vdet" id="actPane" aria-label="Actor record">
+      <div class="vdbar"><span class="vdtitle"></span><button type="button" class="vdclose" aria-label="Close the record">Close</button></div>
+      <p class="vdempty">Pick an actor to see its aliases, tools, the reports in the library that name it and its profile on ORKL.</p>
+      <div class="vdc more-info" id="actDet"></div>
+    </aside>
+  </div>
   </div>
   <section class="downloads">
     <div>

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-25T19:08:07.160Z",
+  "generatedAt": "2026-11-26T02:23:55.456Z",
   "upstream": {
     "site": "https://tldrcve.com",
     "list": "https://tldrcve.com/cves/",
@@ -8,12 +8,12 @@
     "scale": "https://tldrcve.com/how-we-rate/"
   },
   "stats": {
-    "cves": 46,
-    "details": 46,
-    "versions": 46,
+    "cves": 48,
+    "details": 48,
+    "versions": 47,
     "byVerdict": {
-      "Patch now": 19,
-      "Patch now if…": 23,
+      "Patch now": 20,
+      "Patch now if…": 24,
       "Next cycle": 4
     }
   },
@@ -1920,6 +1920,193 @@
       }
     },
     {
+      "slug": "geoserver-chain",
+      "name": "GeoServer chain",
+      "meta": "GeoServer · 6 CVEs",
+      "line": "Public exploit, no login, default setup. Probes seen.",
+      "verdict": "Patch now",
+      "scareLevel": 3.3,
+      "meterLabel": "Drop everything",
+      "disclosed": "2026-11-23",
+      "url": "https://tldrcve.com/geoserver-chain/",
+      "detail": {
+        "slug": "geoserver-chain",
+        "kicker": "GeoServer · 6 CVEs",
+        "name": "GeoServer chain",
+        "verdict": "Patch now",
+        "verdictHint": "Public exploit, no login, default setup. Probes seen.",
+        "summary": "",
+        "meterLabel": "Drop everything",
+        "meterHint": "Attackers are already on it. Patch now.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1,10,11,13"
+          },
+          {
+            "yes": true,
+            "text": "✓ Public exploit code is out 10"
+          },
+          {
+            "yes": true,
+            "text": "✓ Attacks seen in the wild 12,13,14,11"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 16"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "GeoServer, not updated",
+            "hint": null,
+            "body": "Affected: 2.27.6 and earlier, 2.28.0 to 2.28.5, and 3.0.0 to 3.0.1; 2.27.7, 2.28.6 and 3.0.2 are fixed. 2.26 and older are affected and have no fixed release. To see your version, log in to the web admin and open the About GeoServer page: Build Information lists it. 1,2,3,4,5,19,17,15",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "WFS and admin are reachable",
+            "hint": null,
+            "body": "The attack starts with an anonymous WFS request and then acts as admin: CryptoCat lists network access to WFS and the REST API as the preconditions, and for Eye Security's last step (CVE-2026-120704) GeoServer's advice is to restrict both the web admin console and the REST API, so blocking REST alone doesn't rule you out. GeoServer's default rules limit creating stored queries to admins, which the x/WFS bug skips, and rememberme is one of the login filters GeoServer sets up by default. CryptoCat and Eye Security say their chains work on a default installation with no configuration changes; watchTowr agrees. The public exploit targets the stock admin account, which is enabled by default. The public exploit needs a Linux server; Eye Security says its route also works on Windows. 3,6,10,11,13,15,18",
+            "code": []
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update GeoServer",
+            "hint": null,
+            "body": "3.0.2 (stable), 2.28.6 (maintenance) or 2.27.7. GeoServer announced all three on 19 Oct 2026, more than a month before the advisories went public on 23 Nov; the researcher dates 2.28.6 to 2 Nov. 2.27 is end-of-life: GeoServer says to apply 2.27.7 as a mitigation only and plan a move to 2.28 or 3.0. Unless GEOSERVER_REMEMBERME_KEY is set, fixed releases make a new random remember-me key each time they start, so remember-me cookies stop working after the update and after every restart. In a cluster, set it to the same long value on every node; then that key is used and restarts don't change it. If you suspect exposure, GeoServer says to change admin passwords. 1,7,8,9,11,13,18,20 Latest safe versions checked 26 Nov GeoServer → 3.0 3.0.2 2.28 2.28.6 2.27 2.27.7 GeoServer 2.26 and older are end-of-life and get no fixes: move to 3.0 or 2.28.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "If you can't update yet",
+            "hint": null,
+            "body": "GeoServer's stopgaps: block requests whose service parameter contains / , in the query string or in the service attribute of an XML request, at a proxy in front of GeoServer; remove rememberme from the web filter chain (Security > Authentication); limit the REST API's /rest/resource and /rest/security endpoints to trusted networks; disable WFS if you don't need it; and don't install JDBC drivers you don't need, such as SQLite, which Eye Security's route relies on. Changing the remember-me key alone doesn't help, because the same file read reveals the new key. 1,2,3,4,6",
+            "code": []
+          },
+          {
+            "num": "3",
+            "title": "Look for signs",
+            "hint": null,
+            "body": "Check the data directory's wfs/query and workspaces/*/wfs/query folders for stored queries you didn't create; the probes watchTowr saw create stored queries. watchTowr also suggests looking for unexpected JDBC user or role services, database files in the data directory you didn't upload and admin sessions created through remember-me cookies. The public exploit deletes its stored query, JDBC service and staging folder when it's done, and Eye Security's route uses the built-in GetFeatureById stored query and creates none, so a clean result doesn't prove nothing happened. If you find signs, change admin passwords; we would also treat the server as taken over, since the exploit runs commands as the GeoServer process, which is root in the official Docker image it was tested on. 1,2,3,10,12,13,15",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://github.com/geoserver/geoserver/security/advisories/GHSA-hgm3-wq4h-8vvq",
+            "title": "GeoServer GHSA-hgm3-wq4h-8vvq: CVE-2026-129245, default remember-me key, the five-step chain, fixes and stopgap",
+            "date": "23 Nov"
+          },
+          {
+            "url": "https://github.com/geoserver/geoserver/security/advisories/GHSA-39mw-5chv-jh47",
+            "title": "GeoServer GHSA-39mw-5chv-jh47: CVE-2026-120705, file read and SSRF with no login, CVSS 8.6",
+            "date": "23 Nov"
+          },
+          {
+            "url": "https://github.com/geoserver/geoserver/security/advisories/GHSA-rv5g-g2r9-58rj",
+            "title": "GeoServer GHSA-rv5g-g2r9-58rj: CVE-2026-129243, x/WFS skips service security, default stored query rule, proxy block",
+            "date": "23 Nov"
+          },
+          {
+            "url": "https://github.com/geoserver/geoserver/security/advisories/GHSA-9wf2-fcgq-vxhq",
+            "title": "GeoServer GHSA-9wf2-fcgq-vxhq: CVE-2026-129242, admin code execution through JDBC user services",
+            "date": "23 Nov"
+          },
+          {
+            "url": "https://github.com/geoserver/geoserver/security/advisories/GHSA-4v26-c537-jvxc",
+            "title": "GeoServer GHSA-4v26-c537-jvxc: CVE-2026-129244, data directory path disclosed",
+            "date": "23 Nov"
+          },
+          {
+            "url": "https://github.com/geoserver/geoserver/security/advisories/GHSA-wc3v-48j7-xf57",
+            "title": "GeoServer GHSA-wc3v-48j7-xf57: CVE-2026-120704, admin code execution through SQLite JDBC extension loading",
+            "date": "23 Nov"
+          },
+          {
+            "url": "https://geoserver.org/announcements/vulnerability/2026/10/19/geoserver-3-0-2-released.html",
+            "title": "GeoServer 3.0.2 release: security fixes, announced 19 Oct 2026",
+            "date": "19 Oct"
+          },
+          {
+            "url": "https://geoserver.org/announcements/vulnerability/2026/10/19/geoserver-2-28-6-released.html",
+            "title": "GeoServer 2.28.6 release: security fixes, announced 19 Oct 2026",
+            "date": "19 Oct"
+          },
+          {
+            "url": "https://geoserver.org/announcements/vulnerability/2026/10/19/geoserver-2-27-7-released.html",
+            "title": "GeoServer 2.27.7 release: 2.27 is end-of-life, apply as a mitigation only",
+            "date": "19 Oct"
+          },
+          {
+            "url": "https://github.com/Crypto-Cat/geoserver-unauth-rce-poc",
+            "title": "CryptoCat: public proof of concept for the full chain, runs a command as root on the official 3.0.0 Docker image",
+            "date": "23 Nov"
+          },
+          {
+            "url": "https://cryptocat.me/blog/research/analysis/geoserver_preauth_rce/",
+            "title": "CryptoCat: write-up, preconditions, default install, timeline (2.28.6 on 2 Nov), watchTowr's report",
+            "date": "25 Nov"
+          },
+          {
+            "url": "https://x.com/watchtowrcyber/status/2125547398021693623",
+            "title": "watchTowr on X: in-the-wild exploitation of CVE-2026-120705 and CVE-2026-129243 on its honeypots, error-based probes",
+            "date": "25 Nov"
+          },
+          {
+            "url": "https://watchtowr.com/intelligence/geoserver-cve-2026-129245-faq/",
+            "title": "watchTowr FAQ: \"exploitation attempts are already underway\", table marks only CVE-2026-129245 exploited, default install, checks",
+            "date": "25 Nov"
+          },
+          {
+            "url": "https://news.lavx.hu/article/hackers-exploit-two-geoserver-flaws-as-researchers-warn-of-unauthenticated-rce-chains",
+            "title": "The Hacker News (copy on LavX News): two flaws exploited per watchTowr, chain lists CVE-2026-120704 as last step",
+            "date": "25 Nov"
+          },
+          {
+            "url": "https://labs.eye.security/unauthenticated-remote-code-execution-vulnerability-in-geoserver/",
+            "title": "Eye Security: chain through CVE-2026-120704, default configuration, over 3,000 servers online, About page version check",
+            "date": "24 Nov"
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          },
+          {
+            "url": "https://docs.geoserver.org/latest/en/user/webadmin/about/",
+            "title": "GeoServer docs: About GeoServer page shows build information when logged in",
+            "date": null
+          },
+          {
+            "url": "https://docs.geoserver.org/stable/en/user/security/webadmin/auth/",
+            "title": "GeoServer docs: rememberme is a default login filter, GEOSERVER_REMEMBERME_KEY for clusters",
+            "date": null
+          },
+          {
+            "url": "https://geoserver.org/download/",
+            "title": "GeoServer downloads: 3.0 stable, 2.28 maintenance, 2.27 and older archived",
+            "date": null
+          },
+          {
+            "url": "https://github.com/geoserver/geoserver/pull/10008",
+            "title": "GeoServer PR 10008: remember-me key from GEOSERVER_REMEMBERME_KEY when set, otherwise random per run",
+            "date": null
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-26",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/geoserver-chain/"
+      }
+    },
+    {
       "slug": "sshole",
       "name": "SSHole",
       "meta": "OpenSSH (Alpine) · CVE-2026-123158",
@@ -3447,7 +3634,7 @@
       "url": "https://tldrcve.com/sglang/",
       "detail": {
         "slug": "sglang",
-        "kicker": "SGLang · Release roundup · 6 CVEs",
+        "kicker": "SGLang · 6 CVEs",
         "name": "SGLang RCE",
         "verdict": "Patch now if…",
         "verdictHint": "Exploited, no fix yet. Risky if the port is reachable.",
@@ -4187,6 +4374,185 @@
       }
     },
     {
+      "slug": "nfs2root",
+      "name": "Nfs2root",
+      "meta": "Linux kernel · CVE-2026-99362",
+      "line": "Root, no login, on NFS servers open to untrusted hosts.",
+      "verdict": "Patch now if…",
+      "scareLevel": 2.6,
+      "meterLabel": "Check today",
+      "disclosed": "2026-08-17",
+      "url": "https://tldrcve.com/nfs2root/",
+      "detail": {
+        "slug": "nfs2root",
+        "kicker": "Linux kernel · CVE-2026-99362",
+        "name": "Nfs2root",
+        "verdict": "Patch now if…",
+        "verdictHint": "Root, no login, on NFS servers open to untrusted hosts.",
+        "summary": "",
+        "meterLabel": "Check today",
+        "meterHint": "Find out if you're affected. If you are, patch.",
+        "checklist": [
+          {
+            "yes": true,
+            "text": "✓ Works without logging in 1,2"
+          },
+          {
+            "yes": false,
+            "text": "No attacks seen yet 1,12"
+          },
+          {
+            "yes": false,
+            "text": "Not on CISA's exploited list 12"
+          }
+        ],
+        "affected": [
+          {
+            "num": "1",
+            "title": "Kernel 3.16 or later, unpatched",
+            "hint": "command",
+            "body": "The bug came in with kernel 3.16 (2014). Upstream fixed it in 5.10.275, 5.15.226, 6.1.193, 6.6.163, 6.12.117, 6.18.61, 7.3.2 and 7.4-rc1. Distro kernels backport fixes, so compare with your distro's version under Update. 2,3,4,5,6,7,8,1 uname -r",
+            "code": [
+              "uname -r"
+            ]
+          },
+          {
+            "num": "2",
+            "title": "The kernel NFS server runs",
+            "hint": "command",
+            "body": "Only machines that share files with the kernel's own NFS server (nfsd) are affected; Red Hat says systems that don't act as an NFS server aren't exposed, and default RHEL doesn't run or enable it. A line of output means nfsd is loaded. 1,9 lsmod | grep -w nfsd",
+            "code": [
+              "lsmod | grep -w nfsd"
+            ]
+          },
+          {
+            "num": "3",
+            "title": "NFSv4.1 or later is on",
+            "hint": "command",
+            "body": "The overflow is in NFSv4.1 session handling, and OpenSec and Red Hat both name servers offering NFSv4.1 or 4.2; OpenSec says they're on by default. In the output, +4.1 or +4.2 means this condition is met. 1,2,9 cat /proc/fs/nfsd/versions",
+            "code": [
+              "cat /proc/fs/nfsd/versions"
+            ]
+          },
+          {
+            "num": "4",
+            "title": "Untrusted hosts reach 2049",
+            "hint": "command",
+            "body": "The attacker needs one TCP connection to port 2049, no login and no mounted share: OpenSec calls it pre-auth, and the kernel CVE team says the steps involved skip the export access checks. A listener on any address other than loopback counts, unless a firewall lets only trusted hosts in. 1,2 ss -ltn 'sport = :2049'",
+            "code": [
+              "ss -ltn 'sport = :2049'"
+            ]
+          }
+        ],
+        "actions": [
+          {
+            "num": "1",
+            "title": "Update the kernel and reboot",
+            "hint": null,
+            "body": "Fixed so far: Debian 13 in 6.12.117-1, and Debian 12's optional linux-6.12 kernel in 6.12.117-1~deb12u1. Debian 12's default 6.1 kernel is still listed as vulnerable, although upstream fixed 6.1 in 6.1.193 on 23 Nov. Ubuntu lists its main kernel as vulnerable on every release from 16.04 to 26.10, with fixes in progress for 26.04 (7.0.0-45.45) and 26.10 (7.3.0-12.13); Ubuntu gives no date for them. Red Hat lists RHEL 6 to 10 as affected with no fix yet. On other distros, OpenSec's advice is to install the kernel update that lists CVE-2026-99362. 11,10,9,8,2,1 Latest safe versions checked 24 Nov Linux kernel → Debian 13 6.12.118-1 Debian 12 6.1.192-2 Ubuntu 26.04 7.0.0-44.44 Ubuntu 24.04 6.8.0-151.151 Ubuntu 22.04 5.15.0-204.214 RHEL 10.3 6.12.0-264.20.1.el10_3 RHEL 10.2 6.12.0-211.76.1.el10_2 RHEL 9 5.14.0-687.67.1.el9_8 RHEL 8 4.18.0-553.189.1.el8_10 Ubuntu 26.10: 7.3.0-10.10. Cloud and HWE kernels have their own versions.",
+            "code": []
+          },
+          {
+            "num": "2",
+            "title": "Can't update yet? Close 2049",
+            "hint": "command",
+            "body": "Firewall TCP port 2049 so only trusted hosts, such as your storage network, reach the server; Red Hat's page has firewalld steps. If the machine doesn't need to share files, stop the server with Red Hat's systemctl stop nfs-server and systemctl disable nfs-server ; stopping it ends active NFS sessions. Or, from OpenSec, turn off NFSv4.1 and 4.2 with these lines in /etc/nfs.conf, then restart nfs-server; this turns off pNFS and some 4.2 features. 1,9 [nfsd] vers4.1=n vers4.2=n",
+            "code": [
+              "[nfsd] vers4.1=n vers4.2=n"
+            ]
+          },
+          {
+            "num": "3",
+            "title": "Scan and look for signs",
+            "hint": null,
+            "body": "The free NFS tool anfs added a check on 22 Nov that tells a vulnerable server from a fixed one over the network without triggering the overflow. OpenSec says each attempt leaves kernel warnings from nfsd4_check_resp_size ; also look for kernel oopses naming nfsd4_ , svc_ or call_usermodehelper functions, shells started by kernel workers, and bursts of short NFSv4.1 sessions from one address. The attack is valid NFS, so there is no network signature. 13,1",
+            "code": []
+          },
+          {
+            "num": "4",
+            "title": "Why it isn't Patch now",
+            "hint": null,
+            "body": "It only matters where the kernel NFS server runs with NFSv4.1 or 4.2 and untrusted hosts can reach port 2049; machines that don't serve NFS aren't exposed. On servers that do, treat it as urgent: no login is needed and OpenSec built a root shell from it. OpenSec keeps its exploit private, we found no public exploit code or reports of attacks, and it isn't on CISA's list of exploited bugs. The ratings agree it's severe: the kernel CVE team gives 9.8, Red Hat Critical (a draft 9.8) and Ubuntu Critical. We'd change the verdict to Patch now if exploit code is published or attacks are reported. 1,2,9,10,12",
+            "code": []
+          }
+        ],
+        "sources": [
+          {
+            "url": "https://opensec.in/blog/nfs2root-cve-2026-99362",
+            "title": "OpenSec: Nfs2root write-up, root shell video, exploit private, checks, stopgaps, signs",
+            "date": "25 Nov"
+          },
+          {
+            "url": "https://www.cve.org/CVERecord?id=CVE-2026-99362",
+            "title": "CVE record (kernel CNA): CVE-2026-99362, since 3.16, fixed versions, 9.8 and its reasoning",
+            "date": "23 Nov"
+          },
+          {
+            "url": "https://github.com/torvalds/linux/commit/35ff1a7a7e3835c3e974bc5c45d335897564ceae",
+            "title": "Linux kernel (GitHub mirror): the fix by Jérémy Jean, written 17 Aug",
+            "date": null
+          },
+          {
+            "url": "https://github.com/torvalds/linux/commit/47439bb1635e8dd9245e876c2046b66a9b6f9400",
+            "title": "Linux kernel (GitHub mirror): nfsd-7.4 merge into the main kernel, with the fix",
+            "date": "26 Oct"
+          },
+          {
+            "url": "https://cdn.kernel.org/pub/linux/kernel/v7.x/ChangeLog-7.3.2",
+            "title": "kernel.org: 7.3.2 changelog, includes the fix",
+            "date": "6 Nov"
+          },
+          {
+            "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/ChangeLog-6.18.61",
+            "title": "kernel.org: 6.18.61 changelog, includes the fix",
+            "date": "6 Nov"
+          },
+          {
+            "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/ChangeLog-6.12.117",
+            "title": "kernel.org: 6.12.117 changelog, includes the fix",
+            "date": "10 Nov"
+          },
+          {
+            "url": "https://cdn.kernel.org/pub/linux/kernel/v6.x/ChangeLog-6.1.193",
+            "title": "kernel.org: 6.1.193 changelog, released 23 Nov, includes the fix",
+            "date": null
+          },
+          {
+            "url": "https://access.redhat.com/security/cve/CVE-2026-99362",
+            "title": "Red Hat: Critical, default RHEL doesn't run nfsd, RHEL 6 to 10 affected, no fix, mitigations",
+            "date": null
+          },
+          {
+            "url": "https://ubuntu.com/security/CVE-2026-99362",
+            "title": "Ubuntu: priority Critical, main kernel vulnerable, 26.04 and 26.10 fixes in progress",
+            "date": "25 Nov"
+          },
+          {
+            "url": "https://security-tracker.debian.org/tracker/CVE-2026-99362",
+            "title": "Debian tracker: fixed in Debian 13 6.12.117-1 and linux-6.12 6.12.117-1~deb12u1, Debian 12's 6.1 vulnerable",
+            "date": null
+          },
+          {
+            "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+            "title": "CISA KEV catalog: not listed",
+            "date": null
+          },
+          {
+            "url": "https://github.com/skelsec/anfs/commit/bedc3dd18c79604551b8ccf7196bba4fd2ab2e89",
+            "title": "anfs (GitHub): CVE-2026-99362 check that doesn't trigger the overflow",
+            "date": "22 Nov"
+          }
+        ],
+        "changes": [
+          {
+            "date": "2026-11-26",
+            "text": "Published."
+          }
+        ],
+        "url": "https://tldrcve.com/nfs2root/"
+      }
+    },
+    {
       "slug": "ruby2shell",
       "name": "Ruby2Shell",
       "meta": "Ruby (GitLab +2 more) · CVE-2026-132825",
@@ -4274,7 +4640,7 @@
             "num": "5",
             "title": "Patch before the exploit is out",
             "hint": null,
-            "body": "Veria Labs plans to publish its proof of concept on 25 Nov 2026, or later if major vendors haven't shipped a fix by then. 4",
+            "body": "Veria Labs said it would publish its proof of concept on 25 Nov 2026, or later if major vendors hadn't shipped a fix by then. On 26 Nov 2026 its write-up still said that, and it hadn't published one. 4",
             "code": []
           }
         ],
@@ -4351,6 +4717,10 @@
           }
         ],
         "changes": [
+          {
+            "date": "2026-11-26",
+            "text": "Rechecked: Veria Labs hasn't published its proof of concept yet, though it had planned to on 25 Nov."
+          },
           {
             "date": "2026-11-24",
             "text": "GitLab and Chatwoot shipped fixed releases; GitHub Enterprise Server 3.22.6 updated Ruby without naming this bug. The UTF-8 note now mentions a separate 4 GiB case-conversion bug fixed in the same releases. Added Mastodon and OpenProject backport versions."
@@ -8082,6 +8452,27 @@
       "url": "https://tldrcve.com/versions/envoy/"
     },
     {
+      "slug": "geoserver",
+      "name": "GeoServer",
+      "meta": "1 bug · checked 26 Nov",
+      "nofix": false,
+      "chips": [
+        {
+          "line": "3.0",
+          "version": "3.0.2"
+        },
+        {
+          "line": "2.28",
+          "version": "2.28.6"
+        },
+        {
+          "line": "2.27",
+          "version": "2.27.7"
+        }
+      ],
+      "url": "https://tldrcve.com/versions/geoserver/"
+    },
+    {
       "slug": "ghostscript",
       "name": "Ghostscript",
       "meta": "1 bug · checked 22 Nov",
@@ -8185,7 +8576,7 @@
     {
       "slug": "linux-kernel",
       "name": "Linux kernel",
-      "meta": "4 bugs · checked 24 Nov",
+      "meta": "5 bugs · checked 24 Nov",
       "nofix": true,
       "chips": [
         {
