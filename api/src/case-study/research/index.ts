@@ -22,7 +22,7 @@
 import type { Candidate } from '../types';
 import { extractPage, MAX_PAGES } from './extract';
 import { findCveIds, enrichCves, enrichFromPlatform, topicKeyword, type PlatformFacts } from './enrich';
-import { discoverTopicCorpus, suppliedCveIds, suppliedUrls } from './topic';
+import { discoverTopicCorpus, searchTopicNews, suppliedCveIds, suppliedUrls } from './topic';
 import { renderDossier, type ResearchDossier } from './dossier';
 
 export interface ResearchDeps {
@@ -121,7 +121,13 @@ export async function researchCandidate(deps: ResearchDeps): Promise<ResearchDos
       })
     : { hits: [], cveIds: [] };
 
-  const urls = [...operatorHits.map((h) => h.url), ...evidenceUrls, ...corpus.hits.map((h) => h.url)]
+  // A genuinely new topic has nothing in our corpus. One keyword-scoped news
+  // RSS request is the last resort before the writer gets an empty dossier.
+  // It runs only when discovery found no citable URL, so the common path pays
+  // no extra subrequest.
+  const newsHits = operatorText && corpus.hits.length === 0 && keyword ? await searchTopicNews(keyword, fetchFn) : [];
+  const discovered = [...corpus.hits, ...newsHits];
+  const urls = [...operatorHits.map((h) => h.url), ...evidenceUrls, ...discovered.map((h) => h.url)]
     .filter((u, i, all) => all.indexOf(u) === i)
     .slice(0, MAX_PAGES);
   const cveIds = [
@@ -148,7 +154,7 @@ export async function researchCandidate(deps: ResearchDeps): Promise<ResearchDos
     keyword,
     candidate.type
   ).catch(() => EMPTY_PLATFORM);
-  const platform: PlatformFacts = { ...platformFacts, topicHits: corpus.hits };
+  const platform: PlatformFacts = { ...platformFacts, topicHits: discovered };
 
   // 3. A page that failed is not a source. Keep only readable pages in the
   //    citable list, but record the failures so the writer does not "cite"
@@ -175,7 +181,7 @@ export async function researchCandidate(deps: ResearchDeps): Promise<ResearchDos
     pagesFetched: pageResults.length,
     pagesRead: pages.length,
     cvesEnriched: cveResults.length,
-    corpusHits: corpus.hits.length,
+    corpusHits: discovered.length,
     tookMs: Date.now() - startedAt,
   };
   return dossier;

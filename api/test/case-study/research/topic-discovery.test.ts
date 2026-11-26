@@ -186,6 +186,45 @@ describe('discoverTopicCorpus', () => {
   });
 });
 
+const NEWS_RSS = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel>
+  <item>
+    <title>Novel Topic advisory</title>
+    <link>https://www.bing.com/apiclick.aspx?url=https%3A%2F%2Fvendor.example%2Fadvisory</link>
+    <description>Patch details for the novel topic.</description>
+  </item>
+  <item>
+    <title>NVD record</title>
+    <link>https://nvd.nist.gov/vuln/detail/CVE-2099-0001</link>
+    <description>Canonical record, must be skipped.</description>
+  </item>
+</channel></rss>`;
+
+describe('searchTopicNews', () => {
+  it('parses Bing News RSS into citable, unwrapped publisher URLs', async () => {
+    const { searchTopicNews } = await import('../../../src/case-study/research/topic');
+    const fetchStub = vi.fn(async (url: string) => {
+      expect(url).toContain('q=novel%20topic');
+      return new Response(NEWS_RSS, { status: 200 });
+    });
+    const hits = await searchTopicNews('novel topic', fetchStub as any);
+    expect(hits).toEqual([
+      {
+        url: 'https://vendor.example/advisory',
+        label: 'Novel Topic advisory',
+        source: 'news-web',
+        description: 'Patch details for the novel topic.',
+      },
+    ]);
+  });
+
+  it('returns nothing on a failed feed instead of inventing sources', async () => {
+    const { searchTopicNews } = await import('../../../src/case-study/research/topic');
+    const fetchStub = vi.fn(async () => new Response('', { status: 403 }));
+    expect(await searchTopicNews('novel topic', fetchStub as any)).toEqual([]);
+  });
+});
+
 describe('findCveIds', () => {
   it('treats a CVE in the topic title as the subject regardless of content type', async () => {
     const { findCveIds } = await import('../../../src/case-study/research/enrich');
@@ -233,5 +272,38 @@ describe('researchCandidate on a bare topic', () => {
     expect(dossier.platform.topicHits?.length).toBe(2);
     expect(dossier.meta.corpusHits).toBe(2);
     expect(dossier.meta.pagesRead).toBe(3);
+  });
+
+  it('uses the news fallback when the platform corpus is empty', async () => {
+    const { researchCandidate } = await import('../../../src/case-study/research');
+    const { extractPage } = await import('../../../src/case-study/research/extract');
+    const stub = selfStub({ '/api/v1/unified-search': { sections: [] } });
+    const fetchStub = vi.fn(async (url: string) => {
+      if (url.includes('bing.com/news/search')) return new Response(NEWS_RSS, { status: 200 });
+      return new Response('', { status: 200 });
+    });
+
+    const dossier = await researchCandidate({
+      candidate: {
+        key: 'custom-novel',
+        type: 'analysis',
+        title: 'Novel topic explained',
+        rationale: 'Operator-supplied topic.',
+        score: 0.8,
+        evidence: { userContent: 'Context only, no pasted URLs.' },
+        discoveredAt: '2026-11-26T00:00:00Z',
+        status: 'pending',
+      },
+      now: new Date(),
+      self: stub,
+      internalTokenSecret: SECRET,
+      fetchFn: fetchStub as any,
+    });
+
+    const fetched = vi.mocked(extractPage).mock.calls.map((c) => c[0]);
+    expect(fetched).toContain('https://vendor.example/advisory');
+    expect(dossier.meta.corpusHits).toBe(1);
+    expect(dossier.platform.topicHits?.[0]?.source).toBe('news-web');
+    expect(dossier.pages.length).toBe(1);
   });
 });

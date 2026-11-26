@@ -160,7 +160,7 @@ function renderPlatform(platform: PlatformFacts, type?: CaseStudyType): string {
     );
     for (const hit of platform.topicHits.slice(0, 8)) {
       lines.push(
-        `- ${hit.label || hit.source}${hit.url ? ` — ${hit.url}` : ''}${hit.description ? ` — ${hit.description}` : ''}`
+        `- ${hit.label || hit.source} (${hit.source})${hit.url ? ` — ${hit.url}` : ''}${hit.description ? ` — ${hit.description}` : ''}`
       );
     }
   }

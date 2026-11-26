@@ -26,6 +26,8 @@
  */
 
 import { selfFetchJson } from '../../lib/self-fetch';
+import { parseRss } from '../../lib/rss-parser';
+import { isCanonicalAuthorityUrl } from '../../lib/verify-url';
 
 export interface TopicHit {
   url: string;
@@ -46,6 +48,13 @@ const CVE_RE = /\bCVE-\d{4}-\d{4,7}\b/gi;
 const MAX_SUPPLIED = 12;
 const MAX_HITS = 12;
 const MAX_CVES = 4;
+/**
+ * Last-resort web fallback for topics the platform corpus has never covered.
+ * Bing News RSS is already the platform's allowed mirror surface for
+ * bot-blocked publishers (see feeds-aggregate.ts), so this adds no new host.
+ */
+const BING_NEWS_RSS = 'https://www.bing.com/news/search?format=RSS&mkt=en-US&q=';
+const MAX_NEWS_HITS = 5;
 
 /** Minimal SELF binding shape — matches `self-fetch.ts`. */
 type SelfFetcher = {
@@ -154,4 +163,41 @@ export async function discoverTopicCorpus(deps: {
 
   hits.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
   return { hits: hits.slice(0, MAX_HITS), cveIds: [...cveIds].slice(0, MAX_CVES) };
+}
+
+/**
+ * Keyword-scoped news search, used ONLY when the platform corpus returned no
+ * citable URLs for a bare topic. Returns candidates, not facts: the pages are
+ * fetched and verified by `research/index.ts` before reaching the writer.
+ *
+ * Best-effort like every research step — a 403, a timeout or a malformed feed
+ * yields [] and the dossier honestly says nothing was established.
+ */
+export async function searchTopicNews(
+  keyword: string,
+  fetchFn: typeof globalThis.fetch = globalThis.fetch
+): Promise<TopicHit[]> {
+  if (!keyword) return [];
+  try {
+    const res = await fetchFn(`${BING_NEWS_RSS}${encodeURIComponent(keyword)}`, {
+      headers: {
+        accept: 'application/rss+xml, application/xml;q=0.9, */*;q=0.5',
+        'user-agent': 'Mozilla/5.0 (compatible; pranithjain-research/1.0)',
+      },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!res.ok) return [];
+    const items = parseRss(await res.text());
+    return items
+      .map((item) => ({
+        url: item.link,
+        label: item.title,
+        source: 'news-web',
+        description: item.snippet || undefined,
+      }))
+      .filter((h) => /^https?:\/\/\S+$/i.test(h.url) && !isCanonicalAuthorityUrl(h.url))
+      .slice(0, MAX_NEWS_HITS);
+  } catch {
+    return [];
+  }
 }
