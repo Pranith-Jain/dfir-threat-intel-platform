@@ -320,13 +320,11 @@ export default function GlobalHackMap(): JSX.Element {
 
   const briefItems = useMemo(
     () => [
-      ...incidents
-        .slice(0, 12)
-        .map((i) => ({
-          title: `${i.victim}: ${STATUS_META[i.status].label} ${i.type}`,
-          body: i.description,
-          source: 'Global Hack Map feed',
-        })),
+      ...incidents.slice(0, 12).map((i) => ({
+        title: `${i.victim}: ${STATUS_META[i.status].label} ${i.type}`,
+        body: i.description,
+        source: 'Global Hack Map feed',
+      })),
       ...events.slice(0, 8).map((e) => ({ title: e.title, body: e.description, source: e.source })),
       ...fresh.slice(0, 8).map((c) => ({ title: c.id, body: c.description, source: c.kev ? 'CISA KEV' : 'CVE feed' })),
     ],
