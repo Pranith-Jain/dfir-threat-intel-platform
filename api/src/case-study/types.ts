@@ -1,6 +1,6 @@
 // api/src/case-study/types.ts
 import type { CarouselSpec } from './social/slide-spec';
-import type { DossierFactsSnapshot } from './research/dossier';
+import type { DossierFactsSnapshot, ResearchDossier } from './research/dossier';
 
 /**
  * Content-engine topic types. Every type maps 1:1 to a discovery runner and
@@ -169,6 +169,13 @@ export interface Post {
    * Unset for legacy posts; social generation falls back to the body.
    */
   research?: DossierFactsSnapshot;
+  /**
+   * Research measurements recorded at generation time. Deliberately kept off
+   * the compact `research` snapshot (which social copy reads) — this is for
+   * the admin to see that sources were actually read and verified before the
+   * writer ran, rather than trusting the model's own claim to have done so.
+   */
+  researchMeta?: ResearchDossier['meta'];
   /**
    * Optional approval gate metadata. Absent for legacy auto-published
    * posts (treated as `published`). New posts go through `draft` first

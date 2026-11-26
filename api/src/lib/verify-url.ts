@@ -262,3 +262,15 @@ export async function verifyUrls(
 export function statusLabel(s: LinkStatus): string {
   return s === 'ok' ? 'verified' : s === 'broken' ? 'broken' : 'unchecked';
 }
+
+/**
+ * Canonical authority records do not need a liveness probe: the lookup that
+ * produced the URL already established the record exists. Probing NVD/KEV/
+ * MITRE deep links spends one subrequest each and was the single largest
+ * consumer in discovery (26 KEV entries = 26 probes on a 50/invocation plan).
+ *
+ * Callers should still CITE these URLs — only the HEAD check is skipped.
+ */
+export function isCanonicalAuthorityUrl(url: string): boolean {
+  return /nvd\.nist\.gov|known-exploited-vulnerabilities|attack\.mitre\.org/i.test(url);
+}

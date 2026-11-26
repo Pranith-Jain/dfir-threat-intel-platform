@@ -1,0 +1,33 @@
+{
+  "id": "T1098.003",
+  "displayName": "Account Manipulation: Additional Cloud Roles",
+  "tests": [
+    {
+      "name": "Azure AD - Add Company Administrator Role to a user",
+      "guid": "4d77f913-56f5-4a14-b4b1-bf7bb24298ad",
+      "description": "Add an existing Azure user account the Company Administrator Role.",
+      "platforms": ["azure-ad"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username", "password", "target_user"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Simulate - Post BEC persistence via user password reset followed by user added to company administrator role",
+      "guid": "14f3af20-61f1-45b8-ad31-4637815f3f44",
+      "description": "This test looks at simulating the an adversary described in the following blog post. It involves resetting the password of a normal user and adding to the company administrator role within M365.\n Reference: https://www.huntress.com/blog/business-email-compromise-via-azure-administrative-privileges",
+      "platforms": ["azure-ad"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["auth_username", "auth_password", "target_user", "target_password"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1098.003/T1098.003.yaml"
+}

@@ -1,0 +1,332 @@
+{
+  "id": "T1087.002",
+  "displayName": "Account Discovery: Domain Account",
+  "tests": [
+    {
+      "name": "Enumerate all accounts (Domain)",
+      "guid": "6fbc9e68-5ad7-444a-bd11-8bf3136c477e",
+      "description": "Enumerate all accounts\nUpon exection, multiple enumeration commands will be run and their output displayed in the PowerShell session",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enumerate all accounts via PowerShell (Domain)",
+      "guid": "8b8a6449-be98-4f42-afd2-dedddc7453b2",
+      "description": "Enumerate all accounts via PowerShell. Upon execution, lots of user account and group information will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enumerate logged on users via CMD (Domain)",
+      "guid": "161dcd85-d014-4f5e-900c-d3eaae82a0f7",
+      "description": "Enumerate logged on users. Upon exeuction, logged on users will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["computer_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Automated AD Recon (ADRecon)",
+      "guid": "95018438-454a-468c-a0fa-59c800149b59",
+      "description": "ADRecon extracts and combines information about an AD environement into a report. Upon execution, an Excel file with all of the data will be generated and its\npath will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["adrecon_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Adfind -Listing password policy",
+      "guid": "736b4f53-f400-4c22-855d-1a6b5a551600",
+      "description": "Adfind tool can be used for reconnaissance in an Active directory environment. The example chosen illustrates adfind used to query the local password policy.\nreference- http://www.joeware.net/freetools/tools/adfind/, https://social.technet.microsoft.com/wiki/contents/articles/7535.adfind-command-examples.aspx",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["optional_args"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Adfind - Enumerate Active Directory Admins",
+      "guid": "b95fd967-4e62-4109-b48d-265edfd28c3a",
+      "description": "Adfind tool can be used for reconnaissance in an Active directory environment. This example has been documented by ransomware actors enumerating Active Directory Admin accounts\nreference- http://www.joeware.net/freetools/tools/adfind/, https://stealthbits.com/blog/fun-with-active-directorys-admincount-attribute/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["optional_args"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Adfind - Enumerate Active Directory User Objects",
+      "guid": "e1ec8d20-509a-4b9a-b820-06c9b2da8eb7",
+      "description": "Adfind tool can be used for reconnaissance in an Active directory environment. This example has been documented by ransomware actors enumerating Active Directory User Objects\nreference- http://www.joeware.net/freetools/tools/adfind/, https://www.fireeye.com/blog/threat-research/2019/04/pick-six-intercepting-a-fin6-intrusion.html",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["optional_args"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Adfind - Enumerate Active Directory Exchange AD Objects",
+      "guid": "5e2938fb-f919-47b6-8b29-2f6a1f718e99",
+      "description": "Adfind tool can be used for reconnaissance in an Active directory environment. This example has been documented by ransomware actors enumerating Active Directory Exchange Objects\nreference- http://www.joeware.net/freetools/tools/adfind/, https://www.fireeye.com/blog/threat-research/2019/04/pick-six-intercepting-a-fin6-intrusion.html",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["optional_args"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Enumerate Default Domain Admin Details (Domain)",
+      "guid": "c70ab9fd-19e2-4e02-a83c-9cfa8eaa8fef",
+      "description": "This test will enumerate the details of the built-in domain admin account",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enumerate Active Directory for Unconstrained Delegation",
+      "guid": "46f8dbe9-22a5-4770-8513-66119c5be63b",
+      "description": "Attackers may attempt to query for computer objects with the UserAccountControl property\n'TRUSTED_FOR_DELEGATION' (0x80000;524288) set\nMore Information - https://shenaniganslabs.io/2019/01/28/Wagging-the-Dog.html#when-the-stars-align-unconstrained-delegation-leads-to-rce\nPrerequisite: AD RSAT PowerShell module is needed and it must run under a domain user",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["domain", "uac_prop"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Get-DomainUser with PowerView",
+      "guid": "93662494-5ed7-4454-a04c-8c8372808ac2",
+      "description": "Utilizing PowerView, run Get-DomainUser to identify the domain users. Upon execution, Users within the domain will be listed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enumerate Active Directory Users with ADSISearcher",
+      "guid": "02e8be5a-3065-4e54-8cc8-a14d138834d3",
+      "description": "The following Atomic test will utilize ADSISearcher to enumerate users within Active Directory.\nUpon successful execution a listing of users will output with their paths in AD.\nReference: https://devblogs.microsoft.com/scripting/use-the-powershell-adsisearcher-type-accelerator-to-search-active-directory/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enumerate Linked Policies In ADSISearcher Discovery",
+      "guid": "7ab0205a-34e4-4a44-9b04-e1541d1a57be",
+      "description": "The following Atomic test will utilize ADSISearcher to enumerate organizational unit within Active Directory.\nUpon successful execution a listing of users will output with their paths in AD.\nReference: https://medium.com/@pentesttas/discover-hidden-gpo-s-on-active-directory-using-ps-adsi-a284b6814c81",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enumerate Root Domain linked policies Discovery",
+      "guid": "00c652e2-0750-4ca6-82ff-0204684a6fe4",
+      "description": "The following Atomic test will utilize ADSISearcher to enumerate root domain unit within Active Directory.\nUpon successful execution a listing of users will output with their paths in AD.\nReference: https://medium.com/@pentesttas/discover-hidden-gpo-s-on-active-directory-using-ps-adsi-a284b6814c81",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - generaldomaininfo",
+      "guid": "ce483c35-c74b-45a7-a670-631d1e69db3d",
+      "description": "Gathers general domain information using the generaldomaininfo function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Kerbrute - userenum",
+      "guid": "f450461c-18d1-4452-9f0d-2c42c3f08624",
+      "description": "Enumerates active directory usernames using the userenum function of Kerbrute",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["Domain", "DomainController"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Wevtutil - Discover NTLM Users Remote",
+      "guid": "b8a563d4-a836-4993-a74e-0a19b8481bfe",
+      "description": "This test discovers users who have authenticated against a Domain Controller via NTLM. \nThis is done remotely via wmic and captures the event code 4776 from the domain controller and stores the ouput in C:\\temp. [Reference](https://www.reliaquest.com/blog/socgholish-fakeupdates/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Suspicious LAPS Attributes Query with Get-ADComputer all properties",
+      "guid": "394012d9-2164-4d4f-b9e5-acf30ba933fe",
+      "description": "This test executes LDAP query using powershell command Get-ADComputer and lists all the properties including Microsoft LAPS attributes ms-mcs-AdmPwd and ms-mcs-AdmPwdExpirationTime",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["hostname"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Suspicious LAPS Attributes Query with Get-ADComputer ms-Mcs-AdmPwd property",
+      "guid": "6e85bdf9-7bc4-4259-ac0f-f0cb39964443",
+      "description": "This test executes LDAP query using powershell command Get-ADComputer and lists Microsoft LAPS attributes ms-mcs-AdmPwd and ms-mcs-AdmPwdExpirationTime",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["hostname"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Suspicious LAPS Attributes Query with Get-ADComputer all properties and SearchScope",
+      "guid": "ffbcfd62-15d6-4989-a21a-80bfc8e58bb5",
+      "description": "This test executes LDAP query using powershell command Get-ADComputer with SearchScope as subtree and lists all the properties including Microsoft LAPS attributes ms-mcs-AdmPwd and ms-mcs-AdmPwdExpirationTime",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Suspicious LAPS Attributes Query with adfind all properties",
+      "guid": "abf00f6c-9983-4d9a-afbc-6b1c6c6448e1",
+      "description": "This test executes LDAP query using adfind command and lists all the attributes including Microsoft LAPS attributes ms-mcs-AdmPwd and ms-mcs-AdmPwdExpirationTime",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["optional_args", "domain"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Suspicious LAPS Attributes Query with adfind ms-Mcs-AdmPwd",
+      "guid": "51a98f96-0269-4e09-a10f-e307779a8b05",
+      "description": "This test executes LDAP query using adfind command and lists Microsoft LAPS attributes ms-mcs-AdmPwd and ms-mcs-AdmPwdExpirationTime",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["optional_args", "domain"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Active Directory Domain Search",
+      "guid": "096b6d2a-b63f-4100-8fa0-525da4cd25ca",
+      "description": "Output information from LDAPSearch. LDAP Password is the admin-user password on Active Directory",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["domain", "top_level_domain", "user", "password"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Account Enumeration with LDAPDomainDump",
+      "guid": "a54d497e-8dbe-4558-9895-44944baa395f",
+      "description": "This test uses LDAPDomainDump to perform account enumeration on a domain.\n[Reference](https://securityonline.info/ldapdomaindump-active-directory-information-dumper-via-ldap/)",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username", "target_ip", "password"],
+      "dependencyCount": 4
+    },
+    {
+      "name": "Enumerate Active Directory Users with csvde",
+      "guid": "303d67f0-3b7a-4a27-8fc9-995239ae8c51",
+      "description": "The following test uses csvde.exe to export a list of Active Directory users and their properties to a CSV file.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1087.002/T1087.002.yaml"
+}

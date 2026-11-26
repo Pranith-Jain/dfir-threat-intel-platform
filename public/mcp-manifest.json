@@ -2,7 +2,7 @@
   "$schema": "https://modelcontextprotocol.io/schemas/manifest/v1.json",
   "name": "DFIR-ThreatIntel-MCP",
   "version": "1.0.0",
-  "description": "DFIR + Threat Intel MCP server. 446 tools across IOC check, CVE/KEV, actor enrichment, domain/ASN/WHOIS pivots, ransomware + breach monitoring, phishing analysis, supply-chain attacks, YARA/Sigma authoring, MITRE ATT&CK extraction, Hudson Rock infostealer search, passive DNS, IOC watchlists, investigation notebooks, shift handover, prompt vault, and the full SCStelz/security-investigator playbook library (KQL queries, skills, automations, knowledge-base docs).",
+  "description": "DFIR + Threat Intel MCP server. 462 tools across IOC check, CVE/KEV, actor enrichment, domain/ASN/WHOIS pivots, ransomware + breach monitoring, phishing analysis, supply-chain attacks, YARA/Sigma authoring, MITRE ATT&CK extraction, Hudson Rock infostealer search, passive DNS, IOC watchlists, investigation notebooks, shift handover, prompt vault, and the full SCStelz/security-investigator playbook library (KQL queries, skills, automations, knowledge-base docs).",
   "transport": "streamable-http",
   "endpoint": "https://pranithjain.qzz.io/api/mcp",
   "auth": {
@@ -16,9 +16,34 @@
       "listChanged": false
     }
   },
-  "toolCount": 446,
+  "toolCount": 462,
   "generatedAt": "2026-10-21T14:31:05+05:30",
   "tools": [
+    {
+      "name": "aad_attack_coverage",
+      "description": "Return the consolidated ATT&CK Navigator layer: 124 techniques scored by how many rules name each one, with the rule descriptions in the comments. Identifies which attacker techniques are best covered by agentic attack detections.",
+      "category": "other"
+    },
+    {
+      "name": "aad_get_framework",
+      "description": "Return one agentic attack framework: coverage counts, ATT&CK techniques with rule-count scores, sourced indicators (value, confidence, context, publication) and an upstream deep link. Use aad_list_frameworks first to discover slugs.",
+      "category": "other"
+    },
+    {
+      "name": "aad_list_frameworks",
+      "description": "List AI-agent attack frameworks covered by ThreatDefence Agentic Attack Detections (MIT): 100+ frameworks with KQL hunts, Sigma, Suricata, YARA, indicator counts and the reported in-the-wild use. Filter by keyword or minimum rule/indicator counts.",
+      "category": "other"
+    },
+    {
+      "name": "aad_list_indicators",
+      "description": "Search the sourced indicator set (1,800+ values across 16 IOC types: user_agent, ipv4, domain, url, sha256, file_path, uri_string, docker_image, favicon_mmh3, etc). Each row carries confidence, context, source publication and the framework it belongs to.",
+      "category": "other"
+    },
+    {
+      "name": "aad_stats",
+      "description": "Return Agentic Attack Detections corpus stats (frameworks, indicators by type, ATT&CK techniques, shared behavior/general rule inventory) and cache state.",
+      "category": "other"
+    },
     {
       "name": "ai_advisories",
       "description": "AI advisory firehose — per-package GHSA advisories, cvelistV5 CVE commits matched to known AI CVEs, tool release trains (garak, PyRIT, promptfoo, litellm, vllm, ollama, langchain, MCP SDK, MITRE ATLAS, OWASP GenAI), ExploitDB PoCs.",
@@ -127,6 +152,21 @@
     {
       "name": "anarchy_stats",
       "description": "Return cache + manifest stats for the Anarchy course catalog: course counts, top tags, sync timestamps, and LRU cache hit/miss ratios.",
+      "category": "other"
+    },
+    {
+      "name": "art_get_technique",
+      "description": "Return one Atomic Red Team technique with its test metadata: test names, GUIDs, plain descriptions, supported platforms, executor type and elevation flag, input argument names and dependency counts. Raw commands are not vendored; every test deep-links upstream. Use art_list_techniques first to discover ids.",
+      "category": "other"
+    },
+    {
+      "name": "art_list_techniques",
+      "description": "List Atomic Red Team ATT&CK techniques (353 techniques, ~1,950 tests) as presented by atomicredteam.io. Filter by platform (windows/linux/macos/...), executor type (powershell/sh/bash/command_prompt/manual), subtechnique flag, minimum test count or keyword.",
+      "category": "other"
+    },
+    {
+      "name": "art_stats",
+      "description": "Return Atomic Red Team catalog stats: techniques, tests, platform and executor breakdowns, plus cache state.",
       "category": "other"
     },
     {
@@ -1350,13 +1390,53 @@
       "category": "other"
     },
     {
+      "name": "pi_agent_feed",
+      "description": "The PromptIntel agent-protection feed: curated, approved protections (category, severity, action, IoPC technique) with an expiry and a fingerprint to enforce. Community keys get titles plus a description preview with indicators withheld.",
+      "category": "other"
+    },
+    {
+      "name": "pi_check_indicator",
+      "description": "Check whether a URL, domain, IP, SHA-256, file path or skill/MCP name is a known PromptIntel indicator. COSTLY — Community allows 5 values a day per key; the verdict is cached for 24h. A miss is not a clean result.",
+      "category": "other"
+    },
+    {
       "name": "pi_get_entry",
-      "description": "Retrieve a single IoPC taxonomy entry (e.g. IOPC-T1.001 or IOPC-R012) with framework mappings and relationships. Requires server-side PROMPTINTEL_API_KEY.",
+      "description": "Retrieve one IoPC entry (technique IOPC-T1.001 or registry IOPC-R012) with its description, maturity/evidence status and every framework mapping. Served from the local mirror — no key or quota needed.",
+      "category": "other"
+    },
+    {
+      "name": "pi_get_prompt",
+      "description": "Read one PromptIntel prompt in full: attack text, follow-up steps and its NOVA detection rule. COSTLY — the Community plan allows 5 full prompt reads a day per account; the answer is cached for 12h, so a repeat is free.",
+      "category": "other"
+    },
+    {
+      "name": "pi_lookup_file_hashes",
+      "description": "Look up malicious agent files by SHA-256 (SKILL.md bundles, AGENTS.md, CLAUDE.md, .cursorrules, MCP configs). COSTLY — Community allows 20 hash lookups a day; results are cached per hash for 24h. A known hash comes with title/kind/severity only on Community.",
+      "category": "other"
+    },
+    {
+      "name": "pi_quota",
+      "description": "What the PromptIntel key has left today, limit by limit (requests, prompt reads, checks, scans, hash lookups). Never cached — call it after a 429.",
+      "category": "other"
+    },
+    {
+      "name": "pi_scan",
+      "description": "Scan a skill, MCP server or A2A agent for prompt-compromise risk from its address or manifest. COSTLY — Community allows 10 scans a day per key. Send the JSON body documented at promptintel.securitybreak.io/docs/api.",
       "category": "other"
     },
     {
       "name": "pi_search_prompts",
-      "description": "Search the PromptIntel Indicators-of-Prompt-Compromise feed: adversarial AI prompts with severity and category filters. Requires server-side PROMPTINTEL_API_KEY.",
+      "description": "Search the PromptIntel adversarial-prompt feed (approved prompts with severity, category and IoPC technique filters). The list omits attack text on the Community plan; read one with pi_get_prompt. Requires server-side PROMPTINTEL_API_KEY.",
+      "category": "other"
+    },
+    {
+      "name": "pi_taxonomy",
+      "description": "List IoPC (Indicators of Prompt Compromise) techniques: 35 techniques across 9 domains, mapped to OWASP LLM, OWASP Agentic, MITRE ATLAS, Google SAIF, CSA AARM and NIST AI RMF. Served from the local mirror — no PromptIntel key or quota needed.",
+      "category": "other"
+    },
+    {
+      "name": "pi_translate",
+      "description": "Translate an AI-security framework item into the other frameworks (e.g. OWASP_LLM LLM01 → MITRE ATLAS AML.T0051). The link is derived through the IoPC techniques both items map to, and `via` names them. Also answers the inverse: which IoPC techniques sit behind one framework item.",
       "category": "other"
     },
     {

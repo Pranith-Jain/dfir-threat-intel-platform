@@ -1,0 +1,188 @@
+{
+  "slug": "kaligpt",
+  "name": "KaliGPT",
+  "description": "Command-line AI assistant for Kali with several model providers, aimed at students",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 7,
+    "suricata": 3,
+    "yara": 3,
+    "indicators": 14
+  },
+  "techniques": [
+    {
+      "id": "T1059.006",
+      "score": 6,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; KQL hunt: KaliGPT (HackerX) running on a host you monitor; Sentinel analytics: KaliGPT AI pentest agent on a host; Sigma: Command Run by the KaliGPT Agent; Sigma: KaliGPT AI Pentest Agent Started; YARA: KaliGPT_Launcher"
+    },
+    {
+      "id": "T1105",
+      "score": 2,
+      "comment": "KQL hunt: KaliGPT probing your web servers, or running from your network: its tool user agents and URLs in web and proxy logs; Sigma: KaliGPT Installer Download or Web Launcher URL in Proxy Logs"
+    },
+    {
+      "id": "T1552.001",
+      "score": 3,
+      "comment": "KQL hunt: KaliGPT (HackerX) running on a host you monitor; Sigma: KaliGPT Installed or Configured; YARA: KaliGPT_Provider_Config"
+    },
+    {
+      "id": "T1588.002",
+      "score": 3,
+      "comment": "Sigma: KaliGPT Installed or Configured; Sigma: KaliGPT Installer Download or Web Launcher URL in Proxy Logs; YARA: KaliGPT_Source"
+    },
+    {
+      "id": "T1588.007",
+      "score": 1,
+      "comment": "Sigma: KaliGPT Web Launcher Opens the KaliGPT Custom GPT"
+    },
+    {
+      "id": "T1593.002",
+      "score": 1,
+      "comment": "Suricata: 3813223 TD KaliGPT OpenSearchAPI search helper docs page"
+    },
+    {
+      "id": "T1594",
+      "score": 5,
+      "comment": "KQL hunt: KaliGPT probing your web servers, or running from your network: its tool user agents and URLs in web and proxy logs; Sigma: KaliGPT Tool User Agent in Proxy Logs; Sigma: KaliGPT Tool User Agent in Web Server Logs; Suricata: 3813221 TD KaliGPT web_request_framework user agent (target page analysis); Suricata: 3813222 TD KaliGPT get_local_server_content user agent"
+    },
+    {
+      "id": "T1595.002",
+      "score": 7,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; KQL hunt: KaliGPT (HackerX) running on a host you monitor; KQL hunt: KaliGPT probing your web servers, or running from your network: its tool user agents and URLs in web and proxy logs; Sigma: Command Run by the KaliGPT Agent; Sigma: KaliGPT Tool User Agent in Proxy Logs; Sigma: KaliGPT Tool User Agent in Web Server Logs; Suricata: 3813221 TD KaliGPT web_request_framework user agent (target page analysis)"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "user_agent",
+      "value": "HackerX WebRequestFramework/1.0",
+      "confidence": "high",
+      "context": "User agent of KaliGPT's web_request_analysis and get_raw_response tools, which the model calls against target URLs (any method and body, redirects followed; web_request_analysis grades security headers, cookies, CORS and caching). Set with setdefault, so a User-Agent the model passes in headers replaces it",
+      "source": "ThreatDefence review of the KaliGPT source code",
+      "sourceUrl": "https://github.com/SudoHopeX/KaliGPT/blob/b15b8d48367f9d2b9b3bd7edc40daa42445a1228/agents/utils/tools/web_request_framework.py#L63",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "user_agent",
+      "value": "LocalScraper/1.0",
+      "confidence": "medium",
+      "context": "User agent of KaliGPT's get_local_server_content tool (GET, then page text extraction). Meant for local servers, callable with any URL. Short generic name: other scrapers may use it",
+      "source": "ThreatDefence review of the KaliGPT source code",
+      "sourceUrl": "https://github.com/SudoHopeX/KaliGPT/blob/b15b8d48367f9d2b9b3bd7edc40daa42445a1228/agents/utils/tools/locals.py#L35",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36",
+      "confidence": "low",
+      "context": "Fixed browser user agent KaliGPT's search tool uses to download the top search results (newspaper3k) for its RAG step. Old Chrome 100 string used by much other software: context only",
+      "source": "ThreatDefence review of the KaliGPT source code",
+      "sourceUrl": "https://github.com/SudoHopeX/KaliGPT/blob/b15b8d48367f9d2b9b3bd7edc40daa42445a1228/agents/utils/tools/opensearchapi.py#L13",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "url",
+      "value": "https://chatgpt.com/g/g-xouSQobsE-kaligpt/",
+      "confidence": "high",
+      "context": "The author's custom GPT, opened in a browser (chromium by default) by kaligpt --web with ?prompt=<operator prompt>. Seen in process command lines and in proxy logs with TLS inspection",
+      "source": "ThreatDefence review of the KaliGPT source code",
+      "sourceUrl": "https://github.com/SudoHopeX/KaliGPT/blob/b15b8d48367f9d2b9b3bd7edc40daa42445a1228/agents/utils/web_launcher.json#L15",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "url",
+      "value": "https://raw.githubusercontent.com/SudoHopeX/KaliGPT/refs/heads/hackerx/install.sh",
+      "confidence": "medium",
+      "context": "KaliGPT install command (curl -sL ... | bash), which then downloads installers/installer.deb.sh, installer.arch.sh or installer.termux.sh from the same branch as ./kaligptinstaller.sh",
+      "source": "ThreatDefence review of the KaliGPT source code",
+      "sourceUrl": "https://github.com/SudoHopeX/KaliGPT/blob/b15b8d48367f9d2b9b3bd7edc40daa42445a1228/README.md#L69",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "url",
+      "value": "https://github.com/SudoHopeX/OpenSearchAPI.git",
+      "confidence": "medium",
+      "context": "Companion search helper the KaliGPT installer clones into /opt/KaliGPT/OpenSearchAPI (Flask app on 127.0.0.1:5000 that scrapes Google with nodriver/chromium on Xvfb, Bing and DuckDuckGo). Also cloned by people who use it alone",
+      "source": "ThreatDefence review of the KaliGPT source code",
+      "sourceUrl": "https://github.com/SudoHopeX/KaliGPT/blob/b15b8d48367f9d2b9b3bd7edc40daa42445a1228/installers/installer.deb.sh#L83",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/opt/KaliGPT/",
+      "confidence": "high",
+      "context": "KaliGPT install folder on Debian, Kali, Ubuntu, Mint and Arch: code, venv its_venv, OpenSearchAPI helper and provider key file. The launcher runs every provider from this folder",
+      "source": "ThreatDefence review of the KaliGPT source code",
+      "sourceUrl": "https://github.com/SudoHopeX/KaliGPT/blob/b15b8d48367f9d2b9b3bd7edc40daa42445a1228/installers/installer.deb.sh#L72-L83",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/opt/KaliGPT/agents/utils/api.config.json",
+      "confidence": "high",
+      "context": "KaliGPT provider configuration with Gemini, OpenAI and OpenRouter API keys and the Ollama URL in clear text; the installer runs chmod 666 on it",
+      "source": "ThreatDefence review of the KaliGPT source code",
+      "sourceUrl": "https://github.com/SudoHopeX/KaliGPT/blob/b15b8d48367f9d2b9b3bd7edc40daa42445a1228/installers/installer.deb.sh#L315",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/opt/KaliGPT/OpenSearchAPI/app.py",
+      "confidence": "high",
+      "context": "Search helper the KaliGPT launcher starts in the background (python /opt/KaliGPT/OpenSearchAPI/app.py) for every provider mode. Seen in process command lines",
+      "source": "ThreatDefence review of the KaliGPT source code",
+      "sourceUrl": "https://github.com/SudoHopeX/KaliGPT/blob/b15b8d48367f9d2b9b3bd7edc40daa42445a1228/installers/installer.deb.sh#L291-L306",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/usr/local/bin/kaligpt",
+      "confidence": "high",
+      "context": "KaliGPT launcher script written by the Debian and Arch installers",
+      "source": "ThreatDefence review of the KaliGPT source code",
+      "sourceUrl": "https://github.com/SudoHopeX/KaliGPT/blob/b15b8d48367f9d2b9b3bd7edc40daa42445a1228/installers/installer.deb.sh#L136",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/usr/local/bin/opensearchapi",
+      "confidence": "medium",
+      "context": "Launcher of the OpenSearchAPI search helper written by the KaliGPT Debian and Arch installers (opensearchapi --bg prints the PID)",
+      "source": "ThreatDefence review of the KaliGPT source code",
+      "sourceUrl": "https://github.com/SudoHopeX/KaliGPT/blob/b15b8d48367f9d2b9b3bd7edc40daa42445a1228/installers/installer.deb.sh#L291",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/data/data/com.termux/files/usr/share/KaliGPT",
+      "confidence": "medium",
+      "context": "KaliGPT install folder on Android (Termux); launcher /data/data/com.termux/files/usr/bin/kaligpt",
+      "source": "ThreatDefence review of the KaliGPT source code",
+      "sourceUrl": "https://github.com/SudoHopeX/KaliGPT/blob/b15b8d48367f9d2b9b3bd7edc40daa42445a1228/installers/installer.termux.sh#L11-L13",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_name",
+      "value": "kaligptinstaller.sh",
+      "confidence": "high",
+      "context": "Installer install.sh saves in the current folder (curl -sL .../installers/installer.<distro>.sh > kaligptinstaller.sh), then run with sudo bash",
+      "source": "ThreatDefence review of the KaliGPT source code",
+      "sourceUrl": "https://github.com/SudoHopeX/KaliGPT/blob/b15b8d48367f9d2b9b3bd7edc40daa42445a1228/install.sh#L77",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "python3 -m agents.gemini",
+      "confidence": "low",
+      "context": "KaliGPT default provider module started by its launcher from /opt/KaliGPT (also agents.ollama, agents.openrouter, agents.chatgpt, agents.litellm; python -m agents.<provider> <prompt> when started from python3 -m agents). A package named agents is common: check the working folder",
+      "source": "ThreatDefence review of the KaliGPT source code",
+      "sourceUrl": "https://github.com/SudoHopeX/KaliGPT/blob/b15b8d48367f9d2b9b3bd7edc40daa42445a1228/installers/installer.deb.sh#L161-L163",
+      "reported": "2026-11-25"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/kaligpt",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

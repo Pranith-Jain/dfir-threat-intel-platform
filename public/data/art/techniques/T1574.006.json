@@ -1,0 +1,46 @@
+{
+  "id": "T1574.006",
+  "displayName": "Hijack Execution Flow: Dynamic Linker Hijacking",
+  "tests": [
+    {
+      "name": "Shared Library Injection via /etc/ld.so.preload",
+      "guid": "39cb0e67-dd0d-4b74-a74b-c072db7ae991",
+      "description": "This test adds a shared library to the `ld.so.preload` list to execute and intercept API calls. This technique was used by threat actor Rocke during the exploitation of Linux web servers. This requires the `glibc` package.\n\nUpon successful execution, bash will echo `../bin/T1574.006.so` to /etc/ld.so.preload.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["path_to_shared_library_source", "path_to_shared_library"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Shared Library Injection via LD_PRELOAD",
+      "guid": "bc219ff7-789f-4d51-9142-ecae3397deae",
+      "description": "This test injects a shared object library via the LD_PRELOAD environment variable to execute. This technique was used by threat actor Rocke during the exploitation of Linux web servers. This requires the `glibc` package.\n\nUpon successful execution, bash will utilize LD_PRELOAD to load the shared object library `/etc/ld.so.preload`. Output will be via stdout.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["path_to_shared_library_source", "path_to_shared_library"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Dylib Injection via DYLD_INSERT_LIBRARIES",
+      "guid": "4d66029d-7355-43fd-93a4-b63ba92ea1be",
+      "description": "injects a dylib that opens calculator via env variable",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_to_inject", "source_file", "dylib_file"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1574.006/T1574.006.yaml"
+}

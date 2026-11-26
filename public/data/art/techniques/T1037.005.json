@@ -1,0 +1,46 @@
+{
+  "id": "T1037.005",
+  "displayName": "Boot or Logon Initialization Scripts: Startup Items",
+  "tests": [
+    {
+      "name": "Add file to Local Library StartupItems",
+      "guid": "134627c3-75db-410e-bff8-7a920075f198",
+      "description": "Modify or create an file in /Library/StartupItems\n[Reference](https://www.alienvault.com/blogs/labs-research/diversity-in-recent-mac-malware)",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Add launch script to launch daemon",
+      "guid": "fc369906-90c7-4a15-86fd-d37da624dde6",
+      "description": "Add launch script to /Library/StartupItems to launch agent\n[Example](https://cybersecurity.att.com/blogs/labs-research/diversity-in-recent-mac-malware)",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["path_malicious_script", "path_malicious_plist", "path_startup_params"],
+      "dependencyCount": 3
+    },
+    {
+      "name": "Add launch script to launch agent",
+      "guid": "10cf5bec-49dd-4ebf-8077-8f47e420096f",
+      "description": "Add launch script to /Library/StartupItems to launch agent\n[Example](https://cybersecurity.att.com/blogs/labs-research/diversity-in-recent-mac-malware)",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["path_malicious_script", "path_malicious_plist", "path_startup_params"],
+      "dependencyCount": 3
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1037.005/T1037.005.yaml"
+}

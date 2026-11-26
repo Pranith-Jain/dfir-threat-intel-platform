@@ -1,0 +1,150 @@
+{
+  "id": "T1003.003",
+  "displayName": "OS Credential Dumping: NTDS",
+  "tests": [
+    {
+      "name": "Create Volume Shadow Copy with vssadmin",
+      "guid": "dcebead7-6c28-4b4b-bf3c-79deb1b1fc7f",
+      "description": "This test is intended to be run on a domain Controller.\n\nThe Active Directory database NTDS.dit may be dumped by copying it from a Volume Shadow Copy.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["drive_letter"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Copy NTDS.dit from Volume Shadow Copy",
+      "guid": "c6237146-9ea6-4711-85c9-c56d263a6b03",
+      "description": "This test is intended to be run on a domain Controller.\n\nThe Active Directory database NTDS.dit may be dumped by copying it from a Volume Shadow Copy.\n\nThis test requires steps taken in the test \"Create Volume Shadow Copy with vssadmin\".\nA successful test also requires the export of the SYSTEM Registry hive.\nThis test must be executed on a Windows Domain Controller.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["vsc_name", "extract_path"],
+      "dependencyCount": 3
+    },
+    {
+      "name": "Dump Active Directory Database with NTDSUtil",
+      "guid": "2364e33d-ceab-4641-8468-bfb1d7cc2723",
+      "description": "This test is intended to be run on a domain Controller.\n\nThe Active Directory database NTDS.dit may be dumped using NTDSUtil for offline credential theft attacks. This capability\nuses the \"IFM\" or \"Install From Media\" backup functionality that allows Active Directory restoration or installation of\nsubsequent domain controllers without the need of network-based replication.\n\nUpon successful completion, you will find a copy of the ntds.dit file in the C:\\Windows\\Temp directory.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_folder"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Create Volume Shadow Copy with WMI",
+      "guid": "224f7de0-8f0a-4a94-b5d8-989b036c86da",
+      "description": "This test is intended to be run on a domain Controller.\n\nThe Active Directory database NTDS.dit may be dumped by copying it from a Volume Shadow Copy.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["drive_letter"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Create Volume Shadow Copy remotely with WMI",
+      "guid": "d893459f-71f0-484d-9808-ec83b2b64226",
+      "description": "This test is intended to be run from a remote workstation with domain admin context.\nThe Active Directory database NTDS.dit may be dumped by copying it from a Volume Shadow Copy.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["drive_letter", "target_host"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Create Volume Shadow Copy remotely (WMI) with esentutl",
+      "guid": "21c7bf80-3e8b-40fa-8f9d-f5b194ff2865",
+      "description": "This test is intended to be run from a remote workstation with domain admin context.\nThe Active Directory database NTDS.dit may be dumped by copying it from a Volume Shadow Copy created with esentutl.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["source_path", "target_path", "target_host"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Create Volume Shadow Copy with Powershell",
+      "guid": "542bb97e-da53-436b-8e43-e0a7d31a6c24",
+      "description": "This test is intended to be run on a domain Controller.\n\nThe Active Directory database NTDS.dit may be dumped by copying it from a Volume Shadow Copy.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["drive_letter"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create Symlink to Volume Shadow Copy",
+      "guid": "21748c28-2793-4284-9e07-d6d028b66702",
+      "description": "This test is intended to be run on a domain Controller.\n\nThe Active Directory database NTDS.dit may be dumped by creating a symlink to Volume Shadow Copy.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["drive_letter", "symlink_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create Volume Shadow Copy with diskshadow",
+      "guid": "b385996c-0e7d-4e27-95a4-aca046b119a7",
+      "description": "This test is intended to be run on a domain controller\nAn alternative to using vssadmin to create a Volume Shadow Copy for extracting ntds.dit",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["filename"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Copy NTDS in low level NTFS acquisition via MFT parsing",
+      "guid": "f57cb283-c131-4e2f-8a6c-363d575748b2",
+      "description": "This test is intended to be run on a domain Controller.\n\nUnderlayCopy is a PowerShell utility for low-level NTFS acquisition and dumping protected, locked system artifacts (for example: SAM, SYSTEM, NTDS.dit, registry hives, and other files that are normally inaccessible while Windows is running).",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["extract_path", "script_url"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Copy NTDS in low level NTFS acquisition via fsutil",
+      "guid": "c7be89f7-5d06-4321-9f90-8676a77e0502",
+      "description": "This test is intended to be run on a domain Controller.\n\nUnderlayCopy is a PowerShell utility for low-level NTFS acquisition and dumping protected, locked system artifacts (for example: SAM, SYSTEM, NTDS.dit, registry hives, and other files that are normally inaccessible while Windows is running).",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["extract_path", "script_url"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1003.003/T1003.003.yaml"
+}

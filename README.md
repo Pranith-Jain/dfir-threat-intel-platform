@@ -1,6 +1,6 @@
 # dfir-threat-intel-platform
 
-**A 98+ tool DFIR toolkit, a live self-updating threat-intel platform, and a 446-tool MCP server — on one Cloudflare Workers deploy.** Edge-cached, free at the edge, no signup required.
+**A 98+ tool DFIR toolkit, a live self-updating threat-intel platform, and a 462-tool MCP server — on one Cloudflare Workers deploy.** Edge-cached, free at the edge, no signup required.
 
 **[Live platform →](https://pranithjain.qzz.io/dfir)** · [Threat Intel →](https://pranithjain.qzz.io/threatintel) · [MCP catalog →](https://pranithjain.qzz.io/mcp)
 
@@ -45,7 +45,7 @@ A live CTI surface that updates itself: ransomware leak-site + negotiation track
 | Surface                                 | What it does                                                                                                       |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | Live Ransomware Activity                | Leak-site claims merged across Ransomlook, ransomware.live, MyThreatIntel & Andrea Fortuna; per-victim screenshots |
-| Ransomware Groups Directory             | 646-group leak-site directory — status, 7d victims, profiles, recent moves (Sinon-style reference)                 |
+| Ransomware Groups Directory             | 654-group leak-site directory — status, 7d victims, profiles, recent moves (Sinon-style reference)                 |
 | AI Escape Watch                         | 15-incident agent containment-failure registry — CBS scores, 7-stage chains, absent-guardrail analysis             |
 | Ransomware Negotiations                 | ransomware.live PRO negotiation chats — demand vs. settled, discount %, full transcripts                           |
 | Actor Activity Timeline                 | Per-actor leak-site cadence heatmap + MITRE ATT&CK group/TTP pivot                                                 |
@@ -108,7 +108,7 @@ compound queries with launch links, and C2 signature matches using keyless crt.s
 
 ## MCP Server
 
-A 446-tool MCP (Model Context Protocol) server runs on the same Worker, exposing every DFIR and threat-intel capability to AI agents. Connect Claude Desktop, Cursor, or any MCP client.
+A 462-tool MCP (Model Context Protocol) server runs on the same Worker, exposing every DFIR and threat-intel capability to AI agents. Connect Claude Desktop, Cursor, or any MCP client.
 
 **Repo:** [dfir-mcp-server](https://github.com/Pranith-Jain/dfir-mcp-server)
 
@@ -119,13 +119,13 @@ A 446-tool MCP (Model Context Protocol) server runs on the same Worker, exposing
 | Layer           | Choice                                                                                                               |
 | --------------- | -------------------------------------------------------------------------------------------------------------------- |
 | Frontend        | React 19 + Vite + TypeScript + Tailwind                                                                              |
-| Routing         | React Router v7, lazy-loaded (319 route components)                                                                  |
+| Routing         | React Router v7, lazy-loaded (322 route components)                                                                  |
 | SSR             | Prerendered routes for instant first paint                                                                           |
 | Backend         | Cloudflare Workers + Hono                                                                                            |
 | Storage         | KV (briefings, dedup, rate-limit), Cache API (provider/feed results), D1 (briefings DB), Vectorize (semantic search) |
 | Durable Objects | 8 — MCP server, cron lock, live feed, report builder, investigator agent, radar crawler, global pulse                |
 | AI              | Groq (primary) → Workers AI (fallback) for case-study engine; Gemini for agent QA                                    |
-| Tests           | Vitest — 6,700+ tests across 565 test files                                                                          |
+| Tests           | Vitest — 6,700+ tests across 574 test files                                                                          |
 | Quality         | ESLint + Prettier + husky/lint-staged; `tsc --noEmit` gate                                                           |
 | CI              | GitHub Actions: lint + typecheck + vitest, per-ref concurrency cancel                                                |
 | Deploy          | `wrangler deploy`                                                                                                    |
@@ -238,7 +238,7 @@ src/                    React app — pages/{dfir,threatintel}, components, lib,
   pages/threatintel/    PANOPTICON platform pages
   data/content.ts       personalInfo + projects (includes PLATFORM_REPO_URL, this repo)
 api/src/                Cloudflare Worker (Hono) — routes/, providers/ (60+ IOC), lib/, case-study/
-worker/                 Worker entry, MCP server (446 tools), Durable Objects, scheduled cron
+worker/                 Worker entry, MCP server (462 tools), Durable Objects, scheduled cron
 public/data/            Generated data manifests (49 verticals) — build output, not hand-edited
 scripts/                Prerender, manifest builders, sync scripts
 docs/                   Design specs, decisions, loop templates

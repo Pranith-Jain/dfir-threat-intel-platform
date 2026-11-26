@@ -1,0 +1,59 @@
+{
+  "id": "T1053.003",
+  "displayName": "Scheduled Task/Job: Cron",
+  "tests": [
+    {
+      "name": "Cron - Replace crontab with referenced file",
+      "guid": "435057fb-74b1-410e-9403-d81baf194f75",
+      "description": "This test replaces the current user's crontab file with the contents of the referenced file. This technique was used by numerous IoT automated exploitation attacks.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["command", "tmp_cron"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Cron - Add script to all cron subfolders",
+      "guid": "b7d42afa-9086-4c8a-b7b0-8ea3faa6ebb0",
+      "description": "This test adds a script to /etc/cron.hourly, /etc/cron.daily, /etc/cron.monthly and /etc/cron.weekly folders configured to execute on a schedule. This technique was used by the threat actor Rocke during the exploitation of Linux web servers.",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["command", "cron_script_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Cron - Add script to /etc/cron.d folder",
+      "guid": "078e69eb-d9fb-450e-b9d0-2e118217c846",
+      "description": "This test adds a script to /etc/cron.d folder configured to execute on a schedule.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["command", "cron_script_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Cron - Add script to /var/spool/cron/crontabs/ folder",
+      "guid": "2d943c18-e74a-44bf-936f-25ade6cccab4",
+      "description": "This test adds a script to a /var/spool/cron/crontabs folder configured to execute on a schedule. This technique was used by the threat actor Rocke during the exploitation of Linux web servers.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["command", "cron_script_name"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1053.003/T1053.003.yaml"
+}

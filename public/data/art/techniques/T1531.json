@@ -1,0 +1,111 @@
+{
+  "id": "T1531",
+  "displayName": "Account Access Removal",
+  "tests": [
+    {
+      "name": "Change User Password - Windows",
+      "guid": "1b99ef28-f83c-4ec5-8a08-1a56263a5bb2",
+      "description": "Changes the user password to hinder access attempts. Seen in use by LockerGoga. Upon execution, log into the user account \"AtomicAdministrator\" with\nthe password \"HuHuHUHoHo283283\".",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["user_account", "new_user_password", "new_password"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Delete User - Windows",
+      "guid": "f21a1d7d-a62f-442a-8c3a-2440d43b19e5",
+      "description": "Deletes a user account to prevent access. Upon execution, run the command \"net user\" to verify that the new \"AtomicUser\" account was deleted.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["new_user_password", "user_account"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Remove Account From Domain Admin Group",
+      "guid": "43f71395-6c37-498e-ab17-897d814a0947",
+      "description": "This test will remove an account from the domain admins group",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["super_user", "super_pass", "remove_user"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Change User Password via passwd",
+      "guid": "3c717bf3-2ecc-4d79-8ac8-0bfbf08fbce6",
+      "description": "This test changes the user password to hinder access to the account using passwd utility.",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["user_account"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Delete User via dscl utility",
+      "guid": "4d938c43-2fe8-4d70-a5b3-5bf239aa7846",
+      "description": "This test deletes the user account using the dscl utility.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["user_account", "user_password"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Delete User via sysadminctl utility",
+      "guid": "d3812c4e-30ee-466a-a0aa-07e355b561d6",
+      "description": "This test deletes the user account using the sysadminctl utility.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["user_account", "user_name", "user_password"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Azure AD - Delete user via Azure AD PowerShell",
+      "guid": "4f577511-dc1c-4045-bcb8-75d2457f01f4",
+      "description": "Deletes a user in Azure AD. Adversaries may interrupt availability of system and network resources by inhibiting access to accounts utilized by legitimate users. Accounts may be deleted, locked, or manipulated (excluding changed credentials) to remove access to accounts.",
+      "platforms": ["azure-ad"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["userprincipalname"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Azure AD - Delete user via Azure CLI",
+      "guid": "c955c1c7-3145-4a22-af2d-63eea0d967f0",
+      "description": "Deletes a user in Azure AD. Adversaries may interrupt availability of system and network resources by inhibiting access to accounts utilized by legitimate users. Accounts may be deleted, locked, or manipulated (excluding changed credentials) to remove access to accounts.",
+      "platforms": ["azure-ad"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["userprincipalname"],
+      "dependencyCount": 3
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1531/T1531.yaml"
+}

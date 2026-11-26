@@ -1,0 +1,72 @@
+{
+  "id": "T1027.004",
+  "displayName": "Obfuscated Files or Information: Compile After Delivery",
+  "tests": [
+    {
+      "name": "Compile After Delivery using csc.exe",
+      "guid": "ffcdbd6a-b0e8-487d-927a-09127fe9a206",
+      "description": "Compile C# code using csc.exe binary used by .NET\nUpon execution an exe named T1027.004.exe will be placed in the temp folder",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file", "input_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Dynamic C# Compile",
+      "guid": "453614d8-3ba6-4147-acc0-7ec4b3e1faef",
+      "description": "When C# is compiled dynamically, a .cmdline file will be created as a part of the process. \nCertain processes are not typically observed compiling C# code, but can do so without touching disk. This can be used to unpack a payload for execution.\nThe exe file that will be executed is named as T1027.004_DynamicCompile.exe is contained in the 'bin' folder of this atomic, and the source code to the file is in the 'src' folder.\nUpon execution, the exe will print 'T1027.004 Dynamic Compile'.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["input_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "C compile",
+      "guid": "d0377aa6-850a-42b2-95f0-de558d80be57",
+      "description": "Compile a c file with either gcc or clang on FreeBSD, Linux or Macos.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["input_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "CC compile",
+      "guid": "da97bb11-d6d0-4fc1-b445-e443d1346efe",
+      "description": "Compile a c file with either gcc or clang on FreeBSD, Linux or Macos.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["input_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Go compile",
+      "guid": "78bd3fa7-773c-449e-a978-dc1f1500bc52",
+      "description": "Compile a go file with golang on FreeBSD, Linux or Macos.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["input_file"],
+      "dependencyCount": 2
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1027.004/T1027.004.yaml"
+}

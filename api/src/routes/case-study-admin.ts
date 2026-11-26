@@ -11,6 +11,9 @@ import { countAllCandidates } from '../case-study/storage/candidates';
 import { countApproved } from '../case-study/storage/approved';
 import { countFailures } from '../case-study/storage/failed';
 import { generatePost } from '../case-study/generation';
+import { researchCandidate } from '../case-study/research';
+import type { ResearchDossier } from '../case-study/research/dossier';
+import { suppliedCveIds, suppliedUrls } from '../case-study/research/topic';
 import { putDraft } from '../case-study/storage/drafts';
 import { generateLinkedinFromNotes, generateTwitterFromNotes } from '../case-study/generation/social';
 import type { Candidate, CaseStudyType } from '../case-study/types';
@@ -68,15 +71,32 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
       .replace(/-+/g, '-')
       .slice(0, 80);
 
-    /** Brand-configuration hints folded into the source body (n8n layer 1). */
+    /**
+     * Brand-configuration hints folded into the source body (n8n layer 1).
+     * Notes are NOT included here: the blog writer gets them once through
+     * `generatePost`'s `notes` dep (which renders a single `<editor_notes>`
+     * block), and duplicating them in the dossier evidence put the same
+     * guidance in the prompt twice. Social copy still needs them in its body,
+     * so it gets a separate `socialBody`.
+     */
     const brandConfig = [
       content?.trim() ?? '',
-      notes?.trim() ? `<admin_notes>${notes.trim()}</admin_notes>` : '',
       audience?.trim() ? `Target audience: ${audience.trim()}.` : '',
       tone?.trim() ? `Tone: ${tone.trim()}.` : '',
     ]
       .filter(Boolean)
       .join('\n\n');
+    const socialBody = [brandConfig, notes?.trim() ? `<admin_notes>${notes.trim()}</admin_notes>` : '']
+      .filter(Boolean)
+      .join('\n\n');
+
+    // A pasted URL or CVE id is a research input, not just prompt prose. Hand
+    // it to the research stage as evidence so it is fetched, verified and
+    // quoted in the dossier before the writer sees it. Without this, a topic
+    // submitted through this tab produced a dossier with zero sources read.
+    const suppliedText = [content, notes].filter(Boolean).join('\n');
+    const suppliedLinks = suppliedUrls(suppliedText);
+    const suppliedCves = suppliedCveIds(suppliedText);
 
     const result: Record<string, unknown> = {};
     const errors: string[] = [];
@@ -105,19 +125,42 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
       return { rejected: false };
     }
 
+    const pseudo: Candidate = {
+      key: `custom-${slug}`,
+      type: (type as CaseStudyType | undefined) ?? 'analysis',
+      title: subject,
+      rationale: subject,
+      score: 0.8,
+      evidence: {
+        userContent: brandConfig,
+        urls: suppliedLinks.map((h) => h.url),
+        titles: suppliedLinks.map((h) => h.label),
+        cveIds: suppliedCves,
+      },
+      discoveredAt: now.toISOString(),
+      status: 'pending',
+    };
+
+    // One research pass for all requested formats. Social copy used to be
+    // written from the pasted text alone, so LinkedIn/X could assert things
+    // the blog's verified dossier did not support. Sharing the dossier keeps
+    // every format grounded in the same sources and avoids a second fetch.
+    let sharedDossier: ResearchDossier | undefined;
+    async function ensureDossier(): Promise<ResearchDossier> {
+      if (!sharedDossier) {
+        sharedDossier = await researchCandidate({
+          candidate: pseudo,
+          now,
+          self: c.env.SELF,
+          internalTokenSecret: c.env.INTERNAL_TOKEN_SECRET,
+        });
+      }
+      return sharedDossier;
+    }
+
     for (const fmt of formats) {
       try {
         if (fmt === 'blog') {
-          const pseudo: Candidate = {
-            key: `custom-${slug}`,
-            type: (type as CaseStudyType | undefined) ?? 'analysis',
-            title: subject,
-            rationale: subject,
-            score: 0.8,
-            evidence: { userContent: brandConfig },
-            discoveredAt: now.toISOString(),
-            status: 'pending',
-          };
           const post = await generatePost({
             candidate: pseudo,
             ai: getAi(c.env),
@@ -125,10 +168,8 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
             groqKey: c.env.GROQ_API_KEY,
             googleKey: c.env.GOOGLE_AI_STUDIO_API_KEY,
             infronKey: c.env.INFRON_API_KEY,
-            // Lets the research stage read the platform's own corpus
-            // (writeups, trending CVEs, darkweb hits) via the SELF binding.
-            self: c.env.SELF,
-            internalTokenSecret: c.env.INTERNAL_TOKEN_SECRET,
+            dossier: await ensureDossier(),
+            notes: notes?.trim(),
           });
           const gate = approve(post.body, 500);
           if (!gate.rejected && !dry_run) await putDraft(c.env.CASE_STUDIES, post);
@@ -136,12 +177,20 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
             slug: post.slug,
             title: post.title,
             final_post: post.body,
+            // Visible proof that research ran before the write, not after it.
+            research: post.researchMeta,
             status: dry_run ? 'dry_run' : gate.rejected ? 'rejected' : 'draft',
             ...gate,
           };
         } else if (fmt === 'linkedin' || fmt === 'twitter') {
           const gen = fmt === 'linkedin' ? generateLinkedinFromNotes : generateTwitterFromNotes;
-          const notesBody = { slug: `custom-${slug}`, title: subject, body: brandConfig };
+          const notesBody = {
+            slug: `custom-${slug}`,
+            title: subject,
+            body: socialBody,
+            type: pseudo.type,
+            dossier: await ensureDossier(),
+          };
           const out = (await gen(
             notesBody,
             getAi(c.env),
@@ -162,6 +211,8 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
             final_post: text ?? '',
             generatedAt: out.generatedAt,
             validation: out._validation,
+            // Same research pass as the blog, surfaced for every format.
+            research: sharedDossier?.meta,
             status: gate.rejected ? 'rejected' : 'ready',
             ...gate,
           };

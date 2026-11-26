@@ -223,6 +223,12 @@ export async function executeCronJob(
               .filter(([, stat]) => stat.error)
               .map(([name, stat]) => [name, stat.error])
           );
+          // A starved runner looks identical to a quiet feed from the outside:
+          // its own catch turns the budget error into an empty candidate list.
+          // Surface it here so the next fix targets the budget, not the source.
+          const starvedRunners = Object.entries(d.runnerStats ?? {})
+            .filter(([, stat]) => stat.starved)
+            .map(([name]) => name);
           console.log(
             JSON.stringify({
               job: 'discovery',
@@ -236,6 +242,7 @@ export async function executeCronJob(
               // Only present when a source actually failed, so a broken feed
               // is visible in cron logs instead of just shrinking the mix.
               runnerErrors: Object.keys(runnerErrors).length > 0 ? runnerErrors : undefined,
+              starvedRunners: starvedRunners.length > 0 ? starvedRunners : undefined,
             })
           );
         } catch (e) {
@@ -368,12 +375,22 @@ export async function executeCronJob(
           } catch (e) {
             logCronFail('ransomware-recent-warm')(e);
           }
-          // PromptIntel IoPC taxonomy + health — 2 small upstream fetches,
-          // same top-of-hour reasoning as the warms above (cheap, keeps the
-          // /api/v1/promptintel/* handlers on cache hits).
+          // PromptIntel — two UNKEYED, zero-quota probes: public /health for
+          // the cached liveness card and /iopc/latest.json to detect drift
+          // from the committed taxonomy mirror. The old warm re-fetched the
+          // keyed taxonomy hourly, spending 24 of the Community plan's 100
+          // daily requests on a document that changes a few times a month.
           try {
             const warm = await warmPromptintelCache(env as unknown as ApiEnv);
-            console.log(JSON.stringify({ job: 'promptintel-warm', ok: warm.ok, taxonomy: warm.taxonomy }));
+            console.log(
+              JSON.stringify({
+                job: 'promptintel-warm',
+                ok: warm.ok,
+                mirrorVersion: warm.mirrorVersion,
+                liveVersion: warm.liveVersion,
+                mirrorStale: warm.mirrorStale,
+              })
+            );
           } catch (e) {
             logCronFail('promptintel-warm')(e);
           }

@@ -1,0 +1,20 @@
+{
+  "id": "T1204.005",
+  "displayName": "User Execution: Malicious Library",
+  "tests": [
+    {
+      "name": "Execute a synthetic npm package postinstall script",
+      "guid": "57e78bad-45f6-42f4-ad5b-705576394ca2",
+      "description": "Simulates user execution of a malicious library by installing a local, synthetic npm package whose\n`postinstall` lifecycle script executes JavaScript and creates a harmless marker file. This behavior\nrepresents the package-install execution pattern associated with malicious npm packages and campaigns\nsuch as the DPRK-linked Contagious Interview activity.\n\nThe test does not contact an npm registry, download code, collect credentials, establish persistence,\nor execute an operator-supplied payload. Expected output includes npm reporting execution of the\npackage's `postinstall` script, creation of the T1204.005 marker file, and a success message containing\nthe marker contents.\n\nReferences:\n\n- ht",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["npm_path", "package_path", "working_directory", "marker_path"],
+      "dependencyCount": 2
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1204.005/T1204.005.yaml"
+}

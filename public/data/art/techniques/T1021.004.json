@@ -1,0 +1,33 @@
+{
+  "id": "T1021.004",
+  "displayName": "Remote Services: SSH",
+  "tests": [
+    {
+      "name": "ESXi - Enable SSH via PowerCLI",
+      "guid": "8f6c14d1-f13d-4616-b7fc-98cc69fe56ec",
+      "description": "An adversary enables the SSH service on a ESXi host to maintain persistent access to the host and to carryout subsequent operations.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["vm_host", "vm_user", "vm_pass"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "ESXi - Enable SSH via VIM-CMD",
+      "guid": "280812c8-4dae-43e9-a74e-1d08ab997c0e",
+      "description": "An adversary enables SSH on an ESXi host to maintain persistence and creeate another command execution interface.\n[Reference](https://lolesxi-project.github.io/LOLESXi/lolesxi/Binaries/vim-cmd/#enable%20service)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["vm_host", "vm_user", "vm_pass", "plink_file"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1021.004/T1021.004.yaml"
+}

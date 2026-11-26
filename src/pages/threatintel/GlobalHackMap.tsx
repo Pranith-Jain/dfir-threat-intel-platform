@@ -31,6 +31,7 @@ import {
   type GhmIncident,
   type GhmIncidentFeed,
   type GhmFeedRow,
+  type GhmPatchFeed,
   type GhmTab,
   type GhmTrending,
   type GhmWindow,
@@ -78,15 +79,32 @@ function loadStack(): string[] {
 export default function GlobalHackMap(): JSX.Element {
   const { data: pulse, error } = useDataFetch<GlobalPulseResponse>({ url: '/api/v1/global-pulse', ttl: 60_000 });
   const { data: cveFeed } = useDataFetch<GhmCveFeed>({ url: '/api/v1/cve-recent?limit=150', ttl: 5 * 60_000 });
-  const { data: trending } = useDataFetch<GhmTrending>({ url: '/data/cve-intel/vulntracker-trending.json', ttl: 10 * 60_000 });
-  const { data: incidentFeed } = useDataFetch<GhmIncidentFeed>({ url: '/data/global-hack-map/incidents.json', ttl: 10 * 60_000 });
+  const { data: trending } = useDataFetch<GhmTrending>({
+    url: '/data/cve-intel/vulntracker-trending.json',
+    ttl: 10 * 60_000,
+  });
+  const { data: incidentFeed } = useDataFetch<GhmIncidentFeed>({
+    url: '/data/global-hack-map/incidents.json',
+    ttl: 10 * 60_000,
+  });
+  const { data: patchFeed } = useDataFetch<GhmPatchFeed>({
+    url: '/data/global-hack-map/patches.json',
+    ttl: 10 * 60_000,
+  });
   const { data: malwarePkgs } = useDataFetch<{
     generated_at: string;
     packages: Array<{ name: string; ecosystem: string; ossf_url: string }>;
   }>({ url: '/api/v1/malicious-packages?ecosystem=npm', ttl: 15 * 60_000 });
   const { data: malwareSamples } = useDataFetch<{
     generated_at: string;
-    samples: Array<{ sha256: string; first_seen: string; signature: string; file_type: string; tags: string[]; bazaar_url: string }>;
+    samples: Array<{
+      sha256: string;
+      first_seen: string;
+      signature: string;
+      file_type: string;
+      tags: string[];
+      bazaar_url: string;
+    }>;
   }>({ url: '/api/v1/malware-samples', ttl: 15 * 60_000 });
   const { data: maritime } = useDataFetch<{ incidents: Array<Record<string, unknown>> }>({
     url: '/api/v1/ukmto-incidents',
@@ -138,10 +156,11 @@ export default function GlobalHackMap(): JSX.Element {
   }, [pulse, timeWindow]);
 
   const events = useMemo(
-    () => windowEvents.filter((e) => {
-      const status = incidentStatus(e);
-      return !status || statusFilter.has(status);
-    }),
+    () =>
+      windowEvents.filter((e) => {
+        const status = incidentStatus(e);
+        return !status || statusFilter.has(status);
+      }),
     [windowEvents, statusFilter]
   );
 
@@ -180,10 +199,12 @@ export default function GlobalHackMap(): JSX.Element {
       const start = today.getTime() - (13 - index) * DAY;
       const end = start + DAY;
       const victims = new Set(
-        windowIncidents.filter((i) => {
-          const t = Date.parse(i.published);
-          return t >= start && t < end;
-        }).map((i) => i.victim.toLowerCase())
+        windowIncidents
+          .filter((i) => {
+            const t = Date.parse(i.published);
+            return t >= start && t < end;
+          })
+          .map((i) => i.victim.toLowerCase())
       );
       return { date: new Date(start).toISOString().slice(0, 10), count: victims.size };
     });
@@ -197,10 +218,7 @@ export default function GlobalHackMap(): JSX.Element {
         .slice(0, 24),
     [cves]
   );
-  const patchNow = useMemo(
-    () => fresh.filter((c) => c.kev || c.has_exploit).slice(0, 8),
-    [fresh]
-  );
+  const patchNow = useMemo(() => fresh.filter((c) => c.kev || c.has_exploit).slice(0, 8), [fresh]);
 
   // Malware + "outages" (maritime/connectivity) are their own live feeds —
   // they must not be derived from the CVE/incident rows, or the tabs stay empty.
@@ -256,7 +274,7 @@ export default function GlobalHackMap(): JSX.Element {
   }, [maritime, windowEvents]);
 
   const selectedEvent = useMemo(() => events.find((e) => e.id === selectedId) ?? null, [events, selectedId]);
-  const selectedCve = selectedCveId ? cveIndex.get(selectedCveId) ?? null : null;
+  const selectedCve = selectedCveId ? (cveIndex.get(selectedCveId) ?? null) : null;
   const selectedIncident = useMemo(
     () => incidents.find((i) => i.id === selectedIncidentId) ?? null,
     [incidents, selectedIncidentId]
@@ -302,7 +320,11 @@ export default function GlobalHackMap(): JSX.Element {
 
   const briefItems = useMemo(
     () => [
-      ...incidents.slice(0, 12).map((i) => ({ title: `${i.victim}: ${STATUS_META[i.status].label} ${i.type}`, body: i.description, source: 'Global Hack Map feed' })),
+      ...incidents.slice(0, 12).map((i) => ({
+        title: `${i.victim}: ${STATUS_META[i.status].label} ${i.type}`,
+        body: i.description,
+        source: 'Global Hack Map feed',
+      })),
       ...events.slice(0, 8).map((e) => ({ title: e.title, body: e.description, source: e.source })),
       ...fresh.slice(0, 8).map((c) => ({ title: c.id, body: c.description, source: c.kev ? 'CISA KEV' : 'CVE feed' })),
     ],
@@ -415,7 +437,10 @@ export default function GlobalHackMap(): JSX.Element {
       };
 
   return (
-    <main className="relative h-dvh w-full overflow-hidden bg-surface-300 dark:bg-[#080c14]" aria-label="Global Hack Map situation room">
+    <main
+      className="relative h-dvh w-full overflow-hidden bg-surface-300 dark:bg-[#080c14]"
+      aria-label="Global Hack Map situation room"
+    >
       <PageMeta
         title="Global Hack Map"
         description="Live exploits, breaches and vulnerabilities on one globe - honest evidence statuses, patch-now cards, one-click agent fixes and an opt-in AI brief."
@@ -456,7 +481,8 @@ export default function GlobalHackMap(): JSX.Element {
                 {error ? 'The live picture is unavailable' : 'No geolocated events in this window'}
               </p>
               <p className="mt-1 text-mini text-muted">
-                {error ?? 'Widen the time window or clear the status filters — an empty map is a fact, not a guarantee.'}
+                {error ??
+                  'Widen the time window or clear the status filters — an empty map is a fact, not a guarantee.'}
               </p>
             </div>
           </div>
@@ -530,8 +556,14 @@ export default function GlobalHackMap(): JSX.Element {
             onTab={setTab}
             stack={stack}
             onStack={setStack}
-            onSelectEvent={(e) => { selectEvent(e); setSidebarOpen(false); }}
-            onSelectCve={(id) => { selectCve(id); setSidebarOpen(false); }}
+            onSelectEvent={(e) => {
+              selectEvent(e);
+              setSidebarOpen(false);
+            }}
+            onSelectCve={(id) => {
+              selectCve(id);
+              setSidebarOpen(false);
+            }}
             onCheck={() => setCheckOpen(true)}
             onBrief={() => setBriefOpen(true)}
             searchRef={searchRef}
@@ -565,7 +597,14 @@ export default function GlobalHackMap(): JSX.Element {
         </div>
       )}
 
-      <PatchDock cves={patchNow} onSelectCve={selectCve} open={patchOpen} onOpenChange={setPatchOpen} />
+      <PatchDock
+        cves={patchNow}
+        patches={patchFeed?.patches ?? []}
+        generatedAt={patchFeed?.generatedAt ?? null}
+        onSelectCve={selectCve}
+        open={patchOpen}
+        onOpenChange={setPatchOpen}
+      />
 
       {showAnalysis && (selectedEvent || selectedCve || selectedIncident) && (
         <div className="pointer-events-auto absolute bottom-4 right-4 z-30 w-[min(420px,calc(100%-2rem))]">
@@ -574,16 +613,33 @@ export default function GlobalHackMap(): JSX.Element {
             title={selectedCve?.id ?? selectedIncident?.title ?? selectedEvent!.title}
             description={selectedCve?.description ?? selectedIncident?.description ?? selectedEvent!.description}
             country={selectedIncident?.country ?? selectedEvent?.country}
-            severity={selectedCve?.severity?.toLowerCase() === 'critical' ? 'critical' : selectedEvent?.severity ?? (selectedIncident?.status === 'confirmed' ? 'high' : 'medium')}
+            severity={
+              selectedCve?.severity?.toLowerCase() === 'critical'
+                ? 'critical'
+                : (selectedEvent?.severity ?? (selectedIncident?.status === 'confirmed' ? 'high' : 'medium'))
+            }
             kind={selectedEvent?.kind ?? 'breach'}
-            source={selectedCve?.kev ? 'CISA KEV' : selectedIncident ? 'Global Hack Map feed' : selectedEvent?.source ?? 'CVE feed'}
+            source={
+              selectedCve?.kev
+                ? 'CISA KEV'
+                : selectedIncident
+                  ? 'Global Hack Map feed'
+                  : (selectedEvent?.source ?? 'CVE feed')
+            }
             onClose={() => setShowAnalysis(false)}
           />
         </div>
       )}
 
       {checkOpen && (
-        <CheckPanel cves={cves} events={windowEvents} stack={stack} onStack={setStack} onSelectCve={selectCve} onClose={() => setCheckOpen(false)} />
+        <CheckPanel
+          cves={cves}
+          events={windowEvents}
+          stack={stack}
+          onStack={setStack}
+          onSelectCve={selectCve}
+          onClose={() => setCheckOpen(false)}
+        />
       )}
       {briefOpen && <BriefPanel items={briefItems} dayKey={dayKey} onClose={() => setBriefOpen(false)} />}
       {agentsOpen && <AgentsPanel onClose={() => setAgentsOpen(false)} />}

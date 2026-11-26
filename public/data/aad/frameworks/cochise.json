@@ -1,0 +1,119 @@
+{
+  "slug": "cochise",
+  "name": "Cochise",
+  "description": "Research prototype that drives an assumed-breach attack on an Active Directory lab from an attacker host",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 3,
+    "suricata": 1,
+    "yara": 3,
+    "indicators": 8
+  },
+  "techniques": [
+    {
+      "id": "T1021.004",
+      "score": 2,
+      "comment": "KQL hunt: Cochise network shape: one Python process talking to a model API and holding an SSH session, and its asyncssh banner; KQL hunt: Cochise running on a host you monitor, and the Kali VM it drives"
+    },
+    {
+      "id": "T1059.006",
+      "score": 4,
+      "comment": "KQL hunt: Cochise network shape: one Python process talking to a model API and holding an SSH session, and its asyncssh banner; KQL hunt: Cochise running on a host you monitor, and the Kali VM it drives; KQL hunt: Indicator sweep with the agentic watchlist; Sigma: Cochise AI Pentest Agent Launcher"
+    },
+    {
+      "id": "T1110.003",
+      "score": 4,
+      "comment": "KQL hunt: Cochise running on a host you monitor, and the Kali VM it drives; KQL hunt: Indicator sweep with the agentic watchlist; Sentinel analytics: Cochise AI pentest agent user list in AD attack commands; Sigma: Cochise AI Pentest Agent User List in AD Attack Commands"
+    },
+    {
+      "id": "T1558.004",
+      "score": 1,
+      "comment": "Sigma: Cochise AI Pentest Agent User List in AD Attack Commands"
+    },
+    {
+      "id": "T1588.002",
+      "score": 4,
+      "comment": "Sigma: Cochise AI Pentest Agent Run Log Created; YARA: Cochise_Run_Log; YARA: Cochise_Scenario_Prompt; YARA: Cochise_Source"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "file_path",
+      "value": "/osint_users.txt",
+      "confidence": "medium",
+      "context": "User list at the root of the Kali VM that the Cochise scenario prompt names for password spraying; the model passes it to nxc and impacket GetNPUsers (scenario.md:31; 39 of the 59 shipped run logs). The operator places the file",
+      "source": "ThreatDefence review of the Cochise source code",
+      "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/src/cochise/templates/scenario.md#L28-L34",
+      "reported": "2026-10-24"
+    },
+    {
+      "type": "string",
+      "value": "You MUST call the perform_task tool to delegate work to the executor",
+      "confidence": "high",
+      "context": "Planner nudge Cochise sends to the model when it answers without a tool call (planner.py:205); in model traffic and in the run log",
+      "source": "ThreatDefence review of the Cochise source code",
+      "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/src/cochise/planner.py#L205",
+      "reported": "2026-10-24"
+    },
+    {
+      "type": "string",
+      "value": "Timeout during command execution over SSH command execution",
+      "confidence": "high",
+      "context": "Text Cochise returns to the model when a command on the Kali VM passes the 600 second SSH timeout (ssh_connection.py:61); in model traffic and in the run log",
+      "source": "ThreatDefence review of the Cochise source code",
+      "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/src/cochise/ssh_connection.py#L61-L68",
+      "reported": "2026-10-24"
+    },
+    {
+      "type": "string",
+      "value": "Mandiant Attack Lifecycle Model or the Lockheed-Martin Cyber Killchain",
+      "confidence": "medium",
+      "context": "Cochise scenario system prompt (scenario.md:13), sent on every model call and copied into the configuration event of every run log",
+      "source": "ThreatDefence review of the Cochise source code",
+      "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/src/cochise/templates/scenario.md#L13",
+      "reported": "2026-10-24"
+    },
+    {
+      "type": "string",
+      "value": "uv run cochise",
+      "confidence": "medium",
+      "context": "Cochise launcher from the README (README.md:103); starts <venv>/bin/cochise",
+      "source": "ThreatDefence review of the Cochise source code",
+      "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/README.md#L103",
+      "reported": "2026-10-24"
+    },
+    {
+      "type": "string",
+      "value": "cochise-replay",
+      "confidence": "medium",
+      "context": "Cochise console script that replays a run log, cochise-replay logs/run-<YYYYmmdd-HHMMSS>.json (pyproject.toml:23)",
+      "source": "ThreatDefence review of the Cochise source code",
+      "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/pyproject.toml#L21-L25",
+      "reported": "2026-10-24"
+    },
+    {
+      "type": "string",
+      "value": "\"event\": \"starting test-run\"",
+      "confidence": "high",
+      "context": "First line of every Cochise run log logs/run-<YYYYmmdd-HHMMSS>.json, which holds every command, output and credential of the run (cochise.py:29, logger.py:48). File content, not a path",
+      "source": "ThreatDefence review of the Cochise source code",
+      "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/src/cochise/logger.py#L33-L52",
+      "reported": "2026-10-24"
+    },
+    {
+      "type": "string",
+      "value": "AsyncSSH_",
+      "confidence": "low",
+      "context": "SSH client software version Cochise sends to the Kali VM it drives (SSH-2.0-AsyncSSH_2.24.0 with the locked dependency); asyncssh's default, shared with every asyncssh client: context only",
+      "source": "ThreatDefence review of the Cochise source code",
+      "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/src/cochise/ssh_connection.py#L19",
+      "reported": "2026-10-24"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/cochise",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

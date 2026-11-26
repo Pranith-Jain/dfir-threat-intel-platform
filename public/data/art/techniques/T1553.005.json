@@ -1,0 +1,59 @@
+{
+  "id": "T1553.005",
+  "displayName": "Subvert Trust Controls: Mark-of-the-Web Bypass",
+  "tests": [
+    {
+      "name": "Mount ISO image",
+      "guid": "002cca30-4778-4891-878a-aaffcfa502fa",
+      "description": "Mounts ISO image downloaded from internet to evade Mark-of-the-Web. Upon successful execution, powershell will download the .iso from the Atomic Red Team repo, and mount the image. The provided sample ISO simply has a Reports shortcut file in it. Reference: https://www.microsoft.com/security/blog/2021/05/27/new-sophisticated-email-based-attack-from-nobelium/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["path_of_iso"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Mount an ISO image and run executable from the ISO",
+      "guid": "42f22b00-0242-4afc-a61b-0da05041f9cc",
+      "description": "Mounts an ISO image downloaded from internet to evade Mark-of-the-Web and run hello.exe executable from the ISO. \nUpon successful execution, powershell will download the .iso from the Atomic Red Team repo, mount the image, and run the executable from the ISO image that will open command prompt echoing \"Hello, World!\". \nISO provided by:https://twitter.com/mattifestation/status/1398323532988399620 Reference:https://www.microsoft.com/security/blog/2021/05/27/new-sophisticated-email-based-attack-from-nobelium/,",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["path_of_iso"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Remove the Zone.Identifier alternate data stream",
+      "guid": "64b12afc-18b8-4d3f-9eab-7f6cae7c73f9",
+      "description": "Remove the Zone.Identifier alternate data stream which identifies the file as downloaded from the internet.\nRemoving this allows more freedom in executing scripts in PowerShell and avoids opening files in protected view.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_to_download", "file_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Execute LNK file from ISO",
+      "guid": "c2587b8d-743d-4985-aa50-c83394eaeb68",
+      "description": "Executes LNK file document.lnk from AllTheThings.iso. Link file executes cmd.exe and rundll32 to in order to load and execute AllTheThingsx64.dll from the ISO which spawns calc.exe.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["path_of_iso"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1553.005/T1553.005.yaml"
+}

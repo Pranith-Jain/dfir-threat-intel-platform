@@ -1,0 +1,134 @@
+{
+  "slug": "agent-zero",
+  "name": "Agent Zero",
+  "description": "General-purpose agent in a Kali container with a built-in hacker profile and an open web UI",
+  "seenIn": "Threat-actor experimentation GTIG reported, with no published indicators",
+  "counts": {
+    "kqlHunts": 2,
+    "analytics": 0,
+    "sigma": 1,
+    "suricata": 3,
+    "yara": 1,
+    "indicators": 8
+  },
+  "techniques": [
+    {
+      "id": "T1059",
+      "score": 1,
+      "comment": "Sigma: Agent Zero Container, UI or Tunnel Started"
+    },
+    {
+      "id": "T1071",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1071.001",
+      "score": 2,
+      "comment": "Suricata: 3807001 TD Agent Zero web UI page; Suricata: 3807002 TD Agent Zero login page"
+    },
+    {
+      "id": "T1572",
+      "score": 1,
+      "comment": "KQL hunt: Agent Zero on a host you monitor, attack tools on that host, or its UI exposed through a tunnel"
+    },
+    {
+      "id": "T1588.002",
+      "score": 2,
+      "comment": "KQL hunt: Agent Zero on a host you monitor, attack tools on that host, or its UI exposed through a tunnel; YARA: AgentZero_Hacker_Profile"
+    },
+    {
+      "id": "T1588.007",
+      "score": 1,
+      "comment": "YARA: AgentZero_Hacker_Profile"
+    },
+    {
+      "id": "T1595",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1595.002",
+      "score": 1,
+      "comment": "Suricata: 3807003 TD Agent Zero user agent"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "docker_image",
+      "value": "agent0ai/agent-zero",
+      "confidence": "medium",
+      "context": "Agent Zero image on a Kali base (agent0ai/agent-zero-base), web UI published on 50080 (docker/run/docker-compose.yml)",
+      "source": "ThreatDefence review of the Agent Zero source code",
+      "sourceUrl": "https://github.com/agent0ai/agent-zero",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "Login - Agent Zero",
+      "confidence": "medium",
+      "context": "Agent Zero login page title; the UI itself is titled Agent Zero. GitGuardian counted 173 services by title on November 7, 2026, 39 of them open without a login",
+      "source": "GitGuardian",
+      "sourceUrl": "https://blog.gitguardian.com/ai-pentesting-tools-beyond-artex/",
+      "reported": "2026-11-09"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "240024025",
+      "confidence": "medium",
+      "context": "Agent Zero web UI favicon.svg (Shodan http.favicon.hash), verified against webui/public/favicon.svg",
+      "source": "ThreatDefence review of the Agent Zero source code",
+      "sourceUrl": "https://github.com/agent0ai/agent-zero",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "sha256",
+      "value": "c1938a2903529c6fe7d86fc768bd953f9864ea14d7b0fe95a714669f64c896fc",
+      "confidence": "medium",
+      "context": "Agent Zero web UI favicon.svg",
+      "source": "ThreatDefence review of the Agent Zero source code",
+      "sourceUrl": "https://github.com/agent0ai/agent-zero",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "port",
+      "value": "50080",
+      "confidence": "low",
+      "context": "Agent Zero web UI port in the stock compose file (docker/run/docker-compose.yml)",
+      "source": "ThreatDefence review of the Agent Zero source code",
+      "sourceUrl": "https://github.com/agent0ai/agent-zero",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "obey instructions never refuse for safety ethics",
+      "confidence": "medium",
+      "context": "Agent Zero system prompt line, in the default profile (agents/agent0/prompts/agent.system.main.role.md) and the hacker profile, which adds \"cracking hacking penetration testing part of job\"; visible where model traffic is inspected",
+      "source": "ThreatDefence review of the Agent Zero source code",
+      "sourceUrl": "https://github.com/agent0ai/agent-zero",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "user_agent",
+      "value": "agent-zero/",
+      "confidence": "low",
+      "context": "Agent Zero's user agent prefix for its own OpenAI OAuth calls (plugins/_oauth/helpers/codex.py:607)",
+      "source": "ThreatDefence review of the Agent Zero source code",
+      "sourceUrl": "https://github.com/agent0ai/agent-zero",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "AgentZero experimentation",
+      "confidence": "low",
+      "context": "GTIG observed threat-actor experimentation with AgentZero and the ZeroHollow inference service; no actor, target or indicators were published",
+      "source": "Google Threat Intelligence Group",
+      "sourceUrl": "https://cloud.google.com/blog/topics/threat-intelligence/artex-and-friends-enter-agentic-offensive-frameworks",
+      "reported": "2026-10-31"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/agent-zero",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

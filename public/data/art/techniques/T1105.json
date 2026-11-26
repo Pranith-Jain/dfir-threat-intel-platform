@@ -1,0 +1,523 @@
+{
+  "id": "T1105",
+  "displayName": "Ingress Tool Transfer",
+  "tests": [
+    {
+      "name": "rsync remote file copy (push)",
+      "guid": "0fc6e977-cb12-44f6-b263-2824ba917409",
+      "description": "Utilize rsync to perform a remote file copy (push)",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["remote_path", "remote_host", "local_path", "username"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "rsync remote file copy (pull)",
+      "guid": "3180f7d5-52c0-4493-9ea0-e3431a84773f",
+      "description": "Utilize rsync to perform a remote file copy (pull)",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["remote_path", "remote_host", "local_path", "username"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "scp remote file copy (push)",
+      "guid": "83a49600-222b-4866-80a0-37736ad29344",
+      "description": "Utilize scp to perform a remote file copy (push)",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["remote_path", "local_file", "remote_host", "username"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "scp remote file copy (pull)",
+      "guid": "b9d22b9a-9778-4426-abf0-568ea64e9c33",
+      "description": "Utilize scp to perform a remote file copy (pull)",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["remote_host", "local_path", "remote_file", "username"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "sftp remote file copy (push)",
+      "guid": "f564c297-7978-4aa9-b37a-d90477feea4e",
+      "description": "Utilize sftp to perform a remote file copy (push)",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["remote_path", "local_file", "remote_host", "username"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "sftp remote file copy (pull)",
+      "guid": "0139dba1-f391-405e-a4f5-f3989f2c88ef",
+      "description": "Utilize sftp to perform a remote file copy (pull)",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["remote_host", "local_path", "remote_file", "username"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "certutil download (urlcache)",
+      "guid": "dd3b61dd-7bbc-48cd-ab51-49ad1a776df0",
+      "description": "Use certutil -urlcache argument to download a file from the web. Note - /urlcache also works!",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_file", "local_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "certutil download (verifyctl)",
+      "guid": "ffd492e3-0455-4518-9fb1-46527c9f241b",
+      "description": "Use certutil -verifyctl argument to download a file from the web. Note - /verifyctl also works!",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_file", "local_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Windows - BITSAdmin BITS Download",
+      "guid": "a1921cd3-9a2d-47d5-a891-f1d0f2a7a31b",
+      "description": "This test uses BITSAdmin.exe to schedule a BITS job for the download of a file.\nThis technique is used by Qbot malware to download payloads.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["bits_job_name", "local_path", "remote_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Windows - PowerShell Download",
+      "guid": "42dc4460-9aa6-45d3-b1a6-3955d34e1fe8",
+      "description": "This test uses PowerShell to download a payload.\nThis technique is used by multiple adversaries and malware families.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_file", "destination_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "OSTAP Worming Activity",
+      "guid": "2ca61766-b456-4fcf-a35a-1233685e1cad",
+      "description": "OSTap copies itself in a specfic way to shares and secondary drives. This emulates the activity.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["destination_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "svchost writing a file to a UNC path",
+      "guid": "fa5a2759-41d7-4e13-a19c-e8f28a53566f",
+      "description": "svchost.exe writing a non-Microsoft Office file to a file with a UNC path.\nUpon successful execution, this will rename cmd.exe as svchost.exe and move it to `c:\\`, then execute svchost.exe with output to a txt file.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Download a File with Windows Defender MpCmdRun.exe",
+      "guid": "815bef8b-bf91-4b67-be4c-abe4c2a94ccc",
+      "description": "Uses Windows Defender MpCmdRun.exe to download a file from the internet (must have version 4.18 installed).\nThe input arguments \"remote_file\" and \"local_path\" can be used to specify the download URL and the name of the output file.\nBy default, the test downloads the Atomic Red Team license file to the temp directory.\n\nMore info and how to find your version can be found here https://lolbas-project.github.io/lolbas/Binaries/MpCmdRun/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_file", "local_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "whois file download",
+      "guid": "c99a829f-0bb8-4187-b2c6-d47d1df74cab",
+      "description": "Download a remote file using the whois utility",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_host", "remote_port", "output_file", "query", "timeout"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "File Download via PowerShell",
+      "guid": "54a4daf1-71df-4383-9ba7-f1a295d8b6d2",
+      "description": "Use PowerShell to download and write an arbitrary file from the internet. Example is from the 2021 Threat Detection Report by Red Canary.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["target_remote_file", "output_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "File download with finger.exe on Windows",
+      "guid": "5f507e45-8411-4f99-84e7-e38530c45d01",
+      "description": "Simulate a file download using finger.exe. Connect to localhost by default, use custom input argument to test finger connecting to an external server.\nBecause this is being tested on the localhost, you should not be expecting a successful connection\nhttps://www.exploit-db.com/exploits/48815\nhttps://www.bleepingcomputer.com/news/security/windows-10-finger-command-can-be-abused-to-download-or-steal-files/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["remote_host"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Download a file with IMEWDBLD.exe",
+      "guid": "1a02df58-09af-4064-a765-0babe1a0d1e2",
+      "description": "Use IMEWDBLD.exe (built-in to windows) to download a file. This will throw an error for an invalid dictionary file.\nDownloaded files can be found in \"%LocalAppData%\\Microsoft\\Windows\\INetCache\\<8_RANDOM_ALNUM_CHARS>/<FILENAME>[1].<EXTENSION>\" or `%LocalAppData%\\Microsoft\\Windows\\INetCache\\IE\\<8_RANDOM_ALNUM_CHARS>/<FILENAME>[1].<EXTENSION>.\nRun \"Get-ChildItem -Path C:\\Users\\<USERNAME>\\AppData\\Local\\Microsoft\\Windows\\INetCache\\ -Include <FILENAME>* -Recurse -Force -File -ErrorAction SilentlyContinue\" without quotes and adding the correct username and file name to locate the file.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_url", "file_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Curl Download File",
+      "guid": "2b080b99-0deb-4d51-af0f-833d37c4ca6a",
+      "description": "The following Atomic utilizes native curl.exe, or downloads it if not installed, to download a remote DLL and output to a number of directories to simulate malicious behavior.\nExpected output will include whether the file downloaded successfully or not.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_download", "curl_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Curl Upload File",
+      "guid": "635c9a38-6cbf-47dc-8615-3810bc1167cf",
+      "description": "The following Atomic utilizes native curl.exe, or downloads it if not installed, to upload a txt file to simulate data exfiltration\nExpected output will include whether the file uploaded successfully or not.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["curl_path", "remote_destination", "file_path"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Download a file with Microsoft Connection Manager Auto-Download",
+      "guid": "d239772b-88e2-4a2e-8473-897503401bcc",
+      "description": "Uses the cmdl32 to download arbitrary file from the internet. The cmdl32 package is allowed to install the profile used to launch the VPN connection. However, the config is modified to download the arbitary file. \nThe issue of cmdl32.exe detecting and deleting the payload by identifying it as not a VPN Servers profile is avoided by setting a temporary TMP folder and denying the delete permission to all files for the user.\nUpon successful execution the test will open calculator and Notepad executable for 10 seconds.\nreference:\nhttps://twitter.com/ElliotKillick/status/1455897435063074824\nhttps://github.com/LOLBAS-Project/LOLBAS/pull/151\nhttps://lolbas-project.github.io/lolbas/Binaries/Cmdl32/\n",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["Path_to_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "MAZE Propagation Script",
+      "guid": "70f4d07c-5c3e-4d53-bb0a-cdf3ada14baf",
+      "description": "This test simulates MAZE ransomware's propogation script that searches through a list of computers, tests connectivity to them, and copies a binary file to the Windows\\Temp directory of each one. \nUpon successful execution, a specified binary file will attempt to be copied to each online machine, a list of the online machines, as well as a list of offline machines will be output to a specified location.\nReference: https://www.fireeye.com/blog/threat-research/2020/05/tactics-techniques-procedures-associated-with-maze-ransomware-incidents.html",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["binary_file", "exe_remote_folder", "remote_drive_letter"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Printer Migration Command-Line Tool UNC share folder into a zip file",
+      "guid": "49845fc1-7961-4590-a0f0-3dbcf065ae7e",
+      "description": "Create a ZIP file from a folder in a remote drive",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["Path_unc", "Path_PrintBrm"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Lolbas replace.exe use to copy file",
+      "guid": "54782d65-12f0-47a5-b4c1-b70ee23de6df",
+      "description": "Copy file.cab to destination\nReference: https://lolbas-project.github.io/lolbas/Binaries/Replace/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["replace_cab", "Path_replace"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Lolbas replace.exe use to copy UNC file",
+      "guid": "ed0335ac-0354-400c-8148-f6151d20035a",
+      "description": "Copy UNC file to destination\nReference: https://lolbas-project.github.io/lolbas/Binaries/Replace/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["replace_cab", "Path_replace"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "certreq download",
+      "guid": "6fdaae87-c05b-42f8-842e-991a74e8376b",
+      "description": "Use certreq to download a file from the web",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["local_path", "remote_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Download a file using wscript",
+      "guid": "97116a3f-efac-4b26-8336-b9cb18c45188",
+      "description": "Use wscript to run a local VisualBasic file to download a remote file",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["vbscript_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Linux Download File and Run",
+      "guid": "bdc373c5-e9cf-4563-8a7b-a9ba720a90f3",
+      "description": "Utilize linux Curl to download a remote file, chmod +x it and run it.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_url", "payload_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Nimgrab - Transfer Files",
+      "guid": "b1729c57-9384-4d1c-9b99-9b220afb384e",
+      "description": "Use nimgrab.exe to download a file from the web.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_file", "destination_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "iwr or Invoke Web-Request download",
+      "guid": "c01cad7f-7a4c-49df-985e-b190dcf6a279",
+      "description": "Use 'iwr' or \"Invoke-WebRequest\" -URI argument to download a file from the web. Note: without -URI also works in some versions.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_file", "local_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Arbitrary file download using the Notepad++ GUP.exe binary",
+      "guid": "66ee226e-64cb-4dae-80e3-5bf5763e4a51",
+      "description": "GUP is an open source signed binary used by Notepad++ for software updates, and can be used to download arbitrary files(.zip) from internet/github.\n[Reference](https://x.com/nas_bench/status/1535322182863179776?s=20)\nUpon execution, a sample zip file will be downloaded to C:\\Temp\\Sample folder",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["target_file_url", "working_dir", "gup_executable", "target_file_sha256"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "File download via nscurl",
+      "guid": "5bcefe5f-3f30-4f1c-a61a-8d7db3f4450c",
+      "description": "Use nscurl to download and write a file/payload from the internet.\n-k = Disable certificate checking\n-o = Output destination",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_file", "destination_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "File Download with Sqlcmd.exe",
+      "guid": "6934c16e-0b3a-4e7f-ab8c-c414acd32181",
+      "description": "One of the windows packages 'Sqlcmd.exe' can be abused to download malicious files from C2 servers\nThis Atomic will exhibit the similar behavior by downloading a sample zip file from src directory of this Technique folder via GitHub URL",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_url", "local_file_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Remote File Copy using PSCP",
+      "guid": "c82b1e60-c549-406f-9b00-0a8ae31c9cfe",
+      "description": "Copy a staged file using PSCP.exe to a public target location.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [
+        "pscp_url",
+        "pscp_binary",
+        "scp_user",
+        "scp_password",
+        "scp_port",
+        "exfil_package",
+        "target_location",
+        "target_filename"
+      ],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Windows push file using scp.exe",
+      "guid": "2a4b0d29-e5dd-4b66-b729-07423ba1cd9d",
+      "description": "This test simulates pushing files using SCP on a Windows environment.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_path", "remote_host", "local_path", "file_name", "username"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Windows pull file using scp.exe",
+      "guid": "401667dc-05a6-4da0-a2a7-acfe4819559c",
+      "description": "This test simulates pulling files using SCP on a Windows environment.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["remote_path", "remote_host", "local_path", "username"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Windows push file using sftp.exe",
+      "guid": "205e676e-0401-4bae-83a5-94b8c5daeb22",
+      "description": "This test simulates pushing files using SFTP on a Windows environment.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_path", "remote_host", "local_path", "file_name", "username"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Windows pull file using sftp.exe",
+      "guid": "3d25f1f2-55cb-4a41-a523-d17ad4cfba19",
+      "description": "This test simulates pulling files using SFTP on a Windows environment.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["remote_path", "remote_host", "local_path", "username"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Download a file with OneDrive Standalone Updater",
+      "guid": "3dd6a6cf-9c78-462c-bd75-e9b54fc8925b",
+      "description": "Uses OneDrive Standalone Updater to download a file from a specified URL by setting up the required registry keys.\nThis technique can be used to download files without executing anomalous executables.\nReference: https://lolbas-project.github.io/lolbas/Binaries/OneDriveStandaloneUpdater/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_url", "onedrive_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Curl Insecure Connection from a Pod",
+      "guid": "7e2ad0db-1efa-4af2-a77c-bc6e87d7b3f3",
+      "description": "Launches an Ubuntu pod, installs curl, and executes curl with insecure flags (-k/--insecure)\nagainst a target URL. The pod is automatically deleted after execution.",
+      "platforms": ["containers"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["pod_name", "remote_url", "image_name"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1105/T1105.yaml"
+}

@@ -1,0 +1,176 @@
+{
+  "id": "T1078.003",
+  "displayName": "Valid Accounts: Local Accounts",
+  "tests": [
+    {
+      "name": "Create local account with admin privileges",
+      "guid": "a524ce99-86de-4db6-b4f9-e08f35a47a15",
+      "description": "After execution the new account will be active and added to the Administrators group",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["password"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create local account with admin privileges - MacOS",
+      "guid": "f1275566-1c26-4b66-83e3-7f9f7f964daa",
+      "description": "After execution the new account will be active and added to the Administrators group",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create local account with admin privileges using sysadminctl utility - MacOS",
+      "guid": "191db57d-091a-47d5-99f3-97fde53de505",
+      "description": "After execution the new account will be active and added to the Administrators group",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enable root account using dsenableroot utility - MacOS",
+      "guid": "20b40ea9-0e17-4155-b8e6-244911a678ac",
+      "description": "After execution the current/new user will have root access",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Add a new/existing user to the admin group using dseditgroup utility - macOS",
+      "guid": "433842ba-e796-4fd5-a14f-95d3a1970875",
+      "description": "After execution the current/new user will be added to the Admin group",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - Loot local Credentials - powerhell kittie",
+      "guid": "9e9fd066-453d-442f-88c1-ad7911d32912",
+      "description": "Loot local Credentials - powerhell kittie technique via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - Loot local Credentials - Safetykatz",
+      "guid": "e9fdb899-a980-4ba4-934b-486ad22e22f4",
+      "description": "Loot local Credentials - Safetykatz technique via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create local account (Linux)",
+      "guid": "02a91c34-8a5b-4bed-87af-501103eb5357",
+      "description": "An adversary may wish to create an account with admin privileges to work with. In this test we create a \"art\" user with the password art, switch to art, execute whoami, exit and delete the art user.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Reactivate a locked/expired account (Linux)",
+      "guid": "d2b95631-62d7-45a3-aaef-0972cea97931",
+      "description": "A system administrator may have locked and expired a user account rather than deleting it. \"the user is coming back, at some stage\" An adversary may reactivate a inactive account in an attempt to appear legitimate. \n\nIn this test we create a \"art\" user with the password art, lock and expire the account, try to su to art and fail, unlock and renew the account, su successfully, then delete the account.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Reactivate a locked/expired account (FreeBSD)",
+      "guid": "09e3380a-fae5-4255-8b19-9950be0252cf",
+      "description": "A system administrator may have locked and expired a user account rather than deleting it. \"the user is coming back, at some stage\" An adversary may reactivate a inactive account in an attempt to appear legitimate. \n\nIn this test we create a \"art\" user with the password art, lock and expire the account, try to su to art and fail, unlock and renew the account, su successfully, then delete the account.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Login as nobody (Linux)",
+      "guid": "3d2cd093-ee05-41bd-a802-59ee5c301b85",
+      "description": "An adversary may try to re-purpose a system account to appear legitimate. In this test change the login shell of the nobody account, change its password to nobody, su to nobody, exit, then reset nobody's shell to /usr/sbin/nologin. Here is how the nobody entry should look like in `/etc/passwd` before the test is executed and right after the cleanup: `# -> nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin`",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Login as nobody (freebsd)",
+      "guid": "16f6374f-7600-459a-9b16-6a88fd96d310",
+      "description": "An adversary may try to re-purpose a system account to appear legitimate. In this test change the login shell of the nobody account, change its password to nobody, su to nobody, exit, then reset nobody's shell to /usr/sbin/nologin. Here is how the nobody entry should look like in `/etc/passwd` before the test is executed and right after the cleanup: `# -> nobody:x:65534:65534:Unprivileged user:/nonexistent:/usr/sbin/nologin`",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Use PsExec to elevate to NT Authority\\SYSTEM account",
+      "guid": "6904235f-0f55-4039-8aed-41c300ff7733",
+      "description": "PsExec is a powerful tool most known for its remote management capability. However, it can also be used to run processes as the local system account.\n\nThe local system account is a default windows account which has unrestricted access to all system resources.\n\nUpon successful execution, PsExec.exe will spawn a command prompt which will run 'whoami' as the local system account and then exit.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1078.003/T1078.003.yaml"
+}

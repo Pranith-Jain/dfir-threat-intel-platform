@@ -1,0 +1,289 @@
+{
+  "slug": "cybermes",
+  "name": "Cybermes",
+  "description": "Bug bounty and red team framework built on Hermes Agent, with about two hundred playbooks",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 5,
+    "suricata": 12,
+    "yara": 3,
+    "indicators": 23
+  },
+  "techniques": [
+    {
+      "id": "T1005",
+      "score": 1,
+      "comment": "Sigma: Cybermes Files Written"
+    },
+    {
+      "id": "T1046",
+      "score": 1,
+      "comment": "Sigma: Scanners Started With Cybermes MCP Argument Order"
+    },
+    {
+      "id": "T1059",
+      "score": 2,
+      "comment": "Sentinel analytics: Cybermes AI pentest framework on a host; Sigma: Cybermes Launcher, MCP Server or Go Tools Started"
+    },
+    {
+      "id": "T1059.004",
+      "score": 1,
+      "comment": "KQL hunt: Cybermes running on a host you monitor"
+    },
+    {
+      "id": "T1105",
+      "score": 1,
+      "comment": "Suricata: 3813312 TD Cybermes MCP native binary download from GitHub releases (decrypted)"
+    },
+    {
+      "id": "T1588.002",
+      "score": 8,
+      "comment": "KQL hunt: Cybermes running on a host you monitor; KQL hunt: Indicator sweep with the agentic watchlist; Sigma: Cybermes Files Written; Sigma: Cybermes Launcher, MCP Server or Go Tools Started; Sigma: Cybermes User Agents in Proxy Logs; Suricata: 3813309 TD Cybermes MCP npm update check (decrypted); Suricata: 3813312 TD Cybermes MCP native binary download from GitHub releases (decrypted); YARA: Cybermes_Code_Or_MCP_Binary"
+    },
+    {
+      "id": "T1588.007",
+      "score": 3,
+      "comment": "Suricata: 3813310 TD Cybermes persona in model request; Suricata: 3813311 TD Cybermes MCP tool definitions in model request; YARA: Cybermes_Persona_Or_Config"
+    },
+    {
+      "id": "T1592.002",
+      "score": 1,
+      "comment": "Suricata: 3813302 TD Cybermes HTTP probe user agent"
+    },
+    {
+      "id": "T1594",
+      "score": 5,
+      "comment": "KQL hunt: Cybermes user agents and audit canary in web and proxy logs; KQL hunt: Indicator sweep with the agentic watchlist; Sigma: Cybermes User Agents in Proxy Logs; Sigma: Cybermes User Agents in Web Server Logs; Suricata: 3813301 TD Cybermes recon crawler user agent"
+    },
+    {
+      "id": "T1595.002",
+      "score": 9,
+      "comment": "KQL hunt: Cybermes running on a host you monitor; KQL hunt: Cybermes user agents and audit canary in web and proxy logs; Sigma: Cybermes User Agents in Web Server Logs; Sigma: Scanners Started With Cybermes MCP Argument Order; Suricata: 3813305 TD Cybermes AI gateway auditor user agent; Suricata: 3813306 TD Cybermes AI gateway auditor CORS canary origin; Suricata: 3813307 TD Cybermes exam state machine auditor user agent; Suricata: 3813308 TD Cybermes security auditor user agent from model-written scripts; YARA: Cybermes_Assessment_Report"
+    },
+    {
+      "id": "T1595.003",
+      "score": 5,
+      "comment": "KQL hunt: Cybermes user agents and audit canary in web and proxy logs; Sigma: Cybermes User Agents in Proxy Logs; Sigma: Cybermes User Agents in Web Server Logs; Sigma: Scanners Started With Cybermes MCP Argument Order; Suricata: 3813303 TD Cybermes endpoint fuzzer user agent"
+    },
+    {
+      "id": "T1596.003",
+      "score": 2,
+      "comment": "Sigma: Cybermes User Agents in Proxy Logs; Suricata: 3813304 TD Cybermes subdomain discovery query to crt.sh (decrypted)"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Cybermes/2.1 (Recon Crawler)",
+      "confidence": "high",
+      "context": "User agent of the cybermes_recon_crawl MCP tool's native Go crawler (up to 30 pages, links and API paths from HTML and JS), used when katana is not installed or prefer_katana is false (pkg/crawl/crawler.go:84,274). A custom User-Agent header from the tool call overrides it",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/pkg/crawl/crawler.go#L84",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Cybermes/2.1 (Security Assessment)",
+      "confidence": "high",
+      "context": "User agent of the cybermes_http_probe MCP tool's native Go probe (one GET, title, server and technology detection), used when httpx is not installed (pkg/probe/probe.go:82,133)",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/pkg/probe/probe.go#L82",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Cybermes/3.2 (API Fuzzer)",
+      "confidence": "high",
+      "context": "User agent of the cybermes_fuzz_endpoints MCP tool's native Go fuzzer (5 workers, tools/wordlists/common.txt or 41 built-in paths such as .env, .git/config, actuator, swagger), used when ffuf is not installed (pkg/fuzz/fuzzer.go:58-65,382). The tool is auto-approved in the npm launcher's default settings",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/pkg/fuzz/fuzzer.go#L382",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Cybermes/3.2 (Subdomain Recon)",
+      "confidence": "high",
+      "context": "User agent of the cybermes_subdomain_discovery MCP tool's query to https://crt.sh/?q=%25.<domain>&output=json when subfinder is missing or fails (pkg/subdomain/subdomain.go:170,183). HTTPS: visible only with TLS inspection",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/pkg/subdomain/subdomain.go#L183",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "user_agent",
+      "value": "Cybermes-AIGateway-Auditor/1.0",
+      "confidence": "high",
+      "context": "User agent of scripts/audit_ai_gateway_config.py, which requests / with Origin https://audit-canary.example.com and /api/v1/models of an AI gateway (lines 28,59,81)",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/scripts/audit_ai_gateway_config.py#L28",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "user_agent",
+      "value": "Cybermes-ExamAuditor/1.0",
+      "confidence": "high",
+      "context": "User agent of scripts/audit_exam_state_machine.py --url, which fetches an exam-platform session JSON with an optional Bearer token (line 109)",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/scripts/audit_exam_state_machine.py#L109",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "user_agent",
+      "value": "Cybermes-Security-Auditor/1.0",
+      "confidence": "medium",
+      "context": "User agent that Cybermes' .cursorrules tells coding agents to set in scripts and PoCs they write (line 8). Chosen by the model: not every run uses it",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/.cursorrules#L8",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "user_agent",
+      "value": "cybermes-mcp-updater/",
+      "confidence": "high",
+      "context": "Prefix of the npm launcher's update check user agent (cybermes-mcp-updater/<version>, GET https://registry.npmjs.org/cybermes-mcp/latest at most once a day; npm/src/utils/updater.js:35-40). HTTPS: visible only with TLS inspection",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/npm/src/utils/updater.js#L40",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "string",
+      "value": "audit-canary.example.com",
+      "confidence": "medium",
+      "context": "Origin header value (https://audit-canary.example.com) scripts/audit_ai_gateway_config.py sends to test CORS reflection (lines 57-60)",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/scripts/audit_ai_gateway_config.py#L59",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "string",
+      "value": "You are Cybermes, an",
+      "confidence": "high",
+      "context": "Start of both Cybermes personas: .hermes/SOUL.md (You are Cybermes, an elite autonomous offensive security, bug bounty, and red teaming agent framework) and agent.system_prompt in .hermes/config.yaml.example (You are Cybermes, an automated security testing, API diagnostic, and vulnerability assessment agent). In model ",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/.hermes/config.yaml.example#L13",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "string",
+      "value": "autonomous-godmode-hunter",
+      "confidence": "high",
+      "context": "Cybermes skill auto-loaded by its Hermes config (skills.autoload, .hermes/config.yaml.example:54-57) and copied into <HERMES_HOME>/skills/ by setup.sh, the Dockerfile and entrypoint.sh. Not the Hermes godmode jailbreak skill",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/skills/autonomous-godmode-hunter/SKILL.md",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "string",
+      "value": "cybermes_fuzz_endpoints",
+      "confidence": "high",
+      "context": "Name of a cybermes-mcp tool (with cybermes_recon_crawl, cybermes_http_probe, cybermes_nmap_scan, cybermes_nuclei_scan, cybermes_subdomain_discovery, cybermes_record_finding and others). Sent to the model in the tool list, and in the Go binary",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/pkg/mcp/tools_fuzz.go#L17",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "string",
+      "value": "cybermes-mcp@latest",
+      "confidence": "high",
+      "context": "npx package spec the installers write into AI client MCP configs (Claude Desktop, Cursor, Windsurf, Cline, Roo Code, Claude Code, Continue, Zed, Kilo, Codex, Hermes) as mcpServers.cybermes: command npx, args -y cybermes-mcp@latest (npm/src/adapters/clients.js:40-43)",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/npm/src/adapters/clients.js#L42",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "string",
+      "value": "/opt/hermes-venv/bin/hermes",
+      "confidence": "medium",
+      "context": "Hermes install path in the Cybermes Docker image; the container runs /opt/hermes-venv/bin/hermes gateway run by default (Dockerfile:76-80, entrypoint.sh:54-57). A process path, not a file the operator chooses",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/Dockerfile#L76-L80",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "docker_image",
+      "value": "ghcr.io/zyrexnn/cybermes",
+      "confidence": "high",
+      "context": "Cybermes Docker image (docker-compose.yml image ghcr.io/zyrexnn/cybermes:latest, container_name cybermes-agent, command gateway run; published by .github/workflows/docker-publish.yml on v* tags). Runs Hermes with approvals off and a Telegram gateway; no published ports",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/docker-compose.yml#L6-L7",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "string",
+      "value": "cybermes-agent",
+      "confidence": "medium",
+      "context": "Container name in Cybermes' docker-compose.yml (line 7)",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/docker-compose.yml#L7",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "file_path",
+      "value": "/.cybermes/bin/cybermes-mcp-v",
+      "confidence": "high",
+      "context": "Cache of the native MCP binary the npm launcher downloads from https://github.com/Zyrexnn/Cybermes/releases/download/v<version>/cybermes-mcp-v<version>-<os>-<arch>[.exe] into ~/.cybermes/bin/ (npm/src/utils/binary.js:44,130-149)",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/npm/src/utils/binary.js#L130",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "file_path",
+      "value": "/.cybermes/",
+      "confidence": "medium",
+      "context": "Settings folder of the npm launcher: config.json (workspace, rateLimit, autoApprove list) and update_check.json (npm/src/utils/config-store.js:11-16, updater.js:13)",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/npm/src/utils/config-store.js#L12",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "file_path",
+      "value": "/.hermes/skills/autonomous-godmode-hunter/",
+      "confidence": "high",
+      "context": "Cybermes' auto-loaded skill inside the Hermes home (HERMES_HOME is <clone>/.hermes for ./cybermes, /root/.hermes in the container)",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/setup.sh#L53-L56",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "file_name",
+      "value": "cybermes-mcp",
+      "confidence": "high",
+      "context": "Go MCP server (stdio JSON-RPC, server name cybermes-mcp, version 3.5.1) built into tools/bin/ by setup.sh and /usr/local/bin/ in the image, or cached as cybermes-mcp-v<version>-<os>-<arch> (pkg/mcp/server.go:14-16, Dockerfile:92)",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/pkg/mcp/server.go#L14",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "file_name",
+      "value": "smart_pipe",
+      "confidence": "low",
+      "context": "Cybermes Go tool that filters tool output for the model (cmd/smart_pipe, built into tools/bin or /usr/local/bin). The name is not unique to Cybermes",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/Dockerfile#L88",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "file_name",
+      "value": "search_knowledge",
+      "confidence": "low",
+      "context": "Cybermes Go tool that searches its knowledge folder (cmd/search_knowledge). The name is not unique to Cybermes",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/Dockerfile#L90",
+      "reported": "2026-11-16"
+    },
+    {
+      "type": "domain",
+      "value": "api.infistar.cc",
+      "confidence": "low",
+      "context": "Model gateway the Cybermes README and .env.example promote as its sponsor (INFISTAR_BASE_URL=https://api.infistar.cc/v1, commented out by default). Shared with every customer of that gateway: context only",
+      "source": "ThreatDefence review of the Cybermes source code",
+      "sourceUrl": "https://github.com/Zyrexnn/Cybermes/blob/149b9a66752244bbb78926dcdc94dfc5b647ed80/.env.example#L19-L22",
+      "reported": "2026-11-16"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/cybermes",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

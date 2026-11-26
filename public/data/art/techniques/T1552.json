@@ -1,0 +1,33 @@
+{
+  "id": "T1552",
+  "displayName": "Unsecured Credentials",
+  "tests": [
+    {
+      "name": "AWS - Retrieve EC2 Password Data using stratus",
+      "guid": "a21118de-b11e-4ebd-b655-42f11142df0c",
+      "description": "This atomic runs an API call GetPasswordData from a role that does not have permission to do so. This simulates an attacker attempting to retrieve RDP passwords on a high number of Windows EC2 instances. This atomic test leverages a tool called stratus-red-team built by DataDog (https://github.com/DataDog/stratus-red-team). Stratus Red Team is a self-contained binary. You can use it to easily detonate offensive attack techniques against a live cloud environment. Ref: https://stratus-red-team.cloud/attack-techniques/AWS/aws.credential-access.ec2-get-password-data/",
+      "platforms": ["linux", "macos", "iaas:aws"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["stratus_path", "aws_region"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Search for Passwords in Powershell History",
+      "guid": "f9c3d0ab-479b-4019-945f-22ace2b1731a",
+      "description": "Find passwords in the powershell history files\nSearching for following strings: \"password\", \"-p\", \"key\", \"pwd\", \"pass\"",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1552/T1552.yaml"
+}

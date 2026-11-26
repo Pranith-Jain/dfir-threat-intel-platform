@@ -1,0 +1,20 @@
+{
+  "id": "T1574.009",
+  "displayName": "Hijack Execution Flow: Path Interception by Unquoted Path",
+  "tests": [
+    {
+      "name": "Execution of program.exe as service with unquoted service path",
+      "guid": "2770dea7-c50f-457b-84c4-c40a47460d9f",
+      "description": "When a service is created whose executable path contains spaces and isn’t enclosed within quotes, leads to a vulnerability\nknown as Unquoted Service Path which allows a user to gain SYSTEM privileges.\nIn this case, if an executable program.exe in C:\\ exists, C:\\program.exe will be executed instead of test.exe in C:\\Program Files\\subfolder\\test.exe.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["service_executable"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1574.009/T1574.009.yaml"
+}

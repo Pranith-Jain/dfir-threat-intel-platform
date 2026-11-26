@@ -1,0 +1,33 @@
+{
+  "id": "T1505.004",
+  "displayName": "Server Software Component: IIS Components",
+  "tests": [
+    {
+      "name": "Install IIS Module using AppCmd.exe",
+      "guid": "53adbdfa-8200-490c-871c-d3b1ab3324b2",
+      "description": "The following Atomic will utilize AppCmd.exe to install a new IIS Module. IIS must be installed.\nThis atomic utilizes a DLL on disk, but to test further suspiciousness, compile and load [IIS-Raid](https://www.mdsec.co.uk/2020/02/iis-raid-backdooring-iis-using-native-modules/).\nA successful execution will install a module into IIS using AppCmd.exe.\n[Managing and installing Modules Reference](https://learn.microsoft.com/en-us/iis/get-started/introduction-to-iis/iis-modules-overview#to-install-a-module-using-appcmdexe)\n[IIS Modules](https://www.microsoft.com/en-us/security/blog/2022/12/12/iis-modules-the-evolution-of-web-shells-and-how-to-detect-them/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["module_name", "dll_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Install IIS Module using PowerShell Cmdlet New-WebGlobalModule",
+      "guid": "cc3381fb-4bd0-405c-a8e4-6cacfac3b06c",
+      "description": "The following Atomic will utilize PowerShell Cmdlet New-WebGlobalModule to install a new IIS Module. IIS must be installed.\nThis atomic utilizes a DLL on disk, but to test further suspiciousness, compile and load [IIS-Raid](https://www.mdsec.co.uk/2020/02/iis-raid-backdooring-iis-using-native-modules/).\nA successful execution will install a module into IIS using New-WebGlobalModule.\n[Managing IIS Modules with PowerShell](https://learn.microsoft.com/en-us/powershell/module/webadministration/set-webglobalmodule?view=windowsserver2022-ps)\n[IIS Modules](https://www.microsoft.com/en-us/security/blog/2022/12/12/iis-modules-the-evolution-of-web-shells-and-how-to-detect-them/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["module_name", "dll_path"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1505.004/T1505.004.yaml"
+}

@@ -1,0 +1,72 @@
+{
+  "id": "T1485",
+  "displayName": "Data Destruction",
+  "tests": [
+    {
+      "name": "Windows - Overwrite file with SysInternals SDelete",
+      "guid": "476419b5-aebf-4366-a131-ae3e8dae5fc2",
+      "description": "Overwrites and deletes a file using SysInternals SDelete. Upon successful execution, \"Files deleted: 1\" will be displayed in\nthe powershell session along with other information about the file that was deleted.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["sdelete_exe", "file_to_delete"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "FreeBSD/macOS/Linux - Overwrite file with DD",
+      "guid": "38deee99-fd65-4031-bec8-bfa4f9f26146",
+      "description": "Overwrites and deletes a file using DD.\nTo stop the test, break the command with CTRL/CMD+C.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["overwrite_source", "file_to_overwrite"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Overwrite deleted data on C drive",
+      "guid": "321fd25e-0007-417f-adec-33232252be19",
+      "description": "RansomEXX malware removes all deleted files using windows built-in cipher.exe to prevent forensic recover.\nThis process is very slow and test execution may timeout. \nhttps://www.cybereason.com/blog/cybereason-vs.-ransomexx-ransomware\nhttps://support.microsoft.com/en-us/topic/cipher-exe-security-tool-for-the-encrypting-file-system-56c85edd-85cf-ac07-f2f7-ca2d35dab7e4",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "GCP - Delete Bucket",
+      "guid": "4ac71389-40f4-448a-b73f-754346b3f928",
+      "description": "This Atomic will create a Google Storage Bucket then delete it. The idea for this Atomic came from a Rule published by the Elastic team.\n\nIdentifies when a Google Cloud Platform (GCP) storage bucket is deleted. An adversary may delete a storage bucket in order to disrupt their target's business operations.\nThis atomic will create a bucket then delete the bucket.\n\nReference: https://github.com/elastic/detection-rules/blob/main/rules/integrations/gcp/impact_gcp_storage_bucket_deleted.toml",
+      "platforms": ["iaas:gcp"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["project_id", "bucket_name"],
+      "dependencyCount": 4
+    },
+    {
+      "name": "ESXi - Delete VM Snapshots",
+      "guid": "1207ddff-f25b-41b3-aa0e-7c26d2b546d1",
+      "description": "Deletes all snapshots for all Virtual Machines on an ESXi Host\n[Reference](https://lolesxi-project.github.io/LOLESXi/lolesxi/Binaries/vim-cmd/#inhibit%20recovery)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["vm_host", "vm_user", "vm_pass", "plink_file"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1485/T1485.yaml"
+}

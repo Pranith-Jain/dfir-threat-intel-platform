@@ -1,0 +1,20 @@
+{
+  "id": "T1558.002",
+  "displayName": "Steal or Forge Kerberos Tickets: Silver Ticket",
+  "tests": [
+    {
+      "name": "Crafting Active Directory silver tickets with mimikatz",
+      "guid": "385e59aa-113e-4711-84d9-f637aef01f2c",
+      "description": "Once the hash of service account is retrieved it is possible to forge Kerberos ticket granting service (TGS) tickets, also known as silver tickets.\nThe generated ticket is injected in a new empty Windows session and discarded after, so it does not pollute the current Windows session.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["domain_sid", "domain", "account", "target", "service_aes256_key", "mimikatz_path"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1558.002/T1558.002.yaml"
+}

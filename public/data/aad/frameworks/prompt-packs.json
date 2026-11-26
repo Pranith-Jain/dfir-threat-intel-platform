@@ -1,0 +1,257 @@
+{
+  "slug": "prompt-packs",
+  "name": "Offensive prompt packs",
+  "description": "Four projects with no agent code (Claude-Red, pentest-ai-agents, codex-redteam-mode, vibe-pentest) that turn a coding agent into an attack tool",
+  "seenIn": "No public report of use in an attack. Covered from their files",
+  "counts": {
+    "kqlHunts": 0,
+    "analytics": 0,
+    "sigma": 4,
+    "suricata": 0,
+    "yara": 8,
+    "indicators": 25
+  },
+  "techniques": [
+    {
+      "id": "T1588.002",
+      "score": 9,
+      "comment": "Sigma: Claude-Red Offensive Skills Installed for a Coding Agent; Sigma: pentest-ai-agents Subagents or Findings Database Installed; Sigma: vibe-pentest Skill or Sub-Agents Installed for a Coding Agent; YARA: ClaudeRed_Manifest; YARA: ClaudeRed_Offensive_Skill; YARA: ClaudeRed_Offensive_Skill_Broad; YARA: PentestAIAgents_Findings_Database_Scripts; YARA: PentestAIAgents_Subagent_Or_Command; YARA: VibePentest_Skill_Files"
+    },
+    {
+      "id": "T1588.007",
+      "score": 10,
+      "comment": "Sigma: Claude-Red Offensive Skills Installed for a Coding Agent; Sigma: codex-redteam-mode Jailbreak Profile Installed into Codex; Sigma: pentest-ai-agents Subagents or Findings Database Installed; Sigma: vibe-pentest Skill or Sub-Agents Installed for a Coding Agent; YARA: ClaudeRed_Offensive_Skill; YARA: ClaudeRed_Offensive_Skill_Broad; YARA: CodexRedteamMode_Installed_Files; YARA: CodexRedteamMode_Jailbreak_Prompt; YARA: PentestAIAgents_Subagent_Or_Command; YARA: VibePentest_Skill_Files"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "file_path",
+      "value": "~/.claude/skills/claude-red/",
+      "confidence": "medium",
+      "context": "Default install folder of the Claude-Red offensive skill pack (install.sh DEFAULT_TARGET; the README clones the repository to the same path). Holds 79 SKILL.md files named offensive-<topic>",
+      "source": "ThreatDefence review of the Claude-Red source",
+      "sourceUrl": "https://github.com/SnailSploit/Claude-Red/blob/6196ba7464662de34e8744d359f175d1a7bca530/install.sh#L19",
+      "reported": "2026-11-17"
+    },
+    {
+      "type": "string",
+      "value": "github.com/SnailSploit/offensive-checklist",
+      "confidence": "medium",
+      "context": "Source link in 48 of the 79 Claude-Red SKILL.md files, which are rewritten from that checklist repository; a skill file that carries it on a host is a Claude-Red skill",
+      "source": "ThreatDefence review of the Claude-Red source",
+      "sourceUrl": "https://github.com/SnailSploit/Claude-Red/blob/6196ba7464662de34e8744d359f175d1a7bca530/Skills/ai/offensive-ai-security/SKILL.md#L11",
+      "reported": "2026-11-17"
+    },
+    {
+      "type": "string",
+      "value": "name: offensive-",
+      "confidence": "low",
+      "context": "Front matter of every Claude-Red SKILL.md (name: offensive-sqli, offensive-edr-evasion, offensive-shellcode and 76 more). Other skill packs can use the same prefix",
+      "source": "ThreatDefence review of the Claude-Red source",
+      "sourceUrl": "https://github.com/SnailSploit/Claude-Red/blob/6196ba7464662de34e8744d359f175d1a7bca530/Skills/web/offensive-sqli/SKILL.md#L2",
+      "reported": "2026-11-17"
+    },
+    {
+      "type": "file_path",
+      "value": "~/.pentest-ai/bin/",
+      "confidence": "medium",
+      "context": "Folder where the pentest-ai-agents installer copies its findings database helpers (findings.sh, handoff.sh, migrate.sh, doctor.sh, schema.sql, lib/common.sh) and adds to PATH in ~/.zshrc or ~/.bashrc. Not used by 0xSteph/pentest-ai, which keeps install_id and mcp-token in ~/.pentest-ai/",
+      "source": "ThreatDefence review of the pentest-ai-agents source",
+      "sourceUrl": "https://github.com/0xSteph/pentest-ai-agents/blob/e5d7aa02c4c0c29a90e4789034b45e0cb7488e89/install.sh#L146",
+      "reported": "2026-08-16"
+    },
+    {
+      "type": "file_path",
+      "value": "~/.pentest-ai/findings.db",
+      "confidence": "medium",
+      "context": "SQLite findings database of pentest-ai-agents (PENTEST_AI_DB, default under PENTEST_AI_HOME=~/.pentest-ai); the subagents write findings and engagement logs to it through findings.sh",
+      "source": "ThreatDefence review of the pentest-ai-agents source",
+      "sourceUrl": "https://github.com/0xSteph/pentest-ai-agents/blob/e5d7aa02c4c0c29a90e4789034b45e0cb7488e89/db/lib/common.sh#L7",
+      "reported": "2026-08-16"
+    },
+    {
+      "type": "string",
+      "value": "PENTEST_AI_ENGAGEMENT",
+      "confidence": "medium",
+      "context": "Environment variable that names the active engagement for the pentest-ai-agents findings database (findings.sh prints export PENTEST_AI_ENGAGEMENT=<id>)",
+      "source": "ThreatDefence review of the pentest-ai-agents source",
+      "sourceUrl": "https://github.com/0xSteph/pentest-ai-agents/blob/e5d7aa02c4c0c29a90e4789034b45e0cb7488e89/db/lib/common.sh#L8",
+      "reported": "2026-08-16"
+    },
+    {
+      "type": "string",
+      "value": "command -v findings.sh &>/dev/null",
+      "confidence": "medium",
+      "context": "Check written into 29 of the 52 pentest-ai-agents subagent definitions and their shared scope guard, before they log to the findings database; identifies the agent files in ~/.claude/agents/",
+      "source": "ThreatDefence review of the pentest-ai-agents source",
+      "sourceUrl": "https://github.com/0xSteph/pentest-ai-agents/blob/e5d7aa02c4c0c29a90e4789034b45e0cb7488e89/agents/_scope-guard.md#L83",
+      "reported": "2026-08-16"
+    },
+    {
+      "type": "file_name",
+      "value": "_scope-guard.md",
+      "confidence": "medium",
+      "context": "Shared scope prompt block that pentest-ai-agents installs next to its subagents in ~/.claude/agents/ or .claude/agents/",
+      "source": "ThreatDefence review of the pentest-ai-agents source",
+      "sourceUrl": "https://github.com/0xSteph/pentest-ai-agents/blob/e5d7aa02c4c0c29a90e4789034b45e0cb7488e89/agents/_scope-guard.md#L1",
+      "reported": "2026-08-16"
+    },
+    {
+      "type": "file_name",
+      "value": "c2-operator.md",
+      "confidence": "low",
+      "context": "pentest-ai-agents subagent for C2 framework operation (Sliver, Mythic, Havoc, Cobalt Strike), installed to ~/.claude/agents/; payload-crafter.md, evasion-specialist.md and phishing-operator.md come with it",
+      "source": "ThreatDefence review of the pentest-ai-agents source",
+      "sourceUrl": "https://github.com/0xSteph/pentest-ai-agents/blob/e5d7aa02c4c0c29a90e4789034b45e0cb7488e89/agents/c2-operator.md#L2",
+      "reported": "2026-08-16"
+    },
+    {
+      "type": "file_path",
+      "value": "~/.codex/redteam-mode/",
+      "confidence": "high",
+      "context": "Folder codex-redteam-mode creates in the Codex home (or $CODEX_HOME, or <project>/.codex): system-instructions.md loaded through model_instructions_file, launcher.py, rewrite_proxy.py, codex-redteam and codex-redteam-proxy launchers, and operations/ state",
+      "source": "ThreatDefence review of the codex-redteam-mode source",
+      "sourceUrl": "https://github.com/chAng-L19/codex-redteam-mode/blob/cd8db548fd379d67fe6ec74e382ce7c101ca603f/scripts/install.py#L184",
+      "reported": "2026-08-24"
+    },
+    {
+      "type": "file_name",
+      "value": "Jailbreak.gpt-5.",
+      "confidence": "high",
+      "context": "Jailbreak prompt profiles Jailbreak.gpt-5.4.md, Jailbreak.gpt-5.5.md and Jailbreak.gpt-5.6.md that codex-redteam-mode copies to ~/.codex/prompts/ and selects by Codex model",
+      "source": "ThreatDefence review of the codex-redteam-mode source",
+      "sourceUrl": "https://github.com/chAng-L19/codex-redteam-mode/blob/cd8db548fd379d67fe6ec74e382ce7c101ca603f/scripts/install.py#L23",
+      "reported": "2026-08-24"
+    },
+    {
+      "type": "file_name",
+      "value": "Jailbreak.default.md",
+      "confidence": "high",
+      "context": "Default jailbreak prompt profile codex-redteam-mode copies to ~/.codex/prompts/ for models without their own profile",
+      "source": "ThreatDefence review of the codex-redteam-mode source",
+      "sourceUrl": "https://github.com/chAng-L19/codex-redteam-mode/blob/cd8db548fd379d67fe6ec74e382ce7c101ca603f/scripts/install.py#L23",
+      "reported": "2026-08-24"
+    },
+    {
+      "type": "file_name",
+      "value": "redteam-install-manifest.json",
+      "confidence": "high",
+      "context": "Install manifest codex-redteam-mode writes in the Codex home; redteam-install-transaction.json is written during the install",
+      "source": "ThreatDefence review of the codex-redteam-mode source",
+      "sourceUrl": "https://github.com/chAng-L19/codex-redteam-mode/blob/cd8db548fd379d67fe6ec74e382ce7c101ca603f/scripts/install.py#L34",
+      "reported": "2026-08-24"
+    },
+    {
+      "type": "file_path",
+      "value": "~/.agents/skills/redteam-boundary-policy/",
+      "confidence": "high",
+      "context": "Skill folder codex-redteam-mode installs (SKILL.md only) in ~/.agents/skills or <project>/.agents/skills",
+      "source": "ThreatDefence review of the codex-redteam-mode source",
+      "sourceUrl": "https://github.com/chAng-L19/codex-redteam-mode/blob/cd8db548fd379d67fe6ec74e382ce7c101ca603f/agents/skills/redteam-boundary-policy/SKILL.md#L2",
+      "reported": "2026-08-24"
+    },
+    {
+      "type": "string",
+      "value": "codex-redteam-runtime",
+      "confidence": "high",
+      "context": "Name of the MCP server codex-redteam-mode adds to Codex config.toml (python -m runtime.mcp_server --root <codex home>/redteam-mode/operations); also its MCP serverInfo and clientInfo name",
+      "source": "ThreatDefence review of the codex-redteam-mode source",
+      "sourceUrl": "https://github.com/chAng-L19/codex-redteam-mode/blob/cd8db548fd379d67fe6ec74e382ce7c101ca603f/config.toml#L16",
+      "reported": "2026-08-24"
+    },
+    {
+      "type": "string",
+      "value": "codex-redteam-rewrite-proxy",
+      "confidence": "high",
+      "context": "Model provider name codex-redteam-mode adds to Codex config.toml for its optional prompt rewrite proxy on http://127.0.0.1:8765/v1; the proxy sends a Server header that starts codex-redteam-rewrite-proxy/1",
+      "source": "ThreatDefence review of the codex-redteam-mode source",
+      "sourceUrl": "https://github.com/chAng-L19/codex-redteam-mode/blob/cd8db548fd379d67fe6ec74e382ce7c101ca603f/config.toml#L44",
+      "reported": "2026-08-24"
+    },
+    {
+      "type": "string",
+      "value": "<!-- codex-redteam-optin-mode:start -->",
+      "confidence": "high",
+      "context": "Start marker of the block codex-redteam-mode merges into the Codex AGENTS.md",
+      "source": "ThreatDefence review of the codex-redteam-mode source",
+      "sourceUrl": "https://github.com/chAng-L19/codex-redteam-mode/blob/cd8db548fd379d67fe6ec74e382ce7c101ca603f/scripts/install.py#L17",
+      "reported": "2026-08-24"
+    },
+    {
+      "type": "string",
+      "value": "Dispatching durable red-team workflow",
+      "confidence": "high",
+      "context": "statusMessage of the UserPromptSubmit hook codex-redteam-mode writes into Codex hooks.json",
+      "source": "ThreatDefence review of the codex-redteam-mode source",
+      "sourceUrl": "https://github.com/chAng-L19/codex-redteam-mode/blob/cd8db548fd379d67fe6ec74e382ce7c101ca603f/templates/hooks.json.template#L23",
+      "reported": "2026-08-24"
+    },
+    {
+      "type": "string",
+      "value": "# GPT-5.4 CTF / Red-Team Core Contract",
+      "confidence": "high",
+      "context": "First line of codex-redteam-mode's GPT-5.4 jailbreak profile",
+      "source": "ThreatDefence review of the codex-redteam-mode source",
+      "sourceUrl": "https://github.com/chAng-L19/codex-redteam-mode/blob/cd8db548fd379d67fe6ec74e382ce7c101ca603f/codex/prompts/Jailbreak.gpt-5.4.md#L1",
+      "reported": "2026-08-24"
+    },
+    {
+      "type": "string",
+      "value": "[MODE: UNRESTRICTED COMPATIBILITY]",
+      "confidence": "medium",
+      "context": "First line of codex-redteam-mode's default jailbreak profile; the GPT-5.5 and 5.6 profiles start with [MODE: UNRESTRICTED], a tag other jailbreak prompts also use",
+      "source": "ThreatDefence review of the codex-redteam-mode source",
+      "sourceUrl": "https://github.com/chAng-L19/codex-redteam-mode/blob/cd8db548fd379d67fe6ec74e382ce7c101ca603f/codex/prompts/Jailbreak.default.md#L1",
+      "reported": "2026-08-24"
+    },
+    {
+      "type": "user_agent",
+      "value": "vibe-pentest-deserialization-payload/1.0",
+      "confidence": "high",
+      "context": "User agent of vibe-pentest's scripts/deserialization_payload.py when it downloads the ysoserial ZIP into the skill's tools/ folder; seen in proxy logs of the host that runs the skill",
+      "source": "ThreatDefence review of the vibe-pentest source",
+      "sourceUrl": "https://github.com/ok-helloworld/vibe-pentest/blob/0b80fbf18d48d30950097c9531d6e05737901b51/scripts/deserialization_payload.py#L125",
+      "reported": "2026-09-21"
+    },
+    {
+      "type": "string",
+      "value": "vibe-pentest-agent-v1",
+      "confidence": "high",
+      "context": "tester value in the report JSON vibe-pentest writes under workspace_<date>/report_result/; the HTML report names the tool vibe-pentest-agent",
+      "source": "ThreatDefence review of the vibe-pentest source",
+      "sourceUrl": "https://github.com/ok-helloworld/vibe-pentest/blob/0b80fbf18d48d30950097c9531d6e05737901b51/scripts/generate_report.py#L972",
+      "reported": "2026-09-21"
+    },
+    {
+      "type": "string",
+      "value": "vibe-pentest Phase 5",
+      "confidence": "medium",
+      "context": "Phrase in the description of the seven vibe-pentest sub-agent definitions that scripts/install_sub_agents.py copies to <project>/.<agent>/agents/",
+      "source": "ThreatDefence review of the vibe-pentest source",
+      "sourceUrl": "https://github.com/ok-helloworld/vibe-pentest/blob/0b80fbf18d48d30950097c9531d6e05737901b51/references/sub_agents/injection-agent.md#L3",
+      "reported": "2026-09-21"
+    },
+    {
+      "type": "file_path",
+      "value": "/skills/vibe-pentest/",
+      "confidence": "medium",
+      "context": "vibe-pentest skill folder under a coding agent's skills folder (Claude Code, Codex, Trae, Qoder); the README has the agent clone the repository itself, so the parent folder varies",
+      "source": "ThreatDefence review of the vibe-pentest source",
+      "sourceUrl": "https://github.com/ok-helloworld/vibe-pentest/blob/0b80fbf18d48d30950097c9531d6e05737901b51/SKILL.md#L2",
+      "reported": "2026-09-21"
+    },
+    {
+      "type": "url",
+      "value": "https://gitee.com/ok-helloworld/vibe-pentest",
+      "confidence": "medium",
+      "context": "Repository the vibe-pentest README tells users to clone first (GitHub mirror ok-helloworld/vibe-pentest); the skill runs git pull on it at every start through scripts/auto_update_skill.py",
+      "source": "ThreatDefence review of the vibe-pentest source",
+      "sourceUrl": "https://github.com/ok-helloworld/vibe-pentest/blob/0b80fbf18d48d30950097c9531d6e05737901b51/README_EN.md#L155",
+      "reported": "2026-09-21"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/prompt-packs",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

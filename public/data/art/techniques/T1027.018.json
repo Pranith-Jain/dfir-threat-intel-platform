@@ -1,0 +1,46 @@
+{
+  "id": "T1027.018",
+  "displayName": "Obfuscated Files or Information: Invisible Unicode",
+  "tests": [
+    {
+      "name": "File Masquerading with Zero-Width Space",
+      "guid": "5917f0fd-c6d4-4af8-b89d-f3db06349c49",
+      "description": "Creates a file named 'secret.txt' but inserts a Zero-Width Space (U+200B) before the extension. \nThis emulates how adversaries hide malicious files in plain sight, as they appear identical to legitimate files in File Explorer.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Invisible Unicode in Environment Variables",
+      "guid": "125b1b41-bcef-42c3-acaa-a44303e3ffc1",
+      "description": "Sets an environment variable that includes a Zero-Width Non-Joiner (U+200C). \nThis emulates techniques used to hide configuration data or persistence paths from administrators performing manual audits.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Binary Masquerading via Invisible Unicode",
+      "guid": "28e30460-ce18-4974-8e6a-5a2bb74e5c07",
+      "description": "Copies a system binary (calc.exe) to a new name containing an invisible character (U+200D) and executes it.\nThis tests the ability of EDRs to handle non-normalized file paths in process execution events.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1027.018/T1027.018.yaml"
+}

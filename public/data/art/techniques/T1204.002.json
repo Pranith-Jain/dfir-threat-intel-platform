@@ -1,0 +1,176 @@
+{
+  "id": "T1204.002",
+  "displayName": "User Execution: Malicious File",
+  "tests": [
+    {
+      "name": "OSTap Style Macro Execution",
+      "guid": "8bebc690-18c7-4549-bc98-210f7019efff",
+      "description": "This Test uses a VBA macro to create and execute #{jse_path} with cscript.exe. Upon execution, the .jse file launches wscript.exe.\nExecution is handled by [Invoke-MalDoc](https://github.com/redcanaryco/invoke-atomicredteam/blob/master/Public/Invoke-MalDoc.ps1) to load and execute VBA code into Excel or Word documents.\nThis is a known execution chain observed by the OSTap downloader commonly used in TrickBot campaigns.\nReferences:\n  https://www.computerweekly.com/news/252470091/TrickBot-Trojan-switches-to-stealthy-Ostap-downloader",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["jse_path", "ms_product"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "OSTap Payload Download",
+      "guid": "3f3af983-118a-4fa1-85d3-ba4daa739d80",
+      "description": "Uses cscript //E:jscript to download a file",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["script_file", "file_url"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Maldoc choice flags command execution",
+      "guid": "0330a5d2-a45a-4272-a9ee-e364411c4b18",
+      "description": "This Test uses a VBA macro to execute cmd with flags observed in recent maldoc and 2nd stage downloaders. Upon execution, CMD will be launched.\nExecution is handled by [Invoke-MalDoc](https://github.com/redcanaryco/invoke-atomicredteam/blob/master/Public/Invoke-MalDoc.ps1) to load and execute VBA code into Excel or Word documents.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["ms_product"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "OSTAP JS version",
+      "guid": "add560ef-20d6-4011-a937-2c340f930911",
+      "description": "Malicious JavaScript executing CMD which spawns wscript.exe //e:jscript\nExecution is handled by [Invoke-MalDoc](https://github.com/redcanaryco/invoke-atomicredteam/blob/master/Public/Invoke-MalDoc.ps1) to load and execute VBA code into Excel or Word documents.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["jse_path", "ms_product"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Office launching .bat file from AppData",
+      "guid": "9215ea92-1ded-41b7-9cd6-79f9a78397aa",
+      "description": "Microsoft Office creating then launching a .bat script from an AppData directory. The .bat file launches calc.exe when opened.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["bat_path", "ms_product"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Excel 4 Macro",
+      "guid": "4ea1fc97-8a46-4b4e-ba48-af43d2a98052",
+      "description": "This module creates an Excel 4 Macro (XLM) enabled spreadsheet and executes it. The XLM will first write a \"malicious\"\nVBS file to %TEMP%, then execute this file. The VBS will download Process Explorer to the same directory (%TEMP%) and exec.\n\nA note regarding this module. By default, this module will pull the current username from the system and places it into the macro. If\nyou'd like to utilize the \"=GET.WORKSPACE(26)\" method, that many maldoc authors use, you will need to ensure that the User Name associated\nwith Excel matches that of the local system. This username can be found under Files -> Options -> Username",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["download_url", "uname"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Headless Chrome code execution via VBA",
+      "guid": "a19ee671-ed98-4e9d-b19c-d1954a51585a",
+      "description": "This module uses Google Chrome combined with ScriptControl to achieve code execution. It spawns a local\nwebserver hosting our malicious payload. Headless Google Chrome will then reach out to this webserver\nand pull down the script and execute it. By default the payload will execute calc.exe on the system.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Potentially Unwanted Applications (PUA)",
+      "guid": "02f35d62-9fdc-4a97-b899-a5d9a876d295",
+      "description": "The Potentially Unwanted Applications (PUA) protection feature in antivirus software can identify and block PUAs from downloading and installing on endpoints in your network. These applications are not considered viruses, malware, or other types of threats, but might perform actions on endpoints that adversely affect their performance or use. This file is similar to EICAR test virus file, but is considered a Potentially Unwanted Application (PUA) instead of a VIRUS (i.e. not actually malicious, but is flagged as it to verify anti-pua protection).",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["pua_url", "pua_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Office Generic Payload Download",
+      "guid": "5202ee05-c420-4148-bf5e-fd7f7d24850c",
+      "description": "This Test uses a VBA macro to launch Powershell which will download a file from a user defined web server.\nRequired input agruments are c2_domain and file_name\nExecution is handled by [Invoke-MalDoc](https://raw.githubusercontent.com/redcanaryco/atomic-red-team/master/atomics/T1204.002/src/Invoke-MalDoc.ps1) to load and execute VBA code into Excel or Word documents.\nExample for c2 server located at 127.0.0.1 for the file test.txt which is nested below the parent directory in the tests/my-test folder\nExample input args for file in root directory c2-domain = 127.0.0.1, file-name = test.txt",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["macro_path", "c2_domain", "c2_parent_directory", "file_name", "ms_product"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "LNK Payload Download",
+      "guid": "581d7521-9c4b-420e-9695-2aec5241167f",
+      "description": "This lnk files invokes powershell to download putty from the internet and opens the file. https://twitter.com/ankit_anubhav/status/1518932941090410496",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Mirror Blast Emulation",
+      "guid": "24fd9719-7419-42dd-bce6-ab3463110b3c",
+      "description": "Emulates the JS -> MSI chain of the MirrorBlast T505 campaign by executing an xlsm file designed.\nRequires the 32 bit version of Office to run. [MirrorBlast Campaign Analysis](https://blog.morphisec.com/explosive-new-mirrorblast-campaign-targets-financial-companies)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "ClickFix Campaign - Abuse RunMRU to Launch mshta via PowerShell",
+      "guid": "3f3120f0-7e50-4be2-88ae-54c61230cb9f",
+      "description": "Simulates a ClickFix-style campaign by adding a malicious entry to the RunMRU registry key that launches `mshta.exe` with a remote payload.\nThis technique relies on user interaction (Win+R + Enter) to trigger execution.\nUsed in social engineering campaigns that aim to bypass traditional startup methods.\nReference: https://www.netskope.com/blog/lumma-stealer-fake-captchas-new-techniques-to-evade-detection",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Simulate Click-Fix via Downloaded BAT File",
+      "guid": "22386853-f68d-4b50-a362-de235127c443",
+      "description": "Simulates user execution of a BAT file downloaded from the Atomic Red Team GitHub repository.This test represents T1204.002 - User Execution via Malicious File.The BAT file performs harmless terminal output to simulate a \"fix\" operation.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["url", "outfile"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1204.002/T1204.002.yaml"
+}

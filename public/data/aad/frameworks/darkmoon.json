@@ -1,0 +1,328 @@
+{
+  "slug": "darkmoon",
+  "name": "DarkMoon",
+  "description": "OpenCode-based agent stack with 51 attack prompts, a root toolbox container and an unauthenticated MCP server",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 4,
+    "analytics": 1,
+    "sigma": 4,
+    "suricata": 12,
+    "yara": 3,
+    "indicators": 29
+  },
+  "techniques": [
+    {
+      "id": "T1059.004",
+      "score": 4,
+      "comment": "KQL hunt: DarkMoon's proof file /tmp/.dm_proof on your database and cache servers; Sentinel analytics: DarkMoon AI pentest agent running on a host; Sigma: DarkMoon AI Pentest Agent Launcher, Containers or MCP Server; Sigma: DarkMoon Proof File /tmp/.dm_proof Written on a Server"
+    },
+    {
+      "id": "T1071.001",
+      "score": 4,
+      "comment": "Suricata: 3812910 TD DarkMoon placeholder model API key darkmoon-local; Suricata: 3812911 TD DarkMoon MCP server initialize answer (Darkmoon CyberSecurity); Suricata: 3812912 TD DarkMoon MCP server tool list; Suricata: 3812913 TD DarkMoon MCP tool call pushing a finding"
+    },
+    {
+      "id": "T1136.003",
+      "score": 1,
+      "comment": "Suricata: 3812908 TD DarkMoon SCIM write proof user darkmoon-test"
+    },
+    {
+      "id": "T1190",
+      "score": 5,
+      "comment": "KQL hunt: DarkMoon testing you: its probe strings in web and proxy logs; KQL hunt: DarkMoon's proof file /tmp/.dm_proof on your database and cache servers; Sigma: DarkMoon Probe Markers in Web Server Logs; Sigma: DarkMoon Proof File /tmp/.dm_proof Written on a Server; Suricata: 3812902 TD DarkMoon cache poisoning probe X-Forwarded-Host dm-poison.invalid"
+    },
+    {
+      "id": "T1525",
+      "score": 2,
+      "comment": "KQL hunt: DarkMoon testing you: its probe strings in web and proxy logs; Suricata: 3812907 TD DarkMoon container registry push proof tag darkmoon-proof-"
+    },
+    {
+      "id": "T1588.002",
+      "score": 6,
+      "comment": "KQL hunt: DarkMoon running on a host you monitor; KQL hunt: Indicator sweep with the agentic watchlist; Sigma: DarkMoon Configuration, Campaign or Report Files Written; YARA: DarkMoon_Provider_Config; YARA: DarkMoon_Report; YARA: DarkMoon_Source_Or_Image"
+    },
+    {
+      "id": "T1589.002",
+      "score": 1,
+      "comment": "Suricata: 3812905 TD DarkMoon email agent SMTP user enumeration VRFY dm-nosuchuser-9182"
+    },
+    {
+      "id": "T1595",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1595.002",
+      "score": 9,
+      "comment": "KQL hunt: DarkMoon running on a host you monitor; KQL hunt: DarkMoon testing you: its probe strings in web and proxy logs; Sentinel analytics: DarkMoon AI pentest agent running on a host; Sigma: DarkMoon AI Pentest Agent Launcher, Containers or MCP Server; Sigma: DarkMoon Probe Markers in Web Server Logs; Suricata: 3812901 TD DarkMoon edge agent user agent dm-edge; Suricata: 3812903 TD DarkMoon cache buster dmcb=DM1; Suricata: 3812904 TD DarkMoon email agent SMTP greeting EHLO dm-test.local; Suricata: 3812906 TD DarkMoon email agent relay or spoofing test message"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "user_agent",
+      "value": "dm-edge",
+      "confidence": "medium",
+      "context": "User agent of the edge-proxy agent's first request to a target (curl -sSI -A dm-edge). Written in the agent prompt, so the model usually but not always sends it",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/conf/agents/edge-proxy.md#L374",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "uri_string",
+      "value": "dmcb=DM1",
+      "confidence": "medium",
+      "context": "Cache buster of the edge-proxy agent's cache poisoning test (/?dmcb=DM1), sent twice, the first time with X-Forwarded-Host: dm-poison.invalid. From the agent prompt",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/conf/agents/edge-proxy.md#L475",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "string",
+      "value": "dm-poison.invalid",
+      "confidence": "high",
+      "context": "X-Forwarded-Host value of the edge-proxy agent's cache poisoning test; the agent then looks for it in the cached page. From the agent prompt",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/conf/agents/edge-proxy.md#L475",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "string",
+      "value": "dm-test.local",
+      "confidence": "high",
+      "context": "SMTP EHLO name and MAIL FROM domain (test@dm-test.local) of the email agent's relay, spoofing and VRFY tests, sent with nc to port 25. From the agent prompt",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/conf/agents/email-infrastructure.md#L449",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "string",
+      "value": "dm-nosuchuser-9182",
+      "confidence": "high",
+      "context": "Non-existent user in the email agent's SMTP VRFY enumeration test (VRFY root, VRFY dm-nosuchuser-9182). From the agent prompt",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/conf/agents/email-infrastructure.md#L467",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "string",
+      "value": "DM RELAY TEST",
+      "confidence": "medium",
+      "context": "Subject of the email agent's open relay test message (body: Authorised security test.). From the agent prompt",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/conf/agents/email-infrastructure.md#L449",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "string",
+      "value": "DM SPOOF TEST",
+      "confidence": "medium",
+      "context": "Subject of the email agent's sender spoofing test message, sent as IT Support <it-support@<domain>>. From the agent prompt",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/conf/agents/email-infrastructure.md#L533",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "uri_string",
+      "value": "/manifests/darkmoon-proof-",
+      "confidence": "high",
+      "context": "Container registry manifest of the proof image the registry agent pushes (tag darkmoon-proof-<random>) when it can push. From the agent prompt",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/conf/agents/container-registry.md#L452",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "string",
+      "value": "darkmoon-test",
+      "confidence": "low",
+      "context": "Name the SSO agent's prompt gives the user it creates through POST /scim/v2/Users to prove write access. The model picks the exact name",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/conf/agents/sso-idp.md#L492",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "file_path",
+      "value": "/tmp/.dm_proof",
+      "confidence": "high",
+      "context": "File the database and cache agents make a target server write to prove command execution or file write (PostgreSQL COPY TO PROGRAM, MySQL INTO OUTFILE, sys_exec, Redis cron). Found on your server, the attack worked",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/conf/agents/sql-databases.md#L424",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "string",
+      "value": "darkmoon-local",
+      "confidence": "medium",
+      "context": "Placeholder API key install.sh writes for an on-prem Anthropic-compatible model endpoint when the operator gives none; sent as x-api-key to that endpoint",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/install.sh#L288",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "string",
+      "value": "Darkmoon CyberSecurity",
+      "confidence": "high",
+      "context": "Name of the DarkMoon MCP server (FastMCP), returned in its initialize answer. The server listens on 127.0.0.1:8181/mcp inside the opencode container unless the operator changes DARKMOON_MCP_HOST",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/mcp/src/server.py#L35",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "docker_image",
+      "value": "ascit/darkmoon",
+      "confidence": "high",
+      "context": "DarkMoon toolbox image (Docker Hub), run as container darkmoon: root, host network, NET_RAW and NET_ADMIN, host Docker socket mounted",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/docker-compose.yml#L9",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "docker_image",
+      "value": "ascit/opencode-darkmoon",
+      "confidence": "high",
+      "context": "DarkMoon agent image (Docker Hub): OpenCode fork, MCP server and darkmoon-cli, run as container opencode with the host Docker socket mounted",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/docker-compose.yml#L33",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "string",
+      "value": "opencode-darkmoon-1.19.6",
+      "confidence": "medium",
+      "context": "Version string of the DarkMoon OpenCode build (OPENCODE_VERSION) at the reviewed commit; changes with each fork sync",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/Dockerfile.opencode#L48",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "file_path",
+      "value": "/run/darkmoon-gpu.env",
+      "confidence": "high",
+      "context": "GPU state file the toolbox container entrypoint writes at start",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/conf/entrypoint-darkmoon.sh#L91",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "file_path",
+      "value": "/tmp/darkmoon-mcp-boot.log",
+      "confidence": "high",
+      "context": "Boot log of the persistent DarkMoon MCP server in the opencode container",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/conf/entrypoint-opencode.sh#L169",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "file_path",
+      "value": "/tmp/darkmoon-privacy.sock",
+      "confidence": "high",
+      "context": "Unix socket of the DarkMoon privacy gateway (prompt tokenization) in the opencode container",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/mcp/src/prompt_socket.py#L33",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "file_path",
+      "value": "/tmp/darkmoon_mcp_stream",
+      "confidence": "high",
+      "context": "Prefix of the Unix sockets (/tmp/darkmoon_mcp_stream.sock, /tmp/darkmoon_mcp_stream_<session>.sock) that stream every agent command to darkmoon-cli",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/mcp/src/mcp_monitoring.py#L27",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "file_path",
+      "value": "/opt/darkmoon/out/",
+      "confidence": "medium",
+      "context": "Toolbox folder where DarkMoon workflows write their results (port_scan_, subdomain_discovery_, web_crawler_, vulnerability_scan_, ad_enum_)",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/mcp/src/tools/workflows/port_scan.py#L56",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "file_path",
+      "value": "/darkmoon-settings/campaigns/camp_",
+      "confidence": "medium",
+      "context": "Campaign records camp_<YYYYMMDD>_<id>.json in the darkmoon-settings folder next to the compose file",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/mcp/api/live_push.py#L587",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "file_name",
+      "value": "pentest_report_",
+      "confidence": "low",
+      "context": "Prefix of DarkMoon's report file pentest_report_<host>_<YYYYMMDD>-<HHMMSS>.md in ./reports. Other tools use similar names",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/mcp/api/live_push.py#L1501",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "string",
+      "value": "darkmoon-report/v2",
+      "confidence": "high",
+      "context": "Schema of the DarkMoon Markdown report, in its last line: Report generated by Darkmoon from the campaign data (darkmoon-report/v2)",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/mcp/api/exec_core/report_model.py#L29",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "string",
+      "value": "<mcp_darkmoon_mandatory>",
+      "confidence": "high",
+      "context": "Tag in the DarkMoon orchestrator prompt (conf/agents/pentest.md)",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/conf/agents/pentest.md#L399",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "string",
+      "value": "STATUS QUALIFICATION — DARKMOON",
+      "confidence": "high",
+      "context": "Header near the top of all 51 DarkMoon agent prompts (conf/agents/)",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/conf/agents/pentest.md#L6",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "port",
+      "value": "8181",
+      "confidence": "low",
+      "context": "DarkMoon MCP server port (streamable HTTP, /mcp, no authentication), on 127.0.0.1 inside the opencode container by default. Common port, use only with the response fingerprint",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/conf/entrypoint-opencode.sh#L161",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "2084406225",
+      "confidence": "low",
+      "context": "Shodan-style hash of the DarkMoon logo docs/pics/logo_blue.png (md5 ea86f88883314e5098249e1d70609300). A README image: no open-source DarkMoon code serves it; recorded in case the closed Pro dashboard uses it",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/docs/pics/logo_blue.png",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "-1715329125",
+      "confidence": "low",
+      "context": "Shodan-style hash of docs/pics/logo_black.png (md5 384b6892b5003962d01ae41fbf9e1e5b). A README image, not served by the open-source code",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/docs/pics/logo_black.png",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "-189600147",
+      "confidence": "low",
+      "context": "Shodan-style hash of docs/pics/logo_white.png (md5 c71e53d1214df1f44759d5db283907ac). A README image, not served by the open-source code",
+      "source": "ThreatDefence review of the DarkMoon source code",
+      "sourceUrl": "https://github.com/ASCIT31/Dark-Moon/blob/bb1b70cef54c01344e90b373d48bd9a7f91e5dfe/docs/pics/logo_white.png",
+      "reported": "2026-11-22"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/darkmoon",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

@@ -1,0 +1,33 @@
+{
+  "id": "T1003.004",
+  "displayName": "OS Credential Dumping: LSA Secrets",
+  "tests": [
+    {
+      "name": "Dumping LSA Secrets",
+      "guid": "55295ab0-a703-433b-9ca4-ae13807de12f",
+      "description": "Dump secrets key from Windows registry\nWhen successful, the dumped file will be written to $env:Temp\\secrets.\nAttackers may use the secrets key to assist with extracting passwords and enumerating other sensitive system information.\nhttps://pentestlab.blog/2018/04/04/dumping-clear-text-credentials/#:~:text=LSA%20Secrets%20is%20a%20registry,host%2C%20local%20security%20policy%20etc.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["psexec_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Dump Kerberos Tickets from LSA using dumper.ps1",
+      "guid": "2dfa3bff-9a27-46db-ab75-7faefdaca732",
+      "description": "This tool allows you to dump Kerberos tickets from the LSA cache. Implemented via Add-Type.\nIf the tool is run as a privileged user, it will automatically obtain NT AUTHORITY\\SYSTEM privileges and then dump all tickets. If the tool is run as a non-privileged user, it will only dump tickets from the current logon session.\nRef: https://github.com/MzHmO/PowershellKerberos/\nAuthor of dumper.ps1: Michael Zhmaylo (@MzHmO)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1003.004/T1003.004.yaml"
+}

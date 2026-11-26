@@ -1,0 +1,72 @@
+{
+  "id": "T1653",
+  "displayName": "Power Settings",
+  "tests": [
+    {
+      "name": "Prevent system sleep via powercfg (AC/DC standby timeout)",
+      "guid": "d4acd6ff-f41f-4ce6-8c12-2e0b23dd6ad2",
+      "description": "Sets the active power plan's AC and DC standby timeouts to 0 (never), preventing the system from sleeping. Mirrors adversary abuse of powercfg to keep an infected host active indefinitely.\nExpected output: system will no longer enter standby on either AC or battery power until cleanup restores the original value.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable hibernation via powercfg",
+      "guid": "eb271877-e47d-4c13-aa1a-2735b2a93a07",
+      "description": "Disables hibernation entirely using powercfg /hibernate off, removing a disruption point that could terminate malicious activity when the system enters a dormant state.\nExpected output: hibernation is disabled; hiberfil.sys is removed. Cleanup re-enables hibernation.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Extend console lock display timeout via powercfg",
+      "guid": "84933ae7-edf6-4b93-8fc4-1871bbe4c43e",
+      "description": "Extends the console lock display timeout to a large value, delaying automatic screen-off while the PC is locked and keeping the session's display active longer than the configured policy intends.\nExpected output: display will not turn off on the lock screen until cleanup restores the original timeout.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Impair system shutdown capability by denying execute on shutdown.exe",
+      "guid": "7a77663f-1b58-4ec7-a6be-cc360cdb4655",
+      "description": "Takes ownership of shutdown.exe (required since it's normally owned by TrustedInstaller) and denies the Everyone group execute permission, simulating adversary impairment of a system's ability to shut down without deleting the binary outright. Cleanup restores both the original ACL and ownership.\nExpected output: running shutdown.exe will fail with access denied until cleanup restores permissions and ownership.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Fast Startup via direct registry modification (HiberbootEnabled)",
+      "guid": "ac77e6c0-7b13-4d96-a53f-3bb0aeca96ec",
+      "description": "Directly modifies HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Power\\HiberbootEnabled rather than using the powercfg CLI, altering how the system behaves on shutdown (full shutdown vs. hybrid hibernate-backed fast startup). Exercises the registry-based detection path MITRE cites for this technique (monitoring HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power and subkeys), distinct from the CLI-driven tests above.\nExpected output: Fast Startup is disabled; next shutdown will perform a full shutdown rather than a hybrid hibernate. Cleanup restores the original registry value.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1653/T1653.yaml"
+}

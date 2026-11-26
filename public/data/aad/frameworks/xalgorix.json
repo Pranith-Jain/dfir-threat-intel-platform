@@ -1,0 +1,278 @@
+{
+  "slug": "xalgorix",
+  "name": "Xalgorix",
+  "description": "Go binary with a web dashboard whose agent tests web applications and APIs without approval steps and re-exploits each finding",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 0,
+    "sigma": 3,
+    "suricata": 10,
+    "yara": 1,
+    "indicators": 24
+  },
+  "techniques": [
+    {
+      "id": "T1059.004",
+      "score": 1,
+      "comment": "Sigma: Xalgorix Agent on a Host"
+    },
+    {
+      "id": "T1071",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1071.001",
+      "score": 4,
+      "comment": "Suricata: 3809007 TD Xalgorix callback listener answer; Suricata: 3809008 TD Xalgorix console page; Suricata: 3809009 TD Xalgorix console theme script (survives a renamed title); Suricata: 3809010 TD Xalgorix console session cookie"
+    },
+    {
+      "id": "T1190",
+      "score": 7,
+      "comment": "KQL hunt: Xalgorix testing you: its verifier paths, canary and user agents in web and proxy logs; Sigma: Xalgorix Verifier Marker or Canary in Web Logs; Suricata: 3809001 TD Xalgorix verifier path marker; Suricata: 3809002 TD Xalgorix XXE verifier marker; Suricata: 3809003 TD Xalgorix reflection canary in URI; Suricata: 3809004 TD Xalgorix reflection canary in request body; Suricata: 3809005 TD Xalgorix CSRF verifier origin"
+    },
+    {
+      "id": "T1543.002",
+      "score": 1,
+      "comment": "Sigma: Xalgorix Configuration, Service or Scan Data Written"
+    },
+    {
+      "id": "T1588.002",
+      "score": 2,
+      "comment": "KQL hunt: Xalgorix on a host you monitor; YARA: Xalgorix_Binary_Or_Source"
+    },
+    {
+      "id": "T1595",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1595.002",
+      "score": 8,
+      "comment": "KQL hunt: Xalgorix testing you: its verifier paths, canary and user agents in web and proxy logs; Sigma: Xalgorix Verifier Marker or Canary in Web Logs; Suricata: 3809001 TD Xalgorix verifier path marker; Suricata: 3809002 TD Xalgorix XXE verifier marker; Suricata: 3809003 TD Xalgorix reflection canary in URI; Suricata: 3809004 TD Xalgorix reflection canary in request body; Suricata: 3809005 TD Xalgorix CSRF verifier origin; Suricata: 3809006 TD Xalgorix user agent"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "string",
+      "value": "xalgorix-nonexistent-",
+      "confidence": "high",
+      "context": "Path suffix Xalgorix's verifier requests to confirm an access control finding: <path>-xalgorix-nonexistent-<id> (internal/agent/verify_authbypass.go)",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "xalgorix-missing-",
+      "confidence": "high",
+      "context": "Folder name Xalgorix's verifier requests before a path traversal check: <dir>/xalgorix-missing-<id>/../../etc/passwd (internal/agent/verify_path_traversal.go)",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "xalgorix-xxe-",
+      "confidence": "high",
+      "context": "Markers in the XML bodies of Xalgorix's XXE verifier: xalgorix-xxe-start-<32 hex>, -control- and -end-, and file:///xalgorix-xxe-missing-<32 hex> (internal/agent/verify_xxe.go)",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "XALG0R1XTEST",
+      "confidence": "medium",
+      "context": "Reflection canary in Xalgorix's system prompt (internal/agent/agent_prompt.go). An example, so the model may use another string",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "https://csrf-attacker.example",
+      "confidence": "medium",
+      "context": "Origin and Referer that Xalgorix's CSRF verifier sends (internal/agent/verify_csrf.go:113-115)",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "xalgorix-oob-ok:",
+      "confidence": "high",
+      "context": "Body Xalgorix's own callback listener returns to every request, followed by the first path segment (internal/oob/server.go)",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "user_agent",
+      "value": "xalgorix-origin-calibration/1",
+      "confidence": "high",
+      "context": "Xalgorix request that calibrates its callback service, with the header X-Xalgorix-Origin-Calibration (internal/oob/server.go)",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "http_header",
+      "value": "X-Xalgorix-Origin-Calibration",
+      "confidence": "high",
+      "context": "Header on Xalgorix's callback calibration request (internal/oob/server.go)",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "__xalgorix_resolve_path",
+      "confidence": "high",
+      "context": "Shell function in the wrapper Xalgorix puts in front of every command its agent runs, after export XALGORIX_WORKSPACE= (internal/tools/terminal/terminal.go)",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "Xalgorix — Security Scanner",
+      "confidence": "medium",
+      "context": "Title of the Xalgorix dashboard, plain HTTP on port 9137 (internal/web/static/index.html:9)",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "xalgorix.theme",
+      "confidence": "medium",
+      "context": "Browser storage key read by an inline script in the Xalgorix dashboard, so it survives a renamed title (internal/web/static/index.html:17)",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "xalgorix_session",
+      "confidence": "medium",
+      "context": "Session cookie of the Xalgorix dashboard (internal/web/auth_session.go)",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "port",
+      "value": "9137",
+      "confidence": "low",
+      "context": "Default Xalgorix dashboard port",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "248472114",
+      "confidence": "medium",
+      "context": "Xalgorix dashboard icon /logo.png (Shodan http.favicon.hash), computed from internal/web/static/logo.png, in use since August 23, 2026",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "770611025",
+      "confidence": "low",
+      "context": "Earlier Xalgorix dashboard icon, computed from the repository history",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "-1852521790",
+      "confidence": "low",
+      "context": "Earlier Xalgorix dashboard icon, computed from the repository history",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "-559517389",
+      "confidence": "low",
+      "context": "Earlier Xalgorix dashboard icon, computed from the repository history",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "md5",
+      "value": "7ce3d0eeae5c13ad1cf02ed0062c99b9",
+      "confidence": "medium",
+      "context": "Xalgorix dashboard icon logo.png",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "sha256",
+      "value": "8925c407162e52796838ff5de5a246dc34c673f156c1a575d20b996c8f725903",
+      "confidence": "medium",
+      "context": "Xalgorix dashboard icon logo.png",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "docker_image",
+      "value": "xalgord/xalgorix",
+      "confidence": "medium",
+      "context": "Xalgorix image on Docker Hub, run privileged with the volume xalgorix-data; also published as ghcr.io/xalgord/xalgorix",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "file_name",
+      "value": ".xalgorix.env",
+      "confidence": "medium",
+      "context": "Xalgorix settings file in the home folder of the user who runs it; /etc/xalgorix.env for the systemd service",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "file_path",
+      "value": "/.xalgorix/data/",
+      "confidence": "medium",
+      "context": "Xalgorix scan data: <target>/<date>/<target>_<slug>/scan.json and events.jsonl under the home folder",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "docker_image",
+      "value": "xalgorix-finalproof",
+      "confidence": "medium",
+      "context": "Repository pushed into an open container registry as proof of write access, next to xalgorix-pwn and xalgorix-shell (one registry, November 2026)",
+      "source": "ThreatDefence review of open container registries in internet scan data",
+      "sourceUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/behaviors",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "docker_image",
+      "value": "xalgorix-pwn",
+      "confidence": "medium",
+      "context": "Repository pushed into an open container registry as proof of write access, next to xalgorix-finalproof and xalgorix-shell (one registry, November 2026)",
+      "source": "ThreatDefence review of open container registries in internet scan data",
+      "sourceUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/behaviors",
+      "reported": "2026-11-23"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/xalgorix",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

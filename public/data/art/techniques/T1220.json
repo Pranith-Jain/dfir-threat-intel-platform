@@ -1,0 +1,59 @@
+{
+  "id": "T1220",
+  "displayName": "XSL Script Processing",
+  "tests": [
+    {
+      "name": "MSXSL Bypass using local files",
+      "guid": "ca23bfb2-023f-49c5-8802-e66997de462d",
+      "description": "Executes the code specified within a XSL script tag during XSL transformation using a local payload. \nRequires download of MSXSL. No longer available from Microsoft.\n(Available via Internet Archive https://web.archive.org/web/20200825011623/https://www.microsoft.com/en-us/download/details.aspx?id=21714 ) \nOpen Calculator.exe when test successfully executed, while AV turned off.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["xmlfile", "xslfile", "msxsl_exe"],
+      "dependencyCount": 3
+    },
+    {
+      "name": "MSXSL Bypass using remote files",
+      "guid": "a7c3ab07-52fb-49c8-ab6d-e9c6d4a0a985",
+      "description": "Executes the code specified within a XSL script tag during XSL transformation using a remote payload.\nRequires download of MSXSL.exe. No longer available from Microsoft.\n(Available via Internet Archive https://web.archive.org/web/20200825011623/https://www.microsoft.com/en-us/download/details.aspx?id=21714 )\nOpen Calculator.exe when test successfully executed, while AV turned off.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["xmlfile", "xslfile", "msxsl_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "WMIC bypass using local XSL file",
+      "guid": "1b237334-3e21-4a0c-8178-b8c996124988",
+      "description": "Executes the code specified within a XSL script using a local payload.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["wmic_command", "local_xsl_file"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "WMIC bypass using remote XSL file",
+      "guid": "7f5be499-33be-4129-a560-66021f379b9b",
+      "description": "Executes the code specified within a XSL script using a remote payload. Open Calculator.exe when test successfully executed, while AV turned off.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["remote_xsl_file", "wmic_command"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1220/T1220.yaml"
+}

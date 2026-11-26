@@ -1,0 +1,111 @@
+{
+  "id": "T1569.002",
+  "displayName": "System Services: Service Execution",
+  "tests": [
+    {
+      "name": "Execute a Command as a Service",
+      "guid": "2382dee2-a75f-49aa-9378-f52df6ed3fb1",
+      "description": "Creates a service specifying an arbitrary command and executes it. When executing commands such as PowerShell, the service will report that it did not start correctly even when code executes properly.\n\nUpon successful execution, cmd.exe creates a new service using sc.exe that will start powershell.exe to create a new file `art-marker.txt`\n\n[BlackCat Ransomware (ALPHV)](https://www.varonis.com/blog/blackcat-ransomware)  \n[Cybereason vs. BlackCat Ransomware](https://www.cybereason.com/blog/cybereason-vs.-blackcat-ransomware)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["service_name", "executable_command"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Use PsExec to execute a command on a remote host",
+      "guid": "873106b7-cfed-454b-8680-fa9f6400431c",
+      "description": "Requires having Sysinternals installed, path to sysinternals is one of the input input_arguments\nWill start a process on a remote host.\n\nUpon successful execution, cmd will utilize psexec.exe to spawn calc.exe on a remote endpoint (default:localhost).",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["remote_host", "user_name", "password"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "psexec.py (Impacket)",
+      "guid": "edbcd8c9-3639-4844-afad-455c91e95a35",
+      "description": "Will execute a command on the remote host with Impacket psexec.py script.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["remote_host", "username", "domain", "password", "command"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "BlackCat pre-encryption cmds with Lateral Movement",
+      "guid": "31eb7828-97d7-4067-9c1e-c6feb85edc4b",
+      "description": "This atomic attempts to emulate the unique behavior of BlackCat ransomware prior to encryption and during Lateral Movement attempts via PsExec on Windows. Uses bundled PsExec like BlackCat",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["targethost"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Use RemCom to execute a command on a remote host",
+      "guid": "a5d8cdeb-be90-43a9-8b26-cc618deac1e0",
+      "description": "Requires having RemCom installed, path to RemCom is one of the input input_arguments\nWill start a process on a remote host.\nUpon successful execution, cmd will utilize RemCom.exe to spawn calc.exe on a remote endpoint (default:localhost).",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["remote_host", "user_name", "password"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Snake Malware Service Create",
+      "guid": "b8db787e-dbea-493c-96cb-9272296ddc49",
+      "description": "The following Atomic Test will create a new service named WerFaultSvc with a binary path of WinSxS\\x86_microsoft-windows-errorreportingfaults_31bf3856ad364e35_4.0.9600.16384_none_a13f7e283339a050\\WerFault.exe.\nThis was recently seen in the Snake Malware report. \nUpon execution, sc.exe will create a new service named WerFaultSvc with a bin path \\WinSxS\\x86_microsoft-windows-errorreportingfaults_31bf3856ad364e35_4.0.9600.16384_none_a13f7e283339a050\\WerFault.exe and a display name of WerFault Service.\n[Snake Malware - CISA](https://media.defense.gov/2023/May/09/2003218554/-1/-1/0/JOINT_CSA_HUNTING_RU_INTEL_SNAKE_MALWARE_20230509.PDF)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Modifying ACL of Service Control Manager via SDET",
+      "guid": "bf07f520-3909-4ef5-aa22-877a50f2f77b",
+      "description": "Modify permissions of Service Control Manager via SDSET. This allows any administrative user to escalate privilege and create a service with SYSTEM level privileges.Restart is required.\n[Blog](https://0xv1n.github.io/posts/scmanager/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Pipe Creation - PsExec Tool Execution From Suspicious Locations",
+      "guid": "004a5d68-627b-452d-af3d-43bd1fc75a3b",
+      "description": "Requires PsExec tool installed. BlackCat Ransomeware tried to propagate by creating pipe using PsExec process executing from suspicious locations (In the particular case the legitimate PsExec executable is embedded within the Windows variant and is dropped in the victim’s %TEMP% directory). pon successful execution, PsExec will be executed from suspicious location and create a new pipe to execute CMD.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1569.002/T1569.002.yaml"
+}

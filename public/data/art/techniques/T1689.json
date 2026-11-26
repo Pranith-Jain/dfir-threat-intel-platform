@@ -1,0 +1,46 @@
+{
+  "id": "T1689",
+  "displayName": "Downgrade Attack",
+  "tests": [
+    {
+      "name": "ESXi - Change VIB acceptance level to CommunitySupported via PowerCLI",
+      "guid": "062f92c9-28b1-4391-a5f8-9d8ca6852091",
+      "description": "An adversary can change the VIB acceptance level to CommunitySupported to downgrade the acceptance criteria.This can be accomplished via PowerCLI. Afterwards an adversary may proceed to installing malicious VIBs on the host.\n[Reference](https://www.mandiant.com/resources/blog/esxi-hypervisors-detection-hardening)",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["vm_host", "vm_user", "vm_pass"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "ESXi - Change VIB acceptance level to CommunitySupported via ESXCLI",
+      "guid": "14d55b96-b2f5-428d-8fed-49dc4d9dd616",
+      "description": "An adversary will change the VIB acceptance level to CommunitySupported to downgrade the acceptance criteria via ESXCLI. Afterwards an adversary may proceed to installing malicious VIBs on the host.\n[Reference](https://www.mandiant.com/resources/blog/esxi-hypervisors-detection-hardening)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["vm_host", "vm_user", "vm_pass", "plink_file", "cli_script"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "PowerShell Version 2 Downgrade",
+      "guid": "47c96489-2f55-4774-a6df-39faff428f6f",
+      "description": "Executes outdated PowerShell Version 2 which does not support security features like AMSI. By default the atomic will attempt to execute the cmdlet Invoke-Mimikatz whether it exists or not, as this cmdlet will be blocked by AMSI when active.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["v2_command"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1689/T1689.yaml"
+}

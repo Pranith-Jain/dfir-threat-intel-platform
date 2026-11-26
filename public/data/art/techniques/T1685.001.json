@@ -1,0 +1,137 @@
+{
+  "id": "T1685.001",
+  "displayName": "Disable or Modify Tools: Disable or Modify Windows Event Log",
+  "tests": [
+    {
+      "name": "Disable Windows IIS HTTP Logging",
+      "guid": "69435dcf-c66f-4ec0-a8b1-82beb76b34db",
+      "description": "Disables HTTP logging on a Windows IIS web server as seen by Threat Group 3390 (Bronze Union).\nThis action requires HTTP logging configurations in IIS to be unlocked.\n\nUse the cleanup commands to restore some default auditpol settings (your original settings will be lost)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["website_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Windows IIS HTTP Logging via PowerShell",
+      "guid": "a957fb0f-1e85-49b2-a211-413366784b1e",
+      "description": "Disables HTTP logging on a Windows IIS web server as seen by Threat Group 3390 (Bronze Union).\nThis action requires HTTP logging configurations in IIS to be unlocked.\n\nUse the cleanup commands to restore some default auditpol settings (your original settings will be lost)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["website_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Kill Event Log Service Threads",
+      "guid": "41ac52ba-5d5e-40c0-b267-573ed90489bd",
+      "description": "Kill Windows Event Log Service Threads using Invoke-Phant0m. WARNING you will need to restart PC to return to normal state with Log Service. https://artofpwn.com/phant0m-killing-windows-event-log.html",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Impair Windows Audit Log Policy",
+      "guid": "5102a3a7-e2d7-4129-9e45-f483f2e0eea8",
+      "description": "Disables the windows audit policy to prevent key host based telemetry being written into the event logs.\n[Solarigate example](https://www.microsoft.com/security/blog/2021/01/20/deep-dive-into-the-solorigate-second-stage-activation-from-sunburst-to-teardrop-and-raindrop/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Clear Windows Audit Policy Config",
+      "guid": "913c0e4e-4b37-4b78-ad0b-90e7b25010f6",
+      "description": "Clear the Windows audit policy using auditpol utility. This action would stop certain audit events from being recorded in the security log.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Event Logging with wevtutil",
+      "guid": "b26a3340-dad7-4360-9176-706269c74103",
+      "description": "Wevtutil can be used to disable logs. \nNOTE: RansomEXX ransomware uses this to disable Security logs post-encryption.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["log_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Makes Eventlog blind with Phant0m",
+      "guid": "3ddf3d03-f5d6-462a-ad76-2c5ff7b6d741",
+      "description": "Use [Phant0m](https://github.com/hlldz/Phant0m) to disable Eventlog",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_name"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Modify Event Log Channel Access Permissions via Registry - PowerShell",
+      "guid": "8e81d090-0cd6-4d46-863c-eec11311298f",
+      "description": "This test simulates an adversary modifying access permissions for a Windows Event Log Channel by altering the \"ChannelAccess\" registry value. Specifically, it changes the Security Descriptor Definition Language (SDDL) string. These modifications can restrict or grant access to specific users or groups, potentially aiding in defense evasion by controlling who can view or modify a event log channel.\nUpon execution, the user shouldn't be able to access the event log channel via the event viewer or via utilities such as \"Get-EventLog\" or \"wevtutil\".",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ChannelPath"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Modify Event Log Channel Access Permissions via Registry 2 - PowerShell",
+      "guid": "85e6eff8-3ed4-4e03-ae50-aa6a404898a5",
+      "description": "This test simulates an adversary modifying access permissions for a Windows Event Log Channel by altering the \"ChannelAccess\" registry value. Specifically, it changes the Security Descriptor Definition Language (SDDL) string. These modifications can restrict or grant access to specific users or groups, potentially aiding in defense evasion by controlling who can view or modify a event log channel.\nUpon execution, the user shouldn't be able to access the event log channel via the event viewer or via utilities such as \"Get-EventLog\" or \"wevtutil\".",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ChannelPath"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Modify Event Log Access Permissions via Registry - PowerShell",
+      "guid": "a0cb81f8-44d0-4ac4-a8f3-c5c7f43a12c1",
+      "description": "This test simulates an adversary modifying access permissions for a Windows Event Log channel by setting the \"CustomSD\" registry value. Specifically, it changes the Security Descriptor Definition Language (SDDL) string. These modifications can restrict or grant access to specific users or groups, potentially aiding in defense evasion by controlling who can view or modify a event log channel.\nUpon execution, the user shouldn't be able to access the event log channel via the event viewer or via utilities such as \"Get-EventLog\" or \"wevtutil\".",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["CustomSDPath"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1685.001/T1685.001.yaml"
+}

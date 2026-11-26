@@ -1,0 +1,46 @@
+{
+  "id": "T1574.012",
+  "displayName": "Hijack Execution Flow: COR_PROFILER",
+  "tests": [
+    {
+      "name": "User scope COR_PROFILER",
+      "guid": "9d5f89dc-c3a5-4f8a-a4fc-a6ed02e7cb5a",
+      "description": "Creates user scope environment variables and CLSID COM object to enable a .NET profiler (COR_PROFILER).\nThe unmanaged profiler DLL (`T1574.012x64.dll`) executes when the CLR is loaded by the Event Viewer process.\nAdditionally, the profiling DLL will inherit the integrity level of Event Viewer bypassing UAC and executing `notepad.exe` with high integrity.\nIf the account used is not a local administrator the profiler DLL will still execute each time the CLR is loaded by a process, however,\nthe notepad process will not execute with high integrity.\n\nReference: https://redcanary.com/blog/cor_profiler-for-persistence/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_name", "clsid_guid"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "System Scope COR_PROFILER",
+      "guid": "f373b482-48c8-4ce4-85ed-d40c8b3f7310",
+      "description": "Creates system scope environment variables to enable a .NET profiler (COR_PROFILER). System scope environment variables require a restart to take effect.\nThe unmanaged profiler DLL (T1574.012x64.dll`) executes when the CLR is loaded by any process. Additionally, the profiling DLL will inherit the integrity\nlevel of Event Viewer bypassing UAC and executing `notepad.exe` with high integrity. If the account used is not a local administrator the profiler DLL will\nstill execute each time the CLR is loaded by a process, however, the notepad process will not execute with high integrity.\n\nReference: https://redcanary.com/blog/cor_profiler-for-persistence/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_name", "clsid_guid"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Registry-free process scope COR_PROFILER",
+      "guid": "79d57242-bbef-41db-b301-9d01d9f6e817",
+      "description": "Creates process scope environment variables to enable a .NET profiler (COR_PROFILER) without making changes to the registry. The unmanaged profiler DLL (`T1574.012x64.dll`) executes when the CLR is loaded by PowerShell.\n\nReference: https://redcanary.com/blog/cor_profiler-for-persistence/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_name", "clsid_guid"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1574.012/T1574.012.yaml"
+}

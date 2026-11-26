@@ -1,0 +1,332 @@
+{
+  "id": "T1686",
+  "displayName": "Disable or Modify System Firewall",
+  "tests": [
+    {
+      "name": "Disable Microsoft Defender Firewall",
+      "guid": "88d05800-a5e4-407e-9b53-ece4174f197f",
+      "description": "Disables the Microsoft Defender Firewall for the current profile.\nCaution if you access remotely the host where the test runs! Especially with the cleanup command which will re-enable firewall for the current profile...",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Microsoft Defender Firewall via Registry",
+      "guid": "afedc8c4-038c-4d82-b3e5-623a95f8a612",
+      "description": "Disables the Microsoft Defender Firewall for the public profile via registry\nCaution if you access remotely the host where the test runs! Especially with the cleanup command which will re-enable firewall for the current profile...",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Allow SMB and RDP on Microsoft Defender Firewall",
+      "guid": "d9841bf8-f161-4c73-81e9-fd773a5ff8c1",
+      "description": "Allow all SMB and RDP rules on the Microsoft Defender Firewall for all profiles.\nCaution if you access remotely the host where the test runs! Especially with the cleanup command which will reset the firewall and risk disabling those services...",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Opening ports for proxy - HARDRAIN",
+      "guid": "15e57006-79dd-46df-9bf9-31bc24fb5a80",
+      "description": "This test creates a listening interface on a victim device. This tactic was used by HARDRAIN for proxying.\n\nreference: https://www.us-cert.gov/sites/default/files/publications/MAR-10135536-F.pdf",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Open a local port through Windows Firewall to any profile",
+      "guid": "9636dd6e-7599-40d2-8eee-ac16434f35ed",
+      "description": "This test will attempt to open a local port defined by input arguments to any profile",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["local_port"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Allow Executable Through Firewall Located in Non-Standard Location",
+      "guid": "6f5822d2-d38d-4f48-9bfc-916607ff6b8c",
+      "description": "This test will attempt to allow an executable through the system firewall located in the Users directory",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["exe_file_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Stop/Start UFW firewall",
+      "guid": "fe135572-edcd-49a2-afe6-1d39521c5a9a",
+      "description": "Stop the Uncomplicated Firewall (UFW) if installed.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Stop/Start Packet Filter",
+      "guid": "0ca82ed1-0a94-4774-9a9a-a2c83a8022b7",
+      "description": "Stop the Packet Filter if installed.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Stop/Start UFW firewall systemctl",
+      "guid": "9fd99609-1854-4f3c-b47b-97d9a5972bd1",
+      "description": "Stop the Uncomplicated Firewall (UFW) if installed, using systemctl.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Turn off UFW logging",
+      "guid": "8a95b832-2c2a-494d-9cb0-dc9dd97c8bad",
+      "description": "Turn off the Uncomplicated Firewall (UFW) logging.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Add and delete UFW firewall rules",
+      "guid": "b2563a4e-c4b8-429c-8d47-d5bcb227ba7a",
+      "description": "Add and delete a rule on the Uncomplicated Firewall (UFW) if installed and enabled.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Add and delete Packet Filter rules",
+      "guid": "8b23cae1-66c1-41c5-b79d-e095b6098b5b",
+      "description": "Add and delete a rule on the Packet Filter (PF) if installed and enabled.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Edit UFW firewall user.rules file",
+      "guid": "beaf815a-c883-4194-97e9-fdbbb2bbdd7c",
+      "description": "Edit the Uncomplicated Firewall (UFW) rules file /etc/ufw/user.rules.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Edit UFW firewall ufw.conf file",
+      "guid": "c1d8c4eb-88da-4927-ae97-c7c25893803b",
+      "description": "Edit the Uncomplicated Firewall (UFW) configuration file /etc/ufw/ufw.conf \nwhich controls if the firewall starts on boot and its logging level.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Edit UFW firewall sysctl.conf file",
+      "guid": "c4ae0701-88d3-4cd8-8bce-4801ed9f97e4",
+      "description": "Edit the Uncomplicated Firewall (UFW) configuration file for setting network \nvariables /etc/ufw/sysctl.conf.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Edit UFW firewall main configuration file",
+      "guid": "7b697ece-8270-46b5-bbc7-6b9e27081831",
+      "description": "Edit the Uncomplicated Firewall (UFW) main configuration file for setting \ndefault policies /etc/default/ufw.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Tail the UFW firewall log file",
+      "guid": "419cca0c-fa52-4572-b0d7-bc7c6f388a27",
+      "description": "Print  the last 10 lines of the Uncomplicated Firewall (UFW) log file \n/var/log/ufw.log.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Disable iptables",
+      "guid": "7784c64e-ed0b-4b65-bf63-c86db229fd56",
+      "description": "Some Linux systems may not activate ufw, but use iptables for firewall rules instead. (ufw works on top of iptables.) \nAttackers cannot directly disable iptables, as it is not implemented as a service like ufw. But they can flush all iptables \nrules, which in fact \"disable\" iptables.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Modify/delete iptables firewall rules",
+      "guid": "899a7fb5-d197-4951-8614-f19ac4a73ad4",
+      "description": "Instead of completely \"disabling\" iptables, adversaries may choose to delete a certain rule, which, for example, blocks data exfiltration via ftp.\nBy doing so, they may cause less noise to avoid detection.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "LockBit Black - Unusual Windows firewall registry modification -cmd",
+      "guid": "a4651931-ebbb-4cde-9363-ddf3d66214cb",
+      "description": "An adversary tries to modify the windows firewall registry",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "LockBit Black - Unusual Windows firewall registry modification -Powershell",
+      "guid": "80b453d1-eec5-4144-bf08-613a6c3ffe12",
+      "description": "An adversary tries to modify the windows firewall registry.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Blackbit - Disable Windows Firewall using netsh firewall",
+      "guid": "91f348e6-3760-4997-a93b-2ceee7f254ee",
+      "description": "An adversary tries to modify the windows firewall configuration using the deprecated netsh firewall command (command still works).",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "ESXi - Disable Firewall via Esxcli",
+      "guid": "bac8a340-be64-4491-a0cc-0985cb227f5a",
+      "description": "Adversaries may disable the ESXI firewall via ESXCLI",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["vm_host", "plink_file", "username", "password"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Set a firewall rule using New-NetFirewallRule",
+      "guid": "94be7646-25f6-467e-af23-585fb13000c8",
+      "description": "This test will attempt to create a new inbound/outbound firewall rule using the New-NetFirewallRule commandlet.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["direction", "local_port", "protocol", "action"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "ESXi - Set Firewall to PASS Traffic",
+      "guid": "a67e8aea-ea7c-4c3b-9b1b-8c2957c3091d",
+      "description": "This test sets the default ESXi firewall action to PASS instead of DROP. This allows all incoming and outgoing traffic.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["vm_host", "vm_user", "vm_pass", "plink_file"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1686/T1686.yaml"
+}

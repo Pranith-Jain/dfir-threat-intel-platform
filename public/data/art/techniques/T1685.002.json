@@ -1,0 +1,150 @@
+{
+  "id": "T1685.002",
+  "displayName": "Disable or Modify Tools: Disable or Modify Cloud Log",
+  "tests": [
+    {
+      "name": "AWS - CloudTrail Changes",
+      "guid": "9c10dc6b-20bd-403a-8e67-50ef7d07ed4e",
+      "description": "Creates a new cloudTrail in AWS, Upon successful creation it will Update,Stop and Delete the cloudTrail",
+      "platforms": ["iaas:aws"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["cloudtrail_name", "s3_bucket_name", "region"],
+      "dependencyCount": 3
+    },
+    {
+      "name": "Azure - Eventhub Deletion",
+      "guid": "5e09bed0-7d33-453b-9bf3-caea32bff719",
+      "description": "Identifies an Event Hub deletion in Azure.\nAn Event Hub is an event processing service that ingests and processes large volumes of events and data.\nAn adversary may delete an Event Hub in an attempt to evade detection.\nhttps://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-about.",
+      "platforms": ["iaas:azure"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username", "password", "event_hub_name", "resource_group", "name_space_name"],
+      "dependencyCount": 4
+    },
+    {
+      "name": "Office 365 - Exchange Audit Log Disabled",
+      "guid": "1ee572f3-056c-4632-a7fc-7e7c42b1543c",
+      "description": "You can use the Exchange Management Shell to enable or disable mailbox audit logging for a mailbox.\nUnified or Admin Audit logs are disabled via the Exchange Powershell cmdline.\nhttps://github.com/Azure/Azure-Sentinel/blob/master/Detections/OfficeActivity/exchange_auditlogdisabled.yaml",
+      "platforms": ["office-365"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username", "password"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "AWS - Disable CloudTrail Logging Through Event Selectors using Stratus",
+      "guid": "a27418de-bdce-4ebd-b655-38f11142bf0c",
+      "description": "Update event selectors in AWS CloudTrail to disable the logging of certain management events to evade defense. This Atomic test leverages a tool called Stratus-Red-Team built by DataDog (https://github.com/DataDog/stratus-red-team). Stratus Red Team is a self-contained binary. You can use it to easily detonate offensive attack techniques against a live cloud environment. Ref: https://stratus-red-team.cloud/attack-techniques/AWS/aws.defense-evasion.cloudtrail-event-selectors/",
+      "platforms": ["linux", "macos", "iaas:aws"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["stratus_path", "aws_region"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "AWS - CloudTrail Logs Impairment Through S3 Lifecycle Rule using Stratus",
+      "guid": "22d89a2f-d475-4895-b2d4-68626d49c029",
+      "description": "This Atomic test will use the Stratus Red Team will first setup a CloudTrail logging into an S3 bucket and will then make an API call to update the lifecycle rule on that S3 bucket with an expiration date of 1 day. This will essentially delete all the logs after one day. Adversaries often do this actiivity to evade detection. Stratus Red Team is a self-contained binary. You can use it to easily detonate offensive attack techniques against a live cloud environment. ref: https://stratus-red-team.cloud/attack-techniques/AWS/aws.defense-evasion.cloudtrail-lifecycle-rule/",
+      "platforms": ["linux", "macos", "iaas:aws"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["stratus_path", "aws_region"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "AWS - Remove VPC Flow Logs using Stratus",
+      "guid": "93c150f5-ad7b-4ee3-8992-df06dec2ac79",
+      "description": "This Atomic will attempt to remove AWS VPC Flow Logs configuration. Stratus Red Team is a self-contained binary. You can use it to easily detonate offensive attack techniques against a live cloud environment. Ref: https://stratus-red-team.cloud/attack-techniques/AWS/aws.defense-evasion.vpc-remove-flow-logs/",
+      "platforms": ["linux", "macos", "iaas:aws"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["stratus_path", "aws_region"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "AWS - CloudWatch Log Group Deletes",
+      "guid": "89422c87-b57b-4a04-a8ca-802bb9d06121",
+      "description": "Creates a new cloudWatch log group in AWS, Upon successful creation it will Delete the group. Attackers can use this technique to evade defenses by \ndeleting the log stream. Once it is deleted, the logs created by the attackers will not be logged. https://www.elastic.co/guide/en/security/current/aws-cloudwatch-log-group-deletion.html#aws-cloudwatch-log-group-deletion",
+      "platforms": ["iaas:aws"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["cloudwatch_log_group_name", "region"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "AWS CloudWatch Log Stream Deletes",
+      "guid": "33ca84bc-4259-4943-bd36-4655dc420932",
+      "description": "Creates a new cloudWatch log stream in AWS, Upon successful creation it will Delete the stream. Attackers can use this technique to evade defenses by \ndeleting the log stream. Once it is deleted, the logs created by the attackers will not be logged. https://www.elastic.co/guide/en/security/current/aws-cloudwatch-log-stream-deletion.html",
+      "platforms": ["iaas:aws"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["cloudwatch_log_group_name", "cloudwatch_log_stream_name", "region"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Office 365 - Set Audit Bypass For a Mailbox",
+      "guid": "c9a2f6fe-7197-488c-af6d-10c782121ca6",
+      "description": "Use Exchange Management Shell to Mailbox auditing to bypass. It will prevent any mailbox audit logging entries being generated for the target e-mail box.\nhttps://learn.microsoft.com/en-us/powershell/module/exchange/set-mailboxauditbypassassociation?view=exchange-ps",
+      "platforms": ["office-365"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username", "password", "target_email"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "GCP - Delete Activity Event Log",
+      "guid": "d56152ec-01d9-42a2-877c-aac1f6ebe8e6",
+      "description": "GCP provides 4 types of Cloud Audit Logs: Admin Activity, Data Access, System Events, and Policy Denied.\nAn adversary may attempt to delete logs in order to hide their activity. However, Admin Activity, System Events, and Policy Deny events logs cannot be deleted. \n\nThis Atomic attempts to delete the Activity Event log. An event is generated under the method name of `google.logging.v2.LoggingServiceV2.DeleteLog` with a Serverity of `ERROR`.",
+      "platforms": ["iaas:gcp"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["project-id"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "AWS - Config Logs Disabled",
+      "guid": "4608bc1b-e682-466b-a7d7-dbd76760db31",
+      "description": "Disables AWS Config by stopping the configuration recorder, deleting the delivery channel, and deleting the configuration recorder. An attacker with sufficient permissions can use this to stop configuration change recording and avoid detection of subsequent activity.",
+      "platforms": ["iaas:aws"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["configuration_recorder_name", "delivery_channel_name", "region"],
+      "dependencyCount": 2
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1685.002/T1685.002.yaml"
+}

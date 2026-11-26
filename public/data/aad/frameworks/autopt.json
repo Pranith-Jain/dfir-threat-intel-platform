@@ -1,0 +1,116 @@
+{
+  "slug": "autopt",
+  "name": "AutoPT",
+  "description": "Research web pentest agent that runs public vulhub exploits, with an unauthenticated Flask console on port 5000",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 4,
+    "suricata": 6,
+    "yara": 2,
+    "indicators": 6
+  },
+  "techniques": [
+    {
+      "id": "T1036.012",
+      "score": 1,
+      "comment": "Suricata: 3812601 TD Truncated Chrome user agent of AI pentest agents (AutoPT page reader, PentestAgent GH05TCREW browser, CyberStrikeAI implant)"
+    },
+    {
+      "id": "T1059.006",
+      "score": 4,
+      "comment": "KQL hunt: AutoPT on a host you monitor; Sentinel analytics: AutoPT LLM pentest agent run on a host; Sigma: AutoPT Agent Started or Running Its Scan Steps; Sigma: AutoPT Run Result Written"
+    },
+    {
+      "id": "T1071",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1071.001",
+      "score": 6,
+      "comment": "KQL hunt: AutoPT testing you, or its console used: user agents and console API paths in web and proxy logs; Sigma: AutoPT Console API or Vulhub PoC Fetch in Proxy Logs; Suricata: 3812603 TD AutoPT console page; Suricata: 3812604 TD AutoPT console configuration with model keys served; Suricata: 3812605 TD AutoPT console system info; Suricata: 3812606 TD AutoPT console agent run started"
+    },
+    {
+      "id": "T1552.001",
+      "score": 1,
+      "comment": "Suricata: 3812604 TD AutoPT console configuration with model keys served"
+    },
+    {
+      "id": "T1588.002",
+      "score": 1,
+      "comment": "YARA: AutoPT_Source"
+    },
+    {
+      "id": "T1595",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1595.002",
+      "score": 10,
+      "comment": "KQL hunt: AutoPT on a host you monitor; KQL hunt: AutoPT testing you, or its console used: user agents and console API paths in web and proxy logs; Sentinel analytics: AutoPT LLM pentest agent run on a host; Sigma: AutoPT Agent Started or Running Its Scan Steps; Sigma: AutoPT Console API or Vulhub PoC Fetch in Proxy Logs; Sigma: AutoPT Page Reader User Agent in Web Logs; Suricata: 3812601 TD Truncated Chrome user agent of AI pentest agents (AutoPT page reader, PentestAgent GH05TCREW browser, CyberStrikeAI implant); Suricata: 3812602 TD AutoPT upstream page reader user agent; Suricata: 3812606 "
+    }
+  ],
+  "indicators": [
+    {
+      "type": "user_agent",
+      "value": "AutoPT/1.0",
+      "confidence": "medium",
+      "context": "User agent of the ReadHTML page reader in the upstream AutoPT engine, sent with Python urllib on every page the agent reads (tools/web.py:38)",
+      "source": "ThreatDefence review of the AutoPT source code",
+      "sourceUrl": "https://github.com/Dizzy-K/AutoPT/blob/fb26e0c47d47bd835e2164fe2b485df1c546d017/tools/web.py#L38",
+      "reported": "2026-06-01"
+    },
+    {
+      "type": "string",
+      "value": "AutoPT - 自动化渗透测试平台",
+      "confidence": "medium",
+      "context": "Title of the AutoPT web console, Flask development server on port 5000 with no login (frontend/index.html:6)",
+      "source": "ThreatDefence review of the AutoPT source code",
+      "sourceUrl": "https://github.com/evenhu9/AutoPT/blob/e38e208612e15bce94c828c2eb919ab1171332d6/frontend/index.html#L6",
+      "reported": "2026-04-18"
+    },
+    {
+      "type": "string",
+      "value": "xray路径:",
+      "confidence": "medium",
+      "context": "Prefix of the xray_info value in the AutoPT console's unauthenticated GET /api/system/info answer (app.py:608)",
+      "source": "ThreatDefence review of the AutoPT source code",
+      "sourceUrl": "https://github.com/evenhu9/AutoPT/blob/e38e208612e15bce94c828c2eb919ab1171332d6/app.py#L608",
+      "reported": "2026-04-18"
+    },
+    {
+      "type": "string",
+      "value": "=== VULHUB PoC REFERENCE (from github.com/vulhub/vulhub) ===",
+      "confidence": "medium",
+      "context": "Block AutoPT puts in the Inquire agent's prompt before each exploit; seen only in model traffic or in the source (src/psm/state.py:339)",
+      "source": "ThreatDefence review of the AutoPT source code",
+      "sourceUrl": "https://github.com/evenhu9/AutoPT/blob/e38e208612e15bce94c828c2eb919ab1171332d6/src/psm/state.py#L339",
+      "reported": "2026-04-18"
+    },
+    {
+      "type": "file_name",
+      "value": "*_FSM.jsonl",
+      "confidence": "medium",
+      "context": "Result file AutoPT writes after each run: src/result/<model>/<service>_<CVE>_<model>_FSM.jsonl, with the commands the agent ran (src/autopt.py:81-98)",
+      "source": "ThreatDefence review of the AutoPT source code",
+      "sourceUrl": "https://github.com/evenhu9/AutoPT/blob/e38e208612e15bce94c828c2eb919ab1171332d6/src/autopt.py#L81-L98",
+      "reported": "2026-04-18"
+    },
+    {
+      "type": "domain",
+      "value": "api.whatai.cc",
+      "confidence": "low",
+      "context": "Third-party OpenAI-compatible relay set as openai_base in AutoPT's shipped config.yml (src/config/config.yml:3). A public service many tools use, so only context",
+      "source": "ThreatDefence review of the AutoPT source code",
+      "sourceUrl": "https://github.com/evenhu9/AutoPT/blob/e38e208612e15bce94c828c2eb919ab1171332d6/src/config/config.yml#L3",
+      "reported": "2026-04-18"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/autopt",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

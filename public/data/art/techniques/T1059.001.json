@@ -1,0 +1,297 @@
+{
+  "id": "T1059.001",
+  "displayName": "Command and Scripting Interpreter: PowerShell",
+  "tests": [
+    {
+      "name": "Mimikatz",
+      "guid": "f3132740-55bc-48c4-bcc0-758a459cd027",
+      "description": "Download Mimikatz and dump credentials. Upon execution, mimikatz dump details and password hashes will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["mimurl", "mimpath"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Run BloodHound from local disk",
+      "guid": "a21bb23e-e677-4ee7-af90-6931b57b6350",
+      "description": "Upon execution SharpHound will be downloaded to disk, imported and executed. It will set up collection methods, run and then compress and store the data to the temp directory on the machine. If system is unable to contact a domain, proper execution will not occur.\n\nSuccessful execution will produce stdout message stating \"SharpHound Enumeration Completed\". Upon completion, final output will be a *BloodHound.zip file.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Run Bloodhound from Memory using Download Cradle",
+      "guid": "bf8c1441-4674-4dab-8e4e-39d93d08f9b7",
+      "description": "Upon execution SharpHound will load into memory and execute against a domain. It will set up collection methods, run and then compress and store the data to the temp directory. If system is unable to contact a domain, proper execution will not occur.\n\nSuccessful execution will produce stdout message stating \"SharpHound Enumeration Completed\". Upon completion, final output will be a *BloodHound.zip file.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Mimikatz - Cradlecraft PsSendKeys",
+      "guid": "af1800cf-9f9d-4fd1-a709-14b1e6de020d",
+      "description": "Run mimikatz via PsSendKeys. Upon execution, automated actions will take place to open file explorer, open notepad and input code, then mimikatz dump info will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Invoke-AppPathBypass",
+      "guid": "06a220b6-7e29-4bd8-9d07-5b4d86742372",
+      "description": "Note: Windows 10 only. Upon execution windows backup and restore window will be opened.\n\nBypass is based on: https://enigma0x3.net/2017/03/14/bypassing-uac-using-app-paths/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Powershell MsXml COM object - with prompt",
+      "guid": "388a7340-dbc1-4c9d-8e59-b75ad8c6d5da",
+      "description": "Powershell MsXml COM object. Not proxy aware, removing cache although does not appear to write to those locations. Upon execution, \"Download Cradle test success!\" will be displayed.\n\nProvided by https://github.com/mgreen27/mgreen27.github.io",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["url"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Powershell XML requests",
+      "guid": "4396927f-e503-427b-b023-31049b9b09a6",
+      "description": "Powershell xml download request. Upon execution, \"Download Cradle test success!\" will be dispalyed.\n\nProvided by https://github.com/mgreen27/mgreen27.github.io",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["url"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Powershell invoke mshta.exe download",
+      "guid": "8a2ad40b-12c7-4b25-8521-2737b0a415af",
+      "description": "Powershell invoke mshta to download payload. Upon execution, a new PowerShell window will be opened which will display \"Download Cradle test success!\".\n\nProvided by https://github.com/mgreen27/mgreen27.github.io",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["url"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Powershell Invoke-DownloadCradle",
+      "guid": "cc50fa2a-a4be-42af-a88f-e347ba0bf4d7",
+      "description": "Provided by https://github.com/mgreen27/mgreen27.github.io\nInvoke-DownloadCradle is used to generate Network and Endpoint artifacts.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "manual",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "PowerShell Fileless Script Execution",
+      "guid": "fa050f5e-bc75-4230-af73-b6fd7852cd73",
+      "description": "Execution of a PowerShell payload from the Windows Registry similar to that seen in fileless malware infections. Upon exection, open \"C:\\Windows\\Temp\" and verify that\nart-marker.txt is in the folder.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "NTFS Alternate Data Stream Access",
+      "guid": "8e5c5532-1181-4c1d-bb79-b3a9f5dbd680",
+      "description": "Creates a file with an alternate data stream and simulates executing that hidden code/file. Upon execution, \"Stream Data Executed\" will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ads_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "PowerShell Session Creation and Use",
+      "guid": "7c1acec2-78fa-4305-a3e0-db2a54cddecd",
+      "description": "Connect to a remote powershell session and interact with the host.\nUpon execution, network test info and 'T1086 PowerShell Session Creation and Use' will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["hostname_to_connect"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "ATHPowerShellCommandLineParameter -Command parameter variations",
+      "guid": "686a9785-f99b-41d4-90df-66ed515f81d7",
+      "description": "Executes powershell.exe with variations of the -Command parameter",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["command_line_switch_type", "command_param_variation"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "ATHPowerShellCommandLineParameter -Command parameter variations with encoded arguments",
+      "guid": "1c0a870f-dc74-49cf-9afc-eccc45e58790",
+      "description": "Executes powershell.exe with variations of the -Command parameter with encoded arguments supplied",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["command_line_switch_type", "command_param_variation", "encoded_arguments_param_variation"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "ATHPowerShellCommandLineParameter -EncodedCommand parameter variations",
+      "guid": "86a43bad-12e3-4e85-b97c-4d5cf25b95c3",
+      "description": "Executes powershell.exe with variations of the -EncodedCommand parameter",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["command_line_switch_type", "encoded_command_param_variation"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "ATHPowerShellCommandLineParameter -EncodedCommand parameter variations with encoded arguments",
+      "guid": "0d181431-ddf3-4826-8055-2dbf63ae848b",
+      "description": "Executes powershell.exe with variations of the -EncodedCommand parameter with encoded arguments supplied",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [
+        "encoded_command_param_variation",
+        "command_line_switch_type",
+        "encoded_arguments_param_variation"
+      ],
+      "dependencyCount": 1
+    },
+    {
+      "name": "PowerShell Command Execution",
+      "guid": "a538de64-1c74-46ed-aa60-b995ed302598",
+      "description": "Use of obfuscated PowerShell to execute an arbitrary command; outputs \"Hello, from PowerShell!\". Example is from the 2021 Threat Detection Report by Red Canary.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["obfuscated_code"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "PowerShell Invoke Known Malicious Cmdlets",
+      "guid": "49eb9404-5e0f-4031-a179-b40f7be385e3",
+      "description": "Powershell execution of known Malicious PowerShell Cmdlets",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["Malicious_cmdlets"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "PowerUp Invoke-AllChecks",
+      "guid": "1289f78d-22d2-4590-ac76-166737e1811b",
+      "description": "Check for privilege escalation paths using PowerUp from PowerShellMafia",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Abuse Nslookup with DNS Records",
+      "guid": "999bff6d-dc15-44c9-9f5c-e1051bfc86e1",
+      "description": "Red teamer's avoid IEX and Invoke-WebRequest in your PowerShell commands. Instead, host a text record with a payload to compromise hosts.\n[reference](https://twitter.com/jstrosch/status/1237382986557001729)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "SOAPHound - Dump BloodHound Data",
+      "guid": "6a5b2a50-d037-4879-bf01-43d4d6cbf73f",
+      "description": "Dump BloodHound data using SOAPHound. Upon execution, BloodHound data will be dumped and stored in the specified output directory.\nsrc: https://github.com/FalconForceTeam/SOAPHound",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["user", "password", "domain", "dc", "cachefilename", "outputdirectory", "soaphound_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "SOAPHound - Build Cache",
+      "guid": "4099086c-1470-4223-8085-8186e1ed5948",
+      "description": "Build cache using SOAPHound. Upon execution, a cache will be built and stored in the specified cache filename.\nsrc: https://github.com/FalconForceTeam/SOAPHound",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["user", "password", "domain", "dc", "cachefilename", "soaphound_path"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1059.001/T1059.001.yaml"
+}

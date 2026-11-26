@@ -1,0 +1,201 @@
+{
+  "slug": "strix",
+  "name": "Strix",
+  "description": "Python AI pentest agent that runs teams of agents in a Kali sandbox, on any model",
+  "seenIn": "The retail card-theft campaign Gambit reported, where it found the flaws Cairn exploited",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 3,
+    "suricata": 5,
+    "yara": 3,
+    "indicators": 16
+  },
+  "techniques": [
+    {
+      "id": "T1059.006",
+      "score": 1,
+      "comment": "Sentinel analytics: Strix AI pentest agent on a host or reporting from your network"
+    },
+    {
+      "id": "T1071",
+      "score": 5,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; Suricata: 3805500 TD Strix reported address, Gambit retail card-theft operator (Hermes, Strix and Cairn), C2 (outbound); Suricata: 3805502 TD Strix reported address, Gambit retail card-theft operator (Hermes, Strix and Cairn), DNS exfiltration, catch-all mail, HTTP listeners (outbound); Suricata: 3805504 TD Strix reported address, Gambit retail card-theft operator (Hermes, Strix and Cairn), Skimmer host (outbound); Suricata: 3805506 TD Strix reported address, Gambit retail card-theft operator (Hermes, Strix and Cairn), Staging and command s"
+    },
+    {
+      "id": "T1071.001",
+      "score": 5,
+      "comment": "KQL hunt: Strix telemetry and results viewers seen from your network; Suricata: 3805002 TD Strix telemetry TLS (strix.gateway.scarf.sh); Suricata: 3805003 TD Strix telemetry finding reported; Suricata: 3805010 TD Strix results viewer page; Suricata: 3805011 TD Strix results viewer agent steering API"
+    },
+    {
+      "id": "T1071.004",
+      "score": 1,
+      "comment": "Suricata: 3805001 TD Strix telemetry DNS query (strix.gateway.scarf.sh)"
+    },
+    {
+      "id": "T1588.002",
+      "score": 4,
+      "comment": "KQL hunt: Strix running on a host you monitor; YARA: Strix_Package; YARA: Strix_Run_Record; YARA: Strix_Sandbox_Entrypoint"
+    },
+    {
+      "id": "T1595",
+      "score": 5,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; Suricata: 3805501 TD Strix reported address, Gambit retail card-theft operator (Hermes, Strix and Cairn), C2 (inbound); Suricata: 3805503 TD Strix reported address, Gambit retail card-theft operator (Hermes, Strix and Cairn), DNS exfiltration, catch-all mail, HTTP listeners (inbound); Suricata: 3805505 TD Strix reported address, Gambit retail card-theft operator (Hermes, Strix and Cairn), Skimmer host (inbound); Suricata: 3805507 TD Strix reported address, Gambit retail card-theft operator (Hermes, Strix and Cairn), Staging and command serv"
+    },
+    {
+      "id": "T1595.002",
+      "score": 4,
+      "comment": "Sentinel analytics: Strix AI pentest agent on a host or reporting from your network; Sigma: Strix AI Pentest Agent CLI or Sandbox; Sigma: Strix Telemetry DNS Query; Sigma: Strix Telemetry or Results Viewer API in Proxy Logs"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "domain",
+      "value": "strix.gateway.scarf.sh",
+      "confidence": "high",
+      "context": "Strix telemetry, on by default (STRIX_TELEMETRY): POST /scan_started/<version>, /finding_reported/<version>?severity=... and /scan_ended/<version> on every scan (strix/telemetry/scarf.py:29). Seen from your network, Strix ran from your network",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "phc_7rO3XRuNT5sgSKAl6HDIrWdSGh1COzxw0vxVIAR6vVZ",
+      "confidence": "high",
+      "context": "Strix's PostHog project key, sent in every telemetry POST to us.i.posthog.com/capture/ (strix/telemetry/posthog.py:25). Visible only with TLS inspection",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "docker_image",
+      "value": "ghcr.io/usestrix/strix-sandbox",
+      "confidence": "high",
+      "context": "Strix sandbox image (Kali rolling with nmap, nuclei, sqlmap, ffuf, katana, httpx, interactsh-client, Caido), default tag 1.4.1 (strix/config/settings.py:167, STRIX_IMAGE)",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "strix-run-id",
+      "confidence": "high",
+      "context": "Docker label Strix puts on every sandbox container, next to strix-run-type (strix/runtime/docker_client.py:147)",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "caido-cli --listen 0.0.0.0:48080",
+      "confidence": "high",
+      "context": "Caido proxy the Strix sandbox starts with --allow-guests --no-logging; every tool in the sandbox is proxied through it (containers/docker-entrypoint.sh)",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "port",
+      "value": "48080",
+      "confidence": "low",
+      "context": "Caido proxy port inside the Strix sandbox (containers/docker-entrypoint.sh)",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "file_path",
+      "value": "strix_runs/",
+      "confidence": "medium",
+      "context": "Folder Strix writes each run to in its working directory: run.json, agents.json, vulnerabilities.json, vulnerabilities.csv, coverage.json, findings.sarif and penetration_test_report.md (strix/core/paths.py:8, strix/report)",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "file_name",
+      "value": "penetration_test_report.md",
+      "confidence": "low",
+      "context": "Report Strix writes into strix_runs/<run>/ (strix/report)",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "strix-agent",
+      "confidence": "medium",
+      "context": "PyPI package name of Strix; the strix command is its entry point (pyproject.toml)",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "--scan-mode deep",
+      "confidence": "medium",
+      "context": "Strix scan mode Gambit saw the operator use for 146 runs; deep is also the default (strix/interface/cli_args.py:232)",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "Strix Results",
+      "confidence": "high",
+      "context": "Title of the Strix results viewer page (strix/interface/viewer/static/index.html). The viewer binds 127.0.0.1 by default; exposed ones were started with --host 0.0.0.0, often on 8080",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "-566184040",
+      "confidence": "high",
+      "context": "Strix results viewer icon logo.png (Shodan http.favicon.hash), verified against strix/interface/viewer/static/logo.png. GitGuardian counted 13 exposed on November 7, 2026, PenTestIT 11 on November 13",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "sha256",
+      "value": "a6d5ca4b84523e651c7151d0bcb6bc0c132ecc311566bb48ed2da6c82efcb9eb",
+      "confidence": "high",
+      "context": "Strix results viewer icon logo.png",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "You have FULL AUTHORIZATION for authorized security validation on in-scope targets",
+      "confidence": "medium",
+      "context": "Strix system prompt pre-authorization block (AUTHORIZATION STATUS, REFUSAL AVOIDANCE), visible where model traffic is inspected (strix/agents/prompts/system_prompt.jinja:70-78)",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+      "confidence": "low",
+      "context": "User agent of the Strix sandbox headless browser (AGENT_BROWSER_USER_AGENT). Real Chrome 131 on Linux sends the same string: context only, never alone",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+      "confidence": "low",
+      "context": "Default user agent when Strix replays a captured request through Caido (strix/tools/proxy/caido_api.py:193). Same caveat as the browser string",
+      "source": "ThreatDefence review of the Strix source code",
+      "sourceUrl": "https://github.com/usestrix/strix",
+      "reported": "2026-11-21"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/strix",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

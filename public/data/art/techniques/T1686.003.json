@@ -1,0 +1,33 @@
+{
+  "id": "T1686.003",
+  "displayName": "Disable or Modify System Firewall: Windows Host Firewall",
+  "tests": [
+    {
+      "name": "Enable Firewall Rule Group via COM Object (HNetCfg.FwPolicy2)",
+      "guid": "0ef45922-1cd8-4211-8595-3cb3bd87f5d8",
+      "description": "Uses the HNetCfg.FwPolicy2 COM object to enable the File and Printer Sharing and\nNetwork Discovery firewall rule groups on the Private profile. This mirrors behavior\nobserved in ApolloShadow malware, which enables these rule groups to facilitate\nlateral movement by making the host discoverable and enabling file sharing.\n\nReference: https://www.microsoft.com/en-us/security/blog/2025/07/31/frozen-in-transit-secret-blizzards-aitm-campaign-against-diplomats/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Set All Network Profiles to Private via Registry",
+      "guid": "f4e1a3bf-8b50-4967-a225-b6c383019e07",
+      "description": "Modifies the Category value under each network profile GUID in\nHKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\NetworkList\\Profiles to 0 (Private).\nThis relaxes Windows Firewall rules and enables file sharing, a technique used by\nApolloShadow to reduce lateral movement difficulty. Only profiles not already set to\nPrivate are modified, and their original values are saved to a backup file for cleanup.\n\nReference: https://www.microsoft.com/en-us/security/blog/2025/07/31/frozen-in-transit-secret-blizzards-aitm-campaign-against-diplomats/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1686.003/T1686.003.yaml"
+}

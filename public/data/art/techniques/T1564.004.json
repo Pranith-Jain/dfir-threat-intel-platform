@@ -1,0 +1,72 @@
+{
+  "id": "T1564.004",
+  "displayName": "Hide Artifacts: NTFS File Attributes",
+  "tests": [
+    {
+      "name": "Alternate Data Streams (ADS)",
+      "guid": "8822c3b0-d9f9-4daf-a043-49f4602364f4",
+      "description": "Execute from Alternate Streams\n\n[Reference - 1](https://gist.github.com/api0cradle/cdd2d0d0ec9abb686f0e89306e277b8f)\n\n[Reference - 2](https://oddvar.moe/2018/01/14/putting-data-in-alternate-data-streams-and-how-to-execute-it/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Store file in Alternate Data Stream (ADS)",
+      "guid": "2ab75061-f5d5-4c1a-b666-ba2a50df5b02",
+      "description": "Storing files in Alternate Data Stream (ADS) similar to Astaroth malware.\nUpon execution, cmd will run and attempt to launch desktop.ini. No windows remain open after the test",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["payload_path", "ads_file_path", "ads_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create ADS command prompt",
+      "guid": "17e7637a-ddaf-4a82-8622-377e20de8fdb",
+      "description": "Create an Alternate Data Stream with the command prompt. Write access is required. Upon execution, run \"dir /a-d /s /r | find \":$DATA\"\" in the %temp%\nfolder to view that the alternate data stream exists. To view the data in the alternate data stream, run \"notepad T1564.004_has_ads.txt:adstest.txt\"",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_name", "ads_filename"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create ADS PowerShell",
+      "guid": "0045ea16-ed3c-4d4c-a9ee-15e44d1560d1",
+      "description": "Create an Alternate Data Stream with PowerShell. Write access is required. To verify execution, run the command \"ls -Recurse | %{ gi $_.Fullname -stream *} | where stream -ne ':$Data' | Select-Object pschildname\"\nin the %temp% directory to view all files with hidden data streams. To view the data in the alternate data stream, run \"notepad.exe T1564.004_has_ads_powershell.txt:adstest.txt\" in the %temp% folder.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_name", "ads_filename"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Create Hidden Directory via $index_allocation",
+      "guid": "3e6791e7-232c-481c-a680-a52f86b83fdf",
+      "description": "Create an Alternate Data Stream Directory and File with the command prompt. Write access is required. Upon execution,\nrun \"dir /A /Q /R\" in the %temp% folder to view that the alternate data stream folder exists. To view the data in the\nalternate data stream, run \"type %temp%\\...$.......::$index_allocation\\secrets.txt\"",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["folder_name", "hidden_filename"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1564.004/T1564.004.yaml"
+}

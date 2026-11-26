@@ -1,0 +1,137 @@
+{
+  "id": "T1218.005",
+  "displayName": "System Binary Proxy Execution: Mshta",
+  "tests": [
+    {
+      "name": "Mshta executes JavaScript Scheme Fetch Remote Payload With GetObject",
+      "guid": "1483fab9-4f52-4217-a9ce-daa9d7747cae",
+      "description": "Test execution of a remote script using mshta.exe. Upon execution calc.exe will be launched.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["file_url"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Mshta executes VBScript to execute malicious command",
+      "guid": "906865c3-e05f-4acc-85c4-fbc185455095",
+      "description": "Run a local VB script to run local user enumeration powershell command.\nThis attempts to emulate what FIN7 does with this technique which is using mshta.exe to execute VBScript to execute malicious code on victim systems.\nUpon execution, a new PowerShell windows will be opened that displays user information.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Mshta Executes Remote HTML Application (HTA)",
+      "guid": "c4b97eeb-5249-4455-a607-59f95485cb45",
+      "description": "Execute an arbitrary remote HTA. Upon execution calc.exe will be launched.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["temp_file", "hta_url"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Invoke HTML Application - Jscript Engine over Local UNC Simulating Lateral Movement",
+      "guid": "007e5672-2088-4853-a562-7490ddc19447",
+      "description": "Executes an HTA Application using JScript script engine using local UNC path simulating lateral movement.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["script_engine", "hta_file_path", "mshta_file_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Invoke HTML Application - Jscript Engine Simulating Double Click",
+      "guid": "58a193ec-131b-404e-b1ca-b35cf0b18c33",
+      "description": "Executes an HTA Application using JScript script engine simulating double click.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["script_engine", "hta_file_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Invoke HTML Application - Direct download from URI",
+      "guid": "39ceed55-f653-48ac-bd19-aceceaf525db",
+      "description": "Executes an HTA Application by directly downloading from remote URI.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["mshta_file_path", "hta_uri"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Invoke HTML Application - JScript Engine with Rundll32 and Inline Protocol Handler",
+      "guid": "e7e3a525-7612-4d68-a5d3-c4649181b8af",
+      "description": "Executes an HTA Application with JScript Engine, Rundll32 and Inline Protocol Handler.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["rundll32_file_path", "script_engine", "protocol_handler"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Invoke HTML Application - JScript Engine with Inline Protocol Handler",
+      "guid": "d3eaaf6a-cdb1-44a9-9ede-b6c337d0d840",
+      "description": "Executes an HTA Application with JScript Engine and Inline Protocol Handler.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["mshta_file_path", "script_engine", "protocol_handler"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Invoke HTML Application - Simulate Lateral Movement over UNC Path",
+      "guid": "b8a8bdb2-7eae-490d-8251-d5e0295b2362",
+      "description": "Executes an HTA Application with Simulate lateral movement over UNC Path.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["mshta_file_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Mshta used to Execute PowerShell",
+      "guid": "8707a805-2b76-4f32-b1c0-14e558205772",
+      "description": "Use Mshta to execute arbitrary PowerShell. Example is from the 2021 Threat Detection Report by Red Canary.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["message", "seconds_to_sleep"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1218.005/T1218.005.yaml"
+}

@@ -1,0 +1,46 @@
+{
+  "id": "T1027.001",
+  "displayName": "Obfuscated Files or Information: Binary Padding",
+  "tests": [
+    {
+      "name": "Pad Binary to Change Hash - Linux/macOS dd",
+      "guid": "ffe2346c-abd5-4b45-a713-bf5f1ebd573a",
+      "description": "Uses dd to add a zero byte, high-quality random data, and low-quality random data to the binary to change the hash.\n\nUpon successful execution, dd will modify `/tmp/evil-binary`, therefore the expected hash will change.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_to_pad"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Pad Binary to Change Hash using truncate command - Linux/macOS",
+      "guid": "e22a9e89-69c7-410f-a473-e6c212cd2292",
+      "description": "Uses truncate to add a byte to the binary to change the hash.\n\nUpon successful execution, truncate will modify `/tmp/evil-binary`, therefore the expected hash will change.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_to_pad"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Pad Binary to Change Hash using PowerShell - Windows",
+      "guid": "a374947c-2573-4a51-8da8-4e42539f33e0",
+      "description": "Uses PowerShell to add a zero byte and random data to the binary to change the hash.\n\nUpon successful execution, PowerShell will modify #{file_to_pad}, therefore the expected hash will change.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_to_pad"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1027.001/T1027.001.yaml"
+}

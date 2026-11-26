@@ -1,0 +1,85 @@
+{
+  "id": "T1222.001",
+  "displayName": "File and Directory Permissions Modification: Windows Permissions",
+  "tests": [
+    {
+      "name": "Take ownership using takeown utility",
+      "guid": "98d34bb4-6e75-42ad-9c41-1dae7dc6a001",
+      "description": "Modifies the filesystem permissions of the specified file or folder to take ownership of the object. Upon execution, \"SUCCESS\" will\nbe displayed for the folder and each file inside of it.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["file_folder_to_own"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "cacls - Grant permission to specified user or group recursively",
+      "guid": "a8206bcc-f282-40a9-a389-05d9c0263485",
+      "description": "Modifies the filesystem permissions of the specified folder and contents to allow the specified user or group Full Control. If \"Access is denied\"\nis displayed it may be because the file or folder doesn't exit. Run the prereq command to create it. Upon successfull execution, \"Successfully processed 3 files\"\nwill be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["file_or_folder", "user_or_group"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "attrib - Remove read-only attribute",
+      "guid": "bec1e95c-83aa-492e-ab77-60c71bbd21b0",
+      "description": "Removes the read-only attribute from a file or folder using the attrib.exe command. Upon execution, no output will be displayed.\nOpen the file in File Explorer > Right Click - Prperties and observe that the Read Only checkbox is empty.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["file_or_folder"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "attrib - hide file",
+      "guid": "32b979da-7b68-42c9-9a99-0e39900fc36c",
+      "description": "Attackers leverage an existing Windows binary, attrib.exe, to mark specific files or folder as hidden by using specific flags so that\nthe victim does not see the file.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_or_folder"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Grant Full Access to folder for Everyone - Ryuk Ransomware Style",
+      "guid": "ac7e6118-473d-41ec-9ac0-ef4f1d1ed2f6",
+      "description": "Invokes the command line similar to that used by Ryuk Ransomware to grant full access to the entire C:\\ drive for Everyone.\n**icacls \"C:\\*\" /grant Everyone:F /T /C /Q**\nHowever, for this atomic we set the permission on C:\\Users\\Public so it completes faster and doesn't irreversibly affect the host.\nYou can set your own path variable to \"C:\\*\" if you prefer.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["path", "file_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "SubInAcl Execution",
+      "guid": "a8568b10-9ab9-4140-a523-1c72e0176924",
+      "description": "This test simulates an adversary executing the Windows Resource kit utility SubInAcl. This utility was abused by adversaries in the past in order to modify access permissions. Upon execution, a process creation log should be generated indicating successful execution.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["SubInAclDownloadPath"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1222.001/T1222.001.yaml"
+}

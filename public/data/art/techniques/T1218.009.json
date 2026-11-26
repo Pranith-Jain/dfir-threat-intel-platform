@@ -1,0 +1,33 @@
+{
+  "id": "T1218.009",
+  "displayName": "System Binary Proxy Execution: Regsvcs/Regasm",
+  "tests": [
+    {
+      "name": "Regasm Uninstall Method Call Test",
+      "guid": "71bfbfac-60b1-4fc0-ac8b-2cedbbdcb112",
+      "description": "Executes the Uninstall Method, No Admin Rights Required. Upon execution, \"I shouldn't really execute either.\" will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file", "source_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Regsvcs Uninstall Method Call Test",
+      "guid": "fd3c1c6a-02d2-4b72-82d9-71c527abb126",
+      "description": "Executes the Uninstall Method, No Admin Rights Required, Requires SNK. Upon execution, \"I shouldn't really execute\" will be displayed\nalong with other information about the assembly being installed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file", "source_file"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1218.009/T1218.009.yaml"
+}

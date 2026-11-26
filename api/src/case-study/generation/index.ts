@@ -8,7 +8,7 @@ import { generateAiImage, buildHeroImagePrompt, buildBodyImagePrompt, injectBody
 import { validateIocsLive, type IocValidationEnv } from './ioc-live-validation';
 import { verifyAndPruneReferences } from './verify-references';
 import { researchCandidate } from '../research';
-import { snapshotDossier } from '../research/dossier';
+import { snapshotDossier, type ResearchDossier } from '../research/dossier';
 import type { LinkStatus } from '../../lib/verify-url';
 
 /**
@@ -150,6 +150,12 @@ export interface GeneratePostDeps {
   self?: { fetch: (req: RequestInfo, init?: RequestInit) => Promise<Response> };
   /** HMAC secret for self-fetch auth. Absent = skip platform enrichment. */
   internalTokenSecret?: string;
+  /**
+   * Pre-built research dossier. When supplied, the research stage is not run
+   * again — `/admin/generate` uses this to give the blog and the social formats
+   * the exact same verified facts from a single research pass.
+   */
+  dossier?: ResearchDossier;
   /** Injectable reference-URL verifier. Tests pass a deterministic stub. */
   verifyRefs?: (urls: string[]) => Promise<Map<string, LinkStatus>>;
   /** Optional AI illustrations. Absent/disabled = SVG hero only. */
@@ -167,14 +173,29 @@ export async function generatePost(deps: GeneratePostDeps): Promise<Post> {
   // ── Step 1: Research ───────────────────────────────────────────────
   // Deterministic extraction plus real source fetches. This is the stage
   // that replaces the removed "fact verify" LLM pass.
-  const dossier = await researchCandidate({
-    candidate,
-    now,
-    self: deps.self,
-    internalTokenSecret: deps.internalTokenSecret,
-  });
+  const dossier =
+    deps.dossier ??
+    (await researchCandidate({
+      candidate,
+      now,
+      self: deps.self,
+      internalTokenSecret: deps.internalTokenSecret,
+    }));
 
-  const sources = extractSources(candidate.evidence);
+  // Pages the research stage actually read are citable even when their URLs
+  // were discovered for a bare topic rather than supplied in the candidate
+  // evidence. Fold them into the citation set or a verified source would be
+  // dropped silently by step 4's HEAD check.
+  const sources: PostSource[] = [];
+  const seenSources = new Set<string>();
+  for (const s of [
+    ...extractSources(candidate.evidence),
+    ...dossier.pages.filter((p) => p.ok).map((p) => ({ url: p.url, title: p.title || p.publisher || '' })),
+  ]) {
+    if (!s.url || seenSources.has(s.url)) continue;
+    seenSources.add(s.url);
+    sources.push(s);
+  }
 
   // ── Step 2: Write ──────────────────────────────────────────────────
   const { system, user } = buildPrompt({
@@ -287,5 +308,6 @@ export async function generatePost(deps: GeneratePostDeps): Promise<Post> {
     // Compact research facts so social copy (generated later, from the stored
     // Post) can cite exact affected versions, CVSS numbers and dates.
     research: snapshotDossier(dossier),
+    researchMeta: dossier.meta,
   };
 }

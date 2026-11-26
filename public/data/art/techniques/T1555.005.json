@@ -1,0 +1,72 @@
+{
+  "id": "T1555.005",
+  "displayName": "Credentials from Password Stores: Password Managers",
+  "tests": [
+    {
+      "name": "KeePass Database File (.kdbx / .kdb) Discovery via PowerShell",
+      "guid": "f8431722-3973-4a60-8da8-a53939b19872",
+      "description": "Adversaries search filesystem directories (such as user documents, desktop, and temporary folders) for KeePass database files (.kdbx, .kdb) which store encrypted credentials and master databases.\nThis test simulates the discovery technique by creating a test database file with KeePass header magic bytes, scanning the target directory and %TEMP%, and outputting discovered database metadata.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["search_path", "test_db_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "KeePass Database File Discovery via Command Prompt",
+      "guid": "804d3fbc-5983-4fb8-9b93-3e43e827f71a",
+      "description": "Adversaries use native Windows command-line utilities (dir /s /b) to recursively locate .kdbx and .kdb database files across user directories and temporary paths.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["search_path", "test_db_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "KeePass Configuration and Recent Databases Discovery (KeePass.config.xml)",
+      "guid": "18306e0d-acd6-4a4d-97d9-d4cfce30103b",
+      "description": "KeePass stores recent database file paths, user preferences, and trigger configurations in KeePass.config.xml.\nAdversaries inspect this configuration file to locate active database paths or identify trigger execution opportunities.\nThis test creates a simulated KeePass.config.xml in a sandbox folder, reads it to parse the last used database path, and cleans up after execution.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["test_config_path", "mock_db_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Staging Discovered KeePass Databases for Exfiltration",
+      "guid": "8df395f6-3568-4b02-b1c5-fd26b25a41df",
+      "description": "Simulates adversary behavior where discovered KeePass password vaults are copied to a staging directory and compressed into a zip archive prior to exfiltration.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["source_db", "staging_dir", "archive_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "KeePass Database Discovery on Linux",
+      "guid": "13084353-4ffc-4655-a790-07fddd2ae720",
+      "description": "Adversaries locate .kdbx and .kdb password manager databases on Linux systems by scanning common user directories and temporary paths.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["test_dir"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1555.005/T1555.005.yaml"
+}

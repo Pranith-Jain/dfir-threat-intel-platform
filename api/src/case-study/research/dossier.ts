@@ -58,6 +58,8 @@ export interface ResearchDossier {
     pagesFetched: number;
     pagesRead: number;
     cvesEnriched: number;
+    /** Corpus hits discovered for a bare topic (0 for candidates with URLs). */
+    corpusHits?: number;
     tookMs: number;
   };
 }
@@ -148,6 +150,19 @@ function renderPlatform(platform: PlatformFacts, type?: CaseStudyType): string {
     lines.push(
       `Cross-group claims in our corpus: ${platform.victimClaims.map((v) => `${v.victim} — ${v.groups.join(', ')}`).join('; ')}`
     );
+  }
+  // Bare topics get corpus hits that are NOT pages we opened. Say so plainly:
+  // they are citable records, not source excerpts, and the model must not
+  // paraphrase a description as if it had read the underlying article.
+  if (platform.topicHits?.length) {
+    lines.push(
+      'Corpus records matched by this topic (metadata only, pages NOT opened — cite the upstream URL, never present a description as a quotation):'
+    );
+    for (const hit of platform.topicHits.slice(0, 8)) {
+      lines.push(
+        `- ${hit.label || hit.source} (${hit.source})${hit.url ? ` — ${hit.url}` : ''}${hit.description ? ` — ${hit.description}` : ''}`
+      );
+    }
   }
   return lines.length ? lines.join('\n') : '(nothing on this topic in the platform corpus)';
 }

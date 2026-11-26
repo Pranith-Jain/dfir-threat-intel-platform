@@ -1,0 +1,98 @@
+{
+  "id": "T1069.001",
+  "displayName": "Permission Groups Discovery: Local Groups",
+  "tests": [
+    {
+      "name": "Permission Groups Discovery (Local)",
+      "guid": "952931a4-af0b-4335-bbbe-73c8c5b327ae",
+      "description": "Permission Groups Discovery",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Basic Permission Groups Discovery Windows (Local)",
+      "guid": "1f454dd6-e134-44df-bebb-67de70fb6cd8",
+      "description": "Basic Permission Groups Discovery for Windows. This test will display some errors if run on a computer not connected to a domain. Upon execution, domain\ninformation will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Permission Groups Discovery PowerShell (Local)",
+      "guid": "a580462d-2c19-4bc7-8b9a-57a41b7d3ba4",
+      "description": "Permission Groups Discovery utilizing PowerShell. This test will display some errors if run on a computer not connected to a domain. Upon execution, domain\ninformation will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "SharpHound3 - LocalAdmin",
+      "guid": "e03ada14-0980-4107-aff1-7783b2b59bb1",
+      "description": "This module runs the Windows executable of SharpHound in order to remotely list members of the local Administrators group (SAMR)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["domain", "sharphound_path", "output_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Wmic Group Discovery",
+      "guid": "7413be50-be8e-430f-ad4d-07bf197884b2",
+      "description": "Utilizing wmic.exe to enumerate groups on the local system. Upon execution, information will be displayed of local groups on system.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WMIObject Group Discovery",
+      "guid": "69119e58-96db-4110-ad27-954e48f3bb13",
+      "description": "Utilizing PowerShell cmdlet - get-wmiobject, to enumerate local groups on the endpoint. Upon execution, Upon execution, information will be displayed of local groups on system.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Permission Groups Discovery for Containers- Local Groups",
+      "guid": "007d7aa4-8c4d-4f55-ba6a-7c965d51219c",
+      "description": "Attackers may try to obtain a list of services that are operating on remote hosts and local network infrastructure devices, in order to identify potential vulnerabilities that can be exploited through remote software attacks. They typically use tools to conduct port and vulnerability scans in order to obtain this information.",
+      "platforms": ["containers"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 2
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1069.001/T1069.001.yaml"
+}

@@ -1,0 +1,241 @@
+{
+  "id": "T1555.003",
+  "displayName": "Credentials from Password Stores: Credentials from Web Browsers",
+  "tests": [
+    {
+      "name": "Run Chrome-password Collector",
+      "guid": "8c05b133-d438-47ca-a630-19cc464c4622",
+      "description": "A modified sysinternals suite will be downloaded and staged. The Chrome-password collector, renamed accesschk.exe, will then be executed from #{file_path}.\n\nSuccessful execution will produce stdout message stating \"Copying db ... passwordsDB DB Opened. statement prepare DB connection closed properly\". Upon completion, final output will be a file modification of PathToAtomicsFolder\\..\\ExternalPayloads\\sysinternals\\passwordsdb.\n\nAdapted from [MITRE ATTACK Evals](https://github.com/mitre-attack/attack-arsenal/blob/66650cebd33b9a1e180f7b31261da1789cdceb66/adversary_emulation/APT29/CALDERA_DIY/evals/data/abilities/credential-access/e7cab9bb-3e3a-4d93-99cc-3593c1dc8c6d.yml)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Search macOS Safari Cookies",
+      "guid": "c1402f7b-67ca-43a8-b5f3-3143abedc01b",
+      "description": "This test uses `grep` to search a macOS Safari binaryCookies file for specified values. This was used by CookieMiner malware.\n\nUpon successful execution, MacOS shell will cd to `~/Libraries/Cookies` and grep for `Cookies.binarycookies`.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["search_string"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "LaZagne - Credentials from Browser",
+      "guid": "9a2915b3-3954-4cce-8c76-00fbf4dbd014",
+      "description": "The following Atomic test utilizes [LaZagne](https://github.com/AlessandroZ/LaZagne) to extract passwords from browsers on the Windows operating system.\nLaZagne is an open source application used to retrieve passwords stored on a local computer.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["lazagne_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Simulating access to Chrome Login Data",
+      "guid": "3d111226-d09a-4911-8715-fe11664f960d",
+      "description": "Simulates an adversary accessing encrypted credentials from Google Chrome Login database.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["installer_path", "download_url"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Simulating access to Opera Login Data",
+      "guid": "28498c17-57e4-495a-b0be-cc1e36de408b",
+      "description": "Simulates an adversary accessing encrypted credentials from Opera web browser's login database.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["installer_path", "download_url"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Simulating access to Windows Firefox Login Data",
+      "guid": "eb8da98a-2e16-4551-b3dd-83de49baa14c",
+      "description": "Simulates an adversary accessing encrypted credentials from firefox web browser's login database.\nmore info in https://support.mozilla.org/en-US/kb/profiles-where-firefox-stores-user-data",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["installer_path", "download_url"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Simulating access to Windows Edge Login Data",
+      "guid": "a6a5ec26-a2d1-4109-9d35-58b867689329",
+      "description": "Simulates an adversary accessing encrypted credentials from Edge web browser's login database.\nmore info in https://www.forensicfocus.com/articles/chromium-based-microsoft-edge-from-a-forensic-point-of-view/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Decrypt Mozilla Passwords with Firepwd.py",
+      "guid": "dc9cd677-c70f-4df5-bd1c-f114af3c2381",
+      "description": "Firepwd.py is a script that can decrypt Mozilla (Thunderbird, Firefox) passwords.\nUpon successful execution, the decrypted credentials will be output to a text file, as well as displayed on screen. \n\nWill create a Python virtual environment within the External Payloads folder that can be deleted manually post test execution.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["Firepwd_Path", "Out_Filepath", "VS_CMD_Path", "Python_Path", "venv_path"],
+      "dependencyCount": 7
+    },
+    {
+      "name": "LaZagne.py - Dump Credentials from Firefox Browser",
+      "guid": "87e88698-621b-4c45-8a89-4eaebdeaabb1",
+      "description": "Credential Dump Ubuntu 20.04.4 LTS Focal Fossa Firefox Browser, Reference https://github.com/AlessandroZ/LaZagne",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["lazagne_path", "specific_module", "output_file"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Stage Popular Credential Files for Exfiltration",
+      "guid": "f543635c-1705-42c3-b180-efd6dc6e7ee7",
+      "description": "This test is designed to search a drive for credential files used by the most common web browsers on Windows (Firefox, Chrome, Opera, and Edge), export the found files to a folder, and zip it,\nsimulating how an adversary might stage sensitive credential files for exfiltration in order to conduct offline password extraction with tools like [firepwd.py](https://github.com/lclevy/firepwd) or [HackBrowserData](https://github.com/moonD4rk/HackBrowserData).",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - BrowserPwn",
+      "guid": "764ea176-fb71-494c-90ea-72e9d85dce76",
+      "description": "Collect Browser credentials as well as the history via winpwn browserpwn function of WinPwn.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - Loot local Credentials - mimi-kittenz",
+      "guid": "ec1d0b37-f659-4186-869f-31a554891611",
+      "description": "Loot local Credentials - mimi-kittenz technique via function of WinPwn - Extend timeout to 600s",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - PowerSharpPack - Sharpweb for Browser Credentials",
+      "guid": "e5e3d639-6ea8-4408-9ecd-d5a286268ca0",
+      "description": "PowerSharpPack - Sharpweb searching for Browser Credentials technique via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Simulating Access to Chrome Login Data - MacOS",
+      "guid": "124e13e5-d8a1-4378-a6ee-a53cd0c7e369",
+      "description": "This test locates the Login Data files used by Chrome to store encrypted credentials, then copies them to the temp directory for later exfil. \nOnce the files are exfiltrated, malware like CookieMiner could be used to perform credential extraction. \nSee https://unit42.paloaltonetworks.com/mac-malware-steals-cryptocurrency-exchanges-cookies/ .",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WebBrowserPassView - Credentials from Browser",
+      "guid": "e359627f-2d90-4320-ba5e-b0f878155bbe",
+      "description": "The following Atomic test utilizes WebBrowserPassView to extract passwords from browsers on a Window system. WebBrowserPassView is an open source application used to retrieve passwords stored on a local computer. Recently noticed as a tool used in the BlackCat Ransomware.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["webbrowserpassview_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "BrowserStealer (Chrome / Firefox / Microsoft Edge)",
+      "guid": "6f2c5c87-a4d5-4898-9bd1-47a55ecaf1dd",
+      "description": "[Github Repo](https://github.com/SaulBerrenson/BrowserStealer) Simple password/cookies stealer for chrome, edge, and gecko based browsers (30 listed working). This attack simulates stealing the data from the browser files and printing them to the command line.\nIf using to test with Firefox, if the browser is x64 you need to use the x64 build",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 3
+    },
+    {
+      "name": "Dump Chrome Login Data with esentutl",
+      "guid": "70422253-8198-4019-b617-6be401b49fce",
+      "description": "This test simulates an adversary using esentutl to dump encrypted credentials from Google Chrome's Login database.\n[Reference](https://actzero.ai/resources/blog/hygiene-tip-shut-down-attackers-harvesting-cached-browser-credentials/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Query Chrome Login Data In Place with sqlite3 - MacOS",
+      "guid": "29d0c390-3cbc-4e4e-a52b-a1350ed836b7",
+      "description": "Reads Google Chrome's `Login Data` SQLite database in place with the Apple-signed `/usr/bin/sqlite3`\nbinary, instead of copying the database somewhere else first. The saved origin URLs and usernames are\nwritten to the output file. Passwords stay in the `password_value` BLOB column and remain encrypted with\nthe Chrome Safe Storage key, so this test collects the credential index rather than plaintext secrets.\n\nThe `?immutable=1` URI parameter is the part that matters. Chrome holds a lock on the database while it\nis running, and a plain `sqlite3 \"<path>\" \"SELECT ...\"` fails with `Error: in prepare, database is locked (5)`.\nOpening the file through a `file:` URI with `immutable=1` reads it witho",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["chrome_profile", "output_file"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1555.003/T1555.003.yaml"
+}

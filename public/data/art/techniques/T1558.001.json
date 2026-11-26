@@ -1,0 +1,40 @@
+{
+  "id": "T1558.001",
+  "displayName": "Steal or Forge Kerberos Tickets: Golden Ticket",
+  "tests": [
+    {
+      "name": "Crafting Active Directory golden tickets with mimikatz",
+      "guid": "9726592a-dabc-4d4d-81cd-44070008b3af",
+      "description": "Once the hash of the special krbtgt user is retrieved it is possible to craft Kerberos Ticket Granting Ticket impersonating any user in the Active Directory domain.\nThis test crafts a Golden Ticket and then performs an SMB request with it for the SYSVOL share, thus triggering a service ticket request (event ID 4769).\nThe generated ticket is injected in a new empty Windows session and discarded after, so it does not pollute the current Windows session.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["domain_sid", "domain", "account", "krbtgt_aes256_key", "mimikatz_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Crafting Active Directory golden tickets with Rubeus",
+      "guid": "e42d33cd-205c-4acf-ab59-a9f38f6bad9c",
+      "description": "Once the hash of the special krbtgt user is retrieved it is possible to craft Kerberos Ticket Granting Ticket impersonating any user in the Active Directory domain.\nThis test crafts a Golden Ticket and then performs an SMB request with it for the SYSVOL share, thus triggering a service ticket request (event ID 4769).\nThe generated ticket is injected in a new empty Windows session and discarded after, so it does not pollute the current Windows session.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [
+        "domaincontroller",
+        "account",
+        "krbtgt_aes256_key",
+        "local_folder",
+        "local_executable",
+        "rubeus_url"
+      ],
+      "dependencyCount": 2
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1558.001/T1558.001.yaml"
+}

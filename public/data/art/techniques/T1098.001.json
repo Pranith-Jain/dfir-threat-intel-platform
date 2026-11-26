@@ -1,0 +1,46 @@
+{
+  "id": "T1098.001",
+  "displayName": "Account Manipulation: Additional Cloud Credentials",
+  "tests": [
+    {
+      "name": "Azure AD Application Hijacking - Service Principal",
+      "guid": "b8e747c3-bdf7-4d71-bce2-f1df2a057406",
+      "description": "Add a certificate to an Application through its Service Principal. The certificate can then be used to authenticate as the application.\nThis can be used for persistence, and also for privilege escalation by benefiting from the Application's rights.\nAn account with high-enough Azure AD privileges is needed, such as Global Administrator or Application Administrator. The account authentication must be without MFA.",
+      "platforms": ["azure-ad"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username", "password", "service_principal_name"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Azure AD Application Hijacking - App Registration",
+      "guid": "a12b5531-acab-4618-a470-0dafb294a87a",
+      "description": "Add a certificate to an Application through its App Registration. The certificate can then be used to authenticate as the application.\nThis can be used for persistence, and also for privilege escalation by benefiting from the Application's rights.\nAn account with high-enough Azure AD privileges is needed, such as Global Administrator or Application Administrator. The account authentication must be without MFA.",
+      "platforms": ["azure-ad"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username", "password", "application_name"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "AWS - Create Access Key and Secret Key",
+      "guid": "8822c3b0-d9f9-4daf-a043-491160a31122",
+      "description": "Adversaries create their own new access and secret keys to programatically interact with AWS environment, which is already compromised",
+      "platforms": ["iaas:aws"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1098.001/T1098.001.yaml"
+}

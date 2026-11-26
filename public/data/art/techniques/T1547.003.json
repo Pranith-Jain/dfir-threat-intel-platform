@@ -1,0 +1,33 @@
+{
+  "id": "T1547.003",
+  "displayName": "Boot or Logon Autostart Execution: Time Providers",
+  "tests": [
+    {
+      "name": "Create a new time provider",
+      "guid": "df1efab7-bc6d-4b88-8be9-91f55ae017aa",
+      "description": "Establishes persistence by creating a new time provider registry key under HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\W32Time\\TimeProvider.\nThe new time provider will point to a DLL which will be loaded after the w32time service is started. The DLL will then create the file AtomicTest.txt\nin C:\\Users\\Public\\ as validation that the test is successful.\n\nPayload source code: https://github.com/tr4cefl0w/payloads/tree/master/T1547.003/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Edit an existing time provider",
+      "guid": "29e0afca-8d1d-471a-8d34-25512fc48315",
+      "description": "Establishes persistence by editing the NtpServer time provider registry key under HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\W32Time\\TimeProvider.\nThe time provider will point to a DLL which will be loaded after the w32time service is started. The DLL will then create the file AtomicTest.txt\nin C:\\Users\\Public\\ as validation that the test is successful.\n\nPayload source code: https://github.com/tr4cefl0w/payloads/tree/master/T1547.003/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1547.003/T1547.003.yaml"
+}

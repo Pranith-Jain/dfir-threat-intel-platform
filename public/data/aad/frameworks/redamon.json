@@ -1,0 +1,248 @@
+{
+  "slug": "redamon",
+  "name": "RedAmon",
+  "description": "Self-hosted penetration testing platform: a web console, a recon pipeline and an agent that exploits from a Kali sandbox with Metasploit",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 0,
+    "sigma": 3,
+    "suricata": 10,
+    "yara": 1,
+    "indicators": 19
+  },
+  "techniques": [
+    {
+      "id": "T1059",
+      "score": 1,
+      "comment": "Sigma: RedAmon Stack or Reverse Shell Tunnel on a Host"
+    },
+    {
+      "id": "T1071",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1071.001",
+      "score": 4,
+      "comment": "Suricata: 3808002 TD RedAmon MCP handshake client name; Suricata: 3808008 TD RedAmon console page; Suricata: 3808009 TD RedAmon console theme script (survives a renamed title); Suricata: 3808010 TD RedAmon agent API"
+    },
+    {
+      "id": "T1071.004",
+      "score": 1,
+      "comment": "Suricata: 3808007 TD RedAmon ownership check lookup"
+    },
+    {
+      "id": "T1190",
+      "score": 5,
+      "comment": "KQL hunt: RedAmon scanning you: its user agents, canaries and ownership lookup in web, proxy and DNS logs; Sigma: RedAmon User Agent or Canary in Web Logs; Suricata: 3808004 TD RedAmon cache poisoning canary host; Suricata: 3808005 TD RedAmon XSS canary in URI; Suricata: 3808006 TD RedAmon XSS canary in a header"
+    },
+    {
+      "id": "T1572",
+      "score": 2,
+      "comment": "KQL hunt: RedAmon on a host you monitor, and the reverse shell tunnel it opens; Sigma: RedAmon Stack or Reverse Shell Tunnel on a Host"
+    },
+    {
+      "id": "T1588.002",
+      "score": 2,
+      "comment": "KQL hunt: RedAmon on a host you monitor, and the reverse shell tunnel it opens; YARA: RedAmon_Agent_Prompt_Or_Scanner_Markers"
+    },
+    {
+      "id": "T1588.007",
+      "score": 1,
+      "comment": "YARA: RedAmon_Agent_Prompt_Or_Scanner_Markers"
+    },
+    {
+      "id": "T1590.002",
+      "score": 1,
+      "comment": "Sigma: RedAmon Ownership Check Lookup"
+    },
+    {
+      "id": "T1595",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1595.002",
+      "score": 7,
+      "comment": "KQL hunt: RedAmon scanning you: its user agents, canaries and ownership lookup in web, proxy and DNS logs; Sigma: RedAmon User Agent or Canary in Web Logs; Suricata: 3808001 TD RedAmon user agent; Suricata: 3808003 TD RedAmon AI endpoint probe body; Suricata: 3808004 TD RedAmon cache poisoning canary host; Suricata: 3808005 TD RedAmon XSS canary in URI; Suricata: 3808006 TD RedAmon XSS canary in a header"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "user_agent",
+      "value": "RedAmon-AISurfaceRecon/1.0",
+      "confidence": "high",
+      "context": "RedAmon AI attack surface probe, on by default: a one-token chat request POSTed to model API paths and an MCP initialize sent to /mcp, /sse and /messages (recon/main_recon_modules/ai_surface_recon.py)",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (compatible; RedAmon/4.7)",
+      "confidence": "high",
+      "context": "RedAmon subdomain takeover checks, a module that is off by default (recon/main_recon_modules/subdomain_takeover.py:1183)",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (compatible; RedAmon-JsRecon/1.0)",
+      "confidence": "high",
+      "context": "RedAmon endpoint validation in its JavaScript recon module, off by default (recon/main_recon_modules/js_recon.py)",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "user_agent",
+      "value": "RedAmon-CachePoison/1.0",
+      "confidence": "high",
+      "context": "RedAmon web cache poisoning tests, off by default (recon/cache_scan/scanner.py:103)",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "rEdAm0n1337XsS",
+      "confidence": "high",
+      "context": "XSS canary the RedAmon agent prompt says to put in every parameter, in User-Agent, in Referer and in a tracking cookie (agentic/prompts/xss_prompts.py:99). The model may vary it",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "redamon-poc.invalid",
+      "confidence": "high",
+      "context": "RedAmon cache poisoning canary: rdmn<10 hex>.redamon-poc.invalid in X-Forwarded-Host, X-Host and similar headers (recon/cache_scan/safety.py)",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "rdmncb",
+      "confidence": "medium",
+      "context": "Cache buster query parameter of RedAmon's cache poisoning tests, as rdmncb=cb<12 hex>. The name is a project setting (recon/project_settings.py:894)",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "_redamon-verify",
+      "confidence": "medium",
+      "context": "DNS TXT name RedAmon looks up as _redamon-verify.<domain> when a project turns on ownership verification (recon/project_settings.py:70)",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "redamon-theme",
+      "confidence": "medium",
+      "context": "Browser storage key read by an inline script in every page of the RedAmon console, so it survives a renamed title (webapp/src/app/layout.tsx:66)",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "RedAmon Agent API",
+      "confidence": "medium",
+      "context": "OpenAPI title of the RedAmon agent API, published on port 8090 on every interface with no credential on /health, /openapi.json and /tunnel-status (agentic/api.py:157)",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "rdmn_mcp_",
+      "confidence": "medium",
+      "context": "Prefix of the bearer tokens that let an outside AI agent drive RedAmon through /api/mcp-server (webapp/src/lib/mcpAuth.ts:27). Useful for secret scanning",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "redamon-kali",
+      "confidence": "medium",
+      "context": "Container name of RedAmon's Kali sandbox, next to redamon-agent, redamon-webapp and redamon-recon-<id> (docker-compose.yml)",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "port",
+      "value": "8090",
+      "confidence": "low",
+      "context": "RedAmon agent API (uvicorn), published on every interface in the stock compose file. Common port, use only with the response fingerprint",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "964522141",
+      "confidence": "medium",
+      "context": "RedAmon console /favicon.ico (Shodan http.favicon.hash), computed from webapp/public/favicon.ico, unchanged since February 27, 2026",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "-1953467025",
+      "confidence": "medium",
+      "context": "RedAmon console /favicon.png (Shodan http.favicon.hash), computed from webapp/public/favicon.png",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "md5",
+      "value": "620b55364a1b370943ceeab58e1f49a3",
+      "confidence": "medium",
+      "context": "RedAmon console favicon.ico",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "md5",
+      "value": "dca9c654ddce6aa63d1187c509a89345",
+      "confidence": "medium",
+      "context": "RedAmon console favicon.png",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "sha256",
+      "value": "94309d127e1669150c5fd002b4dfd5c7168ee654d4022f6ecb8ad376d92e8ac5",
+      "confidence": "medium",
+      "context": "RedAmon console favicon.ico",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "sha256",
+      "value": "ee50a0eb4fc75bda9e004889c2d3c43b0b4c15178aeea66e2eda52e338674201",
+      "confidence": "medium",
+      "context": "RedAmon console favicon.png",
+      "source": "ThreatDefence review of the RedAmon source code",
+      "sourceUrl": "https://github.com/samugit83/redamon",
+      "reported": "2026-11-23"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/redamon",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

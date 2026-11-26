@@ -130,6 +130,39 @@ describe('generatePost', () => {
     expect(runCompletion).toHaveBeenCalledTimes(1);
   });
 
+  it('reuses a supplied dossier instead of researching twice', async () => {
+    // /admin/generate researches once and shares the same verified dossier
+    // with the blog and the social formats. A second research pass would
+    // re-fetch sources and could disagree with the article's facts.
+    const { runCompletion } = await import('../../../src/case-study/generation/ai-client');
+    (runCompletion as any).mockResolvedValue({ text: goodMd, modelUsed: 'mock' });
+    const { researchCandidate } = await import('../../../src/case-study/research');
+    const { buildDossier } = await import('../../../src/case-study/research/build');
+    const { generatePost } = await import('../../../src/case-study/generation/index');
+    const dossier = buildDossier({
+      type: candidate.type,
+      title: candidate.title,
+      evidence: candidate.evidence,
+      cves: [],
+      pages: [],
+      platform: { writeups: [], relatedCves: [], trendingCves: [], actors: [], victimClaims: [] },
+      unread: [],
+      now: new Date(),
+    });
+    (researchCandidate as any).mockClear();
+    const post = await generatePost({
+      candidate,
+      ai: { run: vi.fn() } as never,
+      now: new Date(),
+      dossier,
+      verifyRefs: allOk,
+    });
+    expect(researchCandidate).not.toHaveBeenCalled();
+    expect(post.researchMeta).toBe(dossier.meta);
+    const call = (runCompletion as any).mock.calls[0] as unknown[];
+    expect((call[1] as { user: string }).user).toContain('<research_dossier>');
+  });
+
   it('feeds the writer a prompt containing the research dossier', async () => {
     const { runCompletion } = await import('../../../src/case-study/generation/ai-client');
     (runCompletion as any).mockResolvedValue({ text: goodMd, modelUsed: 'mock' });

@@ -1,0 +1,113 @@
+{
+  "slug": "hexstrike",
+  "name": "HexStrike",
+  "description": "Python MCP server that gives any AI assistant about 150 security tools over an unauthenticated API",
+  "seenIn": "NetScaler exploitation discussion in 2025, and intrusions GTIG and Mandiant reported",
+  "counts": {
+    "kqlHunts": 4,
+    "analytics": 2,
+    "sigma": 3,
+    "suricata": 7,
+    "yara": 3,
+    "indicators": 4
+  },
+  "techniques": [
+    {
+      "id": "T1046",
+      "score": 1,
+      "comment": "Sentinel analytics: HexStrike tool server or MCP client on a host"
+    },
+    {
+      "id": "T1059",
+      "score": 4,
+      "comment": "KQL hunt: AI assistants wired to a HexStrike server, and its tool API in proxy logs; KQL hunt: HexStrike tool server on a host you monitor; Suricata: 3803010 TD HexStrike shell command API request; Zeek notice: HexStrike::Tool_API_Request"
+    },
+    {
+      "id": "T1059.004",
+      "score": 2,
+      "comment": "Sentinel analytics: HexStrike tool server or MCP client on a host; Sigma: HexStrike Server or MCP Client Process"
+    },
+    {
+      "id": "T1071",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1071.001",
+      "score": 6,
+      "comment": "KQL hunt: AI assistants wired to a HexStrike server, and its tool API in proxy logs; Sigma: HexStrike Tool API Requested Through a Proxy; Suricata: 3803010 TD HexStrike shell command API request; Suricata: 3803011 TD HexStrike tool API request; Suricata: 3803012 TD HexStrike server health response; Zeek notice: HexStrike::Tool_API_Request"
+    },
+    {
+      "id": "T1190",
+      "score": 8,
+      "comment": "KQL hunt: HexStrike user agents and its cross-site scripting probe; Sentinel analytics: HexStrike user agent or cross-site scripting probe; Sigma: HexStrike User Agent or XSS Probe in Web Logs; Suricata: 3803003 TD HexStrike generated exploit user agent; Suricata: 3803004 TD HexStrike XSS reflection probe; YARA: HexStrike_Generated_Exploit; Zeek notice: HexStrike::Exploit_User_Agent; Zeek notice: HexStrike::XSS_Probe"
+    },
+    {
+      "id": "T1587.004",
+      "score": 1,
+      "comment": "YARA: HexStrike_Generated_Exploit"
+    },
+    {
+      "id": "T1588.002",
+      "score": 4,
+      "comment": "KQL hunt: HexStrike tool server on a host you monitor; YARA: HexStrike_MCP_Client_Config; YARA: HexStrike_Server_Or_Client; Zeek notice: HexStrike::Server_Exposed"
+    },
+    {
+      "id": "T1588.007",
+      "score": 2,
+      "comment": "KQL hunt: AI assistants wired to a HexStrike server, and its tool API in proxy logs; YARA: HexStrike_MCP_Client_Config"
+    },
+    {
+      "id": "T1595",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1595.002",
+      "score": 8,
+      "comment": "KQL hunt: HexStrike user agents and its cross-site scripting probe; Sentinel analytics: HexStrike user agent or cross-site scripting probe; Sigma: HexStrike User Agent or XSS Probe in Web Logs; Suricata: 3803001 TD HexStrike HTTP framework user agent; Suricata: 3803002 TD HexStrike browser agent user agent; Suricata: 3803004 TD HexStrike XSS reflection probe; Zeek notice: HexStrike::User_Agent; Zeek notice: HexStrike::XSS_Probe"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "file_name",
+      "value": "hexstrike_screenshot_",
+      "confidence": "high",
+      "context": "Screenshots of the HexStrike browser agent, /tmp/hexstrike_screenshot_<epoch>.png (hexstrike_server.py:13687)",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "CVE-2025-7775",
+      "confidence": "low",
+      "context": "Citrix NetScaler vulnerability threat actors discussed exploiting with HexStrike within hours of disclosure (dark web chatter; HexStrike's actual use not confirmed)",
+      "source": "Check Point",
+      "sourceUrl": "https://blog.checkpoint.com/executive-insights/hexstrike-ai-when-llms-meet-zero-day-exploitation/",
+      "reported": "2025-09-02"
+    },
+    {
+      "type": "string",
+      "value": "CVE-2025-7776",
+      "confidence": "low",
+      "context": "Citrix NetScaler vulnerability threat actors discussed exploiting with HexStrike within hours of disclosure (dark web chatter; HexStrike's actual use not confirmed)",
+      "source": "Check Point",
+      "sourceUrl": "https://blog.checkpoint.com/executive-insights/hexstrike-ai-when-llms-meet-zero-day-exploitation/",
+      "reported": "2025-09-02"
+    },
+    {
+      "type": "string",
+      "value": "CVE-2025-8424",
+      "confidence": "low",
+      "context": "Citrix NetScaler vulnerability threat actors discussed exploiting with HexStrike within hours of disclosure (dark web chatter; HexStrike's actual use not confirmed)",
+      "source": "Check Point",
+      "sourceUrl": "https://blog.checkpoint.com/executive-insights/hexstrike-ai-when-llms-meet-zero-day-exploitation/",
+      "reported": "2025-09-02"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/hexstrike",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

@@ -1,0 +1,72 @@
+{
+  "id": "T1106",
+  "displayName": "Native API",
+  "tests": [
+    {
+      "name": "Execution through API - CreateProcess",
+      "guid": "99be2089-c52d-4a4a-b5c3-261ee42c8b62",
+      "description": "Execute program by leveraging Win32 API's. By default, this will launch calc.exe from the command prompt.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["source_file", "output_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "WinPwn - Get SYSTEM shell - Pop System Shell using CreateProcess technique",
+      "guid": "ce4e76e6-de70-4392-9efe-b281fc2b4087",
+      "description": "Get SYSTEM shell - Pop System Shell using CreateProcess technique via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - Get SYSTEM shell - Bind System Shell using CreateProcess technique",
+      "guid": "7ec5b74e-8289-4ff2-a162-b6f286a33abd",
+      "description": "Get SYSTEM shell - Bind System Shell using CreateProcess technique via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - Get SYSTEM shell - Pop System Shell using NamedPipe Impersonation technique",
+      "guid": "e1f93a06-1649-4f07-89a8-f57279a7d60e",
+      "description": "Get SYSTEM shell - Pop System Shell using NamedPipe Impersonation technique via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Run Shellcode via Syscall in Go",
+      "guid": "ae56083f-28d0-417d-84da-df4242da1f7c",
+      "description": "Runs shellcode in the current running process via a syscall.\n\nSteps taken with this technique\n1. Allocate memory for the shellcode with VirtualAlloc setting the page permissions to Read/Write\n2. Use the RtlCopyMemory macro to copy the shellcode to the allocated memory space\n3. Change the memory page permissions to Execute/Read with VirtualProtect\n4. Use syscall to execute the entrypoint of the shellcode\n\n- PoC Credit: (https://github.com/Ne0nd0g/go-shellcode#syscall)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1106/T1106.yaml"
+}

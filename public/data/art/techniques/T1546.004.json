@@ -1,0 +1,98 @@
+{
+  "id": "T1546.004",
+  "displayName": "Event Triggered Execution: Unix Shell Configuration Modification",
+  "tests": [
+    {
+      "name": "Add command to .bash_profile",
+      "guid": "94500ae1-7e31-47e3-886b-c328da46872f",
+      "description": "Adds a command to the .bash_profile file of the current user",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["command_to_add"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Add command to .bashrc",
+      "guid": "0a898315-4cfa-4007-bafe-33a4646d115f",
+      "description": "Adds a command to the .bashrc file of the current user",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["command_to_add"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Add command to .shrc",
+      "guid": "41502021-591a-4649-8b6e-83c9192aff53",
+      "description": "Adds a command to the .shrc file of the current user",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["command_to_add"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Append to the system shell profile",
+      "guid": "694b3cc8-6a78-4d35-9e74-0123d009e94b",
+      "description": "An adversary may wish to establish persistence by executing malicious commands from the systems /etc/profile every time \"any\" user logs in.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["text_to_append"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Append commands user shell profile",
+      "guid": "bbdb06bc-bab6-4f5b-8232-ba3fbed51d77",
+      "description": "An adversary may wish to establish persistence by executing malicious commands from the users ~/.profile every time the \"user\" logs in.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["text_to_append"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "System shell profile scripts",
+      "guid": "8fe2ccfd-f079-4c03-b1a9-bd9b362b67d4",
+      "description": "An adversary may wish to establish persistence by adding commands into any of the script files in the /etc/profile.d/ directory, which are executed every time \"any\" user logs in.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["text_to_append"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create/Append to .bash_logout",
+      "guid": "37ad2f24-7c53-4a50-92da-427a4ad13f58",
+      "description": "The Bash shell runs ~/.bash_logout \"if it exists\" to run commands on user logout. An adversary may create or append to a .bash_logout to clear history, start processes etc. Note the ~/.bash_logout is only run if you explicitly exit or log out of an \"interactive login shell session\" i.e. via the console, SSH, /bin/bash -l or su -l <username>. \n\nThis test creates the art user, logs in, creates a .bash_logout which will echo some text into the art.txt file on logout and logs out and the /home/art/art.txt is created.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1546.004/T1546.004.yaml"
+}

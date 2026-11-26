@@ -1,0 +1,46 @@
+{
+  "id": "T1090.001",
+  "displayName": "Proxy: Internal Proxy",
+  "tests": [
+    {
+      "name": "Connection Proxy",
+      "guid": "0ac21132-4485-4212-a681-349e8a6637cd",
+      "description": "Enable traffic redirection.\n\nNote that this test may conflict with pre-existing system configuration.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["proxy_server", "proxy_port", "proxy_scheme", "test_url", "run_squid"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Connection Proxy for macOS UI",
+      "guid": "648d68c1-8bcd-4486-9abe-71c6655b6a2c",
+      "description": "Enable traffic redirection on macOS UI (not terminal).\nThe test will modify and enable the \"Web Proxy\" and \"Secure Web Proxy\" settings  in System Preferences => Network => Advanced => Proxies for the specified network interface.\n\nNote that this test may conflict with pre-existing system configuration.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["proxy_server", "proxy_port", "interface"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "portproxy reg key",
+      "guid": "b8223ea9-4be2-44a6-b50a-9657a3d4e72a",
+      "description": "Adds a registry key to set up a proxy on the endpoint at HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\PortProxy\\v4tov4\nUpon execution there will be a new proxy entry in netsh\nnetsh interface portproxy show all",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["connectaddress", "connectport", "listenport"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1090.001/T1090.001.yaml"
+}

@@ -84,9 +84,14 @@ function summariseRunResult(stage: string, result: unknown): string {
       .map(([topic, count]) => `${topic} ${count}`)
       .join(' · ');
     const stats =
-      r.runnerStats && typeof r.runnerStats === 'object' ? (r.runnerStats as Record<string, { error?: unknown }>) : {};
+      r.runnerStats && typeof r.runnerStats === 'object'
+        ? (r.runnerStats as Record<string, { error?: unknown; starved?: boolean }>)
+        : {};
     const failed = Object.entries(stats)
       .filter(([, stat]) => stat && typeof stat === 'object' && typeof stat.error === 'string')
+      .map(([name]) => name);
+    const starved = Object.entries(stats)
+      .filter(([, stat]) => stat?.starved === true)
       .map(([name]) => name);
     const floor =
       typeof r.filledFromSuppressed === 'number' && r.filledFromSuppressed > 0
@@ -94,7 +99,7 @@ function summariseRunResult(stage: string, result: unknown): string {
         : '';
     return `${stage}: ${r.kept} suggestion(s)${floor}${mix ? ` — ${mix}` : ''}${
       failed.length ? ` · failed: ${failed.slice(0, 3).join(', ')}${failed.length > 3 ? '…' : ''}` : ''
-    }`;
+    }${starved.length ? ` · starved: ${starved.slice(0, 3).join(', ')}${starved.length > 3 ? '…' : ''}` : ''}`;
   }
   if (typeof r.discovered === 'number') return `${stage}: discovered ${r.discovered} candidate(s)`;
   if (typeof r.published === 'number') return `${stage}: published ${r.published}`;

@@ -1,0 +1,59 @@
+{
+  "id": "T1048",
+  "displayName": "Exfiltration Over Alternative Protocol",
+  "tests": [
+    {
+      "name": "Exfiltration Over Alternative Protocol - SSH",
+      "guid": "f6786cc8-beda-4915-a4d6-ac2f193bb988",
+      "description": "Input a domain and test Exfiltration over SSH\n\nRemote to Local\n\nUpon successful execution, sh will spawn ssh contacting a remote domain (default: target.example.com) writing a tar.gz file.",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["domain"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Exfiltration Over Alternative Protocol - SSH",
+      "guid": "7c3cb337-35ae-4d06-bf03-3032ed2ec268",
+      "description": "Input a domain and test Exfiltration over SSH\n\nLocal to Remote\n\nUpon successful execution, tar will compress /Users/* directory and password protect the file modification of `Users.tar.gz.enc` as output.",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["user_name", "password", "domain"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "DNSExfiltration (doh)",
+      "guid": "c943d285-ada3-45ca-b3aa-7cd6500c6a48",
+      "description": "DNSExfiltrator enables the transfer (exfiltration) of a file over a DNS request covert channel. This is basically a data leak testing tool allowing to exfiltrate data over a covert channel.\n!!! Test will fail without a domain under your control with A record and NS record !!! \nSee this github page for more details - https://github.com/Arno0x/DNSExfiltrator",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["password", "domain", "ps_module", "doh", "time", "encoding"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Exfiltrate Data using DNS Queries via dig",
+      "guid": "a27916da-05f2-4316-a3ee-feec67a437be",
+      "description": "This test demonstrates how an attacker can exfiltrate sensitive information by encoding it as a subdomain (using base64 encoding) and \nmaking DNS queries via the dig command to a controlled DNS server.",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["dns_port", "attacker_dns_server", "secret_info"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1048/T1048.yaml"
+}

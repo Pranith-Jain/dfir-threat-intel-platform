@@ -1,0 +1,20 @@
+{
+  "id": "T1547.012",
+  "displayName": "Boot or Logon Autostart Execution: Print Processors",
+  "tests": [
+    {
+      "name": "Print Processors",
+      "guid": "f7d38f47-c61b-47cc-a59d-fc0368f47ed0",
+      "description": "Establishes persistence by creating a new print processor registry key under HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Print\\Environments\\Windows x64\\Print Processors.\nThe new print processor will point to a DLL which will be loaded by the spooler service after a reboot. The DLL will then create the file AtomicTest.txt in C:\\Users\\Public\\ as validation that the test is successful.\n\nNote: The test assumes a x64 Windows operating system.\n\nThe payload source code is based on a blog post by stmxcsr: [https://stmxcsr.com/persistence/print-processor.html](https://stmxcsr.com/persistence/print-processor.html)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["restart"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1547.012/T1547.012.yaml"
+}

@@ -1,0 +1,98 @@
+{
+  "id": "T1559",
+  "displayName": "Inter-Process Communication",
+  "tests": [
+    {
+      "name": "Cobalt Strike Artifact Kit pipe",
+      "guid": "bd13b9fc-b758-496a-b81a-397462f82c72",
+      "description": "Uses the [Named Pipes Micro Emulation](https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/micro_emulation_plans/src/named_pipes) executable from the Center for Threat Informed Defense to create a named pipe for inter-process communication.\n\nThe named pipe executable will pause for 30 seconds to allow the client and server to exchange a message through the pipe.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Cobalt Strike Lateral Movement (psexec_psh) pipe",
+      "guid": "830c8b6c-7a70-4f40-b975-8bbe74558acd",
+      "description": "Uses the [Named Pipes Micro Emulation](https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/micro_emulation_plans/src/named_pipes) executable from the Center for Threat Informed Defense to create a named pipe for inter-process communication.\n\nThe named pipe executable will pause for 30 seconds to allow the client and server to exchange a message through the pipe.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Cobalt Strike SSH (postex_ssh) pipe",
+      "guid": "d1f72fa0-5bc2-4b4b-bd1e-43b6e8cfb2e6",
+      "description": "Uses the [Named Pipes Micro Emulation](https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/micro_emulation_plans/src/named_pipes) executable from the Center for Threat Informed Defense to create a named pipe for inter-process communication.\n\nThe named pipe executable will pause for 30 seconds to allow the client and server to exchange a message through the pipe.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Cobalt Strike post-exploitation pipe (4.2 and later)",
+      "guid": "7a48f482-246f-4aeb-9837-21c271ebf244",
+      "description": "Uses the [Named Pipes Micro Emulation](https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/micro_emulation_plans/src/named_pipes) executable from the Center for Threat Informed Defense to create a named pipe for inter-process communication.\n\nThe named pipe executable will pause for 30 seconds to allow the client and server to exchange a message through the pipe.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Cobalt Strike post-exploitation pipe (before 4.2)",
+      "guid": "8dbfc15c-527b-4ab0-a272-019f469d367f",
+      "description": "Uses the [Named Pipes Micro Emulation](https://github.com/center-for-threat-informed-defense/adversary_emulation_library/tree/master/micro_emulation_plans/src/named_pipes) executable from the Center for Threat Informed Defense to create a named pipe for inter-process communication.\n\nThe named pipe executable will pause for 30 seconds to allow the client and server to exchange a message through the pipe.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Create Named Pipe",
+      "guid": "17521690-2183-460f-a182-5dfd6f9f0a7f",
+      "description": "Creates a named pipe using PowerShell. Named pipes are a common inter-process communication mechanism\nthat adversaries use to facilitate data exchange between processes or as a command-and-control channel.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["pipe_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Named Pipe Integrity Reduction for Turla's RPC backdoor",
+      "guid": "7a8f8ae9-6b1d-4f7b-88e7-9ea01234eee5",
+      "description": "Emulates the server-side behavior of Turla's RPC backdoors. First checks to see if the named pipe atctl is in the\nregistry key for NullSessionPipes, and if so, modifies the security descriptor of the pipe to allow untrusted/anonymous\nintegrity level callers via SetSecurityInfo. Essentially allows unauthenticated users to have privileged RCE on the server machine through RPC.\n\nReference: https://www.welivesecurity.com/2019/05/29/turla-powershell-usage/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["pipe_name"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1559/T1559.yaml"
+}

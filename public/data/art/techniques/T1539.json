@@ -1,0 +1,72 @@
+{
+  "id": "T1539",
+  "displayName": "Steal Web Session Cookie",
+  "tests": [
+    {
+      "name": "Steal Firefox Cookies (Windows)",
+      "guid": "4b437357-f4e9-4c84-9fa6-9bcee6f826aa",
+      "description": "This test queries Firefox's cookies.sqlite database to steal the cookie data contained within it, similar to Zloader/Zbot's cookie theft function. \nNote: If Firefox is running, the process will be killed to ensure that the DB file isn't locked. \nSee https://www.malwarebytes.com/resources/files/2020/05/the-silent-night-zloader-zbot_final.pdf.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["sqlite3_path", "output_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Steal Chrome Cookies (Windows)",
+      "guid": "26a6b840-4943-4965-8df5-ef1f9a282440",
+      "description": "This test queries Chrome's SQLite database to steal the encrypted cookie data, designed to function similarly to Zloader/Zbot's cookie theft function. \nOnce an adversary obtains the encrypted cookie info, they could go on to decrypt the encrypted value, potentially allowing for session theft. \nNote: If Chrome is running, the process will be killed to ensure that the DB file isn't locked. \nSee https://www.malwarebytes.com/resources/files/2020/05/the-silent-night-zloader-zbot_final.pdf.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["cookie_db", "sqlite3_path", "output_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Steal Chrome Cookies via Remote Debugging (Mac)",
+      "guid": "e43cfdaf-3fb8-4a45-8de0-7eee8741d072",
+      "description": "The remote debugging functionality in Chrome can be used by malware for post-exploitation activities to obtain cookies without requiring keychain access. By initiating Chrome with a remote debug port, an attacker can sidestep encryption and employ Chrome's own mechanisms to access cookies.\n\nIf successful, this test will output a list of cookies.\n\nNote: Chrome processes will be killed during this test.\n\nSee https://posts.specterops.io/hands-in-the-cookie-jar-dumping-cookies-with-chromiums-remote-debugger-port-34c4f468844e",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Steal Chrome v127+ cookies via Remote Debugging (Windows)",
+      "guid": "b647f4ee-88de-40ac-9419-f17fac9489a7",
+      "description": "Chrome v127+ uses app-bound encryption to protect cookies. This test bypasses that protection to obtain the cookies. If successful, the test outputs cookie values to the console.\nNote: Will stop any instances of Chrome already running\nAdapted from https://embracethered.com/blog/posts/2024/cookie-theft-in-2024-and-what-todo",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Copy Safari BinaryCookies files using AppleScript",
+      "guid": "e57ba07b-3a33-40cd-a892-748273b9b49a",
+      "description": "This command will copy Safari BinaryCookies files using AppleScript as seen in Atomic Stealer.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["destination_path"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1539/T1539.yaml"
+}

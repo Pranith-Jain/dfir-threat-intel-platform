@@ -1,0 +1,46 @@
+{
+  "id": "T1547",
+  "displayName": "Boot or Logon Autostart Execution",
+  "tests": [
+    {
+      "name": "Add a driver",
+      "guid": "cb01b3da-b0e7-4e24-bf6d-de5223526785",
+      "description": "Install a driver via pnputil.exe lolbin",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["driver_inf"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Driver Installation Using pnputil.exe",
+      "guid": "5cb0b071-8a5a-412f-839d-116beb2ed9f7",
+      "description": "pnputil.exe is a native command-line utility in Windows to install drivers, this can be abused by to install malicious drivers. Ref: https://lolbas-project.github.io/lolbas/Binaries/Pnputil/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["driver_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Leverage Virtual Channels to execute custom DLL during successful RDP session",
+      "guid": "fdd45306-74f6-4ade-9a97-0a4895961228",
+      "description": "Virtual Channels can be leveraged to alter RDP behavior using dedicated Addins.The mechanism is implemented using DLLs which can be executed during RDP session automatically. \nThe DLLs are loaded in the host system only after successful connection is established with the remote system.\nOnce the test is run, amsi.dll will be loaded on the host system during successful RDP session.\nBlog :https://learn.microsoft.com/en-us/windows/win32/termserv/terminal-services-virtual-channels?redirectedfrom=MSDN",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["Subkey_Added", "dll_inf"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1547/T1547.yaml"
+}

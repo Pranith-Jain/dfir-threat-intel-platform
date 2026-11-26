@@ -1,0 +1,111 @@
+{
+  "id": "T1110.001",
+  "displayName": "Brute Force: Password Guessing",
+  "tests": [
+    {
+      "name": "Brute Force Credentials of single Active Directory domain users via SMB",
+      "guid": "09480053-2f98-4854-be6e-71ae5f672224",
+      "description": "Attempts to brute force a single Active Directory account by testing connectivity to the IPC$ share on a domain controller",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["user"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Brute Force Credentials of single Active Directory domain user via LDAP against domain controller (NTLM or Kerberos)",
+      "guid": "c2969434-672b-4ec8-8df0-bbb91f40e250",
+      "description": "Attempt to brute force Active Directory domain user on a domain controller, via LDAP, with NTLM or Kerberos",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["user", "passwords_path", "domain", "auth"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Brute Force Credentials of single Azure AD user",
+      "guid": "5a51ef57-299e-4d62-8e11-2d440df55e69",
+      "description": "Attempt to brute force Azure AD user via AzureAD powershell module.",
+      "platforms": ["azure-ad"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["username", "passwords"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Password Brute User using Kerbrute Tool",
+      "guid": "59dbeb1a-79a7-4c2a-baf4-46d0f4c761c4",
+      "description": "Bruteforce a single user's password from a wordlist",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["domaincontroller", "domain"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "SUDO Brute Force - Debian",
+      "guid": "ba1bf0b6-f32b-4db0-b7cc-d78cacc76700",
+      "description": "An adversary may find themselves on a box (e.g. via ssh key auth, with no password) with a user that has sudo'ers privileges, but they do not know the users password. Normally, failed attempts to access root will not cause the root account to become locked, to prevent denial-of-service. This functionality enables an attacker to undertake a local brute force password guessing attack without locking out the root user. \n\nThis test creates the \"art\" user with a password of \"password123\", logs in, downloads and executes the sudo_bruteforce.sh which brute force guesses the password, then deletes the user",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_url"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "SUDO Brute Force - Redhat",
+      "guid": "4097bc00-5eeb-4d56-aaf9-287d60351d95",
+      "description": "An adversary may find themselves on a box (e.g. via ssh key auth, with no password) with a user that has sudo'ers privileges, but they do not know the users password. Normally, failed attempts to access root will not cause the root account to become locked, to prevent denial-of-service. This functionality enables an attacker to undertake a local brute force password guessing attack without locking out the root user. \n\nThis test creates the \"art\" user with a password of \"password123\", logs in, downloads and executes the sudo_bruteforce.sh which brute force guesses the password, then deletes the user",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_url"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "SUDO Brute Force - FreeBSD",
+      "guid": "abcde488-e083-4ee7-bc85-a5684edd7541",
+      "description": "An adversary may find themselves on a box (e.g. via ssh key auth, with no password) with a user that has sudo'ers privileges, but they do not know the users password. Normally, failed attempts to access root will not cause the root account to become locked, to prevent denial-of-service. This functionality enables an attacker to undertake a local brute force password guessing attack without locking out the root user. \n\nThis test creates the \"art\" user with a password of \"password123\", logs in, downloads and executes the sudo_bruteforce.sh which brute force guesses the password, then deletes the user",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_url"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "ESXi - Brute Force Until Account Lockout",
+      "guid": "ed6c2c87-bba6-4a28-ac6e-c8af3d6c2ab5",
+      "description": "An adversary may attempt to brute force the password of privilleged account for privilege escalation.\nIn the process, the TA may lock the account, which can be used for detection. [Reference](https://news.sophos.com/en-us/2022/07/14/blackcat-ransomware-attacks-not-merely-a-byproduct-of-bad-luck/#:~:text=A%20ransomware%20group%20attacking%20large,internal%20systems%20after%20establishing%20a)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["vm_host", "plink_file", "lockout_threshold"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1110.001/T1110.001.yaml"
+}

@@ -1,0 +1,192 @@
+{
+  "slug": "deadend-cli",
+  "name": "Deadend CLI",
+  "description": "Black-box web pentest agent: a Bun terminal UI driving a Python agent with sandboxed tools",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 5,
+    "suricata": 8,
+    "yara": 2,
+    "indicators": 15
+  },
+  "techniques": [
+    {
+      "id": "T1059.006",
+      "score": 4,
+      "comment": "KQL hunt: Deadend CLI on a host you monitor; Sentinel analytics: Deadend CLI pentest agent run on a host; Sigma: Deadend CLI Agent Backend or Launcher Started; Sigma: Deadend CLI Credential Wallet or Session Logs Written"
+    },
+    {
+      "id": "T1071",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1071.001",
+      "score": 5,
+      "comment": "KQL hunt: Deadend CLI testing you: its reflection marker in web logs, and its setup traffic in proxy and DNS logs; Sigma: Deadend CLI Default Trace Collector Lookup; Sigma: Deadend CLI Sandbox Image, Release Download or Trace Collector in Proxy Logs; Suricata: 3813427 TD Deadend CLI default Phoenix trace collector (TLS SNI); Suricata: 3813428 TD Deadend CLI default Phoenix trace collector (DNS)"
+    },
+    {
+      "id": "T1588.002",
+      "score": 2,
+      "comment": "Sigma: Deadend CLI Sandbox Image, Release Download or Trace Collector in Proxy Logs; YARA: DeadendCLI_Source"
+    },
+    {
+      "id": "T1595",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1595.002",
+      "score": 9,
+      "comment": "KQL hunt: Deadend CLI testing you: its reflection marker in web logs, and its setup traffic in proxy and DNS logs; Sigma: Deadend CLI Reflection Probe Marker in Web Logs; Suricata: 3813421 TD Deadend CLI reflection probe marker in URI; Suricata: 3813422 TD Deadend CLI reflection probe marker in request body; Suricata: 3813423 TD Deadend CLI shipped test account password in request; Suricata: 3813424 TD Deadend CLI shipped test account e-mail in request; Suricata: 3813425 TD Deadend CLI unreplaced credential placeholder in request; Suricata: 3813426 TD Deadend CLI example header X-App deadend; "
+    },
+    {
+      "id": "T1610",
+      "score": 1,
+      "comment": "KQL hunt: Deadend CLI on a host you monitor"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "string",
+      "value": "deadend7x7probe",
+      "confidence": "high",
+      "context": "Reflection marker the Deadend CLI supervisor prompt tells the model to send before choosing an XSS payload (_vulnerability_playbooks.jinja2:450, included by supervisor.instructions.jinja2:115); the project's own benchmark logs show GET /page?test=deadend7x7probe",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/34e8371739d70b24034e2fa47f64350e7f7743d3/deadend_cli/deadend_prompts/src/deadend_prompts/_shared/_vulnerability_playbooks.jinja2#L450",
+      "reported": "2026-08-07"
+    },
+    {
+      "type": "string",
+      "value": "deadendpassword123!",
+      "confidence": "high",
+      "context": "Password of the shipped test account; pw_send_payload swaps the dummy value deadendpassword for it before sending, so targets receive it in login and sign-up requests (auth_handler.py:23-62). Raw or URL-encoded (%21)",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/34e8371739d70b24034e2fa47f64350e7f7743d3/deadend_cli/src/deadend_cli/data/reusable_credentials.json#L9",
+      "reported": "2026-08-07"
+    },
+    {
+      "type": "account_name",
+      "value": "deadendtester",
+      "confidence": "high",
+      "context": "User name of the shipped test account sent to targets after the dummy-to-real swap (auth_handler.py:51-55); seen in the project's benchmark logs and reports",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/34e8371739d70b24034e2fa47f64350e7f7743d3/deadend_cli/src/deadend_cli/data/reusable_credentials.json#L7",
+      "reported": "2026-08-07"
+    },
+    {
+      "type": "string",
+      "value": "hacker@straylabs.ai",
+      "confidence": "high",
+      "context": "E-mail of the shipped test account sent to targets after the swap from deadenduser@straylabs.ai (auth_handler.py:45-49). Only account 0 of the wallet is used by default",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/34e8371739d70b24034e2fa47f64350e7f7743d3/deadend_cli/src/deadend_cli/data/reusable_credentials.json#L8",
+      "reported": "2026-08-07"
+    },
+    {
+      "type": "account_name",
+      "value": "deadenduser",
+      "confidence": "medium",
+      "context": "Dummy user name the model is given in v0.1.15 and earlier (request_agent.py:63-80 at that tag). pw_send_payload replaces it, but requests the model sends with curl in the Kali sandbox or with the Python tool keep it, together with the password deadendpassword",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/acb8da6b9b524859bdb9da60be996099551a0b87/deadend_cli/deadend_agent/src/deadend_agent/agents/generic_agents/request_agent.py#L63-L80",
+      "reported": "2026-04-11"
+    },
+    {
+      "type": "string",
+      "value": "<dummy_password>",
+      "confidence": "medium",
+      "context": "Credential placeholder the prompts at 34e83717 give the model (also <dummy_username>, <dummy_email>); the swap does not replace these, so a build of this commit sends them to the target as written (inferred from the code, not seen in a capture). May arrive URL-encoded as %3Cdummy_password%3E",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/34e8371739d70b24034e2fa47f64350e7f7743d3/deadend_cli/deadend_prompts/src/deadend_prompts/requester.instructions.jinja2#L377",
+      "reported": "2026-08-07"
+    },
+    {
+      "type": "http_header",
+      "value": "X-App: deadend",
+      "confidence": "low",
+      "context": "Example request header in the authenticate tool's JSON-flow description; sent only if the model copies the example",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/34e8371739d70b24034e2fa47f64350e7f7743d3/deadend_cli/deadend_prompts/src/deadend_prompts/tools/authenticate.description.jinja2#L132",
+      "reported": "2026-08-07"
+    },
+    {
+      "type": "docker_image",
+      "value": "xoxruns/sandboxed_kali",
+      "confidence": "high",
+      "context": "Kali sandbox image Deadend CLI pulls on setup and runs through the Docker SDK for every task (/bin/bash, host network by default, target source mounted read-only on /challenge); built from environments/images/kalilinux.Dockerfile",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/34e8371739d70b24034e2fa47f64350e7f7743d3/deadend_cli/src/deadend_cli/component_manager.py#L773-L775",
+      "reported": "2026-08-07"
+    },
+    {
+      "type": "domain",
+      "value": "crunch.straylabs.ai",
+      "confidence": "medium",
+      "context": "Default Phoenix OTLP trace collector (https://crunch.straylabs.ai/v1/traces) of the JSON-RPC backend, used when DEADEND_PHOENIX_OTEL_ENABLED is true and PHOENIX_COLLECTOR_ENDPOINT is unset; off by default. Traces carry prompts, model output and tool results",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/34e8371739d70b24034e2fa47f64350e7f7743d3/deadend_cli/src/deadend_cli/jsonrpc_server.py#L310",
+      "reported": "2026-08-07"
+    },
+    {
+      "type": "url",
+      "value": "https://crunch.straylabs.ai/v1/traces",
+      "confidence": "medium",
+      "context": "OTLP HTTP/protobuf trace endpoint the backend builds from its default collector when tracing is turned on without an endpoint (jsonrpc_server.py:304-322)",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/34e8371739d70b24034e2fa47f64350e7f7743d3/deadend_cli/src/deadend_cli/jsonrpc_server.py#L310-L312",
+      "reported": "2026-08-07"
+    },
+    {
+      "type": "file_path",
+      "value": "~/.deadend/reusable_credentials.json",
+      "confidence": "high",
+      "context": "Test-credential wallet copied from the package on every start of the CLI or the JSON-RPC backend (__init__.py:79-97, jsonrpc_server.py:286-302)",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/34e8371739d70b24034e2fa47f64350e7f7743d3/deadend_cli/deadend_agent/src/deadend_agent/constants.py#L29",
+      "reported": "2026-08-07"
+    },
+    {
+      "type": "file_path",
+      "value": "~/.cache/deadend/memory/reusable_credentials.json",
+      "confidence": "medium",
+      "context": "Wallet location read by the requester agent in v0.1.15 and earlier",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/acb8da6b9b524859bdb9da60be996099551a0b87/deadend_cli/deadend_agent/src/deadend_agent/agents/generic_agents/request_agent.py#L63",
+      "reported": "2026-04-11"
+    },
+    {
+      "type": "file_path",
+      "value": "~/.cache/deadend/logs/",
+      "confidence": "medium",
+      "context": "Deadend CLI log folder: rpc-server-<ms>.log from the terminal UI, and <agent>/<session>/requester.jsonl (raw target responses) and python_interpreter.jsonl from the agent tools",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/34e8371739d70b24034e2fa47f64350e7f7743d3/deadend_cli/deadend_agent/src/deadend_agent/constants.py#L37",
+      "reported": "2026-08-07"
+    },
+    {
+      "type": "file_path",
+      "value": "~/.deadend/config.json",
+      "confidence": "low",
+      "context": "Deadend CLI model configuration with provider API keys in clear text; ~/.deadend/settings.json holds the UI settings",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/34e8371739d70b24034e2fa47f64350e7f7743d3/deadend_cli/deadend_agent/src/deadend_agent/constants.py#L25",
+      "reported": "2026-08-07"
+    },
+    {
+      "type": "string",
+      "value": "deadend_cli.jsonrpc_server",
+      "confidence": "medium",
+      "context": "Python module of the Deadend CLI backend, on the command line when the terminal UI runs in --dev or --debug mode (uv run python -m deadend_cli.jsonrpc_server --log-file ...)",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/34e8371739d70b24034e2fa47f64350e7f7743d3/cli/deadend/src/runtime/server-launcher.ts#L65-L76",
+      "reported": "2026-08-07"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/deadend-cli",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

@@ -10,7 +10,18 @@
  * source.
  *
  * Output: public/data/global-hack-map/incidents.json
+ *         public/data/global-hack-map/patches.json
  * Run:    node scripts/sync-ghm-feed.mjs
+ *
+ * REA verification (browser scenario on globalhackmap.vercel.app plus the
+ * Next.js route chunks) found a second PUBLIC feed: `GET /api/patch` needs no
+ * key and returns 14 records with a concrete `fix`, the affected population
+ * (`who`), KEV date, EPSS, CVSS and news volume — the actionable companion to
+ * the incident map. The site's other API routes are gated: `/api/research`
+ * needs Valyu sign-in (401), and `/api/brief`, `/api/check` and `/api/track`
+ * are POST-only browser-context endpoints (400/405). `robots.txt` disallows
+ * `/api/`, but this one endpoint is a public JSON feed served to every
+ * visitor, so it is mirrored as structured metadata with attribution.
  */
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -19,7 +30,9 @@ import { writeJsonIfChanged } from './lib/write-if-changed.mjs';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const OUT = join(ROOT, 'public', 'data', 'global-hack-map', 'incidents.json');
+const PATCH_OUT = join(ROOT, 'public', 'data', 'global-hack-map', 'patches.json');
 const FEED = 'https://globalhackmap.vercel.app/feed.xml';
+const PATCH_FEED = 'https://globalhackmap.vercel.app/api/patch';
 const UA = 'Mozilla/5.0 (compatible; pranithjain-sync/1.0; +https://pranithjain.qzz.io)';
 const MAX_ITEMS = 50;
 
@@ -116,23 +129,78 @@ export function parseFeed(xml) {
     .slice(0, MAX_ITEMS);
 }
 
-async function fetchFeed(attempts = 2) {
+async function fetchFeed(url, accept, attempts = 2) {
   let last;
   for (let i = 0; i < attempts; i++) {
     try {
-      const res = await fetch(FEED, { headers: { 'user-agent': UA, accept: 'application/rss+xml, application/xml' }, signal: AbortSignal.timeout(30_000) });
+      const res = await fetch(url, { headers: { 'user-agent': UA, accept }, signal: AbortSignal.timeout(30_000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.text();
     } catch (e) {
       last = e;
     }
   }
-  throw new Error(`${FEED}: ${last?.message ?? 'fetch failed'}`);
+  throw new Error(`${url}: ${last?.message ?? 'fetch failed'}`);
+}
+
+/**
+ * `GET /api/patch` returns `{items: [...]}`. Keep only the documented fields,
+ * validate the CVE ids, and dedupe by `key` (vendor|product) so an upstream
+ * duplicate cannot occupy two dock slots.
+ */
+export function parsePatches(raw) {
+  let parsed;
+  try {
+    parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  } catch {
+    return [];
+  }
+  const rows = Array.isArray(parsed) ? parsed : parsed?.items ?? parsed?.patches ?? [];
+  if (!Array.isArray(rows)) return [];
+  const text = (v) => (typeof v === 'string' ? v.trim().slice(0, 1200) : '');
+  const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+  const seen = new Set();
+  const out = [];
+  for (const row of rows) {
+    if (!row || typeof row !== 'object') continue;
+    const vendor = text(row.vendor);
+    const product = text(row.product);
+    const key = text(row.key) || [vendor, product].filter(Boolean).join('|').toLowerCase();
+    if (!key || seen.has(key)) continue;
+    const cves = (Array.isArray(row.cves) ? row.cves : [])
+      .filter((c) => typeof c === 'string' && /^CVE-\d{4}-\d{4,7}$/i.test(c.trim()))
+      .map((c) => c.trim().toUpperCase())
+      .slice(0, 20);
+    const title = text(row.title);
+    const fix = text(row.fix);
+    if (!title && !fix) continue;
+    seen.add(key);
+    out.push({
+      key,
+      vendor: vendor || null,
+      product: product || null,
+      cves,
+      exploited: Boolean(row.exploited),
+      ransomware: Boolean(row.ransomware),
+      newsCount: num(row.newsCount) ?? 0,
+      kevAdded: /^\d{4}-\d{2}-\d{2}$/.test(String(row.kevAdded ?? '')) ? row.kevAdded : null,
+      epss: num(row.epss),
+      cvss: num(row.cvss),
+      domain: text(row.domain) || null,
+      title,
+      who: text(row.who),
+      fix,
+      explained: Boolean(row.explained),
+      url: `https://globalhackmap.vercel.app/cve/${cves[0] ?? ''}`.replace(/\/$/, ''),
+    });
+    if (out.length >= 50) break;
+  }
+  return out;
 }
 
 async function main() {
   console.log('  fetching Global Hack Map incident feed');
-  const incidents = parseFeed(await fetchFeed());
+  const incidents = parseFeed(await fetchFeed(FEED, 'application/rss+xml, application/xml'));
   if (!incidents.length) throw new Error('no incidents parsed — upstream feed changed');
   const byStatus = {};
   for (const i of incidents) byStatus[i.status] = (byStatus[i.status] ?? 0) + 1;
@@ -144,7 +212,33 @@ async function main() {
     incidents,
   };
   writeJsonIfChanged(OUT, payload);
-  console.log(`  ✓ ${incidents.length} incidents → ${OUT}\n`);
+  console.log(`  ✓ ${incidents.length} incidents → ${OUT}`);
+
+  // The patch feed is optional: a transient 5xx must not discard the incident
+  // mirror (the two upstream pages are independent and the workflow step is
+  // one script). Log the failure loudly instead.
+  try {
+    const patches = parsePatches(await fetchFeed(PATCH_FEED, 'application/json'));
+    if (!patches.length) throw new Error('no patches parsed — upstream shape changed');
+    const patchPayload = {
+      generatedAt: new Date().toISOString(),
+      upstream: {
+        site: 'https://globalhackmap.vercel.app',
+        endpoint: PATCH_FEED,
+        note: 'Public JSON feed. Only factual patch metadata is mirrored; every row deep-links the relevant CVE page.',
+      },
+      count: patches.length,
+      exploited: patches.filter((p) => p.exploited).length,
+      ransomware: patches.filter((p) => p.ransomware).length,
+      inKev: patches.filter((p) => p.kevAdded).length,
+      patches,
+    };
+    writeJsonIfChanged(PATCH_OUT, patchPayload);
+    console.log(`  ✓ ${patches.length} patch advisories → ${PATCH_OUT}`);
+  } catch (e) {
+    console.warn(`  ! patch feed unavailable: ${e.message}`);
+  }
+  console.log('');
 }
 
 const invoked = process.argv[1] && pathToFileURL(process.argv[1]).href === pathToFileURL(fileURLToPath(import.meta.url)).href;

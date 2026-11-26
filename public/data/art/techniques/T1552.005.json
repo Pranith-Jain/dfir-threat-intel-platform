@@ -1,0 +1,46 @@
+{
+  "id": "T1552.005",
+  "displayName": "Unsecured Credentials: Cloud Instance Metadata API",
+  "tests": [
+    {
+      "name": "Azure - Search Azure AD User Attributes for Passwords",
+      "guid": "ae9b2e3e-efa1-4483-86e2-fae529ab9fb6",
+      "description": "This test uses the MSOnline Powershell module to retrieve all user attributes for a specified account, which can sometimes contain unsecured credentials. \nUpon successful execution, this test will scan all user attributes for any strings containing \"password\".\nThose unsecured credentials will be output to a text file, as well as the account that they are associated with and the user attribute in which they were found. \nSee: https://github.com/dafthack/CloudPentestCheatsheets/blob/master/cheatsheets/Azure.md",
+      "platforms": ["azure-ad"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username", "password"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Azure - Dump Azure Instance Metadata from Virtual Machines",
+      "guid": "cc99e772-4e18-4f1f-b422-c5cdd1bfd7b7",
+      "description": "This test invokes a web request to the default Instance Metadata API of 169.254.169.254 in order to dump the data contained within it to a file. \nSee: https://www.sans.org/blog/cloud-instance-metadata-services-imds-/",
+      "platforms": ["iaas:azure"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "AWS - Retrieve EC2 IAM Role Credentials via IMDSv2",
+      "guid": "c9aa1ca4-04df-4623-adac-1f199ca5ce42",
+      "description": "Simulates an adversary on a compromised EC2 instance abusing the Instance Metadata Service Version 2\n(IMDSv2) to steal the temporary IAM role credentials assigned to the instance. A session token is first\nrequested with a PUT to `/latest/api/token`, then supplied in the `X-aws-ec2-metadata-token` header to\nread the instance's IAM role name and retrieve that role's `AccessKeyId`, `SecretAccessKey`, and `Token`\nfrom `/latest/meta-data/iam/security-credentials/`. The harvested credentials are written to a file.\nOn a host that is not an EC2 instance the requests to the link-local 169.254.169.254 address time out and\nno credentials are returned.\nSee: https://docs.aws.amazon.com/AWSEC2/latest/User",
+      "platforms": ["linux", "iaas:aws"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["metadata_endpoint", "token_ttl", "output_file"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1552.005/T1552.005.yaml"
+}

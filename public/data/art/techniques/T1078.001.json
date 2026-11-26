@@ -1,0 +1,52 @@
+{
+  "id": "T1078.001",
+  "displayName": "Valid Accounts: Default Accounts",
+  "tests": [
+    {
+      "name": "Enable Guest account with RDP capability and admin privileges",
+      "guid": "99747561-ed8d-47f2-9c91-1e5fde1ed6e0",
+      "description": "After execution the Default Guest account will be enabled (Active) and added to Administrators and Remote Desktop Users Group,\nand desktop will allow multiple RDP connections.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [
+        "guest_user",
+        "guest_password",
+        "local_admin_group",
+        "remote_desktop_users_group_name",
+        "remove_rdp_access_during_cleanup"
+      ],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Activate Guest Account",
+      "guid": "aa6cb8c4-b582-4f8e-b677-37733914abda",
+      "description": "The Adversaries can activate the default Guest user. The guest account is inactivated by default",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["guest_user"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enable Guest Account on macOS",
+      "guid": "0315bdff-4178-47e9-81e4-f31a6d23f7e4",
+      "description": "This test enables the guest account on macOS using sysadminctl utility.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1078.001/T1078.001.yaml"
+}

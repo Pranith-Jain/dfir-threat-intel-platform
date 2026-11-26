@@ -1,0 +1,72 @@
+{
+  "id": "T1202",
+  "displayName": "Indirect Command Execution",
+  "tests": [
+    {
+      "name": "Indirect Command Execution - pcalua.exe",
+      "guid": "cecfea7a-5f03-4cdd-8bc8-6f7c22862440",
+      "description": "The Program Compatibility Assistant (pcalua.exe) may invoke the execution of programs and commands from a Command-Line Interface.\n[Reference](https://twitter.com/KyleHanslovan/status/912659279806640128)\nUpon execution, calc.exe should open",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["payload_path", "process"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Indirect Command Execution - forfiles.exe",
+      "guid": "8b34a448-40d9-4fc3-a8c8-4bb286faf7dc",
+      "description": "forfiles.exe may invoke the execution of programs and commands from a Command-Line Interface.\n[Reference](https://github.com/LOLBAS-Project/LOLBAS/blob/master/yml/OSBinaries/Forfiles.yml)\n\"This is basically saying for each occurrence of notepad.exe in c:\\windows\\system32 run calc.exe\"\nUpon execution calc.exe will be opened.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["process"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Indirect Command Execution - conhost.exe",
+      "guid": "cf3391e0-b482-4b02-87fc-ca8362269b29",
+      "description": "conhost.exe refers to a host process for the console window. It provide an interface between command prompt and Windows explorer.\nExecuting it through command line can create process ancestry anomalies\n[Reference] (http://www.hexacorn.com/blog/2020/05/25/how-to-con-your-host/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["process"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Indirect Command Execution - Scriptrunner.exe",
+      "guid": "0fd14730-6226-4f5e-8d67-43c65f1be940",
+      "description": "The \"ScriptRunner.exe\" binary can be abused to proxy execution through it and bypass possible whitelisting. Upon test execution, calc.exe should open\nReference: https://x.com/NickTyrer/status/914234924655312896",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["payload_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Indirect Command Execution - RunMRU Dialog",
+      "guid": "de323a93-2f18-4bd5-ba60-d6fca6aeff76",
+      "description": "Simulates execution of commands via the Windows Run dialog (Win+R) by programmatically opening the Run dialog, \ncopying a command to clipboard, and automating the paste and execution. This generates artifacts in the RunMRU registry key,\nwhich is commonly abused by threat actors to execute malicious commands disguised as CAPTCHA verification steps.\nUpon execution, a test PowerShell command will be executed through the Run dialog.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["command"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1202/T1202.yaml"
+}

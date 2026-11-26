@@ -1,0 +1,59 @@
+{
+  "id": "T1027.013",
+  "displayName": "Obfuscated Files or Information: Encrypted/Encoded File",
+  "tests": [
+    {
+      "name": "Decode Eicar File and Write to File",
+      "guid": "7693ccaa-8d64-4043-92a5-a2eb70359535",
+      "description": "Decode the eicar value, and write it to file, for AV/EDR to try to catch.",
+      "platforms": ["windows", "macos", "linux"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Decrypt Eicar File and Write to File",
+      "guid": "b404caaa-12ce-43c7-9214-62a531c044f7",
+      "description": "Decrypt the eicar value, and write it to file, for AV/EDR to try to catch.",
+      "platforms": ["windows", "macos", "linux"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Password-Protected ZIP Payload Extraction and Execution",
+      "guid": "c2ca068a-eb1e-498f-9f93-3d554c455916",
+      "description": "Extracts and executes a script from a password-protected ZIP archive.\nThis technique is commonly used by malware families like Emotet and QBot to deliver payloads\nvia email attachments where the password is provided in the message body.\nThe encrypted ZIP evades static file analysis until extracted at runtime.\nUpon successful execution, displays confirmation and system information.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["zip_password"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Turla Snake Queue File Artifact",
+      "guid": "6e8dea32-206e-482c-bdfa-f1ca6a737258",
+      "description": "Creates a fake Snake malware queue file in %windir%\\Registration with the naming convention\n<RANDOM_GUID>.<RANDOM_GUID>.crmlog, filled with random bytes to simulate encrypted data that will be decrypted by Snake's kernel driver.\nIn real samples, the decrypted queue file contans key material, communication channels, modes of operation, logs, and command specifications.\n\nReference: https://media.defense.gov/2023/May/09/2003218554/-1/-1/0/JOINT_CSA_HUNTING_RU_INTEL_SNAKE_MALWARE_20230509.PDF",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1027.013/T1027.013.yaml"
+}

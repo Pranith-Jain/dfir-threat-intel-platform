@@ -1,0 +1,33 @@
+{
+  "id": "T1556.002",
+  "displayName": "Modify Authentication Process: Password Filter DLL",
+  "tests": [
+    {
+      "name": "Install and Register Password Filter DLL",
+      "guid": "a7961770-beb5-4134-9674-83d7e1fa865c",
+      "description": "Uses PowerShell to install and register a password filter DLL. Requires a reboot and administrative privileges.\nThe binary in bin is https://www.virustotal.com/gui/file/95140c1ad39fd632d1c1300b246293297aa272ce6035eecc3da56e337200221d/detection\nSource is in src folder. \nThis does require a reboot to see the filter loaded into lsass.exe. \nIt does require Administrative privileges to import the clean registry values back into LSA, it is possible you may have to manually do this after for cleanup.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["dll_path", "dll_name"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Install Additional Authentication Packages",
+      "guid": "91580da6-bc6e-431b-8b88-ac77180005f2",
+      "description": "lsass.exe loads all DLLs specified by the Authentication Packages REG_MULTI_SZ value.\nUses PowerShell to install and register a password filter DLL. Requires a reboot and administrative privileges.\nThe binary in bin is https://www.virustotal.com/gui/file/95140c1ad39fd632d1c1300b246293297aa272ce6035eecc3da56e337200221d/detection\nSource is in src folder. \nThis does require a reboot to see the filter loaded into lsass.exe. \nIt does require Administrative privileges to import the clean registry values back into LSA, it is possible you may have to manually do this after for cleanup.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["dll_path", "dll_name"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1556.002/T1556.002.yaml"
+}

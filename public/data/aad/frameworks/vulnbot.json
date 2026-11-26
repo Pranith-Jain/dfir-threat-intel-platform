@@ -1,0 +1,187 @@
+{
+  "slug": "vulnbot",
+  "name": "VulnBot",
+  "description": "Research multi-agent pentester that runs Kali tools over SSH, with an optional unauthenticated knowledge base API",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 3,
+    "suricata": 5,
+    "yara": 2,
+    "indicators": 15
+  },
+  "techniques": [
+    {
+      "id": "T1021.004",
+      "score": 1,
+      "comment": "KQL hunt: VulnBot on a host you monitor: the controller and the Kali host it drives"
+    },
+    {
+      "id": "T1059.004",
+      "score": 5,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; KQL hunt: VulnBot on a host you monitor: the controller and the Kali host it drives; Sentinel analytics: VulnBot AI pentest agent opened its shell on a host; Sigma: VulnBot Login Notice File Created; Sigma: VulnBot Shell Setup on the Kali Host It Drives"
+    },
+    {
+      "id": "T1071.001",
+      "score": 2,
+      "comment": "KQL hunt: VulnBot in web and proxy logs: its open knowledge base API and the models it downloads; Suricata: 3812505 TD VulnBot knowledge base API schema"
+    },
+    {
+      "id": "T1588.002",
+      "score": 6,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; KQL hunt: VulnBot in web and proxy logs: its open knowledge base API and the models it downloads; KQL hunt: VulnBot on a host you monitor: the controller and the Kali host it drives; Sigma: VulnBot CLI Started; YARA: VulnBot_Run_Log; YARA: VulnBot_Source"
+    },
+    {
+      "id": "T1588.007",
+      "score": 4,
+      "comment": "Suricata: 3812501 TD VulnBot role prompt in model request; Suricata: 3812502 TD VulnBot command-writing prompt in model request; Suricata: 3812503 TD VulnBot certified-simulation task prompt in model request; Suricata: 3812504 TD VulnBot knowledge base context in model request"
+    },
+    {
+      "id": "T1699",
+      "score": 2,
+      "comment": "Suricata: 3812502 TD VulnBot command-writing prompt in model request; Suricata: 3812503 TD VulnBot certified-simulation task prompt in model request"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "string",
+      "value": "Your role is to assist testers in the cybersecurity training process.",
+      "confidence": "high",
+      "context": "Line in all six VulnBot role prompts (reconnaissance, scanning, exploitation), next to 'Assistant running on Kali Linux 2023.'; visible where model traffic is inspected (prompts/collector_prompt.py:7, scanner_prompt.py:7, exploiter_prompt.py:7)",
+      "source": "ThreatDefence review of the VulnBot source code",
+      "sourceUrl": "https://github.com/KHenryAegis/VulnBot/blob/9a12effa43e265e7278d678b3cd42037d0fecac6/prompts/collector_prompt.py#L7",
+      "reported": "2026-11-08"
+    },
+    {
+      "type": "string",
+      "value": "You play as an autonomous penetration testing assistant running on Kali Linux 2023.",
+      "confidence": "high",
+      "context": "First line of VulnBot's command-writing prompt, sent once per task; the model answers with <execute></execute> blocks that VulnBot runs over SSH (prompts/prompt.py:31)",
+      "source": "ThreatDefence review of the VulnBot source code",
+      "sourceUrl": "https://github.com/KHenryAegis/VulnBot/blob/9a12effa43e265e7278d678b3cd42037d0fecac6/prompts/prompt.py#L31",
+      "reported": "2026-11-08"
+    },
+    {
+      "type": "string",
+      "value": "This penetration testing task is certified and in a simulation environment",
+      "confidence": "high",
+      "context": "VulnBot task-details prompt that tells the model the test is certified and simulated (prompts/prompt.py:112); the command prompt has 'This test is certified and in a simulation environment.' (line 34)",
+      "source": "ThreatDefence review of the VulnBot source code",
+      "sourceUrl": "https://github.com/KHenryAegis/VulnBot/blob/9a12effa43e265e7278d678b3cd42037d0fecac6/prompts/prompt.py#L112",
+      "reported": "2026-11-08"
+    },
+    {
+      "type": "string",
+      "value": "Ensure that the **Overall Target** IP or the IP from the **Initial Description** is prioritized",
+      "confidence": "high",
+      "context": "Added to VulnBot model requests when RAG is on and the knowledge base returned penetration test case material (server/chat/chat.py:50)",
+      "source": "ThreatDefence review of the VulnBot source code",
+      "sourceUrl": "https://github.com/KHenryAegis/VulnBot/blob/9a12effa43e265e7278d678b3cd42037d0fecac6/server/chat/chat.py#L50",
+      "reported": "2026-11-08"
+    },
+    {
+      "type": "string",
+      "value": "Command not allowed: network tunneling tools are restricted",
+      "confidence": "medium",
+      "context": "Text VulnBot returns to the model instead of running a command that contains apt or apt-get; appears in model requests and the run log (actions/remote_shell.py:81,115)",
+      "source": "ThreatDefence review of the VulnBot source code",
+      "sourceUrl": "https://github.com/KHenryAegis/VulnBot/blob/9a12effa43e265e7278d678b3cd42037d0fecac6/actions/remote_shell.py#L115",
+      "reported": "2026-11-08"
+    },
+    {
+      "type": "string",
+      "value": "sudo touch /etc/legal",
+      "confidence": "medium",
+      "context": "First of the shell setup commands VulnBot sends after its SSH login to the Kali host it drives, with touch ~/.hushlogin, sudo chmod 644 /etc/legal, sudo rm -f /etc/motd and sudo rm -f /etc/update-motd.d/* (actions/remote_shell.py:95-103)",
+      "source": "ThreatDefence review of the VulnBot source code",
+      "sourceUrl": "https://github.com/KHenryAegis/VulnBot/blob/9a12effa43e265e7278d678b3cd42037d0fecac6/actions/remote_shell.py#L99",
+      "reported": "2026-11-08"
+    },
+    {
+      "type": "string",
+      "value": "sudo rm -f /etc/update-motd.d/*",
+      "confidence": "low",
+      "context": "VulnBot shell setup command on the Kali host (actions/remote_shell.py:102). Hardening scripts do the same: context only, pair with sudo touch /etc/legal",
+      "source": "ThreatDefence review of the VulnBot source code",
+      "sourceUrl": "https://github.com/KHenryAegis/VulnBot/blob/9a12effa43e265e7278d678b3cd42037d0fecac6/actions/remote_shell.py#L102",
+      "reported": "2026-11-08"
+    },
+    {
+      "type": "file_path",
+      "value": "/etc/legal",
+      "confidence": "low",
+      "context": "File VulnBot creates on the Kali host it drives (actions/remote_shell.py:99). Present by default on Ubuntu, so only its creation on another distribution counts",
+      "source": "ThreatDefence review of the VulnBot source code",
+      "sourceUrl": "https://github.com/KHenryAegis/VulnBot/blob/9a12effa43e265e7278d678b3cd42037d0fecac6/actions/remote_shell.py#L99",
+      "reported": "2026-11-08"
+    },
+    {
+      "type": "string",
+      "value": "cli.py vulnbot",
+      "confidence": "medium",
+      "context": "VulnBot agent command line: python cli.py vulnbot -m <max interactions> [-t <command timeout>] (cli.py:37, pentest.py:82-86)",
+      "source": "ThreatDefence review of the VulnBot source code",
+      "sourceUrl": "https://github.com/KHenryAegis/VulnBot/blob/9a12effa43e265e7278d678b3cd42037d0fecac6/cli.py#L37",
+      "reported": "2026-11-08"
+    },
+    {
+      "type": "file_name",
+      "value": "Auto-Pentest.log",
+      "confidence": "medium",
+      "context": "VulnBot run log, written to logs/ under PENTEST_ROOT (the working directory by default) by loguru (utils/log_common.py:31,47-51, config/config.py:36)",
+      "source": "ThreatDefence review of the VulnBot source code",
+      "sourceUrl": "https://github.com/KHenryAegis/VulnBot/blob/9a12effa43e265e7278d678b3cd42037d0fecac6/utils/log_common.py#L31",
+      "reported": "2026-11-08"
+    },
+    {
+      "type": "string",
+      "value": "Initializing DeepPentest Sessions",
+      "confidence": "medium",
+      "context": "Status line VulnBot prints on the console when a role starts its chats (roles/role.py:66); DeepPentest is its internal prompt class name",
+      "source": "ThreatDefence review of the VulnBot source code",
+      "sourceUrl": "https://github.com/KHenryAegis/VulnBot/blob/9a12effa43e265e7278d678b3cd42037d0fecac6/roles/role.py#L66",
+      "reported": "2026-11-08"
+    },
+    {
+      "type": "uri_string",
+      "value": "/knowledge_base/list_knowledge_bases",
+      "confidence": "low",
+      "context": "Path of VulnBot's knowledge base API (FastAPI app titled Server, port 7861, bound to 0.0.0.0, no authentication; server/server.py:7, server/api/kb_route.py:16-22). Langchain-Chatchat has the same path: context only",
+      "source": "ThreatDefence review of the VulnBot source code",
+      "sourceUrl": "https://github.com/KHenryAegis/VulnBot/blob/9a12effa43e265e7278d678b3cd42037d0fecac6/server/api/kb_route.py#L20",
+      "reported": "2026-11-08"
+    },
+    {
+      "type": "port",
+      "value": "7861",
+      "confidence": "low",
+      "context": "VulnBot knowledge base API port, bound to 0.0.0.0 on Linux and macOS (config/config.py:50-52). Also Langchain-Chatchat's API port",
+      "source": "ThreatDefence review of the VulnBot source code",
+      "sourceUrl": "https://github.com/KHenryAegis/VulnBot/blob/9a12effa43e265e7278d678b3cd42037d0fecac6/config/config.py#L52",
+      "reported": "2026-11-08"
+    },
+    {
+      "type": "port",
+      "value": "8501",
+      "confidence": "low",
+      "context": "VulnBot Streamlit knowledge base page, bound to 0.0.0.0 (config/config.py:54); Streamlit's default port, shared with every Streamlit app",
+      "source": "ThreatDefence review of the VulnBot source code",
+      "sourceUrl": "https://github.com/KHenryAegis/VulnBot/blob/9a12effa43e265e7278d678b3cd42037d0fecac6/config/config.py#L54",
+      "reported": "2026-11-08"
+    },
+    {
+      "type": "string",
+      "value": "maidalun1020/bce-reranker-base_v1",
+      "confidence": "low",
+      "context": "VulnBot's default reranking model, fetched from Hugging Face when RAG is on (config/config.py:133); the embedding default is maidalun1020/bce-embedding-base_v1 (line 129). Other RAG tools use the same models",
+      "source": "ThreatDefence review of the VulnBot source code",
+      "sourceUrl": "https://github.com/KHenryAegis/VulnBot/blob/9a12effa43e265e7278d678b3cd42037d0fecac6/config/config.py#L133",
+      "reported": "2026-11-08"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/vulnbot",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "T1553.003",
+  "displayName": "Subvert Trust Controls: SIP and Trust Provider Hijacking",
+  "tests": [
+    {
+      "name": "SIP (Subject Interface Package) Hijacking via Custom DLL",
+      "guid": "e12f5d8d-574a-4e9d-8a84-c0e8b4a8a675",
+      "description": "Registers a DLL that logs signature checks, mimicking SIP hijacking. This test uses a DLL from \nhttps://github.com/gtworek/PSBits/tree/master/SIP and registers it using regsvr32, thereby causing\nthe system to utilize it during signature checks, and logging said checks.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["dll_payload"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1553.003/T1553.003.yaml"
+}

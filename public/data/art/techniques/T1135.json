@@ -1,0 +1,163 @@
+{
+  "id": "T1135",
+  "displayName": "Network Share Discovery",
+  "tests": [
+    {
+      "name": "Network Share Discovery",
+      "guid": "f94b5ad9-911c-4eff-9718-fd21899db4f7",
+      "description": "Network Share Discovery",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["computer_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Network Share Discovery - linux",
+      "guid": "875805bc-9e86-4e87-be86-3a5527315cae",
+      "description": "Network Share Discovery using smbstatus",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["package_checker", "package_installer"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Network Share Discovery - FreeBSD",
+      "guid": "77e468a6-3e5c-45a1-9948-c4b5603747cb",
+      "description": "Network Share Discovery using smbstatus",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["package_checker", "package_installer"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Network Share Discovery command prompt",
+      "guid": "20f1097d-81c1-405c-8380-32174d493bbb",
+      "description": "Network Share Discovery utilizing the command prompt. The computer name variable may need to be modified to point to a different host\nUpon execution available network shares will be displayed in the powershell session",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["computer_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Network Share Discovery PowerShell",
+      "guid": "1b0814d1-bb24-402d-9615-1b20c50733fb",
+      "description": "Network Share Discovery utilizing PowerShell. The computer name variable may need to be modified to point to a different host\nUpon execution, available network shares will be displayed in the powershell session",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "View available share drives",
+      "guid": "ab39a04f-0c93-4540-9ff2-83f862c385ae",
+      "description": "View information about all of the resources that are shared on the local computer Upon execution, available share drives will be displayed in the powershell session",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Share Discovery with PowerView",
+      "guid": "b1636f0a-ba82-435c-b699-0d78794d8bfd",
+      "description": "Enumerate Domain Shares the current user has access. Upon execution, progress info about each share being scanned will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "PowerView ShareFinder",
+      "guid": "d07e4cc1-98ae-447e-9d31-36cb430d28c4",
+      "description": "PowerView is a PowerShell tool to gain network situational awareness on Windows domains. ShareFinder finds (non-standard) shares on machines in the domain.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["parameters"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "WinPwn - shareenumeration",
+      "guid": "987901d1-5b87-4558-a6d9-cffcabc638b8",
+      "description": "Network share enumeration using the shareenumeration function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Network Share Discovery via dir command",
+      "guid": "13daa2cf-195a-43df-a8bd-7dd5ffb607b5",
+      "description": "Network Share Discovery utilizing the dir command prompt. The computer ip variable may need to be modified to point to a different host ip\nUpon execution available network shares will be displayed in the commandline session",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["computer_ip"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enumerate All Network Shares with SharpShares",
+      "guid": "d1fa2a69-b0a2-4e8a-9112-529b00c19a41",
+      "description": "SharpShares is a command line tool that can be integrated with Cobalt Strike's execute-assembly module, allowing for the enumeration of network shares. \nThis technique has been utilized by various ransomware groups, including BianLian.\n[Reference](https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-136a)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_path", "sharp_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Enumerate All Network Shares with Snaffler",
+      "guid": "b19d74b7-5e72-450a-8499-82e49e379d1a",
+      "description": "Snaffler is an open-source tool that has been used by various threat groups, including Scattered Spider/Muddled Libra, to enumerate accessible shares and credential-containing files within a domain. \n[Reference](https://unit42.paloaltonetworks.com/muddled-libra/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_path", "snaffler_path"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1135/T1135.yaml"
+}

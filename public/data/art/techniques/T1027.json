@@ -1,0 +1,150 @@
+{
+  "id": "T1027",
+  "displayName": "Obfuscated Files or Information",
+  "tests": [
+    {
+      "name": "Decode base64 Data into Script",
+      "guid": "f45df6be-2e1e-4136-a384-8f18ab3826fb",
+      "description": "Creates a base64-encoded data file and decodes it into an executable shell script\n\nUpon successful execution, sh will execute art.sh, which is a base64 encoded command, that echoes `Hello from the Atomic Red Team` \nand uname -v",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["shell_command"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Execute base64-encoded PowerShell",
+      "guid": "a50d5a97-2531-499e-a1de-5544c74432c6",
+      "description": "Creates base64-encoded PowerShell code and executes it. This is used by numerous adversaries and malicious tools.\n\nUpon successful execution, powershell will execute an encoded command and stdout default is \"Write-Host \"Hey, Atomic!\"",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["powershell_command"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Execute base64-encoded PowerShell from Windows Registry",
+      "guid": "450e7218-7915-4be4-8b9b-464a49eafcec",
+      "description": "Stores base64-encoded PowerShell code in the Windows Registry and deobfuscates it for execution. This is used by numerous adversaries and malicious tools.\n\nUpon successful execution, powershell will execute encoded command and read/write from the registry.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["registry_key_storage", "powershell_command", "registry_entry_storage"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Execution from Compressed File",
+      "guid": "f8c8a909-5f29-49ac-9244-413936ce6d1f",
+      "description": "Mimic execution of compressed executable. When successfully executed, calculator.exe will open.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["url_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "DLP Evasion via Sensitive Data in VBA Macro over email",
+      "guid": "129edb75-d7b8-42cd-a8ba-1f3db64ec4ad",
+      "description": "Upon successful execution, an excel containing VBA Macro containing sensitive data will be sent outside the network using email.\nSensitive data includes about around 20 odd simulated credit card numbers that passes the LUHN check.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["input_file", "sender", "receiver", "smtp_server"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "DLP Evasion via Sensitive Data in VBA Macro over HTTP",
+      "guid": "e2d85e66-cb66-4ed7-93b1-833fc56c9319",
+      "description": "Upon successful execution, an excel containing VBA Macro containing sensitive data will be sent outside the network using HTTP.\nSensitive data includes about around 20 odd simulated credit card numbers that passes the LUHN check.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["input_file", "ip_address"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Obfuscated Command in PowerShell",
+      "guid": "8b3f4ed6-077b-4bdd-891c-2d237f19410f",
+      "description": "This is an obfuscated PowerShell command which when executed prints \"Hello, from PowerShell!\". Example is from the 2021 Threat Detection Report by Red Canary.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Obfuscated Command Line using special Unicode characters",
+      "guid": "e68b945c-52d0-4dd9-a5e8-d173d70c448f",
+      "description": "This is an obfuscated certutil command that when executed downloads a file from the web. Adapted from T1105. Obfuscation includes special options chars (unicode hyphens), character substitution (e.g. ᶠ) and character insertion (including the usage of the right-to-left 0x202E and left-to-right 0x202D override characters).\nReference:\nhttps://wietze.github.io/blog/windows-command-line-obfuscation",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "manual",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["remote_file", "local_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Snake Malware Encrypted crmlog file",
+      "guid": "7e47ee60-9dd1-4269-9c4f-97953b183268",
+      "description": "The following Atomic Test will create a file with a specific name and sets its attributes to Hidden, System, and Archive. This was related to the Snake Malware campaign and is later decrypted by Snake's kernel driver.\n[Snake Malware - CISA](https://media.defense.gov/2023/May/09/2003218554/-1/-1/0/JOINT_CSA_HUNTING_RU_INTEL_SNAKE_MALWARE_20230509.PDF)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Execution from Compressed JScript File",
+      "guid": "fad04df1-5229-4185-b016-fb6010cd87ac",
+      "description": "Mimic execution of compressed JavaScript file. When successfully executed, calculator.exe will open. This test is meant to help emulate Gootloader as per https://redcanary.com/blog/gootloader/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["url_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Obfuscated PowerShell Command via Character Array",
+      "guid": "6683baf0-6e77-4f58-b114-814184ea8150",
+      "description": "Spawns a child PowerShell process using character array obfuscation. \nBoth the PowerShell binary name and executed command are constructed \nfrom ASCII values at runtime to evade string-based detection.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1027/T1027.yaml"
+}

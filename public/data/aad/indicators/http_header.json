@@ -1,0 +1,306 @@
+{
+  "type": "http_header",
+  "count": 30,
+  "items": [
+    {
+      "value": "X-ARTX-KEY",
+      "confidence": "medium",
+      "context": "Header of the web shell the agents wrote in the intrusion Eye Security handled, also accepted as ?k=. Written by the agents, not in the public code",
+      "actor": "ARTEX operators",
+      "source": "Eye Security",
+      "sourceUrl": "https://labs.eye.security/how-we-defended-against-an-ai-driven-attack/",
+      "reported": "2026-11-12",
+      "framework": "artex"
+    },
+    {
+      "value": "X-ARTEX-Replay-Nonce",
+      "confidence": "medium",
+      "context": "Traffic replay header. The proxy strips it, except for replayed bodies of 5 to 8 MiB (traffic/replay.go:38). Inferred from code",
+      "actor": "ARTEX operators",
+      "source": "ThreatDefence review of the ARTEX source code",
+      "sourceUrl": "https://github.com/BaaRai/ARTEX",
+      "reported": "2026-11-21",
+      "framework": "artex"
+    },
+    {
+      "value": "X-Implant-Token",
+      "confidence": "high",
+      "context": "Header every CyberStrikeAI implant and curl one-liner request carries, with a fixed value per C2 listener (beacon.go.tmpl:375, payload_oneliner.go:184). Kaspersky used it to identify the implant NeuroSploit's C2 beacons send the same header (JoasASantos/NeuroSploit).",
+      "actor": "CyberStrikeAI operators",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21",
+      "framework": "cyberstrikeai neurosploit"
+    },
+    {
+      "value": "X-Session-Token",
+      "confidence": "medium",
+      "context": "Header CyberStrikeAI implants send next to X-Implant-Token, 64 hex characters per implant session (beacon.go.tmpl:376)",
+      "actor": "CyberStrikeAI operators",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21",
+      "framework": "cyberstrikeai"
+    },
+    {
+      "value": "X-Xalgorix-Origin-Calibration",
+      "confidence": "high",
+      "context": "Header on Xalgorix's callback calibration request (internal/oob/server.go)",
+      "actor": "Xalgorix operators",
+      "source": "ThreatDefence review of the Xalgorix source code",
+      "sourceUrl": "https://github.com/xalgorix/xalgorix",
+      "reported": "2026-11-23",
+      "framework": "xalgorix"
+    },
+    {
+      "value": "X-PentestSwarm-Signature",
+      "confidence": "medium",
+      "context": "Signature header on Pentest Swarm AI webhook deliveries (internal/integrations/webhook/dispatcher.go)",
+      "actor": "Pentest Swarm AI operators",
+      "source": "ThreatDefence review of the Pentest Swarm AI source code",
+      "sourceUrl": "https://github.com/Armur-Ai/Pentest-Swarm-AI",
+      "reported": "2026-11-23",
+      "framework": "pentestswarm"
+    },
+    {
+      "value": "X-CAI-API-Key",
+      "confidence": "medium",
+      "context": "Header carrying ALIAS_API_KEY or a session token to the CAI API backend (cai --api), renamable with CAI_API_KEY_HEADER (src/cai/api/app.py:129)",
+      "actor": "CAI operators",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/api/app.py#L129",
+      "reported": "2026-08-22",
+      "framework": "cai"
+    },
+    {
+      "value": "X-Decepticon-Eng",
+      "confidence": "medium",
+      "context": "Engagement header the Decepticon phisher skill tells the agent to put on every phishing lure so a SOC can tell an agreed test apart (X-Decepticon-Eng: <slug>). An instruction in the skill text, so the model may leave it out",
+      "actor": "Decepticon operators",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/packages/decepticon/decepticon/skills/standard/phisher/SKILL.md#L65-L66",
+      "reported": "2026-11-20",
+      "framework": "decepticon"
+    },
+    {
+      "value": "BENCHMARK_TOKEN",
+      "confidence": "low",
+      "context": "Auth header of the TSecBench contest Challenges API that the sapper-v2 arena client and entrypoints send to /openapi/v1/challenges. Any client of that contest platform sends it: an autonomous contest agent, not sapper-v2 alone",
+      "actor": "sapper-v2 operators",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/lib/arena.py#L39-L40",
+      "reported": "2026-11-11",
+      "framework": "sapper-v2"
+    },
+    {
+      "value": "X-StingXSS-Crlf",
+      "confidence": "medium",
+      "context": "Header StingXSS tries to inject through CRLF sequences in parameters (payload stingxss<CRLF>X-StingXSS-Crlf: stingxss-crlf-detected)",
+      "actor": "NyxStrike operators",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/stingxss/blob/898a1288b362448b96310acfc163fd683b58af6f/stingxss/engine/checks/crlf.py#L18",
+      "reported": "2026-06-01",
+      "framework": "nyxstrike"
+    },
+    {
+      "value": "X-NeuroSploit-Scan",
+      "confidence": "high",
+      "context": "Attribution header with the version on every request NeuroSploit's HTTP client sends (lower case x-neurosploit-scan from reqwest), and on every agent curl command per the prompt; kept when the user agent switches to a browser string",
+      "actor": "NeuroSploit operators",
+      "source": "ThreatDefence review of the NeuroSploit source code",
+      "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/pipeline.rs#L636",
+      "reported": "2026-11-24",
+      "framework": "neurosploit"
+    },
+    {
+      "value": "X-Note-Name",
+      "confidence": "medium",
+      "context": "Echo probe header on Vigilo's grey-box root fetch and every crawled page, with the value vigilo<8 hex><e>. The header name alone is not unique; pair it with the value",
+      "actor": "Vigilo operators",
+      "source": "ThreatDefence review of the Vigilo source code",
+      "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/src/greybox_web/tools/discovery.py#L37",
+      "reported": "2026-11-25",
+      "framework": "vigilo"
+    },
+    {
+      "value": "MythicSource: pentest-copilot",
+      "confidence": "high",
+      "context": "Header (name MythicSource, value pentest-copilot) Pentest Copilot adds when it uploads a file to the operator's Mythic C2 server (POST /api/v1.4/task_upload_file_webhook). Mythic is usually HTTPS on 7443, so this needs decrypted traffic",
+      "actor": "Pentest Copilot operators",
+      "source": "ThreatDefence review of the Pentest Copilot source code",
+      "sourceUrl": "https://github.com/bugbasesecurity/pentest-copilot/blob/cd512edd037a32ddb1df3caf2672915bd555daec/backend/src/services/mythic.client.ts#L998",
+      "reported": "2026-08-14",
+      "framework": "pentest-copilot"
+    },
+    {
+      "value": "X-ARIA-X-Token",
+      "confidence": "high",
+      "context": "Request header the ARIA-X API accepts in place of Authorization: Bearer <token>; also listed in its CORS Access-Control-Allow-Headers",
+      "actor": "ARIA-X operators",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/server/app.py#L394",
+      "reported": "2026-11-25",
+      "framework": "aria-x"
+    },
+    {
+      "value": "X-Burp-AI-Agent",
+      "confidence": "high",
+      "context": "Response header X-Burp-AI-Agent: mcp on its MCP health route /__mcp/health, local mode only (mcp/KtorMcpServerManager.kt:210-218)",
+      "actor": "Custom AI Agent operators",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/mcp/KtorMcpServerManager.kt#L216",
+      "reported": "2026-10-21",
+      "framework": "burp-ai-agent"
+    },
+    {
+      "value": "X-Mcp-Takeover-Proof",
+      "confidence": "high",
+      "context": "Request header with an HMAC proof the extension sends in POST /__mcp/shutdown to whatever holds its MCP port (mcp/McpTakeoverProof.kt:52)",
+      "actor": "Custom AI Agent operators",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/mcp/McpTakeoverProof.kt#L52",
+      "reported": "2026-10-21",
+      "framework": "burp-ai-agent"
+    },
+    {
+      "value": "X-BlitzStrike",
+      "confidence": "high",
+      "context": "Header name Blitz Strike's CRLF probe tries to inject into the response",
+      "actor": "Blitz Strike operators",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/orchestrator.ts#L644",
+      "reported": "2026-11-04",
+      "framework": "blitzstrike"
+    },
+    {
+      "value": "X-HackerOne-Research",
+      "confidence": "low",
+      "context": "Header Blitz Strike adds to most of its requests when the operator sets H1_USERNAME; a bug bounty convention used by other tools too",
+      "actor": "Blitz Strike operators",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/http.ts#L17",
+      "reported": "2026-11-04",
+      "framework": "blitzstrike"
+    },
+    {
+      "value": "X-Nebula-CSRF",
+      "confidence": "medium",
+      "context": "Header paired Nebula clients (browser workspace, nebula-chat) send to a core with the nebula_csrf cookie on writes",
+      "actor": "Nebula operators",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/authentication.py#L223",
+      "reported": "2026-11-25",
+      "framework": "nebula"
+    },
+    {
+      "value": "X-Nebula-Api-Key",
+      "confidence": "high",
+      "context": "Header a background command in Nebula's container uses to POST its result to <core>/api/v1/automation-processes/<id>/results; plain HTTP on the LAN when the core binds 0.0.0.0",
+      "actor": "Nebula operators",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/execution_kernel.py#L9552",
+      "reported": "2026-11-25",
+      "framework": "nebula"
+    },
+    {
+      "value": "Agent-Token",
+      "confidence": "low",
+      "context": "Header BreachWeave's challenge client sends to the Tencent Cloud Hackathon platform API (/api/challenges, /api/start_challenge, /api/submit, /api/hint); the platform's protocol, so other teams' agents send it too",
+      "actor": "BreachWeave operators",
+      "source": "ThreatDefence review of the BreachWeave source code",
+      "sourceUrl": "https://github.com/m-sec-org/BreachWeave/blob/bc2d9502a2625c5ef354adc30243bd091341cc51/packages/core/src/challenge/api-client.ts#L139",
+      "reported": "2026-10-09",
+      "framework": "breachweave"
+    },
+    {
+      "value": "x-numasec-directory",
+      "confidence": "medium",
+      "context": "Request header a numasec client (numasec attach, numasec run --attach, the SDK) sends on POSTs to a numasec API server to select the working directory; GETs carry ?directory= instead. Renamed from OpenCode's x-opencode-directory",
+      "actor": "numasec operators",
+      "source": "ThreatDefence review of the numasec source code",
+      "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/sdk/src/v2/client.ts#L62",
+      "reported": "2026-05-08",
+      "framework": "numasec"
+    },
+    {
+      "value": "x-deepseek-harness-user-id",
+      "confidence": "medium",
+      "context": "Request header the Pentest Harness DeepSeek adapter sends to the model API with the anonymous user id from ~/.dsh/.anonymous-user-id, next to x-deepseek-harness-session-id. Inherited from the upstream dsh harness",
+      "actor": "Pentest Harness operators",
+      "source": "ThreatDefence review of the Pentest Harness source code",
+      "sourceUrl": "https://github.com/S1N6H/pentest-harness/blob/4638f38082bdf37cea03ad151905c4bb8662f6e9/packages/llm/llm-deepseek/src/adapter.ts#L527",
+      "reported": "2026-09-11",
+      "framework": "pentest-harness"
+    },
+    {
+      "value": "X-0-Request-ID",
+      "confidence": "medium",
+      "context": "Response header of a 0security console on every request that passes the host check, including the sign-in page",
+      "actor": "0security operators",
+      "source": "ThreatDefence review of the 0security source code",
+      "sourceUrl": "https://github.com/0sec-labs/0security/blob/eec0d4c74e8bba71a158ff1f8309c4565786f764/packages/cli/src/commands/dashboard.ts#L333",
+      "reported": "2026-11-25",
+      "framework": "zerosecurity"
+    },
+    {
+      "value": "X-0-Control-Token",
+      "confidence": "high",
+      "context": "Request header that carries the 0security console control token on API calls",
+      "actor": "0security operators",
+      "source": "ThreatDefence review of the 0security source code",
+      "sourceUrl": "https://github.com/0sec-labs/0security/blob/eec0d4c74e8bba71a158ff1f8309c4565786f764/packages/web/src/api.ts#L69",
+      "reported": "2026-11-25",
+      "framework": "zerosecurity"
+    },
+    {
+      "value": "X-Pentesterflow-Token",
+      "confidence": "medium",
+      "context": "Token header of PentesterFlow's Burp bridge on 127.0.0.1:9999 (random per process); also X-Pentesterflow-Source. Loopback only (src/browser/server.ts:75-79,229)",
+      "actor": "PentesterFlow operators",
+      "source": "ThreatDefence review of the PentesterFlow source code",
+      "sourceUrl": "https://github.com/PentesterFlow/agent/blob/0759d873a07350a70283c9751f7d136905f777c7/src/browser/server.ts#L78",
+      "reported": "2026-08-31",
+      "framework": "pentesterflow"
+    },
+    {
+      "value": "X-Pensar-Client: cli",
+      "confidence": "low",
+      "context": "Header Apex sends to the Pensar Console API with X-Pensar-Client-Version and X-Pensar-Command. Over HTTPS: visible only with TLS inspection",
+      "actor": "Pensar Apex operators",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/api/clientIdentity.ts#L15-L19",
+      "reported": "2026-11-25",
+      "framework": "apex"
+    },
+    {
+      "value": "X-Mobsf-Api-Key",
+      "confidence": "low",
+      "context": "MobSF's own API key header. The MobSF wrapper sends the key in both Authorization and X-Mobsf-Api-Key with an axios user agent; the header alone is any MobSF client",
+      "actor": "MCP for Security operators",
+      "source": "ThreatDefence review of the MCP for Security source code",
+      "sourceUrl": "https://github.com/cyproxio/mcp-for-security/blob/51dd537f5829470ebe508afd33186bd1a0459256/mobsf-mcp/src/mobsf.ts#L27",
+      "reported": "2026-03-30",
+      "framework": "mcp-for-security"
+    },
+    {
+      "value": "X-OpenHack-Client: dashboard",
+      "confidence": "low",
+      "context": "Header the OpenHack v2 dashboard requires on every change request (loopback only)",
+      "actor": "OpenHack operators",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/f94e153c5e6cc55218692ff6827ca1ac4e17e6a9/src/server/security.ts#L22",
+      "reported": "2026-11-23",
+      "framework": "openhack"
+    },
+    {
+      "value": "X-App: deadend",
+      "confidence": "low",
+      "context": "Example request header in the authenticate tool's JSON-flow description; sent only if the model copies the example",
+      "actor": "Deadend CLI operators",
+      "source": "ThreatDefence review of the Deadend CLI source code",
+      "sourceUrl": "https://github.com/straylabs-ai/deadend-cli/blob/34e8371739d70b24034e2fa47f64350e7f7743d3/deadend_cli/deadend_prompts/src/deadend_prompts/tools/authenticate.description.jinja2#L132",
+      "reported": "2026-08-07",
+      "framework": "deadend-cli"
+    }
+  ]
+}

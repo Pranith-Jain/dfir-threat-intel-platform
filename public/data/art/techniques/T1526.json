@@ -1,0 +1,46 @@
+{
+  "id": "T1526",
+  "displayName": "Cloud Service Discovery",
+  "tests": [
+    {
+      "name": "Azure - Dump Subscription Data with MicroBurst",
+      "guid": "1e40bb1d-195e-401e-a86b-c192f55e005c",
+      "description": "Upon successful execution, this test will enumerate all resources that are contained within a valid Azure subscription. \nThe resources enumerated will display on screen, as well as several csv files and folders will be output to a specified directory, listing what resources were discovered by the script. \nSee https://dev.to/cheahengsoon/enumerating-subscription-information-with-microburst-35a1",
+      "platforms": ["iaas:azure"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username", "password", "output_directory", "subscription_name"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "AWS - Enumerate common cloud services",
+      "guid": "aa8b9bcc-46fa-4a59-9237-73c7b93a980c",
+      "description": "Upon successful execution, this test will enumerate common resources that are contained within a valid AWS account.",
+      "platforms": ["iaas:aws"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["access_key", "secret_key", "session_token", "profile", "regions", "output_directory"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Azure - Enumerate common cloud services",
+      "guid": "58f57c8f-db14-4e62-a4d3-5aaf556755d7",
+      "description": "Upon successful execution, this test will enumerate common resources that are contained within a valid Azure subscription.",
+      "platforms": ["iaas:azure"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["client_id", "client_secret", "tenant_id", "cloud", "output_directory"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1526/T1526.yaml"
+}

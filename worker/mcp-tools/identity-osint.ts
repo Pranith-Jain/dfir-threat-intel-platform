@@ -13,29 +13,37 @@ import { z } from 'zod';
 import type { McpToolHost } from './host';
 
 export function registerIdentityOsintTools(h: McpToolHost): void {
-  // ── PromptIntel IoPC registry (NovaHunting) ────────────────────────
+  // ── PromptIntel IoPC registry (SecurityBreak) ──────────────────────
+  //
+  // The taxonomy tools read the committed mirror through the platform's own
+  // REST surface, so they cost no PromptIntel quota and work without a key.
+  // The live tools spend the Community allowance (100 req/day, and 5 prompt
+  // reads / 5 checks / 10 scans / 20 hash lookups a day), so each one is
+  // cached server-side and says so in its description.
   h.tools(
-    'pi_search_prompts',
-    'Search the PromptIntel Indicators-of-Prompt-Compromise feed: adversarial AI prompts with severity and category filters. Requires server-side PROMPTINTEL_API_KEY.',
+    'pi_taxonomy',
+    'List IoPC (Indicators of Prompt Compromise) techniques: 35 techniques across 9 domains, mapped to OWASP LLM, OWASP Agentic, MITRE ATLAS, Google SAIF, CSA AARM and NIST AI RMF. Served from the local mirror — no PromptIntel key or quota needed.',
     {
-      search: z.string().optional().describe('Search in prompt titles and content'),
-      severity: z.string().optional().describe('Filter by severity level'),
-      category: z.string().optional().describe('One of manipulation, abuse, patterns, outputs'),
-      limit: z.number().int().min(1).max(100).optional().describe('Items to return (default 20, max 100)'),
+      domain: z.string().optional().describe('Domain code, e.g. T1 (Instruction & Input Injection)'),
+      framework: z.string().optional().describe('Only techniques mapped to this framework, e.g. MITRE ATLAS'),
+      maturity: z.string().optional().describe('active, experimental or deprecated'),
+      q: z.string().optional().describe('Free-text search over id, name, summary and framework names'),
+      limit: z.number().int().min(1).max(200).optional().describe('Max techniques (default 100)'),
     },
-    async ({ search, severity, category, limit }) => {
+    async ({ domain, framework, maturity, q, limit }) => {
       const p = new URLSearchParams();
-      if (search) p.set('search', search);
-      if (severity) p.set('severity', severity);
-      if (category) p.set('category', category);
-      p.set('limit', String(limit ?? 20));
-      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, `/api/v1/promptintel/prompts?${p}`, h.apiKey);
+      if (domain) p.set('domain', domain);
+      if (framework) p.set('framework', framework);
+      if (maturity) p.set('maturity', maturity);
+      if (q) p.set('q', q);
+      if (limit) p.set('limit', String(limit));
+      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, `/api/v1/promptintel/taxonomy?${p}`, h.apiKey);
       return untrustedToolResult(data);
     }
   );
   h.tools(
     'pi_get_entry',
-    'Retrieve a single IoPC taxonomy entry (e.g. IOPC-T1.001 or IOPC-R012) with framework mappings and relationships. Requires server-side PROMPTINTEL_API_KEY.',
+    'Retrieve one IoPC entry (technique IOPC-T1.001 or registry IOPC-R012) with its description, maturity/evidence status and every framework mapping. Served from the local mirror — no key or quota needed.',
     { id: z.string().describe('IoPC entry id, e.g. IOPC-T1.001') },
     async ({ id }) => {
       const data = await apiFetch<Record<string, unknown>>(
@@ -43,6 +51,154 @@ export function registerIdentityOsintTools(h: McpToolHost): void {
         `/api/v1/promptintel/taxonomy/entries/${encodeURIComponent(id)}`,
         h.apiKey
       );
+      return untrustedToolResult(data);
+    }
+  );
+  h.tools(
+    'pi_translate',
+    'Translate an AI-security framework item into the other frameworks (e.g. OWASP_LLM LLM01 → MITRE ATLAS AML.T0051). The link is derived through the IoPC techniques both items map to, and `via` names them. Also answers the inverse: which IoPC techniques sit behind one framework item.',
+    {
+      framework: z.string().describe('Source framework, e.g. OWASP_LLM, MITRE_ATLAS, OWASP_AGENTIC'),
+      ref: z.string().describe('Item id in that framework, e.g. LLM01 or AML.T0051'),
+      to: z.string().optional().describe('Only return this target framework, e.g. MITRE_ATLAS'),
+    },
+    async ({ framework, ref, to }) => {
+      const p = new URLSearchParams({ framework, ref });
+      if (to) p.set('to', to);
+      const data = await apiFetch<Record<string, unknown>>(
+        h.env.SELF,
+        `/api/v1/promptintel/taxonomy/translate?${p}`,
+        h.apiKey
+      );
+      return untrustedToolResult(data);
+    }
+  );
+  h.tools(
+    'pi_search_prompts',
+    'Search the PromptIntel adversarial-prompt feed (approved prompts with severity, category and IoPC technique filters). The list omits attack text on the Community plan; read one with pi_get_prompt. Requires server-side PROMPTINTEL_API_KEY.',
+    {
+      search: z.string().optional().describe('Words to find in the title, prompt text, tags or author'),
+      entry: z.string().optional().describe('IoPC id filter, e.g. IOPC-T1.002'),
+      severity: z.enum(['low', 'medium', 'high', 'critical']).optional().describe('Filter by severity'),
+      category: z.string().optional().describe('Only prompts carrying this tag'),
+      page: z.number().int().min(1).max(100).optional().describe('Page number (default 1)'),
+      limit: z.number().int().min(1).max(50).optional().describe('Items to return (default 20, max 50)'),
+    },
+    async ({ search, entry, severity, category, page, limit }) => {
+      const p = new URLSearchParams();
+      if (search) p.set('search', search);
+      if (entry) p.set('entry', entry);
+      if (severity) p.set('severity', severity);
+      if (category) p.set('category', category);
+      if (page) p.set('page', String(page));
+      p.set('limit', String(limit ?? 20));
+      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, `/api/v1/promptintel/prompts?${p}`, h.apiKey);
+      return untrustedToolResult(data);
+    }
+  );
+  h.tools(
+    'pi_get_prompt',
+    'Read one PromptIntel prompt in full: attack text, follow-up steps and its NOVA detection rule. COSTLY — the Community plan allows 5 full prompt reads a day per account; the answer is cached for 12h, so a repeat is free.',
+    { id: z.string().describe('Prompt id from pi_search_prompts') },
+    async ({ id }) => {
+      const data = await apiFetch<Record<string, unknown>>(
+        h.env.SELF,
+        `/api/v1/promptintel/prompts/${encodeURIComponent(id)}`,
+        h.apiKey
+      );
+      return untrustedToolResult(data);
+    }
+  );
+  h.tools(
+    'pi_agent_feed',
+    'The PromptIntel agent-protection feed: curated, approved protections (category, severity, action, IoPC technique) with an expiry and a fingerprint to enforce. Community keys get titles plus a description preview with indicators withheld.',
+    {
+      category: z.string().optional().describe('Filter by category, e.g. mcp, skill, prompt'),
+      severity: z.enum(['low', 'medium', 'high', 'critical']).optional().describe('Only items of this severity'),
+      action: z.string().optional().describe('Filter by action type, e.g. block, warn'),
+      since: z.string().optional().describe('ISO timestamp for incremental updates'),
+      technique_id: z.string().optional().describe('Only items tagged with this IoPC technique'),
+    },
+    async ({ category, severity, action, since, technique_id }) => {
+      const p = new URLSearchParams();
+      if (category) p.set('category', category);
+      if (severity) p.set('severity', severity);
+      if (action) p.set('action', action);
+      if (since) p.set('since', since);
+      if (technique_id) p.set('technique_id', technique_id);
+      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, `/api/v1/promptintel/agent-feed?${p}`, h.apiKey);
+      return untrustedToolResult(data);
+    }
+  );
+  h.tools(
+    'pi_check_indicator',
+    'Check whether a URL, domain, IP, SHA-256, file path or skill/MCP name is a known PromptIntel indicator. COSTLY — Community allows 5 values a day per key; the verdict is cached for 24h. A miss is not a clean result.',
+    {
+      value: z
+        .string()
+        .describe('The indicator: URL, domain, IP address, SHA-256, file path or a skill/MCP/package name'),
+      type: z
+        .enum([
+          'skill',
+          'mcp_server',
+          'package',
+          'repository',
+          'publisher',
+          'extension',
+          'wallet',
+          'messaging',
+          'email',
+        ])
+        .optional()
+        .describe('Disambiguate a name whose shape does not say what it is'),
+    },
+    async ({ value, type }) => {
+      const p = new URLSearchParams({ value });
+      if (type) p.set('type', type);
+      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, `/api/v1/promptintel/check?${p}`, h.apiKey);
+      return untrustedToolResult(data);
+    }
+  );
+  h.tools(
+    'pi_lookup_file_hashes',
+    'Look up malicious agent files by SHA-256 (SKILL.md bundles, AGENTS.md, CLAUDE.md, .cursorrules, MCP configs). COSTLY — Community allows 20 hash lookups a day; results are cached per hash for 24h. A known hash comes with title/kind/severity only on Community.',
+    {
+      sha256: z.array(z.string()).min(1).max(50).describe('SHA-256 digests (64 hex chars each)'),
+    },
+    async ({ sha256 }) => {
+      const data = await apiFetch<Record<string, unknown>>(
+        h.env.SELF,
+        `/api/v1/promptintel/artifacts/lookup?sha256=${encodeURIComponent(sha256.join(','))}`,
+        h.apiKey
+      );
+      return untrustedToolResult(data);
+    }
+  );
+  h.tools(
+    'pi_scan',
+    'Scan a skill, MCP server or A2A agent for prompt-compromise risk from its address or manifest. COSTLY — Community allows 10 scans a day per key. Send the JSON body documented at promptintel.securitybreak.io/docs/api.',
+    {
+      source: z.string().max(8000).describe('What to scan: an address, a SKILL.md, an MCP config, an A2A card'),
+      kind: z.enum(['skill', 'mcp', 'a2a', 'ard', 'auto']).optional().describe('Force the input kind (default auto)'),
+      deep_review: z.boolean().optional().describe('Default true: an LLM review panel checks the rule results'),
+    },
+    async ({ source, kind, deep_review }) => {
+      const body: Record<string, unknown> = { source };
+      if (kind) body.kind = kind;
+      if (deep_review !== undefined) body.deep_review = deep_review;
+      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/promptintel/scan', h.apiKey, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+      return untrustedToolResult(data);
+    }
+  );
+  h.tools(
+    'pi_quota',
+    'What the PromptIntel key has left today, limit by limit (requests, prompt reads, checks, scans, hash lookups). Never cached — call it after a 429.',
+    {},
+    async () => {
+      const data = await apiFetch<Record<string, unknown>>(h.env.SELF, '/api/v1/promptintel/quota', h.apiKey);
       return untrustedToolResult(data);
     }
   );

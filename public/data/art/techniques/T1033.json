@@ -1,0 +1,111 @@
+{
+  "id": "T1033",
+  "displayName": "System Owner/User Discovery",
+  "tests": [
+    {
+      "name": "System Owner/User Discovery",
+      "guid": "4c4959bf-addf-4b4a-be86-8d09cc1857aa",
+      "description": "Identify System owner or users on an endpoint.\n\nUpon successful execution, cmd.exe will spawn multiple commands against a target host to identify usernames. Output will be via stdout. \nAdditionally, two files will be written to disk - computers.txt and usernames.txt.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["computer_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "System Owner/User Discovery",
+      "guid": "2a9b677d-a230-44f4-ad86-782df1ef108c",
+      "description": "Identify System owner or users on an endpoint\n\nUpon successful execution, sh will stdout list of usernames.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find computers where user has session - Stealth mode (PowerView)",
+      "guid": "29857f27-a36f-4f7e-8084-4557cd6207ca",
+      "description": "Find existing user session on other computers. Upon execution, information about any sessions discovered will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "User Discovery With Env Vars PowerShell Script",
+      "guid": "dcb6cdee-1fb0-4087-8bf8-88cfd136ba51",
+      "description": "Use the PowerShell environment variables to identify the current logged user.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "GetCurrent User with PowerShell Script",
+      "guid": "1392bd0f-5d5a-429e-81d9-eb9d4d4d5b3b",
+      "description": "Use the PowerShell \"GetCurrent\" method of the WindowsIdentity .NET class to identify the logged user.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "System Discovery - SocGholish whoami",
+      "guid": "3d257a03-eb80-41c5-b744-bb37ac7f65c7",
+      "description": "SocGholish performs whoami discovery commands and outputs the results to a tmp file. \nThe test will generate a filename similar to the random one generated during execution and write the file to AppData\\Temp.\n\nReference: https://redcanary.com/threat-detection-report/threats/socgholish/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "System Owner/User Discovery Using Command Prompt",
+      "guid": "ba38e193-37a6-4c41-b214-61b33277fe36",
+      "description": "Identify the system owner or current user using native Windows command prompt utilities.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "User Discovery - whoami",
+      "guid": "aab580c7-cc30-4a7c-b5a9-46a29066b022",
+      "description": "Identify the current user account and security context using whoami. Adversaries use this command during initial\nreconnaissance after gaining access to a system to determine the user and privilege level they are operating under.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["whoami_args"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1033/T1033.yaml"
+}

@@ -1,0 +1,111 @@
+{
+  "id": "T1007",
+  "displayName": "System Service Discovery",
+  "tests": [
+    {
+      "name": "System Service Discovery",
+      "guid": "89676ba1-b1f8-47ee-b940-2e1a113ebc71",
+      "description": "Identify system services.\n\nUpon successful execution, cmd.exe will execute service commands with expected result to stdout.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "System Service Discovery - net.exe",
+      "guid": "5f864a3f-8ce9-45c0-812c-bdf7d8aeacc3",
+      "description": "Enumerates started system services using net.exe and writes them to a file. This technique has been used by multiple threat actors.\n\nUpon successful execution, net.exe will run from cmd.exe that queries services. Expected output is to a txt file in in the temp directory called service-list.txt.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "System Service Discovery - systemctl/service",
+      "guid": "f4b26bce-4c2c-46c0-bcc5-fce062d38bef",
+      "description": "Enumerates system service using systemctl/service",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Get-Service Execution",
+      "guid": "51f17016-d8fa-4360-888a-df4bf92c4a04",
+      "description": "Executes the Get-Service cmdlet to gather objects representing all services on the local system.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "System Service Discovery - macOS launchctl",
+      "guid": "9b378962-a75e-4856-b117-2503d6dcebba",
+      "description": "Enumerates services on macOS using launchctl. Used by adversaries for\nidentifying daemons, background services, and persistence mechanisms.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "System Service Discovery - Windows Scheduled Tasks (schtasks)",
+      "guid": "7cd7eaa3-9ccc-460d-96d2-c6fb13e6d58a",
+      "description": "Enumerates scheduled tasks on Windows using schtasks.exe.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "System Service Discovery - Services Registry Enumeration",
+      "guid": "d70d82bd-bb00-4837-b146-b40d025551b2",
+      "description": "Enumerates Windows services by reading the Services registry key\n(HKLM\\SYSTEM\\CurrentControlSet\\Services) instead of using Service Control\nManager APIs or CLI tools such as sc.exe or Get-Service.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "System Service Discovery - Linux init scripts",
+      "guid": "8f2a5d2b-4018-46d4-8f3f-0fea53754690",
+      "description": "Enumerates system services by listing SysV init scripts and runlevel\nsymlinks under /etc/init.d and /etc/rc*.d.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1007/T1007.yaml"
+}

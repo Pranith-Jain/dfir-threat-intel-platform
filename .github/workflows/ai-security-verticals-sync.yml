@@ -82,6 +82,26 @@ jobs:
         continue-on-error: true
         run: node scripts/build-orca-manifest.mjs
 
+      - name: Build Agentic Attack Detections manifest
+        # GitHub tree API + raw files from ThreatDefence/agentic-attack-detections
+        # (MIT): framework coverage, 1,800+ sourced indicators, ATT&CK layer.
+        continue-on-error: true
+        run: node scripts/build-aad-manifest.mjs
+
+      - name: Build PromptIntel IoPC taxonomy mirror
+        # Public /taxonomy/ pages on promptintel.securitybreak.io (robots
+        # Allow: /). Metadata + framework mappings only; no attack text and
+        # no API key, so the taxonomy surface costs zero PromptIntel quota.
+        continue-on-error: true
+        run: node scripts/sync-promptintel.mjs
+
+      - name: Build Atomic Red Team manifest
+        # GitHub tree API + 353 raw technique YAMLs from redcanaryco/
+        # atomic-red-team (MIT), the catalog behind atomicredteam.io. Metadata
+        # only — executor commands are never vendored.
+        continue-on-error: true
+        run: node scripts/build-art-manifest.mjs
+
       - name: Build Hacking Incidents manifest
         # Fetches /incidents.json from hackingincidents.ai (robots Allow: /).
         # No upstream licence: only metadata + links are emitted.
@@ -109,13 +129,13 @@ jobs:
       - name: Show diff stat
         run: |
           echo "=== public/data changed files ==="
-          git status --short public/data/cairn/ public/data/nova/ public/data/denali/ public/data/ai-playbook/ public/data/orca/ public/data/hi/ public/data/oh/ public/data/kp/ public/data/cheyenne-tool/ | head -60
+          git status --short public/data/cairn/ public/data/nova/ public/data/denali/ public/data/ai-playbook/ public/data/orca/ public/data/aad/ public/data/art/ public/data/hi/ public/data/oh/ public/data/kp/ public/data/cheyenne-tool/ | head -60
 
       - name: Open PR if data changed
         id: pr
         uses: peter-evans/create-pull-request@v8
         with:
-          commit-message: "chore(ti): sync AI-security verticals (cairn/nova/denali/orca/hi/oh/kp/cheyenne-tool)"
+          commit-message: "chore(ti): sync AI-security verticals (cairn/nova/denali/orca/aad/art/hi/oh/kp/cheyenne-tool)"
           title: "AI-security verticals sync — ${{ github.event.schedule || 'manual' }}"
           body: |
             Automated weekly rebuild of the AI-security verticals.
@@ -131,6 +151,8 @@ jobs:
             - aisecurity.zone (NO reuse licence — structure/identifiers only,
               no prose replicated; every record deep-links upstream)
             - Continuum-AI-Corp/Orca-AI-Incident-Archive (CC BY 4.0)
+            - ThreatDefence/agentic-attack-detections (MIT)
+            - redcanaryco/atomic-red-team (MIT, via atomicredteam.io docs)
             - hackingincidents.ai (NO reuse licence — structured metadata and links only)
             - offsecharnesses.ai (NO reuse licence — structured metadata and links only)
             - kitploit.com/en (robots.txt disallows /api/ — public HTML and RSS only)
@@ -146,6 +168,8 @@ jobs:
             public/data/denali/
             public/data/ai-playbook/
             public/data/orca/
+            public/data/aad/
+            public/data/art/
             public/data/hi/
             public/data/oh/
             public/data/kp/

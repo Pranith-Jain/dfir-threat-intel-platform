@@ -1,0 +1,98 @@
+{
+  "id": "T1553.004",
+  "displayName": "Subvert Trust Controls: Install Root Certificate",
+  "tests": [
+    {
+      "name": "Install root CA on CentOS/RHEL",
+      "guid": "9c096ec4-fd42-419d-a762-d64cc950627e",
+      "description": "Creates a root CA with openssl",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["cert_filename", "key_filename"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Install root CA on FreeBSD",
+      "guid": "f4568003-1438-44ab-a234-b3252ea7e7a3",
+      "description": "Creates a root CA with openssl",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["cert_filename", "key_filename"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Install root CA on Debian/Ubuntu",
+      "guid": "53bcf8a0-1549-4b85-b919-010c56d724ff",
+      "description": "Creates a root CA with openssl",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["cert_filename", "key_filename"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Install root CA on macOS",
+      "guid": "cc4a0b8c-426f-40ff-9426-4e10e5bf4c49",
+      "description": "Creates a root CA with openssl",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["cert_filename", "key_filename"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Install root CA on Windows",
+      "guid": "76f49d86-5eb1-461a-a032-a480f86652f1",
+      "description": "Creates a root CA with Powershell",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["pfx_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Install root CA on Windows with certutil",
+      "guid": "5fdb1a7a-a93c-4fbe-aa29-ddd9ef94ed1f",
+      "description": "Installs a root CA certificate into the machine-wide Trusted Root Certification\nAuthorities store using certutil -f -addstore root.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["root_cert_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Add Root Certificate to CurrentUser Certificate Store",
+      "guid": "ca20a3f1-42b5-4e21-ad3f-1049199ec2e0",
+      "description": "The following Atomic test simulates adding a generic non-malicious certificate to the CurrentUser certificate store. This behavior generates a registry modification that adds the cloned root CA certificate in the keys outlined in the blog.\nKeys will look like - \\SystemCertificates\\CA\\Certificates or \\SystemCertificates\\Root\\Certificates\nReference: https://posts.specterops.io/code-signing-certificate-cloning-attacks-and-defenses-6f98657fc6ec",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1553.004/T1553.004.yaml"
+}

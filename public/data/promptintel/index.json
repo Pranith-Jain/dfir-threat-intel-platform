@@ -1,0 +1,3446 @@
+{
+  "source": "PromptIntel",
+  "sourceUrl": "https://promptintel.securitybreak.io/taxonomy/",
+  "license": "PromptIntel (SecurityBreak). Taxonomy metadata mirrored for reference with attribution; every record deep-links upstream. Prompt attack text, agent-threat analyses and NOVA rules are not mirrored.",
+  "syncedAt": "2026-11-26T15:03:45.186Z",
+  "taxonomyVersion": "2.2.0",
+  "counts": {
+    "domains": 9,
+    "techniques": 35,
+    "frameworks": 6,
+    "mappings": 308
+  },
+  "frameworks": [
+    {
+      "name": "OWASP Top 10 for LLM Applications",
+      "version": "2026",
+      "url": "https://genai.owasp.org/llm-top-10/"
+    },
+    {
+      "name": "OWASP Top 10 for Agentic Applications",
+      "version": "2026",
+      "url": "https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/"
+    },
+    {
+      "name": "MITRE ATLAS",
+      "version": "2026.10",
+      "url": "https://atlas.mitre.org/"
+    },
+    {
+      "name": "Google Secure AI Framework (SAIF)",
+      "version": "2025",
+      "url": "https://saif.google/secure-ai-framework/risks"
+    },
+    {
+      "name": "CSA Autonomous Action Runtime Management (AARM)",
+      "version": "1.0",
+      "url": "https://aarm.dev/spec"
+    },
+    {
+      "name": "NIST AI Risk Management Framework (AI RMF)",
+      "version": "1.0",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+    }
+  ],
+  "domains": [
+    {
+      "id": "T1",
+      "name": "Instruction & Input Injection",
+      "description": "Techniques that introduce attacker-controlled instructions into an AI system's effective instruction stream via direct input, retrieved content, or data the agent is asked to process.",
+      "techniques": ["IOPC-T1.001", "IOPC-T1.002", "IOPC-T1.003", "IOPC-T1.004", "IOPC-T1.005"]
+    },
+    {
+      "id": "T2",
+      "name": "Data, Retrieval & Memory Poisoning",
+      "description": "Techniques that corrupt the data an AI system retrieves, remembers, or learns from, so that later reasoning and actions are influenced without a fresh injection.",
+      "techniques": ["IOPC-T2.001", "IOPC-T2.002", "IOPC-T2.003", "IOPC-T2.004", "IOPC-T2.005", "IOPC-T2.006"]
+    },
+    {
+      "id": "T3",
+      "name": "Tool & Agent Ecosystem",
+      "description": "Techniques that abuse tools, tool metadata, protocols (e.g. MCP), delegation, and inter-agent context to influence or extend an agent's actions.",
+      "techniques": ["IOPC-T3.001", "IOPC-T3.002", "IOPC-T3.003", "IOPC-T3.004"]
+    },
+    {
+      "id": "T4",
+      "name": "Identity, Privilege & Runtime Boundary",
+      "description": "Techniques that abuse an agent's identity, credentials or execution boundary — privilege reuse, sandbox escape and drift away from the authorised goal.",
+      "techniques": ["IOPC-T4.001", "IOPC-T4.002", "IOPC-T4.003"]
+    },
+    {
+      "id": "T5",
+      "name": "Disclosure & Output Integrity",
+      "description": "Techniques whose effect is the disclosure of protected content, or the manipulation of model output that downstream systems trust.",
+      "techniques": ["IOPC-T5.001", "IOPC-T5.002", "IOPC-T5.003"]
+    },
+    {
+      "id": "T6",
+      "name": "Availability & Resource Abuse",
+      "description": "Techniques that degrade availability or inflate the cost of an AI system through query volume, resource-intensive inputs or runaway agent loops.",
+      "techniques": ["IOPC-T6.001", "IOPC-T6.002"]
+    },
+    {
+      "id": "T7",
+      "name": "Model Integrity & Confidentiality",
+      "description": "Attacks on the model itself — extracting or inverting it, or evading its decisions with crafted inputs.",
+      "techniques": ["IOPC-T7.001", "IOPC-T7.002"]
+    },
+    {
+      "id": "T8",
+      "name": "Reconnaissance, Staging & Access",
+      "description": "What an adversary does before touching the target's behaviour: profiling the AI stack, building and rehearsing capabilities offline, and obtaining the access the later techniques need.",
+      "techniques": ["IOPC-T8.001", "IOPC-T8.002", "IOPC-T8.003", "IOPC-T8.004", "IOPC-T8.005"]
+    },
+    {
+      "id": "T9",
+      "name": "Persistence, Propagation & Evasion",
+      "description": "Techniques that keep a compromise alive across sessions, spread it, or hide it from the operator's telemetry.",
+      "techniques": ["IOPC-T9.001", "IOPC-T9.002", "IOPC-T9.003", "IOPC-T9.004", "IOPC-T9.005"]
+    }
+  ],
+  "entries": [
+    {
+      "id": "IOPC-T1.001",
+      "name": "Direct Prompt Injection",
+      "domain": "T1",
+      "domainName": "Instruction & Input Injection",
+      "summary": "Attacker-authored instructions supplied directly in the user-controlled input channel to override system or developer intent.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T1.001/",
+      "maturity": "active",
+      "evidence": "mixed",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "CSA Autonomous Action Runtime Management (AARM)",
+        "Google Secure AI Framework (SAIF)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for Agentic Applications",
+        "OWASP Top 10 for LLM Applications"
+      ],
+      "mappingCount": 9
+    },
+    {
+      "id": "IOPC-T1.002",
+      "name": "Indirect Prompt Injection",
+      "domain": "T1",
+      "domainName": "Instruction & Input Injection",
+      "summary": "Attacker instructions embedded in third-party content (web pages, documents, emails, tickets) that the model ingests as data and interprets as instructions.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T1.002/",
+      "maturity": "active",
+      "evidence": "mixed",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "CSA Autonomous Action Runtime Management (AARM)",
+        "Google Secure AI Framework (SAIF)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for Agentic Applications",
+        "OWASP Top 10 for LLM Applications"
+      ],
+      "mappingCount": 10
+    },
+    {
+      "id": "IOPC-T1.003",
+      "name": "Agent Data Injection",
+      "domain": "T1",
+      "domainName": "Instruction & Input Injection",
+      "summary": "Instructions placed in data an agent is explicitly tasked to process (issue comments, PR descriptions, CI logs, tickets, structured records) that exploit the agent's failure to separate trusted control data from untrusted content data during task execution.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T1.003/",
+      "maturity": "active",
+      "evidence": "mixed",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "CSA Autonomous Action Runtime Management (AARM)",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for Agentic Applications",
+        "OWASP Top 10 for LLM Applications"
+      ],
+      "mappingCount": 5
+    },
+    {
+      "id": "IOPC-T1.004",
+      "name": "Jailbreak & Safety Bypass",
+      "domain": "T1",
+      "domainName": "Instruction & Input Injection",
+      "summary": "Inputs that make a model disregard its own safety policy — persona/roleplay framing, refusal-suppression patterns or optimisation-found suffixes — so it produces content or actions its guardrails should prevent.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T1.004/",
+      "maturity": "active",
+      "evidence": "mixed",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "Google Secure AI Framework (SAIF)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for LLM Applications"
+      ],
+      "mappingCount": 7
+    },
+    {
+      "id": "IOPC-T1.005",
+      "name": "Triggered & Delayed Instruction Activation",
+      "domain": "T1",
+      "domainName": "Instruction & Input Injection",
+      "summary": "An injected instruction that stays dormant until a condition is met — a keyword, a later turn, a specific tool result or a time/step delay — so the payload is not present in the request that eventually causes the action.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T1.005/",
+      "maturity": "active",
+      "evidence": "research",
+      "reviewed": "2026-11-12",
+      "frameworks": ["MITRE ATLAS", "NIST AI Risk Management Framework (AI RMF)", "OWASP Top 10 for LLM Applications"],
+      "mappingCount": 6
+    },
+    {
+      "id": "IOPC-T2.001",
+      "name": "Retrieval / RAG Poisoning",
+      "domain": "T2",
+      "domainName": "Data, Retrieval & Memory Poisoning",
+      "summary": "Malicious content placed in a knowledge source an application retrieves from — a vector store, indexed documents, a shared workspace or mailbox — so that it is pulled into prompts and acts as an indirect injection or biases answers.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T2.001/",
+      "maturity": "active",
+      "evidence": "research",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "Google Secure AI Framework (SAIF)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for Agentic Applications",
+        "OWASP Top 10 for LLM Applications"
+      ],
+      "mappingCount": 12
+    },
+    {
+      "id": "IOPC-T2.002",
+      "name": "Persistent Memory Poisoning",
+      "domain": "T2",
+      "domainName": "Data, Retrieval & Memory Poisoning",
+      "summary": "Injection of adversarial content into an agent's durable memory (long-term memory stores, user profiles, episodic memory, learned preferences) so that it influences future sessions without a fresh injection.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T2.002/",
+      "maturity": "active",
+      "evidence": "curated",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "CSA Autonomous Action Runtime Management (AARM)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for Agentic Applications",
+        "OWASP Top 10 for LLM Applications"
+      ],
+      "mappingCount": 11
+    },
+    {
+      "id": "IOPC-T2.003",
+      "name": "Training & Fine-tuning Data Poisoning",
+      "domain": "T2",
+      "domainName": "Data, Retrieval & Memory Poisoning",
+      "summary": "Malicious or unauthorised examples introduced into training, fine-tuning or feedback data so the resulting model carries biased behaviour or a backdoor trigger.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T2.003/",
+      "maturity": "active",
+      "evidence": "curated",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "Google Secure AI Framework (SAIF)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for LLM Applications"
+      ],
+      "mappingCount": 13
+    },
+    {
+      "id": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "domainName": "Data, Retrieval & Memory Poisoning",
+      "summary": "Compromise of the models, datasets, packages, plugins or MCP servers an AI system assembles from — including published poisoned artefacts and reputation/rug-pull attacks on agent tools.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T2.004/",
+      "maturity": "active",
+      "evidence": "mixed",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "Google Secure AI Framework (SAIF)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for Agentic Applications",
+        "OWASP Top 10 for LLM Applications"
+      ],
+      "mappingCount": 20
+    },
+    {
+      "id": "IOPC-T2.005",
+      "name": "Hallucinated Dependency Exploitation",
+      "domain": "T2",
+      "domainName": "Data, Retrieval & Memory Poisoning",
+      "summary": "Adversaries mine a model's hallucinations for non-existent packages, endpoints or entities, then register them so that later generations resolve to attacker-controlled artefacts (\"slopsquatting\").",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T2.005/",
+      "maturity": "active",
+      "evidence": "research",
+      "reviewed": "2026-11-12",
+      "frameworks": ["MITRE ATLAS", "NIST AI Risk Management Framework (AI RMF)", "OWASP Top 10 for LLM Applications"],
+      "mappingCount": 7
+    },
+    {
+      "id": "IOPC-T2.006",
+      "name": "AI Recommendation Poisoning (GEO Poisoning)",
+      "domain": "T2",
+      "domainName": "Data, Retrieval & Memory Poisoning",
+      "summary": "Content planted where AI assistants and AI search will read it — hidden instructions in web pages, pre-filled \"Summarize with AI\" links, mass-produced or fake-authority pages — so that the assistant recommends, ranks or cites the attacker's product, link or narrative to its users. Also reported as generative engine optimisation (GEO) poisoning and AI SEO poisoning.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T2.006/",
+      "maturity": "active",
+      "evidence": "mixed",
+      "reviewed": "2026-11-12",
+      "frameworks": ["NIST AI Risk Management Framework (AI RMF)"],
+      "mappingCount": 3
+    },
+    {
+      "id": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "domainName": "Tool & Agent Ecosystem",
+      "summary": "Prompts or content that steer an agent into calling tools, executing code, or performing external actions that cause real-world harm or exceed the intended task scope.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T3.001/",
+      "maturity": "active",
+      "evidence": "mixed",
+      "reviewed": "2026-11-22",
+      "frameworks": [
+        "CSA Autonomous Action Runtime Management (AARM)",
+        "Google Secure AI Framework (SAIF)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for Agentic Applications",
+        "OWASP Top 10 for LLM Applications"
+      ],
+      "mappingCount": 16
+    },
+    {
+      "id": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "domainName": "Tool & Agent Ecosystem",
+      "summary": "Adversarial content in tool definitions, descriptions, schemas, results, or protocol metadata (e.g. MCP servers) that manipulates an agent's tool selection, parameters, or subsequent reasoning.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T3.002/",
+      "maturity": "experimental",
+      "evidence": "observed",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "CSA Autonomous Action Runtime Management (AARM)",
+        "Google Secure AI Framework (SAIF)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for Agentic Applications",
+        "OWASP Top 10 for LLM Applications"
+      ],
+      "mappingCount": 16
+    },
+    {
+      "id": "IOPC-T3.003",
+      "name": "Cross-Agent Context Propagation",
+      "domain": "T3",
+      "domainName": "Tool & Agent Ecosystem",
+      "summary": "Compromised context (instructions, poisoned memory, or tool output) crossing an agent boundary — via delegation, shared memory, or agent-to-agent messaging — so that a threat introduced in one agent influences others and amplifies across a workflow.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T3.003/",
+      "maturity": "experimental",
+      "evidence": "observed",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "CSA Autonomous Action Runtime Management (AARM)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for Agentic Applications"
+      ],
+      "mappingCount": 7
+    },
+    {
+      "id": "IOPC-T3.004",
+      "name": "Human-Agent Trust Exploitation",
+      "domain": "T3",
+      "domainName": "Tool & Agent Ecosystem",
+      "summary": "The agent's own output is used to manipulate the human in the loop — misleading summaries at approval points, false confidence or impersonation of a trusted source — so a person authorises an unsafe action.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T3.004/",
+      "maturity": "experimental",
+      "evidence": "observed",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "Google Secure AI Framework (SAIF)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for Agentic Applications"
+      ],
+      "mappingCount": 8
+    },
+    {
+      "id": "IOPC-T4.001",
+      "name": "Agent Identity & Privilege Abuse",
+      "domain": "T4",
+      "domainName": "Identity, Privilege & Runtime Boundary",
+      "summary": "Reuse, escalation or impersonation of an agent's identity and credentials — shared service accounts, over-scoped tokens, or credentials harvested from agent configuration — so actions execute with more authority than the task requires.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T4.001/",
+      "maturity": "active",
+      "evidence": "curated",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "CSA Autonomous Action Runtime Management (AARM)",
+        "Google Secure AI Framework (SAIF)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for Agentic Applications"
+      ],
+      "mappingCount": 12
+    },
+    {
+      "id": "IOPC-T4.002",
+      "name": "Unexpected Code Execution",
+      "domain": "T4",
+      "domainName": "Identity, Privilege & Runtime Boundary",
+      "summary": "Model-controlled text becomes executable code outside its intended boundary — eval-style APIs fed untrusted content, generated code run without review, or escape from the interpreter sandbox onto the host.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T4.002/",
+      "maturity": "active",
+      "evidence": "observed",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "Google Secure AI Framework (SAIF)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for Agentic Applications",
+        "OWASP Top 10 for LLM Applications"
+      ],
+      "mappingCount": 9
+    },
+    {
+      "id": "IOPC-T4.003",
+      "name": "Agent Goal Drift",
+      "domain": "T4",
+      "domainName": "Identity, Privilege & Runtime Boundary",
+      "summary": "An agent moves away from the authorised objective, or outside its authorised scope, with no attacker instruction — widening its own scope over a long task, following self-issued sub-goals, reward hacking, or carrying on past the boundary of its environment — so that actions which each look reasonable no longer serve what was authorised.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T4.003/",
+      "maturity": "active",
+      "evidence": "curated",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "CSA Autonomous Action Runtime Management (AARM)",
+        "Google Secure AI Framework (SAIF)",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for Agentic Applications"
+      ],
+      "mappingCount": 8
+    },
+    {
+      "id": "IOPC-T5.001",
+      "name": "System Prompt & Configuration Disclosure",
+      "domain": "T5",
+      "domainName": "Disclosure & Output Integrity",
+      "summary": "Extraction of the hidden instructions, tool definitions, activation triggers or other configuration that governs a model or agent.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T5.001/",
+      "maturity": "active",
+      "evidence": "observed",
+      "reviewed": "2026-11-12",
+      "frameworks": ["MITRE ATLAS", "NIST AI Risk Management Framework (AI RMF)", "OWASP Top 10 for LLM Applications"],
+      "mappingCount": 8
+    },
+    {
+      "id": "IOPC-T5.002",
+      "name": "Sensitive Data Disclosure",
+      "domain": "T5",
+      "domainName": "Disclosure & Output Integrity",
+      "summary": "Protected data — credentials, PII, documents or connector content held in context, memory or retrieval — is surfaced to an unauthorised recipient through model output or an agent tool call.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T5.002/",
+      "maturity": "active",
+      "evidence": "mixed",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "CSA Autonomous Action Runtime Management (AARM)",
+        "Google Secure AI Framework (SAIF)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for LLM Applications"
+      ],
+      "mappingCount": 11
+    },
+    {
+      "id": "IOPC-T5.003",
+      "name": "Insecure Output Handling",
+      "domain": "T5",
+      "domainName": "Disclosure & Output Integrity",
+      "summary": "Model output is consumed by a downstream component without validation — rendered as markup, executed as a command, or trusted as a control signal — turning generated text into an exploit primitive.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T5.003/",
+      "maturity": "active",
+      "evidence": "research",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "Google Secure AI Framework (SAIF)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for LLM Applications"
+      ],
+      "mappingCount": 9
+    },
+    {
+      "id": "IOPC-T6.001",
+      "name": "Unbounded Consumption & Cost Abuse",
+      "domain": "T6",
+      "domainName": "Availability & Resource Abuse",
+      "summary": "Query volume, resource-intensive inputs or runaway agent loops that exhaust capacity or inflate the operator's inference bill.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T6.001/",
+      "maturity": "active",
+      "evidence": "research",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "Google Secure AI Framework (SAIF)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for LLM Applications"
+      ],
+      "mappingCount": 12
+    },
+    {
+      "id": "IOPC-T6.002",
+      "name": "Induced Refusal (Context Bomb)",
+      "domain": "T6",
+      "domainName": "Availability & Resource Abuse",
+      "summary": "Text planted in content an AI system will read — a request for prohibited material, or a string written to look like one — so that the model's own safety guardrails make it refuse or stop, denying the AI function to whoever depends on it. Reported as \"context bombs\" and \"reverse jailbreaks\".",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T6.002/",
+      "maturity": "experimental",
+      "evidence": "curated",
+      "reviewed": "2026-11-12",
+      "frameworks": ["NIST AI Risk Management Framework (AI RMF)"],
+      "mappingCount": 2
+    },
+    {
+      "id": "IOPC-T7.001",
+      "name": "Model Extraction & Inversion",
+      "domain": "T7",
+      "domainName": "Model Integrity & Confidentiality",
+      "summary": "Repeated, structured querying of a model to clone its functionality, recover training-data membership, or invert it into the underlying examples.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T7.001/",
+      "maturity": "active",
+      "evidence": "curated",
+      "reviewed": "2026-11-12",
+      "frameworks": ["Google Secure AI Framework (SAIF)", "MITRE ATLAS", "NIST AI Risk Management Framework (AI RMF)"],
+      "mappingCount": 7
+    },
+    {
+      "id": "IOPC-T7.002",
+      "name": "Adversarial Evasion",
+      "domain": "T7",
+      "domainName": "Model Integrity & Confidentiality",
+      "summary": "Inputs perturbed just enough to change a model's decision — bypassing a classifier, filter or detector while remaining valid to a human observer.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T7.002/",
+      "maturity": "active",
+      "evidence": "mixed",
+      "reviewed": "2026-11-12",
+      "frameworks": ["Google Secure AI Framework (SAIF)", "MITRE ATLAS", "NIST AI Risk Management Framework (AI RMF)"],
+      "mappingCount": 10
+    },
+    {
+      "id": "IOPC-T8.001",
+      "name": "AI System Reconnaissance",
+      "domain": "T8",
+      "domainName": "Reconnaissance, Staging & Access",
+      "summary": "Passive and active collection about a target's AI stack — publications, technical blogs, victim-owned sites, code repositories and vulnerability analyses — used to select targets and tailor later techniques.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T8.001/",
+      "maturity": "active",
+      "evidence": "curated",
+      "reviewed": "2026-11-12",
+      "frameworks": ["MITRE ATLAS", "NIST AI Risk Management Framework (AI RMF)"],
+      "mappingCount": 11
+    },
+    {
+      "id": "IOPC-T8.002",
+      "name": "Model & Agent Fingerprinting",
+      "domain": "T8",
+      "domainName": "Reconnaissance, Staging & Access",
+      "summary": "Probing a live AI system to identify the model family, its ontology and guardrails, the shape of its outputs, its artefacts and its hallucination profile — the reconnaissance that makes targeted prompts reliable.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T8.002/",
+      "maturity": "active",
+      "evidence": "research",
+      "reviewed": "2026-11-12",
+      "frameworks": ["MITRE ATLAS", "NIST AI Risk Management Framework (AI RMF)"],
+      "mappingCount": 6
+    },
+    {
+      "id": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "domainName": "Reconnaissance, Staging & Access",
+      "summary": "Acquiring public models, datasets or agent configurations, building proxy models, obtaining or developing attack implementations, and verifying them offline before use against the target.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T8.003/",
+      "maturity": "active",
+      "evidence": "curated",
+      "reviewed": "2026-11-12",
+      "frameworks": ["MITRE ATLAS", "NIST AI Risk Management Framework (AI RMF)"],
+      "mappingCount": 16
+    },
+    {
+      "id": "IOPC-T8.004",
+      "name": "AI System Access Acquisition",
+      "domain": "T8",
+      "domainName": "Reconnaissance, Staging & Access",
+      "summary": "Obtaining the access later techniques need — inference API or full model access, service proxies, accounts, adversary-controlled infrastructure, deployed agents, or physical access to the data-collection environment.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T8.004/",
+      "maturity": "active",
+      "evidence": "curated",
+      "reviewed": "2026-11-12",
+      "frameworks": ["MITRE ATLAS", "NIST AI Risk Management Framework (AI RMF)"],
+      "mappingCount": 12
+    },
+    {
+      "id": "IOPC-T8.005",
+      "name": "Adversary-Operated AI Agent",
+      "domain": "T8",
+      "domainName": "Reconnaissance, Staging & Access",
+      "summary": "The attacker runs AI agents of their own — a single agent, a swarm, or an orchestrator with sub-agents, often on self-hosted or refusal-stripped models — to carry out reconnaissance, exploitation, credential chaining, collection and persistence against targets with little human direction per step. Offensive agent consoles, autonomous penetration-testing frameworks, offensive forks of coding agents, and the persona, scope, doctrine and skill files that drive them are its artefacts.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T8.005/",
+      "maturity": "active",
+      "evidence": "mixed",
+      "reviewed": "2026-11-22",
+      "frameworks": [],
+      "mappingCount": 0
+    },
+    {
+      "id": "IOPC-T9.001",
+      "name": "Agent Configuration & Prompt Logic Tampering",
+      "domain": "T9",
+      "domainName": "Persistence, Propagation & Evasion",
+      "summary": "Persistent modification of what governs the agent — system prompt assembly, tool registry, agent configuration files or deployment settings — so the compromise survives the session without a new injection.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T9.001/",
+      "maturity": "active",
+      "evidence": "observed",
+      "reviewed": "2026-11-12",
+      "frameworks": ["Google Secure AI Framework (SAIF)", "MITRE ATLAS", "NIST AI Risk Management Framework (AI RMF)"],
+      "mappingCount": 7
+    },
+    {
+      "id": "IOPC-T9.002",
+      "name": "Detection & Attribution Evasion",
+      "domain": "T9",
+      "domainName": "Persistence, Propagation & Evasion",
+      "summary": "Hiding AI-system compromise from the operator — masquerading as legitimate agents or users, stripping provenance, exploiting gaps in tool/agent logging, or flooding telemetry so real signals are lost.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T9.002/",
+      "maturity": "active",
+      "evidence": "observed",
+      "reviewed": "2026-11-12",
+      "frameworks": [
+        "CSA Autonomous Action Runtime Management (AARM)",
+        "Google Secure AI Framework (SAIF)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)"
+      ],
+      "mappingCount": 9
+    },
+    {
+      "id": "IOPC-T9.003",
+      "name": "Self-Replicating Prompt (AI Worm)",
+      "domain": "T9",
+      "domainName": "Persistence, Propagation & Evasion",
+      "summary": "A payload that instructs the model to reproduce the payload itself into its outputs, memories or messages to other agents, so the compromise spreads without further adversary action.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T9.003/",
+      "maturity": "experimental",
+      "evidence": "observed",
+      "reviewed": "2026-11-22",
+      "frameworks": [
+        "CSA Autonomous Action Runtime Management (AARM)",
+        "MITRE ATLAS",
+        "NIST AI Risk Management Framework (AI RMF)",
+        "OWASP Top 10 for Agentic Applications"
+      ],
+      "mappingCount": 7
+    },
+    {
+      "id": "IOPC-T9.004",
+      "name": "AI Analysis Evasion",
+      "domain": "T9",
+      "domainName": "Persistence, Propagation & Evasion",
+      "summary": "Instructions or bait placed inside an artefact — malware, a package, a document, an advert, a web page — and addressed to the AI that will inspect it, so that an AI-based scanner, reviewer or analyst returns a clean verdict, skips the artefact or stops. Also reported as \"AI evasion\".",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T9.004/",
+      "maturity": "active",
+      "evidence": "mixed",
+      "reviewed": "2026-11-12",
+      "frameworks": ["NIST AI Risk Management Framework (AI RMF)"],
+      "mappingCount": 2
+    },
+    {
+      "id": "IOPC-T9.005",
+      "name": "AI Agent Implant & Command Channel",
+      "domain": "T9",
+      "domainName": "Persistence, Propagation & Evasion",
+      "summary": "An AI agent installed, re-pointed or taken over inside the target's environment and then tasked by the attacker from outside — through a chat bot (Telegram, Matrix), the API or web interface of an AI service, an MCP connection to an attacker server, or the agent's own scheduler — so that it runs commands, collects data and exfiltrates on the attacker's behalf. The agent's legitimate tools become the implant's capabilities, and its traffic blends with normal AI use.",
+      "url": "https://promptintel.securitybreak.io/taxonomy/IOPC-T9.005/",
+      "maturity": "active",
+      "evidence": "mixed",
+      "reviewed": "2026-11-22",
+      "frameworks": [],
+      "mappingCount": 0
+    }
+  ],
+  "mappings": [
+    {
+      "entry": "IOPC-T1.001",
+      "name": "Direct Prompt Injection",
+      "domain": "T1",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "T1",
+      "item": "Prompt Injection",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T1.001",
+      "name": "Direct Prompt Injection",
+      "domain": "T1",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "control:Input Validation and Sanitization",
+      "item": "Input Validation and Sanitization",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T1.001",
+      "name": "Direct Prompt Injection",
+      "domain": "T1",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Prompt Injection",
+      "item": "Prompt Injection",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T1.001",
+      "name": "Direct Prompt Injection",
+      "domain": "T1",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0051",
+      "item": "LLM Prompt Injection",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T1.001",
+      "name": "Direct Prompt Injection",
+      "domain": "T1",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0051.000",
+      "item": "LLM Prompt Injection: Direct",
+      "relationship": "equivalent"
+    },
+    {
+      "entry": "IOPC-T1.001",
+      "name": "Direct Prompt Injection",
+      "domain": "T1",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T1.001",
+      "name": "Direct Prompt Injection",
+      "domain": "T1",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T1.001",
+      "name": "Direct Prompt Injection",
+      "domain": "T1",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI01",
+      "item": "Agent Goal Hijack",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T1.001",
+      "name": "Direct Prompt Injection",
+      "domain": "T1",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM01",
+      "item": "Prompt Injection",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T1.002",
+      "name": "Indirect Prompt Injection",
+      "domain": "T1",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "T1",
+      "item": "Prompt Injection",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T1.002",
+      "name": "Indirect Prompt Injection",
+      "domain": "T1",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "control:Input Validation and Sanitization",
+      "item": "Input Validation and Sanitization",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T1.002",
+      "name": "Indirect Prompt Injection",
+      "domain": "T1",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Prompt Injection",
+      "item": "Prompt Injection",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T1.002",
+      "name": "Indirect Prompt Injection",
+      "domain": "T1",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0051",
+      "item": "LLM Prompt Injection",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T1.002",
+      "name": "Indirect Prompt Injection",
+      "domain": "T1",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0051.001",
+      "item": "LLM Prompt Injection: Indirect",
+      "relationship": "equivalent"
+    },
+    {
+      "entry": "IOPC-T1.002",
+      "name": "Indirect Prompt Injection",
+      "domain": "T1",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0093",
+      "item": "Prompt Infiltration via Public-Facing Application",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T1.002",
+      "name": "Indirect Prompt Injection",
+      "domain": "T1",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T1.002",
+      "name": "Indirect Prompt Injection",
+      "domain": "T1",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T1.002",
+      "name": "Indirect Prompt Injection",
+      "domain": "T1",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI01",
+      "item": "Agent Goal Hijack",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T1.002",
+      "name": "Indirect Prompt Injection",
+      "domain": "T1",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM01",
+      "item": "Prompt Injection",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T1.003",
+      "name": "Agent Data Injection",
+      "domain": "T1",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "T4",
+      "item": "Goal Hijacking",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T1.003",
+      "name": "Agent Data Injection",
+      "domain": "T1",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T1.003",
+      "name": "Agent Data Injection",
+      "domain": "T1",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T1.003",
+      "name": "Agent Data Injection",
+      "domain": "T1",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI01",
+      "item": "Agent Goal Hijack",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T1.003",
+      "name": "Agent Data Injection",
+      "domain": "T1",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM01",
+      "item": "Prompt Injection",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T1.004",
+      "name": "Jailbreak & Safety Bypass",
+      "domain": "T1",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "control:Adversarial Training and Testing",
+      "item": "Adversarial Training and Testing",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T1.004",
+      "name": "Jailbreak & Safety Bypass",
+      "domain": "T1",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Prompt Injection",
+      "item": "Prompt Injection",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T1.004",
+      "name": "Jailbreak & Safety Bypass",
+      "domain": "T1",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0054",
+      "item": "LLM Jailbreak",
+      "relationship": "equivalent"
+    },
+    {
+      "entry": "IOPC-T1.004",
+      "name": "Jailbreak & Safety Bypass",
+      "domain": "T1",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.3",
+      "item": "Dangerous, Violent, or Hateful Content",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T1.004",
+      "name": "Jailbreak & Safety Bypass",
+      "domain": "T1",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.6",
+      "item": "AI system is evaluated regularly for safety risks – as identified in the MAP function.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T1.004",
+      "name": "Jailbreak & Safety Bypass",
+      "domain": "T1",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T1.004",
+      "name": "Jailbreak & Safety Bypass",
+      "domain": "T1",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM01",
+      "item": "Prompt Injection",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T1.005",
+      "name": "Triggered & Delayed Instruction Activation",
+      "domain": "T1",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0051.002",
+      "item": "LLM Prompt Injection: Triggered",
+      "relationship": "equivalent"
+    },
+    {
+      "entry": "IOPC-T1.005",
+      "name": "Triggered & Delayed Instruction Activation",
+      "domain": "T1",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0094",
+      "item": "Delay Execution of LLM Instructions",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T1.005",
+      "name": "Triggered & Delayed Instruction Activation",
+      "domain": "T1",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T1.005",
+      "name": "Triggered & Delayed Instruction Activation",
+      "domain": "T1",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.4",
+      "item": "The functionality and behavior of the AI system and its components – as identified in the MAP function – are monitored when in production.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T1.005",
+      "name": "Triggered & Delayed Instruction Activation",
+      "domain": "T1",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T1.005",
+      "name": "Triggered & Delayed Instruction Activation",
+      "domain": "T1",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM01",
+      "item": "Prompt Injection",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T2.001",
+      "name": "Retrieval / RAG Poisoning",
+      "domain": "T2",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Data Poisoning",
+      "item": "Data Poisoning",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.001",
+      "name": "Retrieval / RAG Poisoning",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0064",
+      "item": "Gather RAG-Indexed Targets",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.001",
+      "name": "Retrieval / RAG Poisoning",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0066",
+      "item": "Retrieval Content Crafting",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.001",
+      "name": "Retrieval / RAG Poisoning",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0070",
+      "item": "RAG Poisoning",
+      "relationship": "equivalent"
+    },
+    {
+      "entry": "IOPC-T2.001",
+      "name": "Retrieval / RAG Poisoning",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0071",
+      "item": "False RAG Entry Injection",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.001",
+      "name": "Retrieval / RAG Poisoning",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.001",
+      "name": "Retrieval / RAG Poisoning",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MANAGE 3.1",
+      "item": "AI risks and benefits from third-party resources are regularly monitored, and risk controls are applied and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.001",
+      "name": "Retrieval / RAG Poisoning",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MAP 4.1",
+      "item": "Approaches for mapping AI technology and legal risks of its components – including the use of third-party data or software – are in place, followed, and documented, as are risks of infringement of a third-party's intellectual property or other rights.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.001",
+      "name": "Retrieval / RAG Poisoning",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.001",
+      "name": "Retrieval / RAG Poisoning",
+      "domain": "T2",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI06",
+      "item": "Memory & Context Poisoning",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.001",
+      "name": "Retrieval / RAG Poisoning",
+      "domain": "T2",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM05",
+      "item": "Data and Model Poisoning",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T2.001",
+      "name": "Retrieval / RAG Poisoning",
+      "domain": "T2",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM09",
+      "item": "Vector and Embedding Weaknesses",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.002",
+      "name": "Persistent Memory Poisoning",
+      "domain": "T2",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "T5",
+      "item": "Memory Poisoning",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.002",
+      "name": "Persistent Memory Poisoning",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0080",
+      "item": "AI Agent Context Poisoning",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T2.002",
+      "name": "Persistent Memory Poisoning",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0080.000",
+      "item": "AI Agent Context Poisoning: Memory",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.002",
+      "name": "Persistent Memory Poisoning",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0080.001",
+      "item": "AI Agent Context Poisoning: Thread",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.002",
+      "name": "Persistent Memory Poisoning",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0092",
+      "item": "Manipulate User LLM Chat History",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.002",
+      "name": "Persistent Memory Poisoning",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.002",
+      "name": "Persistent Memory Poisoning",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MANAGE 4.1",
+      "item": "Post-deployment AI system monitoring plans are implemented, including mechanisms for capturing and evaluating input from users and other relevant AI actors, appeal and override, decommissioning, incident response, recovery, and change management.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.002",
+      "name": "Persistent Memory Poisoning",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.4",
+      "item": "The functionality and behavior of the AI system and its components – as identified in the MAP function – are monitored when in production.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.002",
+      "name": "Persistent Memory Poisoning",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.002",
+      "name": "Persistent Memory Poisoning",
+      "domain": "T2",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI06",
+      "item": "Memory & Context Poisoning",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T2.002",
+      "name": "Persistent Memory Poisoning",
+      "domain": "T2",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM05",
+      "item": "Data and Model Poisoning",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T2.003",
+      "name": "Training & Fine-tuning Data Poisoning",
+      "domain": "T2",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "control:Training Data Sanitization",
+      "item": "Training Data Sanitization",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.003",
+      "name": "Training & Fine-tuning Data Poisoning",
+      "domain": "T2",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Data Poisoning",
+      "item": "Data Poisoning",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.003",
+      "name": "Training & Fine-tuning Data Poisoning",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0018.000",
+      "item": "Manipulate AI Model: Poison AI Model",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.003",
+      "name": "Training & Fine-tuning Data Poisoning",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0020",
+      "item": "Training Data Poisoning",
+      "relationship": "equivalent"
+    },
+    {
+      "entry": "IOPC-T2.003",
+      "name": "Training & Fine-tuning Data Poisoning",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0031",
+      "item": "Erode AI Model Integrity",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.003",
+      "name": "Training & Fine-tuning Data Poisoning",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0059",
+      "item": "Erode Dataset Integrity",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.003",
+      "name": "Training & Fine-tuning Data Poisoning",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0076",
+      "item": "Corrupt AI Model",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.003",
+      "name": "Training & Fine-tuning Data Poisoning",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0115.000",
+      "item": "Publish Poisoned AI Artifacts: Datasets",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.003",
+      "name": "Training & Fine-tuning Data Poisoning",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T2.003",
+      "name": "Training & Fine-tuning Data Poisoning",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MAP 2.3",
+      "item": "Scientific integrity and TEVV considerations are identified and documented, including those related to experimental design, data collection and selection (e.g., availability, representativeness, suitability), system trustworthiness, and construct validation.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.003",
+      "name": "Training & Fine-tuning Data Poisoning",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MAP 4.1",
+      "item": "Approaches for mapping AI technology and legal risks of its components – including the use of third-party data or software – are in place, followed, and documented, as are risks of infringement of a third-party's intellectual property or other rights.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.003",
+      "name": "Training & Fine-tuning Data Poisoning",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.003",
+      "name": "Training & Fine-tuning Data Poisoning",
+      "domain": "T2",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM05",
+      "item": "Data and Model Poisoning",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Model Source Tampering",
+      "item": "Model Source Tampering",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0010.001",
+      "item": "Supply Chain Compromise: Software",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0010.002",
+      "item": "Supply Chain Compromise: Data Repository",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0010.003",
+      "item": "Supply Chain Compromise: Model Repository",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0011",
+      "item": "User Execution",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0011.000",
+      "item": "User Execution: Unsafe AI Artifacts",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0011.002",
+      "item": "User Execution: Poisoned AI Agent Tool",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0109",
+      "item": "AI Supply Chain Rug Pull",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0111",
+      "item": "AI Supply Chain Reputation Inflation",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0115",
+      "item": "Publish Poisoned AI Artifacts",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0115.001",
+      "item": "Publish Poisoned AI Artifacts: Models",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.12",
+      "item": "Value Chain and Component Integration",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GOVERN 6.1",
+      "item": "Policies and procedures are in place that address AI risks associated with third-party entities, including risks of infringement of a third party's intellectual property or other rights.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GOVERN 6.2",
+      "item": "Contingency processes are in place to handle failures or incidents in third-party data or AI systems deemed to be high-risk.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MANAGE 3.1",
+      "item": "AI risks and benefits from third-party resources are regularly monitored, and risk controls are applied and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MANAGE 3.2",
+      "item": "Pre-trained models which are used for development are monitored as part of AI system regular monitoring and maintenance.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MAP 4.1",
+      "item": "Approaches for mapping AI technology and legal risks of its components – including the use of third-party data or software – are in place, followed, and documented, as are risks of infringement of a third-party's intellectual property or other rights.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI04",
+      "item": "Agentic Supply Chain Vulnerabilities",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.004",
+      "name": "AI Supply Chain Compromise",
+      "domain": "T2",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM04",
+      "item": "Supply Chain",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T2.005",
+      "name": "Hallucinated Dependency Exploitation",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0011.001",
+      "item": "User Execution: Malicious Package",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.005",
+      "name": "Hallucinated Dependency Exploitation",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0060",
+      "item": "Publish Hallucinated Entities",
+      "relationship": "equivalent"
+    },
+    {
+      "entry": "IOPC-T2.005",
+      "name": "Hallucinated Dependency Exploitation",
+      "domain": "T2",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0062",
+      "item": "Discover LLM Hallucinations",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.005",
+      "name": "Hallucinated Dependency Exploitation",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.2",
+      "item": "Confabulation",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.005",
+      "name": "Hallucinated Dependency Exploitation",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MAP 2.2",
+      "item": "Information about the AI system's knowledge limits and how system output may be utilized and overseen by humans is documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.005",
+      "name": "Hallucinated Dependency Exploitation",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T2.005",
+      "name": "Hallucinated Dependency Exploitation",
+      "domain": "T2",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM07",
+      "item": "Misinformation",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T2.006",
+      "name": "AI Recommendation Poisoning (GEO Poisoning)",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.8",
+      "item": "Information Integrity",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.006",
+      "name": "AI Recommendation Poisoning (GEO Poisoning)",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T2.006",
+      "name": "AI Recommendation Poisoning (GEO Poisoning)",
+      "domain": "T2",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "R1",
+      "item": "Pre-execution Interception",
+      "relationship": "evidence supports"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "R4",
+      "item": "Five Authorization Decisions",
+      "relationship": "evidence supports"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "R5",
+      "item": "Tamper-evident Receipts",
+      "relationship": "evidence supports"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "T2",
+      "item": "Confused Deputy",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "control:Agent Permissions",
+      "item": "Agent Permissions",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "control:Agent User Control",
+      "item": "Agent User Control",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Rogue Actions",
+      "item": "Rogue Actions",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0053",
+      "item": "AI Agent Tool Invocation",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0101",
+      "item": "Data Destruction via AI Agent Tool Invocation",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MANAGE 2.4",
+      "item": "Mechanisms are in place and applied, responsibilities are assigned and understood to supersede, disengage, or deactivate AI systems that demonstrate performance or outcomes inconsistent with intended use.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MAP 3.5",
+      "item": "Processes for human oversight are defined, assessed, and documented in accordance with organizational policies from GOVERN function.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MAP 4.2",
+      "item": "Internal risk controls for components of the AI system including third-party AI technologies are identified and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI02",
+      "item": "Tool Misuse & Exploitation",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.001",
+      "name": "Agentic Tool Misuse",
+      "domain": "T3",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM03",
+      "item": "Excessive Agency",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "T11",
+      "item": "Malicious Tool Output",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Insecure Integrated Component",
+      "item": "Insecure Integrated Component",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0010.005",
+      "item": "Supply Chain Compromise: AI Agent Tool",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0110.000",
+      "item": "AI Agent Tool Poisoning: Definition and Instructions",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0110.001",
+      "item": "AI Agent Tool Poisoning: Implementation",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0110.002",
+      "item": "AI Agent Tool Poisoning: Runtime Response",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0115.002",
+      "item": "Publish Poisoned AI Artifacts: AI Agent Tools",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.12",
+      "item": "Value Chain and Component Integration",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GOVERN 6.1",
+      "item": "Policies and procedures are in place that address AI risks associated with third-party entities, including risks of infringement of a third party's intellectual property or other rights.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MANAGE 3.1",
+      "item": "AI risks and benefits from third-party resources are regularly monitored, and risk controls are applied and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MAP 4.2",
+      "item": "Internal risk controls for components of the AI system including third-party AI technologies are identified and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI02",
+      "item": "Tool Misuse & Exploitation",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI04",
+      "item": "Agentic Supply Chain Vulnerabilities",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.002",
+      "name": "Tool and Context Poisoning",
+      "domain": "T3",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM04",
+      "item": "Supply Chain",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T3.003",
+      "name": "Cross-Agent Context Propagation",
+      "domain": "T3",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "T7",
+      "item": "Cross-Agent Propagation",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.003",
+      "name": "Cross-Agent Context Propagation",
+      "domain": "T3",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0061",
+      "item": "LLM Prompt Self-Replication",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.003",
+      "name": "Cross-Agent Context Propagation",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.003",
+      "name": "Cross-Agent Context Propagation",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MAP 4.2",
+      "item": "Internal risk controls for components of the AI system including third-party AI technologies are identified and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.003",
+      "name": "Cross-Agent Context Propagation",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.003",
+      "name": "Cross-Agent Context Propagation",
+      "domain": "T3",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI07",
+      "item": "Insecure Inter-Agent Communication",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.003",
+      "name": "Cross-Agent Context Propagation",
+      "domain": "T3",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI08",
+      "item": "Cascading Failures",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.004",
+      "name": "Human-Agent Trust Exploitation",
+      "domain": "T3",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "control:Agent User Control",
+      "item": "Agent User Control",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.004",
+      "name": "Human-Agent Trust Exploitation",
+      "domain": "T3",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0073",
+      "item": "Impersonation",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.004",
+      "name": "Human-Agent Trust Exploitation",
+      "domain": "T3",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0100",
+      "item": "AI Agent Clickbait",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.004",
+      "name": "Human-Agent Trust Exploitation",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.7",
+      "item": "Human-AI Configuration",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T3.004",
+      "name": "Human-Agent Trust Exploitation",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GOVERN 3.2",
+      "item": "Policies and procedures are in place to define and differentiate roles and responsibilities for human-AI configurations and oversight of AI systems.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.004",
+      "name": "Human-Agent Trust Exploitation",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MAP 2.2",
+      "item": "Information about the AI system's knowledge limits and how system output may be utilized and overseen by humans is documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.004",
+      "name": "Human-Agent Trust Exploitation",
+      "domain": "T3",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MAP 3.5",
+      "item": "Processes for human oversight are defined, assessed, and documented in accordance with organizational policies from GOVERN function.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T3.004",
+      "name": "Human-Agent Trust Exploitation",
+      "domain": "T3",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI09",
+      "item": "Human-Agent Trust Exploitation",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.001",
+      "name": "Agent Identity & Privilege Abuse",
+      "domain": "T4",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "R9",
+      "item": "Least Privilege Enforcement",
+      "relationship": "evidence supports"
+    },
+    {
+      "entry": "IOPC-T4.001",
+      "name": "Agent Identity & Privilege Abuse",
+      "domain": "T4",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "T8",
+      "item": "Over-Privileged Credentials",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.001",
+      "name": "Agent Identity & Privilege Abuse",
+      "domain": "T4",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "control:Agent Permissions",
+      "item": "Agent Permissions",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T4.001",
+      "name": "Agent Identity & Privilege Abuse",
+      "domain": "T4",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0055",
+      "item": "Unsecured Credentials",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.001",
+      "name": "Agent Identity & Privilege Abuse",
+      "domain": "T4",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0083",
+      "item": "Credentials from AI Agent Configuration",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.001",
+      "name": "Agent Identity & Privilege Abuse",
+      "domain": "T4",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0091",
+      "item": "Use Alternate Authentication Material",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.001",
+      "name": "Agent Identity & Privilege Abuse",
+      "domain": "T4",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0091.000",
+      "item": "Use Alternate Authentication Material: Application Access Token",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.001",
+      "name": "Agent Identity & Privilege Abuse",
+      "domain": "T4",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0091.001",
+      "item": "Use Alternate Authentication Material: Web Session Cookie",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.001",
+      "name": "Agent Identity & Privilege Abuse",
+      "domain": "T4",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.001",
+      "name": "Agent Identity & Privilege Abuse",
+      "domain": "T4",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MAP 4.2",
+      "item": "Internal risk controls for components of the AI system including third-party AI technologies are identified and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T4.001",
+      "name": "Agent Identity & Privilege Abuse",
+      "domain": "T4",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T4.001",
+      "name": "Agent Identity & Privilege Abuse",
+      "domain": "T4",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI03",
+      "item": "Identity & Privilege Abuse",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.002",
+      "name": "Unexpected Code Execution",
+      "domain": "T4",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Insecure Integrated Component",
+      "item": "Insecure Integrated Component",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.002",
+      "name": "Unexpected Code Execution",
+      "domain": "T4",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0050",
+      "item": "Command and Scripting Interpreter",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.002",
+      "name": "Unexpected Code Execution",
+      "domain": "T4",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0097",
+      "item": "Virtualization/Sandbox Evasion",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.002",
+      "name": "Unexpected Code Execution",
+      "domain": "T4",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0105",
+      "item": "Escape to Host",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.002",
+      "name": "Unexpected Code Execution",
+      "domain": "T4",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.002",
+      "name": "Unexpected Code Execution",
+      "domain": "T4",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MAP 4.2",
+      "item": "Internal risk controls for components of the AI system including third-party AI technologies are identified and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T4.002",
+      "name": "Unexpected Code Execution",
+      "domain": "T4",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T4.002",
+      "name": "Unexpected Code Execution",
+      "domain": "T4",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI05",
+      "item": "Unexpected Code Execution",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.002",
+      "name": "Unexpected Code Execution",
+      "domain": "T4",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM10",
+      "item": "Improper Output Handling",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T4.003",
+      "name": "Agent Goal Drift",
+      "domain": "T4",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "R7",
+      "item": "Semantic Distance Tracking",
+      "relationship": "evidence supports"
+    },
+    {
+      "entry": "IOPC-T4.003",
+      "name": "Agent Goal Drift",
+      "domain": "T4",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "T6",
+      "item": "Intent Drift",
+      "relationship": "equivalent"
+    },
+    {
+      "entry": "IOPC-T4.003",
+      "name": "Agent Goal Drift",
+      "domain": "T4",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Rogue Actions",
+      "item": "Rogue Actions",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T4.003",
+      "name": "Agent Goal Drift",
+      "domain": "T4",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MANAGE 2.4",
+      "item": "Mechanisms are in place and applied, responsibilities are assigned and understood to supersede, disengage, or deactivate AI systems that demonstrate performance or outcomes inconsistent with intended use.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T4.003",
+      "name": "Agent Goal Drift",
+      "domain": "T4",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MAP 3.5",
+      "item": "Processes for human oversight are defined, assessed, and documented in accordance with organizational policies from GOVERN function.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T4.003",
+      "name": "Agent Goal Drift",
+      "domain": "T4",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.4",
+      "item": "The functionality and behavior of the AI system and its components – as identified in the MAP function – are monitored when in production.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T4.003",
+      "name": "Agent Goal Drift",
+      "domain": "T4",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.6",
+      "item": "AI system is evaluated regularly for safety risks – as identified in the MAP function.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T4.003",
+      "name": "Agent Goal Drift",
+      "domain": "T4",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI10",
+      "item": "Rogue Agents",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.001",
+      "name": "System Prompt & Configuration Disclosure",
+      "domain": "T5",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0069.002",
+      "item": "Discover LLM System Information: System Prompt",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.001",
+      "name": "System Prompt & Configuration Disclosure",
+      "domain": "T5",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0084",
+      "item": "Discover AI Agent Configuration",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.001",
+      "name": "System Prompt & Configuration Disclosure",
+      "domain": "T5",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0084.000",
+      "item": "Discover AI Agent Configuration: Embedded Knowledge",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.001",
+      "name": "System Prompt & Configuration Disclosure",
+      "domain": "T5",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0084.002",
+      "item": "Discover AI Agent Configuration: Activation Triggers",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.001",
+      "name": "System Prompt & Configuration Disclosure",
+      "domain": "T5",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0084.003",
+      "item": "Discover AI Agent Configuration: Call Chains",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.001",
+      "name": "System Prompt & Configuration Disclosure",
+      "domain": "T5",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.001",
+      "name": "System Prompt & Configuration Disclosure",
+      "domain": "T5",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T5.001",
+      "name": "System Prompt & Configuration Disclosure",
+      "domain": "T5",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM08",
+      "item": "Hidden Context Exposure",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T5.002",
+      "name": "Sensitive Data Disclosure",
+      "domain": "T5",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "T3",
+      "item": "Data Exfiltration",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.002",
+      "name": "Sensitive Data Disclosure",
+      "domain": "T5",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Sensitive Data Disclosure",
+      "item": "Sensitive Data Disclosure",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.002",
+      "name": "Sensitive Data Disclosure",
+      "domain": "T5",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0085",
+      "item": "Data from AI Services",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.002",
+      "name": "Sensitive Data Disclosure",
+      "domain": "T5",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0085.000",
+      "item": "Data from AI Services: RAG Databases",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.002",
+      "name": "Sensitive Data Disclosure",
+      "domain": "T5",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0085.001",
+      "item": "Data from AI Services: AI Agent Tools",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.002",
+      "name": "Sensitive Data Disclosure",
+      "domain": "T5",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0086",
+      "item": "Exfiltration via AI Agent Tool Invocation",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.002",
+      "name": "Sensitive Data Disclosure",
+      "domain": "T5",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.4",
+      "item": "Data Privacy",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.002",
+      "name": "Sensitive Data Disclosure",
+      "domain": "T5",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.002",
+      "name": "Sensitive Data Disclosure",
+      "domain": "T5",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.10",
+      "item": "Privacy risk of the AI system – as identified in the MAP function – is examined and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T5.002",
+      "name": "Sensitive Data Disclosure",
+      "domain": "T5",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T5.002",
+      "name": "Sensitive Data Disclosure",
+      "domain": "T5",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM02",
+      "item": "Sensitive Information Disclosure",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T5.003",
+      "name": "Insecure Output Handling",
+      "domain": "T5",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "control:Output Validation and Sanitization",
+      "item": "Output Validation and Sanitization",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T5.003",
+      "name": "Insecure Output Handling",
+      "domain": "T5",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Insecure Model Output",
+      "item": "Insecure Model Output",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.003",
+      "name": "Insecure Output Handling",
+      "domain": "T5",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0067",
+      "item": "LLM Trusted Output Components Manipulation",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.003",
+      "name": "Insecure Output Handling",
+      "domain": "T5",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0067.000",
+      "item": "LLM Trusted Output Components Manipulation: Citations",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.003",
+      "name": "Insecure Output Handling",
+      "domain": "T5",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0077",
+      "item": "LLM Response Rendering",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.003",
+      "name": "Insecure Output Handling",
+      "domain": "T5",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T5.003",
+      "name": "Insecure Output Handling",
+      "domain": "T5",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MAP 4.2",
+      "item": "Internal risk controls for components of the AI system including third-party AI technologies are identified and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T5.003",
+      "name": "Insecure Output Handling",
+      "domain": "T5",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T5.003",
+      "name": "Insecure Output Handling",
+      "domain": "T5",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM10",
+      "item": "Improper Output Handling",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T6.001",
+      "name": "Unbounded Consumption & Cost Abuse",
+      "domain": "T6",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Denial of ML Service",
+      "item": "Denial of ML Service",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T6.001",
+      "name": "Unbounded Consumption & Cost Abuse",
+      "domain": "T6",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0029",
+      "item": "Denial of AI Service",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T6.001",
+      "name": "Unbounded Consumption & Cost Abuse",
+      "domain": "T6",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0034",
+      "item": "Cost Harvesting",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T6.001",
+      "name": "Unbounded Consumption & Cost Abuse",
+      "domain": "T6",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0034.000",
+      "item": "Cost Harvesting: Excessive Queries",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T6.001",
+      "name": "Unbounded Consumption & Cost Abuse",
+      "domain": "T6",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0034.001",
+      "item": "Cost Harvesting: Resource-Intensive Queries",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T6.001",
+      "name": "Unbounded Consumption & Cost Abuse",
+      "domain": "T6",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0034.002",
+      "item": "Cost Harvesting: Agentic Resource Consumption",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T6.001",
+      "name": "Unbounded Consumption & Cost Abuse",
+      "domain": "T6",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0046",
+      "item": "Spamming AI System with Chaff Data",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T6.001",
+      "name": "Unbounded Consumption & Cost Abuse",
+      "domain": "T6",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T6.001",
+      "name": "Unbounded Consumption & Cost Abuse",
+      "domain": "T6",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MANAGE 2.4",
+      "item": "Mechanisms are in place and applied, responsibilities are assigned and understood to supersede, disengage, or deactivate AI systems that demonstrate performance or outcomes inconsistent with intended use.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T6.001",
+      "name": "Unbounded Consumption & Cost Abuse",
+      "domain": "T6",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.4",
+      "item": "The functionality and behavior of the AI system and its components – as identified in the MAP function – are monitored when in production.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T6.001",
+      "name": "Unbounded Consumption & Cost Abuse",
+      "domain": "T6",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T6.001",
+      "name": "Unbounded Consumption & Cost Abuse",
+      "domain": "T6",
+      "framework": "OWASP Top 10 for LLM Applications",
+      "ref": "LLM06",
+      "item": "Unbounded Consumption",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T6.002",
+      "name": "Induced Refusal (Context Bomb)",
+      "domain": "T6",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T6.002",
+      "name": "Induced Refusal (Context Bomb)",
+      "domain": "T6",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T7.001",
+      "name": "Model Extraction & Inversion",
+      "domain": "T7",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Model Exfiltration",
+      "item": "Model Exfiltration",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T7.001",
+      "name": "Model Extraction & Inversion",
+      "domain": "T7",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Model Reverse Engineering",
+      "item": "Model Reverse Engineering",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T7.001",
+      "name": "Model Extraction & Inversion",
+      "domain": "T7",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0048.004",
+      "item": "External Harms: AI Intellectual Property Theft",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T7.001",
+      "name": "Model Extraction & Inversion",
+      "domain": "T7",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.4",
+      "item": "Data Privacy",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T7.001",
+      "name": "Model Extraction & Inversion",
+      "domain": "T7",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T7.001",
+      "name": "Model Extraction & Inversion",
+      "domain": "T7",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.10",
+      "item": "Privacy risk of the AI system – as identified in the MAP function – is examined and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T7.001",
+      "name": "Model Extraction & Inversion",
+      "domain": "T7",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T7.002",
+      "name": "Adversarial Evasion",
+      "domain": "T7",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Model Evasion",
+      "item": "Model Evasion",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T7.002",
+      "name": "Adversarial Evasion",
+      "domain": "T7",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0015",
+      "item": "Evade AI Model",
+      "relationship": "equivalent"
+    },
+    {
+      "entry": "IOPC-T7.002",
+      "name": "Adversarial Evasion",
+      "domain": "T7",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0043",
+      "item": "Craft Adversarial Data",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T7.002",
+      "name": "Adversarial Evasion",
+      "domain": "T7",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0043.000",
+      "item": "Craft Adversarial Data: White-Box Optimization",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T7.002",
+      "name": "Adversarial Evasion",
+      "domain": "T7",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0043.001",
+      "item": "Craft Adversarial Data: Black-Box Optimization",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T7.002",
+      "name": "Adversarial Evasion",
+      "domain": "T7",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0043.002",
+      "item": "Craft Adversarial Data: Black-Box Transfer",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T7.002",
+      "name": "Adversarial Evasion",
+      "domain": "T7",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0043.003",
+      "item": "Craft Adversarial Data: Manual Modification",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T7.002",
+      "name": "Adversarial Evasion",
+      "domain": "T7",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T7.002",
+      "name": "Adversarial Evasion",
+      "domain": "T7",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.5",
+      "item": "The AI system to be deployed is demonstrated to be valid and reliable.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T7.002",
+      "name": "Adversarial Evasion",
+      "domain": "T7",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T8.001",
+      "name": "AI System Reconnaissance",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0000",
+      "item": "Search Open Technical Databases",
+      "relationship": "equivalent"
+    },
+    {
+      "entry": "IOPC-T8.001",
+      "name": "AI System Reconnaissance",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0000.000",
+      "item": "Search Open Technical Databases: Journals and Conference Proceedings",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.001",
+      "name": "AI System Reconnaissance",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0000.001",
+      "item": "Search Open Technical Databases: Pre-Print Repositories",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.001",
+      "name": "AI System Reconnaissance",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0000.002",
+      "item": "Search Open Technical Databases: Technical Blogs",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.001",
+      "name": "AI System Reconnaissance",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0001",
+      "item": "Search Open AI Vulnerability Analysis",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.001",
+      "name": "AI System Reconnaissance",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0003",
+      "item": "Search Victim-Owned Websites",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.001",
+      "name": "AI System Reconnaissance",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0004",
+      "item": "Search Application Repositories",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.001",
+      "name": "AI System Reconnaissance",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0006",
+      "item": "Active Scanning",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.001",
+      "name": "AI System Reconnaissance",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0095",
+      "item": "Search Open Websites/Domains",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.001",
+      "name": "AI System Reconnaissance",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0095.000",
+      "item": "Search Open Websites/Domains: Code Repositories",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.001",
+      "name": "AI System Reconnaissance",
+      "domain": "T8",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T8.002",
+      "name": "Model & Agent Fingerprinting",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0007",
+      "item": "Discover AI Artifacts",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.002",
+      "name": "Model & Agent Fingerprinting",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0013",
+      "item": "Discover AI Model Ontology",
+      "relationship": "equivalent"
+    },
+    {
+      "entry": "IOPC-T8.002",
+      "name": "Model & Agent Fingerprinting",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0014",
+      "item": "Discover AI Model Family",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.002",
+      "name": "Model & Agent Fingerprinting",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0063",
+      "item": "Discover AI Model Outputs",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.002",
+      "name": "Model & Agent Fingerprinting",
+      "domain": "T8",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.002",
+      "name": "Model & Agent Fingerprinting",
+      "domain": "T8",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0002",
+      "item": "Acquire Public AI Artifacts",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0002.000",
+      "item": "Acquire Public AI Artifacts: Datasets",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0002.001",
+      "item": "Acquire Public AI Artifacts: Models",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0002.002",
+      "item": "Acquire Public AI Artifacts: AI Agent Configuration",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0005.000",
+      "item": "Replicate AI Model Behavior: Replicate Behavior from Gathered AI Artifacts",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0005.001",
+      "item": "Replicate AI Model Behavior: Replicate Behavior from Model Outputs",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0005.002",
+      "item": "Replicate AI Model Behavior: Adapt Existing Model to Replicate Behavior",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0016",
+      "item": "Obtain Capabilities",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0016.000",
+      "item": "Obtain Capabilities: Adversarial AI Attack Implementations",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0016.001",
+      "item": "Obtain Capabilities: Software Tools",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0016.002",
+      "item": "Obtain Capabilities: Generative AI",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0017",
+      "item": "Develop Capabilities",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0017.000",
+      "item": "Develop Capabilities: Adversarial AI Attacks",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0042",
+      "item": "Verify Attack",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0079",
+      "item": "Stage Capabilities",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.003",
+      "name": "Offline Attack Staging",
+      "domain": "T8",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T8.004",
+      "name": "AI System Access Acquisition",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0008",
+      "item": "Acquire Infrastructure",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.004",
+      "name": "AI System Access Acquisition",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0008.000",
+      "item": "Acquire Infrastructure: AI Development Workspaces",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.004",
+      "name": "AI System Access Acquisition",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0008.005",
+      "item": "Acquire Infrastructure: AI Service Proxies",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.004",
+      "name": "AI System Access Acquisition",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0012",
+      "item": "Valid Accounts",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.004",
+      "name": "AI System Access Acquisition",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0021",
+      "item": "Establish Accounts",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.004",
+      "name": "AI System Access Acquisition",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0040",
+      "item": "AI Model Inference API Access",
+      "relationship": "equivalent"
+    },
+    {
+      "entry": "IOPC-T8.004",
+      "name": "AI System Access Acquisition",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0044",
+      "item": "Full AI Model Access",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.004",
+      "name": "AI System Access Acquisition",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0047",
+      "item": "AI-Enabled Product or Service",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.004",
+      "name": "AI System Access Acquisition",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0096",
+      "item": "AI Service API",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.004",
+      "name": "AI System Access Acquisition",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0103",
+      "item": "Deploy AI Agent",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.004",
+      "name": "AI System Access Acquisition",
+      "domain": "T8",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0114",
+      "item": "AI Service Web Interface",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T8.004",
+      "name": "AI System Access Acquisition",
+      "domain": "T8",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T9.001",
+      "name": "Agent Configuration & Prompt Logic Tampering",
+      "domain": "T9",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "risk:Model Deployment Tampering",
+      "item": "Model Deployment Tampering",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T9.001",
+      "name": "Agent Configuration & Prompt Logic Tampering",
+      "domain": "T9",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0018.003",
+      "item": "Manipulate AI Model: Modify Prompt Construction Logic",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T9.001",
+      "name": "Agent Configuration & Prompt Logic Tampering",
+      "domain": "T9",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0081",
+      "item": "Modify AI Agent Configuration",
+      "relationship": "equivalent"
+    },
+    {
+      "entry": "IOPC-T9.001",
+      "name": "Agent Configuration & Prompt Logic Tampering",
+      "domain": "T9",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T9.001",
+      "name": "Agent Configuration & Prompt Logic Tampering",
+      "domain": "T9",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MANAGE 4.1",
+      "item": "Post-deployment AI system monitoring plans are implemented, including mechanisms for capturing and evaluating input from users and other relevant AI actors, appeal and override, decommissioning, incident response, recovery, and change management.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T9.001",
+      "name": "Agent Configuration & Prompt Logic Tampering",
+      "domain": "T9",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.4",
+      "item": "The functionality and behavior of the AI system and its components – as identified in the MAP function – are monitored when in production.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T9.001",
+      "name": "Agent Configuration & Prompt Logic Tampering",
+      "domain": "T9",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T9.002",
+      "name": "Detection & Attribution Evasion",
+      "domain": "T9",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "R5",
+      "item": "Tamper-evident Receipts",
+      "relationship": "evidence supports"
+    },
+    {
+      "entry": "IOPC-T9.002",
+      "name": "Detection & Attribution Evasion",
+      "domain": "T9",
+      "framework": "Google Secure AI Framework (SAIF)",
+      "ref": "control:Threat Detection",
+      "item": "Threat Detection",
+      "relationship": "evidence supports"
+    },
+    {
+      "entry": "IOPC-T9.002",
+      "name": "Detection & Attribution Evasion",
+      "domain": "T9",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0073",
+      "item": "Impersonation",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T9.002",
+      "name": "Detection & Attribution Evasion",
+      "domain": "T9",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0074",
+      "item": "Masquerading",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T9.002",
+      "name": "Detection & Attribution Evasion",
+      "domain": "T9",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0107",
+      "item": "Exploitation for Defense Evasion",
+      "relationship": "equivalent"
+    },
+    {
+      "entry": "IOPC-T9.002",
+      "name": "Detection & Attribution Evasion",
+      "domain": "T9",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MANAGE 4.1",
+      "item": "Post-deployment AI system monitoring plans are implemented, including mechanisms for capturing and evaluating input from users and other relevant AI actors, appeal and override, decommissioning, incident response, recovery, and change management.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T9.002",
+      "name": "Detection & Attribution Evasion",
+      "domain": "T9",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.4",
+      "item": "The functionality and behavior of the AI system and its components – as identified in the MAP function – are monitored when in production.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T9.002",
+      "name": "Detection & Attribution Evasion",
+      "domain": "T9",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T9.002",
+      "name": "Detection & Attribution Evasion",
+      "domain": "T9",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.8",
+      "item": "Risks associated with transparency and accountability – as identified in the MAP function – are examined and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T9.003",
+      "name": "Self-Replicating Prompt (AI Worm)",
+      "domain": "T9",
+      "framework": "CSA Autonomous Action Runtime Management (AARM)",
+      "ref": "T7",
+      "item": "Cross-Agent Propagation",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T9.003",
+      "name": "Self-Replicating Prompt (AI Worm)",
+      "domain": "T9",
+      "framework": "MITRE ATLAS",
+      "ref": "AML.T0061",
+      "item": "LLM Prompt Self-Replication",
+      "relationship": "equivalent"
+    },
+    {
+      "entry": "IOPC-T9.003",
+      "name": "Self-Replicating Prompt (AI Worm)",
+      "domain": "T9",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "narrower than"
+    },
+    {
+      "entry": "IOPC-T9.003",
+      "name": "Self-Replicating Prompt (AI Worm)",
+      "domain": "T9",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MANAGE 2.4",
+      "item": "Mechanisms are in place and applied, responsibilities are assigned and understood to supersede, disengage, or deactivate AI systems that demonstrate performance or outcomes inconsistent with intended use.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T9.003",
+      "name": "Self-Replicating Prompt (AI Worm)",
+      "domain": "T9",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MANAGE 4.3",
+      "item": "Incidents and errors are communicated to relevant AI actors including affected communities.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T9.003",
+      "name": "Self-Replicating Prompt (AI Worm)",
+      "domain": "T9",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    },
+    {
+      "entry": "IOPC-T9.003",
+      "name": "Self-Replicating Prompt (AI Worm)",
+      "domain": "T9",
+      "framework": "OWASP Top 10 for Agentic Applications",
+      "ref": "ASI08",
+      "item": "Cascading Failures",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T9.004",
+      "name": "AI Analysis Evasion",
+      "domain": "T9",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "GAI 2.9",
+      "item": "Information Security",
+      "relationship": "related"
+    },
+    {
+      "entry": "IOPC-T9.004",
+      "name": "AI Analysis Evasion",
+      "domain": "T9",
+      "framework": "NIST AI Risk Management Framework (AI RMF)",
+      "ref": "MEASURE 2.7",
+      "item": "AI system security and resilience – as identified in the MAP function – are evaluated and documented.",
+      "relationship": "control relevant"
+    }
+  ]
+}

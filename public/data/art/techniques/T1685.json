@@ -1,0 +1,1034 @@
+{
+  "id": "T1685",
+  "displayName": "Disable or Modify Tools",
+  "tests": [
+    {
+      "name": "Windows Disable LSA Protection",
+      "guid": "40075d5f-3a70-4c66-9125-f72bee87247d",
+      "description": "The following Atomic adds a registry entry to disable LSA Protection.\n\nThe LSA controls and manages user rights information, password hashes and other important bits of information in memory. Attacker tools, such as mimikatz, rely on accessing this content to scrape password hashes or clear-text passwords. Enabling LSA Protection configures Windows to control the information stored in memory in a more secure fashion - specifically, to prevent non-protected processes from accessing that data.\nUpon successful execution, the registry will be modified and RunAsPPL will be set to 0, disabling Lsass protection.\nhttps://learn.microsoft.com/en-us/windows-server/security/credentials-protection-and-ma",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable journal logging via systemctl utility",
+      "guid": "c3a377f9-1203-4454-aa35-9d391d34768f",
+      "description": "The atomic test disables the journal logging using built-in systemctl utility",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable journal logging via sed utility",
+      "guid": "12e5551c-8d5c-408e-b3e4-63f53b03379f",
+      "description": "The atomic test disables the journal logging by searching and replacing the \"Storage\" parameter to \"none\" within the journald.conf file, thus any new journal entries will only be temporarily available in memory and not written to disk",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable syslog",
+      "guid": "4ce786f8-e601-44b5-bfae-9ebb15a7d1c8",
+      "description": "Disables syslog collection",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["package_checker", "package_installer", "flavor_command", "cleanup_command"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Disable syslog (freebsd)",
+      "guid": "db9de996-441e-4ae0-947b-61b6871e2fdf",
+      "description": "Disables syslog collection",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Cb Response",
+      "guid": "ae8943f7-0f8d-44de-962d-fbc2e2f03eb8",
+      "description": "Disable the Cb Response service",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable SELinux",
+      "guid": "fc225f36-9279-4c39-b3f9-5141ab74f8d8",
+      "description": "Disables SELinux enforcement",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Stop Crowdstrike Falcon on Linux",
+      "guid": "828a1278-81cc-4802-96ab-188bf29ca77d",
+      "description": "Stop and disable Crowdstrike Falcon on Linux",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Carbon Black Response",
+      "guid": "8fba7766-2d11-4b4a-979a-1e3d9cc9a88c",
+      "description": "Disables Carbon Black Response",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable LittleSnitch",
+      "guid": "62155dd8-bb3d-4f32-b31c-6532ff3ac6a3",
+      "description": "Disables LittleSnitch",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable OpenDNS Umbrella",
+      "guid": "07f43b33-1e15-4e99-be70-bc094157c849",
+      "description": "Disables OpenDNS Umbrella",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable macOS Gatekeeper",
+      "guid": "2a821573-fb3f-4e71-92c3-daac7432f053",
+      "description": "Disables macOS Gatekeeper",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Stop and unload Crowdstrike Falcon on macOS",
+      "guid": "b3e7510c-2d4c-4249-a33f-591a2bc83eef",
+      "description": "Stop and unload Crowdstrike Falcon daemons falcond and userdaemon on macOS",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["falcond_plist", "userdaemon_plist"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Unload Sysmon Filter Driver",
+      "guid": "811b3e76-c41b-430c-ac0d-e2380bfaa164",
+      "description": "Unloads the Sysinternals Sysmon filter driver without stopping the Sysmon service. To verify successful execution,\nrun the prereq_command's and it should fail with an error of \"sysmon filter must be loaded\".",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["sysmon_driver"],
+      "dependencyCount": 3
+    },
+    {
+      "name": "Uninstall Sysmon",
+      "guid": "a316fb2e-5344-470d-91c1-23e15c374edc",
+      "description": "Uninstall Sysinternals Sysmon for Defense Evasion",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["sysmon_exe"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "AMSI Bypass - AMSI InitFailed",
+      "guid": "695eed40-e949-40e5-b306-b4031e4154bd",
+      "description": "Any easy way to bypass AMSI inspection is it patch the dll in memory setting the \"amsiInitFailed\" function to true.\nUpon execution, no output is displayed.\n\nhttps://www.mdsec.co.uk/2018/06/exploring-powershell-amsi-and-logging-evasion/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "AMSI Bypass - Remove AMSI Provider Reg Key",
+      "guid": "13f09b91-c953-438e-845b-b585e51cac9b",
+      "description": "With administrative rights, an adversary can remove the AMSI Provider registry key in HKLM\\Software\\Microsoft\\AMSI to disable AMSI inspection.\nThis test removes the Windows Defender provider registry key. Upon execution, no output is displayed.\nOpen Registry Editor and navigate to \"HKLM:\\SOFTWARE\\Microsoft\\AMSI\\Providers\\\" to verify that it is gone.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Arbitrary Security Windows Service",
+      "guid": "a1230893-56ac-4c81-b644-2108e982f8f5",
+      "description": "With administrative rights, an adversary can disable Windows Services related to security products. This test requires McAfeeDLPAgentService to be installed.\nChange the service_name input argument for your AV solution. Upon exeuction, infomration will be displayed stating the status of the service.\nTo verify that the service has stopped, run \"sc query McAfeeDLPAgentService\"",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["service_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Tamper with Windows Defender ATP PowerShell",
+      "guid": "6b8df440-51ec-4d53-bf83-899591c9b5d7",
+      "description": "Attempting to disable scheduled scanning and other parts of windows defender atp. Upon execution Virus and Threat Protection will show as disabled\nin Windows settings.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Tamper with Windows Defender Command Prompt",
+      "guid": "aa875ed4-8935-47e2-b2c5-6ec00ab220d2",
+      "description": "Attempting to disable scheduled scanning and other parts of windows defender atp. These commands must be run as System, so they still fail as administrator.\nHowever, adversaries do attempt to perform this action so monitoring for these command lines can help alert to other bad things going on. Upon execution, \"Access Denied\"\nwill be displayed twice and the WinDefend service status will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Tamper with Windows Defender Registry",
+      "guid": "1b3e0146-a1e5-4c5c-89fb-1bb2ffe8fc45",
+      "description": "Disable Windows Defender from starting after a reboot. Upen execution, if the computer is rebooted the entire Virus and Threat protection window in Settings will be\ngrayed out and have no info.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Microsoft Office Security Features",
+      "guid": "6f5fb61b-4e56-4a3d-a8c3-82e13686c6d7",
+      "description": "Gorgon group may disable Office security features so that their code can run. Upon execution, an external document will not\nshow any warning before editing the document.\n\n\nhttps://unit42.paloaltonetworks.com/unit42-gorgon-group-slithering-nation-state-cybercrime/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Remove Windows Defender Definition Files",
+      "guid": "3d47daaa-2f56-43e0-94cc-caf5d8d52a68",
+      "description": "Removing definition files would cause ATP to not fire for AntiMalware. Check MpCmdRun.exe man page for info on all arguments.\nOn later viersions of windows (1909+) this command fails even with admin due to inusfficient privelages. On older versions of windows the\ncommand will say completed.\n\nhttps://unit42.paloaltonetworks.com/unit42-gorgon-group-slithering-nation-state-cybercrime/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Stop and Remove Arbitrary Security Windows Service",
+      "guid": "ae753dda-0f15-4af6-a168-b9ba16143143",
+      "description": "Beginning with Powershell 6.0, the Stop-Service cmdlet sends a stop message to the Windows Service Controller for each of the specified services. The Remove-Service cmdlet removes a Windows service in the registry and in the service database.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["service_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Uninstall Crowdstrike Falcon on Windows",
+      "guid": "b32b1ccf-f7c1-49bc-9ddd-7d7466a7b297",
+      "description": "Uninstall Crowdstrike Falcon. If the WindowsSensor.exe path is not provided as an argument we need to search for it. Since the executable is located in a folder named with a random guid we need to identify it before invoking the uninstaller.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["falcond_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Tamper with Windows Defender Evade Scanning -Folder",
+      "guid": "0b19f4ee-de90-4059-88cb-63c800c683ed",
+      "description": "Malware can exclude a specific path from being scanned and evading detection. \nUpon successul execution, the file provided should be on the list of excluded path. \nTo check the exclusion list using poweshell (Get-MpPreference).ExclusionPath",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["excluded_folder"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Tamper with Windows Defender Evade Scanning -Extension",
+      "guid": "315f4be6-2240-4552-b3e1-d1047f5eecea",
+      "description": "Malware can exclude specific extensions from being scanned and evading detection. \nUpon successful execution, the extension(s) should be on the list of excluded extensions.\nTo check the exclusion list using poweshell  (Get-MpPreference).ExclusionExtension.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["excluded_exts"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Tamper with Windows Defender Evade Scanning -Process",
+      "guid": "a123ce6a-3916-45d6-ba9c-7d4081315c27",
+      "description": "Malware can exclude specific processes from being scanned and evading detection.\nUpon successful execution, the process(es) should be on the list of excluded processes. \nTo check the exclusion list using poweshell  (Get-MpPreference).ExclusionProcess.\"",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["excluded_process"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "office-365-Disable-AntiPhishRule",
+      "guid": "b9bbae2c-2ba6-4cf3-b452-8e8f908696f3",
+      "description": "Using the Disable-AntiPhishRule cmdlet to disable antiphish rules in your office-365 organization.",
+      "platforms": ["office-365"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username", "password"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Disable Windows Defender with DISM",
+      "guid": "871438ac-7d6e-432a-b27d-3e7db69faf58",
+      "description": "The following Atomic will attempt to disable Windows-Defender using the built in DISM.exe, Deployment Image Servicing and Management tool. \nDISM is used to enumerate, install, uninstall, configure, and update features and packages in Windows images.\nA successful execution will not standard-out any details. Remove the quiet switch if verbosity is needed.\nThis method will remove Defender and it's package.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Defender Using NirSoft AdvancedRun",
+      "guid": "81ce22fd-9612-4154-918e-8a1f285d214d",
+      "description": "Information on NirSoft AdvancedRun and its creators found here: http://www.nirsoft.net/utils/advanced_run.html\nThis Atomic will run AdvancedRun.exe with similar behavior identified during the WhisperGate campaign.\nSee https://medium.com/s2wblog/analysis-of-destructive-malware-whispergate-targeting-ukraine-9d5d158f19f3\nUpon successful execution, AdvancedRun.exe will attempt to run and stop Defender, and optionally attempt to delete the Defender folder on disk.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["AdvancedRun_Location", "delete_defender_folder"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Kill antimalware protected processes using Backstab",
+      "guid": "24a12b91-05a7-4deb-8d7f-035fa98591bc",
+      "description": "Backstab loads Process Explorer driver which is signed by Microsoft and use it to terminate running processes protected by antimalware software such as MsSense.exe or MsMpEng.exe, which is otherwise not possible to kill.\nhttps://github.com/Yaxser/Backstab",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["process_name"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "WinPwn - Kill the event log services for stealth",
+      "guid": "7869d7a3-3a30-4d2c-a5d2-f1cd9c34ce66",
+      "description": "Kill the event log services for stealth via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Tamper with Windows Defender ATP using Aliases - PowerShell",
+      "guid": "c531aa6e-9c97-4b29-afee-9b7be6fc8a64",
+      "description": "Attempting to disable scheduled scanning and other parts of Windows Defender ATP using set-MpPreference aliases. Upon execution Virus and Threat Protection will show as disabled\nin Windows settings.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "LockBit Black - Disable Privacy Settings Experience Using Registry -cmd",
+      "guid": "d6d22332-d07d-498f-aea0-6139ecb7850e",
+      "description": "LockBit Black - Disable Privacy Settings Experience Using Registry",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "LockBit Black - Use Registry Editor to turn on automatic logon -cmd",
+      "guid": "9719d0e1-4fe0-4b2e-9a72-7ad3ee8ddc70",
+      "description": "LockBit Black - Use Registry Editor to turn on automatic logon",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "LockBit Black - Disable Privacy Settings Experience Using Registry -Powershell",
+      "guid": "d8c57eaa-497a-4a08-961e-bd5efd7c9374",
+      "description": "LockBit Black - Disable Privacy Settings Experience Using Registry",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Lockbit Black - Use Registry Editor to turn on automatic logon -Powershell",
+      "guid": "5e27f36d-5132-4537-b43b-413b0d5eec9a",
+      "description": "Lockbit Black - Use Registry Editor to turn on automatic logon",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Windows Defender with PwSh Disable-WindowsOptionalFeature",
+      "guid": "f542ffd3-37b4-4528-837f-682874faa012",
+      "description": "The following Atomic will attempt to disable Windows-Defender using the built in PowerShell cmdlet Disable-WindowsOptionalFeature, Deployment Image Servicing and Management tool. \nSimilar to DISM.exe, this cmdlet is used to enumerate, install, uninstall, configure, and update features and packages in Windows images.\nA successful execution will not standard-out any details. Remove the quiet switch if verbosity is needed.\nThis method will remove Defender and it's packages.\nReference: https://docs.microsoft.com/en-us/powershell/module/dism/disable-windowsoptionalfeature?view=windowsserver2022-ps",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WMIC Tamper with Windows Defender Evade Scanning Folder",
+      "guid": "59d386fc-3a4b-41b8-850d-9e3eee24dfe4",
+      "description": "The following Atomic will attempt to exclude a folder within Defender leveraging WMI\nReference: https://www.bleepingcomputer.com/news/security/gootkit-malware-bypasses-windows-defender-by-setting-path-exclusions/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Delete Windows Defender Scheduled Tasks",
+      "guid": "4b841aa1-0d05-4b32-bbe7-7564346e7c76",
+      "description": "The following atomic test will delete the Windows Defender scheduled tasks.\n\n[Reference](https://thedfirreport.com/2022/05/09/seo-poisoning-a-gootloader-story/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Clear History",
+      "guid": "23b88394-091b-4968-a42d-fb8076992443",
+      "description": "Clear Shell History. This technique only affect the bash shell application.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Suspend History",
+      "guid": "94f6a1c9-aae7-46a4-9083-2bb1f5768ec4",
+      "description": "suspend Shell History seen in Awfulshred wiper- https://unix.stackexchange.com/questions/10922/temporarily-suspend-bash-history-on-a-given-shell",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Reboot Linux Host via Kernel System Request",
+      "guid": "6d6d3154-1a52-4d1a-9d51-92ab8148b32e",
+      "description": "reboot system via system request seen in Awfulshred wiper.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Clear Pagging Cache",
+      "guid": "f790927b-ea85-4a16-b7b2-7eb44176a510",
+      "description": "clear pagging cache via system request. This is a temporary change in the system to clear paging cache. This technique seen in Awfulshred wiper as part\nof its malicious payload on the compromised host. added reference link for this technique: https://www.tecmint.com/clear-ram-memory-cache-buffer-and-swap-space-on-linux/",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Memory Swap",
+      "guid": "e74e4c63-6fde-4ad2-9ee8-21c3a1733114",
+      "description": "disable swapping of device paging that impaire the compromised host to swap data if the RAM is full. Awfulshred wiper used this technique as an additional \npayload to the compromised host and to make sure that there will be no recoverable data due to swap feature of FreeBSD/linux.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Hypervisor-Enforced Code Integrity (HVCI)",
+      "guid": "70bd71e6-eba4-4e00-92f7-617911dbe020",
+      "description": "This test disables Hypervisor-Enforced Code Integrity (HVCI) by setting the registry key HKLM:\\SYSTEM\\CurrentControlSet\\Control\\DeviceGuard\\Scenarios\\HypervisorEnforcedCodeIntegrity \"Enabled\" value to \"0\".\nThe pre-req needs to be ran in order to setup HVCI and have it enabled. \nWe do not recommend running this in production.\n[Black Lotus Campaign](https://www.microsoft.com/en-us/security/blog/2023/04/11/guidance-for-investigating-attacks-using-cve-2022-21894-the-blacklotus-campaign/)\n[Microsoft](https://learn.microsoft.com/en-us/windows/security/threat-protection/device-guard/enable-virtualization-based-protection-of-code-integrity)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "AMSI Bypass - Override AMSI via COM",
+      "guid": "17538258-5699-4ff1-92d1-5ac9b0dc21f5",
+      "description": "With administrative rights, an adversary can disable AMSI via registry value in HKCU\\Software\\Classes\\CLSID\\{fdb00e52-a214-4aa1-8fba-4357bb0072ec} by overriding the Microsoft Defender COM object for AMSI and points it to a DLL that does not exist.\nThis is currently being used by AsyncRAT and others. \nhttps://strontic.github.io/xcyclopedia/library/clsid_fdb00e52-a214-4aa1-8fba-4357bb0072ec.html\nhttps://securitynews.sonicwall.com/xmlpost/asyncrat-variant-includes-cryptostealer-capabilites/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "AWS - GuardDuty Suspension or Deletion",
+      "guid": "11e65d8d-e7e4-470e-a3ff-82bc56ad938e",
+      "description": "Enables GuardDuty in AWS, upon successful creation this test will suspend and then delete the GuardDuty configuration.",
+      "platforms": ["iaas:aws"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["region"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Tamper with Defender ATP on Linux/MacOS",
+      "guid": "40074085-dbc8-492b-90a3-11bcfc52fda8",
+      "description": "With root privileges, an adversary can disable real time protection. Note, this test assumes Defender is not in passive mode and real-time protection is enabled. The use of a managed.json on Linux or Defender .plist on MacOS will prevent these changes. Tamper protection will also prevent this (available on MacOS, but not Linux at the time of writing). Installation of MDATP is a prerequisite. Installation steps vary across MacOS and Linux distros. See Microsoft public documentation for instructions: https://learn.microsoft.com/en-us/microsoft-365/security/defender-endpoint/mac-install-manually?view=o365-worldwide https://learn.microsoft.com/en-us/microsoft-365/security/defender-endpoint/linux",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Tamper with Windows Defender Registry - Reg.exe",
+      "guid": "1f6743da-6ecc-4a93-b03f-dc357e4b313f",
+      "description": "Disable Windows Defender by tampering with windows defender registry using the utility \"reg.exe\"",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Tamper with Windows Defender Registry - Powershell",
+      "guid": "a72cfef8-d252-48b3-b292-635d332625c3",
+      "description": "Disable Windows Defender by tampering with windows defender registry through powershell",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "ESXi - Disable Account Lockout Policy via PowerCLI",
+      "guid": "091a6290-cd29-41cb-81ea-b12f133c66cb",
+      "description": "An adversary may disable account lockout policy within ESXi to have the ability to prevent defensive actions from being enforced in the future or to prevent future alerting.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["vm_host", "vm_user", "vm_pass"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Delete Microsoft Defender ASR Rules - InTune",
+      "guid": "eea0a6c2-84e9-4e8c-a242-ac585d28d0d1",
+      "description": "This test simulates the deletion of the ASR rules loaded by Microsoft Defender using the registry. Depending on the deployment, rules can be pushed either using GPO or InTune, This test simulates an InTune-based rules deployment.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Delete Microsoft Defender ASR Rules - GPO",
+      "guid": "0e7b8a4b-2ca5-4743-a9f9-96051abb6e50",
+      "description": "This test simulates the deletion of the ASR rules loaded by Microsoft Defender using the registry. Depending on the deployment, rules can be pushed either using GPO or InTune, This test simulates a GPO-based rules deployment.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "AMSI Bypass - Create AMSIEnable Reg Key",
+      "guid": "728eca7b-0444-4f6f-ac36-437e3d751dc0",
+      "description": "Threat Actor could disable the AMSI function by adding a registry value name “AmsiEnable” to the registry key “HKCU\\Software\\Microsoft\\Windows Script\\Settings\\AmsiEnable” and set its value to 0.\nRef: https://mostafayahiax.medium.com/hunting-for-amsi-bypassing-methods-9886dda0bf9d",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable EventLog-Application Auto Logger Session Via Registry - Cmd",
+      "guid": "653c6e17-14a2-4849-851d-f1c0cc8ea9ab",
+      "description": "This atomic simulates an activity where an attacker disables the EventLog-Application ETW Auto Logger session using the reg.exe utility to update the Windows registry value \"Start\". This would effectivly disable the Event log application channel. The changes would only take effect after a restart.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable EventLog-Application Auto Logger Session Via Registry - PowerShell",
+      "guid": "da86f239-9bd3-4e85-92ed-4a94ef111a1c",
+      "description": "This atomic simulates an activity where an attacker disables the EventLog-Application ETW Auto Logger session using the powershell.exe \"New-ItemProperty\" cmdlet to update the Windows registry value \"Start\". This would effectivly disable the Event log application channel. The changes would only take effect after a restart.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable EventLog-Application ETW Provider Via Registry - Cmd",
+      "guid": "1cac9b54-810e-495c-8aac-989e0076583b",
+      "description": "This atomic simulates an activity where an attacker disables a specific ETW provider from the EventLog-Application ETW Auto Logger session using the reg.exe utility to update the Windows registry value \"Enabled\". This would effectivly remove that provider from the session and cause to not emit any logs of that type. The changes would only take effect after a restart.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ETWProviderGUID"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable EventLog-Application ETW Provider Via Registry - PowerShell",
+      "guid": "8f907648-1ebf-4276-b0f0-e2678ca474f0",
+      "description": "This atomic simulates an activity where an attacker disables a specific ETW provider from the EventLog-Application ETW Auto Logger session using the powershell.exe \"New-ItemProperty\" cmdlet to update the Windows registry value \"Enabled\". This would effectivly remove that provider from the session and cause to not emit any logs of that type. The changes would only take effect after a restart.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ETWProviderGUID"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Freeze PPL-protected process with EDR-Freeze",
+      "guid": "cbb2573a-a6ad-4c87-aef8-6e175598559b",
+      "description": "This test utilizes the tool EDR-Freeze, which leverages the native Microsoft binary WerFaultSecure.exe to suspend processes protected by the Protected Process Light mechanism. PPL is a Windows security feature designed to safeguard critical system processes — such as those related to antivirus, credential protection, and system integrity — from tampering or inspection. These processes operate in a restricted environment that prevents access even from administrators or debugging tools, unless the accessing tool is signed and trusted by Microsoft. By using WerFaultSecure.exe, which is inherently trusted by the operating system, EDR-Freeze is able to bypass these restrictions and temporarily fr",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["processName"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable ASLR Via sysctl parameters - Linux",
+      "guid": "ac333fe1-ce2b-400b-a117-538634427439",
+      "description": "Detects Execution of the `sysctl` command to set `kernel.randomize_va_space=0` which disables Address Space Layout Randomization (ASLR) in Linux.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Auditing Configuration Changes on Linux Host",
+      "guid": "212cfbcf-4770-4980-bc21-303e37abd0e3",
+      "description": "Emulates modification of auditd configuration files",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["audisp_config_file_name", "auditd_config_file_name", "libaudit_config_file_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Auditing Configuration Changes on FreeBSD Host",
+      "guid": "cedaf7e7-28ee-42ab-ba13-456abd35d1bd",
+      "description": "Emulates modification of auditd configuration files",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["auditd_config_file_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Logging Configuration Changes on Linux Host",
+      "guid": "7d40bc58-94c7-4fbb-88d9-ebce9fcdb60c",
+      "description": "Emulates modification of syslog configuration.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["syslog_config_file_name", "rsyslog_config_file_name", "syslog_ng_config_file_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Logging Configuration Changes on FreeBSD Host",
+      "guid": "6b8ca3ab-5980-4321-80c3-bcd77c8daed8",
+      "description": "Emulates modification of syslog configuration.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["syslog_config_file_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Powershell ETW Provider - Windows",
+      "guid": "6f118276-121d-4c09-bb58-a8fb4a72ee84",
+      "description": "This test was created to disable the Microsoft Powershell ETW provider by using the built-in Windows tool, logman.exe. This provider is used as a common source of telemetry in AV/EDR solutions.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ps_exec_location", "session", "provider"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Disable .NET Event Tracing for Windows Via Registry (cmd)",
+      "guid": "8a4c33be-a0d3-434a-bee6-315405edbd5b",
+      "description": "Disables ETW for the .NET Framework using the reg.exe utility to update the Windows registry",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable .NET Event Tracing for Windows Via Registry (powershell)",
+      "guid": "19c07a45-452d-4620-90ed-4c34fffbe758",
+      "description": "Disables ETW for the .NET Framework using PowerShell to update the Windows registry",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "LockBit Black - Disable the ETW Provider of Windows Defender -cmd",
+      "guid": "f6df0b8e-2c83-44c7-ba5e-0fa4386bec41",
+      "description": "An adversary can disable the ETW Provider of Windows Defender,\nso nothing would be logged to Microsoft-Windows-Windows-Defender/Operational anymore.\nhttps://www.cisa.gov/news-events/cybersecurity-advisories/aa23-075a",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "LockBit Black - Disable the ETW Provider of Windows Defender -Powershell",
+      "guid": "69fc085b-5444-4879-8002-b24c8e1a3e02",
+      "description": "An adversary can disable the ETW Provider of Windows Defender,\nso nothing would be logged to Microsoft-Windows-Windows-Defender/Operational anymore.\nhttps://www.cisa.gov/news-events/cybersecurity-advisories/aa23-075a",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable .NET Event Tracing for Windows Via Environment Variable HKCU Registry - Cmd",
+      "guid": "fdac1f79-b833-4bab-b4a1-11b1ed676a4b",
+      "description": "Disables ETW for the .NET Framework by setting the COMPlus_ETWEnabled environment variable to 0 in the HKCU registry using the reg.exe utility. In order for changes to take effect a logout might be required.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable .NET Event Tracing for Windows Via Environment Variable HKCU Registry - PowerShell",
+      "guid": "b42c1f8c-399b-47ae-8fd8-763181395fee",
+      "description": "Disables ETW for the .NET Framework by setting the COMPlus_ETWEnabled environment variable to 0 in the HKCU registry using PowerShell. In order for changes to take effect a logout might be required.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable .NET Event Tracing for Windows Via Environment Variable HKLM Registry - Cmd",
+      "guid": "110b4281-43fe-405f-a184-5d8eaf228ebf",
+      "description": "Disables ETW for the .NET Framework by setting the COMPlus_ETWEnabled environment variable to 0 in the HKLM registry using the reg.exe utility. In order for changes to take effect a reboot might be required.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable .NET Event Tracing for Windows Via Environment Variable HKLM Registry - PowerShell",
+      "guid": "4d61779d-be7f-425c-b560-0cafb2522911",
+      "description": "Disables ETW for the .NET Framework by setting the COMPlus_ETWEnabled environment variable to 0 in the HKLM registry using PowerShell. In order for changes to take effect a reboot might be required.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Block Cybersecurity communication by leveraging Windows Name Resolution Policy Table",
+      "guid": "1174b5df-2c33-490f-8854-f5eb80c907ca",
+      "description": "Adversaries are redirecting DNS queries to an incorrect or malicious DNS server IP, thereby blocking legitimate communications and potentially compromising the security infrastructure. This atomic test aims to respond with 127.0.0.1 when a DNS query is made for endpoint.security.microsoft.com.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Throttle Cybersecurity Agent Network Traffic via QoS Policy",
+      "guid": "7dd05b3e-0803-4852-9345-c494eb3e40fe",
+      "description": "This test simulates an adversary impairing security agent capabilities by applying Policy-Based Quality of Service (QoS) throttling rules to security agent processes.\n\nUnlike traditional evasion techniques (such as firewall-based blocking or process termination), this approach leverages native Windows functionality to degrade, rather than disable, defensive tooling:\n\n- Uses built-in Windows QoS features to manipulate application bandwidth\n- Limits network throughput to extremely low levels (e.g., 8 bits per second)\n- Causes security agents to repeatedly time out when attempting to communicate with their cloud backend\n\nAs a result, telemetry ingestion, alerting, and remote response capabiliti",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["process_name", "throttle_rate", "net_qos_policy_name"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "AMSI Bypass - Patching AmsiScanBuffer",
+      "guid": "ff543dd9-4537-458c-b297-c85ae1939e34",
+      "description": "Patches AmsiScanBuffer in memory using P/Invoke to resolve the function address via\nGetModuleHandle/GetProcAddress, then overwrites the prologue with instructions that\nreturn AMSI_RESULT_CLEAN immediately (mov al, 1; ret).\n\nReference: https://i.blackhat.com/briefings/asia/2018/asia-18-Tal-Liberman-Documenting-the-Undocumented-The-Rise-and-Fall-of-AMSI.pdf",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Impair Windows Defender via Disk Space Exhaustion using fsutil",
+      "guid": "0486ee68-cfde-41a3-823f-7a0d96fa84a1",
+      "description": "Simulates defense impairment by leveraging the built-in Windows utility fsutil.exe to create an arbitrary oversized hidden file in the user %TEMP% directory.\nIn real-world evasion (e.g., BigDiskBuster technique), adversaries size a hidden GUID-named file to consume all available free disk space on the system drive. This condition causes Microsoft Defender Antivirus platform updates and dynamic signature downloads to fail due to disk exhaustion (ERROR_DISK_FULL / 0x80070070), freezing definition updates while keeping nominal services running.\n\nThis test creates a non-destructive temporary test file to validate detection telemetry without crashing the system drive.\n\nReferences:\n- https://lolba",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "file_size_bytes"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1685/T1685.yaml"
+}

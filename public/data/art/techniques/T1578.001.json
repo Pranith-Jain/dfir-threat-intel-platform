@@ -1,0 +1,46 @@
+{
+  "id": "T1578.001",
+  "displayName": "Modify Cloud Compute Infrastructure: Create Snapshot",
+  "tests": [
+    {
+      "name": "AWS - Create Snapshot from EBS Volume",
+      "guid": "a3c09662-85bb-4ea8-b15b-6dc8a844e236",
+      "description": "Creates an EBS snapshot in AWS using the AWS CLI.\nThis simulates an adversary duplicating volume data via snapshots for persistence or exfiltration.",
+      "platforms": ["iaas:aws"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["aws_region", "aws_volume_id"],
+      "dependencyCount": 3
+    },
+    {
+      "name": "Azure - Create Snapshot from Managed Disk",
+      "guid": "89e69b4b-3458-4ec6-b819-b3008debc1bc",
+      "description": "Creates a snapshot of a managed disk in Azure using the Azure CLI.\nSimulates adversary snapshotting behavior for persistence or data duplication.",
+      "platforms": ["iaas:azure"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["azure_resource_group", "azure_disk_name", "azure_snapshot_name"],
+      "dependencyCount": 3
+    },
+    {
+      "name": "GCP - Create Snapshot from Persistent Disk",
+      "guid": "e6fbc036-91e7-4ad3-b9cb-f7210f40dd5d",
+      "description": "Creates a snapshot of a persistent disk in GCP using the gcloud CLI.\nEmulates adversary behavior to gain access to volume data or replicate environment state.",
+      "platforms": ["iaas:gcp"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["gcp_disk_name", "gcp_zone", "gcp_snapshot_name"],
+      "dependencyCount": 3
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1578.001/T1578.001.yaml"
+}

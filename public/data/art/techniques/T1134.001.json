@@ -1,0 +1,72 @@
+{
+  "id": "T1134.001",
+  "displayName": "Access Token Manipulation: Token Impersonation/Theft",
+  "tests": [
+    {
+      "name": "Named pipe client impersonation",
+      "guid": "90db9e27-8e7c-4c04-b602-a45927884966",
+      "description": "Uses PowerShell and Empire's [GetSystem module](https://github.com/BC-SECURITY/Empire/blob/v3.4.0/data/module_source/privesc/Get-System.ps1). The script creates a named pipe, and a service that writes to that named pipe. When the service connects to the named pipe, the script impersonates its security context.\nWhen executed successfully, the test displays the domain and name of the account it's impersonating (local SYSTEM).\n\nReference: https://blog.cobaltstrike.com/2014/04/02/what-happens-when-i-type-getsystem/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "`SeDebugPrivilege` token duplication",
+      "guid": "34f0a430-9d04-4d98-bcb5-1989f14719f0",
+      "description": "Uses PowerShell and Empire's [GetSystem module](https://github.com/BC-SECURITY/Empire/blob/v3.4.0/data/module_source/privesc/Get-System.ps1). The script uses `SeDebugPrivilege` to obtain, duplicate and impersonate the token of a another process.\nWhen executed successfully, the test displays the domain and name of the account it's impersonating (local SYSTEM).",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Launch NSudo Executable",
+      "guid": "7be1bc0f-d8e5-4345-9333-f5f67d742cb9",
+      "description": "Launches the NSudo executable for a short period of time and then exits.\nNSudo download observed after maldoc execution. NSudo is a system management tool for advanced users to launch programs with full privileges.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["nsudo_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Bad Potato",
+      "guid": "9c6d799b-c111-4749-a42f-ec2f8cb51448",
+      "description": "https://github.com/BeichenDream/BadPotato\nPrivilege escalation using named pipe connections",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Juicy Potato",
+      "guid": "f095e373-b936-4eb4-8d22-f47ccbfbe64a",
+      "description": "This Atomic utilizes Juicy Potato to obtain privilege escalation. \nUpon successful execution of this test, a vulnerable CLSID will be used to execute a process with system permissions.\nThis tactic has been previously observed in SnapMC Ransomware, amongst numerous other campaigns. \n[Reference](https://blog.fox-it.com/2021/10/11/snapmc-skips-ransomware-steals-data/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["potato_path", "listening_port", "target_exe", "target_CLSID"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1134.001/T1134.001.yaml"
+}

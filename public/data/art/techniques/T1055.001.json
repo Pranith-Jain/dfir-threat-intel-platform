@@ -1,0 +1,33 @@
+{
+  "id": "T1055.001",
+  "displayName": "Process Injection: Dynamic-link Library Injection",
+  "tests": [
+    {
+      "name": "Process Injection via mavinject.exe",
+      "guid": "74496461-11a1-4982-b439-4d87a550d254",
+      "description": "Windows 10 Utility To Inject DLLS.\n\nUpon successful execution, powershell.exe will download T1055.dll to disk. Powershell will then spawn mavinject.exe to perform process injection in T1055.dll.\nWith default arguments, expect to see a MessageBox, with notepad's icon in taskbar.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["process_id", "dll_payload"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "WinPwn - Get SYSTEM shell - Bind System Shell using UsoClient DLL load technique",
+      "guid": "8b56f787-73d9-4f1d-87e8-d07e89cbc7f5",
+      "description": "Get SYSTEM shell - Bind System Shell using UsoClient DLL load technique via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1055.001/T1055.001.yaml"
+}

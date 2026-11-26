@@ -1,0 +1,202 @@
+{
+  "id": "T1069.002",
+  "displayName": "Permission Groups Discovery: Domain Groups",
+  "tests": [
+    {
+      "name": "Basic Permission Groups Discovery Windows (Domain)",
+      "guid": "dd66d77d-8998-48c0-8024-df263dc2ce5d",
+      "description": "Basic Permission Groups Discovery for Windows. This test will display some errors if run on a computer not connected to a domain. Upon execution, domain\ninformation will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Permission Groups Discovery PowerShell (Domain)",
+      "guid": "6d5d8c96-3d2a-4da9-9d6d-9a9d341899a7",
+      "description": "Permission Groups Discovery utilizing PowerShell. This test will display some errors if run on a computer not connected to a domain. Upon execution, domain\ninformation will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["user"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Elevated group enumeration using net group (Domain)",
+      "guid": "0afb5163-8181-432e-9405-4322710c0c37",
+      "description": "Runs \"net group\" command including command aliases and loose typing to simulate enumeration/discovery of high value domain groups. This\ntest will display some errors if run on a computer not connected to a domain. Upon execution, domain information will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find machines where user has local admin access (PowerView)",
+      "guid": "a2d71eee-a353-4232-9f86-54f4288dd8c1",
+      "description": "Find machines where user has local admin access (PowerView). Upon execution, progress and info about each host in the domain being scanned will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find local admins on all machines in domain (PowerView)",
+      "guid": "a5f0d9f8-d3c9-46c0-8378-846ddd6b1cbd",
+      "description": "Enumerates members of the local Administrators groups across all machines in the domain. Upon execution, information about each machine will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find Local Admins via Group Policy (PowerView)",
+      "guid": "64fdb43b-5259-467a-b000-1b02c00e510a",
+      "description": "takes a computer and determines who has admin rights over it through GPO enumeration. Upon execution, information about the machine will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["computer_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enumerate Users Not Requiring Pre Auth (ASRepRoast)",
+      "guid": "870ba71e-6858-4f6d-895c-bb6237f6121b",
+      "description": "When successful, accounts that do not require kerberos pre-auth will be returned",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Adfind - Query Active Directory Groups",
+      "guid": "48ddc687-82af-40b7-8472-ff1e742e8274",
+      "description": "Adfind tool can be used for reconnaissance in an Active directory environment. This example has been documented by ransomware actors enumerating Active Directory Groups\nreference- http://www.joeware.net/freetools/tools/adfind/, https://www.fireeye.com/blog/threat-research/2019/04/pick-six-intercepting-a-fin6-intrusion.html",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["optional_args"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Enumerate Active Directory Groups with Get-AdGroup",
+      "guid": "3d1fcd2a-e51c-4cbe-8d84-9a843bad8dc8",
+      "description": "The following Atomic test will utilize Get-AdGroup to enumerate groups within Active Directory.\nUpon successful execution a listing of groups will output with their paths in AD.\nReference: https://docs.microsoft.com/en-us/powershell/module/activedirectory/get-adgroup?view=windowsserver2022-ps",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enumerate Active Directory Groups with ADSISearcher",
+      "guid": "9f4e344b-8434-41b3-85b1-d38f29d148d0",
+      "description": "The following Atomic test will utilize ADSISearcher to enumerate groups within Active Directory.\nUpon successful execution a listing of groups will output with their paths in AD.\nReference: https://devblogs.microsoft.com/scripting/use-the-powershell-adsisearcher-type-accelerator-to-search-active-directory/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Get-ADUser Enumeration using UserAccountControl flags (AS-REP Roasting)",
+      "guid": "43fa81fb-34bb-4b5f-867b-03c7dbe0e3d8",
+      "description": "When successful, accounts that do not require kerberos pre-auth will be returned.\nReference: https://m0chan.github.io/2019/07/31/How-To-Attack-Kerberos-101.html",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Get-DomainGroupMember with PowerView",
+      "guid": "46352f40-f283-4fe5-b56d-d9a71750e145",
+      "description": "Utilizing PowerView, run Get-DomainGroupMember to identify domain users. Upon execution, progress and info about groups within the domain being scanned will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Get-DomainGroup with PowerView",
+      "guid": "5a8a181c-2c8e-478d-a943-549305a01230",
+      "description": "Utilizing PowerView, run Get-DomainGroup to identify the domain groups. Upon execution, Groups within the domain will be listed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Active Directory Enumeration with LDIFDE",
+      "guid": "22cf8cb9-adb1-4e8c-80ca-7c723dfc8784",
+      "description": "Output information from Active Directory to a specified file. [Ldifde](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-R2-and-2012/cc731033(v=ws.11)) is a CLI tool for creating, modifying and deleting directory objects.\nThe test is derived from the CISA Report on Voly Typhoon. Reference: https://media.defense.gov/2023/May/24/2003229517/-1/-1/0/CSA_Living_off_the_Land.PDF",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_path", "output_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Active Directory Domain Search Using LDAP - Linux (Ubuntu)/macOS",
+      "guid": "d58d749c-4450-4975-a9e9-8b1d562755c2",
+      "description": "Output information from LDAPSearch. LDAP Password is the admin-user password on Active Directory",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["domain", "top_level_domain", "user", "password"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1069.002/T1069.002.yaml"
+}

@@ -1,0 +1,189 @@
+{
+  "id": "T1070.003",
+  "displayName": "Indicator Removal: Clear Command History",
+  "tests": [
+    {
+      "name": "Clear Bash history (rm)",
+      "guid": "a934276e-2be5-4a36-93fd-98adbb5bd4fc",
+      "description": "Clears bash history via rm",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["history_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Clear Bash history (echo)",
+      "guid": "cbf506a5-dd78-43e5-be7e-a46b7c7a0a11",
+      "description": "Clears bash history via echo",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["history_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Clear Bash history (cat dev/null)",
+      "guid": "b1251c35-dcd3-4ea1-86da-36d27b54f31f",
+      "description": "Clears bash history via cat /dev/null",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["history_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Clear Bash history (ln dev/null)",
+      "guid": "23d348f3-cc5c-4ba9-bd0a-ae09069f0914",
+      "description": "Clears bash history via a symlink to /dev/null",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["history_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Clear Bash history (truncate)",
+      "guid": "47966a1d-df4f-4078-af65-db6d9aa20739",
+      "description": "Clears bash history via truncate",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["history_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Clear history of a bunch of shells",
+      "guid": "7e6721df-5f08-4370-9255-f06d8a77af4c",
+      "description": "Clears the history of a bunch of different shell types by setting the history size to zero",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Clear and Disable Bash History Logging",
+      "guid": "784e4011-bd1a-4ecd-a63a-8feb278512e6",
+      "description": "Clears the history and disable bash history logging of the current shell and future shell sessions",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Use Space Before Command to Avoid Logging to History",
+      "guid": "53b03a54-4529-4992-852d-a00b4b7215a6",
+      "description": "Using a space before a command causes the command to not be logged in the Bash History file",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Bash History Logging with SSH -T",
+      "guid": "5f8abd62-f615-43c5-b6be-f780f25790a1",
+      "description": "Keeps history clear and stays out of lastlog,wtmp,btmp ssh -T keeps the ssh client from catching a proper TTY, which is what usually gets logged on lastlog",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Clear Docker Container Logs",
+      "guid": "553b39f9-1e8c-47b1-abf5-8daf7b0391e9",
+      "description": "Clears Docker container logs using the Docker CLI and the truncate command, removing all log entries.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Prevent Powershell History Logging",
+      "guid": "2f898b81-3e97-4abb-bc3f-a95138988370",
+      "description": "Prevents Powershell history",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Clear Powershell History by Deleting History File",
+      "guid": "da75ae8d-26d6-4483-b0fe-700e4df4f037",
+      "description": "Clears Powershell history",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Set Custom AddToHistoryHandler to Avoid History File Logging",
+      "guid": "1d0d9aa6-6111-4f89-927b-53e8afae7f94",
+      "description": "The \"AddToHistoryHandler\" receives the current command as the $line variable and then returns $true if \nthe line should be written to the history file. Here we simply return $false so nothing gets added to \nthe history file for the current session.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Clear PowerShell Session History",
+      "guid": "22c779cd-9445-4d3e-a136-f75adbf0315f",
+      "description": "This technique involves using the Clear-History cmdlet in PowerShell to remove all records of previously executed commands.\nThis action is often performed by attackers to eliminate traces of their activities, making incident detection and forensic \ninvestigation more challenging. By clearing the session history, adversaries aim to obfuscate their operational footprint.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1070.003/T1070.003.yaml"
+}

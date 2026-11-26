@@ -1,0 +1,382 @@
+{
+  "slug": "nyxstrike",
+  "name": "NyxStrike",
+  "description": "HexStrike AI derivative with a web interface, a decision engine and about 200 tools over MCP",
+  "seenIn": "No public report of use in an attack. Covered from its source code and scan data",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 4,
+    "suricata": 17,
+    "yara": 3,
+    "indicators": 35
+  },
+  "techniques": [
+    {
+      "id": "T1059.004",
+      "score": 2,
+      "comment": "KQL hunt: NyxStrike server, MCP client or local model on a host you monitor; Sigma: NyxStrike Server, MCP Client or Tool Started by the Server"
+    },
+    {
+      "id": "T1071",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1071.001",
+      "score": 8,
+      "comment": "KQL hunt: NyxStrike testing you, or a NyxStrike server used through your proxy: user agents, probe markers and server paths; Sigma: NyxStrike Update Check or Server API Requested Through a Proxy; Suricata: 3817020 TD NyxStrike server health response; Suricata: 3817021 TD NyxStrike server ping response; Suricata: 3817022 TD NyxStrike console page; Suricata: 3817023 TD NyxStrike server refused a request without its bearer token; Suricata: 3817024 TD NyxStrike dashboard data response; Suricata: 3817025 TD NyxStrike AI session request to its server"
+    },
+    {
+      "id": "T1190",
+      "score": 9,
+      "comment": "KQL hunt: NyxStrike testing you, or a NyxStrike server used through your proxy: user agents, probe markers and server paths; Sentinel analytics: NyxStrike user agent or browser agent probe; Sigma: NyxStrike User Agent or Probe Marker in Web Logs; Suricata: 3817004 TD NyxStrike browser agent XSS reflection probe; Suricata: 3817006 TD NyxStrike StingXSS confirmation marker in URI; Suricata: 3817007 TD NyxStrike StingXSS confirmation marker in request body; Suricata: 3817008 TD NyxStrike StingXSS redirect, JSONP or CRLF probe in URI; Suricata: 3817010 TD NyxStrike BreachSQL UNION marker in URI; S"
+    },
+    {
+      "id": "T1588.002",
+      "score": 5,
+      "comment": "KQL hunt: NyxStrike server, MCP client or local model on a host you monitor; Sigma: NyxStrike Data Folder, Log or Browser Screenshot Written; YARA: NyxStrike_CommonHuman_Scanner_Packages; YARA: NyxStrike_MCP_Client_Config; YARA: NyxStrike_Server_Or_Source"
+    },
+    {
+      "id": "T1588.007",
+      "score": 1,
+      "comment": "YARA: NyxStrike_MCP_Client_Config"
+    },
+    {
+      "id": "T1595",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1595.002",
+      "score": 13,
+      "comment": "KQL hunt: NyxStrike testing you, or a NyxStrike server used through your proxy: user agents, probe markers and server paths; Sentinel analytics: NyxStrike user agent or browser agent probe; Sigma: NyxStrike User Agent or Probe Marker in Web Logs; Suricata: 3817001 TD NyxStrike decision engine user agent; Suricata: 3817002 TD NyxStrike HTTP framework user agent; Suricata: 3817003 TD NyxStrike browser agent user agent; Suricata: 3817004 TD NyxStrike browser agent XSS reflection probe; Suricata: 3817006 TD NyxStrike StingXSS confirmation marker in URI; Suricata: 3817007 TD NyxStrike StingXSS conf"
+    },
+    {
+      "id": "T1595.003",
+      "score": 1,
+      "comment": "Suricata: 3817005 TD NyxStrike OpenAPI discovery user agent (commonhuman-core)"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "user_agent",
+      "value": "NyxStrike/1.0",
+      "confidence": "high",
+      "context": "User agent of the NyxStrike decision engine's target probe: a HEAD request then a GET fallback to the target URL when it profiles a web application (analyze-target, smart-scan, select-tools, attack chains)",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/backend/server_core/intelligence/intelligent_decision_engine.py#L192",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "user_agent",
+      "value": "Security-HTTP-Framework/1.0 (Advanced Security Testing)",
+      "confidence": "high",
+      "context": "User agent of NyxStrike's HTTP testing framework (http_framework tool); renamed from HexStrike-HTTP-Framework/1.0",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/backend/server_api/web_framework/http_framework.py#L19",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "user_agent",
+      "value": "Security-BrowserAgent/1.0 (Security Testing)",
+      "confidence": "high",
+      "context": "User agent of NyxStrike's headless Chrome browser agent (Selenium, 1920x1080, --disable-web-security); renamed from HexStrike-BrowserAgent/1.0",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/backend/server_api/web_framework/browser_agent.py#L47",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "string",
+      "value": "<xssTest123>",
+      "confidence": "medium",
+      "context": "Reflection probe the NyxStrike browser agent puts into text fields of up to 5 GET forms, sent with python-requests (URL-encoded %3CxssTest123%3E); renamed from <hexstrikeXSSTest123>",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/backend/server_api/web_framework/browser_agent.py#L238",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "uri_string",
+      "value": "xssTest123",
+      "confidence": "medium",
+      "context": "NyxStrike browser agent reflection probe value in query strings",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/backend/server_api/web_framework/browser_agent.py#L238",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "string",
+      "value": "NyxStrike Tools API Server is operational",
+      "confidence": "high",
+      "context": "Message in the /health response of the NyxStrike server (port 8888), with version and tool inventory. Open without a token only on loopback installs or behind a proxy",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/backend/server_core/tool_specs/monitoring.py#L35",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "string",
+      "value": "Pong! NyxStrike Tools API Server is responsive",
+      "confidence": "high",
+      "context": "Body of GET /ping on the NyxStrike server; its MCP client calls /ping and then /health when it starts",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/backend/server_api/ops/system_monitoring.py#L215",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "string",
+      "value": "github-master-startup",
+      "confidence": "medium",
+      "context": "Value of update.source in the NyxStrike /web-dashboard JSON once the start-up version check has run",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/backend/server_api/ops/web_dashboard.py#L67",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "string",
+      "value": "Unexpected authorization header format",
+      "confidence": "medium",
+      "context": "Text of the 401 page (Werkzeug default HTML, title 401 Unauthorized) a NyxStrike server with NYXSTRIKE_API_TOKEN set returns to any request without a Bearer header, including GET /",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/nyxstrike_server.py#L66",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "string",
+      "value": "NyxStrike",
+      "confidence": "medium",
+      "context": "HTML title of the NyxStrike dashboard (<title>NyxStrike</title>), served on / and every non-API path; offensive.agency fingerprint html.title.text:\"NyxStrike\"",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/frontend/dashboard/index.html#L7",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "-1255721562",
+      "confidence": "medium",
+      "context": "NyxStrike dashboard icon /assets/favicon-CBc3_nbG.ico (Shodan http.favicon.hash), since April 10, 2026 (1.4.0); /favicon.ico returns the HTML page, not an icon",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/frontend/dashboard/assets/favicon-CBc3_nbG.ico",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "md5",
+      "value": "3ea8bc0926603ec3a6b570917e3c5678",
+      "confidence": "medium",
+      "context": "NyxStrike dashboard icon favicon-CBc3_nbG.ico (also frontend/ui/favicons/favicon.ico)",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/frontend/dashboard/assets/favicon-CBc3_nbG.ico",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "sha256",
+      "value": "3a732c79cd0940418257e8cd989d2682069a3cc9d49ebee8bfe906c1fb362d64",
+      "confidence": "medium",
+      "context": "NyxStrike dashboard icon favicon-CBc3_nbG.ico",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/frontend/dashboard/assets/favicon-CBc3_nbG.ico",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "1080777268",
+      "confidence": "low",
+      "context": "Earlier dashboard icon favicon-D_bVPi1p.ico of the same code base (March 20 to April 10, 2026), when it was still HexStrike AI Community Edition with the page title ui",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/c6d448bdf9389661651d964f549ae9eeaf64062d/server_static/assets/favicon-D_bVPi1p.ico",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "string",
+      "value": "nyxstrike_token",
+      "confidence": "medium",
+      "context": "sessionStorage key in which the NyxStrike dashboard keeps the API bearer token; in the dashboard script bundle",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/frontend/ui/src/api/client.ts#L1",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "file_name",
+      "value": "nyxstrike_server.py",
+      "confidence": "high",
+      "context": "NyxStrike tool server script, the parent of every tool it runs through /bin/sh -c",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/nyxstrike_server.py",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "file_name",
+      "value": "nyxstrike_mcp.py",
+      "confidence": "high",
+      "context": "NyxStrike MCP client that AI assistants launch: <dir>/nyxstrike-env/bin/python3 <dir>/nyxstrike_mcp.py --server http://127.0.0.1:8888 --profile full",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/nyxstrike_mcp.py",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "file_name",
+      "value": "nyxstrike.sh",
+      "confidence": "medium",
+      "context": "NyxStrike launcher and installer (-a, -t, -ai, -ai-small, --server, --mcp)",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/nyxstrike.sh",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "file_path",
+      "value": "/nyxstrike-env/",
+      "confidence": "medium",
+      "context": "Virtual environment nyxstrike.sh creates with uv next to the code; the server and MCP client run from <dir>/nyxstrike-env/bin/python3",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/nyxstrike.sh#L27",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "file_path",
+      "value": "/.nyxstrike_data/",
+      "confidence": "medium",
+      "context": "NyxStrike data folder in its working directory (or NYXSTRIKE_DATA_DIR): nyxstrike.db, sessions/, run_history.json, tool_stats.json, wordlists.json, config/cred_key, config/config_local.json, tmp/mcp_msf_resource.rc",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/config.py#L6",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "file_name",
+      "value": "nyxstrike.db",
+      "confidence": "medium",
+      "context": "NyxStrike SQLite database (credentials, loot, recipes) in .nyxstrike_data",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/backend/server_core/db.py#L39",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "file_name",
+      "value": "nyxstrike.log",
+      "confidence": "medium",
+      "context": "NyxStrike server log in its working folder",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/backend/server_core/setup_logging.py#L34",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "file_name",
+      "value": "security_screenshot_",
+      "confidence": "medium",
+      "context": "Screenshots of the NyxStrike browser agent, /tmp/security_screenshot_<epoch>.png; renamed from hexstrike_screenshot_",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/backend/server_api/web_framework/browser_agent.py#L98",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "string",
+      "value": "nyxstrike-ai",
+      "confidence": "medium",
+      "context": "Name of the Ollama model nyxstrike.sh -ai or -ai-small creates from an abliterated base model, and the default NYXSTRIKE_LLM_MODEL",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/nyxstrike.sh#L43",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "string",
+      "value": "huihui_ai/gemma-4-abliterated:e4b",
+      "confidence": "low",
+      "context": "Abliterated (refusal-removed) Ollama base model nyxstrike.sh -ai pulls; also used outside NyxStrike",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/nyxstrike.sh#L42",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "string",
+      "value": "huihui_ai/qwen3.5-abliterated:2B",
+      "confidence": "low",
+      "context": "Abliterated Ollama base model nyxstrike.sh -ai-small pulls; also used outside NyxStrike",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/nyxstrike.sh#L298",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "url",
+      "value": "https://raw.githubusercontent.com/CommonHuman-Lab/nyxstrike/master/config.py",
+      "confidence": "medium",
+      "context": "Version check the NyxStrike server makes once at start-up with Python urllib (user agent Python-urllib/<version>)",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/backend/server_api/ops/web_dashboard.py#L20",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "string",
+      "value": "NYXSTRIKE_API_TOKEN",
+      "confidence": "medium",
+      "context": "Environment variable holding the NyxStrike server bearer token; required since 1.8.0 to bind a non-loopback address",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/nyxstrike/blob/3ac74499b8d77785d1b496791a4aab32a253a9cb/nyxstrike_server.py#L49",
+      "reported": "2026-08-20"
+    },
+    {
+      "type": "user_agent",
+      "value": "commonhuman-core/openapi-discover",
+      "confidence": "medium",
+      "context": "User agent of the OpenAPI discovery in commonhuman-core, used by NyxStrike's openapi_discover tool: GETs of /openapi.json, /swagger.json, /api-docs, /docs, /redoc and 15 more paths. The library also serves other CommonHuman-Lab tools",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/commonhuman-core/blob/ac4ded6333568f3b5a0fbf787eb1e7da0cf6f22a/src/commonhuman_core/openapi.py#L351",
+      "reported": "2026-06-03"
+    },
+    {
+      "type": "string",
+      "value": "StingXSS_",
+      "confidence": "medium",
+      "context": "Prefix of the confirmation marker StingXSS_<6 lowercase or digits> in every StingXSS payload. StingXSS is a CommonHuman-Lab scanner NyxStrike installs and drives; it also runs on its own",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/stingxss/blob/898a1288b362448b96310acfc163fd683b58af6f/stingxss/engine/analysis/payload_gen.py#L66",
+      "reported": "2026-06-01"
+    },
+    {
+      "type": "http_header",
+      "value": "X-StingXSS-Crlf",
+      "confidence": "medium",
+      "context": "Header StingXSS tries to inject through CRLF sequences in parameters (payload stingxss<CRLF>X-StingXSS-Crlf: stingxss-crlf-detected)",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/stingxss/blob/898a1288b362448b96310acfc163fd683b58af6f/stingxss/engine/checks/crlf.py#L18",
+      "reported": "2026-06-01"
+    },
+    {
+      "type": "string",
+      "value": "stingxss-probe.example.com",
+      "confidence": "medium",
+      "context": "Origin of the StingXSS CORS check (https://evil.stingxss-probe.example.com; also https://<host>.evil.stingxss-probe.com)",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/stingxss/blob/898a1288b362448b96310acfc163fd683b58af6f/stingxss/engine/checks/cors.py#L113",
+      "reported": "2026-06-01"
+    },
+    {
+      "type": "string",
+      "value": "stingxss_redir_marker",
+      "confidence": "medium",
+      "context": "Open redirect canary of StingXSS: //stingxss-canary.example.com/stingxss_redir_marker",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/stingxss/blob/898a1288b362448b96310acfc163fd683b58af6f/stingxss/engine/checks/redirect.py#L19",
+      "reported": "2026-06-01"
+    },
+    {
+      "type": "string",
+      "value": "stingxss_jsonp_probe",
+      "confidence": "medium",
+      "context": "Callback name StingXSS sends to JSONP endpoints",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/stingxss/blob/898a1288b362448b96310acfc163fd683b58af6f/stingxss/engine/checks/jsonp_some.py#L50",
+      "reported": "2026-06-01"
+    },
+    {
+      "type": "string",
+      "value": "BreachSQL_",
+      "confidence": "medium",
+      "context": "Prefix of the UNION marker BreachSQL_<6 lowercase or digits> in BreachSQL payloads (from commonhuman-payloads). BreachSQL is a CommonHuman-Lab scanner NyxStrike installs (0.1.8, Python); it also runs on its own",
+      "source": "ThreatDefence review of the NyxStrike source code",
+      "sourceUrl": "https://github.com/CommonHuman-Lab/commonhuman-payloads/blob/88e375dfc7c44f550f817469a5533795d84d7511/src/commonhuman_payloads/sqli/union.py#L11",
+      "reported": "2026-06-01"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/nyxstrike",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

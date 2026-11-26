@@ -1,6 +1,7 @@
 import type { Candidate } from '../types';
 import { candidateUsesBlockedSource } from '../source-blocklist';
 import { interleaveByType } from './sampling';
+import type { SubrequestBudget } from './subrequest-budget';
 
 export interface RunDiscoveryDeps {
   /** Topic name → runner. Generic so new topics (breach, scam, aisec,
@@ -71,6 +72,12 @@ export interface RunDiscoveryDeps {
    * with genuinely stale items rather than the strict pass's runners-up.
    */
   rankTopUp?: (pool: Candidate[]) => void;
+  /**
+   * Invocation-wide subrequest accounting. Read AFTER each runner so a
+   * starved runner is visible even though its internal catches turn the
+   * budget error into an empty candidate list.
+   */
+  budget?: SubrequestBudget;
 }
 
 export interface RunnerStat {
@@ -86,6 +93,8 @@ export interface RunnerStat {
   ms: number;
   /** Present when the runner threw; the pipeline continues with the others. */
   error?: string;
+  /** True when the shared subrequest budget denied this runner work. */
+  starved?: boolean;
 }
 
 export interface RunDiscoveryResult {
@@ -163,6 +172,7 @@ export async function runDiscovery(deps: RunDiscoveryDeps): Promise<RunDiscovery
           blocked: 0,
           ms,
           error: error instanceof Error ? error.message : String(error),
+          starved: deps.budget?.wasStarved(name) || undefined,
         };
         continue;
       }
@@ -201,6 +211,7 @@ export async function runDiscovery(deps: RunDiscoveryDeps): Promise<RunDiscovery
         suppressed: gateSuppressed.length,
         blocked: cands.length - allowed.length,
         ms,
+        starved: deps.budget?.wasStarved(name) || undefined,
       };
     }
   }

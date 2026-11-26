@@ -1,0 +1,228 @@
+{
+  "slug": "artemis",
+  "name": "ARTEMIS",
+  "description": "Stanford research agent: a supervisor that starts and watches vulnerability-hunting sub-agents",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 6,
+    "suricata": 4,
+    "yara": 4,
+    "indicators": 19
+  },
+  "techniques": [
+    {
+      "id": "T1059",
+      "score": 6,
+      "comment": "KQL hunt: ARTEMIS running on a host you monitor; KQL hunt: Indicator sweep with the agentic watchlist; Sentinel analytics: ARTEMIS AI pentest agent sub-agent started on a host; Sigma: ARTEMIS Codex Sub-Agent Started; Sigma: ARTEMIS Session or Sub-Agent Files Written; YARA: ARTEMIS_Session_Files"
+    },
+    {
+      "id": "T1059.004",
+      "score": 2,
+      "comment": "KQL hunt: ARTEMIS running on a host you monitor; Sigma: Process Started by an ARTEMIS Codex Sub-Agent"
+    },
+    {
+      "id": "T1059.006",
+      "score": 2,
+      "comment": "KQL hunt: ARTEMIS running on a host you monitor; Sigma: ARTEMIS Supervisor or Autonomous Driver Started"
+    },
+    {
+      "id": "T1190",
+      "score": 6,
+      "comment": "KQL hunt: ARTEMIS prompt example payloads in web and proxy logs; KQL hunt: Indicator sweep with the agentic watchlist; Sigma: ARTEMIS Prompt Example Payloads in Web Logs; Suricata: 3813321 TD ARTEMIS prompt PHP deserialization payload in URI; Suricata: 3813322 TD ARTEMIS prompt PHP deserialization payload in body; Suricata: 3813323 TD ARTEMIS prompt PHP deserialization payload in URL-encoded body"
+    },
+    {
+      "id": "T1567",
+      "score": 2,
+      "comment": "KQL hunt: ARTEMIS running on a host you monitor; Sigma: ARTEMIS Vulnerability Report Posted with curl"
+    },
+    {
+      "id": "T1588.002",
+      "score": 3,
+      "comment": "YARA: ARTEMIS_Codex_Fork_Binary; YARA: ARTEMIS_Specialist_Prompt; YARA: ARTEMIS_Supervisor_Source"
+    },
+    {
+      "id": "T1595.002",
+      "score": 3,
+      "comment": "KQL hunt: ARTEMIS prompt example payloads in web and proxy logs; Sigma: ARTEMIS Prompt Example Payloads in Web Logs; Suricata: 3813324 TD ARTEMIS prompt open redirect example attacker.site in URI"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "string",
+      "value": "--wait-for-followup",
+      "confidence": "high",
+      "context": "Option the ARTEMIS fork adds to codex exec; the supervisor starts every sub-agent with it, next to --instance-id and --log-session-dir (declared in codex-rs/exec/src/cli.rs:75). Upstream Codex has no such option",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/supervisor/orchestration/instance_manager.py#L84",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "string",
+      "value": "--log-session-dir",
+      "confidence": "medium",
+      "context": "Option the ARTEMIS fork adds to codex exec for its realtime logs; the supervisor passes it to every sub-agent with --instance-id and --wait-for-followup (declared in codex-rs/exec/src/cli.rs:67). Upstream Codex has no such option, but the name is generic enough to appear in other tools",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/supervisor/orchestration/instance_manager.py#L82",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "string",
+      "value": "Codex Supervisor - AI Security Testing Orchestrator",
+      "confidence": "medium",
+      "context": "argparse description of the ARTEMIS supervisor (python -m supervisor.supervisor --help); in the source and in help output",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/supervisor/supervisor.py#L52",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "string",
+      "value": "=== CODEX INSTANCE:",
+      "confidence": "high",
+      "context": "First line of realtime_context.txt, which each ARTEMIS sub-agent writes in <session>/workspaces/<instance id>/; also a string in the compiled fork",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/codex-rs/exec/src/realtime_logger.rs#L80-L87",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "string",
+      "value": "=== VULNERABILITY SUBMITTED TO SLACK ===",
+      "confidence": "high",
+      "context": "Header of each entry ARTEMIS appends to vulnerabilities_found.log in its session folder after posting a finding",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/supervisor/triage/triage_tools.py#L682-L706",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "string",
+      "value": "You are Codex, a deployed cybersecurity red-teaming agent operating inside a fully-equipped Kali Linux container",
+      "confidence": "high",
+      "context": "Opening of five ARTEMIS sub-agent system prompts (web, client-side-web, enumeration, web-enumeration, linux-privesc); embedded in the compiled fork and sent to the model on every call (visible with TLS inspection), and written into final_result.json and realtime_context.txt",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/codex-rs/core/web.md#L1",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "string",
+      "value": "You are an autonomous security testing supervisor, orchestrating multiple Codex instances",
+      "confidence": "high",
+      "context": "Opening of the ARTEMIS supervisor system prompt, sent to the supervisor model (OpenRouter or OpenAI) on every call",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/supervisor/prompts/supervisor_prompt.py#L13",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "file_path",
+      "value": "logs/supervisor_session_",
+      "confidence": "medium",
+      "context": "ARTEMIS supervisor session folder, ./logs/supervisor_session_<unix time>/ under the working directory, holding supervisor.log, supervisor_todo.json, workspaces/ and triage_instances/",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/supervisor/supervisor.py#L87-L89",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "file_path",
+      "value": "codex-logs-backup",
+      "confidence": "medium",
+      "context": "Folder in the user's home directory where the ARTEMIS Codex fork copies its autonomous_session_<time>/ logs in autonomous mode (codex autonomous -f <config>.yaml)",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/codex-rs/cli/src/main.rs#L500-L503",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "file_name",
+      "value": "supervisor_heartbeat.json",
+      "confidence": "medium",
+      "context": "Heartbeat file in an ARTEMIS supervisor session folder, rewritten through the run",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/supervisor/orchestration/orchestrator.py#L102",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "file_name",
+      "value": "followup_input.json",
+      "confidence": "medium",
+      "context": "File the ARTEMIS supervisor writes in a sub-agent workspace to send it the next instruction; the sub-agent polls for it after writing status.json with waiting_for_followup",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/supervisor/orchestration/instance_manager.py#L242",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "file_name",
+      "value": "realtime_context.txt",
+      "confidence": "low",
+      "context": "Running transcript each ARTEMIS sub-agent writes in its workspace. A plain name: only with workspaces/ in the path, or the === CODEX INSTANCE: header, does it mean ARTEMIS",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/codex-rs/exec/src/realtime_logger.rs#L39",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "file_name",
+      "value": "vulnerabilities_found.log",
+      "confidence": "medium",
+      "context": "Log of findings ARTEMIS posted to Slack, in the supervisor session folder and in each triager folder",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/supervisor/submissions/vulnerability.py#L101",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "file_name",
+      "value": "session_vulnerabilities.jsonl",
+      "confidence": "medium",
+      "context": "ARTEMIS per-session store of submitted findings (title, asset, type, severity, hash)",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/supervisor/vulnerability_storage.py#L19",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "file_path",
+      "value": "/app/trinity/ARTEMIS",
+      "confidence": "medium",
+      "context": "Code folder in the Docker image the ARTEMIS README builds (docker build -t artemis .); the logs volume is mounted at /app/trinity/ARTEMIS/logs",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/Dockerfile#L21-L23",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "string",
+      "value": "s:11:\"injection\"",
+      "confidence": "low",
+      "context": "Part of the malformed PHP object O:8:\"stdClass\":1:{s:4:\"test\";s:11:\"injection\";} in the ARTEMIS web specialist prompt (the length is wrong for injection). A model may send it as written; it may also have been copied elsewhere",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/codex-rs/core/web.md#L73-L76",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "uri_string",
+      "value": "next=https://attacker.site",
+      "confidence": "low",
+      "context": "Open redirect example /nav?to=/logout&next=https://attacker.site in the ARTEMIS client-side-web prompt; a model may send it as written",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/codex-rs/core/client_side_web.md#L48",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "url",
+      "value": "https://openrouter.ai/api/v1",
+      "confidence": "low",
+      "context": "Default model endpoint of the ARTEMIS supervisor when OPENROUTER_API_KEY is set, and of its autonomous driver always; the README also points the Codex sub-agents at it. Shared with every OpenRouter customer: context only",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/supervisor/orchestration/orchestrator.py#L93",
+      "reported": "2025-12-31"
+    },
+    {
+      "type": "user_agent",
+      "value": "codex_cli_rs",
+      "confidence": "low",
+      "context": "User agent prefix and originator header of the ARTEMIS Codex fork on model API calls (codex_cli_rs/0.0.0 (<OS> <version>; <arch>) <terminal>, version from codex-rs/Cargo.toml:25). Shared with every Codex CLI; visible only with TLS inspection: context only",
+      "source": "ThreatDefence review of the ARTEMIS source code",
+      "sourceUrl": "https://github.com/Stanford-Trinity/ARTEMIS/blob/f309242d2a74493cd41aa3f8b02cec4d3fdd479d/codex-rs/core/src/user_agent.rs#L1-L13",
+      "reported": "2025-12-31"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/artemis",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

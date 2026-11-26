@@ -1,0 +1,223 @@
+{
+  "slug": "aria-x",
+  "name": "ARIA-X",
+  "description": "Python engine borrowing ARTEX, Cairn and PentAGI designs; console on 8787 and its own ARIA-X user agent on every request",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 4,
+    "suricata": 8,
+    "yara": 2,
+    "indicators": 19
+  },
+  "techniques": [
+    {
+      "id": "T1059.004",
+      "score": 2,
+      "comment": "KQL hunt: ARIA-X engine, console or sandbox on a host you monitor; Sigma: ARIA-X Engine, Console or Sandbox Command"
+    },
+    {
+      "id": "T1071.001",
+      "score": 8,
+      "comment": "KQL hunt: ARIA-X requests and console use in web and proxy logs; Sigma: ARIA-X Agent User Agent or Console API Use in Proxy Logs; Suricata: 3819410 TD ARIA-X console page title; Suricata: 3819411 TD ARIA-X console Server header; Suricata: 3819412 TD ARIA-X API bearer realm on 401; Suricata: 3819413 TD ARIA-X API configuration response; Suricata: 3819415 TD ARIA-X engagement created through the console API; Suricata: 3819416 TD ARIA-X engagement run started through the API"
+    },
+    {
+      "id": "T1190",
+      "score": 5,
+      "comment": "KQL hunt: ARIA-X requests and console use in web and proxy logs; Sentinel analytics: ARIA-X agent user agent reached a web server; Sigma: ARIA-X Agent User Agent in Web Logs; Suricata: 3819401 TD ARIA-X agent user agent; Suricata: 3819414 TD ARIA-X API configuration says no authentication is required"
+    },
+    {
+      "id": "T1588.002",
+      "score": 5,
+      "comment": "KQL hunt: ARIA-X engine, console or sandbox on a host you monitor; KQL hunt: Indicator sweep with the agentic watchlist; Sigma: ARIA-X Database, Run Evidence or Working Folders; Sigma: ARIA-X Engine, Console or Sandbox Command; YARA: ARIA_X_Source_Or_Console"
+    },
+    {
+      "id": "T1595.002",
+      "score": 8,
+      "comment": "KQL hunt: ARIA-X requests and console use in web and proxy logs; KQL hunt: Indicator sweep with the agentic watchlist; Sentinel analytics: ARIA-X agent user agent reached a web server; Sigma: ARIA-X Agent User Agent in Web Logs; Sigma: ARIA-X Agent User Agent or Console API Use in Proxy Logs; Sigma: ARIA-X Database, Run Evidence or Working Folders; Suricata: 3819401 TD ARIA-X agent user agent; YARA: ARIA_X_Run_Evidence_Or_Report"
+    },
+    {
+      "id": "T1610",
+      "score": 2,
+      "comment": "KQL hunt: ARIA-X engine, console or sandbox on a host you monitor; Sigma: ARIA-X Engine, Console or Sandbox Command"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "user_agent",
+      "value": "ARIA-X/0.3.0 (authorized security research)",
+      "confidence": "high",
+      "context": "User agent ARIA-X v0.3.0 sends on every request of its http_request and web_probe tools, and on its DuckDuckGo research searches. Built from __version__, so other versions differ only in the number; the model can replace it through the tool's headers argument",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/tools/net.py#L40",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "user_agent",
+      "value": "ARIA-X/0.2.1 (authorized security research)",
+      "confidence": "high",
+      "context": "User agent of ARIA-X v0.2.1 (same f-string as v0.3.0)",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/80a7500dbcacdb177c4578ff982c99e3b33e2b1e/src/aria_x/tools/net.py#L39",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "user_agent",
+      "value": "ARIA-X/0.1 (authorized security research)",
+      "confidence": "high",
+      "context": "Fixed user agent of ARIA-X v0.1.0 and v0.2.0",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/995c267f2522ef6cf2aa360c6c2b9c8419f0a4b1/src/aria_x/tools/net.py#L38",
+      "reported": "2026-11-22"
+    },
+    {
+      "type": "string",
+      "value": "ARIA-X · Engagement Console",
+      "confidence": "high",
+      "context": "HTML title of the ARIA-X console on port 8787 (middle dot U+00B7), served without a token even when one is set; same since v0.1.0",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/web/index.html#L8",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "ARIA-X console — autonomous security engagement control plane.",
+      "confidence": "high",
+      "context": "Meta description of the ARIA-X console page",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/web/index.html#L7",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "Bearer realm=\"ARIA-X\"",
+      "confidence": "high",
+      "context": "WWW-Authenticate on the 401 the ARIA-X API answers when a token is set and none is sent (any /api/ path except /api/health)",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/server/app.py#L306",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "http_header",
+      "value": "X-ARIA-X-Token",
+      "confidence": "high",
+      "context": "Request header the ARIA-X API accepts in place of Authorization: Bearer <token>; also listed in its CORS Access-Control-Allow-Headers",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/server/app.py#L394",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "Autonomous Reasoning & Investigation Agent, eXtended",
+      "confidence": "medium",
+      "context": "ARIA-X tagline: in the /api/config response (\"tagline\"), the console header, the CLI banner and the package description",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/__init__.py#L23",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "# ARIA-X OPERATING DOCTRINE",
+      "confidence": "high",
+      "context": "First line of every ARIA-X agent system prompt; visible in model API request bodies to a TLS-inspecting proxy or an LLM gateway log",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/agents/prompts.py#L28",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "ARIA_X_AUTH_TOKEN",
+      "confidence": "medium",
+      "context": "Environment variable holding the ARIA-X console bearer token; required by its compose file, optional for docker run of its image (then the API has no authentication)",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/config.py#L235",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "ARIA_X_SANDBOX",
+      "confidence": "medium",
+      "context": "Environment variable set to 1 for every command ARIA-X's local sandbox runs as bash -lc on the host; also the setting that picks the sandbox backend",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/tools/sandbox.py#L278",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "ARIA_X_SESSION",
+      "confidence": "high",
+      "context": "Environment variable set to 1 for ARIA-X's interactive PTY sessions (/bin/bash -lc <command>)",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/tools/session.py#L227",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "aria-x-sess-",
+      "confidence": "high",
+      "context": "Name prefix of ARIA-X's interactive Docker sandbox containers (aria-x-sess-<8 hex>, docker run --rm -i -t); one-shot command containers are aria-x-<12 hex>",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/tools/session.py#L211",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "aria-x-console",
+      "confidence": "medium",
+      "context": "Container name of the ARIA-X console in its compose file (image aria-x:0.3.0, published on 127.0.0.1:8787)",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/docker/docker-compose.yml#L17",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "docker_image",
+      "value": "aria-x:0.3.0",
+      "confidence": "medium",
+      "context": "Locally built ARIA-X image (python:3.12-slim, CMD serve --host 0.0.0.0 --port 8787). Not published to a registry",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/docker/docker-compose.yml#L16",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_name",
+      "value": "aria-x.db",
+      "confidence": "high",
+      "context": "ARIA-X SQLite database in its data folder (./data, /app/data in the image), WAL mode so also aria-x.db-wal and aria-x.db-shm",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/config.py#L438",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_name",
+      "value": "aria-x.toml",
+      "confidence": "medium",
+      "context": "ARIA-X configuration file (configs/aria-x.toml or aria-x.toml), written by aria-x init",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/config.py#L539",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/work/evidence/http_",
+      "confidence": "medium",
+      "context": "Evidence records of ARIA-X HTTP requests: <runs>/run_<12 hex>/work/evidence/http_<YYYYMMDD>_<HHMMSS>_<8 digits>.json, holding the request headers with the ARIA-X user agent",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/tools/net.py#L124",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "url",
+      "value": "https://html.duckduckgo.com/html/?q=",
+      "confidence": "low",
+      "context": "ARIA-X web_search tool endpoint, fetched with the ARIA-X user agent. Used by many tools: context only, unless the user agent matches",
+      "source": "ThreatDefence review of the ARIA-X source code",
+      "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/tools/net.py#L679",
+      "reported": "2026-11-25"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/aria-x",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

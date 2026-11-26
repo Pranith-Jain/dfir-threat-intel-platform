@@ -3,7 +3,8 @@ import { topicKey } from '../stable-keys';
 import { severityFromText, noveltyScore, finalScore } from '../scoring';
 import { dayOfYear } from './rotation';
 import { selfFetchJson } from '../../lib/self-fetch';
-import { verifyUrls, type LinkStatus } from '../../lib/verify-url';
+import { isCanonicalAuthorityUrl, verifyUrls, type LinkStatus } from '../../lib/verify-url';
+import type { SubrequestBudget } from './subrequest-budget';
 
 /**
  * Trend research — the replacement for the old `agentic-trends` runner.
@@ -274,6 +275,8 @@ export interface TrendResearchDeps {
   internalTokenSecret?: string;
   /** Verify candidate URLs resolve. Off in cron to save subrequests. */
   deepVerify?: boolean;
+  /** Optional invocation-wide subrequest accounting. */
+  budget?: SubrequestBudget;
 }
 
 /**
@@ -303,17 +306,21 @@ export async function discoverTrendResearch(deps: TrendResearchDeps): Promise<Ca
   // every signal would blow the subrequest budget on items that never make
   // the cut.
   signals.sort((a, b) => b.weight - a.weight);
-  const shortlist = signals.slice(0, 12);
+  // `perTopicOverride.trends` is 3 in run.ts. Verifying 12 URLs to keep 3
+  // spent nine probes on candidates that never made the cut; four is enough
+  // for the shortlist and keeps the shared subrequest budget intact.
+  const shortlist = signals.slice(0, 4);
 
-  // One batched verification for the whole shortlist.
+  // One batched verification for the whole shortlist. Canonical NVD/KEV/
+  // MITRE URLs need no probe — the corpus record that produced them is the
+  // authority. A budget denial is swallowed here on purpose: the orchestrator
+  // reads `budget.wasStarved('trends')` from outside.
   const statuses: Record<string, LinkStatus> = {};
-  if (shortlist.some((s) => !/nvd\.nist\.gov|known-exploited-vulnerabilities/.test(s.url))) {
+  const probeUrls = shortlist.map((s) => s.url).filter((u) => !isCanonicalAuthorityUrl(u));
+  if (probeUrls.length > 0) {
     try {
-      const results = await verifyUrls(
-        shortlist.map((s) => s.url),
-        3000,
-        { deepSoft404: deps.deepVerify === true }
-      );
+      deps.budget?.spend('trends', probeUrls.length);
+      const results = await verifyUrls(probeUrls, 3000, { deepSoft404: deps.deepVerify === true });
       for (const [url, r] of results) statuses[url] = r.linkStatus;
     } catch {
       return [];
@@ -329,7 +336,7 @@ export async function discoverTrendResearch(deps: TrendResearchDeps): Promise<Ca
     if (seenKeys.has(key)) continue;
 
     // Canonical-authority URLs are constructed from the id and need no probe.
-    const canonical = /nvd\.nist\.gov|known-exploited-vulnerabilities/.test(signal.url);
+    const canonical = isCanonicalAuthorityUrl(signal.url);
     const status = canonical ? 'ok' : statuses[signal.url];
     // An unverified URL is exactly where a fabricated citation hides, and
     // unlike the old LLM runner every candidate here is anchored to a real

@@ -1,0 +1,137 @@
+{
+  "id": "T1113",
+  "displayName": "Screen Capture",
+  "tests": [
+    {
+      "name": "Screencapture",
+      "guid": "0f47ceb1-720f-4275-96b8-21f0562217ac",
+      "description": "Use screencapture command to collect a full desktop screenshot",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Screencapture (silent)",
+      "guid": "deb7d358-5fbd-4dc4-aecc-ee0054d2d9a4",
+      "description": "Use screencapture command to collect a full desktop screenshot",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "X Windows Capture",
+      "guid": "8206dd0c-faf6-4d74-ba13-7fbe13dce6ac",
+      "description": "Use xwd command to collect a full desktop screenshot and review file with xwud",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file", "package_checker", "package_installer"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "X Windows Capture (freebsd)",
+      "guid": "562f3bc2-74e8-46c5-95c7-0e01f9ccc65c",
+      "description": "Use xwd command to collect a full desktop screenshot and review file with xwud",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Capture Linux Desktop using Import Tool",
+      "guid": "9cd1cccb-91e4-4550-9139-e20a586fcea1",
+      "description": "Use import command from ImageMagick to collect a full desktop screenshot",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Capture Linux Desktop using Import Tool (freebsd)",
+      "guid": "18397d87-38aa-4443-a098-8a48a8ca5d8d",
+      "description": "Use import command from ImageMagick to collect a full desktop screenshot",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Windows Screencapture",
+      "guid": "3c898f62-626c-47d5-aad2-6de873d69153",
+      "description": "Use Psr.exe binary to collect screenshots of user display. Test will do left mouse click to simulate user behaviour",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file", "recording_time"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Windows Screen Capture (CopyFromScreen)",
+      "guid": "e9313014-985a-48ef-80d9-cde604ffc187",
+      "description": "Take a screen capture of the desktop through a call to the [Graphics.CopyFromScreen] .NET API.\n[Graphics.CopyFromScreen]: https://docs.microsoft.com/en-us/dotnet/api/system.drawing.graphics.copyfromscreen",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Windows Recall Feature Enabled - DisableAIDataAnalysis Value Deleted",
+      "guid": "5a496325-0115-4274-8eb9-755b649ad0fb",
+      "description": "Detects the enabling of the Windows Recall feature via registry manipulation. Windows Recall can be enabled by deleting the existing \"DisableAIDataAnalysis\" registry value. Adversaries may enable Windows Recall as part of post-exploitation discovery and collection activities. This rule assumes that Recall is already explicitly disabled on the host, and subsequently enabled by the adversary. \n- https://learn.microsoft.com/en-us/windows/client-management/manage-recall\n- https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-windowsai#disableaidataanalysis",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "RDP Bitmap Cache Extraction via bmc-tools",
+      "guid": "98f19852-7348-4f99-9e15-6ff4320464c7",
+      "description": "Simulates an attacker extracting the RDP bitmap cache using the ANSSI \"bmc-tools.py\" script.\nThis test requires valid RDP bitmap cache files to exist on the system (usually created after an outgoing RDP connection is made).",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["cache_path", "output_dir"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1113/T1113.yaml"
+}

@@ -312,6 +312,11 @@ const AI_STRICT_EXACT = new Set<string>([
   '/api/v1/cti/export/stix', // STIX serialisation over a D1 scan
   '/api/v1/telegram-custom-channels', // shared KV list rewrite; DELETE shares the path
   '/api/v1/flowviz/analyze', // graph build that runs a Workers AI model
+  // PromptIntel Community plan: 10 scans/day and 5 indicator checks/day per
+  // key. The server caches answers, but a caller varying the body/value can
+  // still drain the account's allowance — keep both POST forms strict.
+  '/api/v1/promptintel/scan',
+  '/api/v1/promptintel/check',
 ]);
 function isAiStrict(pathname: string, method: string): boolean {
   if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') return false;
@@ -348,10 +353,20 @@ const COSTLY_GET_EXACT = new Set<string>([
   // (Socradar fortibleed tab) keylessly and was left on the global 30/min —
   // i.e. 30 platform-egress scans of an arbitrary third-party host per minute.
   '/api/v1/fortibleed/check',
+  // PromptIntel Community allowance is per ACCOUNT, not per colo: 5 prompt
+  // reads, 5 indicator checks and 20 hash lookups a day. The routes cache,
+  // but a caller varying the id/value still spends the allowance.
+  '/api/v1/promptintel/check',
+  '/api/v1/promptintel/artifacts/lookup',
 ]);
+
+// Dynamic paths that spend the same allowance (a `:id` can never be an exact
+// pathname, so they need a prefix check in isCostlyGet).
+const COSTLY_GET_PREFIX = ['/api/v1/promptintel/prompts/'];
 
 function isCostlyGet(url: URL): boolean {
   if (COSTLY_GET_EXACT.has(url.pathname)) return true;
+  if (COSTLY_GET_PREFIX.some((p) => url.pathname.startsWith(p))) return true;
   return url.pathname === '/api/v1/intel-bundle' && url.searchParams.has('title') && url.searchParams.has('body');
 }
 

@@ -1,0 +1,267 @@
+{
+  "id": "T1685.006",
+  "displayName": "Disable or Modify Tools: Clear Linux or Mac System Logs",
+  "tests": [
+    {
+      "name": "rm -rf",
+      "guid": "989cc1b1-3642-4260-a809-54f9dd559683",
+      "description": "Delete system and audit logs",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["syslog_path", "macos_audit_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "rm -rf",
+      "guid": "bd8ccc45-d632-481e-b7cf-c467627d68f9",
+      "description": "Delete messages and security logs",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Delete log files using built-in log utility",
+      "guid": "653d39cd-bae7-499a-898c-9fb96b8b5cd1",
+      "description": "This test deletes main log datastore, inflight log data, time-to-live data(TTL), fault and error content",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Truncate system log files via truncate utility",
+      "guid": "6290f8a8-8ee9-4661-b9cf-390031bf6973",
+      "description": "This test truncates the system log files using the truncate utility with (-s 0) parameter which sets file size to zero, thus emptying the file content",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["system_log_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Truncate system log files via truncate utility (freebsd)",
+      "guid": "14033063-ee04-4eaf-8f5d-ba07ca7a097c",
+      "description": "This test truncates the system log files using the truncate utility with (-s 0 or --size=0) parameter which sets file size to zero, thus emptying the file content",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Delete log files via cat utility by appending /dev/null or /dev/zero",
+      "guid": "c23bdb88-928d-493e-b46d-df2906a50941",
+      "description": "The first sub-test truncates the log file to zero bytes via /dev/null and the second sub-test fills the log file with null bytes(zeroes) via /dev/zero, using cat utility",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["system_log_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Delete log files via cat utility by appending /dev/null or /dev/zero (freebsd)",
+      "guid": "369878c6-fb04-48d6-8fc2-da9d97b3e054",
+      "description": "The first sub-test truncates the log file to zero bytes via /dev/null and the second sub-test fills the log file with null bytes(zeroes) via /dev/zero, using cat utility",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "System log file deletion via find utility",
+      "guid": "bc8eeb4a-cc3e-45ec-aa6e-41e973da2558",
+      "description": "This test finds and deletes the system log files within /var/log/ directory using various executions(rm, shred, unlink)",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["system_log_name1", "system_log_name2", "system_log_name3"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Overwrite macOS system log via echo utility",
+      "guid": "0208ea60-98f1-4e8c-8052-930dce8f742c",
+      "description": "This test overwrites the contents of system log file with an empty string using echo utility",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["system_log_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Overwrite FreeBSD system log via echo utility",
+      "guid": "11cb8ee1-97fb-4960-8587-69b8388ee9d9",
+      "description": "This test overwrites the contents of system log file with an empty string using echo utility",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Real-time system log clearance/deletion",
+      "guid": "848e43b3-4c0a-4e4c-b4c9-d1e8cea9651c",
+      "description": "This test reads real-time system log file and writes empty string to it, thus clearing the log file without tampering with the logging process",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Delete system log files via unlink utility",
+      "guid": "03013b4b-01db-437d-909b-1fdaa5010ee8",
+      "description": "This test deletes the system log file using unlink utility",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["system_log_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Delete system log files via unlink utility (freebsd)",
+      "guid": "45ad4abd-19bd-4c5f-a687-41f3eee8d8c2",
+      "description": "This test deletes the messages log file using unlink utility",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Delete system log files using shred utility",
+      "guid": "86f0e4d5-3ca7-45fb-829d-4eda32b232bb",
+      "description": "This test overwrites the contents of the log file with zero bytes(-z) using three passes(-n 3) of data, and then delete the file(-u) securely",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["system_log_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Delete system log files using srm utility",
+      "guid": "b0768a5e-0f32-4e75-ae5b-d036edcf96b6",
+      "description": "This test securely deletes the system log files individually and recursively using the srm utility.\nInstall srm using Homebrew with the command: brew install khell/homebrew-srm/srm\nRefer: https://github.com/khell/homebrew-srm/issues/1 for installation",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["system_log_path", "system_log_folder"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Delete system log files using OSAScript",
+      "guid": "810a465f-cd4f-47bc-b43e-d2de3b033ecc",
+      "description": "This test deletes the system log file using osascript via \"do shell script\"(sh/bash by default) which in-turn spawns rm utility, requires admin privileges",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["system_log_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Delete system log files using Applescript",
+      "guid": "e62f8694-cbc7-468f-862c-b10cd07e1757",
+      "description": "This test deletes the system log file using applescript using osascript via Finder application\nNote: The user may be prompted to grant access to the Finder application before the command can be executed successfully as part of TCC(Transparency, Consent, and Control) Framework.\nRefer: https://www.rainforestqa.com/blog/macos-tcc-db-deep-dive",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["system_log_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Delete system journal logs via rm and journalctl utilities",
+      "guid": "ca50dd85-81ff-48ca-92e1-61f119cb1dcf",
+      "description": "The first sub-test deletes the journal files using rm utility in the \"/var/log/journal/\" directory and the second sub-test clears the journal by modifiying time period of logs that should be retained to zero.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["journal_folder"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Overwrite Linux Mail Spool",
+      "guid": "1602ff76-ed7f-4c94-b550-2f727b4782d4",
+      "description": "This test overwrites the Linux mail spool of a specified user. This technique was used by threat actor Rocke during the exploitation of Linux web servers.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["username"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Overwrite Linux Log",
+      "guid": "d304b2dc-90b4-4465-a650-16ddd503f7b5",
+      "description": "This test overwrites the specified log. This technique was used by threat actor Rocke during the exploitation of Linux web servers.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["log_path"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1685.006/T1685.006.yaml"
+}

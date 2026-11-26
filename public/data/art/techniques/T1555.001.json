@@ -1,0 +1,59 @@
+{
+  "id": "T1555.001",
+  "displayName": "Credentials from Password Stores: Keychain",
+  "tests": [
+    {
+      "name": "Keychain Dump",
+      "guid": "88e1fa00-bf63-4e5b-a3e1-e2ea51c8cca6",
+      "description": "This command will dump keychain credential information from login.keychain. \nSource: https://www.loobins.io/binaries/security/\n\n### Keychain File path\n  ~/Library/Keychains/\n  /Library/Keychains/\n  /Network/Library/Keychains/\n  [Security Reference](https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/security.1.html)",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Export Certificate Item(s)",
+      "guid": "1864fdec-ff86-4452-8c30-f12507582a93",
+      "description": "This command finds all certificate items and sends the output to local file in pem format.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["cert_export"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Import Certificate Item(s) into Keychain",
+      "guid": "e544bbcb-c4e0-4bd0-b614-b92131635f59",
+      "description": "This command will import a certificate pem file into a keychain.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["cert_export"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Copy Keychain using cat utility",
+      "guid": "5c32102a-c508-49d3-978f-288f8a9f6617",
+      "description": "This command will copy the keychain using the cat utility in a manner similar to Atomic Stealer.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["keychain_export"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1555.001/T1555.001.yaml"
+}

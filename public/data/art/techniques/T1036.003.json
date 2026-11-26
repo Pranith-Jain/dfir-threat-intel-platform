@@ -1,0 +1,111 @@
+{
+  "id": "T1036.003",
+  "displayName": "Masquerading: Rename Legitimate Utilities",
+  "tests": [
+    {
+      "name": "Masquerading as Windows LSASS process",
+      "guid": "5ba5a3d1-cf3c-4499-968a-a93155d1f717",
+      "description": "Copies cmd.exe, renames it, and launches it to masquerade as an instance of lsass.exe.\n\nUpon execution, cmd will be launched by powershell. If using Invoke-AtomicTest, The test will hang until the 120 second timeout cancels the session",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Masquerading as FreeBSD or Linux crond process.",
+      "guid": "a315bfff-7a98-403b-b442-2ea1b255e556",
+      "description": "Copies sh process, renames it as crond, and executes it to masquerade as the cron daemon.\n\nUpon successful execution, sh is renamed to `crond` and executed.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Masquerading - cscript.exe running as notepad.exe",
+      "guid": "3a2a578b-0a01-46e4-92e3-62e2859b42f0",
+      "description": "Copies cscript.exe, renames it, and launches it to masquerade as an instance of notepad.exe.\n\nUpon successful execution, cscript.exe is renamed as notepad.exe and executed from non-standard path.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Masquerading - wscript.exe running as svchost.exe",
+      "guid": "24136435-c91a-4ede-9da1-8b284a1c1a23",
+      "description": "Copies wscript.exe, renames it, and launches it to masquerade as an instance of svchost.exe.\n\nUpon execution, no windows will remain open but wscript will have been renamed to svchost and ran out of the temp folder",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Masquerading - powershell.exe running as taskhostw.exe",
+      "guid": "ac9d0fc3-8aa8-4ab5-b11f-682cd63b40aa",
+      "description": "Copies powershell.exe, renames it, and launches it to masquerade as an instance of taskhostw.exe.\n\nUpon successful execution, powershell.exe is renamed as taskhostw.exe and executed from non-standard path.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Masquerading - non-windows exe running as windows exe",
+      "guid": "bc15c13f-d121-4b1f-8c7d-28d95854d086",
+      "description": "Copies an exe, renames it as a windows exe, and launches it to masquerade as a real windows exe\n\nUpon successful execution, powershell will execute T1036.003.exe as svchost.exe from on a non-standard path.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["outputfile", "inputfile"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Masquerading - windows exe running as different windows exe",
+      "guid": "c3d24a39-2bfe-4c6a-b064-90cd73896cb0",
+      "description": "Copies a windows exe, renames it as another windows exe, and launches it to masquerade as second windows exe",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["outputfile", "inputfile"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Malicious process Masquerading as LSM.exe",
+      "guid": "83810c46-f45e-4485-9ab6-8ed0e9e6ed7f",
+      "description": "Detect LSM running from an incorrect directory and an incorrect service account\nThis works by copying cmd.exe to a file, naming it lsm.exe, then copying a file to the C:\\ folder.\n\nUpon successful execution, cmd.exe will be renamed as lsm.exe and executed from non-standard path.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1036.003/T1036.003.yaml"
+}

@@ -1,0 +1,59 @@
+{
+  "id": "T1197",
+  "displayName": "BITS Jobs",
+  "tests": [
+    {
+      "name": "Bitsadmin Download (cmd)",
+      "guid": "3c73d728-75fb-4180-a12f-6712864d7421",
+      "description": "This test simulates an adversary leveraging bitsadmin.exe to download\nand execute a payload",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_file", "local_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Bitsadmin Download (PowerShell)",
+      "guid": "f63b8bc4-07e5-4112-acba-56f646f3f0bc",
+      "description": "This test simulates an adversary leveraging bitsadmin.exe to download\nand execute a payload leveraging PowerShell\n\nUpon execution you will find a github markdown file downloaded to the Temp directory",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_file", "local_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Persist, Download, & Execute",
+      "guid": "62a06ec5-5754-47d2-bcfc-123d8314c6ae",
+      "description": "This test simulates an adversary leveraging bitsadmin.exe to schedule a BITS transferand execute a payload in multiple steps.\nNote that in this test, the file executed is not the one downloaded. The downloading of a random file is simply the trigger for getting bitsdamin to run an executable.\nThis has the interesting side effect of causing the executable (e.g. notepad) to run with an Initiating Process of \"svchost.exe\" and an Initiating Process Command Line of \"svchost.exe -k netsvcs -p -s BITS\"\nThis job will remain in the BITS queue until complete or for up to 90 days by default if not removed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["command_path", "bits_job_name", "local_file", "remote_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Bits download using desktopimgdownldr.exe (cmd)",
+      "guid": "afb5e09e-e385-4dee-9a94-6ee60979d114",
+      "description": "This test simulates using desktopimgdownldr.exe to download a malicious file\ninstead of a desktop or lockscreen background img. The process that actually makes \nthe TCP connection and creates the file on the disk is a svchost process (“-k netsvc -p -s BITS”) \nand not desktopimgdownldr.exe. See https://labs.sentinelone.com/living-off-windows-land-a-new-native-file-downldr/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_file", "download_path", "cleanup_path", "cleanup_file"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1197/T1197.yaml"
+}

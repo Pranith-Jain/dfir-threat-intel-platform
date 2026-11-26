@@ -1,0 +1,66 @@
+{
+  "id": "T1059.006",
+  "displayName": "Command and Scripting Interpreter: Python",
+  "tests": [
+    {
+      "name": "Execute shell script via python's command mode arguement",
+      "guid": "3a95cdb2-c6ea-4761-b24e-02b71889b8bb",
+      "description": "Download and execute shell script and write to file then execute locally using Python -c (command mode)",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["script_url", "payload_file_name", "executor", "script_args"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Execute Python via scripts",
+      "guid": "6c4d1dcb-33c7-4c36-a8df-c6cfd0408be8",
+      "description": "Create Python file (.py) that downloads and executes shell script via executor arguments",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["python_script_name", "script_url", "payload_file_name", "executor", "script_args"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Execute Python via Python executables",
+      "guid": "0b44d79b-570a-4b27-a31f-3bf2156e5eaa",
+      "description": "Create Python file (.py) then compile to binary (.pyc) that downloads an external malicious script then executes locally using the supplied executor and arguments",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [
+        "python_script_name",
+        "script_url",
+        "payload_file_name",
+        "executor",
+        "script_args",
+        "python_binary_name"
+      ],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Python pty module and spawn function used to spawn sh or bash",
+      "guid": "161d694c-b543-4434-85c3-c3a433e33792",
+      "description": "Uses the Python spawn function to spawn a sh shell followed by a bash shell. Per Volexity, this technique was observed in exploitation of Atlassian Confluence [CVE-2022-26134]. Reference: https://www.volexity.com/blog/2022/06/02/zero-day-exploitation-of-atlassian-confluence",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1059.006/T1059.006.yaml"
+}

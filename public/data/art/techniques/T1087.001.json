@@ -1,0 +1,150 @@
+{
+  "id": "T1087.001",
+  "displayName": "Account Discovery: Local Account",
+  "tests": [
+    {
+      "name": "Enumerate all accounts (Local)",
+      "guid": "f8aab3dd-5990-4bf8-b8ab-2226c951696f",
+      "description": "Enumerate all accounts by copying /etc/passwd to another file",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "View sudoers access",
+      "guid": "fed9be70-0186-4bde-9f8a-20945f9370c2",
+      "description": "(requires root)",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "View accounts with UID 0",
+      "guid": "c955a599-3653-4fe5-b631-f11c00eb0397",
+      "description": "View accounts with UID 0",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "List opened files by user",
+      "guid": "7e46c7a5-0142-45be-a858-1a3ecb4fd3cb",
+      "description": "List opened files by user",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Show if a user account has ever logged in remotely",
+      "guid": "0f0b6a29-08c3-44ad-a30b-47fd996b2110",
+      "description": "Show if a user account has ever logged in remotely",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Enumerate users and groups",
+      "guid": "e6f36545-dc1e-47f0-9f48-7f730f54a02e",
+      "description": "Utilize groups and id to enumerate users and groups",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enumerate users and groups",
+      "guid": "319e9f6c-7a9e-432e-8c62-9385c803b6f2",
+      "description": "Utilize local utilities to enumerate users and groups",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enumerate all accounts on Windows (Local)",
+      "guid": "80887bec-5a9b-4efc-a81d-f83eb2eb32ab",
+      "description": "Enumerate all accounts\nUpon execution, multiple enumeration commands will be run and their output displayed in the PowerShell session",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enumerate all accounts via PowerShell (Local)",
+      "guid": "ae4b6361-b5f8-46cb-a3f9-9cf108ccfe7b",
+      "description": "Enumerate all accounts via PowerShell. Upon execution, lots of user account and group information will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enumerate logged on users via CMD (Local)",
+      "guid": "a138085e-bfe5-46ba-a242-74a6fb884af3",
+      "description": "Enumerate logged on users. Upon execution, logged on users will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "ESXi - Local Account Discovery via ESXCLI",
+      "guid": "9762ac6e-aa60-4449-a2f0-cbbd0e1fd22c",
+      "description": "An adversary can use ESXCLI to enumerate a list of all local accounts on an ESXi host.\n[Reference](https://lolesxi-project.github.io/LOLESXi/lolesxi/Binaries/esxcli/#account%20enumeration)\"",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["vm_host", "vm_user", "vm_pass", "plink_file"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1087.001/T1087.001.yaml"
+}

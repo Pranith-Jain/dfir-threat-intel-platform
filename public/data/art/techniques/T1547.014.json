@@ -1,0 +1,46 @@
+{
+  "id": "T1547.014",
+  "displayName": "Boot or Logon Autostart Execution: Active Setup",
+  "tests": [
+    {
+      "name": "HKLM - Add atomic_test key to launch executable as part of user setup",
+      "guid": "deff4586-0517-49c2-981d-bbea24d48d71",
+      "description": "This test will create an \"atomic_test\" key under 'HKLM:\\SOFTWARE\\Microsoft\\Active Setup\\Installed Components' to launch calc by configuring an active setup executable and \nforcing to run active setup using the \"runonce.exe /AlternateShellStartup\" command. \nWithout the \"runonce.exe /AlternateShellStartup\" command it would run during the next logon for each user.\n\nNote: If you logout before running the cleanup command, you will be required to go through the OOBE (out-of-box experience) setup sequence to log back in. \nThe payload will only run once unless the cleanup command is run in between tests.\n\n[Active Setup Explained](https://helgeklein.com/blog/active-setup-explained/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["payload"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "HKLM - Add malicious StubPath value to existing Active Setup Entry",
+      "guid": "39e417dd-4fed-4d9c-ae3a-ba433b4d0e9a",
+      "description": "This test will add a StubPath entry to the Active Setup native registry key associated with 'Internet Explorer Core Fonts' (UUID {C9E9A340-D1F1-11D0-821E-444553540600}) \nSaid key doesn't have a StubPath value by default, by adding one it will launch calc by forcing to run active setup using runonce.exe /AlternateShellStartup. \nWithout the last command it will normally run on next user logon. Note: this test will only run once successfully if no cleanup command is run in between test.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["payload"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "HKLM - re-execute 'Internet Explorer Core Fonts' StubPath payload by decreasing version number",
+      "guid": "04d55cef-f283-40ba-ae2a-316bc3b5e78c",
+      "description": "This test will decrease the version number of the 'Internet Explorer Core Fonts' (UUID {C9E9A340-D1F1-11D0-821E-444553540600}) registry key for the current user, \nwhich will force the StubPath payload (if set) to execute.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1547.014/T1547.014.yaml"
+}

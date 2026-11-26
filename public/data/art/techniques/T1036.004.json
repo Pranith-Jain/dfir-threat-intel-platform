@@ -1,0 +1,59 @@
+{
+  "id": "T1036.004",
+  "displayName": "Masquerading: Masquerade Task or Service",
+  "tests": [
+    {
+      "name": "Creating W32Time similar named service using schtasks",
+      "guid": "f9f2fe59-96f7-4a7d-ba9f-a9783200d4c9",
+      "description": "Creating W32Time similar named service (win32times) using schtasks just like threat actor dubbed \"Operation Wocao\"",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Creating W32Time similar named service using sc",
+      "guid": "b721c6ef-472c-4263-a0d9-37f1f4ecff66",
+      "description": "Creating W32Time similar named service (win32times) using sc just like threat actor dubbed \"Operation Wocao\"",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "linux rename /proc/pid/comm using prctl",
+      "guid": "f0e3aaea-5cd9-4db6-a077-631dd19b27a8",
+      "description": "Runs a C program that calls prctl(PR_SET_NAME) to modify /proc/pid/comm value to \"totally_legit\".  This will show up as process name in simple 'ps' listings.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["exe_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Hiding a malicious process with bind mounts",
+      "guid": "ad4b73c2-d6e2-4d8b-9868-4c6f55906e01",
+      "description": "Creates a malicious process and hides it by bind mounting to the /proc filesystem of a benign process",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1036.004/T1036.004.yaml"
+}

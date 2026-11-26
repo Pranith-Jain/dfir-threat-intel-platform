@@ -1,0 +1,33 @@
+{
+  "id": "T1580",
+  "displayName": "Cloud Infrastructure Discovery",
+  "tests": [
+    {
+      "name": "AWS - EC2 Enumeration from Cloud Instance",
+      "guid": "99ee161b-dcb1-4276-8ecb-7cfdcb207820",
+      "description": "This atomic runs several API calls (sts:GetCallerIdentity, s3:ListBuckets, iam:GetAccountSummary, iam:ListRoles, iam:ListUsers, iam:GetAccountAuthorizationDetails, ec2:DescribeSnapshots, cloudtrail:DescribeTrails, guardduty:ListDetectors) from the context of an EC2 instance role. This simulates an attacker compromising an EC2 instance and running initial discovery commands on it. This atomic test leverages a tool called stratus-red-team built by DataDog (https://github.com/DataDog/stratus-red-team). Stratus Red Team is a self-contained binary. You can use it to easily detonate offensive attack techniques against a live cloud environment. Ref: https://stratus-red-team.cloud/attack-techniques/",
+      "platforms": ["linux", "macos", "iaas:aws"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["stratus_path", "aws_region"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "AWS - EC2 Security Group Enumeration",
+      "guid": "99b38f24-5acc-4aa3-85e5-b7f97a5d37ac",
+      "description": "Simulate an attacker's action to enumerate EC2 Security Groups in a compromised AWS environment.",
+      "platforms": ["iaas:aws"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["aws_profile", "output_format"],
+      "dependencyCount": 2
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1580/T1580.yaml"
+}

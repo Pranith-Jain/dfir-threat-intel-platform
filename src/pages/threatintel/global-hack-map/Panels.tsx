@@ -41,6 +41,7 @@ import {
   type GhmCve,
   type GhmFeedRow,
   type GhmIncident,
+  type GhmPatch,
   type GhmTab,
   type GhmWindow,
 } from './types';
@@ -101,7 +102,12 @@ export function TopBar({
   const ticker = useMemo(() => fresh.slice(0, 20), [fresh]);
   return (
     <header className="pointer-events-auto absolute inset-x-0 top-0 z-30 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-line-1/50 bg-surface-100/90 px-3 py-2 backdrop-blur-md sm:px-4">
-      <button type="button" onClick={onMap} className="flex shrink-0 items-center gap-2 rounded-control py-1" aria-label="Global Hack Map home">
+      <button
+        type="button"
+        onClick={onMap}
+        className="flex shrink-0 items-center gap-2 rounded-control py-1"
+        aria-label="Global Hack Map home"
+      >
         <Globe2 size={20} className="text-rose-500" aria-hidden />
         <span className="flex flex-col font-semibold leading-none tracking-tight text-heading sm:flex-row sm:gap-1.5">
           <span className="text-micro font-mono font-normal uppercase tracking-widest text-muted sm:text-sm sm:font-semibold sm:tracking-tight sm:text-heading">
@@ -150,18 +156,37 @@ export function TopBar({
         </div>
       </div>
 
-      <nav className="ml-auto flex shrink-0 items-center gap-0.5 rounded-full border border-line-1 bg-surface-100 p-0.5" aria-label="Situation room navigation">
-        <button type="button" onClick={onMap} className="hidden rounded-full px-2.5 py-1 text-mini text-muted hover:text-heading md:inline-flex">
+      <nav
+        className="ml-auto flex shrink-0 items-center gap-0.5 rounded-full border border-line-1 bg-surface-100 p-0.5"
+        aria-label="Situation room navigation"
+      >
+        <button
+          type="button"
+          onClick={onMap}
+          className="hidden rounded-full px-2.5 py-1 text-mini text-muted hover:text-heading md:inline-flex"
+        >
           Map
         </button>
-        <button type="button" onClick={onCheck} className="rounded-full px-2.5 py-1 text-mini text-muted hover:text-heading">
+        <button
+          type="button"
+          onClick={onCheck}
+          className="rounded-full px-2.5 py-1 text-mini text-muted hover:text-heading"
+        >
           <span className="sm:hidden">Check</span>
           <span className="hidden sm:inline">Am I affected?</span>
         </button>
-        <button type="button" onClick={onBrief} className="hidden rounded-full px-2.5 py-1 text-mini text-muted hover:text-heading md:inline-flex">
+        <button
+          type="button"
+          onClick={onBrief}
+          className="hidden rounded-full px-2.5 py-1 text-mini text-muted hover:text-heading md:inline-flex"
+        >
           Daily brief
         </button>
-        <button type="button" onClick={onAgents} className="hidden rounded-full px-2.5 py-1 text-mini text-muted hover:text-heading lg:inline-flex">
+        <button
+          type="button"
+          onClick={onAgents}
+          className="hidden rounded-full px-2.5 py-1 text-mini text-muted hover:text-heading lg:inline-flex"
+        >
           Agents
         </button>
         <a
@@ -175,7 +200,9 @@ export function TopBar({
           <GitBranch size={13} />
         </a>
       </nav>
-      {generatedAt && <span className="hidden font-mono text-micro text-muted/60 xl:inline">{relativeAgo(generatedAt)}</span>}
+      {generatedAt && (
+        <span className="hidden font-mono text-micro text-muted/60 xl:inline">{relativeAgo(generatedAt)}</span>
+      )}
     </header>
   );
 }
@@ -245,9 +272,12 @@ export function StorySidebar({
         // or severity — GHM's list is curated advisories and exploitation.
         .filter((c) => !/^\[(cvenotify|tg|dbugs|cvefeed)\]/i.test(c.description))
         .filter((c) => c.kev || c.has_exploit || c.origin === 'vulntracker' || (c.score ?? 0) >= 7)
-        .filter((c) =>
-          stack.length === 0 ||
-          stack.some((s) => `${c.vendor ?? ''} ${c.product ?? ''} ${c.description}`.toLowerCase().includes(s.toLowerCase()))
+        .filter(
+          (c) =>
+            stack.length === 0 ||
+            stack.some((s) =>
+              `${c.vendor ?? ''} ${c.product ?? ''} ${c.description}`.toLowerCase().includes(s.toLowerCase())
+            )
         )
         .filter((c) => !q || `${c.id} ${c.description} ${c.vendor ?? ''} ${c.product ?? ''}`.toLowerCase().includes(q))
         .sort((a, b) => Number(b.kev) - Number(a.kev) || (b.score ?? 0) - (a.score ?? 0))
@@ -255,10 +285,7 @@ export function StorySidebar({
     [cves, q, stack]
   );
   const eventRows = useMemo(
-    () =>
-      events
-        .filter((e) => !q || `${e.title} ${e.description} ${e.source}`.toLowerCase().includes(q))
-        .slice(0, 60),
+    () => events.filter((e) => !q || `${e.title} ${e.description} ${e.source}`.toLowerCase().includes(q)).slice(0, 60),
     [events, q]
   );
   const tabCounts: Record<GhmTab, number> = {
@@ -281,15 +308,23 @@ export function StorySidebar({
     <section className="pointer-events-auto flex h-full min-h-0 flex-col overflow-hidden rounded-r-2xl border-r border-line-1 bg-surface-100/95 shadow-xl backdrop-blur-md">
       <div className="shrink-0 px-3 pt-3">
         <div className="px-1 pb-2">
-          <h1 className="text-lg font-semibold leading-tight tracking-tight text-heading">Live vulnerabilities, exploits and breaches</h1>
-          <p className="mt-1 text-mini leading-snug text-muted">What attackers are using right now, who it hits, and how to lock down what you use.</p>
+          <h1 className="text-lg font-semibold leading-tight tracking-tight text-heading">
+            Live vulnerabilities, exploits and breaches
+          </h1>
+          <p className="mt-1 text-mini leading-snug text-muted">
+            What attackers are using right now, who it hits, and how to lock down what you use.
+          </p>
         </div>
         <div className="flex items-center justify-between gap-2 px-1">
           <span className="flex items-center gap-1.5 text-mini text-muted">
             <Radio size={11} className="text-emerald-500" aria-hidden />
             Live{generatedAt ? <span className="text-muted/70">· updated {relativeAgo(generatedAt)}</span> : null}
           </span>
-          <div className="flex items-center gap-0.5 rounded-control border border-line-1 p-0.5" role="group" aria-label="Time window">
+          <div
+            className="flex items-center gap-0.5 rounded-control border border-line-1 p-0.5"
+            role="group"
+            aria-label="Time window"
+          >
             {(['24h', '7d', '30d'] as const).map((w) => (
               <button
                 key={w}
@@ -314,7 +349,9 @@ export function StorySidebar({
           </div>
           <div className="mt-1 flex items-end justify-between gap-2">
             <div>
-              <div className="text-4xl font-semibold leading-none tracking-tight text-heading tabular-nums">{orgCount}</div>
+              <div className="text-4xl font-semibold leading-none tracking-tight text-heading tabular-nums">
+                {orgCount}
+              </div>
               <p className="mt-1.5 text-micro text-muted">
                 {incidents.length} sourced incidents · {cves.filter((c) => c.kev).length} known exploited
               </p>
@@ -335,7 +372,9 @@ export function StorySidebar({
                   <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[status]}`} />
                   {STATUS_META[status].label}
                 </span>
-                <span className="mt-1 block text-base font-semibold leading-none text-heading tabular-nums">{statusCounts[status]}</span>
+                <span className="mt-1 block text-base font-semibold leading-none text-heading tabular-nums">
+                  {statusCounts[status]}
+                </span>
               </button>
             ))}
           </div>
@@ -365,7 +404,11 @@ export function StorySidebar({
 
         {/* Omnibox */}
         <div className="relative mt-2.5">
-          <Search size={13} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" aria-hidden />
+          <Search
+            size={13}
+            className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted"
+            aria-hidden
+          />
           <input
             ref={searchRef}
             value={query}
@@ -381,13 +424,24 @@ export function StorySidebar({
 
         {/* Actions */}
         <div className="mt-2 flex flex-wrap gap-1.5">
-          <button type="button" onClick={onCheck} className="inline-flex items-center gap-1 rounded-control border border-line-1 px-2 py-1 text-mini text-body hover:border-rose-500/40">
+          <button
+            type="button"
+            onClick={onCheck}
+            className="inline-flex items-center gap-1 rounded-control border border-line-1 px-2 py-1 text-mini text-body hover:border-rose-500/40"
+          >
             <CircleHelp size={11} /> Am I affected?
           </button>
-          <button type="button" onClick={onBrief} className="inline-flex items-center gap-1 rounded-control border border-line-1 px-2 py-1 text-mini text-body hover:border-rose-500/40">
+          <button
+            type="button"
+            onClick={onBrief}
+            className="inline-flex items-center gap-1 rounded-control border border-line-1 px-2 py-1 text-mini text-body hover:border-rose-500/40"
+          >
             <Sparkles size={11} /> Daily brief
           </button>
-          <Link to="/threatintel/cve-list" className="inline-flex items-center gap-1 rounded-control border border-line-1 px-2 py-1 text-mini text-body hover:border-rose-500/40">
+          <Link
+            to="/threatintel/cve-list"
+            className="inline-flex items-center gap-1 rounded-control border border-line-1 px-2 py-1 text-mini text-body hover:border-rose-500/40"
+          >
             All CVEs <ArrowUpRight size={11} />
           </Link>
         </div>
@@ -427,7 +481,10 @@ export function StorySidebar({
               aria-label="Add a vendor or product to your stack"
               className="min-w-0 flex-1 rounded-control border border-line-1 bg-surface px-2 py-1 text-mini text-body outline-none focus:border-rose-500/40"
             />
-            <button type="submit" className="rounded-control border border-line-1 px-2 text-mini text-muted hover:text-heading">
+            <button
+              type="submit"
+              className="rounded-control border border-line-1 px-2 text-mini text-muted hover:text-heading"
+            >
               Add
             </button>
           </form>
@@ -436,12 +493,14 @@ export function StorySidebar({
 
       {/* Live lists */}
       <div className="sticky top-0 z-10 mt-2.5 flex shrink-0 gap-0.5 border-y border-line-1 bg-surface-100 px-2 py-1.5">
-        {([
-          ['cves', 'CVEs', Bug],
-          ['breaches', 'Breaches', ShieldAlert],
-          ['malware', 'Malware', Package],
-          ['outages', 'Outages', Activity],
-        ] as const).map(([id, label, Icon]) => (
+        {(
+          [
+            ['cves', 'CVEs', Bug],
+            ['breaches', 'Breaches', ShieldAlert],
+            ['malware', 'Malware', Package],
+            ['outages', 'Outages', Activity],
+          ] as const
+        ).map(([id, label, Icon]) => (
           <button
             key={id}
             type="button"
@@ -489,7 +548,9 @@ export function StorySidebar({
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${STATUS_DOT[i.status]}`} />
                       <span className="font-mono text-micro uppercase tracking-wider text-muted">{i.type}</span>
-                      {i.records != null && <span className="font-mono text-micro text-muted/70">{i.records.toLocaleString()} records</span>}
+                      {i.records != null && (
+                        <span className="font-mono text-micro text-muted/70">{i.records.toLocaleString()} records</span>
+                      )}
                       <span className="ml-auto font-mono text-micro text-muted/70">{relativeAgo(i.published)}</span>
                     </div>
                     <p className="mt-0.5 line-clamp-1 text-mini text-heading">{i.victim}</p>
@@ -515,12 +576,19 @@ export function StorySidebar({
                       className="w-full rounded-lg border border-line-1 bg-surface px-2 py-1.5 text-left transition-colors hover:border-rose-500/40"
                     >
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${status ? STATUS_DOT[status] : 'bg-slate-400'}`} />
-                        <span className="font-mono text-micro uppercase tracking-wider text-muted">{e.kind.replace(/_/g, ' ')}</span>
+                        <span
+                          className={`h-1.5 w-1.5 shrink-0 rounded-full ${status ? STATUS_DOT[status] : 'bg-slate-400'}`}
+                        />
+                        <span className="font-mono text-micro uppercase tracking-wider text-muted">
+                          {e.kind.replace(/_/g, ' ')}
+                        </span>
                         <span className="ml-auto font-mono text-micro text-muted/70">{relativeAgo(e.timestamp)}</span>
                       </div>
                       <p className="mt-0.5 line-clamp-1 text-mini text-heading">{e.title}</p>
-                      <p className="line-clamp-1 text-micro text-muted">{e.source}{e.country ? ` · ${e.country}` : ''}</p>
+                      <p className="line-clamp-1 text-micro text-muted">
+                        {e.source}
+                        {e.country ? ` · ${e.country}` : ''}
+                      </p>
                     </button>
                   </li>
                 );
@@ -530,20 +598,40 @@ export function StorySidebar({
             <EmptyList label="No incidents in this window. That is a fact, not a guarantee." />
           ))}
 
-        {tab === 'malware' && (malwareRows.length ? <FeedRowList rows={malwareRows} /> : <EmptyList label="Malware feeds did not answer — cross-check the source directly." />)}
-        {tab === 'outages' && (outageRows.length ? <FeedRowList rows={outageRows} /> : <EmptyList label="No maritime or connectivity rows in this window." />)}
+        {tab === 'malware' &&
+          (malwareRows.length ? (
+            <FeedRowList rows={malwareRows} />
+          ) : (
+            <EmptyList label="Malware feeds did not answer — cross-check the source directly." />
+          ))}
+        {tab === 'outages' &&
+          (outageRows.length ? (
+            <FeedRowList rows={outageRows} />
+          ) : (
+            <EmptyList label="No maritime or connectivity rows in this window." />
+          ))}
       </div>
 
       <div className="flex shrink-0 items-center justify-between border-t border-line-1 px-3 py-2 text-micro text-muted/70">
         <span>Every pin is sourced.</span>
-        <Link to="/api/mcp" className="underline hover:text-heading">MCP</Link>
+        <Link to="/api/mcp" className="underline hover:text-heading">
+          MCP
+        </Link>
       </div>
     </section>
   );
 }
 
 /** One section of the CVE list — GHM splits advisories from confirmed exploitation. */
-function CveList({ heading, rows, onSelect }: { heading: string; rows: GhmCve[]; onSelect: (id: string) => void }): JSX.Element | null {
+function CveList({
+  heading,
+  rows,
+  onSelect,
+}: {
+  heading: string;
+  rows: GhmCve[];
+  onSelect: (id: string) => void;
+}): JSX.Element | null {
   if (!rows.length) return null;
   return (
     <section>
@@ -559,9 +647,15 @@ function CveList({ heading, rows, onSelect }: { heading: string; rows: GhmCve[];
                 className="w-full rounded-lg border border-line-1 bg-surface px-2 py-1.5 text-left transition-colors hover:border-rose-500/40"
               >
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className={`font-mono text-micro font-semibold ${SIGNAL_TONE[signal]}`}>{SIGNAL_LABEL[signal]}</span>
+                  <span className={`font-mono text-micro font-semibold ${SIGNAL_TONE[signal]}`}>
+                    {SIGNAL_LABEL[signal]}
+                  </span>
                   <span className="font-mono text-mini font-semibold text-heading">{cve.id}</span>
-                  {cve.score != null && <span className={`rounded border px-1 font-mono text-micro ${severityTone(cve.severity)}`}>{cve.score.toFixed(1)}</span>}
+                  {cve.score != null && (
+                    <span className={`rounded border px-1 font-mono text-micro ${severityTone(cve.severity)}`}>
+                      {cve.score.toFixed(1)}
+                    </span>
+                  )}
                   <span className="ml-auto font-mono text-micro text-muted/70">{relativeAgo(cve.published)}</span>
                 </div>
                 <p className="mt-0.5 line-clamp-1 text-mini text-body">{productLabel(cve)}</p>
@@ -614,12 +708,19 @@ function FeedRowList({ rows }: { rows: GhmFeedRow[] }): JSX.Element {
         <li key={row.id} className="rounded-lg border border-line-1 bg-surface px-2 py-1.5">
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="font-mono text-micro uppercase tracking-wider text-muted">{row.source}</span>
-            <span className="ml-auto font-mono text-micro text-muted/70">{row.timestamp ? relativeAgo(row.timestamp) : ''}</span>
+            <span className="ml-auto font-mono text-micro text-muted/70">
+              {row.timestamp ? relativeAgo(row.timestamp) : ''}
+            </span>
           </div>
           <p className="mt-0.5 line-clamp-1 text-mini text-heading">{row.title}</p>
           <p className="line-clamp-2 text-micro text-muted">{row.description}</p>
           {row.url && (
-            <a href={sanitizeUrl(row.url) || undefined} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1 font-mono text-micro text-muted hover:text-heading">
+            <a
+              href={sanitizeUrl(row.url) || undefined}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-flex items-center gap-1 font-mono text-micro text-muted hover:text-heading"
+            >
               source <ExternalLink size={9} />
             </a>
           )}
@@ -646,12 +747,26 @@ export function DetailPanel({
 }): JSX.Element | null {
   if (!event && !cve && !incident) return null;
   const status = incident?.status ?? (event ? incidentStatus(event) : null);
-  const id = cve?.id ?? (cveFromText(incident?.description ?? '') || cveFromText(event?.title ?? '') || event?.id || incident?.id || 'detail');
+  const id =
+    cve?.id ??
+    (cveFromText(incident?.description ?? '') ||
+      cveFromText(event?.title ?? '') ||
+      event?.id ||
+      incident?.id ||
+      'detail');
   return (
-    <aside className="pointer-events-auto flex h-full w-full flex-col overflow-y-auto custom-scrollbar rounded-l-2xl border-l border-line-1 bg-surface-100/95 shadow-xl backdrop-blur-md" aria-label="Dossier">
+    <aside
+      className="pointer-events-auto flex h-full w-full flex-col overflow-y-auto custom-scrollbar rounded-l-2xl border-l border-line-1 bg-surface-100/95 shadow-xl backdrop-blur-md"
+      aria-label="Dossier"
+    >
       <div className="flex items-center justify-between border-b border-line-1 px-3 py-2">
         <Eyebrow>Dossier</Eyebrow>
-        <button type="button" onClick={onClose} aria-label="Close dossier" className="rounded-control p-1 text-muted hover:text-heading">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close dossier"
+          className="rounded-control p-1 text-muted hover:text-heading"
+        >
           <X size={14} />
         </button>
       </div>
@@ -661,7 +776,9 @@ export function DetailPanel({
             <>
               <ShieldAlert size={14} className="text-rose-500" aria-hidden />
               <h2 className="text-sm font-semibold leading-snug text-heading">{incident.victim}</h2>
-              <span className={`rounded border px-1.5 py-0.5 font-mono text-micro ${STATUS_TONE_INLINE[incident.status]}`}>
+              <span
+                className={`rounded border px-1.5 py-0.5 font-mono text-micro ${STATUS_TONE_INLINE[incident.status]}`}
+              >
                 {STATUS_META[incident.status].label}
               </span>
             </>
@@ -691,8 +808,8 @@ export function DetailPanel({
               {incident.place && <Fact label="Location" value={incident.place} />}
             </div>
             <p className="mt-3 text-micro leading-snug text-muted">
-              {STATUS_META[incident.status].description}. If you use this organisation, check its own advisory and rotate
-              anything exposed. An absent result is never proof you are unaffected.
+              {STATUS_META[incident.status].description}. If you use this organisation, check its own advisory and
+              rotate anything exposed. An absent result is never proof you are unaffected.
             </p>
           </>
         ) : cve ? (
@@ -702,7 +819,10 @@ export function DetailPanel({
               <Fact label="Signal" value={SIGNAL_LABEL[cveSignal(cve)]} />
               <Fact label="Published" value={relativeAgo(cve.published) || '—'} />
               <Fact label="EPSS" value={epssPercent(cve.epss) || 'unknown'} />
-              <Fact label="Corroboration" value={cve.listed_by_count ? `${cve.listed_by_count} sources` : 'single source'} />
+              <Fact
+                label="Corroboration"
+                value={cve.listed_by_count ? `${cve.listed_by_count} sources` : 'single source'}
+              />
               {cve.vendor && <Fact label="Vendor" value={cve.vendor} />}
               {cve.product && <Fact label="Product" value={cve.product} />}
             </div>
@@ -731,7 +851,12 @@ export function DetailPanel({
 
         <div className="mt-3 flex flex-wrap items-center gap-2 text-mini">
           {incident && (
-            <a href={sanitizeUrl(incident.url) || undefined} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-muted hover:text-heading">
+            <a
+              href={sanitizeUrl(incident.url) || undefined}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-muted hover:text-heading"
+            >
               Original incident <ExternalLink size={10} />
             </a>
           )}
@@ -752,7 +877,12 @@ export function DetailPanel({
             Platform record <ArrowUpRight size={10} />
           </Link>
           {event?.url && (
-            <a href={sanitizeUrl(event.url) || undefined} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-muted hover:text-heading">
+            <a
+              href={sanitizeUrl(event.url) || undefined}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-muted hover:text-heading"
+            >
               Original source <ExternalLink size={10} />
             </a>
           )}
@@ -776,7 +906,9 @@ function Fact({ label, value }: { label: string; value: string }): JSX.Element {
   return (
     <div className="rounded-lg border border-line-1 bg-surface-200/60 px-2 py-1.5">
       <div className="font-mono text-micro uppercase tracking-wider text-muted">{label}</div>
-      <div className="mt-0.5 truncate text-mini text-body" title={value}>{value}</div>
+      <div className="mt-0.5 truncate text-mini text-body" title={value}>
+        {value}
+      </div>
     </div>
   );
 }
@@ -785,16 +917,21 @@ function Fact({ label, value }: { label: string; value: string }): JSX.Element {
 
 export function PatchDock({
   cves,
+  patches,
+  generatedAt,
   onSelectCve,
   open,
   onOpenChange,
 }: {
   cves: GhmCve[];
+  patches: GhmPatch[];
+  generatedAt: string | null;
   onSelectCve: (id: string) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }): JSX.Element | null {
-  if (!cves.length) return null;
+  if (!cves.length && !patches.length) return null;
+  const showPatches = patches.length > 0;
   return (
     <>
       {!open && (
@@ -814,33 +951,125 @@ export function PatchDock({
           <div className="flex items-center gap-2 px-1">
             <Wrench size={12} className="text-rose-500" aria-hidden />
             <h2 className="font-mono text-micro uppercase tracking-wider text-heading">Patch now</h2>
-            <p className="truncate text-micro text-muted">The software attackers are using today</p>
-            <button type="button" onClick={() => onOpenChange(false)} aria-label="Hide Patch now" className="ml-auto rounded-control p-1 text-muted hover:text-heading">
+            <p className="truncate text-micro text-muted">
+              {showPatches
+                ? 'Exploited software — who is affected and the exact fix'
+                : 'The software attackers are using today'}
+            </p>
+            {generatedAt && (
+              <span className="shrink-0 font-mono text-micro text-muted/70">{relativeAgo(generatedAt)}</span>
+            )}
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              aria-label="Hide Patch now"
+              className="ml-auto rounded-control p-1 text-muted hover:text-heading"
+            >
               <ChevronDown size={12} />
             </button>
           </div>
-          <ul className="mt-2 flex gap-2 overflow-x-auto custom-scrollbar">
-            {cves.map((cve) => {
-              const signal = cveSignal(cve);
-              return (
-                <li key={cve.id} className="w-[228px] shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => onSelectCve(cve.id)}
-                    className="flex h-full w-full flex-col rounded-xl border border-line-1 bg-surface px-2.5 py-2 text-left hover:border-rose-500/40"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <span className={`truncate text-mini font-medium ${SIGNAL_TONE[signal]}`}>{SIGNAL_LABEL[signal]}</span>
-                      <span className="ml-auto font-mono text-micro text-muted/70">{relativeAgo(cve.kev_added ?? cve.published)}</span>
+          {showPatches ? (
+            <ul className="mt-2 flex gap-2 overflow-x-auto custom-scrollbar">
+              {patches.slice(0, 16).map((patch) => {
+                const label = patch.ransomware ? 'Ransomware' : patch.exploited ? 'Exploited' : 'Patch';
+                const tone = patch.ransomware || patch.exploited ? SIGNAL_TONE.ransomware : SIGNAL_TONE.news;
+                const product = [patch.vendor, patch.product].filter(Boolean).join(' ') || patch.key;
+                return (
+                  <li key={patch.key} className="w-[300px] shrink-0">
+                    <div className="flex h-full w-full flex-col rounded-xl border border-line-1 bg-surface px-2.5 py-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`truncate text-mini font-medium ${tone}`}>{label}</span>
+                        {patch.kevAdded && (
+                          <span className="font-mono text-micro text-muted/70">KEV {patch.kevAdded.slice(5)}</span>
+                        )}
+                        {patch.epss != null && (
+                          <span className="font-mono text-micro text-muted/70">
+                            EPSS {(patch.epss * 100).toFixed(1)}%
+                          </span>
+                        )}
+                        {patch.cvss != null && (
+                          <span className="ml-auto font-mono text-micro text-muted/70">
+                            CVSS {patch.cvss.toFixed(1)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1 line-clamp-1 text-mini font-semibold text-heading">{product}</div>
+                      <div className="mt-0.5 line-clamp-2 text-micro text-body" title={patch.title}>
+                        {patch.title}
+                      </div>
+                      {patch.who && (
+                        <div className="mt-1 line-clamp-2 text-micro text-muted" title={patch.who}>
+                          <span className="font-mono uppercase tracking-wider">who: </span>
+                          {patch.who}
+                        </div>
+                      )}
+                      {patch.fix && (
+                        <div
+                          className="mt-1 line-clamp-3 rounded border border-emerald-500/25 bg-emerald-500/5 px-1.5 py-1 text-micro text-emerald-700 dark:text-emerald-300"
+                          title={patch.fix}
+                        >
+                          {patch.fix}
+                        </div>
+                      )}
+                      <div className="mt-auto flex items-center gap-2 pt-1.5">
+                        <span className="min-w-0 flex-1 truncate font-mono text-micro text-muted/70">
+                          {patch.cves.slice(0, 2).join(' · ') || patch.key}
+                        </span>
+                        {patch.cves[0] && (
+                          <button
+                            type="button"
+                            onClick={() => onSelectCve(patch.cves[0]!)}
+                            className="shrink-0 font-mono text-micro text-sky-600 hover:underline dark:text-sky-400"
+                          >
+                            dossier
+                          </button>
+                        )}
+                        <a
+                          href={patch.url}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          aria-label="Open upstream patch advisory"
+                          className="shrink-0 text-muted hover:text-heading"
+                        >
+                          <ExternalLink size={10} />
+                        </a>
+                      </div>
                     </div>
-                    <div className="mt-1 line-clamp-1 text-mini font-semibold text-heading">{productLabel(cve)}</div>
-                    <div className="mt-1 line-clamp-2 text-micro text-muted">{cve.description}</div>
-                    <div className="mt-auto pt-1.5 font-mono text-micro text-muted/70">{cve.id}{cve.score != null ? ` · ${cve.score.toFixed(1)}` : ''}</div>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <ul className="mt-2 flex gap-2 overflow-x-auto custom-scrollbar">
+              {cves.map((cve) => {
+                const signal = cveSignal(cve);
+                return (
+                  <li key={cve.id} className="w-[228px] shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => onSelectCve(cve.id)}
+                      className="flex h-full w-full flex-col rounded-xl border border-line-1 bg-surface px-2.5 py-2 text-left hover:border-rose-500/40"
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span className={`truncate text-mini font-medium ${SIGNAL_TONE[signal]}`}>
+                          {SIGNAL_LABEL[signal]}
+                        </span>
+                        <span className="ml-auto font-mono text-micro text-muted/70">
+                          {relativeAgo(cve.kev_added ?? cve.published)}
+                        </span>
+                      </div>
+                      <div className="mt-1 line-clamp-1 text-mini font-semibold text-heading">{productLabel(cve)}</div>
+                      <div className="mt-1 line-clamp-2 text-micro text-muted">{cve.description}</div>
+                      <div className="mt-auto pt-1.5 font-mono text-micro text-muted/70">
+                        {cve.id}
+                        {cve.score != null ? ` · ${cve.score.toFixed(1)}` : ''}
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </section>
       )}
     </>
@@ -851,11 +1080,23 @@ export function PatchDock({
 
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }): JSX.Element {
   return (
-    <div className="pointer-events-auto absolute inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-[8vh]" role="dialog" aria-modal="true" aria-label={title}>
+    <div
+      className="pointer-events-auto absolute inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-[8vh]"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+    >
       <div className="w-full max-w-2xl rounded-2xl border border-line-1 bg-surface-100 p-4 shadow-2xl">
         <div className="flex items-center justify-between border-b border-line-1 pb-2">
           <h2 className="text-base font-semibold text-heading">{title}</h2>
-          <button type="button" onClick={onClose} aria-label="Close" className="rounded-control p-1 text-muted hover:text-heading"><X size={15} /></button>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="rounded-control p-1 text-muted hover:text-heading"
+          >
+            <X size={15} />
+          </button>
         </div>
         <div className="pt-3">{children}</div>
       </div>
@@ -880,14 +1121,22 @@ export function CheckPanel({
 }): JSX.Element {
   const [draft, setDraft] = useState('');
   const matches = cves
-    .filter((c) => stack.length === 0 || stack.some((s) => `${c.vendor ?? ''} ${c.product ?? ''} ${c.description}`.toLowerCase().includes(s.toLowerCase())))
+    .filter(
+      (c) =>
+        stack.length === 0 ||
+        stack.some((s) =>
+          `${c.vendor ?? ''} ${c.product ?? ''} ${c.description}`.toLowerCase().includes(s.toLowerCase())
+        )
+    )
     .slice(0, 20);
-  const eventMatches = events.filter((e) => stack.some((s) => `${e.title} ${e.description}`.toLowerCase().includes(s.toLowerCase()))).slice(0, 10);
+  const eventMatches = events
+    .filter((e) => stack.some((s) => `${e.title} ${e.description}`.toLowerCase().includes(s.toLowerCase())))
+    .slice(0, 10);
   return (
     <Modal title="Am I affected?" onClose={onClose}>
       <p className="text-mini leading-relaxed text-muted">
-        Add the apps, products and companies you use. We show what attackers are exploiting in them and what to do about it.
-        Nothing is uploaded — your stack stays in this browser.
+        Add the apps, products and companies you use. We show what attackers are exploiting in them and what to do about
+        it. Nothing is uploaded — your stack stays in this browser.
       </p>
       <form
         className="mt-3 flex gap-2"
@@ -898,27 +1147,56 @@ export function CheckPanel({
           setDraft('');
         }}
       >
-        <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="e.g. Microsoft Exchange, Atlassian, nginx" aria-label="Add a product or company" className="min-w-0 flex-1 rounded-control border border-line-1 bg-surface px-2 py-1.5 text-mini outline-none focus:border-rose-500/40" />
-        <button type="submit" className="rounded-control border border-line-1 px-3 text-mini text-body hover:border-rose-500/40">Add</button>
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder="e.g. Microsoft Exchange, Atlassian, nginx"
+          aria-label="Add a product or company"
+          className="min-w-0 flex-1 rounded-control border border-line-1 bg-surface px-2 py-1.5 text-mini outline-none focus:border-rose-500/40"
+        />
+        <button
+          type="submit"
+          className="rounded-control border border-line-1 px-3 text-mini text-body hover:border-rose-500/40"
+        >
+          Add
+        </button>
       </form>
       {stack.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">
           {stack.map((s) => (
-            <button key={s} type="button" onClick={() => onStack(stack.filter((x) => x !== s))} className="rounded-full border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 font-mono text-micro text-rose-600 dark:text-rose-400">
+            <button
+              key={s}
+              type="button"
+              onClick={() => onStack(stack.filter((x) => x !== s))}
+              className="rounded-full border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 font-mono text-micro text-rose-600 dark:text-rose-400"
+            >
               {s} ×
             </button>
           ))}
         </div>
       )}
       <div className="mt-4">
-        <Eyebrow>{stack.length ? `${matches.length} CVE touches your stack` : `${matches.length} exploited CVEs in the live feed`}</Eyebrow>
+        <Eyebrow>
+          {stack.length
+            ? `${matches.length} CVE touches your stack`
+            : `${matches.length} exploited CVEs in the live feed`}
+        </Eyebrow>
         <ul className="mt-2 space-y-1">
           {matches.map((c) => {
             const signal = cveSignal(c);
             return (
               <li key={c.id}>
-                <button type="button" onClick={() => { onSelectCve(c.id); onClose(); }} className="flex w-full items-center gap-2 rounded-lg border border-line-1 bg-surface px-2 py-1.5 text-left hover:border-rose-500/40">
-                  <span className={`font-mono text-micro font-semibold ${SIGNAL_TONE[signal]}`}>{SIGNAL_LABEL[signal]}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSelectCve(c.id);
+                    onClose();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg border border-line-1 bg-surface px-2 py-1.5 text-left hover:border-rose-500/40"
+                >
+                  <span className={`font-mono text-micro font-semibold ${SIGNAL_TONE[signal]}`}>
+                    {SIGNAL_LABEL[signal]}
+                  </span>
                   <span className="font-mono text-mini text-heading">{c.id}</span>
                   <span className="min-w-0 flex-1 truncate text-mini text-muted">{productLabel(c)}</span>
                   <ArrowUpRight size={11} className="text-muted" />
@@ -941,22 +1219,37 @@ export function CheckPanel({
         </div>
       )}
       <p className="mt-4 text-micro text-muted/70">
-        For a full email / domain breach search, use the <Link to="/dfir/breach" className="underline hover:text-heading" onClick={onClose}>breach checker</Link>. An empty result here never proves you are unaffected.
+        For a full email / domain breach search, use the{' '}
+        <Link to="/dfir/breach" className="underline hover:text-heading" onClick={onClose}>
+          breach checker
+        </Link>
+        . An empty result here never proves you are unaffected.
       </p>
     </Modal>
   );
 }
 
-export function BriefPanel({ items, dayKey, onClose }: { items: Array<{ title: string; body?: string; source?: string }>; dayKey: string; onClose: () => void }): JSX.Element {
+export function BriefPanel({
+  items,
+  dayKey,
+  onClose,
+}: {
+  items: Array<{ title: string; body?: string; source?: string }>;
+  dayKey: string;
+  onClose: () => void;
+}): JSX.Element {
   const confirmed = items.filter((i) => /Confirmed/i.test(i.title)).length;
   const claimed = items.filter((i) => /Claimed/i.test(i.title)).length;
   const kev = items.filter((i) => /CVE-\d{4}-\d+/i.test(i.title)).length;
   return (
     <Modal title="Today's brief" onClose={onClose}>
       <p className="text-micro font-mono uppercase tracking-wider text-muted">Daily brief · {dayKey}</p>
-      <h3 className="mt-1 text-lg font-semibold leading-snug text-heading">Everything that broke in the last 48 hours</h3>
+      <h3 className="mt-1 text-lg font-semibold leading-snug text-heading">
+        Everything that broke in the last 48 hours
+      </h3>
       <p className="mt-1 text-mini text-muted">
-        A live briefing built from the incident feed, confirmed-exploitation list and AI summary. Counts are live; every item links to its source.
+        A live briefing built from the incident feed, confirmed-exploitation list and AI summary. Counts are live; every
+        item links to its source.
       </p>
 
       <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -970,25 +1263,35 @@ export function BriefPanel({ items, dayKey, onClose }: { items: Array<{ title: s
         <section>
           <Eyebrow className="mb-1.5 block">Critical · act now</Eyebrow>
           <ul className="space-y-1">
-            {items.filter((i) => /Confirmed|CISA KEV/i.test(i.title)).slice(0, 6).map((i, index) => (
-              <li key={`${i.title}-${index}`} className="rounded-lg border border-line-1 bg-surface px-2 py-1.5">
-                <p className="line-clamp-2 text-mini text-heading">{i.title}</p>
-                <p className="mt-0.5 line-clamp-2 text-micro text-muted">{i.body}</p>
-                <p className="mt-1 text-micro font-mono text-rose-600 dark:text-rose-400">What to do · verify the vendor advisory, patch and hunt for pre-patch compromise.</p>
-              </li>
-            ))}
+            {items
+              .filter((i) => /Confirmed|CISA KEV/i.test(i.title))
+              .slice(0, 6)
+              .map((i, index) => (
+                <li key={`${i.title}-${index}`} className="rounded-lg border border-line-1 bg-surface px-2 py-1.5">
+                  <p className="line-clamp-2 text-mini text-heading">{i.title}</p>
+                  <p className="mt-0.5 line-clamp-2 text-micro text-muted">{i.body}</p>
+                  <p className="mt-1 text-micro font-mono text-rose-600 dark:text-rose-400">
+                    What to do · verify the vendor advisory, patch and hunt for pre-patch compromise.
+                  </p>
+                </li>
+              ))}
           </ul>
         </section>
         <section>
           <Eyebrow className="mb-1.5 block">Watch · claims &amp; reports</Eyebrow>
           <ul className="space-y-1">
-            {items.filter((i) => !/Confirmed|CISA KEV/i.test(i.title)).slice(0, 6).map((i, index) => (
-              <li key={`${i.title}-${index}`} className="rounded-lg border border-line-1 bg-surface px-2 py-1.5">
-                <p className="line-clamp-2 text-mini text-heading">{i.title}</p>
-                <p className="mt-0.5 line-clamp-2 text-micro text-muted">{i.body}</p>
-                <p className="mt-1 text-micro font-mono text-amber-600 dark:text-amber-400">What to do · treat as unconfirmed until the organisation or a regulator says so.</p>
-              </li>
-            ))}
+            {items
+              .filter((i) => !/Confirmed|CISA KEV/i.test(i.title))
+              .slice(0, 6)
+              .map((i, index) => (
+                <li key={`${i.title}-${index}`} className="rounded-lg border border-line-1 bg-surface px-2 py-1.5">
+                  <p className="line-clamp-2 text-mini text-heading">{i.title}</p>
+                  <p className="mt-0.5 line-clamp-2 text-micro text-muted">{i.body}</p>
+                  <p className="mt-1 text-micro font-mono text-amber-600 dark:text-amber-400">
+                    What to do · treat as unconfirmed until the organisation or a regulator says so.
+                  </p>
+                </li>
+              ))}
           </ul>
         </section>
       </div>
@@ -1008,21 +1311,35 @@ export function AgentsPanel({ onClose }: { onClose: () => void }): JSX.Element {
   return (
     <Modal title="For agents" onClose={onClose}>
       <p className="text-mini leading-relaxed text-muted">
-        This situation room is readable by agents. The platform exposes a read-only MCP server, an <code className="font-mono text-mini text-body">llms.txt</code> and
-        plain-text runbooks. Every dossier's one-click fix links only pre-fill a prompt — nothing runs until you send it.
+        This situation room is readable by agents. The platform exposes a read-only MCP server, an{' '}
+        <code className="font-mono text-mini text-body">llms.txt</code> and plain-text runbooks. Every dossier's
+        one-click fix links only pre-fill a prompt — nothing runs until you send it.
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
-        <Link to="/api/mcp" className="inline-flex items-center gap-1 rounded-control border border-line-1 px-2 py-1 text-mini text-body hover:border-rose-500/40">
+        <Link
+          to="/api/mcp"
+          className="inline-flex items-center gap-1 rounded-control border border-line-1 px-2 py-1 text-mini text-body hover:border-rose-500/40"
+        >
           MCP server <ExternalLink size={10} />
         </Link>
-        <a href="/llms.txt" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-control border border-line-1 px-2 py-1 text-mini text-body hover:border-rose-500/40">
+        <a
+          href="/llms.txt"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 rounded-control border border-line-1 px-2 py-1 text-mini text-body hover:border-rose-500/40"
+        >
           llms.txt <ExternalLink size={10} />
         </a>
-        <Link to="/dfir/agent-suite" className="inline-flex items-center gap-1 rounded-control border border-line-1 px-2 py-1 text-mini text-body hover:border-rose-500/40">
+        <Link
+          to="/dfir/agent-suite"
+          className="inline-flex items-center gap-1 rounded-control border border-line-1 px-2 py-1 text-mini text-body hover:border-rose-500/40"
+        >
           Agent suite <ArrowUpRight size={10} />
         </Link>
       </div>
-      <p className="mt-3 flex items-center gap-1.5 text-micro text-muted/70"><Users size={10} /> Open source concept: Global Hack Map (MIT).</p>
+      <p className="mt-3 flex items-center gap-1.5 text-micro text-muted/70">
+        <Users size={10} /> Open source concept: Global Hack Map (MIT).
+      </p>
     </Modal>
   );
 }
@@ -1035,7 +1352,8 @@ export function MobileSidebarToggle({ open, onClick }: { open: boolean; onClick:
       onClick={onClick}
       className="pointer-events-auto absolute bottom-4 left-3 z-30 rounded-full border border-line-1 bg-surface-100/90 px-3 py-2 text-mini text-body backdrop-blur-md md:hidden"
     >
-      {open ? <X size={12} className="inline" /> : <Globe2 size={12} className="inline" />} {open ? 'Close feed' : 'Open feed'}
+      {open ? <X size={12} className="inline" /> : <Globe2 size={12} className="inline" />}{' '}
+      {open ? 'Close feed' : 'Open feed'}
     </button>
   );
 }

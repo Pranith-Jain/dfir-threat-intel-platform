@@ -1,0 +1,59 @@
+{
+  "id": "T1491.001",
+  "displayName": "Defacement: Internal Defacement",
+  "tests": [
+    {
+      "name": "Replace Desktop Wallpaper",
+      "guid": "30558d53-9d76-41c4-9267-a7bd5184bed3",
+      "description": "Downloads an image from a URL and sets it as the desktop wallpaper.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["url_of_wallpaper", "pointer_to_orginal_wallpaper", "wallpaper_location"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Configure LegalNoticeCaption and LegalNoticeText registry keys to display ransom message",
+      "guid": "ffcbfaab-c9ff-470b-928c-f086b326089b",
+      "description": "Display ransom message to users at system start-up by configuring registry keys HKLM\\SOFTWARE\\Micosoft\\Windows\\CurrentVersion\\Policies\\System\\LegalNoticeCaption and HKLM\\SOFTWARE\\Micosoft\\Windows\\CurrentVersion\\Policies\\System\\LegalNoticeText.\n\n[SynAck Ransomware](https://www.trendmicro.com/vinfo/es/security/news/cybercrime-and-digital-threats/synack-ransomware-leverages-process-doppelg-nging-for-evasion-and-infection), \n[Grief Ransomware](https://redcanary.com/blog/grief-ransomware/), \n[Maze Ransomware](https://cyware.com/research-and-analysis/maze-ransomware-a-deadly-combination-of-data-theft-and-encryption-to-target-us-organizations-8f27),\n[Pysa Ransomware](https://www.cybereason.com/blog",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["legal_notice_caption", "legal_notice_text"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "ESXi - Change Welcome Message on Direct Console User Interface (DCUI)",
+      "guid": "30905f21-34f3-4504-8b4c-f7a5e314b810",
+      "description": "Changes the ESXi welcome message to potentially display ransom information.\n[Reference](https://lolesxi-project.github.io/LOLESXi/lolesxi/Binaries/esxcli/#change%20display%20information)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["vm_host", "vm_user", "vm_pass", "plink_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Windows - Display a simulated ransom note via Notepad (non-destructive)",
+      "guid": "0eeb68ce-e64c-4420-8d53-ad5bdc6f86d5",
+      "description": "Creates a temporary ransom-note text file and opens it in Notepad to\nsimulate ransomware \"note display\" behavior without making destructive\nchanges. SAFE and non-destructive.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["note_filename", "pid_filename", "note_title", "note_body"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1491.001/T1491.001.yaml"
+}

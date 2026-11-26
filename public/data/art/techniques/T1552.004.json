@@ -1,0 +1,228 @@
+{
+  "id": "T1552.004",
+  "displayName": "Unsecured Credentials: Private Keys",
+  "tests": [
+    {
+      "name": "Private Keys",
+      "guid": "520ce462-7ca7-441e-b5a5-f8347f632696",
+      "description": "Find private keys on the Windows file system.\nFile extensions include: .key, .pgp, .gpg, .ppk., .p12, .pem, pfx, .cer, .p7b, .asc",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Discover Private SSH Keys",
+      "guid": "46959285-906d-40fa-9437-5a439accd878",
+      "description": "Discover private SSH keys on a FreeBSD, macOS or Linux system.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["search_path", "filename", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Copy Private SSH Keys with CP",
+      "guid": "7c247dc7-5128-4643-907b-73a76d9135c3",
+      "description": "Copy private SSH keys on a Linux system to a staging folder using the `cp` command.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["search_path", "output_folder"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Copy Private SSH Keys with CP (freebsd)",
+      "guid": "12e4a260-a7fd-4ed8-bf18-1a28c1395775",
+      "description": "Copy private SSH keys on a FreeBSD system to a staging folder using the `cp` command.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["search_path", "output_folder"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Copy Private SSH Keys with rsync",
+      "guid": "864bb0b2-6bb5-489a-b43b-a77b3a16d68a",
+      "description": "Copy private SSH keys on a Linux or macOS system to a staging folder using the `rsync` command.",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["search_path", "output_folder"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Copy Private SSH Keys with rsync (freebsd)",
+      "guid": "922b1080-0b95-42b0-9585-b9a5ea0af044",
+      "description": "Copy private SSH keys on a FreeBSD system to a staging folder using the `rsync` command.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["search_path", "output_folder"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Copy the users GnuPG directory with rsync",
+      "guid": "2a5a0601-f5fb-4e2e-aa09-73282ae6afca",
+      "description": "Copy the users GnuPG (.gnupg) directory on a Mac or Linux system to a staging folder using the `rsync` command.",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["search_path", "output_folder"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Copy the users GnuPG directory with rsync (freebsd)",
+      "guid": "b05ac39b-515f-48e9-88e9-2f141b5bcad0",
+      "description": "Copy the users GnuPG (.gnupg) directory on a FreeBSD system to a staging folder using the `rsync` command.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["search_path", "output_folder"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "ADFS token signing and encryption certificates theft - Local",
+      "guid": "78e95057-d429-4e66-8f82-0f060c1ac96f",
+      "description": "Retrieve ADFS token signing and encrypting certificates. This is a precursor to the Golden SAML attack (T1606.002). You must be signed in as Administrator on an ADFS server.\nBased on https://o365blog.com/post/adfs/ and https://github.com/fireeye/ADFSDump.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "ADFS token signing and encryption certificates theft - Remote",
+      "guid": "cab413d8-9e4a-4b8d-9b84-c985bd73a442",
+      "description": "Retrieve ADFS token signing and encrypting certificates. This is a precursor to the Golden SAML attack (T1606.002). You must be signed in as a Domain Administrators user on a domain-joined computer.\nBased on https://o365blog.com/post/adfs/ and https://github.com/fireeye/ADFSDump.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["adfs_service_account_name", "replication_user", "replication_password", "adfs_server_name"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "CertUtil ExportPFX",
+      "guid": "336b25bf-4514-4684-8924-474974f28137",
+      "description": "The following Atomic test simulates adding a generic non-malicious certificate to the Root certificate store. This behavior generates a registry modification that adds the cloned root CA certificate in the keys outlined in the blog. In addition, this Atomic utilizes CertUtil to export the PFX (ExportPFX), similar to what was seen in the Golden SAML attack.\nKeys will look like - \\SystemCertificates\\CA\\Certificates or \\SystemCertificates\\Root\\Certificates\nReference: https://posts.specterops.io/code-signing-certificate-cloning-attacks-and-defenses-6f98657fc6ec\nReference: https://www.splunk.com/en_us/blog/security/a-golden-saml-journey-solarwinds-continued.html",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output", "password"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Export Root Certificate with Export-PFXCertificate",
+      "guid": "7617f689-bbd8-44bc-adcd-6f8968897848",
+      "description": "Creates a Root certificate and exports it with Export-PFXCertificate PowerShell Cmdlet.\nUpon a successful attempt, this will write a pfx to disk and utilize the Cmdlet Export-PFXCertificate.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["pfx_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Export Root Certificate with Export-Certificate",
+      "guid": "78b274f8-acb0-428b-b1f7-7b0d0e73330a",
+      "description": "Creates a Root certificate and exports it with Export-Certificate PowerShell Cmdlet.\nUpon a successful attempt, this will write a pfx to disk and utilize the Cmdlet Export-Certificate.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["pfx_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Export Certificates with Mimikatz",
+      "guid": "290df60e-4b5d-4a5e-b0c7-dc5348ea0c86",
+      "description": "The following Atomic test will utilize Mimikatz to extract the certificates from the local system My store. This tool is available at https://github.com/gentilkiwi/mimikatz and can be obtained using the get-prereq_commands.\nA successful attempt will stdout the certificates and write multiple .pfx and .der files to disk.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["mimikatz_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Enumerate WireGuard interface credentials with wg showconf",
+      "guid": "e7568442-1b7d-4380-a933-b269d1326b6c",
+      "description": "Dump WireGuard interface configurations including private keys and preshared keys using wg showconf. Requires root privileges.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Find WireGuard configuration files",
+      "guid": "42c55554-3dcb-4df6-8fbb-c8ccacc478d4",
+      "description": "Find WireGuard configuration files in /etc/wireguard/, which contain private keys and preshared keys in plaintext. Requires root privileges.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find TLS private key files",
+      "guid": "5e417277-0ae7-4ad5-a3e8-0fa27c122b29",
+      "description": "Find TLS private key files on the filesystem by extension.\nExtensions include *.key, *.pem, *.p12, and *.pfx",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "file_extensions", "optional_flags"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1552.004/T1552.004.yaml"
+}

@@ -1,0 +1,46 @@
+{
+  "id": "T1001.002",
+  "displayName": "Data Obfuscation: Steganography",
+  "tests": [
+    {
+      "name": "Steganographic Tarball Embedding",
+      "guid": "c7921449-8b62-4c4d-8a83-d9281ac0190b",
+      "description": "This atomic test, named \"Steganographic Tarball Embedding\", simulates the technique of data obfuscation via steganography by embedding a tar archive file (tarball) \nwithin an image.\n\nThe test begins by ensuring the availability of the image file and the tarball file containing data . It then generates random passwords and saves them to a \nfile. Subsequently, the tarball file is created, containing the passwords file. The test executor command reads the contents of the image \nfile and the tarball file as byte arrays and appends them together to form a new image file. This process effectively embeds the tarball \nfile within the image, utilizing steganography techniques for data obfuscation.\n\nT",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["image_file", "tar_file", "new_image_file", "passwords_file"],
+      "dependencyCount": 3
+    },
+    {
+      "name": "Embedded Script in Image Execution via Extract-Invoke-PSImage",
+      "guid": "04bb8e3d-1670-46ab-a3f1-5cee64da29b6",
+      "description": "This atomic test demonstrates the technique of data obfuscation via steganography, where a PowerShell script is concealed within an image file. \nThe PowerShell script is embedded using steganography techniques, making it undetectable by traditional security measures. The script is hidden \nwithin the pixels of the image, enabling attackers to covertly transfer and execute malicious code across systems.\n\nThe test begins by ensuring the availability of the malicious image file and the Extract-Invoke-PSImage script. The test proceeds to extract the hidden \nPowerShell script (decoded.ps1) from the image file using the Extract-Invoke-PSImage tool. The extracted script is then decoded from base64 e",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["image_file", "psimage_script"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Execute Embedded Script in Image via Steganography",
+      "guid": "4ff61684-ad91-405c-9fbc-048354ff1d07",
+      "description": "This atomic test demonstrates the execution of an embedded script in an image file using steganography techniques. The script is first encoded in base64 and then embedded within the pixels of the image. The modified image is created, and the script is extracted and executed on the target system.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["script", "evil_image", "image"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1001.002/T1001.002.yaml"
+}

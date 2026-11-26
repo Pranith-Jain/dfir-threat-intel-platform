@@ -1,0 +1,33 @@
+{
+  "id": "T1654",
+  "displayName": "Log Enumeration",
+  "tests": [
+    {
+      "name": "Get-EventLog To Enumerate Windows Security Log",
+      "guid": "a9030b20-dd4b-4405-875e-3462c6078fdc",
+      "description": "Uses the built-in PowerShell commandlet Get-EventLog to search for 'SYSTEM' keyword and saves results to a text file.\n\nThis technique was observed in a [TheDFIRReport case](https://thedfirreport.com/2023/04/03/malicious-iso-file-leads-to-domain-wide-ransomware/) \nwhere the threat actor enumerated the Windows Security audit log to determine user accounts and associated IPv4 addresses.\n\nSuccessful execution will save matching log events to the users temp folder.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Enumerate Windows Security Log via WevtUtil",
+      "guid": "fef0ace1-3550-4bf1-a075-9fea55a778dd",
+      "description": "WevtUtil is a command line tool that can be utilised by adversaries to gather intelligence on a targeted Windows system's logging infrastructure. \n\nBy executing this command, malicious actors can enumerate all available event logs, including both default logs such as Application, Security, and System\nas well as any custom logs created by administrators. \n\nThis information provides valuable insight into the system's logging mechanisms, potentially allowing attackers to identify gaps or weaknesses in the logging configuration",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1654/T1654.yaml"
+}
