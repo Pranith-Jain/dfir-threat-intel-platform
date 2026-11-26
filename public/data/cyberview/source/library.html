@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>CyberView library</title>
-<meta name="description" content="A searchable catalogue of public threat-intelligence reports and tracked threat actors, mirrored from ORKL. CyberView stores the title, source and links only, never the report text.">
+<meta name="description" content="A searchable catalogue of public threat-intelligence reports and tracked threat actors. The title, source and links are mirrored from ORKL; where CyberView AI (a Claude model) has read a report, its own short summary and, for actors, a reviewed story are shown. Each report is read on ORKL.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="icon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -23,7 +23,6 @@
 <div class="navsheet" id="navSheet" hidden role="dialog" aria-modal="true" aria-label="Menu"><div class="sheethead">CyberView<button type="button" class="sheetclose" id="navClose" aria-label="Close menu">&times;</button></div><nav class="sheetnav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="tools.html">Tools</a><a href="library.html" aria-current="page">Library</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html">Community</a><a href="status.html">Status</a><a href="about.html">About</a></nav></div>
 <main class="ar">
   <div class="arview">
-  <nav class="libnav" id="libnav" aria-label="Library sections"><a href="library.html#tab=reports" id="tabReports" aria-current="page">Reports<span class="n" id="repN"></span></a><a href="library.html#tab=actors" id="tabActors">Actor catalogue<span class="n" id="actN"></span></a><a href="actors.html">Actors in events</a><a href="archive.html">Event archive</a></nav>
   <section class="intro phead">
     <div>
       <h1>The threat-report library</h1>
@@ -32,6 +31,9 @@
     <span class="hl"></span>
     <form class="psearch" id="qform" role="search"><label><span class="sr-only">Search the library</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Report title, actor, alias" autocomplete="off" spellcheck="false"><kbd>/</kbd></label></form>
   </section>
+  <!-- Featured reads follow the page heading (its h2 comes after the h1) and sit above the section strip -->
+  <section class="panel featured" id="featured" aria-labelledby="featH" hidden><h2 id="featH">Featured reads</h2><ul class="fgrid" id="featList"></ul></section>
+  <nav class="libnav" id="libnav" aria-label="Library sections"><a href="library.html#tab=reports" id="tabReports" aria-current="page">Reports<span class="n" id="repN"></span></a><a href="library.html#tab=actors" id="tabActors">Actor catalogue<span class="n" id="actN"></span></a><a href="actors.html">Actors in events</a><a href="archive.html">Event archive</a></nav>
   <div class="vgrid argrid" id="repGrid">
     <div class="vrail">
       <form class="filters" id="filters" aria-label="Filter the reports">
@@ -43,7 +45,7 @@
       </form>
       <section class="panel" aria-labelledby="aboutHead">
         <h2 id="aboutHead">About this library</h2>
-        <p class="note">A mirror of ORKL's catalogue of public threat-intelligence reports and the actors they track. CyberView keeps each report's title, source, year, language and the links back to ORKL &mdash; never the report text, which you read on ORKL itself.</p>
+        <p class="note">A mirror of ORKL's catalogue of public threat-intelligence reports and the actors they track. CyberView keeps each report's title, source, year, language and the links back to ORKL &mdash; never the report text, which you read on ORKL itself. Where CyberView AI (a Claude model) has read a report and the audit has checked it, a short summary is shown; stories about threat actors are reviewed before they appear and cite the reports every fact came from. Each summary and story has a Report an error link.</p>
       </section>
     </div>
     <div class="vlist" tabindex="-1">
@@ -83,7 +85,7 @@
   <section class="downloads">
     <div>
       <h2>Where this comes from</h2>
-      <p>The catalogue is mirrored from the <a href="https://orkl.eu/" target="_blank" rel="noopener noreferrer">Open Research Knowledge Library (ORKL)</a>, a community archive of public threat-intelligence reporting. CyberView stores the metadata and the links only; each report is read on ORKL. Indicators of compromise are linked, never copied.</p>
+      <p>The catalogue is mirrored from the <a href="https://orkl.eu/" target="_blank" rel="noopener noreferrer">Open Research Knowledge Library (ORKL)</a>, a community archive of public threat-intelligence reporting. The title, source and links are mirrored from ORKL, and each report is read on ORKL. Where CyberView AI (a Claude model) has read a report, its own short summary is shown, and for actors a story that a separate review passed; both are written by an AI model, and each has a Report an error link. Indicators of compromise are linked, never copied.</p>
     </div>
   </section>
 </main>

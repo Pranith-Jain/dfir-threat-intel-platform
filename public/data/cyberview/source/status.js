@@ -8,7 +8,7 @@
 (function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
-  var REPO = "https://github.com/xanderhutch/CyberView";
+  var REPO = "https://github.com/CyberViewTools/CyberView";
   var MODEL = { "claude-sonnet-5-5": "Sonnet 5.5", "claude-opus-5-5": "Opus 5.5", "claude-haiku-5-5": "Haiku 5.5" };
   var AI_BY = "CyberView AI (a Claude model)";
   var DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

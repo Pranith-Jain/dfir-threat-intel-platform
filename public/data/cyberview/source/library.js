@@ -1,19 +1,96 @@
 // CyberView library page. Reads data/orkl-index.json (one compact row per report and per actor, mirrored from ORKL)
-// and lets you browse and search the catalogue in pages. CyberView stores the title, source, year, language and the
-// links to ORKL only, never the report text. All text is inserted as text, never as HTML; every link is rebuilt and
+// and lets you browse and search the catalogue in pages. The catalogue holds the title, source, year, language and the
+// links to ORKL, never the report text. All text is inserted as text, never as HTML; every link is rebuilt and
 // host-checked. A link to one record (library.html#r=<sha1> for a report, #tab=actors&ta=<ORKL id> for an actor)
 // opens that record straight away, on the page of the list that holds it.
+// CyberView AI (a Claude model) also reads some of the reports: a read report shows a plain-language summary and the facts it
+// names (data/library/cards/<xx>.json), and an actor, or a group of reports on one subject, shows a reviewed story in which every
+// sentence cites the reports it came from (data/library/stories/<key>.json; #story=<key> opens one). Everything fetched is
+// cleaned here again (cleanCard, cleanStory, cleanStoryIndex) and only ever inserted as text.
 (function () {
   "use strict";
   var PAGE = 50;
   var reports = [], actors = [], sources = [], langs = [];
   var repPage = 0, actPage = 0, OPEN = "", OPEN_ACT = "", paneTitle = "", actTitle = "", actorFilter = "", actorCount = {}, tab = "reports";
   var byName = {}, profiles = null;
+  var AI_BY = "CyberView AI (a Claude model)";
+  var FAIL = "This write-up can't be loaded right now.";
+  var SHA1 = /^[0-9a-f]{40}$/, SKEY = /^[A-Za-z0-9-]{1,70}$/, CVE = /^CVE-\d{4}-\d{4,7}$/i;
+  var SECHEAD = { who: "Who they are", targets: "Who they go after", methods: "How they work", operations: "Notable operations", takeaway: "What defenders should take from it" };
+  var OPEN_STORY = "", shards = {}, storyCache = {}, storyIdx = null;
   var $ = function (id) { return document.getElementById(id); };
 
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = String(text); return n; }
   function safe(name, fn) { try { fn(); } catch (e) { if (window.console) console.warn("library: " + name + " could not be drawn", e); } }
   function plural(n, w) { return n.toLocaleString("en") + " " + w + (n === 1 ? "" : "s"); }
+  var DAYFMT = null; try { DAYFMT = new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "numeric" }); } catch (e) { DAYFMT = null; }
+  function fmtDate(iso) { var t = Date.parse(iso); return isFinite(t) && DAYFMT ? DAYFMT.format(new Date(t)) : ""; }
+
+  /* ---------- cleaning what the build published (length limits; the build cleaned it already, this is the second check) ---------- */
+  function clip(v, n) { return String(v == null ? "" : v).replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim().slice(0, n); }
+  function list(v, max) { return Array.isArray(v) ? v.slice(0, max) : []; }
+  function isObj(x) { return !!x && typeof x === "object" && !Array.isArray(x); }
+  function cleanCard(raw) {
+    if (!isObj(raw)) return null;
+    var sm = clip(raw.sm, 600); if (!sm) return null;
+    var f = isObj(raw.f) ? raw.f : {}, out = { sm: sm, k: clip(raw.k, 40), p: raw.p === true, f: {} };
+    function vals(k, withBy) {
+      return list(f[k], 20).map(function (x) {
+        if (isObj(x)) { var v = clip(x.v, 200); return v ? { v: v, by: clip(withBy ? x.by : "", 120) } : null; }
+        var s = clip(x, 200); return s ? { v: s, by: "" } : null;
+      }).filter(Boolean);
+    }
+    ["a", "s", "c", "t"].forEach(function (k) { out.f[k] = vals(k, k === "a"); });
+    out.f.v = vals("v", false).filter(function (x) { return CVE.test(x.v); }).map(function (x) { return { v: x.v.toUpperCase(), by: "" }; });
+    return out;
+  }
+  function cleanStory(raw, key) {
+    if (!isObj(raw) || raw.key !== key || !SKEY.test(key)) return null;
+    var src = list(raw.src, 80).map(function (x) {
+      if (!isObj(x) || !SHA1.test(String(x.sha1))) return null;
+      return { sha1: x.sha1, title: clip(x.title, 300) || "Untitled report", authors: list(x.authors, 5).map(function (a) { return clip(a, 120); }).filter(Boolean), year: /^\d{4}$/.test(String(x.year)) ? String(x.year) : "" };
+    }).filter(Boolean);
+    var inSrc = {}; src.forEach(function (x) { inSrc[x.sha1] = 1; });
+    var sections = list(raw.sections, 8).map(function (sec) {
+      if (!isObj(sec) || !Object.prototype.hasOwnProperty.call(SECHEAD, sec.h)) return null;
+      var ss = list(sec.sentences, 40).map(function (sn) {
+        if (!isObj(sn)) return null; var t = clip(sn.t, 400); if (!t) return null;
+        var cites = list(sn.cites, 8).filter(function (c) { return c === "catalogue" || (typeof c === "string" && SHA1.test(c) && inSrc[c]); });
+        return { t: t, cites: cites };
+      }).filter(Boolean);
+      return ss.length ? { h: sec.h, sentences: ss } : null;
+    }).filter(Boolean);
+    // the fixed reading order, whatever order the file has: who, targets, methods, operations, takeaway
+    var ORDER = Object.keys(SECHEAD); sections.sort(function (a, b) { return ORDER.indexOf(a.h) - ORDER.indexOf(b.h); });
+    if (!sections.length) return null;
+    return { key: key, kind: raw.kind === "actor" ? "actor" : "subject", name: clip(raw.name, 120), headline: clip(raw.headline, 120), in_short: clip(raw.in_short, 240), sections: sections,
+      reviewed_at: clip(raw.reviewed_at, 40), src: src, stale: raw.stale === true };
+  }
+  function cleanStoryIndex(raw) {
+    var rows = isObj(raw) ? list(raw.stories, 500) : [];
+    return rows.map(function (x) {
+      if (!isObj(x) || !SKEY.test(String(x.key)) || !clip(x.headline, 120)) return null;
+      return { key: x.key, kind: x.kind === "actor" ? "actor" : "subject", name: clip(x.name, 120), headline: clip(x.headline, 120), in_short: clip(x.in_short, 240), reviewed_at: clip(x.reviewed_at, 40) };
+    }).filter(Boolean);
+  }
+  function getJson(url) { return fetch(url, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }); }
+  function loadCard(sha) {
+    if (!SHA1.test(sha)) return Promise.reject(new Error("bad id"));
+    // a failed fetch is not cached: the entry is dropped so the next open tries again
+    var sh = sha.slice(0, 2); if (!shards[sh]) shards[sh] = getJson("data/library/cards/" + sh + ".json").catch(function (e) { delete shards[sh]; throw e; });
+    return shards[sh].then(function (o) { var c = isObj(o) && Object.prototype.hasOwnProperty.call(o, sha) ? cleanCard(o[sha]) : null; if (!c) throw new Error("no card"); return c; });
+  }
+  function loadStory(key) {
+    if (!SKEY.test(key)) return Promise.reject(new Error("bad key"));
+    if (!storyCache[key]) storyCache[key] = getJson("data/library/stories/" + key + ".json").then(function (o) { var s = cleanStory(o, key); if (!s) throw new Error("bad story"); return s; })
+      .catch(function (e) { delete storyCache[key]; throw e; });
+    return storyCache[key];
+  }
+  // the list of reviewed stories, newest review first; empty when there is none or it cannot be read
+  function loadStoryIndex() {
+    if (!storyIdx) storyIdx = getJson("data/library/stories.json").then(function (o) { return cleanStoryIndex(o).sort(function (a, b) { return b.reviewed_at.localeCompare(a.reviewed_at) || a.key.localeCompare(b.key); }); }).catch(function () { storyIdx = null; return []; });
+    return storyIdx;
+  }
 
   // Every link back to ORKL is rebuilt here from a validated id and checked against the ORKL hosts, never taken from data.
   // Reports: the PDF lives at archive.orkl.eu/<sha1>.pdf and the record at orkl.eu/libraryEntry/<id>; an actor's profile
@@ -43,6 +120,7 @@
       langs = Array.isArray(d.langs) ? d.langs : [];
       reports = (Array.isArray(d.reports) ? d.reports : []).filter(function (r) { return r && typeof r.s === "string"; }).map(function (r) {
         r.a = Array.isArray(r.a) ? r.a.filter(function (x) { return typeof x === "string"; }) : []; r.c = Array.isArray(r.c) ? r.c : [];
+        r.k = r.k === 1 && SHA1.test(r.s) ? 1 : 0; r.st = typeof r.st === "string" && SKEY.test(r.st) ? r.st : "";
         r._s = ((r.t || "") + " " + r.a.join(" ")).toLowerCase();
         var seen = {}; r.a.forEach(function (n) { if (!seen[n]) { seen[n] = 1; actorCount[n] = (actorCount[n] || 0) + 1; } });
         return r;
@@ -52,19 +130,47 @@
         a.tl = Array.isArray(a.tl) ? a.tl.filter(function (x) { return typeof x === "string"; }) : [];
         a.i = typeof a.i === "string" && /^[0-9A-Za-z-]{1,64}$/.test(a.i) ? a.i : "";
         a.s = typeof a.s === "string" ? a.s : "";
+        a.st = typeof a.st === "string" && SKEY.test(a.st) ? a.st : "";
         a._s = ((a.n || "") + " " + a.al.join(" ") + " " + a.tl.join(" ")).toLowerCase();
         (byName[a.n] = byName[a.n] || []).push(a);
         return a;
       });
       var rt = typeof d.reports_total === "number" ? d.reports_total : reports.length;
       var at = typeof d.actors_total === "number" ? d.actors_total : actors.length;
-      $("summary").textContent = rt.toLocaleString("en") + " public threat-intelligence reports and " + at.toLocaleString("en") + " tracked threat actors, mirrored from ORKL. CyberView keeps the titles and links; each report is read on ORKL.";
+      intro(rt, at, null);
+      getJson("data/orkl.json").then(function (o) { intro(rt, at, isObj(o) ? { cards: Math.max(0, Math.floor(Number(o.cards_read)) || 0), stories: Math.max(0, Math.floor(Number(o.stories_published)) || 0) } : null); }).catch(function () {});
+      safe("featured", drawFeatured);
       $("repN").textContent = rt.toLocaleString("en");
       $("actN").textContent = at.toLocaleString("en");
       safe("filters", fillFilters);
       applyHash();
       window.addEventListener("hashchange", applyHash);
     }).catch(function () { $("summary").textContent = "The library can't be loaded right now. Try again in a minute."; });
+  }
+
+  // the intro line: the catalogue counts, then what CyberView's AI has read and written, only once there is something to say
+  function intro(rt, at, c) {
+    var t = rt.toLocaleString("en") + " public threat-intelligence reports and " + at.toLocaleString("en") + " tracked threat actors, mirrored from ORKL. ";
+    if (c && c.cards > 0 && c.stories > 0) t += "CyberView's AI has read " + c.cards.toLocaleString("en") + " of them and written " + plural(c.stories, "reviewed story").replace("storys", "stories") + "; every fact links to the report it came from.";
+    else if (c && c.cards > 0) t += "CyberView's AI has read " + c.cards.toLocaleString("en") + " of them; every fact links to the report it came from.";
+    else t += "CyberView has not summarised these reports yet.";
+    $("summary").textContent = t;
+  }
+  // Featured reads: up to six of the most recently reviewed stories, above the section strip; hidden when there are none
+  function drawFeatured() {
+    loadStoryIndex().then(function (rows) {
+      safe("featured", function () {
+        var box = $("featList"); box.textContent = "";
+        rows.slice(0, 6).forEach(function (s) {
+          var li = el("li"), a = el("a", "fcard"); a.href = "#story=" + encodeURIComponent(s.key);
+          a.appendChild(el("span", "fkind", s.kind === "actor" ? "Threat actor story" : "Story"));
+          a.appendChild(el("span", "fh", s.headline));
+          if (s.in_short) a.appendChild(el("span", "fs", s.in_short));
+          li.appendChild(a); box.appendChild(li);
+        });
+        $("featured").hidden = !rows.length;
+      });
+    });
   }
 
   function fillFilters() {
@@ -150,6 +256,7 @@
     m.appendChild(el("span", null, r.y || "Undated"));
     var lc = langs[r.l]; if (lc) m.appendChild(el("span", null, langName(lc)));
     box.appendChild(m);
+    safe("summary", function () { cardBlock(box, r); });
     box.appendChild(el("h3", null, "Read it on ORKL"));
     var ln = el("p", "reclinks"), any = false;
     if (orklUrl("lib", r.i)) { var la = el("a", null, "ORKL record"); la.href = orklUrl("lib", r.i); la.target = "_blank"; la.rel = "noopener noreferrer"; ln.appendChild(la); any = true; }
@@ -165,9 +272,108 @@
       });
       box.appendChild(ap);
     }
-    box.appendChild(el("p", "note", "Catalogued from ORKL. CyberView stores the title, source and links only — the report itself is read on ORKL."));
+    box.appendChild(el("p", "note", "Catalogued from ORKL: the title, source and links are mirrored from ORKL, and the report itself is read there."));
     var lp = el("p", "arlink"), lk = el("a", null, "Link to this report");
     lk.href = "library.html#r=" + encodeURIComponent(r.s); lp.appendChild(lk); box.appendChild(lp);
+  }
+
+  // what CyberView's AI read in one report: the summary and the facts it names, or the line saying it has not read it
+  function cardBlock(box, r) {
+    if (!r.k) { box.appendChild(el("p", "note", "CyberView has not summarised this report.")); }
+    else {
+      var host = el("div", "rcard"); box.appendChild(host);
+      loadCard(r.s).then(function (c) { if (OPEN !== r.s) return; safe("summary", function () { drawCard(host, c, r); }); })
+        .catch(function () { if (OPEN === r.s) host.appendChild(el("p", "note", FAIL)); });
+    }
+    if (r.st) {
+      var sp = el("p", "storylink"); box.appendChild(sp);
+      loadStoryIndex().then(function (rows) {
+        var s = rows.filter(function (x) { return x.key === r.st; })[0]; if (!s || OPEN !== r.s) return;
+        sp.appendChild(document.createTextNode("Part of the story: ")); var a = el("a", null, s.headline); a.href = "#story=" + encodeURIComponent(s.key); sp.appendChild(a);
+      });
+    }
+  }
+  // the same "Report an error" route a story has: an event-report issue naming the Library summary or story
+  function errorLink(label, title) {
+    var ep = el("p", "storyend note"), ea = el("a", "reporterr", "Report an error");
+    ea.href = "https://github.com/xanderhutch/CyberView/issues/new?template=event-report.yml&title=" + encodeURIComponent("Error report: " + label) + "&event=" + encodeURIComponent(String(title).slice(0, 120) + " (" + label + ")");
+    ea.target = "_blank"; ea.rel = "noopener noreferrer"; ep.appendChild(ea); return ep;
+  }
+  function drawCard(host, c, r) {
+    host.appendChild(el("h3", null, "What this report says"));
+    host.appendChild(el("p", "summary", c.sm));
+    function group(label, items, titled) {
+      if (!items.length) return;
+      host.appendChild(el("h4", "fl", label));
+      var p = el("p", "arcves"); items.forEach(function (x) { var pl = el("span", "pill", x.v); if (titled && x.by) pl.title = "Named by " + x.by; p.appendChild(pl); }); host.appendChild(p);
+    }
+    group("Who", c.f.a, true); group("Targets", c.f.s.concat(c.f.c)); group("Tools", c.f.t);
+    if (c.f.v.length) {
+      host.appendChild(el("h4", "fl", "CVEs"));
+      c.f.v.forEach(function (x) {
+        var row = el("div", "cvrow"); row.appendChild(el("span", "cvid", x.v)); var ln = el("p", "reclinks");
+        var a1 = el("a", null, "CVE record"); a1.href = "https://www.cve.org/CVERecord?id=" + x.v; var a2 = el("a", null, "NVD record"); a2.href = "https://nvd.nist.gov/vuln/detail/" + x.v;
+        [a1, a2].forEach(function (a) { a.target = "_blank"; a.rel = "noopener noreferrer"; ln.appendChild(a); });
+        var a4 = el("a", null, "Am I affected? How to fix"); a4.href = "vulnerabilities.html#" + x.v; ln.appendChild(a4);
+        row.appendChild(ln); host.appendChild(row);
+      });
+    }
+    host.appendChild(el("p", "note aiby", "Summarised by " + AI_BY + "." + (c.p ? " Read from part of the report." : "")));
+    host.appendChild(errorLink("Library summary " + r.s, r.t || "Untitled report"));
+  }
+
+  // one reviewed story: headline, in short, byline, sections of sentences each followed by numbered citations, the numbered sources, and the error link
+  function storyView(box, s, actor) {
+    var w = el("article", "story"), num = {}, order = [], byHash = {};
+    s.src.forEach(function (x) { byHash[x.sha1] = x; });
+    function numOf(sha) { if (!num[sha]) { order.push(sha); num[sha] = order.length; } return num[sha]; }
+    s.sections.forEach(function (sec) { sec.sentences.forEach(function (sn) { sn.cites.forEach(function (c) { if (c !== "catalogue") numOf(c); }); }); });
+    s.src.forEach(function (x) { numOf(x.sha1); });
+    w.appendChild(el("h2", null, s.headline || s.name));
+    if (s.in_short) w.appendChild(el("p", "inshort", s.in_short));
+    var d = fmtDate(s.reviewed_at);
+    w.appendChild(el("p", "byline", "Written by " + AI_BY + " · from " + plural(s.src.length, "report") + (d ? " · reviewed " + d : "")));
+    if (s.stale) w.appendChild(el("p", "staleline", "New reports have arrived since this was reviewed."));
+    s.sections.forEach(function (sec) {
+      w.appendChild(el("h3", null, SECHEAD[sec.h]));
+      var p = el("p", "prose");
+      sec.sentences.forEach(function (sn) {
+        p.appendChild(el("span", "s", sn.t));
+        sn.cites.forEach(function (c) {
+          if (c === "catalogue") {
+            var u = actor ? orklUrl("ta", actor.i) : "";
+            if (u) { var ca = el("a", "cite", "ORKL catalogue"); ca.href = orklUrl("ta", actor.i); ca.target = "_blank"; ca.rel = "noopener noreferrer"; p.appendChild(ca); } else p.appendChild(el("span", "cite", "ORKL catalogue"));
+          } else {
+            var n = num[c], a = el("a", "cite", "[" + n + "]"); a.href = "library.html#r=" + c; a.setAttribute("aria-label", "Source " + n + ": " + byHash[c].title); p.appendChild(a);
+          }
+        });
+        p.appendChild(document.createTextNode(" "));
+      });
+      w.appendChild(p);
+    });
+    if (order.length) {
+      w.appendChild(el("h3", null, "Sources"));
+      var ol = el("ol", "srcs");
+      order.forEach(function (sha) {
+        var x = byHash[sha], li = el("li"), a = el("a", null, x.title); a.href = "library.html#r=" + sha; li.appendChild(a);
+        var meta = [x.authors.join(", "), x.year].filter(Boolean).join(" · "); if (meta) li.appendChild(el("span", "note", " " + meta));
+        ol.appendChild(li);
+      });
+      w.appendChild(ol);
+    }
+    w.appendChild(errorLink("Library story " + s.key, s.headline || s.name));
+    box.appendChild(w);
+  }
+  // fetch a story into its own slot; a failure shows the one line there and nothing else on the page changes
+  function storySlot(box, key, actor, stillOpen) {
+    var slot = el("div", "storybox"); box.appendChild(slot);
+    loadStory(key).then(function (s) { if (stillOpen()) safe("story", function () { storyView(slot, s, actor); if (!actor) { $("pane").querySelector(".vdtitle").textContent = paneTitle = s.headline || s.name; } }); })
+      .catch(function () { if (stillOpen()) slot.appendChild(el("p", "note", FAIL)); });
+  }
+  function openStory(key) {
+    OPEN = ""; OPEN_STORY = key; paneTitle = "Story"; mark();
+    var d = $("det"); d.textContent = ""; safe("story", function () { storySlot(d, key, null, function () { return OPEN_STORY === key; }); });
+    paneSync(); $("pane").scrollTop = 0; writeHash();
   }
 
   function narrow() { return window.innerWidth < 1240; }
@@ -185,7 +391,7 @@
     [].forEach.call($("actList").querySelectorAll(".row"), function (li) { var on = !!OPEN_ACT && li.getAttribute("data-k") === OPEN_ACT; li.classList.toggle("on", on); li.firstChild.setAttribute("aria-expanded", on ? "true" : "false"); });
   }
   function openReport(r, fromLink) {
-    OPEN = r.s; paneTitle = r.t || "Report";
+    OPEN = r.s; OPEN_STORY = ""; paneTitle = r.t || "Report";
     if (fromLink) {
       if (tab !== "reports") showTab("reports");
       // go to the page of the list that holds it, clearing the filters if they hide it
@@ -201,7 +407,7 @@
   }
   function closePane() {
     var back = OPEN ? $("rp-" + OPEN) : null;
-    OPEN = ""; paneTitle = ""; $("det").textContent = ""; mark(); paneSync(); writeHash();
+    OPEN = ""; OPEN_STORY = ""; paneTitle = ""; $("det").textContent = ""; mark(); paneSync(); writeHash();
     if (back) back.firstChild.focus({ preventScroll: true });
   }
 
@@ -279,11 +485,13 @@
       if (hit && OPEN_ACT === actKey(a)) { var ca = el("a", null, "On file in CyberView events: " + hit.name); ca.href = "actors.html#a=" + encodeURIComponent(hit.id); cv.appendChild(ca); }
     });
     var others = (byName[a.n] || []).filter(function (o) { return o !== a && o.s; });
+    var storyHere = a.st ? (function () { var k = actKey(a); return function () { return OPEN_ACT === k; }; })() : null;
     if (others.length) {
       var op = el("p", "note", "Also tracked under this name by: ");
       others.forEach(function (o, i) { if (i) op.appendChild(document.createTextNode(", ")); var ob = el("button", "linkish", o.s); ob.type = "button"; ob.addEventListener("click", function () { openActorRecord(o); }); op.appendChild(ob); });
       box.appendChild(op);
     }
+    if (a.st) safe("story", function () { storySlot(box, a.st, a, storyHere); });
     if (a.al.length) { box.appendChild(el("h3", null, "Aliases (" + a.al.length + ")")); var al = el("p", "arcves"); a.al.forEach(function (x) { al.appendChild(el("span", "pill", x)); }); box.appendChild(al); }
     if (a.tl.length) { box.appendChild(el("h3", null, "Tools (" + a.tl.length + ")")); var tl = el("p", "arcves"); a.tl.forEach(function (x) { tl.appendChild(el("span", "pill", x)); }); box.appendChild(tl); }
     if (rc) {
@@ -342,6 +550,7 @@
       if ($("year").value) p.set("year", $("year").value);
       if ($("lang").value && langs[Number($("lang").value)]) p.set("lang", langs[Number($("lang").value)]);
       if (OPEN) p.set("r", OPEN);
+      else if (OPEN_STORY) p.set("story", OPEN_STORY);
       else if (repPage) p.set("p", String(repPage + 1));
     } else {
       if ($("actSrc").value) p.set("cat", $("actSrc").value);
@@ -365,9 +574,12 @@
     var r = p.get("r"), ta = p.get("ta"), an = p.get("an");
     var want = r ? reports.filter(function (x) { return x.s === r; })[0] : null;
     var wantA = ta ? actors.filter(function (x) { return x.i === ta; })[0] : an ? (byName[an] || [])[0] : null;
-    OPEN = ""; $("det").textContent = ""; OPEN_ACT = ""; $("actDet").textContent = "";
+    var sk = p.get("story"); sk = sk && SKEY.test(sk) ? sk : "";
+    var storyA = !want && !wantA && sk ? actors.filter(function (x) { return x.st === sk; })[0] : null;
+    OPEN = ""; OPEN_STORY = ""; $("det").textContent = ""; OPEN_ACT = ""; $("actDet").textContent = "";
     if (want) { showTab("reports"); openReport(want, true); return; }
-    if (wantA) { tab = "actors"; showTab("actors"); openActorRecord(wantA, true); return; }
+    if (wantA || storyA) { tab = "actors"; showTab("actors"); openActorRecord(wantA || storyA, true); return; }
+    if (sk) { showTab("reports"); openStory(sk); return; }
     if (p.get("tab") === "actors") { actPage = pageN; showTab("actors"); } else { repPage = pageN; showTab("reports"); }
     mark(); paneSync();
   }
@@ -387,7 +599,7 @@
   $("actNext").addEventListener("click", function () { actPage++; renderActors(); listTop("actView"); writeHash(); });
   document.addEventListener("keydown", function (e) {
     var tag = (document.activeElement || {}).tagName || "", typing = /^(INPUT|TEXTAREA|SELECT)$/.test(tag) || (document.activeElement && document.activeElement.isContentEditable);
-    if (e.key === "Escape" && !typing && tab === "reports" && OPEN) { e.preventDefault(); closePane(); }
+    if (e.key === "Escape" && !typing && tab === "reports" && (OPEN || OPEN_STORY)) { e.preventDefault(); closePane(); }
     else if (e.key === "Escape" && !typing && tab === "actors" && OPEN_ACT) { e.preventDefault(); closeActor(); }
     else if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey && !typing) { e.preventDefault(); $("q").focus(); }
   });

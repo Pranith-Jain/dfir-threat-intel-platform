@@ -4,7 +4,7 @@
 (function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
-  var NEW_URL = "https://github.com/xanderhutch/CyberView/issues/new";
+  var NEW_URL = "https://github.com/CyberViewTools/CyberView/issues/new";
   function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = String(text); return n; }
   function str(v, n) { return typeof v === "string" ? v.slice(0, n) : ""; }
   function isId(s) { return /^[a-z0-9][a-z0-9-]{2,119}$/.test(s || ""); }
@@ -87,7 +87,7 @@
       if (p.note) li.appendChild(el("p", "note cmnote", "Moderator's note: " + p.note));
       var foot = el("div", "cmfoot");
       if (p.event) { var ev = el("a", null, "About: " + p.event); ev.href = safeUrl("./#e=" + p.event); foot.appendChild(ev); }
-      var rp = el("a", null, "Report #" + p.id); rp.href = "https://github.com/xanderhutch/CyberView/issues/new?template=chat-report.yml&post=" + encodeURIComponent(String(p.id)) + "&title=" + encodeURIComponent("Report community post " + p.id);
+      var rp = el("a", null, "Report #" + p.id); rp.href = "https://github.com/CyberViewTools/CyberView/issues/new?template=chat-report.yml&post=" + encodeURIComponent(String(p.id)) + "&title=" + encodeURIComponent("Report community post " + p.id);
       rp.target = "_blank"; rp.rel = "noopener noreferrer"; foot.appendChild(rp);
       li.appendChild(foot); box.appendChild(li);
       if (q) li.classList.add("qhit");
