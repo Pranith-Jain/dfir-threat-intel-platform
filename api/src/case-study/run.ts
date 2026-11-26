@@ -39,6 +39,7 @@ import { discoverEuvd } from './discovery/euvd';
 import { discoverTrendResearch } from './discovery/trend-research';
 import { discoverPhishuntHunts } from './discovery/phishunt';
 import { activeRunnerNames } from './discovery/rotation';
+import { createSubrequestBudget } from './discovery/subrequest-budget';
 import { runPlanner } from './publishing/planner';
 import { runPublisher } from './publishing/publisher';
 import { putCandidate, putCandidates } from './storage/candidates';
@@ -253,11 +254,14 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
   const asRows = (v: unknown): Array<Record<string, unknown>> =>
     Array.isArray(v) ? v.filter((x): x is Record<string, unknown> => !!x && typeof x === 'object') : [];
 
+  // One counted budget per invocation. The free plan allows 50 subrequests;
+  // 38 is the runners' share, leaving headroom for persistence, dedup and
+  // SELF calls. Heavy runners report starvation through `runnerStats`.
+  const budget = createSubrequestBudget();
   const hexbrainKey = env.HEXBRAIN_API_KEY;
   const allRunners: Record<string, () => Promise<Candidate[]>> = {
     vulncheck: () =>
       discoverVulnCheckKev({ fetch: globalThis.fetch, now, getDedup: memGet, token: env.VULNCHECK_API_TOKEN ?? '' }),
-    cve: () => discoverCves({ fetch: globalThis.fetch, now, getDedup: memGet }),
     actor: () => discoverActors({ fetch: globalThis.fetch, now, getDedup: memGet, feeds: ACTOR_RSS_FEEDS }),
     malware: () =>
       discoverMalware({ fetch: globalThis.fetch, now, getDedup: memGet, abuseChKey: env.ABUSECH_AUTH_KEY ?? '' }),
@@ -378,7 +382,13 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
         // These URLs come from the platform's own corpus, so they are far
         // more trustworthy than the LLM's were — off by default.
         deepVerify: env.DEEP_LINK_VERIFY === 'true',
+        budget,
       }),
+    // CVE runs LAST on purpose. It used to be second, so its ~53 NVD probes
+    // exhausted the invocation before any non-CVE runner fetched. Even if the
+    // budget is now exhausted for other reasons, the diversity runners have
+    // already produced the day's non-CVE backbone.
+    cve: () => discoverCves({ fetch: globalThis.fetch, now, getDedup: memGet, budget }),
   };
   // Discovery diversity model:
   //   - 13 high-value "always-on" topics: `cve`, `actor`, `exploit`,
@@ -446,6 +456,7 @@ export async function runDiscoveryNow(env: CaseStudyEnv, now: Date) {
     limit: 10,
     perTopicOverride: { trends: 3 },
     minKept: MIN_DAILY_CANDIDATES,
+    budget,
     // Top-up admission policy. Two hard rules, both non-negotiable:
     //   - an admin skip (`suppressedUntil` in the future) always wins, and
     //   - an already-PUBLISHED key is never re-offered — no duplicate post.

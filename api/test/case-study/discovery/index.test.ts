@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { runDiscovery } from '../../../src/case-study/discovery/index';
+import { createSubrequestBudget } from '../../../src/case-study/discovery/subrequest-budget';
 import type { Candidate } from '../../../src/case-study/types';
 
 const sampleC = (key: string, type: any, score: number): Candidate => ({
@@ -338,5 +339,34 @@ describe('runDiscovery', () => {
     const result = await runDiscovery(env as any);
     expect(result.byTopic.cve).toBe(2);
     expect(writes.map((w) => w.key).sort()).toEqual(['c2', 'c3']);
+  });
+
+  it('reports a starved runner even when its catch swallowed the budget error', async () => {
+    // This is the production failure mode: a runner's internal catch turns a
+    // denied spend into an empty list, so `returned: 0` alone looks like a
+    // quiet feed. The orchestrator must read the budget, not the runner.
+    const budget = createSubrequestBudget(0);
+    const result = await runDiscovery({
+      runners: {
+        cve: async () => {
+          try {
+            budget.spend('cve');
+          } catch {
+            /* swallowed exactly as a real runner would */
+          }
+          return [];
+        },
+        actor: async () => [sampleC('actor-1', 'actor', 0.9)],
+      },
+      putCandidate: async () => {},
+      commitDedup: async () => {},
+      now: new Date('2026-05-14T06:00:00Z'),
+      budget,
+    } as any);
+
+    expect(result.runnerStats.cve?.starved).toBe(true);
+    expect(result.runnerStats.actor?.starved).toBeUndefined();
+    expect(result.byTopic.cve).toBe(0);
+    expect(result.byTopic.actor).toBe(1);
   });
 });

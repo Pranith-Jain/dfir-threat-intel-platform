@@ -1,12 +1,21 @@
 import type { Candidate, DedupRecord } from '../types';
 import { cveKey } from '../stable-keys';
 import { recencyScore, severityScore, noveltyScore, finalScore } from '../scoring';
-import { verifyUrl, type LinkStatus } from '../../lib/verify-url';
+import { isCanonicalAuthorityUrl, type LinkStatus } from '../../lib/verify-url';
 import { formatAffectedVersions } from '../../lib/cve-versions';
 import { formatKevTitle } from '../kev-autopublish';
+import type { SubrequestBudget } from './subrequest-budget';
 
 const KEV_URL = 'https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json';
 const NVD_API = 'https://services.nvd.nist.gov/rest/json/cves/2.0';
+/**
+ * NVD enrichment is bounded. On a busy KEV day the 14-day window held 26
+ * entries; enriching all of them plus probing each NVD deep link came to ~53
+ * subrequests against a 50/invocation ceiling. The newest eight get full
+ * CVSS/version data — the rest still become candidates from the authoritative
+ * KEV record, which is enough for the daily suggestion queue.
+ */
+const CVE_ENRICH_MAX = 8;
 
 interface KevEntry {
   cveID: string;
@@ -50,6 +59,8 @@ export interface DiscoverDeps {
   fetch: typeof globalThis.fetch;
   now: Date;
   getDedup: (stableKey: string) => Promise<DedupRecord | null>;
+  /** Optional invocation-wide subrequest accounting. */
+  budget?: SubrequestBudget;
 }
 
 /**
@@ -107,10 +118,11 @@ export async function enrichFromNvd(
 }
 
 export async function discoverCves(deps: DiscoverDeps): Promise<Candidate[]> {
-  const { fetch, now, getDedup } = deps;
+  const { fetch, now, getDedup, budget } = deps;
   const candidates: Candidate[] = [];
 
   try {
+    budget?.spend('cve');
     const r = await fetch(KEV_URL, { headers: { 'User-Agent': 'pranithjain.qzz.io case-study-discovery' } });
     if (!r.ok) throw new Error(`KEV fetch ${r.status}`);
     const data = (await r.json()) as { vulnerabilities: KevEntry[] };
@@ -121,8 +133,19 @@ export async function discoverCves(deps: DiscoverDeps): Promise<Candidate[]> {
       return dateAdded >= fourteenDaysAgo;
     });
 
-    // Enrich with NVD data in parallel
-    const nvdResults = await Promise.allSettled(entries.map((k) => enrichFromNvd(fetch, k.cveID)));
+    // Enrich only the newest slice, and account for each lookup. A budget
+    // denial is swallowed here on purpose: the orchestrator reads
+    // `budget.wasStarved('cve')` from outside, where this catch cannot hide it.
+    const nvdResults = await Promise.allSettled(
+      entries.slice(0, CVE_ENRICH_MAX).map(async (k) => {
+        try {
+          budget?.spend('cve');
+        } catch {
+          return {};
+        }
+        return enrichFromNvd(fetch, k.cveID);
+      })
+    );
 
     for (let i = 0; i < entries.length; i++) {
       const k = entries[i];
@@ -138,10 +161,10 @@ export async function discoverCves(deps: DiscoverDeps): Promise<Candidate[]> {
       const dedup = await getDedup(stable);
 
       const nvdUrl = `https://nvd.nist.gov/vuln/detail/${encodeURIComponent(k.cveID)}`;
-      const nvdUrlResult = await verifyUrl(nvdUrl, 3000);
-      // Nuanced verdict: 'broken' only for a confirmed-dead URL (404/410/
-      // soft-404/NXDOMAIN); WAF blocks + 5xx + timeouts stay 'unchecked'.
-      const nvdStatus: LinkStatus = nvdUrlResult.linkStatus;
+      // Canonical authority records are not probed: the KEV/NVD lookup that
+      // produced the candidate already established the record. The old HEAD
+      // check spent one subrequest per CVE and starved every later runner.
+      const nvdStatus: LinkStatus = isCanonicalAuthorityUrl(nvdUrl) ? 'ok' : 'unchecked';
       const sourceLinkStatuses: Record<string, LinkStatus> = {
         [nvdUrl]: nvdStatus,
       };
