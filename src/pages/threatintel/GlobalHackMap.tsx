@@ -376,17 +376,28 @@ export default function GlobalHackMap(): JSX.Element {
     const params = new URLSearchParams(window.location.search);
     const cve = params.get('cve');
     const incident = params.get('i');
-    if (!cve && !incident) return;
-    deepLinkApplied.current = true;
-    if (cve) setSelectedCveId(cve.toUpperCase());
-    else if (incident) {
-      const match = allIncidents.find((i) => i.id === incident);
-      if (match) setSelectedIncidentId(match.id);
-      else setSelectedId(incident);
+    if (cve) {
+      // CVE deep links do not depend on any feed — resolve immediately.
+      deepLinkApplied.current = true;
+      setSelectedCveId(cve.toUpperCase());
+      return;
     }
-  }, [allIncidents]);
+    if (!incident) return;
+    // Wait for the incident mirror. Previously this ran on the first render
+    // with an empty feed, missed the match, and marked the link applied — so
+    // a breach URL silently fell back to a Pulse event id that did not exist.
+    if (!incidentFeed) return;
+    deepLinkApplied.current = true;
+    const match = allIncidents.find((i) => i.id === incident);
+    if (match) setSelectedIncidentId(match.id);
+    else setSelectedId(incident);
+  }, [allIncidents, incidentFeed]);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    // Do not round-trip away a deep link until it has been resolved above.
+    // This effect used to strip `?i=` on mount, so the resolving effect could
+    // never read it after the feed arrived.
+    if (!deepLinkApplied.current && (params.has('cve') || params.has('i'))) return;
     params.delete('cve');
     params.delete('i');
     if (selectedCveId) params.set('cve', selectedCveId);
