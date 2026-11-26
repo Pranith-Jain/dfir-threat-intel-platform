@@ -1,6 +1,6 @@
 # DFIR-ThreatIntel MCP - tool catalog
 
-**446 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
+**454 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
 
 ## Quick start
 
@@ -14,8 +14,13 @@
 
 ## Tools by category
 
-### other (329)
+### other (337)
 
+- `aad_attack_coverage` - Return the consolidated ATT&CK Navigator layer: 124 techniques scored by how many rules name each one, with the rule descriptions in the comments. Identifies which attacker techniques are best covered by agentic attack detections.
+- `aad_get_framework` - Return one agentic attack framework: coverage counts, ATT&CK techniques with rule-count scores, sourced indicators (value, confidence, context, publication) and an upstream deep link. Use aad_list_frameworks first to discover slugs.
+- `aad_list_frameworks` - List AI-agent attack frameworks covered by ThreatDefence Agentic Attack Detections (MIT): 100+ frameworks with KQL hunts, Sigma, Suricata, YARA, indicator counts and the reported in-the-wild use. Filter by keyword or minimum rule/indicator counts.
+- `aad_list_indicators` - Search the sourced indicator set (1,800+ values across 16 IOC types: user_agent, ipv4, domain, url, sha256, file_path, uri_string, docker_image, favicon_mmh3, etc). Each row carries confidence, context, source publication and the framework it belongs to.
+- `aad_stats` - Return Agentic Attack Detections corpus stats (frameworks, indicators by type, ATT&CK techniques, shared behavior/general rule inventory) and cache state.
 - `ai_advisories` - AI advisory firehose — per-package GHSA advisories, cvelistV5 CVE commits matched to known AI CVEs, tool release trains (garak, PyRIT, promptfoo, litellm, vllm, ollama, langchain, MCP SDK, MITRE ATLAS, OWASP GenAI), ExploitDB PoCs.
 - `ai_playbook_cve_refs` - CVE references cited by the AI Security Playbook, enriched against our local CISA KEV snapshot so you can see which are known-exploited. Enrichment comes from our own feed, never upstream.
 - `ai_playbook_get_layer` - Get one AI Security Playbook division by roman id (I..VIII) or slug, including the risk identifiers it defines.
@@ -34,6 +39,9 @@
 - `anarchy_recommend` - Rank Anarchy courses for a user library. Deterministic scorer (no LLM): tag affinity with saved/done/doing courses, same-provider affinity, and a difficulty ladder one rung above completed courses. Excludes library courses. Empty library returns beginner-friendly popular picks.
 - `anarchy_similar` - Courses similar to one Anarchy course: shared tracks first, then same provider, then same difficulty. Use anarchy_list_courses first to discover IDs.
 - `anarchy_stats` - Return cache + manifest stats for the Anarchy course catalog: course counts, top tags, sync timestamps, and LRU cache hit/miss ratios.
+- `art_get_technique` - Return one Atomic Red Team technique with its test metadata: test names, GUIDs, plain descriptions, supported platforms, executor type and elevation flag, input argument names and dependency counts. Raw commands are not vendored; every test deep-links upstream. Use art_list_techniques first to discover ids.
+- `art_list_techniques` - List Atomic Red Team ATT&CK techniques (353 techniques, ~1,950 tests) as presented by atomicredteam.io. Filter by platform (windows/linux/macos/...), executor type (powershell/sh/bash/command_prompt/manual), subtechnique flag, minimum test count or keyword.
+- `art_stats` - Return Atomic Red Team catalog stats: techniques, tests, platform and executor breakdowns, plus cache state.
 - `briefings_related` - Find prior briefings related to a given briefing — links by shared IOCs (domains/IPs/hashes/URL hosts) or shared tactic keywords, ranked by match count then severity then recency. Case-triage linkage (port of the CTI case-queue related-case matcher).
 - `btc_abuse_check` - Check a Bitcoin address for abuse/scam reports on ChainAbuse. Returns the `verdict` field, which is authoritative: "flagged" means abuse reports exist, "clean" means the lookup completed and found none, and "unknown" means the lookup did NOT complete (missing CHAINABUSE_API_KEY or upstream error) — an "unknown" verdict is NOT evidence of a clean address and must not be reported as such. On "flagged", reports include categories (phishing, ransomware, scam, etc.), descriptions, and associated scam types. Useful for tracing illicit crypto transactions.
 - `bw_get_breach` - Return the full body of a single breach/leak claim by slug. Includes description, source URL, activity sector, and references. Use bw_list_breaches first to discover slugs.

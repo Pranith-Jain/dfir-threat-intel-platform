@@ -1,0 +1,72 @@
+{
+  "id": "T1127.003",
+  "displayName": "Trusted Developer Utilities Proxy Execution: JamPlus",
+  "tests": [
+    {
+      "name": "JamPlus proxy execution - launch calc.exe via Jamfile.jam action",
+      "guid": "5f7f863b-b6e5-4eb3-98af-9844d194137e",
+      "description": "Writes a minimal Jamfile.jam whose build action shell-executes calc.exe, then invokes jam.exe against it. Mirrors the reported abuse pattern of using JamPlus's build actions to proxy execution of an arbitrary binary from a reputable developer tool.\nExpected output: calc.exe launches as a child process of jam.exe.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["jam_path", "work_dir"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "JamPlus proxy execution - launch PowerShell via Jamfile.jam action",
+      "guid": "51b6913b-f96a-4d18-9802-41d4c5d4f995",
+      "description": "Writes a Jamfile.jam whose build action invokes powershell.exe to write a marker file, simulating an adversary using JamPlus to proxy execution of a PowerShell payload rather than a GUI binary.\nExpected output: a marker file is created by the powershell.exe process spawned from jam.exe.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["jam_path", "work_dir", "marker_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "JamPlus proxy execution - payload injected via command-line variable substitution",
+      "guid": "077fb22c-fe92-4abd-aecf-31339324864b",
+      "description": "Writes an innocuous-looking Jamfile.jam whose action body only references a variable, with no payload embedded in the file itself. The actual command is supplied entirely via a jam -s command-line variable at invocation time, so the Jamfile would pass a static content review while the executed command is assembled only at runtime. Simulates a supply-chain-style abuse pattern where a pre-approved, benign-looking build script is weaponized purely through its invocation parameters.\nExpected output: calc.exe launches as a child process of jam.exe, despite the Jamfile containing no reference to calc.exe.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["jam_path", "work_dir", "payload_command"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "JamPlus proxy execution - command execution via explicitly named Jamfile",
+      "guid": "cab43461-dbf0-4786-a9bc-857067272f8d",
+      "description": "Writes a build-instructions file under a non-default filename and invokes JamPlus against it explicitly using the -f flag, rather than relying on JamPlus's default Jamfile.jam auto-discovery. Demonstrates a distinct invocation path that may evade detections keyed only on the default filename.\nExpected output: notepad.exe launches as a child process of jam.exe.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["jam_path", "work_dir"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "JamPlus proxy execution - payload download and execute via jam build action",
+      "guid": "424b5096-2c96-44a0-a48f-ef66bb9d5638",
+      "description": "Writes a Jamfile.jam whose build action downloads a benign file from a local/looped-back source and writes it to disk via jam, simulating the download-and-stage step adversaries perform before executing a second-stage payload through JamPlus, without actually executing attacker-controlled content.\nExpected output: a file is retrieved and written to disk by a process spawned from jam.exe.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["jam_path", "work_dir", "staged_file"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1127.003/T1127.003.yaml"
+}

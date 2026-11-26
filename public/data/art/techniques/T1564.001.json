@@ -1,0 +1,137 @@
+{
+  "id": "T1564.001",
+  "displayName": "Hide Artifacts: Hidden Files and Directories",
+  "tests": [
+    {
+      "name": "Create a hidden file in a hidden directory",
+      "guid": "61a782e5-9a19-40b5-8ba4-69a4b9f3d7be",
+      "description": "Creates a hidden file inside a hidden directory",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Mac Hidden file",
+      "guid": "cddb9098-3b47-4e01-9d3b-6f5f323288a9",
+      "description": "Hide a file on MacOS",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create Windows System File with Attrib",
+      "guid": "f70974c8-c094-4574-b542-2c545af95a32",
+      "description": "Creates a file and marks it as a system file using the attrib.exe utility. Upon execution, open the file in file explorer then open Properties > Details\nand observe that the Attributes are \"SA\" for System and Archive.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_to_modify"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Create Windows Hidden File with Attrib",
+      "guid": "dadb792e-4358-4d8d-9207-b771faa0daa5",
+      "description": "Creates a file and marks it as hidden using the attrib.exe utility.Upon execution, open File Epxplorer and enable View > Hidden Items. Then, open Properties > Details on the file\nand observe that the Attributes are \"SH\" for System and Hidden.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_to_modify"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Hidden files",
+      "guid": "3b7015f2-3144-4205-b799-b05580621379",
+      "description": "Requires Apple Dev Tools",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["filename"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Hide a Directory",
+      "guid": "b115ecaf-3b24-4ed2-aefe-2fcb9db913d3",
+      "description": "Hide a directory on MacOS",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Show all hidden files",
+      "guid": "9a1ec7da-b892-449f-ad68-67066d04380c",
+      "description": "Show all hidden files on MacOS",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Hide Files Through Registry",
+      "guid": "f650456b-bd49-4bc1-ae9d-271b5b9581e7",
+      "description": "Disable Show Hidden files switch in registry. This technique was abused by several malware to hide their files from normal user.\nSee how this trojan abuses this technique - https://www.sophos.com/en-us/threat-center/threat-analyses/viruses-and-spyware/W32~Tiotua-P/detailed-analysis.aspx",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create Windows Hidden File with powershell",
+      "guid": "7f66d539-4fbe-4cfa-9a56-4a2bf660c58a",
+      "description": "Creates a file and marks it as hidden through powershell. Upon execution, open File Epxplorer and enable View > Hidden Items. Then, open Properties > Details on the file\nand observe that the Attributes is \"H\" Hidden.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_to_modify"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Create Windows System File with powershell",
+      "guid": "d380c318-0b34-45cb-9dad-828c11891e43",
+      "description": "Creates a file and marks it as System through powershell. Upon execution, open File Epxplorer and enable View > Hidden Items. Then, open Properties > Details on the file\nand observe that the Attributes is \"S\" System.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_to_modify"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1564.001/T1564.001.yaml"
+}

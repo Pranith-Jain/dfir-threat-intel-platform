@@ -1,0 +1,236 @@
+{
+  "slug": "shannon",
+  "name": "Shannon",
+  "description": "TypeScript white-box AI pentester: Temporal workers drive model agents that read the code and test the running application with a headless browser",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 3,
+    "suricata": 3,
+    "yara": 5,
+    "indicators": 21
+  },
+  "techniques": [
+    {
+      "id": "T1071.001",
+      "score": 1,
+      "comment": "Suricata: 3813010 TD Shannon scan workflows in a Temporal Web UI or API response"
+    },
+    {
+      "id": "T1499.004",
+      "score": 4,
+      "comment": "KQL hunt: Shannon testing you: the php2shell probe sizes and its browser user agent in web and proxy logs; Sigma: Shannon Experimental php2shell Crash Probe Started; Suricata: 3813001 TD Shannon php2shell crash probe multipart boundary; Suricata: 3813002 TD Shannon php2shell crash probe MIME header flood"
+    },
+    {
+      "id": "T1588.002",
+      "score": 5,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; KQL hunt: Shannon running on a host you monitor; YARA: Shannon_Package; YARA: Shannon_Playwright_Stealth_Files; YARA: Shannon_Session_Record"
+    },
+    {
+      "id": "T1595",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1595.002",
+      "score": 8,
+      "comment": "KQL hunt: Shannon running on a host you monitor; KQL hunt: Shannon testing you: the php2shell probe sizes and its browser user agent in web and proxy logs; Sentinel analytics: Shannon AI pentest agent on a host; Sigma: Shannon AI Pentest Agent CLI, Worker Container or Report Renderer; Sigma: Shannon Workspace, Deliverable or Browser Files Written; Suricata: 3813001 TD Shannon php2shell crash probe multipart boundary; YARA: Shannon_Report_Markdown; YARA: Shannon_Report_PDF"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "string",
+      "value": "shannonPhp2shellProbe",
+      "confidence": "high",
+      "context": "Multipart boundary prefix of the --exp-php2shell crash probe: Content-Type multipart/form-data; boundary=----shannonPhp2shellProbe<32 hex>, on the control request and both probe bodies (apps/cli/src/exp-php2shell/multipart.ts:26)",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/cli/src/exp-php2shell/multipart.ts#L26",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "X-h0: a",
+      "confidence": "medium",
+      "context": "First of the 80,000 or 540,000 MIME headers (X-h0: a, X-h1: a, ...) in the single part of the php2shell probe body, 1,029,023 or 7,449,023 bytes, POSTed to one URL (apps/cli/src/exp-php2shell/multipart.ts:44). A short string: use it together with the boundary or the body sizes",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/cli/src/exp-php2shell/multipart.ts#L44",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "--exp-php2shell",
+      "confidence": "high",
+      "context": "CLI flag that runs the php2shell crash probe against one URL from the CLI, without Docker (apps/cli/src/help.ts:37)",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/cli/src/help.ts#L37",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      "confidence": "low",
+      "context": "User agent of the Shannon agents' headless Chromium, set in the stealth config it writes to .playwright/cli.config.json (apps/worker/src/ai/playwright-config-writer.ts:67-68). Real Chrome 124 on Linux sends the same string: context only, never alone",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/worker/src/ai/playwright-config-writer.ts#L67",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "docker_image",
+      "value": "keygraph/shannon",
+      "confidence": "high",
+      "context": "Shannon worker image on Docker Hub, tag = CLI version (apps/cli/src/docker.ts:25). Wolfi base with Chromium, Playwright CLI and Typst; label shannon.worker-protocol=workflow-id-v1",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/cli/src/docker.ts#L25",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "docker_image",
+      "value": "shannon-worker",
+      "confidence": "medium",
+      "context": "Image tag the worker is built under when run from a clone with ./shannon build (apps/cli/src/docker.ts:26). Generic name: check for the shannon.* labels",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/cli/src/docker.ts#L26",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "docker_image",
+      "value": "temporalio/temporal:1.7.0",
+      "confidence": "low",
+      "context": "Temporal dev server Shannon runs as container shannon-temporal on network shannon-net (docker-compose.yml:7). A common workflow engine image: context only",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/docker-compose.yml#L7",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "@keygraph/shannon",
+      "confidence": "high",
+      "context": "npm package of the Shannon CLI, run as npx @keygraph/shannon start -u <url> -r <repo> (apps/cli/package.json:2)",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/cli/package.json#L2",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "shannon-worker-",
+      "confidence": "high",
+      "context": "Name prefix of every Shannon worker container: shannon-worker-<8 hex>, started with docker run -d --rm --network shannon-net (apps/cli/src/commands/start.ts:365)",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/cli/src/commands/start.ts#L365",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "shannon.workflow-id",
+      "confidence": "high",
+      "context": "Docker label on every Shannon worker container, next to shannon.workspace and shannon.task-queue (apps/cli/src/docker.ts:35)",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/cli/src/docker.ts#L35",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "shannon.worker-protocol",
+      "confidence": "high",
+      "context": "Label on the Shannon worker image, value workflow-id-v1 (Dockerfile:47)",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/Dockerfile#L47",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "shannon-temporal",
+      "confidence": "medium",
+      "context": "Container name of the Temporal server Shannon starts with docker compose; the worker reaches it as TEMPORAL_ADDRESS=shannon-temporal:7233 (docker-compose.yml:8)",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/docker-compose.yml#L8",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "pentestPipelineWorkflow",
+      "confidence": "high",
+      "context": "Temporal workflow type of every Shannon scan, visible in the Temporal Web UI and API on port 8233 (apps/worker/src/temporal/worker.ts:772)",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/worker/src/temporal/worker.ts#L772",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "_shannon-",
+      "confidence": "medium",
+      "context": "Suffix of Shannon workflow IDs and auto-named workspace folders: <target host>_shannon-<epoch ms> (apps/cli/src/commands/start.ts:311)",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/cli/src/commands/start.ts#L311",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "Shannon | AI Pentester by Keygraph",
+      "confidence": "high",
+      "context": "Author of every Shannon PDF report (Typst document metadata) and the brand= input on the typst compile command line (apps/worker/templates/typst/report.typ:19)",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/worker/templates/typst/report.typ#L19",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "SHANNON_AI_MODEL",
+      "confidence": "medium",
+      "context": "Environment variable that picks the model as <provider>:<model-id>; default anthropic:claude-sonnet-4-6 (apps/worker/src/ai/models.ts:84)",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/worker/src/ai/models.ts#L84",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": ".shannon/deliverables/",
+      "confidence": "medium",
+      "context": "Folder of the Shannon agents' outputs inside each run: pre_recon_deliverable.md, recon_deliverable.md, <class>_analysis_deliverable.md, <class>_exploitation_queue.json, <class>_exploitation_evidence.md, comprehensive_security_assessment_report.md (apps/worker/src/paths.ts:25)",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/worker/src/paths.ts#L25",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_name",
+      "value": "comprehensive_security_assessment_report.md",
+      "confidence": "medium",
+      "context": "Assembled Shannon report in .shannon/deliverables/; copied to the run root as Security-Assessment-Report.md and .pdf (apps/worker/src/paths.ts:38)",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/worker/src/paths.ts#L38",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_name",
+      "value": "Security-Assessment-Report.pdf",
+      "confidence": "low",
+      "context": "Shannon PDF report at the run root (apps/worker/src/paths.ts:44). A generic name: check the PDF author",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/worker/src/paths.ts#L44",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_name",
+      "value": "php2shell-report.json",
+      "confidence": "medium",
+      "context": "JSON report of the php2shell probe, written to the -o directory (apps/cli/src/exp-php2shell/run.ts:74)",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/apps/cli/src/exp-php2shell/run.ts#L74",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "port",
+      "value": "8233",
+      "confidence": "low",
+      "context": "Temporal Web UI that Shannon publishes on 127.0.0.1:8233; it lists every scan with its target (docker-compose.yml:12). Temporal's own default port: context only",
+      "source": "ThreatDefence review of the Shannon source code",
+      "sourceUrl": "https://github.com/KeygraphHQ/shannon/blob/3760d2f9df9f3afa374a8eb2473adadfbf9ed991/docker-compose.yml#L12",
+      "reported": "2026-11-25"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/shannon",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

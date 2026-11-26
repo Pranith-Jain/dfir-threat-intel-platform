@@ -1,0 +1,746 @@
+{
+  "slug": "cyberstrikeai",
+  "name": "CyberStrikeAI",
+  "description": "Go operator console whose agents run about 90 tools, with its own implants, C2 listeners and webshell manager",
+  "seenIn": "FortiGate mass-exploitation infrastructure, an AWS intrusion, and education organizations in Africa and Latin America",
+  "counts": {
+    "kqlHunts": 5,
+    "analytics": 2,
+    "sigma": 7,
+    "suricata": 11,
+    "yara": 4,
+    "indicators": 71
+  },
+  "techniques": [
+    {
+      "id": "T1036.005",
+      "score": 1,
+      "comment": "KQL hunt: CyberStrikeAI implant persistence and the file names seen in real attacks"
+    },
+    {
+      "id": "T1036.012",
+      "score": 2,
+      "comment": "Suricata: 3804013 TD CyberStrikeAI implant default user agent (truncated Chrome string); Zeek notice: CyberStrikeAI::Implant_User_Agent"
+    },
+    {
+      "id": "T1053.003",
+      "score": 3,
+      "comment": "KQL hunt: CyberStrikeAI implant persistence and the file names seen in real attacks; Sentinel analytics: CyberStrikeAI implant persistence; Sigma: CyberStrikeAI Implant Linux Persistence or curl Beacon"
+    },
+    {
+      "id": "T1053.005",
+      "score": 3,
+      "comment": "KQL hunt: CyberStrikeAI implant persistence and the file names seen in real attacks; Sentinel analytics: CyberStrikeAI implant persistence; Sigma: CyberStrikeAI Implant Windows Persistence Named SystemUpdate"
+    },
+    {
+      "id": "T1059",
+      "score": 1,
+      "comment": "Sentinel analytics: CyberStrikeAI webshell manager or OS probe"
+    },
+    {
+      "id": "T1059.004",
+      "score": 1,
+      "comment": "YARA: CyberStrikeAI_Curl_Beacon_Script"
+    },
+    {
+      "id": "T1071",
+      "score": 7,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; Suricata: 3804500 TD CyberStrikeAI reported address, AI-run AWS intrusion from a CyberStrikeAI server, CyberStrikeAI console (CN=CyberStrikeAI certificate, title CyberStrikeAI, port 8080) and source of every AWS API call in an intrusion that used eight AWS identities across four accounts, Sep 30 to Oct 16, 2026 (AS133199, Hong Kong) (outbound); Suricata: 3804502 TD CyberStrikeAI reported address, AI-run AWS intrusion from a CyberStrikeAI server, CyberStrikeAI console in the same /24 serving the same certificate as 43.240.29.11, not seen in "
+    },
+    {
+      "id": "T1071.001",
+      "score": 16,
+      "comment": "KQL hunt: A CyberStrikeAI console on a host you monitor, or behind your proxy; KQL hunt: CyberStrikeAI implant check-ins: five seconds, no jitter, fixed headers; Sigma: CyberStrikeAI Implant Linux Persistence or curl Beacon; Sigma: CyberStrikeAI User Agents or Implant Check-in in Proxy Logs; Suricata: 3804005 TD CyberStrikeAI console user agent; Suricata: 3804006 TD CyberStrikeAI console self-signed certificate; Suricata: 3804010 TD CyberStrikeAI or NeuroSploit implant token header; Suricata: 3804011 TD CyberStrikeAI implant session header with check-in; Suricata: 3804012 TD CyberStrikeAI impl"
+    },
+    {
+      "id": "T1082",
+      "score": 7,
+      "comment": "KQL hunt: CyberStrikeAI webshell manager driving a webshell on your servers; Sigma: CyberStrikeAI Webshell OS Probe Command; Suricata: 3804002 TD CyberStrikeAI webshell OS probe in URI; Suricata: 3804003 TD CyberStrikeAI webshell OS probe in request body; Suricata: 3804004 TD CyberStrikeAI webshell OS probe answered by a Windows server; Zeek notice: CyberStrikeAI::OS_Probe; Zeek notice: CyberStrikeAI::OS_Probe_Answered"
+    },
+    {
+      "id": "T1095",
+      "score": 4,
+      "comment": "KQL hunt: CyberStrikeAI implant check-ins: five seconds, no jitter, fixed headers; Suricata: 3804014 TD CyberStrikeAI TCP implant magic CSB1; YARA: CyberStrikeAI_Implant; Zeek notice: CyberStrikeAI::TCP_Implant"
+    },
+    {
+      "id": "T1505.003",
+      "score": 11,
+      "comment": "KQL hunt: CyberStrikeAI webshell manager driving a webshell on your servers; Sentinel analytics: CyberStrikeAI webshell manager or OS probe; Sigma: CyberStrikeAI Webshell Manager User Agent or OS Probe in Web Logs; Sigma: CyberStrikeAI Webshell OS Probe Command; Suricata: 3804001 TD CyberStrikeAI webshell manager user agent; Suricata: 3804002 TD CyberStrikeAI webshell OS probe in URI; Suricata: 3804003 TD CyberStrikeAI webshell OS probe in request body; Suricata: 3804004 TD CyberStrikeAI webshell OS probe answered by a Windows server; Zeek notice: CyberStrikeAI::OS_Probe; Zeek notice: CyberStr"
+    },
+    {
+      "id": "T1543.001",
+      "score": 4,
+      "comment": "KQL hunt: CyberStrikeAI implant persistence and the file names seen in real attacks; Sentinel analytics: CyberStrikeAI implant persistence; Sigma: CyberStrikeAI Implant LaunchAgent com.apple.systemupdate; YARA: CyberStrikeAI_Persistence_Artifacts"
+    },
+    {
+      "id": "T1546.004",
+      "score": 3,
+      "comment": "KQL hunt: CyberStrikeAI implant persistence and the file names seen in real attacks; Sentinel analytics: CyberStrikeAI implant persistence; YARA: CyberStrikeAI_Persistence_Artifacts"
+    },
+    {
+      "id": "T1547.001",
+      "score": 4,
+      "comment": "KQL hunt: CyberStrikeAI implant persistence and the file names seen in real attacks; Sentinel analytics: CyberStrikeAI implant persistence; Sigma: CyberStrikeAI Implant Run Key Value SystemUpdate; Sigma: CyberStrikeAI Implant Windows Persistence Named SystemUpdate"
+    },
+    {
+      "id": "T1587.003",
+      "score": 2,
+      "comment": "Suricata: 3804006 TD CyberStrikeAI console self-signed certificate; Zeek notice: CyberStrikeAI::Console_Certificate"
+    },
+    {
+      "id": "T1588.002",
+      "score": 2,
+      "comment": "KQL hunt: A CyberStrikeAI console on a host you monitor, or behind your proxy; YARA: CyberStrikeAI_Console"
+    },
+    {
+      "id": "T1595",
+      "score": 7,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; Suricata: 3804501 TD CyberStrikeAI reported address, AI-run AWS intrusion from a CyberStrikeAI server, CyberStrikeAI console (CN=CyberStrikeAI certificate, title CyberStrikeAI, port 8080) and source of every AWS API call in an intrusion that used eight AWS identities across four accounts, Sep 30 to Oct 16, 2026 (AS133199, Hong Kong) (inbound); Suricata: 3804503 TD CyberStrikeAI reported address, AI-run AWS intrusion from a CyberStrikeAI server, CyberStrikeAI console in the same /24 serving the same certificate as 43.240.29.11, not seen in t"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (compatible; CyberStrikeAI-WebShell/1.0)",
+      "confidence": "high",
+      "context": "User agent CyberStrikeAI's webshell manager sends on every command, file and OS probe request to a planted webshell (internal/handler/webshell.go:799, webshell_probe.go:93)",
+      "source": "Elastic Security Labs",
+      "sourceUrl": "https://www.elastic.co/security-labs/threat-command/agentic-offensive-frameworks-detection-artex",
+      "reported": "2026-11-13"
+    },
+    {
+      "type": "user_agent",
+      "value": "CyberStrikeAI/1.7.4",
+      "confidence": "high",
+      "context": "User agent the CyberStrikeAI console sends to FOFA, ZoomEye, Quake and Shodan search APIs (internal/handler/fofa.go:654, 1078). Seen in your proxy logs it means a console runs behind your proxy",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "user_agent",
+      "value": "CyberStrikeAI/1.0",
+      "confidence": "high",
+      "context": "User agent of CyberStrikeAI's WeChat iLink bot client to ilinkai.weixin.qq.com (internal/robot/ilink/client.go:21)",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "user_agent",
+      "value": "CyberStrikeAI/1.7.11",
+      "confidence": "medium",
+      "context": "User agent of the ramon-victor/CyberStrikeAI fork (English translation and Burp Suite plugin). Watch for any value starting with CyberStrikeAI/",
+      "source": "PenTestIT",
+      "sourceUrl": "https://pentestit.com/ai-pentesting-frameworks-abuse-lineage-fingerprints/",
+      "reported": "2026-11-14"
+    },
+    {
+      "type": "user_agent",
+      "value": "CyberStrikeAI-Docker-build",
+      "confidence": "medium",
+      "context": "User agent of the ramon-victor/CyberStrikeAI fork's Docker build",
+      "source": "PenTestIT",
+      "sourceUrl": "https://pentestit.com/ai-pentesting-frameworks-abuse-lineage-fingerprints/",
+      "reported": "2026-11-14"
+    },
+    {
+      "type": "string",
+      "value": "echo :OSPROBE_%OS%:END",
+      "confidence": "high",
+      "context": "Command CyberStrikeAI's webshell manager runs through a webshell to tell Windows from Linux (internal/handler/webshell_probe.go:13). Seen as a child of a web server process",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": ":OSPROBE_",
+      "confidence": "high",
+      "context": "Marker of the webshell OS probe in request parameters and web server child processes (internal/handler/webshell_probe.go:13)",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "http_header",
+      "value": "X-Session-Token",
+      "confidence": "medium",
+      "context": "Header CyberStrikeAI implants send next to X-Implant-Token, 64 hex characters per implant session (beacon.go.tmpl:376)",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "uri_string",
+      "value": "/check_in",
+      "confidence": "low",
+      "context": "Default CyberStrikeAI implant check-in path, POST every 5 seconds with no jitter by default; /tasks?session_id=, /result, /upload and /file/ follow (internal/c2/types.go:151-157). Configurable",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "uri_string",
+      "value": "/tasks?session_id=",
+      "confidence": "medium",
+      "context": "CyberStrikeAI implant task poll (GET), sent right after each /check_in (beacon.go.tmpl:546, payload_oneliner.go:197)",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "CSB1",
+      "confidence": "low",
+      "context": "Magic the CyberStrikeAI TCP implant sends first on every connection to a tcp_reverse listener, followed by 4-byte big-endian length frames (internal/c2/tcp_beacon_server.go:24)",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "cyberstrike-ai/tmp/c2/payloads/build-",
+      "confidence": "high",
+      "context": "Main package path in the Go build information of every implant the CyberStrikeAI builder compiles (go version -m shows path cyberstrike-ai/tmp/c2/payloads/build-<8 hex>). Kaspersky noted the path is identical across payloads",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "SystemUpdate",
+      "confidence": "medium",
+      "context": "Name the CyberStrikeAI implant uses for its Windows persistence: Run key value under HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run and a scheduled task created with /sc onlogon /rl highest (beacon.go.tmpl:1327, 1334). Kaspersky saw a SystemUpdate task running as SYSTEM in real attacks",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "file_name",
+      "value": "com.apple.systemupdate.plist",
+      "confidence": "high",
+      "context": "LaunchAgent the CyberStrikeAI implant writes to ~/Library/LaunchAgents on macOS, label com.apple.systemupdate, KeepAlive (beacon.go.tmpl:1308)",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "&>/dev/null &) # cs",
+      "confidence": "high",
+      "context": "Line the CyberStrikeAI implant appends to ~/.bashrc on Linux: (nohup <implant> &>/dev/null &) # cs (beacon.go.tmpl:1282)",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "| sort -u | crontab -",
+      "confidence": "medium",
+      "context": "CyberStrikeAI's Linux cron persistence runs (crontab -l 2>/dev/null; echo '@reboot <implant> &') | sort -u | crontab - (beacon.go.tmpl:1275)",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "od -An -N32 -tx1 /dev/urandom",
+      "confidence": "medium",
+      "context": "Session token generator in CyberStrikeAI's curl_beacon one-liner, a bash loop that POSTs to /check_in every 5 seconds (internal/c2/payload_oneliner.go:191)",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "CN=CyberStrikeAI",
+      "confidence": "high",
+      "context": "Subject and issuer of the console's self-signed ECDSA certificate, made fresh at every start, SAN localhost, 127.0.0.1 and ::1, valid one year (internal/app/main_server_tls.go:114). The not-before time records when the console last started",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "-1349384020",
+      "confidence": "high",
+      "context": "CyberStrikeAI console favicon.ico since July 28, 2026 (Shodan http.favicon.hash), verified against web/static/favicon.ico",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "-1149488178",
+      "confidence": "medium",
+      "context": "CyberStrikeAI console favicon.ico from April 26 to July 28, 2026 (older installs), from the repository history",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "-1389405690",
+      "confidence": "medium",
+      "context": "CyberStrikeAI console favicon.ico from January 16 to April 26, 2026 (older installs), from the repository history",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "sha256",
+      "value": "483ddc84a99698971d21d4ac6eb6057fbedb575ab12d7cff51434b305665d4b7",
+      "confidence": "high",
+      "context": "CyberStrikeAI console favicon.ico (ONYPHE and Plum favicon SHA-256)",
+      "source": "D4 Project Plum",
+      "sourceUrl": "https://github.com/D4-project/Plum-Antibodies/issues/530",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "string",
+      "value": "brand-wordmark__core",
+      "confidence": "medium",
+      "context": "CSS class of the CyberStrikeAI login page wordmark, kept by renamed builds such as DarkAI; matched 336 services",
+      "source": "Spectrum Security",
+      "sourceUrl": "https://www.spectrum.security/blog/offensive-ai-tools-in-the-wild",
+      "reported": "2026-11-18"
+    },
+    {
+      "type": "string",
+      "value": "cyberstrike-theme",
+      "confidence": "medium",
+      "context": "Local storage key in the CyberStrikeAI console theme script (web/static/js/theme.js:4)",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "file_path",
+      "value": "data/conversations.db",
+      "confidence": "low",
+      "context": "CyberStrikeAI's SQLite store of conversations, tool runs, C2 sessions and webshell connections, relative to its working folder. Huntback recovered one from an exposed workspace",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "file_name",
+      "value": "cyberstrike-ai",
+      "confidence": "medium",
+      "context": "Binary name of the CyberStrikeAI console built by run.sh (run.sh:93)",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "beacon_windows_amd64_p_",
+      "confidence": "medium",
+      "context": "Default implant file name pattern beacon_<os>_<arch>_p_<14 hex> when the operator does not name the file (internal/c2/payload_builder.go:182)",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "ipv4",
+      "value": "185.186.245.144",
+      "confidence": "medium",
+      "context": "C2 for the CyberStrikeAI Windows beacon and target of the p1.ps1 reverse shell on port 5501",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "104.234.26.163",
+      "confidence": "medium",
+      "context": "C2 for payload delivery and the CyberStrikeAI Linux beacon",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "domain",
+      "value": "fastcdn.bar",
+      "confidence": "medium",
+      "context": "C2 for the CyberStrikeAI Windows beacon",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "domain",
+      "value": "media.fastcdn.bar",
+      "confidence": "medium",
+      "context": "C2 for the CyberStrikeAI Linux beacon",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "md5",
+      "value": "d726a8b4886c636f76ca6d30ef6a6ff4",
+      "confidence": "high",
+      "context": "CyberStrikeAI Windows beacon, c:\\windows\\temp\\svchosts.exe",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "md5",
+      "value": "2770562d104391b92b42671c270079bb",
+      "confidence": "high",
+      "context": "File at c:\\windows\\temp\\svcmon32.exe and c:\\programdata\\svcmon32.exe, listed with the Windows beacon",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "md5",
+      "value": "09e1da2afa1216ecc55648ec8e122d2a",
+      "confidence": "high",
+      "context": "CyberStrikeAI Linux beacon",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "md5",
+      "value": "805b9e4ae74c903787416800999b8418",
+      "confidence": "high",
+      "context": "CyberStrikeAI Linux beacon",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "md5",
+      "value": "29efd64dd3c7fe1e2b022b7ad73a1ba5",
+      "confidence": "high",
+      "context": "Renamed mimikatz, C:\\Windows\\Temp\\wdiag2.exe, used for DCSync and Golden Ticket",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "md5",
+      "value": "74f57b3e897a4960dcdd5b7e8a54f9df",
+      "confidence": "medium",
+      "context": "RogueWinRM, c:\\rwx\\RogueWinRM.exe",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "md5",
+      "value": "0bbd08af95f877f1d568b03de2eb76b4",
+      "confidence": "high",
+      "context": "Reverse shell PowerShell script c:\\ProgramData\\p1.ps1, spread over WMI with local admin accounts",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "file_name",
+      "value": "svchosts.exe",
+      "confidence": "high",
+      "context": "CyberStrikeAI Windows beacon named to pass for svchost.exe, in C:\\Windows\\Temp",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "file_name",
+      "value": "svcmon32.exe",
+      "confidence": "medium",
+      "context": "Dropped in C:\\Windows\\Temp and C:\\ProgramData next to the CyberStrikeAI beacon",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "file_name",
+      "value": "wdiag2.exe",
+      "confidence": "medium",
+      "context": "Renamed mimikatz in C:\\Windows\\Temp",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "file_path",
+      "value": "C:\\ProgramData\\dsn_line.txt",
+      "confidence": "medium",
+      "context": "Database connection string copied from rsreportserver.config and decrypted with DPAPI",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "43.240.29.11",
+      "confidence": "medium",
+      "context": "CyberStrikeAI console (CN=CyberStrikeAI certificate, title CyberStrikeAI, port 8080) and source of every AWS API call in an intrusion that used eight AWS identities across four accounts, Sep 30 to Oct 16, 2026 (AS133199, Hong Kong)",
+      "source": "Elastic Security Labs",
+      "sourceUrl": "https://www.elastic.co/security-labs/threat-command/cyberstrikeai-aws-cloudtrail-intrusion",
+      "reported": "2026-11-13"
+    },
+    {
+      "type": "ipv4",
+      "value": "43.240.29.28",
+      "confidence": "low",
+      "context": "CyberStrikeAI console in the same /24 serving the same certificate as 43.240.29.11; not seen in the AWS activity",
+      "source": "Elastic Security Labs",
+      "sourceUrl": "https://www.elastic.co/security-labs/threat-command/cyberstrikeai-aws-cloudtrail-intrusion",
+      "reported": "2026-11-13"
+    },
+    {
+      "type": "ipv4",
+      "value": "43.240.29.33",
+      "confidence": "low",
+      "context": "CyberStrikeAI console in the same /24 serving the same certificate as 43.240.29.11; not seen in the AWS activity",
+      "source": "Elastic Security Labs",
+      "sourceUrl": "https://www.elastic.co/security-labs/threat-command/cyberstrikeai-aws-cloudtrail-intrusion",
+      "reported": "2026-11-13"
+    },
+    {
+      "type": "string",
+      "value": "3356730520974368630",
+      "confidence": "medium",
+      "context": "Serial number of the CN=CyberStrikeAI certificate shared by 43.240.29.11, .28 and .33 (valid 2026-09-15 to 2027-09-15)",
+      "source": "Elastic Security Labs",
+      "sourceUrl": "https://www.elastic.co/security-labs/threat-command/cyberstrikeai-aws-cloudtrail-intrusion",
+      "reported": "2026-11-13"
+    },
+    {
+      "type": "ipv4",
+      "value": "212.11.64.250",
+      "confidence": "medium",
+      "context": "CyberStrikeAI banner on port 8080 and NetFlow to FortiGate devices targeted in the campaign that compromised more than 600 FortiGate firewalls in 55 countries; the address Amazon shared from that campaign, also hosting DecryptVeeamPasswords.ps1. Last seen running CyberStrikeAI Jan 30, 2026",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "103.164.81.110",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Feb 2, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "106.52.47.65",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Feb 25, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "115.120.233.95",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Feb 26, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "117.72.103.145",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Feb 23, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "118.25.186.119",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Feb 24, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "142.171.160.137",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Jan 29, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "144.31.224.253",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Feb 26, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "146.190.195.154",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Jan 23, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "146.190.82.132",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Jan 24, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "154.219.114.92",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Feb 12, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "38.38.250.182",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Jan 25, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "43.106.25.225",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Jan 31, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "43.167.237.212",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Feb 1, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "47.101.186.156",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Feb 25, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "47.95.33.207",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Feb 26, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "60.204.227.64",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Feb 8, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "62.234.61.215",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Feb 25, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "64.176.48.93",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Feb 24, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "81.70.144.252",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Feb 26, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv6",
+      "value": "2400:d321:2308:1461::1",
+      "confidence": "low",
+      "context": "CyberStrikeAI server, one of 21 Team Cymru saw from Jan 20 to Feb 26, 2026; last seen Feb 26, 2026. Historical: check current use before acting",
+      "source": "Team Cymru",
+      "sourceUrl": "https://www.team-cymru.com/post/tracking-cyberstrikeai-usage",
+      "reported": "2026-03-02"
+    },
+    {
+      "type": "ipv4",
+      "value": "158.220.114.59",
+      "confidence": "low",
+      "context": "CyberStrikeAI console seen by ONYPHE (favicon SHA-256 and title match). An exposed console is not proof of malicious use",
+      "source": "D4 Project Plum",
+      "sourceUrl": "https://github.com/D4-project/Plum-Antibodies/issues/530",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "ipv4",
+      "value": "38.76.169.207",
+      "confidence": "low",
+      "context": "Exposed CyberStrikeAI workspace served on TCP 8010 (/CyberStrikeAI/data/conversations.db) after a session of 221 tool runs with the approval gate turned off, Nov 16, 2026. The operator and authorization are unknown",
+      "source": "Huntback",
+      "sourceUrl": "https://huntback.io/blog/inside-cyberstrikeai-221-tool-executions-disabled-approval-gate",
+      "reported": "2026-11-17"
+    },
+    {
+      "type": "string",
+      "value": "dnslog.cn",
+      "confidence": "low",
+      "context": "Out-of-band service the operators resolved random subdomains of to learn a victim's external address. Used widely by Chinese-language testers",
+      "source": "Kaspersky",
+      "sourceUrl": "https://securelist.com/cyberstrikeai-attacks/121715/",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "docker_image",
+      "value": "csai-push-probe",
+      "confidence": "medium",
+      "context": "Repository pushed into an open container registry as a write test; csai is CyberStrikeAI by its initials. cyberstrike-probe was seen on another registry",
+      "source": "ThreatDefence review of open container registries in internet scan data",
+      "sourceUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/behaviors",
+      "reported": "2026-11-23"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/cyberstrikeai",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

@@ -95,6 +95,16 @@ import {
 } from '../lib/oh-manifest';
 import { filterKpExploits, filterKpTools, getKpFeed, kpCacheStats, loadKpIndex } from '../lib/kp-manifest';
 import { getMmdCategory, listMmdTools, loadMmdCommits, loadMmdIndex, mmdCacheStats } from '../lib/mmd-manifest';
+// AAD — ThreatDefence agentic attack detections (MIT) + ART — Atomic Red Team.
+import {
+  aadCacheStats,
+  filterAadFrameworks,
+  filterAadIndicators,
+  getAadFramework,
+  loadAadAttack,
+  loadAadIndex,
+} from '../lib/aad-manifest';
+import { artCacheStats, filterArtTechniques, getArtTechnique, loadArtIndex } from '../lib/art-manifest';
 import { filterArtifacts, getWinRegArtifact, loadWinRegIndex, winRegCacheStats } from '../lib/winreg-manifest';
 import type { DenaliActivity } from '../lib/denali-manifest';
 export function registerDfirManifestsTools(h: McpToolHost): void {
@@ -959,6 +969,168 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
         license: idx.license,
         commits: commits?.commits ?? idx.recentCommits,
         cache: mmdCacheStats(),
+      });
+    }
+  );
+
+  // ── AAD tools — ThreatDefence agentic attack detections ─────────
+  h.tools(
+    'aad_list_frameworks',
+    'List AI-agent attack frameworks covered by ThreatDefence Agentic Attack Detections (MIT): 100+ frameworks with KQL hunts, Sigma, Suricata, YARA, indicator counts and the reported in-the-wild use. Filter by keyword or minimum rule/indicator counts.',
+    {
+      keyword: z.string().optional().describe('Substring match against name, slug, description and reported use'),
+      min_indicators: z.number().int().min(0).optional().describe('Minimum sourced indicator count'),
+      min_rules: z.number().int().min(0).optional().describe('Minimum combined hunt/rule count'),
+      limit: z.number().int().min(1).max(200).optional().describe('Max rows (default 50, capped at 200)'),
+    },
+    async ({ keyword, min_indicators, min_rules, limit }) => {
+      const idx = await loadAadIndex(ASSETS);
+      const rows = filterAadFrameworks(idx.frameworks, {
+        keyword,
+        minIndicators: min_indicators,
+        minRules: min_rules,
+        limit: limit ?? 50,
+      });
+      return untrustedToolResult({
+        total: idx.frameworks.length,
+        returned: rows.length,
+        source: idx.source,
+        license: idx.license,
+        frameworks: rows,
+      });
+    }
+  );
+
+  h.tools(
+    'aad_get_framework',
+    'Return one agentic attack framework: coverage counts, ATT&CK techniques with rule-count scores, sourced indicators (value, confidence, context, publication) and an upstream deep link. Use aad_list_frameworks first to discover slugs.',
+    { slug: z.string().describe('Framework slug, e.g. "artex", "cairn", "pentagi".') },
+    async ({ slug }) => {
+      const body = await getAadFramework(ASSETS, slug);
+      if (!body)
+        return untrustedToolResult({
+          error: 'framework_not_found',
+          slug,
+          hint: 'Call aad_list_frameworks to see available slugs.',
+        });
+      return untrustedToolResult(body);
+    }
+  );
+
+  h.tools(
+    'aad_list_indicators',
+    'Search the sourced indicator set (1,800+ values across 16 IOC types: user_agent, ipv4, domain, url, sha256, file_path, uri_string, docker_image, favicon_mmh3, etc). Each row carries confidence, context, source publication and the framework it belongs to.',
+    {
+      type: z.string().optional().describe('IOC type, e.g. user_agent, ipv4, domain, sha256'),
+      framework: z.string().optional().describe('Framework slug filter'),
+      keyword: z.string().optional().describe('Substring match against value, context and source'),
+      limit: z.number().int().min(1).max(500).optional().describe('Max rows (default 50, capped at 500)'),
+    },
+    async ({ type, framework, keyword, limit }) => {
+      const items = await filterAadIndicators(ASSETS, { type, framework, keyword, limit: limit ?? 50 });
+      return untrustedToolResult({
+        returned: items.length,
+        source: 'ThreatDefence/agentic-attack-detections',
+        indicators: items,
+      });
+    }
+  );
+
+  h.tools(
+    'aad_attack_coverage',
+    'Return the consolidated ATT&CK Navigator layer: 124 techniques scored by how many rules name each one, with the rule descriptions in the comments. Identifies which attacker techniques are best covered by agentic attack detections.',
+    {},
+    async () => {
+      const layer = await loadAadAttack(ASSETS);
+      return untrustedToolResult(layer ?? { error: 'attack_layer_not_found' });
+    }
+  );
+
+  h.tools(
+    'aad_stats',
+    'Return Agentic Attack Detections corpus stats (frameworks, indicators by type, ATT&CK techniques, shared behavior/general rule inventory) and cache state.',
+    {},
+    async () => {
+      const idx = await loadAadIndex(ASSETS);
+      return untrustedToolResult({
+        source: idx.source,
+        sourceUrl: idx.sourceUrl,
+        license: idx.license,
+        stats: idx.stats,
+        indicatorTypes: idx.indicatorTypes,
+        cache: aadCacheStats(),
+      });
+    }
+  );
+
+  // ── ART tools — Atomic Red Team ─────────────────────────────────
+  h.tools(
+    'art_list_techniques',
+    'List Atomic Red Team ATT&CK techniques (353 techniques, ~1,950 tests) as presented by atomicredteam.io. Filter by platform (windows/linux/macos/...), executor type (powershell/sh/bash/command_prompt/manual), subtechnique flag, minimum test count or keyword.',
+    {
+      keyword: z.string().optional().describe('Substring match against technique id and display name'),
+      platform: z.string().optional().describe('e.g. windows, linux, macos, containers, office-365, iaas:aws'),
+      executor: z.string().optional().describe('powershell, sh, bash, command_prompt, manual'),
+      subtechnique: z.boolean().optional().describe('Only sub-techniques (id contains a dot)'),
+      min_tests: z.number().int().min(0).optional().describe('Minimum number of atomic tests'),
+      limit: z.number().int().min(1).max(400).optional().describe('Max rows (default 50, capped at 400)'),
+    },
+    async ({ keyword, platform, executor, subtechnique, min_tests, limit }) => {
+      const idx = await loadArtIndex(ASSETS);
+      const rows = filterArtTechniques(idx.techniques, {
+        keyword,
+        platform,
+        executor,
+        subtechnique,
+        minTests: min_tests,
+        limit: limit ?? 50,
+      });
+      return untrustedToolResult({
+        total: idx.techniques.length,
+        returned: rows.length,
+        source: idx.source,
+        license: idx.license,
+        techniques: rows,
+      });
+    }
+  );
+
+  h.tools(
+    'art_get_technique',
+    'Return one Atomic Red Team technique with its test metadata: test names, GUIDs, plain descriptions, supported platforms, executor type and elevation flag, input argument names and dependency counts. Raw commands are not vendored; every test deep-links upstream. Use art_list_techniques first to discover ids.',
+    {
+      id: z
+        .string()
+        .regex(/^T\d{4}(\.\d{3})?$/)
+        .describe('ATT&CK technique id, e.g. "T1059.001".'),
+    },
+    async ({ id }) => {
+      const body = await getArtTechnique(ASSETS, id.toUpperCase());
+      if (!body)
+        return untrustedToolResult({
+          error: 'technique_not_found',
+          id,
+          hint: 'Call art_list_techniques to see available ids.',
+        });
+      return untrustedToolResult(body);
+    }
+  );
+
+  h.tools(
+    'art_stats',
+    'Return Atomic Red Team catalog stats: techniques, tests, platform and executor breakdowns, plus cache state.',
+    {},
+    async () => {
+      const idx = await loadArtIndex(ASSETS);
+      return untrustedToolResult({
+        source: idx.source,
+        sourceUrl: idx.sourceUrl,
+        siteUrl: idx.siteUrl,
+        license: idx.license,
+        stats: idx.stats,
+        platformCounts: idx.platformCounts,
+        executorCounts: idx.executorCounts,
+        cache: artCacheStats(),
       });
     }
   );

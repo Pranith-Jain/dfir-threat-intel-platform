@@ -1,0 +1,72 @@
+{
+  "id": "T1070.005",
+  "displayName": "Indicator Removal: Network Share Connection Removal",
+  "tests": [
+    {
+      "name": "Add Network Share",
+      "guid": "14c38f32-6509-46d8-ab43-d53e32d2b131",
+      "description": "Add a Network Share utilizing the command_prompt",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["share_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Remove Network Share",
+      "guid": "09210ad5-1ef2-4077-9ad3-7351e13e9222",
+      "description": "Removes a Network Share utilizing the command_prompt",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["share_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Remove Network Share PowerShell",
+      "guid": "0512d214-9512-4d22-bde7-f37e058259b3",
+      "description": "Removes a Network Share utilizing PowerShell",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["share_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Administrative Share Creation at Startup",
+      "guid": "99c657aa-ebeb-4179-a665-69288fdd12b8",
+      "description": "Administrative shares are hidden network shares created by Microsoft’s Windows NT operating systems that grant system administrators \nremote access to every disk volume on a network-connected system. These shares are automatically created at started unless they have been\npurposefully disabled as is done in this Atomic test. As Microsoft puts it, \"Missing administrative shares typically \nindicate that the computer in question has been compromised by malicious software.\"\nhttps://threatpost.com/conti-ransomware-gang-has-full-log4shell-attack-chain/177173/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Remove Administrative Shares",
+      "guid": "4299eff5-90f1-4446-b2f3-7f4f5cfd5d62",
+      "description": "Administrative shares are hidden network shares created by Microsoft’s Windows NT operating systems that grant system administrators \nremote access to every disk volume on a network-connected system. As Microsoft puts it, “Missing administrative shares typically \nindicate that the computer in question has been compromised by malicious software.\nhttps://threatpost.com/conti-ransomware-gang-has-full-log4shell-attack-chain/177173/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1070.005/T1070.005.yaml"
+}

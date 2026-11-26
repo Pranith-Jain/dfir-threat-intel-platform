@@ -1,0 +1,46 @@
+{
+  "id": "T1123",
+  "displayName": "Audio Capture",
+  "tests": [
+    {
+      "name": "using device audio capture commandlet",
+      "guid": "9c3ad250-b185-4444-b5a9-d69218a10c95",
+      "description": "Uses AudioDeviceCmdlets to set the default recording device and simulate audio capture.\nModule repo: [AudioDeviceCmdlets](https://github.com/frgnca/AudioDeviceCmdlets)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Registry artefact when application use microphone",
+      "guid": "7a21cce2-6ada-4f7c-afd9-e1e9c481e44a",
+      "description": "[can-you-track-processes-accessing-the-camera-and-microphone](https://svch0st.medium.com/can-you-track-processes-accessing-the-camera-and-microphone-7e6885b37072)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "using Quicktime Player",
+      "guid": "c7a0bb71-70ce-4a53-b115-881f241b795b",
+      "description": "Use AppleScript to get Quicktime Player to record an audio file from the default microphone.\n\nShould create a non-empty m4a file with sound from the microphone.\n\n- requires Automation permissions but no additional microphone permissions\n- saves file in /tmp by default. Other locations likely to require more permissions.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["filename", "audiofile", "duration"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1123/T1123.yaml"
+}

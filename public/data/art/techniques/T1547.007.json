@@ -1,0 +1,46 @@
+{
+  "id": "T1547.007",
+  "displayName": "Boot or Logon Autostart Execution: Re-opened Applications",
+  "tests": [
+    {
+      "name": "Copy in loginwindow.plist for Re-Opened Applications",
+      "guid": "5fefd767-ef54-4ac6-84d3-751ab85e8aba",
+      "description": "Copy in new loginwindow.plist to launch Calculator.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["calc_plist_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Re-Opened Applications using LoginHook",
+      "guid": "5f5b71da-e03f-42e7-ac98-d63f9e0465cb",
+      "description": "Mac Defaults\n\n[Reference](https://developer.apple.com/library/content/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CustomLogin.html)",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["script"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Append to existing loginwindow for Re-Opened Applications",
+      "guid": "766b6c3c-9353-4033-8b7e-38b309fa3a93",
+      "description": "Appends an entry to launch Calculator hidden loginwindow.*.plist for next login.\nNote that the change may not result in the added Calculator program launching on next user login.\nIt may depend on which version of macOS you are running on.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["objc_source_path", "exe_path"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1547.007/T1547.007.yaml"
+}

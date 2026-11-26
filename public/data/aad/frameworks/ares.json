@@ -1,0 +1,277 @@
+{
+  "slug": "ares",
+  "name": "Ares",
+  "description": "Dreadnode's Rust multi-agent platform that chains impacket, NetExec and certipy against Active Directory; it ships its own detections",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 4,
+    "analytics": 1,
+    "sigma": 9,
+    "suricata": 6,
+    "yara": 6,
+    "indicators": 20
+  },
+  "techniques": [
+    {
+      "id": "T1003.002",
+      "score": 5,
+      "comment": "KQL hunt: Ares residue in Active Directory, SQL Server and Windows logs; Sigma: Ares SQL Server Hive Dump Through xp_cmdshell; Suricata: 3813444 TD Ares SQL Server hive dump, fixed EncodedCommand payload in xp_cmdshell; Suricata: 3813445 TD Ares SQL Server hive dump, ___ARES_HIVE_ delimiter in a result set; YARA: Ares_MSSQL_Hive_Dump_Script"
+    },
+    {
+      "id": "T1041",
+      "score": 1,
+      "comment": "Suricata: 3813445 TD Ares SQL Server hive dump, ___ARES_HIVE_ delimiter in a result set"
+    },
+    {
+      "id": "T1046",
+      "score": 2,
+      "comment": "KQL hunt: Ares markers in web and proxy logs; Suricata: 3813446 TD Ares ESC8 probe, HEAD /certsrv/certfnsh.asp with no User-Agent"
+    },
+    {
+      "id": "T1053.005",
+      "score": 2,
+      "comment": "KQL hunt: Ares residue in Active Directory, SQL Server and Windows logs; Suricata: 3813443 TD Ares GPO abuse probe task ARES_GPO_Probe_ written over SMB"
+    },
+    {
+      "id": "T1059.001",
+      "score": 3,
+      "comment": "KQL hunt: Ares residue in Active Directory, SQL Server and Windows logs; Sigma: Ares SQL Server Hive Dump Through xp_cmdshell; YARA: Ares_MSSQL_Hive_Dump_Script"
+    },
+    {
+      "id": "T1110.002",
+      "score": 2,
+      "comment": "KQL hunt: Ares running on a host you monitor; Sigma: Ares Hashcat or John Session Name"
+    },
+    {
+      "id": "T1136.002",
+      "score": 6,
+      "comment": "KQL hunt: Ares residue in Active Directory, SQL Server and Windows logs; KQL hunt: Ares running on a host you monitor; KQL hunt: Indicator sweep with the agentic watchlist; Sentinel analytics: Ares AI pentest agent machine account created in Active Directory; Sigma: Ares Minted Machine Account Created With impacket-addcomputer; Suricata: 3813441 TD Ares minted machine account name ARES-<8 hex>$ in SMB (SAMR create)"
+    },
+    {
+      "id": "T1484.001",
+      "score": 2,
+      "comment": "KQL hunt: Ares residue in Active Directory, SQL Server and Windows logs; Suricata: 3813443 TD Ares GPO abuse probe task ARES_GPO_Probe_ written over SMB"
+    },
+    {
+      "id": "T1505.001",
+      "score": 2,
+      "comment": "Sigma: Ares SQL Server Hive Dump Through xp_cmdshell; Suricata: 3813444 TD Ares SQL Server hive dump, fixed EncodedCommand payload in xp_cmdshell"
+    },
+    {
+      "id": "T1550.003",
+      "score": 2,
+      "comment": "Sigma: Ares Kerberos Ticket Helpers; YARA: Ares_Cross_Realm_TGS_Helper"
+    },
+    {
+      "id": "T1557.001",
+      "score": 1,
+      "comment": "Sigma: Ares Working Files on Its Attack Box"
+    },
+    {
+      "id": "T1558",
+      "score": 3,
+      "comment": "KQL hunt: Ares residue in Active Directory, SQL Server and Windows logs; Sigma: Ares Working Files on Its Attack Box; Suricata: 3813442 TD Ares minted machine account ARES-<8 hex>$ in a Kerberos request"
+    },
+    {
+      "id": "T1558.001",
+      "score": 3,
+      "comment": "KQL hunt: Ares running on a host you monitor; Sigma: Ares Kerberos Ticket Helpers; YARA: Ares_Cross_Realm_TGS_Helper"
+    },
+    {
+      "id": "T1588.002",
+      "score": 8,
+      "comment": "KQL hunt: Ares running on a host you monitor; KQL hunt: Indicator sweep with the agentic watchlist; Sigma: Ares Orchestrator or Worker Service; Sigma: Ares Worker Starting Active Directory Attack Tools; YARA: Ares_Binary; YARA: Ares_Config; YARA: Ares_Kerberos_Skew_Shim; YARA: Ares_Source"
+    },
+    {
+      "id": "T1649",
+      "score": 4,
+      "comment": "KQL hunt: Ares markers in web and proxy logs; KQL hunt: Ares running on a host you monitor; Sigma: Ares Certipy Output File Names; Sigma: Ares Shadow Credentials Passphrase or PFX Name"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "string",
+      "value": "ares-shadow-cred",
+      "confidence": "high",
+      "context": "Fixed PFX passphrase Ares' pywhisker wrapper sets with --pfx-password on every Shadow Credentials export, and passes again as certipy auth -password ares-shadow-cred (ares-tools/src/acl.rs:262,479; privesc/adcs.rs:297)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ares-tools/src/acl.rs#L249-L262",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "file_path",
+      "value": "/tmp/ares_shadowcred_",
+      "confidence": "high",
+      "context": "Prefix of every Shadow Credentials export Ares asks pywhisker to write: <temp>/ares_shadowcred_<epoch ms>-<pid>-<seq>_<account> (.pfx, _cert.pem, _priv.pem), then read by certipy auth -pfx (ares-tools/src/acl.rs:270,409-418)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ares-tools/src/acl.rs#L264-L270",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "account_name",
+      "value": "ARES-",
+      "confidence": "medium",
+      "context": "Prefix of every machine account Ares adds with impacket-addcomputer: ARES- plus 8 uppercase hex digits and a trailing $, password Ar<16 hex>!7z; the name is minted in code whatever the model asks for (privesc/delegation.rs:362-378). Match the full pattern ^ARES-[0-9A-F]{8}\\$$, not the prefix alone",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ares-tools/src/privesc/delegation.rs#L362-L378",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "string",
+      "value": "ARES_GPO_Probe_",
+      "confidence": "high",
+      "context": "Name prefix of the immediate scheduled task Ares pushes through a writable GPO with pygpoabuse: ARES_GPO_Probe_<8 hex>, command cmd /c whoami, -f (orchestrator/automation/gpo.rs:143-160,366-377)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ares-cli/src/orchestrator/automation/gpo.rs#L143-L160",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "string",
+      "value": "___ARES_HIVE_",
+      "confidence": "high",
+      "context": "Delimiter rows (___ARES_HIVE_SAM_B64___, ___ARES_HIVE_SYSTEM_B64___, ___ARES_HIVE_SECURITY_B64___ and the _END___ forms) around the base64 SAM, SYSTEM and SECURITY hives in Ares' xp_cmdshell hive dump; seen in PowerShell script block logs and SQL result sets (lateral/mssql.rs:345-385)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ares-tools/src/lateral/mssql.rs#L345-L356",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "string",
+      "value": "JABFAHIAcgBvAHIAQQBjAHQAaQBvAG4AUAByAGUAZgBlAHIAZQBuAGMAZQA9ACcAUwB0AG8AcAAnAAoAJAB0AD0AJABlAG4AdgA6AFQARQBNAFAACgAkAGEAPQAiACQAdABcAGEALgBoAGkAdgBlACIA",
+      "confidence": "high",
+      "context": "Start of the -EncodedCommand of Ares' far-host hive dump (powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand ...), run by xp_cmdshell on a linked SQL Server. The script has no variables, so the whole base64 is the same on every run (lateral/mssql.rs:368-385,494-496)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ares-tools/src/lateral/mssql.rs#L480-L497",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "string",
+      "value": "--session ares-hc-",
+      "confidence": "medium",
+      "context": "hashcat session name of every Ares crack job (ares-hc-<pid>-<seq>, with --restore-disable and --potfile-disable, under nice -n) (ares-tools/src/cracker.rs:18-30,100-108,854)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ares-tools/src/cracker.rs#L18-L30",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "string",
+      "value": "--session=ares-jtr-",
+      "confidence": "medium",
+      "context": "John the Ripper session name of every Ares crack job (ares-jtr-<pid>-<seq>) (ares-tools/src/cracker.rs:1073)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ares-tools/src/cracker.rs#L1068-L1073",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "file_path",
+      "value": "/tmp/ares-tickets/",
+      "confidence": "high",
+      "context": "Fixed folder for the golden, silver and inter-realm Kerberos tickets Ares forges (<src>__<tgt>__<user>.ccache, with <ccache>.krb5.conf next to it); appears in tool arguments such as ccache=/tmp/ares-tickets/... (privesc/delegation.rs:166, privesc/trust.rs:133)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ares-tools/src/privesc/trust.rs#L133",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "file_name",
+      "value": "cross_realm_tgs.py",
+      "confidence": "medium",
+      "context": "Impacket helper embedded in the ares binary, written next to a forged inter-realm TGT and run as python3 <dir>/cross_realm_tgs.py --in-ccache ... --target-realm ... (privesc/trust.rs:13,181-235,452-470)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ares-tools/src/privesc/cross_realm_tgs.py",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "file_path",
+      "value": "/tmp/ares_relay_",
+      "confidence": "medium",
+      "context": "Working folder prefix of Ares' relay_and_coerce tool (tempfile ares_relay_<random>, holding relay.log and coerce.log from ntlmrelayx and the coercion tools) (ares-tools/src/coercion.rs:815-822)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ares-tools/src/coercion.rs#L815-L822",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "file_path",
+      "value": "~/.ares/sessions/",
+      "confidence": "medium",
+      "context": "Default folder of Ares' per-task agent transcripts (<task_id>.jsonl) unless ARES_SESSION_LOG_DIR is set; blue reports go to ~/.ares/reports/ (ares-llm/src/agent_loop/config.rs:317-345)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ares-llm/src/agent_loop/config.rs#L317-L345",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "file_path",
+      "value": "/var/log/ares/",
+      "confidence": "low",
+      "context": "Log folder of the Ares worker units (<role>.log) and the orchestrator (orchestrator.log) on its Ansible-built attack box; a generic name (ansible/roles/redis/defaults/main.yml:26, .taskfiles/ec2/scripts/launch-orchestrator.sh.tmpl:102)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ansible/roles/redis/templates/ares%40.service.j2#L24-L25",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "string",
+      "value": "--unit=ares-orchestrator.service",
+      "confidence": "medium",
+      "context": "systemd-run unit name the Ares EC2 launcher gives the orchestrator, in system-ares.slice, running /usr/local/bin/ares orchestrator (.taskfiles/ec2/scripts/launch-orchestrator.sh.tmpl:73-108)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/.taskfiles/ec2/scripts/launch-orchestrator.sh.tmpl#L73-L108",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "string",
+      "value": "system-ares.slice",
+      "confidence": "medium",
+      "context": "systemd slice holding the Ares orchestrator and the ares@<role>.service workers (recon, credential_access, cracker, acl, privesc, lateral, coercion) on its attack box (ansible/roles/redis/templates/system-ares.slice.j2, ares@.service.j2:31)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ansible/roles/redis/templates/ares%40.service.j2#L31",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "string",
+      "value": "ares-nats",
+      "confidence": "low",
+      "context": "server_name of the NATS broker the Ares Ansible role installs; shows in the NATS INFO banner on 4222 and in /varz on 8222, both bound to 127.0.0.1 by default (ansible/roles/nats/templates/nats-server.conf.j2, defaults/main.yml)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ansible/roles/nats/templates/nats-server.conf.j2",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "port",
+      "value": "41445",
+      "confidence": "low",
+      "context": "Loopback TCP port Ares binds as a host-wide lock while ntlmrelayx holds 445 and 80; seen only on the attack box (ares-tools/src/coercion.rs:722-760)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ares-tools/src/coercion.rs#L722-L760",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "docker_image",
+      "value": "ghcr.io/l50/ares-orchestrator",
+      "confidence": "low",
+      "context": "Container image name for the Ares orchestrator in the repository's docs and warpgate templates (built from github.com/l50/ares); whether it is published and pullable was not checked (warpgate-templates/README.md:123, docs/infrastructure.md:314)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/warpgate-templates/README.md#L120-L133",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "docker_image",
+      "value": "ghcr.io/l50/ares-worker",
+      "confidence": "low",
+      "context": "Container image name for the Ares worker in the repository's docs and warpgate templates; per-role images ares-recon-agent, ares-credential-access-agent, ares-cracker-agent, ares-acl-agent, ares-privesc-agent, ares-lateral-movement-agent and ares-coercion-agent follow the same pattern; publication not checked",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/warpgate-templates/README.md#L120-L133",
+      "reported": "2026-10-28"
+    },
+    {
+      "type": "domain",
+      "value": "api.openai.com",
+      "confidence": "low",
+      "context": "OpenAI chat completions endpoint Ares calls for gpt-* models, the defaults in config/ares.yaml (gpt-5.2, gpt-5, gpt-5-mini). Investigate only when a server calls it unexpectedly alongside other activity (ares-llm/src/provider/openai.rs:14)",
+      "source": "ThreatDefence review of the Ares source code",
+      "sourceUrl": "https://github.com/dreadnode/ares/blob/786b2987bfeb08284b93802c3f533c54738e1e48/ares-llm/src/provider/openai.rs#L14",
+      "reported": "2026-10-28"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/ares",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

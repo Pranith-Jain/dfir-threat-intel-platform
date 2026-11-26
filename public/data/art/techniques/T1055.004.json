@@ -1,0 +1,46 @@
+{
+  "id": "T1055.004",
+  "displayName": "Process Injection: Asynchronous Procedure Call",
+  "tests": [
+    {
+      "name": "Process Injection via C#",
+      "guid": "611b39b7-e243-4c81-87a4-7145a90358b1",
+      "description": "Process Injection using C#\nreference: https://github.com/pwndizzle/c-sharp-memory-injection\nExcercises Five Techniques\n1. Process injection\n2. ApcInjectionAnyProcess\n3. ApcInjectionNewProcess\n4. IatInjection\n5. ThreadHijack\nUpon successful execution, cmd.exe will execute T1055.exe, which exercises 5 techniques. Output will be via stdout.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["exe_binary"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "EarlyBird APC Queue Injection in Go",
+      "guid": "73785dd2-323b-4205-ab16-bb6f06677e14",
+      "description": "Creates a process in a suspended state and calls QueueUserAPC WinAPI to add a UserAPC to the child process that points to allocated shellcode. \nResumeThread is called which then calls NtTestAlert to execute the created UserAPC which then executes the shellcode.\nThis technique allows for the early execution of shellcode and potentially before AV/EDR can hook functions to support detection.\n- PoC Credit: (https://github.com/Ne0nd0g/go-shellcode#createprocesswithpipe)\n- References: \n  - https://www.bleepingcomputer.com/news/security/early-bird-code-injection-technique-helps-malware-stay-undetected/\n  - https://www.ired.team/offensive-security/code-injection-process-injection/early-bird-apc-queu",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["spawn_process_path", "spawn_process_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Remote Process Injection with Go using NtQueueApcThreadEx WinAPI",
+      "guid": "4cc571b1-f450-414a-850f-879baf36aa06",
+      "description": "Uses the undocumented NtQueueAPCThreadEx WinAPI to create a \"Special User APC\" in the current thread of the current process to execute shellcode. \nSince the shellcode is loaded and executed in the current process it is considered local shellcode execution.\n\nSteps taken with this technique\n1. Allocate memory for the shellcode with VirtualAlloc setting the page permissions to Read/Write\n2. Use the RtlCopyMemory macro to copy the shellcode to the allocated memory space\n3. Change the memory page permissions to Execute/Read with VirtualProtect\n4. Get a handle to the current thread\n5. Execute the shellcode in the current thread by creating a Special User APC through the NtQueueApcThreadEx function",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1055.004/T1055.004.yaml"
+}

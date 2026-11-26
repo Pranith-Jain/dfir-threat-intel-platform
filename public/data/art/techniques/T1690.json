@@ -1,0 +1,163 @@
+{
+  "id": "T1690",
+  "displayName": "Prevent Command History Logging",
+  "tests": [
+    {
+      "name": "Disable history collection",
+      "guid": "4eafdb45-0f79-4d66-aa86-a3e2c08791f5",
+      "description": "Disables history collection in shells",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["evil_command"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable history collection (freebsd)",
+      "guid": "cada55b4-8251-4c60-819e-8ec1b33c9306",
+      "description": "Disables history collection in shells",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["evil_command"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Mac HISTCONTROL",
+      "guid": "468566d5-83e5-40c1-b338-511e1659628d",
+      "description": "The HISTCONTROL variable is set to ignore (not write to the history file) command that are a duplicate of something already in the history \nand commands that start with a space. This atomic sets this variable in the current session and also writes it to the current user's ~/.bash_profile \nso that it will apply to all future settings as well.\nhttps://www.linuxjournal.com/content/using-bash-history-more-efficiently-histcontrol",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "manual",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Clear bash history",
+      "guid": "878794f7-c511-4199-a950-8c28b3ed8e5b",
+      "description": "An attacker may clear the bash history cache and the history file as their last act before logging off to remove the record of their command line activities. \n\nIn this test we use the $HISTFILE variable throughout to 1. confirms the $HISTFILE variable is set 2. echo \"\" into it 3..5 confirm the file is empty 6 clear the history cache 7. confirm the history cache is empty. This is when the attacker would logoff.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Setting the HISTCONTROL environment variable",
+      "guid": "10ab786a-028e-4465-96f6-9e83ca6c5f24",
+      "description": "An attacker may exploit the space before a command (e.g. \" ls\") or the duplicate command suppression feature in Bash history to prevent their commands from being recorded in the history file or to obscure the order of commands used. \n\nIn this test we 1. sets $HISTCONTROL to ignoreboth 2. clears the history cache 3. executes ls -la with a space in-front of it 4. confirms that ls -la is not in the history cache 5. sets $HISTCONTROL to erasedups 6. clears the history cache 7..9 executes ls -la $HISTFILE 3 times 10. confirms that their is only one command in history",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Setting the HISTFILESIZE environment variable",
+      "guid": "5cafd6c1-2f43-46eb-ac47-a5301ba0a618",
+      "description": "An Adversary may set the bash history files size environment variable (HISTFILESIZE) to zero to prevent the logging of commands to the history file after they log out of the system.\n\nNote: we don't wish to log out, so we are just confirming the value of HISTFILESIZE. In this test we 1. echo HISTFILESIZE 2. set it to zero 3. confirm that HISTFILESIZE is set to zero.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Setting the HISTSIZE environment variable",
+      "guid": "386d3850-2ce7-4508-b56b-c0558922c814",
+      "description": "An Adversary may set the sh history files size environment variable (HISTSIZE) to zero to prevent the logging of commands to the history file after they log out of the system.\n\nNote: we don't wish to log out, so we are just confirming the value of HISTSIZE. In this test we 1. echo HISTSIZE 2. set it to zero 3. confirm that HISTSIZE is set to zero.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Setting the HISTFILE environment variable",
+      "guid": "b3dacb6c-a9e3-44ec-bf87-38db60c5cad1",
+      "description": "An Adversary may clear, unset or redirect the history environment variable HISTFILE to prevent logging of commands to the history file after they log out of the system.\n\nNote: we don't wish to log out, so we are just confirming the value of HISTFILE. In this test we 1. echo HISTFILE 2. set it to /dev/null 3. confirm that HISTFILE is set to /dev/null.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Setting the HISTFILE environment variable (freebsd)",
+      "guid": "f7308845-6da8-468e-99f2-4271f2f5bb67",
+      "description": "An Adversary may clear, unset or redirect the history environment variable HISTFILE to prevent logging of commands to the history file after they log out of the system.\n\nNote: we don't wish to log out, so we are just confirming the value of HISTFILE. In this test we 1. echo HISTFILE 2. set it to /dev/null 3. confirm that HISTFILE is set to /dev/null.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Setting the HISTIGNORE environment variable",
+      "guid": "f12acddb-7502-4ce6-a146-5b62c59592f1",
+      "description": "An Adversary may take advantage of the HISTIGNORE environment variable either to ignore particular commands or all commands. \n\nIn this test we 1. set HISTIGNORE to ignore ls, rm and ssh commands 2. clear this history cache 3..4 execute ls commands 5. confirm that the ls commands are not in the history cache 6. unset HISTIGNORE variable 7.. same again, but ignoring ALL commands.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Windows Command Line Auditing using reg.exe",
+      "guid": "1329d5ab-e10e-4e5e-93d1-4d907eb656e5",
+      "description": "In Windows operating systems, command line auditing is controlled through the following registry value:\n\n  Registry Path: HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\\Audit\n  \n  Registry Value: ProcessCreationIncludeCmdLine_Enabled\n\nWhen command line auditing is enabled, the system records detailed information about command execution, including the command executed, the user account responsible for executing the command, and the timestamp of the execution.\nThis information is crucial for security monitoring and forensic analysis, as it helps organizations detect and investigate unauthorized or malicious activities within their systems.\nBy default, command line auditing may ",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable Windows Command Line Auditing using Powershell Cmdlet",
+      "guid": "95f5c72f-6dfe-45f3-a8c1-d8faa07176fa",
+      "description": "In Windows operating systems, command line auditing is controlled through the following registry value:\n\n  Registry Path: HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\\Audit\n  \n  Registry Value: ProcessCreationIncludeCmdLine_Enabled\n\nWhen command line auditing is enabled, the system records detailed information about command execution, including the command executed, the user account responsible for executing the command, and the timestamp of the execution.\nThis information is crucial for security monitoring and forensic analysis, as it helps organizations detect and investigate unauthorized or malicious activities within their systems.\nBy default, command line auditing may ",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1690/T1690.yaml"
+}

@@ -1,0 +1,33 @@
+{
+  "id": "T1550.003",
+  "displayName": "Use Alternate Authentication Material: Pass the Ticket",
+  "tests": [
+    {
+      "name": "Mimikatz Kerberos Ticket Attack",
+      "guid": "dbf38128-7ba7-4776-bedf-cc2eed432098",
+      "description": "Similar to PTH, but attacking Kerberos",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["ticket", "mimikatz_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Rubeus Kerberos Pass The Ticket",
+      "guid": "a2fc4ec5-12c6-4fb4-b661-961f23f359cb",
+      "description": "Requesting a TGT on a remote system and retrieving it locally before requesting a service ticket with it. This is a Pass-The-Ticket attack because the TGT is obtained on the remote system, then used from a different machine (local).\nPsExec is used to execute commands on the remote system, and the \"C$\" admin share is used to retrieve the TGT, so the current user must have admin rights remotely and other PsExec prerequisites must be met.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["target", "user_name", "password", "domain", "rubeus_url"],
+      "dependencyCount": 2
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1550.003/T1550.003.yaml"
+}

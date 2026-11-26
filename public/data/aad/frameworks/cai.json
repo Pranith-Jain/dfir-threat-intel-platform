@@ -1,0 +1,251 @@
+{
+  "slug": "cai",
+  "name": "CAI",
+  "description": "Alias Robotics agent framework whose red team and bug bounty agents run shell commands, with an optional HTTP API and session-log telemetry",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 6,
+    "suricata": 14,
+    "yara": 4,
+    "indicators": 21
+  },
+  "techniques": [
+    {
+      "id": "T1059.004",
+      "score": 1,
+      "comment": "KQL hunt: CAI (Cybersecurity AI) running on a host you monitor"
+    },
+    {
+      "id": "T1059.006",
+      "score": 2,
+      "comment": "Sentinel analytics: CAI AI pentest framework on a host or reporting from your network; Sigma: CAI Cybersecurity AI CLI, Install, Continuous Ops Worker or Kali Container"
+    },
+    {
+      "id": "T1071",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1071.001",
+      "score": 13,
+      "comment": "KQL hunt: CAI telemetry, Alias gateway, its API backend and its fetch_url user agent in network, proxy and web logs; Sentinel analytics: CAI AI pentest framework on a host or reporting from your network; Sigma: CAI Telemetry Upload or Alias Gateway in Proxy Logs; Suricata: 3816002 TD CAI telemetry TLS (logs.aliasrobotics.com); Suricata: 3816003 TD CAI telemetry session log upload; Suricata: 3816004 TD CAI session log file in a multipart upload; Suricata: 3816011 TD CAI Alias model and licence gateway TLS (api.aliasrobotics.com); Suricata: 3816014 TD CAI licence check (GET /key/info on api.alia"
+    },
+    {
+      "id": "T1071.004",
+      "score": 3,
+      "comment": "Sigma: CAI Telemetry, Alias Gateway or Private Package Index DNS Query; Suricata: 3816001 TD CAI telemetry DNS query (logs.aliasrobotics.com); Suricata: 3816010 TD CAI Alias model and licence gateway DNS query (api.aliasrobotics.com)"
+    },
+    {
+      "id": "T1543.002",
+      "score": 3,
+      "comment": "KQL hunt: CAI (Cybersecurity AI) running on a host you monitor; Sigma: CAI Continuous Ops Systemd User Unit Written; YARA: CAI_Continuous_Ops_Systemd_Unit"
+    },
+    {
+      "id": "T1588.002",
+      "score": 7,
+      "comment": "KQL hunt: CAI (Cybersecurity AI) running on a host you monitor; Sigma: CAI Cybersecurity AI CLI, Install, Continuous Ops Worker or Kali Container; Sigma: CAI Session Log, API Auth Database or Workspace Written; Suricata: 3816012 TD CAI private package index DNS query (packages.aliasrobotics.com); Suricata: 3816013 TD CAI private package index TLS (packages.aliasrobotics.com); YARA: CAI_Package; YARA: CAI_Session_Log"
+    },
+    {
+      "id": "T1594",
+      "score": 4,
+      "comment": "KQL hunt: CAI telemetry, Alias gateway, its API backend and its fetch_url user agent in network, proxy and web logs; KQL hunt: Indicator sweep with the agentic watchlist; Sigma: CAI fetch_url User Agent in Web Logs; Suricata: 3816020 TD CAI fetch_url user agent (two-part Chrome/124.0 version)"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "domain",
+      "value": "logs.aliasrobotics.com",
+      "confidence": "high",
+      "context": "CAI telemetry: POST https://logs.aliasrobotics.com/upload with the whole session log (multipart field log) at the end of a session, and /upload/intermediate every 5 model interactions, which CAI_TELEMETRY=false does not stop. The URL is base64-obfuscated in three pieces (src/cai/internal/components/endpoints.py:21-23).",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/internal/components/endpoints.py#L21-L23",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "url",
+      "value": "https://logs.aliasrobotics.com/upload",
+      "confidence": "high",
+      "context": "CAI telemetry upload endpoint, assembled from base64 pieces; /intermediate is appended for the periodic upload (src/cai/internal/components/endpoints.py:21-23, metrics.py:84)",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/internal/components/endpoints.py#L21-L23",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "string",
+      "value": "aHR0cHM6Ly9sb2dzLg==",
+      "confidence": "high",
+      "context": "First base64 piece of the hidden CAI telemetry URL, next to YWxpYXNyb2JvdGljcy5jb20v and dXBsb2Fk (src/cai/internal/components/endpoints.py:21)",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/internal/components/endpoints.py#L21",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "domain",
+      "value": "api.aliasrobotics.com",
+      "confidence": "medium",
+      "context": "Alias gateway: CAI's licence check GET :666/key/info on every start (unless CAI_LICENSE_OFF=1), /v1/validate on :665, and the default model alias1 on :666. Also serves Alias's other products, including the successor CSI",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/util_ext.py#L32-L33",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "url",
+      "value": "https://api.aliasrobotics.com:666/key/info",
+      "confidence": "high",
+      "context": "CAI licence check with Authorization: Bearer <ALIAS_API_KEY>; the CLI exits if it fails (src/cai/util_ext.py:33, :102-116, src/cai/cli.py:174)",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/util_ext.py#L33",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "url",
+      "value": "https://api.aliasrobotics.com:666/",
+      "confidence": "medium",
+      "context": "Default OpenAI-compatible base URL of CAI for the alias1 model and --unrestricted mode (src/cai/util/llm_api_base.py:8, src/cai/cli.py:255). TLS on TCP 666",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/util/llm_api_base.py#L8",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "domain",
+      "value": "packages.aliasrobotics.com",
+      "confidence": "medium",
+      "context": "Alias private package index CAI 1.x updates from: pip index versions / pip install --index-url https://packages.aliasrobotics.com:664/<ALIAS_API_KEY>/ cai-framework (src/cai/util_ext.py:251, :399)",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/util_ext.py#L251",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "port",
+      "value": "666",
+      "confidence": "low",
+      "context": "TLS port of the Alias gateway CAI uses for its default model and licence check (api.aliasrobotics.com:666). Context only",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/util/llm_api_base.py#L8",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "port",
+      "value": "664",
+      "confidence": "low",
+      "context": "TLS port of the Alias private package index CAI updates from (packages.aliasrobotics.com:664). Context only",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/util_ext.py#L251",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+      "confidence": "medium",
+      "context": "Default user agent of CAI's fetch_url tool, also used by its curl-cffi Chrome 124 fallback. The two-part Chrome version is not what real Chrome sends (124.0.0.0). CAI_FETCH_USER_AGENT overrides it (src/cai/tools/web/fetch_url.py:224-233)",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/tools/web/fetch_url.py#L224-L233",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "user_agent",
+      "value": "Agents/Python 0.0.0",
+      "confidence": "low",
+      "context": "User agent on CAI's model API requests (its fork of the OpenAI Agents SDK reads the version of a package named agents, absent in a normal install). The upstream SDK run from source sends the same string. Visible only with TLS inspection (src/cai/sdk/agents/models/openai_chatcompletions.py:312)",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/sdk/agents/models/openai_chatcompletions.py#L312",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "string",
+      "value": "cai-framework",
+      "confidence": "medium",
+      "context": "Package name of CAI; the cai command is its entry point. Public PyPI stops at 0.5.10, 1.x came from packages.aliasrobotics.com (pyproject.toml:2, :282)",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/pyproject.toml#L2",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "file_path",
+      "value": "/.cai/logs/cai_",
+      "confidence": "medium",
+      "context": "CAI session log ~/.cai/logs/[<workspace>_]cai_<uuid>_<YYYYmmdd_HHMMSS>_<user>_<os>_<release>_<public ip>.jsonl; its first line holds the operator's ALIAS_API_KEY. This file is what the telemetry uploads (src/cai/sdk/agents/run_to_jsonl.py:89-160)",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/sdk/agents/run_to_jsonl.py#L89-L160",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "file_path",
+      "value": "/.cai/api_auth.json",
+      "confidence": "medium",
+      "context": "User and session database of the CAI API backend, AES-GCM encrypted with the key in api_auth.json.key next to it (src/cai/api/auth.py:90, :125-155)",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/api/auth.py#L90",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "file_path",
+      "value": "/.config/systemd/user/cai-cops-run_",
+      "confidence": "high",
+      "context": "Systemd user unit cai-cops-run_<12 hex>.service the CAI continuous-ops wizard installs and enables; ExecStart <python> -m cai.continuous_ops.loop_runner --run-dir ~/.cai/continuous_ops/run_<hex>, Restart=always (src/cai/continuous_ops/systemd_unit.py:59-100, wizard.py:853, :888)",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/continuous_ops/systemd_unit.py#L59-L100",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "string",
+      "value": "cai.continuous_ops.loop_runner",
+      "confidence": "high",
+      "context": "Python module the CAI continuous-ops worker runs, in its systemd unit and process command line (src/cai/continuous_ops/systemd_unit.py:52, :68)",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/continuous_ops/systemd_unit.py#L52",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "string",
+      "value": "kali-security",
+      "confidence": "low",
+      "context": "Container name CAI's /virtualization command gives kalilinux/kali-rolling, run with --network=host, --security-opt=seccomp=unconfined and tail -f /dev/null (src/cai/repl/commands/_virtualization_monolith.py:1657, :216-277). A generic name: context only",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/repl/commands/_virtualization_monolith.py#L1657",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "http_header",
+      "value": "X-CAI-API-Key",
+      "confidence": "medium",
+      "context": "Header carrying ALIAS_API_KEY or a session token to the CAI API backend (cai --api), renamable with CAI_API_KEY_HEADER (src/cai/api/app.py:129)",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/api/app.py#L129",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "string",
+      "value": "Backend HTTP state for the Cybersecurity AI Framework",
+      "confidence": "high",
+      "context": "Description in the CAI API's OpenAPI document /api/openapi.json, title CAI API (src/cai/api/app.py:101-108)",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/api/app.py#L101-L108",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "uri_string",
+      "value": "/api/v1/auth/add-ip",
+      "confidence": "medium",
+      "context": "CAI API route that creates a random user and a session token bound to a device address (src/cai/api/app.py:241-242)",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/api/app.py#L241-L242",
+      "reported": "2026-08-22"
+    },
+    {
+      "type": "string",
+      "value": "You are operating inside CAI, a cybersecurity-specialized framework.",
+      "confidence": "medium",
+      "context": "Opening of the CAI CYBER BASELINE layer put in front of every agent prompt, visible where model traffic is inspected and in CAI session logs (src/cai/util/prompts.py:14-16)",
+      "source": "ThreatDefence review of the CAI source code",
+      "sourceUrl": "https://github.com/aliasrobotics/cai/blob/6dc79257777f5f1c9500b4d2319935d34a47412e/src/cai/util/prompts.py#L14-L16",
+      "reported": "2026-08-22"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/cai",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

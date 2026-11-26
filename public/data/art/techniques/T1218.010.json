@@ -1,0 +1,72 @@
+{
+  "id": "T1218.010",
+  "displayName": "System Binary Proxy Execution: Regsvr32",
+  "tests": [
+    {
+      "name": "Regsvr32 local COM scriptlet execution",
+      "guid": "449aa403-6aba-47ce-8a37-247d21ef0306",
+      "description": "Regsvr32.exe is a command-line program used to register and unregister OLE controls. Upon execution, calc.exe will be launched.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["filename", "regsvr32path", "regsvr32name"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Regsvr32 remote COM scriptlet execution",
+      "guid": "c9d0c4ef-8a96-4794-a75b-3d3a5e6f2a36",
+      "description": "Regsvr32.exe is a command-line program used to register and unregister OLE controls. This test may be blocked by windows defender; disable\nwindows defender real-time protection to fix it. Upon execution, calc.exe will be launched.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["url", "regsvr32path", "regsvr32name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Regsvr32 local DLL execution",
+      "guid": "08ffca73-9a3d-471a-aeb0-68b4aa3ab37b",
+      "description": "Regsvr32.exe is a command-line program used to register and unregister OLE controls. Upon execution, calc.exe will be launched.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["dll_name", "regsvr32path", "regsvr32name"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Regsvr32 Registering Non DLL",
+      "guid": "1ae5ea1f-0a4e-4e54-b2f5-4ac328a7f421",
+      "description": "Replicating observed Gozi maldoc behavior registering a dll with an altered extension",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["dll_file", "regsvr32path", "regsvr32name"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Regsvr32 Silent DLL Install Call DllRegisterServer",
+      "guid": "9d71c492-ea2e-4c08-af16-c6994cdf029f",
+      "description": "Regsvr32.exe is a command-line program used to register and unregister OLE controls. Normally, an install is executed with /n to prevent calling DllRegisterServer.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["dll_name", "regsvr32path", "regsvr32name"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1218.010/T1218.010.yaml"
+}

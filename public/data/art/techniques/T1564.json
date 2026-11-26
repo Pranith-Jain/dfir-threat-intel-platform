@@ -1,0 +1,72 @@
+{
+  "id": "T1564",
+  "displayName": "Hide Artifacts",
+  "tests": [
+    {
+      "name": "Extract binary files via VBA",
+      "guid": "6afe288a-8a8b-4d33-a629-8d03ba9dad3a",
+      "description": "This module extracts a binary (calc.exe) from inside of another binary. \n\nIn the wild maldoc authors will use this technique to hide binaries inside of files stored \nwithin the office document itself. An example of this technique can be seen in sample\n\nf986040c7dd75b012e7dfd876acb33a158abf651033563ab068800f07f508226\n\nThis sample contains a document inside of itself. Document 1 is the actual maldoc itself, document 2\nis the same document without all the malicious code. Document 1 will copy Document 2 to the file system\nand then \"peek\" inside of this document and pull out the oleObject.bin file. Contained inside of this\noleObject.bin file is a payload that is parsed out and executed on the fil",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Create a Hidden User Called \"$\"",
+      "guid": "2ec63cc2-4975-41a6-bf09-dffdfb610778",
+      "description": "Creating a user with a username containing \"$\"",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create an \"Administrator \" user (with a space on the end)",
+      "guid": "5bb20389-39a5-4e99-9264-aeb92a55a85c",
+      "description": "Creating a user with a username containing with a space on the end",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create and Hide a Service with sc.exe",
+      "guid": "333c7de0-6fbe-42aa-ac2b-c7e40b18246a",
+      "description": "The following technique utilizes sc.exe and sdset to change the security descriptor of a service and \"hide\" it from Get-Service or sc query.\n\nUpon successful execution, sc.exe creates a new service changes the security descriptor.\n\nhttps://twitter.com/Alh4zr3d/status/1580925761996828672\nhttps://learn.microsoft.com/en-us/windows/win32/secauthz/security-descriptor-string-format",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["service_name", "executable_command"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Command Execution with NirCmd",
+      "guid": "2748ab4a-1e0b-4cf2-a2b0-8ef765bec7be",
+      "description": "NirCmd is used by threat actors to execute commands, which can include recon and privilege escalation via running commands via the SYSTEM account\nSee https://www.kroll.com/en/insights/publications/cyber/black-basta-technical-analysis",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["nircmd_location", "command_to_execute", "cleanup_command_to_execute"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1564/T1564.yaml"
+}

@@ -1,0 +1,215 @@
+{
+  "id": "T1218",
+  "displayName": "System Binary Proxy Execution",
+  "tests": [
+    {
+      "name": "mavinject - Inject DLL into running process",
+      "guid": "c426dacf-575d-4937-8611-a148a86a5e61",
+      "description": "Injects arbitrary DLL into running process specified by process ID. Requires Windows 10.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["process_id", "dll_payload"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Register-CimProvider - Execute evil dll",
+      "guid": "ad2c17ed-f626-4061-b21e-b9804a6f3655",
+      "description": "Execute arbitrary dll. Requires at least Windows 8/2012. Also note this dll can be served up via SMB",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["dll_payload"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "InfDefaultInstall.exe .inf Execution",
+      "guid": "54ad7d5a-a1b5-472c-b6c4-f8090fb2daef",
+      "description": "Test execution of a .inf using InfDefaultInstall.exe\n\nReference: https://github.com/LOLBAS-Project/LOLBAS/blob/master/yml/OSBinaries/Infdefaultinstall.yml",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["inf_to_execute"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "ProtocolHandler.exe Downloaded a Suspicious File",
+      "guid": "db020456-125b-4c8b-a4a7-487df8afb5a2",
+      "description": "Emulates attack via documents through protocol handler in Microsoft Office.  On successful execution you should see Microsoft Word launch a blank file.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["remote_url"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Microsoft.Workflow.Compiler.exe Payload Execution",
+      "guid": "7cbb0f26-a4c1-4f77-b180-a009aa05637e",
+      "description": "Emulates attack with Microsoft.Workflow.Compiler.exe running a .Net assembly that launches calc.exe",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["xml_payload", "mwcpath", "mwcname"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Renamed Microsoft.Workflow.Compiler.exe Payload Executions",
+      "guid": "4cc40fd7-87b8-4b16-b2d7-57534b86b911",
+      "description": "Emulates attack with a renamed Microsoft.Workflow.Compiler.exe running a .Net assembly that launches calc.exe",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["xml_payload", "renamed_binary", "mwcpath", "mwcname"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Invoke-ATHRemoteFXvGPUDisablementCommand base test",
+      "guid": "9ebe7901-7edf-45c0-b5c7-8366300919db",
+      "description": "RemoteFXvGPUDisablement.exe is an abusable, signed PowerShell host executable that was introduced in Windows 10 and Server 2019 (OS Build 17763.1339).\n\nOne of the PowerShell functions called by RemoteFXvGPUDisablement.exe is Get-VMRemoteFXPhysicalVideoAdapter, a part of the Hyper-V module. This atomic test influences RemoteFXvGPUDisablement.exe to execute custom PowerShell code by using a technique referred to as \"PowerShell module load-order hijacking\" where a module containing, in this case, an implementation of the Get-VMRemoteFXPhysicalVideoAdapter is loaded first by way of introducing a temporary module into the first directory listed in the %PSModulePath% environment variable or within",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["module_name", "module_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "DiskShadow Command Execution",
+      "guid": "0e1483ba-8f0c-425d-b8c6-42736e058eaa",
+      "description": "Emulates attack with a DiskShadow.exe (LOLBIN installed by default on Windows) being used to execute arbitrary commands Reference: https://bohops.com/2018/03/26/diskshadow-the-return-of-vss-evasion-persistence-and-active-directory-database-extraction/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["txt_payload", "dspath"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Load Arbitrary DLL via Wuauclt (Windows Update Client)",
+      "guid": "49fbd548-49e9-4bb7-94a6-3769613912b8",
+      "description": "This test uses Wuauclt to load an arbitrary DLL. Upon execution with the default inputs, calculator.exe will be launched. \nSee https://dtm.uk/wuauclt/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["arbitrary_dll"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Lolbin Gpscript logon option",
+      "guid": "5bcda9cd-8e85-48fa-861d-b5a85d91d48c",
+      "description": "Executes logon scripts configured in Group Policy.\nhttps://lolbas-project.github.io/lolbas/Binaries/Gpscript/\nhttps://oddvar.moe/2018/04/27/gpscript-exe-another-lolbin-to-the-list/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Lolbin Gpscript startup option",
+      "guid": "f8da74bb-21b8-4af9-8d84-f2c8e4a220e3",
+      "description": "Executes startup scripts configured in Group Policy\nhttps://lolbas-project.github.io/lolbas/Binaries/Gpscript/\nhttps://oddvar.moe/2018/04/27/gpscript-exe-another-lolbin-to-the-list/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Lolbas ie4uinit.exe use as proxy",
+      "guid": "13c0804e-615e-43ad-b223-2dfbacd0b0b3",
+      "description": "Executes commands from a specially prepared ie4uinit.inf file.\nPoc from : https://bohops.com/2018/03/10/leveraging-inf-sct-fetch-execute-techniques-for-bypass-evasion-persistence-part-2/\nReference: https://lolbas-project.github.io/lolbas/Binaries/Ie4uinit/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["Path_inf", "Path_ie4uinit"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "LOLBAS CustomShellHost to Spawn Process",
+      "guid": "b1eeb683-90bb-4365-bbc2-2689015782fe",
+      "description": "This test simulates an adversary copying `customshellhost.exe` and `calc.exe` from `C:\\windows\\system32\\` to `C:\\temp\\`, renaming `calc.exe` to `explorer.exe`.\nUpon execution, customshellhost.exe will spawn calc.exe.\nNote this will only work on Windows 10 or 11.\n[LOLBAS](https://lolbas-project.github.io/lolbas/Binaries/CustomShellHost/)\n[BishopFox](https://bishopfox.com/blog/edr-bypass-with-lolbins)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["dest_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Provlaunch.exe Executes Arbitrary Command via Registry Key",
+      "guid": "ab76e34f-28bf-441f-a39c-8db4835b89cc",
+      "description": "Provlaunch.exe executes a command defined in the Registry. This test will create the necessary registry keys and values, then run provlaunch.exe to execute an arbitrary command.\n- https://twitter.com/0gtweet/status/1674399582162153472\n- https://lolbas-project.github.io/lolbas/Binaries/Provlaunch/\nRegistry keys are deleted after successful execution.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "LOLBAS Msedge to Spawn Process",
+      "guid": "e5eedaed-ad42-4c1e-8783-19529738a349",
+      "description": "Executes a process under a trusted Microsoft signed binary,mseddge. This test will spawn \"calc.exe\" as a child process of msedge.exe\n- https://lolbas-project.github.io/lolbas/Binaries/Msedge/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "System Binary Proxy Execution - Wlrmdr Lolbin",
+      "guid": "7816c252-b728-4ea6-a683-bd9441ca0b71",
+      "description": "Use wlrmdr(Windows Logon Reminder executable) as a proxy binary to evade defensive countermeasures",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["payload_path"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1218/T1218.yaml"
+}

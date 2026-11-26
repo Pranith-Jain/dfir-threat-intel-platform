@@ -1,0 +1,280 @@
+{
+  "id": "T1547.001",
+  "displayName": "Boot or Logon Autostart Execution: Registry Run Keys / Startup Folder",
+  "tests": [
+    {
+      "name": "Reg Key Run",
+      "guid": "e55be3fd-3521-4610-9d1a-e210e42dcf05",
+      "description": "Run Key Persistence\n\nUpon successful execution, cmd.exe will modify the registry by adding \\\"Atomic Red Team\\\" to the Run key. Output will be via stdout.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["command_to_execute"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Reg Key RunOnce",
+      "guid": "554cbd88-cde1-4b56-8168-0be552eed9eb",
+      "description": "RunOnce Key Persistence.\n\nUpon successful execution, cmd.exe will modify the registry to load AtomicRedTeam.dll to RunOnceEx. Output will be via stdout.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["thing_to_execute"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "PowerShell Registry RunOnce",
+      "guid": "eb44f842-0457-4ddc-9b92-c4caa144ac42",
+      "description": "RunOnce Key Persistence via PowerShell\nUpon successful execution, a new entry will be added to the runonce item in the registry.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["thing_to_execute", "reg_key_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Suspicious vbs file run from startup Folder",
+      "guid": "2cb98256-625e-4da9-9d44-f2e5f90b8bd5",
+      "description": "vbs files can be placed in and ran from the startup folder to maintain persistance. Upon execution, \"T1547.001 Hello, World VBS!\" will be displayed twice. \nAdditionally, the new files can be viewed in the \"$env:APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\"\nfolder and will also run when the computer is restarted and the user logs in.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Suspicious jse file run from startup Folder",
+      "guid": "dade9447-791e-4c8f-b04b-3a35855dfa06",
+      "description": "jse files can be placed in and ran from the startup folder to maintain persistance.\nUpon execution, \"T1547.001 Hello, World JSE!\" will be displayed twice. \nAdditionally, the new files can be viewed in the \"$env:APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\"\nfolder and will also run when the computer is restarted and the user logs in.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Suspicious bat file run from startup Folder",
+      "guid": "5b6768e4-44d2-44f0-89da-a01d1430fd5e",
+      "description": "bat files can be placed in and executed from the startup folder to maintain persistance\n\nUpon execution, cmd will be run and immediately closed. Additionally, the new files can be viewed in the \"$env:APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\"\nfolder and will also run when the computer is restarted and the user logs in.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Add Executable Shortcut Link to User Startup Folder",
+      "guid": "24e55612-85f6-4bd6-ae74-a73d02e3441d",
+      "description": "Adds a non-malicious executable shortcut link to the current users startup directory. Test can be verified by going to the users startup directory and checking if the shortcut link exists.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Add persistance via Recycle bin",
+      "guid": "bda6a3d6-7aa7-4e89-908b-306772e9662f",
+      "description": "Add a persistance via Recycle bin [vxunderground](https://github.com/vxunderground/VXUG-Papers/blob/main/The%20Persistence%20Series/Persistence%20via%20Recycle%20Bin/Persistence_via_Recycle_Bin.pdf)\nUser have to clic on the recycle bin to lauch the payload (here calc)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "SystemBC Malware-as-a-Service Registry",
+      "guid": "9dc7767b-30c1-4cc4-b999-50cab5e27891",
+      "description": "This Atomic will create a registry key called socks5_powershell for persistance access\nhttps://medium.com/walmartglobaltech/systembc-powershell-version-68c9aad0f85c",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["reg_key_value", "reg_key_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Change Startup Folder - HKLM Modify User Shell Folders Common Startup Value",
+      "guid": "acfef903-7662-447e-a391-9c91c2f00f7b",
+      "description": "This test will modify the HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders -V \"Common Startup\" \nvalue to point to a new startup folder where a payload could be stored to launch at boot.  *successful execution requires system restart",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["new_startup_folder", "payload"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Change Startup Folder - HKCU Modify User Shell Folders Startup Value",
+      "guid": "8834b65a-f808-4ece-ad7e-2acdf647aafa",
+      "description": "This test will modify the HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders  -V \"Startup\" value \nto point to a new startup folder where a payload could be stored to launch at boot.  *successful execution requires system restart",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["new_startup_folder", "payload"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "HKCU - Policy Settings Explorer Run Key",
+      "guid": "a70faea1-e206-4f6f-8d9a-67379be8f6f1",
+      "description": "This test will create a new value under HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run to launch calc.exe on boot. \n*Requires reboot",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["target_key_value_name", "payload"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "HKLM - Policy Settings Explorer Run Key",
+      "guid": "b5c9a9bc-dda3-4ea0-b16a-add8e81ab75f",
+      "description": "This test will create a HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\Run key value to launch calc.exe on boot. \n*Requires reboot",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["target_key_value_name", "payload"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "HKLM - Append Command to Winlogon Userinit KEY Value",
+      "guid": "f7fab6cc-8ece-4ca7-a0f1-30a22fccd374",
+      "description": "This test will append a command to the  HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\Userinit value to launch calc.exe on boot.\n* Requires reboot",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["payload"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "HKLM - Modify default System Shell - Winlogon Shell KEY Value",
+      "guid": "1d958c61-09c6-4d9e-b26b-4130314e520e",
+      "description": "This test change the default value of HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\Shell from \"explorer.exe\" to the full path of \"C:\\Windows\\explorer.exe\" \nto log a change to the key's default value without breaking boot sequence. \nAn atacker will alternatively replace this with a custom shell.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["payload"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "secedit used to create a Run key in the HKLM Hive",
+      "guid": "14fdc3f1-6fc3-4556-8d36-aa89d9d42d02",
+      "description": "secedit allows to manipulate the HKLM hive of the Windows registry. This test creates a Run key with the keyname calc having calc.exe as the value in the HKLM hive.\n[Reference](https://blueteamops.medium.com/secedit-and-i-know-it-595056dee53d)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ini_file", "secedit_db"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Modify BootExecute Value",
+      "guid": "befc2b40-d487-4a5a-8813-c11085fb5672",
+      "description": "This test modifies the BootExecute registry value to \"autocheck autoche *\", which can be used to simulate an adversary's attempt to tamper with the system's boot process. \nReference - https://www.welivesecurity.com/wp-content/uploads/2018/09/ESET-LoJax.pdf\nNOTE that by not saving the correct value, you may inhibit your system from booting properly. Only run on a test system. There is a reg export before running the Atomic.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["registry_value"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Allowing custom application to execute during new RDP logon session",
+      "guid": "b051b3c0-66e7-4a81-916d-e6383bd3a669",
+      "description": "When a users logs in to a computer via RDP,Windows will search for the key in HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\Wds\\rdpwd registry\nBy default, rdpclip is the value stored. An attacker with administrator privileges can alter the value stored to allow for the custom application to execute during RDP login session.The test will allow running cal rather rdpclip when a user logs in via RDP",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["malicious_app"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Creating Boot Verification Program Key for application execution during successful boot",
+      "guid": "6e1666d5-3f2b-4b9a-80aa-f011322380d4",
+      "description": "Microsoft allows users to define a custom boot verification program for those situations by creating the registry key “HKLM\\System\\CurrentControlSet\\Control\\BootVerificationProgram” and setting the value of ImagePath to the path of boot verification program.Threat Actor\ncan abuse by creating this registry key and providing a malicious application to be executed during successful boot",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["malicious_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Add persistence via Windows Context Menu",
+      "guid": "de47f4a0-2acb-416d-9a6b-cee584a4c4d1",
+      "description": "This atomic test add persistence taking advantage of the  Windows Context Menu [Hexacorn](https://www.hexacorn.com/blog/2018/07/29/beyond-good-ol-run-key-part-82/)\nUser have to right click on the main screen or in the white space of the opened folder (e.g. Size Modify).",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Turla Mosquito Run Key Persistence via rundll32 DLL Export",
+      "guid": "522c390e-8c86-497c-b37e-79a4eb072a89",
+      "description": "Imitates the Registry Run key persistence used by Turla's Mosquito backdoor.\n\nUpon successful execution, an `auto_update` value is written to the current user's Run key pointing to a\nrundll32 invocation of the (benign, by default) DLL.\n\nReference: https://www.welivesecurity.com/wp-content/uploads/2018/01/ESET_Turla_Mosquito.pdf",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["backdoor_dll", "backdoor_dll_url"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1547.001/T1547.001.yaml"
+}

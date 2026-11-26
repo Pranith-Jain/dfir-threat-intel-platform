@@ -1,0 +1,33 @@
+{
+  "id": "T1547.009",
+  "displayName": "Boot or Logon Autostart Execution: Shortcut Modification",
+  "tests": [
+    {
+      "name": "Shortcut Modification",
+      "guid": "ce4fc678-364f-4282-af16-2fb4c78005ce",
+      "description": "This test to simulate shortcut modification and then execute. example shortcut (*.lnk , .url) strings check with powershell;\ngci -path \"C:\\Users\" -recurse -include *.url -ea SilentlyContinue | Select-String -Pattern \"exe\" | FL.\nUpon execution, calc.exe will be launched.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["shortcut_file_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create shortcut to cmd in startup folders",
+      "guid": "cfdc954d-4bb0-4027-875b-a1893ce406f2",
+      "description": "LNK file to launch CMD placed in startup folder. Upon execution, open File Explorer and browse to \"%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\\"\nto view the new shortcut.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1547.009/T1547.009.yaml"
+}

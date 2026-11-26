@@ -1,0 +1,33 @@
+{
+  "id": "T1505.005",
+  "displayName": "Server Software Component: Terminal Services DLL",
+  "tests": [
+    {
+      "name": "Simulate Patching termsrv.dll",
+      "guid": "0b2eadeb-4a64-4449-9d43-3d999f4a317b",
+      "description": "Simulates patching of termsrv.dll by making a benign change to the file and replacing it with the original afterwards.\nBefore we can make the modifications we need to take ownership of the file and grant ourselves the necessary permissions.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Modify Terminal Services DLL Path",
+      "guid": "18136e38-0530-49b2-b309-eed173787471",
+      "description": "This atomic test simulates the modification of the ServiceDll value in HKLM\\System\\CurrentControlSet\\services\\TermService\\Parameters. This technique may be leveraged by adversaries to establish persistence by loading a patched version of the DLL containing malicious code.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1505.005/T1505.005.yaml"
+}

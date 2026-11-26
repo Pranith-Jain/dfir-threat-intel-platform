@@ -1,0 +1,46 @@
+{
+  "id": "T1078.004",
+  "displayName": "Valid Accounts: Cloud Accounts",
+  "tests": [
+    {
+      "name": "Creating GCP Service Account and Service Account Key",
+      "guid": "9fdd83fd-bd53-46e5-a716-9dec89c8ae8e",
+      "description": "GCP Service Accounts can be used to gain intial access as well as maintain persistence inside Google Cloud.",
+      "platforms": ["google-workspace", "iaas:gcp"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["project-id", "service-account-name", "service-account-email", "output-key-file"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Azure Persistence Automation Runbook Created or Modified",
+      "guid": "348f4d14-4bd3-4f6b-bd8a-61237f78b3ac",
+      "description": "Identifies when an Azure Automation runbook is created or modified. An adversary may create or modify an Azure\nAutomation runbook to execute malicious code and maintain persistence in their target's environment.",
+      "platforms": ["iaas:azure"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["resource_group", "runbook_name", "automation_account_name"],
+      "dependencyCount": 4
+    },
+    {
+      "name": "GCP - Create Custom IAM Role",
+      "guid": "3a159042-69e6-4398-9a69-3308a4841c85",
+      "description": "This atomic will create a new IAM role. The default role permissions are: *IAM Service Account Get*. The idea for this Atomic came from a Rule published by the Elastic team.\n\nIdentifies an Identity and Access Management (IAM) custom role creation in Google Cloud Platform (GCP). \nCustom roles are user-defined, and allow for the bundling of one or more supported permissions to meet specific needs. \nCustom roles will not be updated automatically and could lead to privilege creep if not carefully scrutinized.\n\nThis atomic will create a new IAM role. The default role permissions are: *IAM Service Account Get*\n\nReference: https://github.com/elastic/detection-rules/blob/main/rules/integrations/gcp/",
+      "platforms": ["iaas:gcp"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["project-id", "role-name", "role-description", "roles"],
+      "dependencyCount": 2
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1078.004/T1078.004.yaml"
+}

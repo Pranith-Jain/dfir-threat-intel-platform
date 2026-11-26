@@ -1,0 +1,215 @@
+{
+  "id": "T1040",
+  "displayName": "Network Sniffing",
+  "tests": [
+    {
+      "name": "Packet Capture Linux using tshark or tcpdump",
+      "guid": "7fe741f7-b265-4951-a7c7-320889083b3e",
+      "description": "Perform a PCAP. Wireshark will be required for tshark. TCPdump may already be installed.\n\nUpon successful execution, tshark or tcpdump will execute and capture 5 packets on interface ens33.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["interface"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Packet Capture FreeBSD using tshark or tcpdump",
+      "guid": "c93f2492-9ebe-44b5-8b45-36574cccfe67",
+      "description": "Perform a PCAP. Wireshark will be required for tshark. TCPdump may already be installed.\n\nUpon successful execution, tshark or tcpdump will execute and capture 5 packets on interface ens33.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["interface"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Packet Capture macOS using tcpdump or tshark",
+      "guid": "9d04efee-eff5-4240-b8d2-07792b873608",
+      "description": "Perform a PCAP on macOS. This will require Wireshark/tshark to be installed. TCPdump may already be installed.\n\nUpon successful execution, tshark or tcpdump will execute and capture 5 packets on interface en0A.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["interface"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Packet Capture Windows Command Prompt",
+      "guid": "a5b2f6a0-24b4-493e-9590-c699f75723ca",
+      "description": "Perform a packet capture using the windows command prompt. This will require a host that has Wireshark/Tshark\ninstalled.\n\nUpon successful execution, tshark will execute and capture 5 packets on interface \"Ethernet\".",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["interface", "wireshark_url", "tshark_path", "npcap_url", "npcap_path"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Windows Internal Packet Capture",
+      "guid": "b5656f67-d67f-4de8-8e62-b5581630f528",
+      "description": "Uses the built-in Windows packet capture\nAfter execution you should find a file named trace.etl and trace.cab in the temp directory",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Windows Internal pktmon capture",
+      "guid": "c67ba807-f48b-446e-b955-e4928cd1bf91",
+      "description": "Will start a packet capture and store log file as t1040.etl.\nhttps://lolbas-project.github.io/lolbas/Binaries/Pktmon/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Windows Internal pktmon set filter",
+      "guid": "855fb8b4-b8ab-4785-ae77-09f5df7bff55",
+      "description": "Select Desired ports for packet capture \nhttps://lolbas-project.github.io/lolbas/Binaries/Pktmon/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Packet Capture macOS using /dev/bpfN with sudo",
+      "guid": "e6fe5095-545d-4c8b-a0ae-e863914be3aa",
+      "description": "Opens a /dev/bpf file (O_RDONLY) and captures packets for a few seconds.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ifname", "csource_path", "program_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Filtered Packet Capture macOS using /dev/bpfN with sudo",
+      "guid": "e2480aee-23f3-4f34-80ce-de221e27cd19",
+      "description": "Opens a /dev/bpf file (O_RDONLY), sets BPF filter for 'udp' and captures packets for a few seconds.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ifname", "csource_path", "program_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Packet Capture FreeBSD using /dev/bpfN with sudo",
+      "guid": "e2028771-1bfb-48f5-b5e6-e50ee0942a14",
+      "description": "Opens a /dev/bpf file (O_RDONLY) and captures packets for a few seconds.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ifname", "csource_path", "program_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Filtered Packet Capture FreeBSD using /dev/bpfN with sudo",
+      "guid": "a3a0d4c9-c068-4563-a08d-583bd05b884c",
+      "description": "Opens a /dev/bpf file (O_RDONLY), sets BPF filter for 'udp' and captures packets for a few seconds.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ifname", "csource_path", "program_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Packet Capture Linux socket AF_PACKET,SOCK_RAW with sudo",
+      "guid": "10c710c9-9104-4d5f-8829-5b65391e2a29",
+      "description": "Captures packets with domain=AF_PACKET, type=SOCK_RAW for a few seconds.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["csource_path", "program_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Packet Capture Linux socket AF_INET,SOCK_RAW,TCP with sudo",
+      "guid": "7a0895f0-84c1-4adf-8491-a21510b1d4c1",
+      "description": "Captures packets with domain=AF_INET,type=SOCK_RAW,protocol=TCP for a few seconds.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["csource_path", "program_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Packet Capture Linux socket AF_INET,SOCK_PACKET,UDP with sudo",
+      "guid": "515575ab-d213-42b1-aa64-ef6a2dd4641b",
+      "description": "Captures packets with domain=AF_INET,type=SOCK_PACKET,protocol=UDP for a few seconds.\nSOCK_PACKET is \"obsolete\" according to the man page, but still works on Ubuntu 20.04",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["csource_path", "program_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Packet Capture Linux socket AF_PACKET,SOCK_RAW with BPF filter for UDP with sudo",
+      "guid": "b1cbdf8b-6078-48f5-a890-11ea19d7f8e9",
+      "description": "Captures packets with domain=AF_PACKET,type=SOCK_RAW for a few seconds.\nSets a BPF filter on the socket to filter for UDP traffic.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["csource_path", "program_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "PowerShell Network Sniffing",
+      "guid": "9c15a7de-de14-46c3-bc2a-6d94130986ae",
+      "description": "PowerShell Built-in Cmdlets to capture network traffic.\nhttps://learn.microsoft.com/en-us/powershell/module/neteventpacketcapture/new-neteventsession?view=windowsserver2022-ps",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1040/T1040.yaml"
+}

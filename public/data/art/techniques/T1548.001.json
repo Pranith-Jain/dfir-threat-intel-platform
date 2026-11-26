@@ -1,0 +1,137 @@
+{
+  "id": "T1548.001",
+  "displayName": "Abuse Elevation Control Mechanism: Setuid and Setgid",
+  "tests": [
+    {
+      "name": "Make and modify binary from C source",
+      "guid": "896dfe97-ae43-4101-8e96-9a7996555d80",
+      "description": "Make, change owner, and change file attributes on a C source code file",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["payload"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Make and modify binary from C source (freebsd)",
+      "guid": "dd580455-d84b-481b-b8b0-ac96f3b1dc4c",
+      "description": "Make, change owner, and change file attributes on a C source code file",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["payload"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Set a SetUID flag on file",
+      "guid": "759055b3-3885-4582-a8ec-c00c9d64dd79",
+      "description": "This test sets the SetUID flag on a file in FreeBSD.",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_to_setuid"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Set a SetUID flag on file (freebsd)",
+      "guid": "9be9b827-ff47-4e1b-bef8-217db6fb7283",
+      "description": "This test sets the SetUID flag on a file in FreeBSD.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_to_setuid"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Set a SetGID flag on file",
+      "guid": "db55f666-7cba-46c6-9fe6-205a05c3242c",
+      "description": "This test sets the SetGID flag on a file in Linux and macOS.",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_to_setuid"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Set a SetGID flag on file (freebsd)",
+      "guid": "1f73af33-62a8-4bf1-bd10-3bea931f2c0d",
+      "description": "This test sets the SetGID flag on a file in FreeBSD.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_to_setuid"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Make and modify capabilities of a binary",
+      "guid": "db53959c-207d-4000-9e7a-cd8eb417e072",
+      "description": "Make and modify [capabilities](https://man7.org/linux/man-pages/man7/capabilities.7.html) of a C source code file.\nThe binary doesn't have to modify the UID, but the binary is given the capability to arbitrarily modify it at any time with `setuid(0)`.\nWithout being owned by root, the binary can set the UID to 0.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["payload"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Provide the SetUID capability to a file",
+      "guid": "1ac3272f-9bcf-443a-9888-4b1d3de785c1",
+      "description": "This test gives a file the capability to set UID without using flags.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_to_setcap"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Do reconnaissance for files that have the setuid bit set",
+      "guid": "8e36da01-cd29-45fd-be72-8a0fcaad4481",
+      "description": "This test simulates a command that can be run to enumerate files that have the setuid bit set",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Do reconnaissance for files that have the setgid bit set",
+      "guid": "3fb46e17-f337-4c14-9f9a-a471946533e2",
+      "description": "This test simulates a command that can be run to enumerate files that have the setgid bit set",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1548.001/T1548.001.yaml"
+}

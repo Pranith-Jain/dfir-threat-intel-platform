@@ -1,0 +1,33 @@
+{
+  "id": "T1070",
+  "displayName": "Indicator Removal",
+  "tests": [
+    {
+      "name": "Indicator Removal using FSUtil",
+      "guid": "b4115c7a-0e92-47f0-a61e-17e7218b2435",
+      "description": "Manages the update sequence number (USN) change journal, which provides a persistent log of all changes made to files on the volume. Upon execution, no output\nwill be displayed. More information about fsutil can be found at https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-usn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Indicator Manipulation using FSUtil",
+      "guid": "96e86706-6afd-45b6-95d6-108d23eaf2e9",
+      "description": "Finds a file by user name (if Disk Quotas are enabled), queries allocated ranges for a file, sets a file's short name, sets a file's valid data length, sets zero data for a file, or creates a new file. Upon execution, no output\nwill be displayed. More information about fsutil can be found at https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/fsutil-file\n- https://tria.ge/230601-x8x6bsgb24/behavioral2",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_to_manipulate", "file_data_length"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1070/T1070.yaml"
+}

@@ -1,0 +1,150 @@
+{
+  "id": "T1070.004",
+  "displayName": "Indicator Removal: File Deletion",
+  "tests": [
+    {
+      "name": "Delete a single file - FreeBSD/Linux/macOS",
+      "guid": "562d737f-2fc6-4b09-8c2a-7f8ff0828480",
+      "description": "Delete a single file from the temporary directory",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["parent_folder", "file_to_delete"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Delete an entire folder - FreeBSD/Linux/macOS",
+      "guid": "a415f17e-ce8d-4ce2-a8b4-83b674e7017e",
+      "description": "Recursively delete the temporary directory and all files contained within it",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["folder_to_delete"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Overwrite and delete a file with shred",
+      "guid": "039b4b10-2900-404b-b67f-4b6d49aa6499",
+      "description": "Use the `shred` command to overwrite the temporary file and then delete it",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["file_to_shred"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Delete a single file - Windows cmd",
+      "guid": "861ea0b4-708a-4d17-848d-186c9c7f17e3",
+      "description": "Delete a single file from the temporary directory using cmd.exe.\nUpon execution, no output will be displayed. Use File Explorer to verify the file was deleted.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["file_to_delete"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Delete an entire folder - Windows cmd",
+      "guid": "ded937c4-2add-42f7-9c2c-c742b7a98698",
+      "description": "Recursively delete a folder in the temporary directory using cmd.exe.\nUpon execution, no output will be displayed. Use File Explorer to verify the folder was deleted.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["folder_to_delete"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Delete a single file - Windows PowerShell",
+      "guid": "9dee89bd-9a98-4c4f-9e2d-4256690b0e72",
+      "description": "Delete a single file from the temporary directory using Powershell. Upon execution, no output will be displayed. Use File Explorer to verify the file was deleted.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["file_to_delete"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Delete an entire folder - Windows PowerShell",
+      "guid": "edd779e4-a509-4cba-8dfa-a112543dbfb1",
+      "description": "Recursively delete a folder in the temporary directory using Powershell. Upon execution, no output will be displayed. Use File Explorer to verify the folder was deleted.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["folder_to_delete"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Delete Filesystem - Linux",
+      "guid": "f3aa95fe-4f10-4485-ad26-abf22a764c52",
+      "description": "This test deletes the entire root filesystem of a Linux system. This technique was used by Amnesia IoT malware to avoid analysis. This test is dangerous and destructive, do NOT use on production equipment.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Delete Prefetch File",
+      "guid": "36f96049-0ad7-4a5f-8418-460acaeb92fb",
+      "description": "Delete a single prefetch file.  Deletion of prefetch files is a known anti-forensic technique. To verify execution, Run `(Get-ChildItem -Path \"$Env:SystemRoot\\prefetch\\*.pf\" | Measure-Object).Count`\nbefore and after the test to verify that the number of prefetch files decreases by 1.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Delete TeamViewer Log Files",
+      "guid": "69f50a5f-967c-4327-a5bb-e1a9a9983785",
+      "description": "Adversaries may delete TeamViewer log files to hide activity. This should provide a high true-positive alert ration.\nThis test just places the files in a non-TeamViewer folder, a detection would just check for a deletion event matching the TeamViewer\nlog file format of TeamViewer_##.log. Upon execution, no output will be displayed. Use File Explorer to verify the folder was deleted.\n\nhttps://twitter.com/SBousseaden/status/1197524463304290305?s=20",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["teamviewer_log_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Clears Recycle bin via rd",
+      "guid": "f723d13d-48dc-4317-9990-cf43a9ac0bf2",
+      "description": "An adversary clears the recycle bin in the system partition using rd to remove traces of deleted files.\n[Reference](https://thedfirreport.com/2024/08/12/threat-actors-toolkit-leveraging-sliver-poshc2-batch-scripts/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1070.004/T1070.004.yaml"
+}

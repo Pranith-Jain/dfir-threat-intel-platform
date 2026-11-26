@@ -1,0 +1,173 @@
+{
+  "id": "T1047",
+  "displayName": "Windows Management Instrumentation",
+  "tests": [
+    {
+      "name": "WMI Reconnaissance Users",
+      "guid": "c107778c-dcf5-47c5-af2e-1d058a3df3ea",
+      "description": "An adversary might use WMI to list all local User Accounts. \nWhen the test completes , there should be local user accounts information displayed on the command line.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "WMI Reconnaissance Processes",
+      "guid": "5750aa16-0e59-4410-8b9a-8a47ca2788e2",
+      "description": "An adversary might use WMI to list Processes running on the compromised host.\nWhen the test completes , there should be running processes listed on the command line.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "WMI Reconnaissance Software",
+      "guid": "718aebaa-d0e0-471a-8241-c5afa69c7414",
+      "description": "An adversary might use WMI to list installed Software hotfix and patches.\nWhen the test completes, there should be a list of installed patches and when they were installed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "WMI Reconnaissance List Remote Services",
+      "guid": "0fd48ef7-d890-4e93-a533-f7dedd5191d3",
+      "description": "An adversary might use WMI to check if a certain Remote Service is running on a remote device. \nWhen the test completes, a service information will be displayed on the screen if it exists.\nA common feedback message is that \"No instance(s) Available\" if the service queried is not running.\nA common error message is \"Node - (provided IP or default)  ERROR Description =The RPC server is unavailable\" \nif the provided remote host is unreachable",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["node", "service_search_string"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WMI Execute Local Process",
+      "guid": "b3bdfc91-b33e-4c6d-a5c8-d64bee0276b3",
+      "description": "This test uses wmic.exe to execute a process on the local host.\nWhen the test completes , a new process will be started locally .A notepad application will be started when input is left on default.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["process_to_execute"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WMI Execute Remote Process",
+      "guid": "9c8ef159-c666-472f-9874-90c8d60d136b",
+      "description": "This test uses wmic.exe to execute a process on a remote host. Specify a valid value for remote IP using the node parameter.\nTo clean up, provide the same node input as the one provided to run the test\nA common error message is \"Node - (provided IP or default)  ERROR Description =The RPC server is unavailable\" if the default or provided IP is unreachable",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["node", "user_name", "password", "process_to_execute"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create a Process using WMI Query and an Encoded Command",
+      "guid": "7db7a7f9-9531-4840-9b30-46220135441c",
+      "description": "Solarigate persistence is achieved via backdoors deployed via various techniques including using PowerShell with an EncodedCommand\n Powershell -nop -exec bypass -EncodedCommand <encoded command>\nWhere the –EncodedCommand, once decoded, would resemble:\n  Invoke-WMIMethod win32_process -name create -argumentlist ‘rundll32 c:\\windows\\idmu\\common\\ypprop.dll _XInitImageFuncPtrs’ -ComputerName WORKSTATION\nThe EncodedCommand in this atomic is the following: Invoke-WmiMethod -Path win32_process -Name create -ArgumentList notepad.exe\nYou should expect to see notepad.exe running after execution of this test.\n[Solarigate Analysis from Microsoft](https://www.microsoft.com/security/blog/2020/12/18/analyz",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create a Process using obfuscated Win32_Process",
+      "guid": "10447c83-fc38-462a-a936-5102363b1c43",
+      "description": "This test tries to mask process creation by creating a new class that inherits from Win32_Process. Indirect call of suspicious method such as Win32_Process::Create can break detection logic.\n[Cybereason blog post No Win32_ProcessNeeded](https://www.cybereason.com/blog/wmi-lateral-movement-win32)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["new_class", "process_to_execute"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WMI Execute rundll32",
+      "guid": "00738d2a-4651-4d76-adf2-c43a41dfb243",
+      "description": "This test uses wmic.exe to execute a DLL function using rundll32. Specify a valid value for remote IP using the node parameter.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["node", "dll_to_execute", "function_to_execute"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Application uninstall using WMIC",
+      "guid": "c510d25b-1667-467d-8331-a56d3e9bc4ff",
+      "description": "Emulates uninstalling  applications using WMIC.  This method only works if the product was installed with an msi file.  APTs have been seen using this to uninstall security products.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["node", "product"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Impacket wmiexec.py",
+      "guid": "a3ddaf15-d1a1-4bc3-8683-84c7c67120fe",
+      "description": "wmiexec.py is tool included in the Impacket toolkit that allows to execute commands remotely on a Windows System using WMI (Windows management Instrumentation).",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [
+        "target_domain",
+        "user_name",
+        "password",
+        "target_host",
+        "command",
+        "optional_args",
+        "uv_install_dir",
+        "uv_tool_dir",
+        "uv_tool_bin_dir"
+      ],
+      "dependencyCount": 2
+    },
+    {
+      "name": "AveMaria/Warzone program.bat WMIC Process Creation",
+      "guid": "778b54b0-ae7a-4f80-b74b-59eddee87ad5",
+      "description": "Emulates the evasive behavior of the Ave Maria/Warzone RAT, which follows these steps:\n1. Creates a batch script (program_path) that runs commands found in its own ADS named start (program_path:start)\n2. Writes to program_path:start a wmiexec command that starts a process from an ADS named ApplicationData of a specified file (ads_host:ApplicationData)\n3. Writes to the ADS ads_host:ApplicationData the contents of an executable (normally would be the ransomware)\n4. Runs the batch script, which runs everything that was set up\n\nReference: https://www.splunk.com/en_us/blog/security/defending-the-gates-understanding-and-detecting-ave-maria-warzone-rat.html",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["payload_binary", "program_path", "ads_host"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1047/T1047.yaml"
+}

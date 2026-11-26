@@ -1,0 +1,111 @@
+{
+  "id": "T1482",
+  "displayName": "Domain Trust Discovery",
+  "tests": [
+    {
+      "name": "Windows - Discover domain trusts with dsquery",
+      "guid": "4700a710-c821-4e17-a3ec-9e4c81d6845f",
+      "description": "Uses the dsquery command to discover domain trusts.\nRequires the installation of dsquery via Windows RSAT or the Windows Server AD DS role.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Windows - Discover domain trusts with nltest",
+      "guid": "2e22641d-0498-48d2-b9ff-c71e496ccdbe",
+      "description": "Uses the nltest command to discover domain trusts.\nRequires the installation of nltest via Windows RSAT or the Windows Server AD DS role.\nThis technique has been used by the Trickbot malware family.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Powershell enumerate domains and forests",
+      "guid": "c58fbc62-8a62-489e-8f2d-3565d7d96f30",
+      "description": "Use powershell to enumerate AD information.\nRequires the installation of PowerShell AD admin cmdlets via Windows RSAT or the Windows Server AD DS role.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Adfind - Enumerate Active Directory OUs",
+      "guid": "d1c73b96-ab87-4031-bad8-0e1b3b8bf3ec",
+      "description": "Adfind tool can be used for reconnaissance in an Active directory environment. This example has been documented by ransomware actors enumerating Active Directory OUs\nreference- http://www.joeware.net/freetools/tools/adfind/, https://www.fireeye.com/blog/threat-research/2019/04/pick-six-intercepting-a-fin6-intrusion.html",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["optional_args"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Adfind - Enumerate Active Directory Trusts",
+      "guid": "15fe436d-e771-4ff3-b655-2dca9ba52834",
+      "description": "Adfind tool can be used for reconnaissance in an Active directory environment. This example has been documented by ransomware actors enumerating Active Directory Trusts\nreference- http://www.joeware.net/freetools/tools/adfind/, https://www.fireeye.com/blog/threat-research/2019/04/pick-six-intercepting-a-fin6-intrusion.html",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["optional_args"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Get-DomainTrust with PowerView",
+      "guid": "f974894c-5991-4b19-aaf5-7cc2fe298c5d",
+      "description": "Utilizing PowerView, run Get-DomainTrust to identify domain trusts. Upon execution, progress and info about trusts within the domain being scanned will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Get-ForestTrust with PowerView",
+      "guid": "58ed10e8-0738-4651-8408-3a3e9a526279",
+      "description": "Utilizing PowerView, run Get-ForestTrust to identify forest trusts. Upon execution, progress and info about forest trusts within the domain being scanned will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "TruffleSnout - Listing AD Infrastructure",
+      "guid": "ea1b4f2d-5b82-4006-b64f-f2845608a3bf",
+      "description": "Iterative AD discovery toolkit for offensive operators. Situational awareness and targeted low noise enumeration. Preference for OpSec.- https://github.com/dsnezhkov/TruffleSnout",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["trufflesnout_path", "domain"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1482/T1482.yaml"
+}

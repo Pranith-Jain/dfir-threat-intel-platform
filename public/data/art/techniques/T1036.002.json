@@ -1,0 +1,33 @@
+{
+  "id": "T1036.002",
+  "displayName": "Masquerading: Right-to-Left Override",
+  "tests": [
+    {
+      "name": "Masquerading: Right-to-Left Override Batch File Creation and Execution",
+      "guid": "d7c03c7e-31cd-43c7-859a-ec053f73b23a",
+      "description": "'Creates a batch file and then uses the RTLO operator (0x202E) to transform the file name from \"evil_batchfdp.bat\" to \"evil_batchtab.pdf\". The script then executes the batch file which displays \"Hello World!\" for 30 seconds before closing out.'",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["fileloc"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Masquerading: RTLO Masqueraded File Download and Execution",
+      "guid": "dac81590-8b63-4769-8b82-310beedc4f09",
+      "description": "Downloads a batch file that has an obfuscated name utilizing the RTLO operator. The batch file then runs automatically, opening a cmd window and then closing 30 seconds later",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["fileloc"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1036.002/T1036.002.yaml"
+}

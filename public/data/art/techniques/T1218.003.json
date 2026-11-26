@@ -1,0 +1,33 @@
+{
+  "id": "T1218.003",
+  "displayName": "System Binary Proxy Execution: CMSTP",
+  "tests": [
+    {
+      "name": "CMSTP Executing Remote Scriptlet",
+      "guid": "34e63321-9683-496b-bbc1-7566bc55e624",
+      "description": "Adversaries may supply CMSTP.exe with INF files infected with malicious commands",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["inf_file_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "CMSTP Executing UAC Bypass",
+      "guid": "748cb4f6-2fb3-4e97-b7ad-b22635a09ab0",
+      "description": "Adversaries may invoke cmd.exe (or other malicious commands) by embedding them in the RunPreSetupCommandsSection of an INF file",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["inf_file_uac"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1218.003/T1218.003.yaml"
+}

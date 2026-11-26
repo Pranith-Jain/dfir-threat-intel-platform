@@ -1,0 +1,150 @@
+{
+  "id": "T1140",
+  "displayName": "Deobfuscate/Decode Files or Information",
+  "tests": [
+    {
+      "name": "Deobfuscate/Decode Files Or Information",
+      "guid": "dc6fe391-69e6-4506-bd06-ea5eeb4082f8",
+      "description": "Encode/Decode executable\nUpon execution a file named T1140_calc_decoded.exe will be placed in the temp folder",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["executable"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Certutil Rename and Decode",
+      "guid": "71abc534-3c05-4d0c-80f7-cbe93cb2aa94",
+      "description": "Rename certutil and decode a file. This is in reference to latest research by FireEye [here](https://www.fireeye.com/blog/threat-research/2018/09/apt10-targeting-japanese-corporations-using-updated-ttps.html)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["executable"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Base64 decoding with Python",
+      "guid": "356dc0e8-684f-4428-bb94-9313998ad608",
+      "description": "Use Python to decode a base64-encoded text string and echo it to the console",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["message", "encoded_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Base64 decoding with Perl",
+      "guid": "6604d964-b9f6-4d4b-8ce8-499829a14d0a",
+      "description": "Use Perl to decode a base64-encoded text string and echo it to the console",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["message", "encoded_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Base64 decoding with shell utilities",
+      "guid": "b4f6a567-a27a-41e5-b8ef-ac4b4008bb7e",
+      "description": "Use common shell utilities to decode a base64-encoded text string and echo it to the console",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["message", "encoded_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Base64 decoding with shell utilities (freebsd)",
+      "guid": "b6097712-c42e-4174-b8f2-4b1e1a5bbb3d",
+      "description": "Use common shell utilities to decode a base64-encoded text string and echo it to the console",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["message", "encoded_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "FreeBSD b64encode Shebang in CLI",
+      "guid": "18ee2002-66e8-4518-87c5-c0ec9c8299ac",
+      "description": "Using b64decode shell scripts that have Shebang in them. This is commonly how attackers obfuscate passing and executing a shell script. Seen [here](https://www.trendmicro.com/pl_pl/research/20/i/the-evolution-of-malicious-shell-scripts.html) by TrendMicro, as well as [LinPEAS](https://github.com/carlospolop/PEASS-ng/tree/master/linPEAS). Also a there is a great Sigma rule [here](https://github.com/SigmaHQ/sigma/blob/master/rules/linux/process_creation/proc_creation_lnx_base64_shebang_cli.yml) for it.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["bash_encoded", "dash_encoded", "fish_encoded", "sh_encoded"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Hex decoding with shell utilities",
+      "guid": "005943f9-8dd5-4349-8b46-0313c0a9f973",
+      "description": "Use common shell utilities to decode a hex-encoded text string and echo it to the console",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["message", "encoded_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Linux Base64 Encoded Shebang in CLI",
+      "guid": "3a15c372-67c1-4430-ac8e-ec06d641ce4d",
+      "description": "Using Linux Base64 Encoded shell scripts that have Shebang in them. This is commonly how attackers obfuscate passing and executing a shell script. Seen [here](https://www.trendmicro.com/pl_pl/research/20/i/the-evolution-of-malicious-shell-scripts.html) by TrendMicro, as well as [LinPEAS](https://github.com/carlospolop/PEASS-ng/tree/master/linPEAS). Also a there is a great Sigma rule [here](https://github.com/SigmaHQ/sigma/blob/master/rules/linux/process_creation/proc_creation_lnx_base64_shebang_cli.yml) for it.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["bash_encoded", "dash_encoded", "fish_encoded", "sh_encoded"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "XOR decoding and command execution using Python",
+      "guid": "c3b65cd5-ee51-4e98-b6a3-6cbdec138efc",
+      "description": "An adversary can obfuscate malicious commands or payloads using XOR and execute them on the victim's machine. This test uses Python to decode and execute commands on the machine.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["xor_key", "encrypted_command"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Expand CAB with expand.exe",
+      "guid": "9f8b1c54-cb76-4d5e-bb1f-2f5c0e8f5a11",
+      "description": "Uses expand.exe to extract a file from a CAB created locally. This simulates adversarial use of expand on cabinet archives.\nUpon success, art-expand-source.txt is extracted next to the CAB.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["cab_path", "output_dir"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1140/T1140.yaml"
+}

@@ -1,0 +1,46 @@
+{
+  "id": "T1546.011",
+  "displayName": "Event Triggered Execution: Application Shimming",
+  "tests": [
+    {
+      "name": "Application Shim Installation",
+      "guid": "9ab27e22-ee62-4211-962b-d36d9a0e6a18",
+      "description": "Install a shim database. This technique is used for privilege escalation and bypassing user access control.\nUpon execution, \"Installation of AtomicShim complete.\" will be displayed. To verify the shim behavior, run \nthe AtomicTest.exe from the <PathToAtomicsFolder>\\\\T1546.011\\\\bin directory. You should see a message box appear\nwith \"Atomic Shim DLL Test!\" as defined in the AtomicTest.dll. To better understand what is happening, review\nthe source code files is the <PathToAtomicsFolder>\\\\T1546.011\\\\src directory.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "New shim database files created in the default shim database directory",
+      "guid": "aefd6866-d753-431f-a7a4-215ca7e3f13d",
+      "description": "Upon execution, check the \"C:\\Windows\\apppatch\\Custom\\\" folder for the new shim database\n\nhttps://www.fireeye.com/blog/threat-research/2017/05/fin7-shim-databases-persistence.html",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Registry key creation and/or modification events for SDB",
+      "guid": "9b6a06f9-ab5e-4e8d-8289-1df4289db02f",
+      "description": "Create registry keys in locations where fin7 typically places SDB patches. Upon execution, output will be displayed describing\nthe registry keys that were created. These keys can also be viewed using the Registry Editor.\n\nhttps://www.fireeye.com/blog/threat-research/2017/05/fin7-shim-databases-persistence.html",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1546.011/T1546.011.yaml"
+}

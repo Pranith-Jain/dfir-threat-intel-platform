@@ -1,0 +1,1 @@
+../../../worker/lib/aad-manifest.ts

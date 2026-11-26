@@ -1,0 +1,72 @@
+{
+  "id": "T1137.005",
+  "displayName": "Office Application Startup: Outlook Rules",
+  "tests": [
+    {
+      "name": "Outlook Rule - Subject Trigger with DeletePermanently Action via COM Object",
+      "guid": "ffadc988-b682-4a68-bd7e-4803666be637",
+      "description": "Creates a malicious Outlook rule via the COM object that permanently deletes\nemails when an email with a specific subject keyword arrives. Simulates\nadversary persistence via Outlook Rules (T1137.005). Uses DeletePermanently\naction as it does not require a resolved Exchange folder unlike MoveToFolder.\nNOTE: olRuleActionStartApplication cannot be created programmatically per\nMicrosoft's Rules object model - DeletePermanently is used as the supported\nequivalent that generates the same rule-creation artefact.\nNOTE: This test MUST be run from a non-elevated (standard user) PowerShell\nsession. Outlook COM fails with 0x80080005 when invoked as Administrator.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["rule_name", "trigger_subject"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Outlook Rule - Sender Address Trigger with DeletePermanently Action via COM Object",
+      "guid": "bddfd8d4-7687-4971-b611-50a537ab3ab4",
+      "description": "Creates an Outlook rule via COM that permanently deletes emails received\nfrom a specific sender address. Adversaries use sender-based triggers to\nmake rules appear more legitimate (e.g. disguised as a filter for a\nspecific colleague). Tests a different rule condition path through the\nCOM object model. Uses DeletePermanently as it does not require a resolved\nExchange folder unlike MoveToFolder.\nNOTE: This test MUST be run from a non-elevated (standard user) PowerShell\nsession. Outlook COM fails with 0x80080005 when invoked as Administrator.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["rule_name", "trigger_sender"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Outlook Rule - Auto-Forward Emails to External Address via COM Object",
+      "guid": "b0bd3d76-a57c-4699-83f4-8cd798dd09bd",
+      "description": "Creates an Outlook rule that automatically forwards all received emails to\nan external address. Simulates Business Email Compromise (BEC) and insider\nthreat scenarios where adversaries establish forwarding rules to exfiltrate\nmail. One of the most commonly observed real-world abuses of Outlook rules.\nDetected by Exchange mail flow anomalies and Microsoft Secure Score\nforwarding alerts.\nNOTE: No actual email is forwarded during this test - the rule is created\nbut a trigger email is not sent. Run cleanup immediately after verification.\nNOTE: This test MUST be run from a non-elevated (standard user) PowerShell\nsession. Outlook COM fails with 0x80080005 when invoked as Administrator.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["rule_name", "forward_to_address"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Outlook Rules - Enumerate Existing Rules via PowerShell COM Object",
+      "guid": "5ff5249a-5807-480e-ab52-c430497a8a25",
+      "description": "Enumerates all Outlook rules configured on the local profile using the\nPowerShell COM object. Simulates the discovery phase where an adversary\naudits existing rules before implanting their own, or where a threat actor\ntool such as Ruler lists rules to understand the environment. This\nenumeration should itself generate telemetry - use it to validate that\nyour monitoring catches PowerShell spawning Outlook COM for recon purposes.\nNOTE: This test MUST be run from a non-elevated (standard user) PowerShell\nsession. Outlook COM fails with 0x80080005 when invoked as Administrator.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Outlook Rule - Create Rule with Obfuscated Blank Name (MAPI Evasion)",
+      "guid": "cb814cf8-24f2-41dc-a1cd-1c2073276d4a",
+      "description": "Creates an Outlook rule with a zero-width space as its display name,\nmaking it appear blank and invisible in the standard Outlook Rules UI.\nSimulates the hidden inbox rule technique documented by Damian Pfammatter\n(2018) and referenced in MITRE ATT&CK T1137.005 - adversaries use MAPI\neditors or Ruler to blank PR_RULE_MSG_NAME so the rule does not appear\nduring casual rule auditing. Tests whether monitoring catches rules that\nare invisible in the Outlook GUI but detectable via MFCMapi or\nGet-InboxRule on Exchange. Uses PlaySound action as RunApplication\ncannot be created programmatically per Microsoft's Rules object model.\nNOTE: This test MUST be run from a non-elevated (standard user) PowerS",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["trigger_subject", "sound_file_path"],
+      "dependencyCount": 2
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1137.005/T1137.005.yaml"
+}

@@ -1,0 +1,59 @@
+{
+  "id": "T1547.006",
+  "displayName": "Boot or Logon Autostart Execution: Kernel Modules and Extensions",
+  "tests": [
+    {
+      "name": "Linux - Load Kernel Module via insmod",
+      "guid": "687dcb93-9656-4853-9c36-9977315e9d23",
+      "description": "This test uses the insmod command to load a kernel module for Linux.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["module_name", "module_path", "temp_folder", "module_source_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "MacOS - Load Kernel Module via kextload and kmutil",
+      "guid": "f4391089-d3a5-4dd1-ab22-0419527f2672",
+      "description": "This test uses the kextload and kmutil commands to load and unload a MacOS kernel module.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["module_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "MacOS - Load Kernel Module via KextManagerLoadKextWithURL()",
+      "guid": "f0007753-beb3-41ea-9948-760785e4c1e5",
+      "description": "This test uses the IOKit API to load a kernel module for macOS.\nHarcoded to use SoftRAID kext",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["src_path", "exe_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Snake Malware Kernel Driver Comadmin",
+      "guid": "e5cb5564-cc7b-4050-86e8-f2d9eec1941f",
+      "description": "The following Atomic Test will write an file, comadmin.dat, to disk. From the report, Snake's installer drops the kernel driver and a custom DLL which is used to load the driver into a\nsingle AES encrypted file on disk. Typically, this file is named “comadmin.dat” and is stored in the %windows%\\system32\\Com directory. \nThis Atomic Test will write a hardcoded named file to disk in the com directory named comadmin.dat.\n[Snake Malware - CISA](https://media.defense.gov/2023/May/09/2003218554/-1/-1/0/JOINT_CSA_HUNTING_RU_INTEL_SNAKE_MALWARE_20230509.PDF)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1547.006/T1547.006.yaml"
+}

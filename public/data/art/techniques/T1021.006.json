@@ -1,0 +1,46 @@
+{
+  "id": "T1021.006",
+  "displayName": "Remote Services: Windows Remote Management",
+  "tests": [
+    {
+      "name": "Enable Windows Remote Management",
+      "guid": "9059e8de-3d7d-4954-a322-46161880b9cf",
+      "description": "Powershell Enable WinRM\n\nUpon successful execution, powershell will \"Enable-PSRemoting\" allowing for remote PS access.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Remote Code Execution with PS Credentials Using Invoke-Command",
+      "guid": "5295bd61-bd7e-4744-9d52-85962a4cf2d6",
+      "description": "Simulate lateral movement with PowerShell Remoting on the local host. \nUpon successful execution, PowerShell will execute `whoami` using `Invoke-Command`, targeting the \nlocal machine as remote target.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinRM Access with Evil-WinRM",
+      "guid": "efe86d95-44c4-4509-ae42-7bfd9d1f5b3d",
+      "description": "An adversary may attempt to use Evil-WinRM with a valid account to interact with remote systems that have WinRM enabled",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["user_name", "destination_address", "password"],
+      "dependencyCount": 2
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1021.006/T1021.006.yaml"
+}

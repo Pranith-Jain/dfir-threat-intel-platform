@@ -1,0 +1,143 @@
+{
+  "id": "T1486",
+  "displayName": "Data Encrypted for Impact",
+  "tests": [
+    {
+      "name": "Encrypt files using gpg (FreeBSD/Linux)",
+      "guid": "7b8ce084-3922-4618-8d22-95f996173765",
+      "description": "Uses gpg to encrypt a file",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["pwd_for_encrypted_file", "encrypted_file_path", "input_file_path", "encryption_alg"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Encrypt files using 7z (FreeBSD/Linux)",
+      "guid": "53e6735a-4727-44cc-b35b-237682a151ad",
+      "description": "Uses 7z to encrypt a file",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["pwd_for_encrypted_file", "encrypted_file_path", "input_file_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Encrypt files using ccrypt (FreeBSD/Linux)",
+      "guid": "08cbf59f-85da-4369-a5f4-049cffd7709f",
+      "description": "Attempts to encrypt data on target systems as root to simulate an interruption authentication to target system. If root permissions are not available then attempts to encrypt data within user's home directory.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["cped_file_path", "root_input_file_path", "pwd_for_encrypted_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Encrypt files using openssl (FreeBSD/Linux)",
+      "guid": "142752dc-ca71-443b-9359-cf6f497315f1",
+      "description": "Uses openssl to encrypt a file",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [
+        "private_key_path",
+        "public_key_path",
+        "encryption_bit_size",
+        "encrypted_file_path",
+        "input_file_path"
+      ],
+      "dependencyCount": 1
+    },
+    {
+      "name": "PureLocker Ransom Note",
+      "guid": "649349c7-9abf-493b-a7a2-b1aa4d141528",
+      "description": "building the IOC (YOUR_FILES.txt) for the PureLocker ransomware \nhttps://www.bleepingcomputer.com/news/security/purelocker-ransomware-can-lock-files-on-windows-linux-and-macos/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Encrypt files using 7z utility - macOS",
+      "guid": "645f0f5a-ef09-48d8-b9bc-f0e24c642d72",
+      "description": "This test encrypts the file(s) using the 7z utility",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_password", "encrypted_file_name", "input_file_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Encrypt files using openssl utility - macOS",
+      "guid": "1a01f6b8-b1e8-418e-bbe3-78a6f822759e",
+      "description": "This test encrypts the file(s) using the openssl utility",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["encryption_option", "input_file_path", "output_file_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Data Encrypted with GPG4Win",
+      "guid": "4541e2c2-33c8-44b1-be79-9161440f1718",
+      "description": "Gpg4win is a Windows tool (also called Kleopatra which is the preferred certificate manager) that uses email and file encryption packages for symmetric encryption. It is used by attackers to encrypt disks. User will need to add pass phrase to encrypt file as automation is not allowed under newer versions.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["GPG_Exe_Location", "File_to_Encrypt_Location"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Data Encrypt Using DiskCryptor",
+      "guid": "44b68e11-9da2-4d45-a0d9-893dabd60f30",
+      "description": "DiskCryptor, an open source encryption utility, can be exploited by adversaries for encrypting all disk partitions, including system partitions. This tool was identified in a ransomware campaign, as reported on https://thedfirreport.com/2021/11/15/exchange-exploit-leads-to-domain-wide-ransomware/. The documentation for DiskCryptor can be found at https://github.com/DavidXanatos/DiskCryptor. During the installation process, running dcrypt.exe starts the encryption console. It's important to note that a system reboot is necessary as part of the installation.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["dcrypt_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Akira Ransomware drop Files with .akira Extension and Ransomnote",
+      "guid": "ab3f793f-2dcc-4da5-9c71-34988307263f",
+      "description": "Dropping 100 files with random content and .akira File Extension and the Akira Ransomnote to c:\\",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1486/T1486.yaml"
+}

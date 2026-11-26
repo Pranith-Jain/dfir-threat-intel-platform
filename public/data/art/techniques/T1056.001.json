@@ -1,0 +1,111 @@
+{
+  "id": "T1056.001",
+  "displayName": "Input Capture: Keylogging",
+  "tests": [
+    {
+      "name": "Input Capture",
+      "guid": "d9b633ca-8efb-45e6-b838-70f595c6ae26",
+      "description": "Utilize PowerShell and external resource to capture keystrokes\n[Payload](https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1056.001/src/Get-Keystrokes.ps1)\nProvided by [PowerSploit](https://github.com/PowerShellMafia/PowerSploit/blob/master/Exfiltration/Get-Keystrokes.ps1)\n\nUpon successful execution, Powershell will execute `Get-Keystrokes.ps1` and output to key.log.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["filepath"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Living off the land Terminal Input Capture on Linux with pam.d",
+      "guid": "9c6bdb34-a89f-4b90-acb1-5970614c711b",
+      "description": "Pluggable Access Module, which is present on all modern Linux systems, generally contains a library called pam_tty_audit.so which logs all keystrokes for the selected users and sends it to audit.log.  All terminal activity on any new logins would then be archived and readable by an adversary with elevated privledges.\n\nPasswords hidden by the console can also be logged, with 'log_passwd' as in this example.  If root logging is enabled, then output from any process which is later started by root is also logged, even if this policy is carefully enabled (e.g. 'disable=*' as the initial command).\n\nUse 'aureport --tty' or other audit.d reading tools to read the log output, which is binary.  Mac OS",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Logging bash history to syslog",
+      "guid": "0e59d59d-3265-4d35-bebd-bf5c1ec40db5",
+      "description": "There are several variables that can be set to control the appearance of the bash command prompt: PS1, PS2, PS3, PS4 and PROMPT_COMMAND. The contents of these variables are executed as if they had been typed on the command line. The PROMPT_COMMAND variable \"if set\" will be executed before the PS1 variable and can be configured to write the latest \"bash history\" entries to the syslog.\n\nTo gain persistence the command could be added to the users .bashrc or .bash_aliases or the systems default .bashrc in /etc/skel/",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Logging sh history to syslog/messages",
+      "guid": "b04284dc-3bd9-4840-8d21-61b8d31c99f2",
+      "description": "There are several variables that can be set to control the appearance of the bash command prompt: PS1, PS2, PS3, PS4 and PROMPT_COMMAND. The contents of these variables are executed as if they had been typed on the command line. The PROMPT_COMMAND variable \"if set\" will be executed before the PS1 variable and can be configured to write the latest \"bash history\" entries to the syslog.\n\nTo gain persistence the command could be added to the users .shrc or .profile",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Bash session based keylogger",
+      "guid": "7f85a946-a0ea-48aa-b6ac-8ff539278258",
+      "description": "When a command is executed in bash, the BASH_COMMAND variable contains that command. For example :~$ echo $BASH_COMMAND = \"echo $BASH_COMMAND\". The trap command is not a external command, but a built-in function of bash and can be used in a script to run a bash function when some event occurs. trap will detect when the BASH_COMMAND variable value changes and then pipe that value into a file, creating a bash session based keylogger. \n\nTo gain persistence the command could be added to the users .bashrc or .bash_aliases or the systems default .bashrc in /etc/skel/",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "SSHD PAM keylogger",
+      "guid": "81d7d2ad-d644-4b6a-bea7-28ffe43becca",
+      "description": "Linux PAM (Pluggable Authentication Modules) is used in sshd authentication. The Linux audit tool auditd can use the pam_tty_audit module to enable auditing of TTY input and capture all keystrokes in a ssh session and place them in the /var/log/audit/audit.log file after the session closes.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["user_account"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Auditd keylogger",
+      "guid": "a668edb9-334e-48eb-8c2e-5413a40867af",
+      "description": "The linux audit tool auditd can be used to capture 32 and 64 bit command execution and place the command in the /var/log/audit/audit.log audit log.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "MacOS Swift Keylogger",
+      "guid": "aee3a097-4c5c-4fff-bbd3-0a705867ae29",
+      "description": "Utilizes a swift script to log keys to sout. It runs for 5 seconds then dumps the output to standard. Input Monitoring is required.\nInput Monitoring can be enabled in System Preferences > Security & Privacy > Privacy > Input Monitoring.\nReferece: https://cedowens.medium.com/taking-esf-for-a-nother-spin-6e1e6acd1b74",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["swift_src"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1056.001/T1056.001.yaml"
+}

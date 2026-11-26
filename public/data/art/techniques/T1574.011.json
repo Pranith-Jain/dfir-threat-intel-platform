@@ -1,0 +1,33 @@
+{
+  "id": "T1574.011",
+  "displayName": "Hijack Execution Flow: Services Registry Permissions Weakness",
+  "tests": [
+    {
+      "name": "Service Registry Permissions Weakness",
+      "guid": "f7536d63-7fd4-466f-89da-7e48d550752a",
+      "description": "Service registry permissions weakness check and then which can lead to privilege escalation with ImagePath. eg.\nreg add \"HKLM\\SYSTEM\\CurrentControlSet\\Services\\#{weak_service_name}\" /f /v ImagePath /d \"C:\\temp\\AtomicRedteam.exe\"",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["weak_service_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Service ImagePath Change with reg.exe",
+      "guid": "f38e9eea-e1d7-4ba6-b716-584791963827",
+      "description": "Change Service registry ImagePath of a bengin service to a malicious file",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["weak_service_name", "weak_service_path", "malicious_service_path"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1574.011/T1574.011.yaml"
+}

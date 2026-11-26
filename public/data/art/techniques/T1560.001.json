@@ -1,0 +1,176 @@
+{
+  "id": "T1560.001",
+  "displayName": "Archive Collected Data: Archive via Utility",
+  "tests": [
+    {
+      "name": "Compress Data for Exfiltration With Rar",
+      "guid": "02ea31cb-3b4c-4a2d-9bf1-e4e70ebcf5d0",
+      "description": "An adversary may compress data (e.g., sensitive documents) that is collected prior to exfiltration.\nWhen the test completes you should find the txt files from the %USERPROFILE% directory compressed in a file called T1560.001-data.rar in the %USERPROFILE% directory",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["input_path", "file_extension", "output_file", "rar_installer", "rar_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Compress Data and lock with password for Exfiltration with winrar",
+      "guid": "8dd61a55-44c6-43cc-af0c-8bdda276860c",
+      "description": "Note: Requires winrar installation\nrar a -p\"blue\" hello.rar (VARIANT)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["rar_installer", "rar_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Compress Data and lock with password for Exfiltration with winzip",
+      "guid": "01df0353-d531-408d-a0c5-3161bf822134",
+      "description": "Note: Requires winzip installation\nwzzip sample.zip -s\"blueblue\" *.txt (VARIANT)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["winzip_exe", "winzip_url", "winzip_hash"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Compress Data and lock with password for Exfiltration with 7zip",
+      "guid": "d1334303-59cb-4a03-8313-b3e24d02c198",
+      "description": "Note: This test requires 7zip installation",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["7zip_installer", "7zip_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Data Compressed - nix - zip",
+      "guid": "c51cec55-28dd-4ad2-9461-1eacbc82c3a0",
+      "description": "An adversary may compress data (e.g., sensitive documents) that is collected prior to exfiltration. This test uses standard zip compression.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["input_files", "output_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Data Compressed - nix - gzip Single File",
+      "guid": "cde3c2af-3485-49eb-9c1f-0ed60e9cc0af",
+      "description": "An adversary may compress data (e.g., sensitive documents) that is collected prior to exfiltration. This test uses standard gzip compression.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["input_file", "input_content"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Data Compressed - nix - tar Folder or File",
+      "guid": "7af2b51e-ad1c-498c-aca8-d3290c19535a",
+      "description": "An adversary may compress data (e.g., sensitive documents) that is collected prior to exfiltration. This test uses standard gzip compression.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["input_file_folder", "output_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Data Encrypted with zip and gpg symmetric",
+      "guid": "0286eb44-e7ce-41a0-b109-3da516e05a5f",
+      "description": "Encrypt data for exiltration",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["test_folder", "test_file", "encryption_password"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Encrypts collected data with AES-256 and Base64",
+      "guid": "a743e3a6-e8b2-4a30-abe7-ca85d201b5d3",
+      "description": "An adversary may compress all the collected data, encrypt and send them to a C2 server using base64 encoding. \nThis atomic test tries to emulate the behaviour of the FLEXIROOT backdoor to archive the collected data. FLEXIROOT typically utilizes AES encryption and base64 encoding to transfer the encrypted data to the C2 server. \nIn this test, standard zip compression and the OpenSSL library are used to encrypt the compressed data.\nhttps://attack.mitre.org/versions/v7/software/S0267/",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["input_folder", "input_file", "enc_pass"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "ESXi - Remove Syslog remote IP",
+      "guid": "36c62584-d360-41d6-886f-d194654be7c2",
+      "description": "An adversary may edit the syslog config to remove the loghost in order to prevent or redirect logs being received by SIEM.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["vm_host", "plink_file", "username", "password"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Compress a File for Exfiltration using Makecab",
+      "guid": "2a7bc405-9555-4f49-ace2-b2ae2941d629",
+      "description": "An adversary may compress data using Makecab (in-built Windows binary) that is collected prior to exfiltration.\n[reference](https://unit42.paloaltonetworks.com/exchange-server-credential-harvesting/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["input_file", "output_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Copy and Compress AppData Folder",
+      "guid": "05e8942e-f04f-460a-b560-f7781257feec",
+      "description": "Copies the AppData folder, compresses it, and cleans up temporary files.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["destination_folder", "zip_file_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Data Compressed - macOS - ditto Archive of a Sensitive Directory",
+      "guid": "2794f321-55c4-4484-9eef-0557996f715a",
+      "description": "Uses `ditto`, Apple's own copy and archive utility, to compress a directory holding sensitive data into a\nsingle zip archive, which is the staging step that normally precedes exfiltration.\n\n`ditto` is the tool macOS infostealers reach for rather than `zip` or `tar`, because it preserves resource\nforks and extended attributes, so the archive survives a round trip with macOS metadata intact. CyberProof's\nAMOS analysis describes the malware aggregating Keychain files, browser credentials and wallet data and\ncompressing them \"into a single archive named `osalogging.zip` within the `/tmp` directory using native macOS\nutilities like `ditto`\". [LOOBins](https://www.loobins.io/binaries/ditto/) lists",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["source_path", "output_file"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1560.001/T1560.001.yaml"
+}

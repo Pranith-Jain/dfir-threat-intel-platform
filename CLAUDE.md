@@ -236,7 +236,7 @@ checkout never needs the folder until someone rebuilds locally.
 
 **Weekly sync**: `.github/workflows/si-upstream-sync.yml` re-runs sync + build every Monday 06:00 UTC; opens a PR if `public/data/si/` changed.
 
-**MCP tool inventory**: 446 tools total across the `DFIR_MCP` Durable Object — DFIR/threat-intel tools (`check_ioc`, `lookup_cve`, `enrich_actor`, `lookup_domain`, etc.) + SI tools (`si_*`) + threat-intel vertical (`ti_*`) + NHI scanner (`nhi_*`) + depx (`depx_*`) + winreg (`winreg_*`) + HudsonRock (`hr_*`) + Telegram (`tg_*`) + workspace/notebook (`ws_*`, `notebook_*`) + passive DNS + IOC watchlist + report analysis + more. Regenerate `public/mcp-manifest.json` + `public/mcp/README.md` + `public/llms-full.txt` with `node scripts/build-mcp-manifest.mjs && node scripts/build-llms-full.mjs`.
+**MCP tool inventory**: 454 tools total across the `DFIR_MCP` Durable Object — DFIR/threat-intel tools (`check_ioc`, `lookup_cve`, `enrich_actor`, `lookup_domain`, etc.) + SI tools (`si_*`) + threat-intel vertical (`ti_*`) + NHI scanner (`nhi_*`) + depx (`depx_*`) + winreg (`winreg_*`) + HudsonRock (`hr_*`) + Telegram (`tg_*`) + workspace/notebook (`ws_*`, `notebook_*`) + passive DNS + IOC watchlist + report analysis + more. Regenerate `public/mcp-manifest.json` + `public/mcp/README.md` + `public/llms-full.txt` with `node scripts/build-mcp-manifest.mjs && node scripts/build-llms-full.mjs`.
 
 ## Threat Intel vertical — CVE/KEV/IOC/sector brief (v1)
 
@@ -550,7 +550,7 @@ Two replicated verticals added 2026-10-17, plus live integrations:
 for the digest) reused; `offseq-radar` RSS entry already in `src/data/rssFeeds.ts`.
 
 **Both verticals ride** `.github/workflows/threat-intel-sync.yml` (sync + build
-steps added) and regenerate `public/mcp-manifest.json` (now 446 tools).
+steps added) and regenerate `public/mcp-manifest.json` (now 454 tools).
 
 ## Content-generation system (/admin)
 
@@ -1002,6 +1002,53 @@ the index stays slim — record id → shard is the id's `YYYY-MM` prefix.
 
 **Rides** `ai-security-verticals-sync.yml` (Tue 07:30 UTC, PR + auto-merge +
 self-deploy). To rebuild: `node scripts/build-orca-manifest.mjs`.
+
+## Agentic Attack Detections (aad__) + Atomic Red Team (art__)
+
+Two MIT-licensed detection-reference verticals added 2026-11-26. Both use the
+slim-index + per-slug-shard pattern read through `env.ASSETS`; 8 MCP tools total
+(5 `aad_*`, 3 `art_*`).
+
+**AAD** — [ThreatDefence/agentic-attack-detections](https://github.com/ThreatDefence/agentic-attack-detections)
+(MIT): detection coverage for 100+ AI-agent attack frameworks (ARTEX, Cairn,
+PentAGI, HexStrike, …), 1,838 sourced indicators across 16 IOC types, a 124-technique
+ATT&CK Navigator layer, and the shared behavior/general rule inventory. The
+build reads the GitHub tree once + 4 curated raw files (+ per-framework ATT&CK
+layers); per-framework bodies carry coverage counts, techniques and indicators.
+
+**ART** — [atomicredteam.io](https://www.atomicredteam.io) / [redcanaryco/atomic-red-team](https://github.com/redcanaryco/atomic-red-team)
+(MIT): REA browser capture (`capture_browser_scenario`, DOM + network) confirmed
+the site is a Fuma/Next.js docs viewer with **no private API** — only internal
+`/docs/...?_rsc=` fetches — and `robots.txt` disallows `/api/`, so the catalog
+comes from the upstream GitHub repo instead. 353 ATT&CK techniques / 1,950 tests,
+built from 353 raw technique YAMLs. **Only metadata is mirrored** (test name,
+GUID, short description, platforms, executor type, argument names, dependency
+count); raw executor commands are never vendored and every test deep-links its
+canonical upstream YAML.
+
+**Data**: `public/data/aad/` (`index.json`, `frameworks/<slug>.json`,
+`indicators/<type>.json`, `attack.json`) and `public/data/art/` (`index.json`,
+`techniques/<T####>.json`)
+
+**Files**:
+
+- `scripts/build-aad-manifest.mjs` / `scripts/build-art-manifest.mjs` — GitHub
+  tree API + raw fetches, `--source <dir>` offline mode, wipe + rebuild
+- `worker/lib/{aad,art}-manifest.ts` (+ `.test.ts`: 8 + 6 tests, + `api/` symlinks) —
+  loaders, filter helpers, LRU caches, `_reset*CacheForTests`
+- `api/src/routes/{aad,art}-edge-tools.ts` — 6 + 4 REST routes under
+  `/api/v1/{aad,art}/*`, mounted in `api/src/index.ts`
+- `src/pages/threatintel/AgenticAttacks.tsx` (`/threatintel/agentic-attacks`)
+  and `AtomicRedTeam.tsx` (`/threatintel/atomic-red-team`), registered in
+  `App.tsx`, `pages-index.ts` and `threatintel-hubs.ts`
+- `api/test/routes/aad-art.test.ts` — 5 route tests
+- MCP: `aad_list_frameworks`, `aad_get_framework`, `aad_list_indicators`,
+  `aad_attack_coverage`, `aad_stats`, `art_list_techniques`,
+  `art_get_technique`, `art_stats` (both in `dfir-manifests.ts` and the bridge)
+
+**Rides** `ai-security-verticals-sync.yml` (Tue 07:30 UTC, isolated
+`continue-on-error` steps, PR + auto-merge). To rebuild:
+`node scripts/build-aad-manifest.mjs && node scripts/build-art-manifest.mjs`.
 
 ## Public-site replications — HI / OH / KP
 

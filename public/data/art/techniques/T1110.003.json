@@ -1,0 +1,124 @@
+{
+  "id": "T1110.003",
+  "displayName": "Brute Force: Password Spraying",
+  "tests": [
+    {
+      "name": "Password Spray all Domain Users",
+      "guid": "90bc2e54-6c84-47a5-9439-0a2a92b4b175",
+      "description": "CAUTION! Be very careful to not exceed the password lockout threshold for users in the domain by running this test too frequently.\nThis atomic attempts to map the IPC$ share on one of the Domain Controllers using a password of Spring2020 for each user in the %temp%\\users.txt list. Any successful authentications will be printed to the screen with a message like \"[*] username:password\", whereas a failed auth will simply print a period. Use the input arguments to specify your own password to use for the password spray.\nUse the get_prereq_command's to create a list of all domain users in the temp directory called users.txt.\nSee the \"Windows FOR Loop Password Spraying Made Easy\" blog by @OrOneEqu",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["password"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Password Spray (DomainPasswordSpray)",
+      "guid": "263ae743-515f-4786-ac7d-41ef3a0d4b2b",
+      "description": "Perform a domain password spray using the DomainPasswordSpray tool. It will try a single password against all users in the domain\n\nhttps://github.com/dafthack/DomainPasswordSpray",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["domain"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Password spray all Active Directory domain users with a single password via LDAP against domain controller (NTLM or Kerberos)",
+      "guid": "f14d956a-5b6e-4a93-847f-0c415142f07d",
+      "description": "Attempt to brute force all Active Directory domain users with a single password (called \"password spraying\") on a domain controller, via LDAP, with NTLM or Kerberos\n\nPrerequisite: AD RSAT PowerShell module is needed and it must run under a domain user (to fetch the list of all domain users)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["password", "domain", "auth"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Password spray all Azure AD users with a single password",
+      "guid": "a8aa2d3e-1c52-4016-bc73-0f8854cfa80a",
+      "description": "Attempt to brute force all Azure AD users with a single password (called \"password spraying\") via AzureAD Powershell module.\nValid credentials are only needed to fetch the list of Azure AD users.",
+      "platforms": ["azure-ad"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["password", "valid_username", "valid_password"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "WinPwn - DomainPasswordSpray Attacks",
+      "guid": "5ccf4bbd-7bf6-43fc-83ac-d9e38aff1d82",
+      "description": "DomainPasswordSpray Attacks technique via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Password Spray Invoke-DomainPasswordSpray Light",
+      "guid": "b15bc9a5-a4f3-4879-9304-ea0011ace63a",
+      "description": "Perform a domain password spray using the same core method of the [DomainPasswordSpray tool](https://github.com/dafthack/DomainPasswordSpray) \nbut without all the extra code that makes the script get blocked by many AVs. \nThis atomic test will attempt a single password against all users in a password list at $env:Temp\\usersdpsLight.txt. You can create this file manually\nor with the automated prereq_command. The prereq_command will limit the user list to 200 users by default to help you avoid massive account lockout.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["user_limit", "password"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Password Spray Microsoft Online Accounts with MSOLSpray (Azure/O365)",
+      "guid": "f3a10056-0160-4785-8744-d9bd7c12dc39",
+      "description": "This test attempts to brute force a list of Microsoft Online (Azure/O365) users with a single password via the MSOLSpray Powershell module.",
+      "platforms": ["azure-ad"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["password", "user_list"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Password Spray using Kerbrute Tool",
+      "guid": "c6f25ec3-6475-47a9-b75d-09ac593c5ecb",
+      "description": "Test a single password against a list of users",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["domaincontroller", "domain"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "AWS - Password Spray an AWS using GoAWSConsoleSpray",
+      "guid": "9c10d16b-20b1-403a-8e67-50ef7117ed4e",
+      "description": "GoAWSConsoleSpray is a tool that can be used to spray AWS IAM Console Credentials in order to identify a valid login for a user account built by WhiteOakSecurity. For more details reagrding the tool, check - https://www.whiteoaksecurity.com/blog/goawsconsolespray-password-spraying-tool/",
+      "platforms": ["iaas:aws"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["aws_account_id"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1110.003/T1110.003.yaml"
+}

@@ -1,0 +1,66 @@
+{
+  "id": "T1055.012",
+  "displayName": "Process Injection: Process Hollowing",
+  "tests": [
+    {
+      "name": "Process Hollowing using PowerShell",
+      "guid": "562427b4-39ef-4e8c-af88-463a78e70b9c",
+      "description": "This test uses PowerShell to create a Hollow from a PE on disk with explorer as the parent.\nCredit to FuzzySecurity (https://github.com/FuzzySecurity/PowerShell-Suite/blob/master/Start-Hollow.ps1)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [
+        "script_download_url",
+        "script_path",
+        "hollow_binary_path",
+        "parent_process_name",
+        "sponsor_binary_path",
+        "spawnto_process_name"
+      ],
+      "dependencyCount": 1
+    },
+    {
+      "name": "RunPE via VBA",
+      "guid": "3ad4a037-1598-4136-837c-4027e4fa319b",
+      "description": "This module executes notepad.exe from within the WINWORD.EXE process",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["ms_product"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Process Hollowing in Go using CreateProcessW WinAPI",
+      "guid": "c8f98fe1-c89b-4c49-a7e3-d60ee4bc2f5a",
+      "description": "Creates a process in a suspended state, executes shellcode to spawn calc.exe in a child process, and then resumes the original process.\n- PoC Credit: (https://github.com/Ne0nd0g/go-shellcode#createprocess)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["hollow_binary_path", "hollow_process_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Process Hollowing in Go using CreateProcessW and CreatePipe WinAPIs (T1055.012)",
+      "guid": "94903cc5-d462-498a-b919-b1e5ab155fee",
+      "description": "Create a process in a suspended state, execute shellcode to spawn calc.exe in a child process, and then resume the original process.\nThis test uses the CreatePipe function to create an anonymous pipe that parent and child processes can communicate over. This anonymous pipe\nallows for the retrieval of output generated from executed shellcode.\n- PoC Credit: (https://github.com/Ne0nd0g/go-shellcode#createprocesswithpipe)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["hollow_binary_path", "hollow_process_name"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1055.012/T1055.012.yaml"
+}

@@ -1,0 +1,205 @@
+{
+  "slug": "chying-agent",
+  "name": "CHYing-agent",
+  "description": "Contest agent on the Claude Agent SDK with an unauthenticated dashboard on every interface and fixed web terminal markers",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 3,
+    "suricata": 8,
+    "yara": 3,
+    "indicators": 17
+  },
+  "techniques": [
+    {
+      "id": "T1059.004",
+      "score": 7,
+      "comment": "KQL hunt: CHYing-agent dashboard use and web terminal markers in proxy, firewall and target logs; KQL hunt: Indicator sweep with the agentic watchlist; Sentinel analytics: CHYing-agent AI pentest agent running on a host; Suricata: 3817701 TD CHYing-agent web terminal probe marker in terminal output; Suricata: 3817702 TD CHYing-agent web terminal exit-code marker in terminal output; Suricata: 3817703 TD CHYing-agent web terminal command delimiter in terminal output; YARA: CHYingAgent_Web_Terminal_Command_Trace"
+    },
+    {
+      "id": "T1059.006",
+      "score": 3,
+      "comment": "KQL hunt: CHYing-agent running on a host you monitor; Sentinel analytics: CHYing-agent AI pentest agent running on a host; Sigma: CHYing-agent Python Tool Call in Its Kali Container"
+    },
+    {
+      "id": "T1071.001",
+      "score": 6,
+      "comment": "KQL hunt: CHYing-agent dashboard use and web terminal markers in proxy, firewall and target logs; Suricata: 3817704 TD CHYing-agent dashboard page or Swagger page title; Suricata: 3817705 TD CHYing-agent dashboard OpenAPI document; Suricata: 3817706 TD CHYing-agent dashboard statistics API answer; Suricata: 3817707 TD CHYing-agent orchestrator system prompt in a model request; Suricata: 3817708 TD CHYing-agent tool names in a model request"
+    },
+    {
+      "id": "T1133",
+      "score": 3,
+      "comment": "KQL hunt: CHYing-agent dashboard use and web terminal markers in proxy, firewall and target logs; Suricata: 3817701 TD CHYing-agent web terminal probe marker in terminal output; YARA: CHYingAgent_Web_Terminal_Command_Trace"
+    },
+    {
+      "id": "T1588.002",
+      "score": 6,
+      "comment": "KQL hunt: CHYing-agent running on a host you monitor; KQL hunt: Indicator sweep with the agentic watchlist; Sigma: CHYing-agent AI Pentest Agent Launch, Tools Container or Ghidra Services; Sigma: CHYing-agent Work Folder, Database or Log Files Written; YARA: CHYingAgent_Source; YARA: CHYingAgent_Work_Files"
+    },
+    {
+      "id": "T1610",
+      "score": 2,
+      "comment": "KQL hunt: CHYing-agent running on a host you monitor; Sigma: CHYing-agent AI Pentest Agent Launch, Tools Container or Ghidra Services"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "string",
+      "value": "__WSS_PROBE_7b3e__",
+      "confidence": "high",
+      "context": "Marker the web terminal client types (echo __WSS_PROBE_7b3e__) into a target's ttyd, wetty, GoTTY or Kubernetes exec terminal to find the right protocol; it comes back in the terminal output and stays in shell history",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/claude_sdk/wss_terminal_client.py#L215",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "string",
+      "value": "__WSS_EXIT_c1a4__",
+      "confidence": "high",
+      "context": "Exit-code marker appended to every command the agent types into a target's web terminal (printf '\\n__WSS_EXIT_c1a4__%s\\n' with the saved exit code); printed in the output and kept in shell history",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/claude_sdk/wss_terminal_client.py#L206",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "string",
+      "value": "__WSS_CMD_END_9f7a__",
+      "confidence": "high",
+      "context": "End-of-command delimiter (echo __WSS_CMD_END_9f7a__) appended to every command the agent types into a target's web terminal",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/claude_sdk/wss_terminal_client.py#L205",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "string",
+      "value": "__chy_rc=$?",
+      "confidence": "high",
+      "context": "Shell variable in the wrapper appended to every web terminal command (; __chy_rc=$?; printf ...). Look for it in shell history and terminal session logs on the target",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/claude_sdk/wss_terminal_client.py#L399",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "string",
+      "value": "You are CHYing Orchestrator - an autonomous security automation system",
+      "confidence": "high",
+      "context": "Start of the orchestrator system prompt sent with every model request. Visible only with TLS inspection of model traffic",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/prompts/orchestrator_identity.md#L2",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "string",
+      "value": "mcp__chying__exec",
+      "confidence": "high",
+      "context": "Name of the agent's command tool as the model sees it (MCP server chying, tool exec); in model requests and in Claude Code session transcripts under ~/.claude/projects/",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/agents/tool_registry.py#L3",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "string",
+      "value": "CHYing Agent Dashboard",
+      "confidence": "high",
+      "context": "Title of the dashboard page (Vue build) and of its FastAPI app, so also of /docs (CHYing Agent Dashboard - Swagger UI). Plain HTTP on 0.0.0.0:8080 with no login",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/web-ui/index.html#L7",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "string",
+      "value": "Web Dashboard API for CHYing Agent",
+      "confidence": "high",
+      "context": "Description of the dashboard's FastAPI app, returned in /openapi.json",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/web/app.py#L20",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "string",
+      "value": "chying-agent-docker",
+      "confidence": "medium",
+      "context": "Container name, hostname and compose service of the agent's privileged Kali tools container; also the DOCKER_CONTAINER_NAME the preflight checks with docker inspect",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/docker/docker-compose.yml#L7",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "docker_image",
+      "value": "chying-agent-docker-tools",
+      "confidence": "medium",
+      "context": "Image of the tools container (chying-agent-docker-tools:latest), built locally from docker/Dockerfile target chying-full; not on a public registry",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/docker/docker-compose.yml#L6",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/agent-work/ctf/",
+      "confidence": "medium",
+      "context": "Per-target work folder agent-work/ctf/<Category>/<challenge>/ (findings.log, attack_timeline.md, dumps/commands.log, poc_scripts/); /root/agent-work/ctf/ inside the container",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/challenge_solver.py#L295",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/data/chying.db",
+      "confidence": "medium",
+      "context": "SQLite database of challenges, executions, findings and writeups in the repository folder",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/db/session.py#L20",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/logs/chying_agent_",
+      "confidence": "medium",
+      "context": "Run log logs/chying_agent_<YYYYmmdd_HHMMSS>.log in the repository folder; per-target logs go to logs/challenges/",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/common.py#L149",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/.taie/null-zone/",
+      "confidence": "medium",
+      "context": "Data folder of the agent's Null Zone contest skills (keys, flags, injection attempts, agent profiles)",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/null-zone/skills/null-zone/SKILL.md#L51",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "url",
+      "value": "https://api.lkeap.cloud.tencent.com/coding/anthropic",
+      "confidence": "low",
+      "context": "Example LLM_BASE_URL (Tencent Cloud Anthropic-compatible endpoint, model glm-5) in .env.example. Used by many Claude Code users: context only",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/.env.example#L35",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "url",
+      "value": "https://api.minimaxi.com/anthropic",
+      "confidence": "low",
+      "context": "Example alternate LLM_BASE_URL_ALT (MiniMax, model MiniMax-M2.7) in .env.example. Used by many Claude Code users: context only",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/.env.example#L41",
+      "reported": "2026-04-25"
+    },
+    {
+      "type": "domain",
+      "value": "xget-cfw.fireline.fun",
+      "confidence": "low",
+      "context": "GitHub download accelerator the tools image is built through (Ghidra, ghidra-mcp, nuclei-templates, vulhub, jwt_tool, ysoserial, katana, httpx). Build time only and used by other projects: context only",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/docker/Dockerfile#L26",
+      "reported": "2026-04-25"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/chying-agent",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

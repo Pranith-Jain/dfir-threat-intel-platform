@@ -1,0 +1,169 @@
+{
+  "slug": "ctf-agent",
+  "name": "CTF Agent",
+  "description": "CTF solver that races several models in parallel Docker sandboxes",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 6,
+    "suricata": 3,
+    "yara": 2,
+    "indicators": 13
+  },
+  "techniques": [
+    {
+      "id": "T1059.004",
+      "score": 5,
+      "comment": "KQL hunt: CTF Agent running on a host you monitor; KQL hunt: Indicator sweep with the agentic watchlist; Sentinel analytics: CTF Agent AI solver sandbox started on a host; Sigma: CTF Agent Claude Solver Command Redirected Into Its Sandbox; Sigma: CTF Agent Sandbox Command Wrapper in a Container"
+    },
+    {
+      "id": "T1059.006",
+      "score": 2,
+      "comment": "KQL hunt: CTF Agent running on a host you monitor; Sigma: CTF Agent Launcher or Its Model CLIs"
+    },
+    {
+      "id": "T1078.001",
+      "score": 2,
+      "comment": "KQL hunt: CTF Agent playing on a CTFd platform: its CTFd client user agent in web and proxy logs; Suricata: 3813342 TD CTF Agent CTFd login with default admin/admin account"
+    },
+    {
+      "id": "T1119",
+      "score": 6,
+      "comment": "KQL hunt: CTF Agent playing on a CTFd platform: its CTFd client user agent in web and proxy logs; KQL hunt: Indicator sweep with the agentic watchlist; Sigma: CTF Agent CTFd Client User Agent in Proxy Logs; Sigma: CTF Agent CTFd Client User Agent in Web Server Logs; Suricata: 3813341 TD CTF Agent CTFd client user agent; Suricata: 3813343 TD CTF Agent pull_challenges CTFd API request (Chrome 45 user agent, shared with Eruditus)"
+    },
+    {
+      "id": "T1588.007",
+      "score": 6,
+      "comment": "KQL hunt: CTF Agent running on a host you monitor; KQL hunt: Indicator sweep with the agentic watchlist; Sigma: CTF Agent Launcher or Its Model CLIs; Sigma: CTF Agent Workspace or Solver Trace Written; YARA: CTF_Agent_Solver_Trace; YARA: CTF_Agent_Source"
+    },
+    {
+      "id": "T1609",
+      "score": 2,
+      "comment": "KQL hunt: CTF Agent running on a host you monitor; Sigma: CTF Agent Claude Solver Command Redirected Into Its Sandbox"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36",
+      "confidence": "medium",
+      "context": "User agent of the CTF Agent CTFd client on every request to the CTFd platform (challenge list and solves polled every 5 seconds, challenge details, file downloads, flag submissions, login). A Windows 7 string cut off before (KHTML, like Gecko): no browser sends it. Match the whole value: as a substring it is the start ",
+      "source": "ThreatDefence review of the CTF Agent source code",
+      "sourceUrl": "https://github.com/verialabs/ctf-agent/blob/3366d569557c4fda3fd153040632de65e255396d/backend/ctfd.py#L14",
+      "reported": "2026-03-29"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36",
+      "confidence": "low",
+      "context": "User agent of the CTF Agent pull_challenges.py helper on CTFd /login, /challenges and /api/v1/ requests. Taken from es3n1n/Eruditus, which sends the same string, and an old real Chrome string: context only",
+      "source": "ThreatDefence review of the CTF Agent source code",
+      "sourceUrl": "https://github.com/verialabs/ctf-agent/blob/3366d569557c4fda3fd153040632de65e255396d/pull_challenges.py#L35",
+      "reported": "2026-03-29"
+    },
+    {
+      "type": "string",
+      "value": "timeout --signal=KILL --kill-after=5 10 bash -c 'uname -m'",
+      "confidence": "high",
+      "context": "First command CTF Agent runs in every new solver sandbox container through the Docker API, inside bash -c, to learn the container architecture (backend/sandbox.py:165-171). Seen where the EDR sensor sees container processes",
+      "source": "ThreatDefence review of the CTF Agent source code",
+      "sourceUrl": "https://github.com/verialabs/ctf-agent/blob/3366d569557c4fda3fd153040632de65e255396d/backend/agents/claude_solver.py#L93",
+      "reported": "2026-03-29"
+    },
+    {
+      "type": "string",
+      "value": "timeout --signal=KILL --kill-after=5",
+      "confidence": "medium",
+      "context": "Wrapper around every command CTF Agent runs in a solver sandbox: bash -c \"timeout --signal=KILL --kill-after=5 <seconds> bash -c '<command>'\". Other scripts may use the same timeout options: look for bursts from one container",
+      "source": "ThreatDefence review of the CTF Agent source code",
+      "sourceUrl": "https://github.com/verialabs/ctf-agent/blob/3366d569557c4fda3fd153040632de65e255396d/backend/sandbox.py#L165",
+      "reported": "2026-03-29"
+    },
+    {
+      "type": "string",
+      "value": "IMPORTANT: You are running inside a Docker sandbox. All files are under /challenge/",
+      "confidence": "high",
+      "context": "Start of the system prompt of the CTF Agent Claude and Codex solvers, sent to the model with every request; visible in model traffic with TLS inspection, in Claude Code or Codex session files, and possibly on the claude CLI command line",
+      "source": "ThreatDefence review of the CTF Agent source code",
+      "sourceUrl": "https://github.com/verialabs/ctf-agent/blob/3366d569557c4fda3fd153040632de65e255396d/backend/agents/claude_solver.py#L97-L104",
+      "reported": "2026-03-29"
+    },
+    {
+      "type": "string",
+      "value": "You are a CTF competition coordinator running for the ENTIRE duration of a live competition",
+      "confidence": "high",
+      "context": "First line of the CTF Agent coordinator system prompt (Claude and Codex coordinators), sent with every coordinator request",
+      "source": "ThreatDefence review of the CTF Agent source code",
+      "sourceUrl": "https://github.com/verialabs/ctf-agent/blob/3366d569557c4fda3fd153040632de65e255396d/backend/agents/claude_coordinator.py#L34-L35",
+      "reported": "2026-03-29"
+    },
+    {
+      "type": "string",
+      "value": "You are an expert CTF solver. Find the real flag for the challenge below.",
+      "confidence": "medium",
+      "context": "First line of the CTF Agent solver prompt built for every challenge; also in the model requests of its Pydantic AI solvers (Bedrock, Azure, Zen, Google)",
+      "source": "ThreatDefence review of the CTF Agent source code",
+      "sourceUrl": "https://github.com/verialabs/ctf-agent/blob/3366d569557c4fda3fd153040632de65e255396d/backend/prompts.py#L72-L73",
+      "reported": "2026-03-29"
+    },
+    {
+      "type": "string",
+      "value": "mcp__coordinator__read_solver_trace",
+      "confidence": "medium",
+      "context": "Tool name the CTF Agent Claude coordinator sees for its in-process MCP server coordinator (also spawn_swarm, bump_agent, broadcast, kill_swarm); in model requests and Claude Code session transcripts. The server name coordinator is generic: use this tool name, not the prefix",
+      "source": "ThreatDefence review of the CTF Agent source code",
+      "sourceUrl": "https://github.com/verialabs/ctf-agent/blob/3366d569557c4fda3fd153040632de65e255396d/backend/agents/claude_coordinator.py#L125-L133",
+      "reported": "2026-03-29"
+    },
+    {
+      "type": "string",
+      "value": "ctf-agent",
+      "confidence": "low",
+      "context": "Docker label key (value true) on every CTF Agent solver container; at start the agent force-deletes every container with this label. Also the project name and Codex clientInfo name, so a bare match is weak: use it as a container label",
+      "source": "ThreatDefence review of the CTF Agent source code",
+      "sourceUrl": "https://github.com/verialabs/ctf-agent/blob/3366d569557c4fda3fd153040632de65e255396d/backend/sandbox.py#L19",
+      "reported": "2026-03-29"
+    },
+    {
+      "type": "docker_image",
+      "value": "ctf-sandbox",
+      "confidence": "low",
+      "context": "Local image CTF Agent runs its solver containers from (docker build -f sandbox/Dockerfile.sandbox -t ctf-sandbox), with SYS_ADMIN, SYS_PTRACE, seccomp unconfined and /dev/loop-control. Not on a registry, generic name: context only",
+      "source": "ThreatDefence review of the CTF Agent source code",
+      "sourceUrl": "https://github.com/verialabs/ctf-agent/blob/3366d569557c4fda3fd153040632de65e255396d/backend/config.py#L28",
+      "reported": "2026-03-29"
+    },
+    {
+      "type": "file_path",
+      "value": "/ctf-workspace-",
+      "confidence": "medium",
+      "context": "Prefix of the host temporary folder (tempfile.mkdtemp, /tmp/ctf-workspace-<random> on Linux) each CTF Agent solver sandbox mounts read-write on /challenge/workspace; removed when the solver stops",
+      "source": "ThreatDefence review of the CTF Agent source code",
+      "sourceUrl": "https://github.com/verialabs/ctf-agent/blob/3366d569557c4fda3fd153040632de65e255396d/backend/sandbox.py#L114",
+      "reported": "2026-03-29"
+    },
+    {
+      "type": "file_path",
+      "value": "/logs/trace-",
+      "confidence": "low",
+      "context": "CTF Agent per-solver JSONL trace logs/trace-<challenge>-<model>-<YYYYmmdd-HHMMSS>.jsonl in the working directory (models claude-opus-4-6, gpt-5.4, gpt-5.4-mini, gpt-5.3-codex by default). Generic prefix: confirm with the model name in the file name or the YARA rule",
+      "source": "ThreatDefence review of the CTF Agent source code",
+      "sourceUrl": "https://github.com/verialabs/ctf-agent/blob/3366d569557c4fda3fd153040632de65e255396d/backend/tracing.py#L21",
+      "reported": "2026-03-29"
+    },
+    {
+      "type": "url",
+      "value": "https://opencode.ai/zen/v1",
+      "confidence": "low",
+      "context": "OpenCode Zen gateway CTF Agent uses for zen/* model specs and as the quota fallback for codex/gpt-5.3-codex-spark. Used by many OpenCode users: context only",
+      "source": "ThreatDefence review of the CTF Agent source code",
+      "sourceUrl": "https://github.com/verialabs/ctf-agent/blob/3366d569557c4fda3fd153040632de65e255396d/backend/models.py#L83",
+      "reported": "2026-03-29"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/ctf-agent",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

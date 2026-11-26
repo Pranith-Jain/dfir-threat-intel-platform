@@ -1,0 +1,85 @@
+{
+  "id": "T1543.003",
+  "displayName": "Create or Modify System Process: Windows Service",
+  "tests": [
+    {
+      "name": "Modify Fax service to run PowerShell",
+      "guid": "ed366cde-7d12-49df-a833-671904770b9f",
+      "description": "This test will temporarily modify the service Fax by changing the binPath to PowerShell\nand will then revert the binPath change, restoring Fax to its original state.\nUpon successful execution, cmd will modify the binpath for `Fax` to spawn powershell. Powershell will then spawn.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["service_name", "service_binpath"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Service Installation CMD",
+      "guid": "981e2942-e433-44e9-afc1-8c957a1496b6",
+      "description": "Download an executable from github and start it as a service.\nUpon successful execution, powershell will download `AtomicService.exe` from github. cmd.exe will spawn sc.exe which will create and start the service. Results will output via stdout.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["binary_path", "service_type", "startup_type", "service_name"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Service Installation PowerShell",
+      "guid": "491a4af6-a521-4b74-b23b-f7b3f1ee9e77",
+      "description": "Installs A Local Service via PowerShell.\nUpon successful execution, powershell will download `AtomicService.exe` from github. Powershell will then use `New-Service` and `Start-Service` to start service. Results will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["binary_path", "service_name"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "TinyTurla backdoor service w64time",
+      "guid": "ef0581fd-528e-4662-87bc-4c2affb86940",
+      "description": "It's running Dll as service to emulate the TinyTurla backdoor\n\n[Related Talos Blog](https://blog.talosintelligence.com/2021/09/tinyturla.html)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["dllfilename"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Remote Service Installation CMD",
+      "guid": "fb4151a2-db33-4f8c-b7f8-78ea8790f961",
+      "description": "Download an executable from github and start it as a service on a remote endpoint\nUpon successful execution, powershell will download `AtomicService.exe` from github. cmd.exe will spawn sc.exe which will create and start the service. Results will output via stdout.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["binary_path", "service_type", "startup_type", "service_name", "remote_host"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Modify Service to Run Arbitrary Binary (Powershell)",
+      "guid": "1f896ce4-8070-4959-8a25-2658856a70c9",
+      "description": "This test will use PowerShell to temporarily modify a service to run an arbitrary executable by changing its binary path and will then revert the binary path change, restoring the service to its original state.\nThis technique was previously observed through SnapMC's use of Powerspolit's invoke-serviceabuse function. \n[Reference](https://blog.fox-it.com/2021/10/11/snapmc-skips-ransomware-steals-data/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["service_name", "new_bin_path", "original_bin_path"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1543.003/T1543.003.yaml"
+}

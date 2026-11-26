@@ -1,0 +1,20 @@
+{
+  "id": "T1556.001",
+  "displayName": "Modify Authentication Process: Domain Controller Authentication",
+  "tests": [
+    {
+      "name": "Skeleton Key via Mimikatz",
+      "guid": "0ee8081f-e9a7-4a2e-a23f-68473023184f",
+      "description": "Injects a Skeleton Key into LSASS on a domain controller using Mimikatz. Once injected, any domain\nuser account can be authenticated using the password 'mimikatz' until the domain controller is rebooted.\n\nThis test must be run on an isolated domain controller and must not be performed on a production DC.\nCleanup forces a reboot of the domain controller to evict the skeleton key from LSASS memory.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["mimikatz_path", "file_path", "mimikatz_url", "directory_path"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1556.001/T1556.001.yaml"
+}

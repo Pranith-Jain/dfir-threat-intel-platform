@@ -1,0 +1,59 @@
+{
+  "id": "T1567.004",
+  "displayName": "Exfiltration Over Web Service: Exfiltration Over Webhook",
+  "tests": [
+    {
+      "name": "Exfiltrate staged data to a Discord webhook (PowerShell)",
+      "guid": "f0057c81-24dc-4a2e-b658-5809c242180b",
+      "description": "Stages a file containing simulated sensitive data and exfiltrates its contents to a\nDiscord incoming webhook by POSTing a JSON `content` payload over HTTPS. Webhook URLs\nrequire no authentication header, so a single HTTPS POST is sufficient to move data out\nof the environment while blending in with normal SaaS traffic.\nSee https://discord.com/developers/docs/resources/webhook#execute-webhook",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["webhook_url", "staged_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Exfiltrate staged file to a Discord webhook with curl (bash)",
+      "guid": "40c44d16-bb49-4d14-aafa-f9ba7e6e6c5b",
+      "description": "Stages a file containing simulated sensitive data and uploads it as a multipart\n`file` attachment to a Discord incoming webhook using curl. This produces an outbound\nHTTPS POST to a commonly allow-listed SaaS endpoint, mirroring real-world data theft\nthat abuses Discord webhooks for exfiltration.\nSee https://discord.com/developers/docs/resources/webhook#execute-webhook",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["webhook_url", "staged_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Exfiltrate staged data to a Slack webhook with curl (sh)",
+      "guid": "c666acd6-6ff5-4d28-9490-195d89cd4337",
+      "description": "Stages a file containing simulated sensitive data and exfiltrates its contents to a\nSlack incoming webhook by POSTing a JSON `text` payload with curl. Slack incoming\nwebhooks accept unauthenticated JSON POSTs, making them a low-friction exfiltration\nchannel that blends with legitimate collaboration traffic.\nSee https://api.slack.com/messaging/webhooks",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["webhook_url", "staged_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Exfiltrate staged data to a Microsoft Teams webhook (PowerShell)",
+      "guid": "35ad6590-2207-4b14-bf8f-9899470d7156",
+      "description": "Stages a file containing simulated sensitive data and exfiltrates its contents to a\nMicrosoft Teams incoming webhook (Office 365 connector / Power Automate workflow URL)\nby POSTing a JSON `text` payload over HTTPS. The endpoint resides on a Microsoft-owned\ndomain, allowing the exfiltration to blend in with trusted corporate traffic.\nSee https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["webhook_url", "staged_file"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1567.004/T1567.004.yaml"
+}

@@ -1,0 +1,46 @@
+{
+  "id": "T1564.002",
+  "displayName": "Hide Artifacts: Hidden Users",
+  "tests": [
+    {
+      "name": "Create Hidden User using UniqueID < 500",
+      "guid": "4238a7f0-a980-4fff-98a2-dfc0a363d507",
+      "description": "Add a hidden user on macOS using Unique ID < 500 (users with that ID are hidden by default)",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["user_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create Hidden User using IsHidden option",
+      "guid": "de87ed7b-52c3-43fd-9554-730f695e7f31",
+      "description": "Add a hidden user on macOS using IsHidden optoin",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["user_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create Hidden User in Registry",
+      "guid": "173126b7-afe4-45eb-8680-fa9f6400431c",
+      "description": "Adversaries may similarly hide user accounts in Windows. Adversaries can set the HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\SpecialAccounts\\UserList Registry key value to 0 for a specific user to prevent that user from being listed on the logon screen.\nReference https://attack.mitre.org/techniques/T1564/002/ and https://thedfirreport.com/2022/07/11/select-xmrig-from-sqlserver/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["user_password", "user_name"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1564.002/T1564.002.yaml"
+}

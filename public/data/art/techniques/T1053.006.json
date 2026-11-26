@@ -1,0 +1,51 @@
+{
+  "id": "T1053.006",
+  "displayName": "Scheduled Task/Job: Systemd Timers",
+  "tests": [
+    {
+      "name": "Create Systemd Service and Timer",
+      "guid": "f4983098-bb13-44fb-9b2c-46149961807b",
+      "description": "This test creates Systemd service and timer then starts and enables the Systemd timer",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [
+        "path_to_systemd_service",
+        "path_to_systemd_timer",
+        "systemd_service_name",
+        "systemd_timer_name"
+      ],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create a user level transient systemd service and timer",
+      "guid": "3de33f5b-62e5-4e63-a2a0-6fd8808c80ec",
+      "description": "Schedule a user level transient task (will not survive a reboot) without having to create the .timer or .service files by using the systemd-run command.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Create a system level transient systemd service and timer",
+      "guid": "d3eda496-1fc0-49e9-aff5-3bec5da9fa22",
+      "description": "Schedule a system level transient task (will not survive a reboot) without having to create the .timer or .service files by using the systemd-run command.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1053.006/T1053.006.yaml"
+}

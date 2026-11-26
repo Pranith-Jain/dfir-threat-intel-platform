@@ -1,0 +1,59 @@
+{
+  "id": "T1546.003",
+  "displayName": "Event Triggered Execution: Windows Management Instrumentation Event Subscription",
+  "tests": [
+    {
+      "name": "Persistence via WMI Event Subscription - CommandLineEventConsumer",
+      "guid": "3c64f177-28e2-49eb-a799-d767b24dd1e0",
+      "description": "Run from an administrator powershell window. After running, reboot the victim machine.\nAfter it has been online for 4 minutes you should see notepad.exe running as SYSTEM.\n\nCode references\n\nhttps://gist.github.com/mattifestation/7fe1df7ca2f08cbfa3d067def00c01af\n\nhttps://github.com/EmpireProject/Empire/blob/master/data/module_source/persistence/Persistence.psm1#L545",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Persistence via WMI Event Subscription - ActiveScriptEventConsumer",
+      "guid": "fecd0dfd-fb55-45fa-a10b-6250272d0832",
+      "description": "Run from an administrator powershell window. After running, reboot the victim machine.\nAfter it has been online for 4 minutes you should see notepad.exe running as SYSTEM.\n\nCode references\n\nhttps://gist.github.com/mgreen27/ef726db0baac5623dc7f76bfa0fc494c",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Windows MOFComp.exe Load MOF File",
+      "guid": "29786d7e-8916-4de6-9c55-be7b093b2706",
+      "description": "The following Atomic will utilize MOFComp.exe to load a local MOF file.\nThe Managed Object Format (MOF) compiler parses a file containing MOF statements and adds the classes and class instances defined in the file to the WMI repository. \nTo query for the class:  gwmi __eventfilter -namespace root\\subscription\nA successful execution will add the class to WMI root namespace.\nReference: https://pentestlab.blog/2020/01/21/persistence-wmi-event-subscription/ and https://thedfirreport.com/2022/07/11/select-xmrig-from-sqlserver/.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["mofcomp_path", "mof_file"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Turla WMI Persistence - Dual Filter with Base64 Payload",
+      "guid": "67cee1c5-8c9b-460b-a4c3-76a6c69bcd15",
+      "description": "Emulates WMI event subscription persistence used by Turla. Creates a single CommandLineEventConsumer\nwith a base64-encoded PowerShell payload, then binds it to two event filters: one that triggers at a\nspecific time of day (Win32_LocalTime) and one that triggers based on system uptime\n(Win32_PerfFormattedData_PerfOS_System).\n\nReference: https://www.welivesecurity.com/2019/05/29/turla-powershell-usage/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["benign_payload"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1546.003/T1546.003.yaml"
+}

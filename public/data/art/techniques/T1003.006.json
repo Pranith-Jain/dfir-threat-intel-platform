@@ -1,0 +1,33 @@
+{
+  "id": "T1003.006",
+  "displayName": "OS Credential Dumping: DCSync",
+  "tests": [
+    {
+      "name": "DCSync (Active Directory)",
+      "guid": "129efd28-8497-4c87-a1b0-73b9a870ca3e",
+      "description": "Active Directory attack allowing retrieval of account information without accessing memory or retrieving the NTDS database.\nWorks against a remote Windows Domain Controller using the replication protocol.\nPrivileges required: domain admin or domain controller account (by default), or any other account with required rights.\n[Reference](https://adsecurity.org/?p=1729)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["domain", "user", "mimikatz_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Run DSInternals Get-ADReplAccount",
+      "guid": "a0bced08-3fc5-4d8b-93b7-e8344739376e",
+      "description": "The following Atomic will run Get-ADReplAccount from DSInternals.\nUpon successful execution, domain and credentials will appear in stdout. \n[Reference](https://www.crowdstrike.com/blog/observations-from-the-stellarparticle-campaign/) CrowdStrike StellarParticle.\nhttps://www.dsinternals.com/en/retrieving-active-directory-passwords-remotely/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["logonserver"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1003.006/T1003.006.yaml"
+}

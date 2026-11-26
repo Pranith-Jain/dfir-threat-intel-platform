@@ -1,0 +1,137 @@
+{
+  "id": "T1614.001",
+  "displayName": "System Location Discovery: System Language Discovery",
+  "tests": [
+    {
+      "name": "Discover System Language by Registry Query",
+      "guid": "631d4cf1-42c9-4209-8fe9-6bd4de9421be",
+      "description": "Identify System language by querying the registry on an endpoint. \n\nUpon successful execution, result in number format can be looked up to correlate the language.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Discover System Language with chcp",
+      "guid": "d91473ca-944e-477a-b484-0e80217cd789",
+      "description": "Identify System language with the chcp command.\n\nUpon successful execution, result in number format can be looked up to correlate the language.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Discover System Language with locale",
+      "guid": "837d609b-845e-4519-90ce-edc3b4b0e138",
+      "description": "Identify System language with the `locale` command.\n\nUpon successful execution, the output will contain the environment variables that indicate\nthe 5 character locale that can be looked up to correlate the language and territory.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Discover System Language with localectl",
+      "guid": "07ce871a-b3c3-44a3-97fa-a20118fdc7c9",
+      "description": "Identify System language with the `localectl` command.\n\nUpon successful execution, the key `System Locale` from the output will contain the\n`LANG` environment variable that has the 5 character locale result that can be looked\nup to correlate the language and territory.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Discover System Language by locale file",
+      "guid": "5d7057c9-2c8a-4026-91dd-13b5584daa69",
+      "description": "Identify System language with the by reading the locale configuration file.\n\nThe locale configuration file contains the `LANG` environment variable which\nwill contain the 5 character locale that can be looked up to correlate the\nlanguage and territory.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Discover System Language by Environment Variable Query",
+      "guid": "cb8f7cdc-36c4-4ed0-befc-7ad7d24dfd7a",
+      "description": "Identify System language by checking the environment variables\n\nUpon successful execution, the 5 character locale result can be looked up to\ncorrelate the language and territory. Environment query commands are likely\nto run with a pattern match command e.g. `env | grep LANG`\n\nNote: `env` and `printenv` will usually provide the same results. `set` is\nalso used as a builtin command that does not generate syscall telemetry but\ndoes provide a list of the environment variables.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Discover System Language with dism.exe",
+      "guid": "69f625ba-938f-4900-bdff-82ada3df5d9c",
+      "description": "The Windows utility DISM (Deployment Image Servicing and Management) can be used to display information about international settings and languages on the currently installed Windows image using an elevated terminal.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Discover System Language by Windows API Query",
+      "guid": "e39b99e9-ce7f-4b24-9c88-0fbad069e6c6",
+      "description": "This test executes a custom script called LanguageKeyboardLayout.exe which outputs the values of the following Windows API functions to the user terminal: \n\n`GetKeyboardLayout`, `GetKeyboardLayoutList`, `GetUserDefaultUILanguage`, `GetSystemDefaultUILanguage`, `GetUserDefaultLangID`.\n\nDocumentation for these functions is located [here](https://learn.microsoft.com/en-us/windows/win32/api/winuser/).",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Discover System Language with WMIC",
+      "guid": "4758003d-db14-4959-9c0f-9e87558ac69e",
+      "description": "WMIC (Windows Management Instrumentation Command-line) is a command-line tool that provides a simplified interface to query and manage Windows system configurations, processes, and hardware information using WMI. \n\nThe command in this test retrieves information about the system's locale, operating system language, and multilingual user interface (MUI) languages.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["target_host", "format_style"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Discover System Language with Powershell",
+      "guid": "1f23bfe8-36d4-49ce-903a-19a1e8c6631b",
+      "description": "This PowerShell script collects key system settings, such as the UI language, user language preferences, system locale, current culture, UI culture, and time zone, into a hash table. \n\nIt then outputs these settings in a readable key-value format directly to the terminal. The script is simple and efficient for quickly displaying system configuration details.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1614.001/T1614.001.yaml"
+}

@@ -1,0 +1,59 @@
+{
+  "id": "T1036.005",
+  "displayName": "Masquerading: Match Legitimate Resource Name or Location",
+  "tests": [
+    {
+      "name": "Execute a process from a directory masquerading as the current parent directory",
+      "guid": "812c3ab8-94b0-4698-a9bf-9420af23ce24",
+      "description": "Create and execute a process from a directory masquerading as the current parent directory (`...` instead of normal `..`)",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["test_message"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Masquerade as a built-in system executable",
+      "guid": "35eb8d16-9820-4423-a2a1-90c4f5edd9ca",
+      "description": "Launch an executable that attempts to masquerade as a legitimate executable.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["executable_filepath"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Masquerading cmd.exe as VEDetector.exe",
+      "guid": "03ae82a6-9fa0-465b-91df-124d8ca5c4e8",
+      "description": "This test simulates an adversary renaming cmd.exe to VEDetector.exe to masquerade as a legitimate application.\nThe test copies cmd.exe, renames it to VEDetector.exe, adds a registry run key for persistence, and executes the renamed binary.\nThis technique may be used to evade detection by mimicking legitimate software names or locations.\n\n**Expected Output:**\n- A new process named VEDetector.exe appears in the process list, but its behavior matches cmd.exe.\n- SIEM/EDR systems may detect this as suspicious process activity (e.g., Sysmon Event ID 1 for process creation, or Event ID 13 for registry modifications).\n- Registry modification in HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run may",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ved_path", "source_file"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "WMIC masquerade as ncv.exe in temp directory",
+      "guid": "9ce7d442-9b1e-43a3-87ea-55038ce79aa2",
+      "description": "Copies %SystemRoot%\\System32\\wbem\\wmic.exe to a temporary directory,\nrenames it to ncv.exe, and executes it to retrieve OS version information.\nThis simulates an adversary using a renamed trusted binary from an\nunexpected location to evade detection.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["temp_dir", "source_exe", "masqueraded_name"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1036.005/T1036.005.yaml"
+}

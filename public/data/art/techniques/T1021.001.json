@@ -1,0 +1,59 @@
+{
+  "id": "T1021.001",
+  "displayName": "Remote Services: Remote Desktop Protocol",
+  "tests": [
+    {
+      "name": "RDP to Remote Host",
+      "guid": "355d4632-8cb9-449d-91ce-b566d0253d3e",
+      "description": "Attempt an RDP session via the Remote Desktop Client (mstsc) to an arbitrary remote host.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["target_host", "domain", "username", "password"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Changing RDP Port to Non Standard Port via Powershell",
+      "guid": "2f840dd4-8a2e-4f44-beb3-6b2399ea3771",
+      "description": "Changing RDP Port to Non Standard Port via Powershell",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["OLD_Remote_Port", "NEW_Remote_Port"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Changing RDP Port to Non Standard Port via Command_Prompt",
+      "guid": "74ace21e-a31c-4f7d-b540-53e4eb6d1f73",
+      "description": "Changing RDP Port to Non Standard Port via Command_Prompt",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["OLD_Remote_Port", "NEW_Remote_Port"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable NLA for RDP via Command Prompt",
+      "guid": "01d1c6c0-faf0-408e-b368-752a02285cb2",
+      "description": "Disables network-level authentication (NLA) for RDP by changing a registry key via Command Prompt\nDisabling NLA for RDP can allow remote user interaction with the Windows sign-in screen prior to authentication. According to Microsoft, Flax Typhoon actors used this technique implementation to achieve persistence on victim systems: https://www.microsoft.com/en-us/security/blog/2023/08/24/flax-typhoon-using-legitimate-software-to-quietly-access-taiwanese-organizations/\nSee also: https://github.com/EmpireProject/Empire/blob/master/lib/modules/powershell/management/enable_rdp.py",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["Default_UserAuthentication"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1021.001/T1021.001.yaml"
+}

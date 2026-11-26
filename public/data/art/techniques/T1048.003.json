@@ -1,0 +1,111 @@
+{
+  "id": "T1048.003",
+  "displayName": "Exfiltration Over Alternative Protocol: Exfiltration Over Unencrypted Non-C2 Protocol",
+  "tests": [
+    {
+      "name": "Exfiltration Over Alternative Protocol - HTTP",
+      "guid": "1d1abbd6-a3d3-4b2e-bef5-c59293f46eff",
+      "description": "A firewall rule (ipfw,pf,iptables or firewalld) will be needed to allow exfiltration on port 1337.\n\nUpon successful execution, sh will be used to make a directory (/tmp/victim-staging-area), write a txt file, and host the directory with Python on port 1337, to be later downloaded.",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "manual",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Exfiltration Over Alternative Protocol - ICMP",
+      "guid": "dd4b4421-2e25-4593-90ae-7021947ad12e",
+      "description": "Exfiltration of specified file over ICMP protocol.\n\nUpon successful execution, powershell will utilize ping (icmp) to exfiltrate notepad.exe to a remote address (default 127.0.0.1). Results will be via stdout.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["input_file", "ip_address"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Exfiltration Over Alternative Protocol - DNS",
+      "guid": "c403b5a4-b5fc-49f2-b181-d1c80d27db45",
+      "description": "Exfiltration of specified file over DNS protocol.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "manual",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Exfiltration Over Alternative Protocol - HTTP",
+      "guid": "6aa58451-1121-4490-a8e9-1dada3f1c68c",
+      "description": "Exfiltration of specified file over HTTP.\nUpon successful execution, powershell will invoke web request using POST method to exfiltrate notepad.exe to a remote address (default http://127.0.0.1). Results will be via stdout.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["input_file", "ip_address"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Exfiltration Over Alternative Protocol - SMTP",
+      "guid": "ec3a835e-adca-4c7c-88d2-853b69c11bb9",
+      "description": "Exfiltration of specified file over SMTP.\nUpon successful execution, powershell will send an email with attached file to exfiltrate to a remote address. Results will be via stdout.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["input_file", "sender", "receiver", "smtp_server"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "MAZE FTP Upload",
+      "guid": "57799bc2-ad1e-4130-a793-fb0c385130ba",
+      "description": "This test simulates MAZE's ransomware's ability to exfiltrate data via FTP.\nUpon successful execution, all 7z files within the %windir%\\temp directory will be uploaded to a remote FTP server. \nReference: https://www.mandiant.com/resources/tactics-techniques-procedures-associated-with-maze-ransomware-incidents",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ftp_server", "username", "password"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Exfiltration Over Alternative Protocol - FTP - Rclone",
+      "guid": "b854eb97-bf9b-45ab-a1b5-b94e4880c56b",
+      "description": "Rclone may be used by an adversary to exfiltrate data to a publicly hosted FTP server.\n[Reference](https://thedfirreport.com/2021/03/29/sodinokibi-aka-revil-ransomware/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["ftp_server", "ftp_pass", "ftp_user", "ftp_port"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Python3 http.server",
+      "guid": "3ea1f938-f80a-4305-9aa8-431bc4867313",
+      "description": "An adversary may use the python3 standard library module http.server to exfiltrate data. This test checks if python3 is available and if so, creates a HTTP server on port 9090, captures the PID, sleeps for 10 seconds, then kills the PID and unsets the $PID variable.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1048.003/T1048.003.yaml"
+}

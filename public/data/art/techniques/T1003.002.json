@@ -1,0 +1,111 @@
+{
+  "id": "T1003.002",
+  "displayName": "OS Credential Dumping: Security Account Manager",
+  "tests": [
+    {
+      "name": "Registry dump of SAM, creds, and secrets",
+      "guid": "5c2571d0-1572-416d-9676-812e64ca9f44",
+      "description": "Local SAM (SAM & System), cached credentials (System & Security) and LSA secrets (System & Security) can be enumerated\nvia three registry keys. Then processed locally using https://github.com/Neohapsis/creddump7\n\nUpon successful execution of this test, you will find three files named, sam, system and security in the %temp% directory.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Registry parse with pypykatz",
+      "guid": "a96872b2-cbf3-46cf-8eb4-27e8c0e85263",
+      "description": "Parses registry hives to obtain stored credentials.\n\nWill create a Python virtual environment within the External Payloads folder that can be deleted manually post test execution.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["venv_path"],
+      "dependencyCount": 3
+    },
+    {
+      "name": "esentutl.exe SAM copy",
+      "guid": "a90c2f4d-6726-444e-99d2-a00cd7c20480",
+      "description": "Copy the SAM hive using the esentutl.exe utility\nThis can also be used to copy other files and hives like SYSTEM, NTUSER.dat etc.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "file_name", "copy_dest"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "PowerDump Hashes and Usernames from Registry",
+      "guid": "804f28fc-68fc-40da-b5a2-e9d0bce5c193",
+      "description": "Executes a hashdump by reading the hashes from the registry.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "dump volume shadow copy hives with certutil",
+      "guid": "eeb9751a-d598-42d3-b11c-c122d9c3f6c7",
+      "description": "Dump hives from volume shadow copies with the certutil utility, exploiting a vulnerability known as \"HiveNightmare\" or \"SeriousSAM\".\nThis can be done with a non-admin user account. [CVE-2021-36934](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36934)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["target_hive", "limit"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "dump volume shadow copy hives with System.IO.File",
+      "guid": "9d77fed7-05f8-476e-a81b-8ff0472c64d0",
+      "description": "Dump hives from volume shadow copies with System.IO.File. [CVE-2021-36934](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-36934)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["target_hive", "limit"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - Loot local Credentials - Dump SAM-File for NTLM Hashes",
+      "guid": "0c0f5f06-166a-4f4d-bb4a-719df9a01dbb",
+      "description": "Loot local Credentials - Dump SAM-File for NTLM Hashes technique via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Dumping of SAM, creds, and secrets(Reg Export)",
+      "guid": "21df41be-cdd8-4695-a650-c3981113aa3c",
+      "description": "Local SAM (SAM & System), cached credentials (System & Security) and LSA secrets (System & Security) can be enumerated via three registry keys. Used reg export to execute this behavior\nUpon successful execution of this test, you will find three files named, sam, system and security in the %temp% directory.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1003.002/T1003.002.yaml"
+}

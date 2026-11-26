@@ -1,0 +1,33 @@
+{
+  "id": "T1566.001",
+  "displayName": "Phishing: Spearphishing Attachment",
+  "tests": [
+    {
+      "name": "Download Macro-Enabled Phishing Attachment",
+      "guid": "114ccff9-ae6d-4547-9ead-4cd69f687306",
+      "description": "This atomic test downloads a macro enabled document from the Atomic Red Team GitHub repository, simulating an end user clicking a phishing link to download the file.\nThe file \"PhishingAttachment.xlsm\" is downloaded to the %temp% directory.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Word spawned a command shell and used an IP address in the command line",
+      "guid": "cbb6799a-425c-4f83-9194-5447a909d67f",
+      "description": "Word spawning a command prompt then running a command with an IP address in the command line is an indicator of malicious activity.\nUpon execution, CMD will be launched and ping 8.8.8.8.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["jse_path", "ms_product"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1566.001/T1566.001.yaml"
+}

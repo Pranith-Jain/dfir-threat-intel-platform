@@ -1,0 +1,39 @@
+{
+  "id": "T1528",
+  "displayName": "Steal Application Access Token",
+  "tests": [
+    {
+      "name": "Azure - Functions code upload - Functions code injection via Blob upload",
+      "guid": "9a5352e4-56e5-45c2-9b3f-41a46d3b3a43",
+      "description": "This test injects code into an Azure Function (RCE).\n\nAttack idea/reference: https://orca.security/resources/blog/azure-shared-key-authorization-exploitation/\n\nSimilar to T1528 \"Azure - Functions code upload - Functions code injection to retrieve the Functions identity access token\", the depicted code injection scenario tampers the source code of Azure Functions to perform Subscription Privilege Escalation by retrieving the identity access token of an Azure functions instance. In this case, the prepared zip file (underlying package for a Function) is expected to contain the tampered function presented in src/code_to_insert.py. Note that the endpoint https://changeme.net needs to be adapted i",
+      "platforms": ["iaas:azure"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["storage_account_name", "container_name", "blob_name", "file_path_blob"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Azure - Functions code upload - Functions code injection via File Share modification to retrieve the Functions identity access token",
+      "guid": "67aaf4cb-54ce-42e2-ab56-e0a9bcc089b1",
+      "description": "This test injects code into an Azure Function (RCE) to perform Subscription Privilege Escalation by retrieving the identity access token of an Azure functions instance.\n\nAttack idea/reference: https://orca.security/resources/blog/azure-shared-key-authorization-exploitation/\n\nOnce executed, the \"https://changeme\" will retrieve the access token when the function app is executed on behalf of the tenant. The function may be triggered manually from authorized people, triggered in regular intervals, or in various other ways. The access token can then be used to perform further attack steps with the permissions that the function app holds (e.g. listening virtual machines).\n\nNote: \n- The Azure Funct",
+      "platforms": ["iaas:azure"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [
+        "storage_account_name",
+        "execution_option",
+        "file_share_name",
+        "file_path",
+        "code_to_insert_path"
+      ],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1528/T1528.yaml"
+}

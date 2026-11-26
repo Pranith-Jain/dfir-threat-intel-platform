@@ -1,0 +1,137 @@
+{
+  "id": "T1057",
+  "displayName": "Process Discovery",
+  "tests": [
+    {
+      "name": "Process Discovery - ps",
+      "guid": "4ff64f0b-aaf2-4866-b39d-38d9791407cc",
+      "description": "Utilize ps to identify processes.\n\nUpon successful execution, sh will execute ps and output to /tmp/loot.txt.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Process Discovery - tasklist",
+      "guid": "c5806a4f-62b8-4900-980b-c7ec004e9908",
+      "description": "Utilize tasklist to identify processes.\n\nUpon successful execution, cmd.exe will execute tasklist.exe to list processes. Output will be via stdout.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Process Discovery - Get-Process",
+      "guid": "3b3809b6-a54b-4f5b-8aff-cb51f2e97b34",
+      "description": "Utilize Get-Process PowerShell cmdlet to identify processes.\n\nUpon successful execution, powershell.exe will execute Get-Process to list processes. Output will be via stdout.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Process Discovery - get-wmiObject",
+      "guid": "b51239b4-0129-474f-a2b4-70f855b9f2c2",
+      "description": "Utilize get-wmiObject PowerShell cmdlet to identify processes.\n\nUpon successful execution, powershell.exe will execute get-wmiObject to list processes. Output will be via stdout.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Process Discovery - wmic process",
+      "guid": "640cbf6d-659b-498b-ba53-f6dd1a1cc02c",
+      "description": "Utilize windows management instrumentation to identify processes.\n\nUpon successful execution, WMIC will execute process to list processes. Output will be via stdout.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Discover Specific Process - tasklist",
+      "guid": "11ba69ee-902e-4a0f-b3b6-418aed7d7ddb",
+      "description": "Adversaries may use command line tools to discover specific processes in preparation of further attacks. \nExamples of this could be discovering the PID of lsass.exe to dump its memory or discovering whether specific security processes (e.g. AV or EDR) are running.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["process_to_enumerate"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Process Discovery - Process Hacker",
+      "guid": "966f4c16-1925-4d9b-8ce0-01334ee0867d",
+      "description": "Process Hacker can be exploited to infiltrate system processes, identify weak points, or achieve unauthorized control over systems. However, its malicious use can often be flagged by security defenses, rendering it a perilous tool for illegitimate purposes.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["processhacker_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Process Discovery - PC Hunter",
+      "guid": "b4ca838d-d013-4461-bf2c-f7132617b409",
+      "description": "PC Hunter is a toolkit with access to hundreds of settings including kernels, kernel modules, processes, network, startup, and more. When abused, this tool can allow threat actors to effectively access sensitive processes, collect system information, and terminate security software.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["pchunter64_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Launch Taskmgr from cmd to View running processes",
+      "guid": "4fd35378-39aa-481e-b7c4-e3bf49375c67",
+      "description": "An adverary may launch taskmgr.exe with the /7 switch via command prompt to view processes running on the system.\n[Reference](https://github.com/trellix-enterprise/ac3-threat-sightings/blob/main/sightings/Sightings_Conti_Ransomware.yml)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Check Process Token Elevation via GetTokenInformation",
+      "guid": "668f1d74-4bdb-4209-91e3-b31df0e4fbb7",
+      "description": "Uses C# P/Invoke to call OpenProcessToken and GetTokenInformation with TokenElevation\nto discover whether the current process is running with elevated privileges. Adversaries\nuse this API-level check to determine their privilege context before deciding whether\nto attempt privilege escalation. Turla's ApolloShadow does this to determine its path of execution.\n\nReference: https://www.microsoft.com/en-us/security/blog/2025/07/31/frozen-in-transit-secret-blizzards-aitm-campaign-against-diplomats/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1057/T1057.yaml"
+}

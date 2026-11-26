@@ -1,0 +1,46 @@
+{
+  "id": "T1611",
+  "displayName": "Escape to Host",
+  "tests": [
+    {
+      "name": "Deploy container using nsenter container escape",
+      "guid": "0b2f9520-a17a-4671-9dba-3bd034099fff",
+      "description": "In this escape `kubectl` is used to launch a new pod, with a container that has the host pids mapped into the container (`hostPID:true`). It uses the alpine linux container image. It runs with privilege on the host (`privileged:true`). When the container is launched the command `nsenter --mount=/proc/1/ns/mnt -- /bin/bash` is ran. Since the host processes have been mapped into the container, the container enters the host namespace, escaping the container.\n\nAdditional Details:\n- https://twitter.com/mauilion/status/1129468485480751104\n- https://securekubernetes.com/scenario_2_attack/",
+      "platforms": ["containers"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 5
+    },
+    {
+      "name": "Mount host filesystem to escape privileged Docker container",
+      "guid": "6c499943-b098-4bc6-8d38-0956fc182984",
+      "description": "This technique abuses privileged Docker containers to mount the host's filesystem and then create a cron job to launch a reverse shell as the host's superuser.\nThe container running the test needs be privileged.  It may take up to a minute for this to run due to how often crond triggers a job.\nDev note: the echo to create cron_filename is broken up to prevent localized execution of hostname and id by Powershell.",
+      "platforms": ["containers"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["mount_device", "mount_point", "cron_path", "cron_filename", "listen_address", "listen_port"],
+      "dependencyCount": 5
+    },
+    {
+      "name": "Privilege Escalation via Docker Volume Mapping",
+      "guid": "39fab1bc-fcb9-406f-bc2e-fe03e42ff0e4",
+      "description": "This test demonstrates privilege escalation by abusing Docker's volume mapping\nfeature to gain access to the host file system. By mounting the root directory\nof the host into a Docker container, the attacker can use chroot to operate as\nroot on the host system.",
+      "platforms": ["containers"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username"],
+      "dependencyCount": 2
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1611/T1611.yaml"
+}

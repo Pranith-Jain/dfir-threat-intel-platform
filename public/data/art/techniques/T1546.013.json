@@ -1,0 +1,33 @@
+{
+  "id": "T1546.013",
+  "displayName": "Event Triggered Execution: PowerShell Profile",
+  "tests": [
+    {
+      "name": "Append malicious start-process cmdlet",
+      "guid": "090e5aa5-32b6-473b-a49b-21e843a56896",
+      "description": "Appends a start process cmdlet to the current user's powershell profile pofile that points to a malicious executable. Upon execution, calc.exe will be launched.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["exe_path", "ps_profile"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Turla Malicious Powershell Profile for Persistence",
+      "guid": "b5d7e195-4b66-428a-b6d5-04d671a13869",
+      "description": "Creates a PowerShell profile that emulates Turla tradecraft observed in the wild. The profile checks\nif it is running as SYSTEM (S-1-5-18) via WMI, logs execution to an XOR-obfuscated file disguised\nas a thumbnail cache (C:\\Users\\Public\\Downloads\\thumbs.ini), reads a base64-encoded payload from\na registry key masquerading as an ActiveX compatibility entry, and executes it via Invoke-Expression.\n\nReference: https://www.welivesecurity.com/2019/05/29/turla-powershell-usage/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["profile_path", "benign_payload"],
+      "dependencyCount": 2
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1546.013/T1546.013.yaml"
+}

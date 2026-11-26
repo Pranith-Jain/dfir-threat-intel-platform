@@ -1,0 +1,72 @@
+{
+  "id": "T1546.018",
+  "displayName": "Event Triggered Execution: Python Startup Hooks",
+  "tests": [
+    {
+      "name": "Python Startup Hook - atomic_hook.pth (Windows)",
+      "guid": "57289962-21dc-4501-b756-80cd30608d9f",
+      "description": "Executes code by placing a .pth file in the site-packages directory. \nSupports python.exe and python3.exe via input arguments.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["python_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Python Startup Hook - usercustomize.py (Windows)",
+      "guid": "05cc7a2c-ce32-46f2-a358-f27f76718c39",
+      "description": "Executes code via usercustomize.py. This is a per-user persistence mechanism \nthat does not require Administrative privileges.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["python_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Python Startup Hook - atomic_hook.pth (Linux)",
+      "guid": "a58c066d-f2f0-42a2-ab70-30af73f89e66",
+      "description": "Executes code by creating atomic_hook.pth in the site-packages directory. \nThis script runs automatically for every user on the system when Python starts.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["python_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Python Startup Hook - atomic_hook.pth (macOS)",
+      "guid": "28ca4f81-fa96-47ff-8555-dde98017e89b",
+      "description": "Creates a Python startup hook using a .pth file inside a virtual environment on macOS.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["exe_name", "python_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Python Startup Hook - usercustomize.py (Linux / MacOS)",
+      "guid": "6e78084a-a433-4702-a838-cc7b765d87e8",
+      "description": "Executes code via usercustomize.py. This is a per-user persistence mechanism \nthat does not require root privileges.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["python_exe"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1546.018/T1546.018.yaml"
+}

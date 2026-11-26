@@ -1,0 +1,124 @@
+{
+  "id": "T1572",
+  "displayName": "Protocol Tunneling",
+  "tests": [
+    {
+      "name": "DNS over HTTPS Large Query Volume",
+      "guid": "ae9ef4b0-d8c1-49d4-8758-06206f19af0a",
+      "description": "This test simulates an infected host sending a large volume of DoH queries to a command and control server.\nThe intent of this test is to trigger threshold based detection on the number of DoH queries either from a single source system or to a single targe domain.\nA custom domain and sub-domain will need to be passed as input parameters for this test to work. Upon execution, DNS information about the domain will be displayed for each callout in a JSON format.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["doh_server", "query_type", "subdomain", "query_volume", "domain"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "DNS over HTTPS Regular Beaconing",
+      "guid": "0c5f9705-c575-42a6-9609-cbbff4b2fc9b",
+      "description": "This test simulates an infected host beaconing via DoH queries to a command and control server at regular intervals over time.\nThis behaviour is typical of implants either in an idle state waiting for instructions or configured to use a low query volume over time to evade threshold based detection.\nA custom domain and sub-domain will need to be passed as input parameters for this test to work. Upon execution, DNS information about the domain will be displayed for each callout in a JSON format.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["doh_server", "runtime", "domain", "subdomain", "query_type", "c2_interval", "c2_jitter"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "DNS over HTTPS Long Domain Query",
+      "guid": "748a73d5-cea4-4f34-84d8-839da5baa99c",
+      "description": "This test simulates an infected host returning data to a command and control server using long domain names.\nThe simulation involves sending DoH queries that gradually increase in length until reaching the maximum length. The intent is to test the effectiveness of detection of DoH queries for long domain names over a set threshold.\n Upon execution, DNS information about the domain will be displayed for each callout in a JSON format.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["doh_server", "query_type", "subdomain", "domain"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "run ngrok",
+      "guid": "4cdc9fc7-53fb-4894-9f0c-64836943ea60",
+      "description": "Download and run ngrok. Create tunnel to chosen port.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["api_token", "port_num", "download"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Microsoft Dev tunnels (Linux/macOS)",
+      "guid": "9f94a112-1ce2-464d-a63b-83c1f465f801",
+      "description": "Dev Tunnels enables insiders as well as threat actors to expose local ports over the internet via Microsoft dev tunnels.\n\nThis atomic will generate a dev tunnel binding it to the local service running on the provided port. Can be used to expose local services, web applications and local files etc.\nReference:\n- [Microsoft Docs](https://learn.microsoft.com/en-us/tunnels/dev-tunnels-overview)\n- [LOT Tunnels](https://lottunnels.github.io/lottunnels/Binaries/devtunnels/)",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["port", "download_url", "binary_path"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "VSCode tunnels (Linux/macOS)",
+      "guid": "b877943f-0377-44f4-8477-f79db7f07c4d",
+      "description": "Visual Studio Code Remote Tunnels can be used for exposing local development environment/services/files over the internet.\nThis atomic will generate a dev tunnel binding it to the local service running on the provided port.\nReference:\n- [Microsoft Docs](https://code.visualstudio.com/docs/remote/tunnels)\n- [LOT Tunnels](https://lottunnels.github.io/lottunnels/Binaries/vscode-server/)",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["artifact_base_url", "artifact_build", "payload_path", "additional_args"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Cloudflare tunnels (Linux/macOS)",
+      "guid": "228c336a-2f79-4043-8aef-bfa453a611d5",
+      "description": "Cloudflared can be used for exposing local development environment/services/files over the internet.\nThis atomic will generate a dev tunnel binding it to the local service running on the provided port.\nReference:\n- [Cloudflared Docs](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)\n- [LOT Tunnels](https://lottunnels.github.io/lottunnels/Binaries/cloudflared/)",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["cloudflared_artifact_base_url", "binary_path", "url_to_tunnel", "additional_args"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Install and Run frpc Reverse Proxy Client",
+      "guid": "f54179ee-c782-4fe3-b836-213d3bda66a2",
+      "description": "Downloads and runs frpc (fast reverse proxy client), the victim-side component\nof the frp framework. Adversaries deploy frpc on compromised hosts to establish\noutbound tunnel connections to an attacker-controlled frps server, bypassing\ninbound firewall rules and exposing internal services externally.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_url", "frp_path", "server_addr", "server_port"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Install and Run gost Tunnel Proxy",
+      "guid": "3afc90c4-90b3-44af-8d14-52852abe7258",
+      "description": "Downloads and runs gost (Go Simple Tunnel), a multi-protocol proxy and tunnel\ntool used by adversaries to establish SOCKS5 proxies, protocol relays, and\nencrypted tunnels on compromised hosts to facilitate C2 communication and\nlateral movement while evading network controls.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_url", "gost_path", "listen_port"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1572/T1572.yaml"
+}

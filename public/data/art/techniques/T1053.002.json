@@ -1,0 +1,46 @@
+{
+  "id": "T1053.002",
+  "displayName": "Scheduled Task/Job: At",
+  "tests": [
+    {
+      "name": "At.exe Scheduled task",
+      "guid": "4a6c0dc4-0f2a-4203-9298-a5a9bdc21ed8",
+      "description": "Executes cmd.exe\nNote: deprecated in Windows 8+\n\nUpon successful execution, cmd.exe will spawn at.exe and create a scheduled task that will spawn cmd at a specific time.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "At - Schedule a job",
+      "guid": "7266d898-ac82-4ec0-97c7-436075d0d08e",
+      "description": "This test submits a command to be run in the future by the `at` daemon.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["time_spec", "at_command"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "At - Schedule a job via kubectl in a Pod",
+      "guid": "9ddf2e5e-7e2c-46c2-9940-3c2ff29c7213",
+      "description": "Launches a short-lived Ubuntu pod, installs the `at` utility, starts the `atd` daemon,\nand submits a job with `at`. The pod is deleted after execution.",
+      "platforms": ["containers"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["image_name", "pod_name", "time_spec", "at_command"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1053.002/T1053.002.yaml"
+}

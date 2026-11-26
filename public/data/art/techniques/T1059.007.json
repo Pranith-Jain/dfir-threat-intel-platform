@@ -1,0 +1,72 @@
+{
+  "id": "T1059.007",
+  "displayName": "Command and Scripting Interpreter: JavaScript",
+  "tests": [
+    {
+      "name": "JScript execution to gather local computer information via cscript",
+      "guid": "01d75adf-ca1b-4dd1-ac96-7c9550ad1035",
+      "description": "JScript execution test, execute JScript via cscript command. When successful, system information will be written to $env:TEMP\\T1059.007.out.txt",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["jscript"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "JScript execution to gather local computer information via wscript",
+      "guid": "0709945e-4fec-4c49-9faf-c3c292a74484",
+      "description": "JScript execution test, execute JScript via wscript command. When successful, system information will be shown with four message boxes.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["jscript"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Turla Kopiluwak Windows Enumeration",
+      "guid": "e65e6772-bfd3-4f25-934b-861d5caa34db",
+      "description": "Executes a JScript file via wscript.exe that runs a series of reconnaissance commands (net use, ipconfig,\nsysteminfo, whoami, tasklist, netstat, arp, dir, etc.) and appends all output to a single staging file\nat c:\\windows\\temp\\result2.dat. Output file name, wscript.exe execution, and reconnaisance commands run mirror the behaviors of Turla's Javascript trojan Kopiluwak\n\nReference: https://unit42.paloaltonetworks.com/turla-pensive-ursa-threat-assessment/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["jscript"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Turla KopiLuwak RC4 Decryption Stager",
+      "guid": "02428cbe-c230-4353-b31d-61c9d328b153",
+      "description": "Emulates KopiLuwak's next-stage JavaScript loader named Chkdsk.js. The script accepts an\nRC4 decryption key via the -scan parameter and decrypts hardcoded ciphertext bytes, which are then run as script.\nIn this atomic, the decrypted bytes generate and display a random number instead of performing malicious behavior.\nIn the real attack chain, a scheduled task (ProactiveScan) invokes this script with the key every 30 minutes.\n\nReference: https://securelist.com/turla-renews-its-arsenal-with-topinambour/91687/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["chkdsk_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Turla KopiLuwak Registry JavaScript Payload Execution",
+      "guid": "9be739ec-b1ba-4950-94d0-e62444b23645",
+      "description": "Emulates KopiLuwak's technique of storing a JavaScript payload as REG_BINARY data in the Windows registry\nand executing it. The script uses WMI StdRegProv to read binary data from\nHKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Maintenance\\MOfficeMaintenance, converts the\nbytes to a string with String.fromCharCode, and runs it with eval(). The registry path, value\nname, and WMI access pattern mirror the real malware.\n\nReference: https://securelist.com/turla-renews-its-arsenal-with-topinambour/91687/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["payload", "registry_script"],
+      "dependencyCount": 3
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1059.007/T1059.007.yaml"
+}

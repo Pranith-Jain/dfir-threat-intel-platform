@@ -1,0 +1,72 @@
+{
+  "id": "T1136.002",
+  "displayName": "Create Account: Domain Account",
+  "tests": [
+    {
+      "name": "Create a new Windows domain admin user",
+      "guid": "fcec2963-9951-4173-9bfa-98d8b7834e62",
+      "description": "Creates a new domain admin user in a command prompt.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username", "password", "group"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create a new account similar to ANONYMOUS LOGON",
+      "guid": "dc7726d2-8ccb-4cc6-af22-0d5afb53a548",
+      "description": "Create a new account similar to ANONYMOUS LOGON in a command prompt.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username", "password"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Create a new Domain Account using PowerShell",
+      "guid": "5a3497a4-1568-4663-b12a-d4a5ed70c7d7",
+      "description": "Creates a new Domain User using the credentials of the Current User",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username", "password"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Active Directory Create Admin Account",
+      "guid": "562aa072-524e-459a-ba2b-91f1afccf5ab",
+      "description": "Use Admin Credentials to Create A Domain Admin Account",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["domain", "top_level_domain", "admin_user", "admin_password", "domain_controller"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Active Directory Create User Account (Non-elevated)",
+      "guid": "8c992cb3-a46e-4fd5-b005-b1bab185af31",
+      "description": "Use Admin Credentials to Create A Normal Account (as means of entry)",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["domain", "top_level_domain", "admin_user", "admin_password", "domain_controller"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1136.002/T1136.002.yaml"
+}

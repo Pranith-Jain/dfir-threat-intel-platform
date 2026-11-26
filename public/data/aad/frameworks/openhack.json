@@ -1,0 +1,242 @@
+{
+  "slug": "openhack",
+  "name": "OpenHack",
+  "description": "Local source-code security scanner whose agents map, review, challenge and judge findings",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 8,
+    "suricata": 14,
+    "yara": 3,
+    "indicators": 20
+  },
+  "techniques": [
+    {
+      "id": "T1046",
+      "score": 2,
+      "comment": "KQL hunt: OpenHack on a host you monitor; Sigma: Network Scanners Started by the OpenHack v0.x Agent"
+    },
+    {
+      "id": "T1071",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1071.001",
+      "score": 5,
+      "comment": "Sentinel analytics: Host contacted the OpenHack out-of-band collector; Sigma: OpenHack Vendor Hosts or User Agents in Proxy Logs; Sigma: Request to the OpenHack Out-of-Band Collector; Suricata: 3813362 TD OpenHack out-of-band collector in TLS SNI (oob.openhack.com); Suricata: 3813363 TD OpenHack out-of-band collector in cleartext HTTP Host (oob.openhack.com)"
+    },
+    {
+      "id": "T1071.004",
+      "score": 3,
+      "comment": "KQL hunt: OpenHack testing you: its collector, canary rows and user agents in web, proxy and DNS logs; Sigma: OpenHack Out-of-Band Collector Resolved; Suricata: 3813361 TD OpenHack out-of-band collector lookup (oob.openhack.com)"
+    },
+    {
+      "id": "T1190",
+      "score": 11,
+      "comment": "KQL hunt: OpenHack testing you: its collector, canary rows and user agents in web, proxy and DNS logs; Sentinel analytics: Host contacted the OpenHack out-of-band collector; Sigma: OpenHack Collector or Canary Marker in Web Requests; Sigma: OpenHack Out-of-Band Collector Resolved; Sigma: Request to the OpenHack Out-of-Band Collector; Suricata: 3813361 TD OpenHack out-of-band collector lookup (oob.openhack.com); Suricata: 3813362 TD OpenHack out-of-band collector in TLS SNI (oob.openhack.com); Suricata: 3813363 TD OpenHack out-of-band collector in cleartext HTTP Host (oob.openhack.com); Suricat"
+    },
+    {
+      "id": "T1588.002",
+      "score": 15,
+      "comment": "KQL hunt: OpenHack on a host you monitor; Sigma: Claude Code or Codex CLI Started by OpenHack; Sigma: OpenHack Scanner or Pentest Agent Command Line; Sigma: OpenHack Vendor Hosts or User Agents in Proxy Logs; Sigma: OpenHack Workspace, Temporary or Evidence Files Written; Suricata: 3813368 TD OpenHack v0.x client user agent (openhack); Suricata: 3813369 TD OpenHack v0.x model gateway or update check lookup (api.openhack.com); Suricata: 3813370 TD OpenHack v0.x model gateway or update check in TLS SNI (api.openhack.com); Suricata: 3813371 TD OpenHack v2 installer lookup (install.openhack.com); "
+    },
+    {
+      "id": "T1595",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1595.002",
+      "score": 8,
+      "comment": "KQL hunt: OpenHack on a host you monitor; KQL hunt: OpenHack testing you: its collector, canary rows and user agents in web, proxy and DNS logs; Sigma: Network Scanners Started by the OpenHack v0.x Agent; Sigma: OpenHack Collector or Canary Marker in Web Requests; Sigma: OpenHack Scanner or Pentest Agent Command Line; Suricata: 3813365 TD OpenHack canary marker in a request URI (__openhack_test_); Suricata: 3813366 TD OpenHack canary marker in a request body (__openhack_test_); Suricata: 3813367 TD OpenHack web_fetch user agent (Chrome/125.0 with a two-part version)"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "domain",
+      "value": "oob.openhack.com",
+      "confidence": "high",
+      "context": "Out-of-band collector of the OpenHack v0.x pentest agent (PyPI openhack 0.2.4): oob_register returns https://oob.openhack.com/<label>-<12 hex> for blind SSRF, command injection and XXE payloads (OOB_URL overrides it). A target that resolves or calls it ran the agent's payload; the agent's own host polls /_hits on it",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/8fdfdddffa1f493d21e3e6dd98d911e7c531b84b/openhack/tools/oob.py#L29",
+      "reported": "2026-08-21"
+    },
+    {
+      "type": "domain",
+      "value": "api.openhack.com",
+      "confidence": "medium",
+      "context": "Default model gateway (https://api.openhack.com/v1, bearer OPENHACK_API_KEY) and update check (/updates?current=<version>) of the OpenHack v0.x agent. A host that contacts it runs OpenHack 0.x; the vendor's own service",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/8fdfdddffa1f493d21e3e6dd98d911e7c531b84b/openhack/config.py#L85",
+      "reported": "2026-08-21"
+    },
+    {
+      "type": "domain",
+      "value": "app.openhack.com",
+      "confidence": "low",
+      "context": "Sign-up and device-login site of the OpenHack v0.x agent (PROD_APP_URL). Vendor site; context only",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/8fdfdddffa1f493d21e3e6dd98d911e7c531b84b/openhack/config.py#L84",
+      "reported": "2026-08-21"
+    },
+    {
+      "type": "domain",
+      "value": "install.openhack.com",
+      "confidence": "medium",
+      "context": "OpenHack v2 installer (curl -fsSL https://install.openhack.com | sh), a Cloudflare Worker that serves install.sh, which downloads the release from GitHub into ~/.local/bin/openhack",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/f94e153c5e6cc55218692ff6827ca1ac4e17e6a9/deploy/installer/wrangler.toml#L8",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "url",
+      "value": "https://github.com/openhackai/OpenHack/releases/download/",
+      "confidence": "low",
+      "context": "Release path the OpenHack v2 installer downloads from: v<version>/openhack-<version>-<darwin|linux>-<arm64|x64>.tar.gz and .sha256",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/f94e153c5e6cc55218692ff6827ca1ac4e17e6a9/install.sh#L62",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "user_agent",
+      "value": "openhack",
+      "confidence": "medium",
+      "context": "Exact user agent the OpenHack v0.x agent sends on its model list call to api.openhack.com/v1/models, collector polls to oob.openhack.com, ChatGPT token calls to auth.openai.com and the models.dev catalog fetch. Short, so match it exactly, not as a substring",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/8fdfdddffa1f493d21e3e6dd98d911e7c531b84b/openhack/agents/llm.py#L92",
+      "reported": "2026-08-21"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36",
+      "confidence": "medium",
+      "context": "User agent of the OpenHack v0.x web_fetch and keyless search tools (httpx). Real Chrome writes Chrome/125.0.0.0; the two-part version is the tell. web_fetch fetches any URL the model gives it, including target pages",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/8fdfdddffa1f493d21e3e6dd98d911e7c531b84b/openhack/tools/web.py#L34",
+      "reported": "2026-08-21"
+    },
+    {
+      "type": "string",
+      "value": "__openhack_test_",
+      "confidence": "high",
+      "context": "Canary marker the OpenHack v0.x hunter and validator prompts use to prove write access: rows __openhack_test_probe and __openhack_test_probe_updated, email __openhack_test_@example.com, inserted, read back with ?name=eq.__openhack_test_probe, updated and deleted (openhack/prompts/hunter.py:176-189, openhack/prompts/val",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/8fdfdddffa1f493d21e3e6dd98d911e7c531b84b/openhack/prompts/validator.py#L53",
+      "reported": "2026-08-21"
+    },
+    {
+      "type": "string",
+      "value": "You are a source-review worker inside OpenHack.",
+      "confidence": "high",
+      "context": "Sentence in the system prompt OpenHack v2 passes on the command line of every claude child in subscription mode (--system-prompt), and to codex through instructions.txt. May be cut off in long EDR command lines",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/f94e153c5e6cc55218692ff6827ca1ac4e17e6a9/src/providers/subscription.ts#L84",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "{\"disableAllHooks\":true,\"apiKeyHelper\":\"\",\"forceLoginMethod\":\"claudeai\"}",
+      "confidence": "high",
+      "context": "--settings value OpenHack v2 passes to every claude child (with --safe-mode --restricted --setting-sources \"\") for model turns and login checks",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/f94e153c5e6cc55218692ff6827ca1ac4e17e6a9/src/providers/subscription.ts#L15",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "openhack-subscription-",
+      "confidence": "medium",
+      "context": "Prefix of the temporary folder OpenHack v2 creates per model turn for its claude or codex child (instructions.txt, response.schema.json); it appears on the codex command line in --output-schema and model_instructions_file",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/f94e153c5e6cc55218692ff6827ca1ac4e17e6a9/src/providers/subscription.ts#L65",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "This dashboard only accepts requests addressed to localhost.",
+      "confidence": "medium",
+      "context": "403 JSON error of the OpenHack v2 dashboard (127.0.0.1:6969) for any request whose Host is not localhost or 127.0.0.1; seen only if the port is forwarded",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/f94e153c5e6cc55218692ff6827ca1ac4e17e6a9/src/server/security.ts#L9",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "{\"app\":\"openhack\",\"version\":\"",
+      "confidence": "medium",
+      "context": "Start of the OpenHack v2 dashboard's GET /api/health answer (then home, instanceId and activeScans)",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/f94e153c5e6cc55218692ff6827ca1ac4e17e6a9/src/server/index.ts#L109",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "string",
+      "value": "You are the Hunter agent for OpenHack Agent",
+      "confidence": "medium",
+      "context": "Opening of the OpenHack v0.x hunter system prompt, seen in model traffic where it is inspected or in the installed package",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/8fdfdddffa1f493d21e3e6dd98d911e7c531b84b/openhack/prompts/hunter.py#L5",
+      "reported": "2026-08-21"
+    },
+    {
+      "type": "string",
+      "value": "You are OpenHack — the Swiss-army knife for hackers.",
+      "confidence": "medium",
+      "context": "Opening of the OpenHack v0.x interactive agent system prompt, seen in model traffic where it is inspected or in the installed package",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/8fdfdddffa1f493d21e3e6dd98d911e7c531b84b/openhack/agents/interactive.py#L21",
+      "reported": "2026-08-21"
+    },
+    {
+      "type": "string",
+      "value": "openhack-sandbox-",
+      "confidence": "medium",
+      "context": "Docker compose project name prefix (openhack-sandbox-<unix time>) the OpenHack v0.x sandbox verifier uses to run the target repository's own compose file; network <project>_default, override file .openhack-sandbox-override-<project>.yml in the target folder",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/8fdfdddffa1f493d21e3e6dd98d911e7c531b84b/openhack/sandbox/orchestrator.py#L66",
+      "reported": "2026-08-21"
+    },
+    {
+      "type": "file_path",
+      "value": "/.openhack/",
+      "confidence": "medium",
+      "context": "OpenHack home folder, both versions. v2: settings.json, credentials.json (API keys in plain text), dashboard-<port>.json and .log, projects/<hash>/scans/<id>.json. v0.x: config, auth.json, models-dev.json, scans/<id>.events.jsonl, checkpoints/",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/f94e153c5e6cc55218692ff6827ca1ac4e17e6a9/src/core/files.ts#L7",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "file_path",
+      "value": "/.openhack-evidence/",
+      "confidence": "medium",
+      "context": "Folder the OpenHack v0.x browser tools write screenshots and evidence to, inside the folder under test",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/8fdfdddffa1f493d21e3e6dd98d911e7c531b84b/openhack/tools/registry.py#L51",
+      "reported": "2026-08-21"
+    },
+    {
+      "type": "port",
+      "value": "6969",
+      "confidence": "low",
+      "context": "Default port of the OpenHack v2 dashboard (Bun, bound to 127.0.0.1 only)",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/f94e153c5e6cc55218692ff6827ca1ac4e17e6a9/src/server/index.ts#L80",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "http_header",
+      "value": "X-OpenHack-Client: dashboard",
+      "confidence": "low",
+      "context": "Header the OpenHack v2 dashboard requires on every change request (loopback only)",
+      "source": "ThreatDefence review of the OpenHack source code",
+      "sourceUrl": "https://github.com/openhackai/OpenHack/blob/f94e153c5e6cc55218692ff6827ca1ac4e17e6a9/src/server/security.ts#L22",
+      "reported": "2026-11-23"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/openhack",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

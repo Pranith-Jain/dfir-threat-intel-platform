@@ -1147,6 +1147,8 @@ import { hiRouter } from './routes/hi-edge-tools';
 import { ohRouter } from './routes/oh-edge-tools';
 import { kpRouter } from './routes/kp-edge-tools';
 import { mmdRouter } from './routes/mmd-edge-tools';
+import { aadRouter } from './routes/aad-edge-tools';
+import { artRouter } from './routes/art-edge-tools';
 import { denaliRouter } from './routes/denali-edge-tools';
 import { aiPlaybookRouter } from './routes/ai-playbook-edge-tools';
 import { reportsRouter } from './routes/reports-edge-tools';
@@ -2316,6 +2318,14 @@ app.route('/api/v1', kpRouter);
 // categories + recent commit activity feed. Data ships in public/data/mmd/
 // built by scripts/build-mmd-manifest.mjs.
 app.route('/api/v1', mmdRouter);
+
+// AAD — ThreatDefence agentic attack detections (MIT): detection coverage for
+// 100+ AI-agent attack frameworks, 1,800+ sourced indicators and an ATT&CK
+// layer. ART — Atomic Red Team test catalog (redcanaryco, MIT): 353 ATT&CK
+// techniques with test metadata and upstream deep links. Both ship in
+// public/data/{aad,art}/ built by scripts/build-{aad,art}-manifest.mjs.
+app.route('/api/v1', aadRouter);
+app.route('/api/v1', artRouter);
 
 // Denali — evidence-led AI security reference (transilienceai/denali,
 // Apache-2.0): 9 deterministic rules, domain taxonomy, 38 ADR/guide docs,

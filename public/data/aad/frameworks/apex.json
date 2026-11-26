@@ -1,0 +1,264 @@
+{
+  "slug": "apex",
+  "name": "Pensar Apex",
+  "description": "Pensar's terminal pentest agent for black-box and white-box web testing, open core of a commercial console",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 5,
+    "suricata": 5,
+    "yara": 3,
+    "indicators": 23
+  },
+  "techniques": [
+    {
+      "id": "T1059.004",
+      "score": 3,
+      "comment": "KQL hunt: Pensar Apex on a host you monitor; Sentinel analytics: Pensar Apex AI pentest agent commands on a host; Sigma: Pensar Apex Agent Command Markers"
+    },
+    {
+      "id": "T1071.001",
+      "score": 2,
+      "comment": "Suricata: 3813245 TD Pensar Apex callback listener answer; YARA: Pensar_Apex_Callback_Listener_Script"
+    },
+    {
+      "id": "T1190",
+      "score": 2,
+      "comment": "KQL hunt: Pensar Apex testing you: its user agents and sign-up test account in web and proxy logs; Suricata: 3813243 TD Pensar Apex sign-up test account from the registration prompt"
+    },
+    {
+      "id": "T1588.002",
+      "score": 7,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; KQL hunt: Pensar Apex on a host you monitor; Sigma: Pensar Apex CLI or Kali Container Started; Sigma: Pensar Apex Install, Update Check or Model Gateway; Sigma: Pensar Apex Session, Run Store or Callback Listener Files; YARA: Pensar_Apex_Code; YARA: Pensar_Apex_Session_Readme"
+    },
+    {
+      "id": "T1588.007",
+      "score": 1,
+      "comment": "Sigma: Pensar Apex Install, Update Check or Model Gateway"
+    },
+    {
+      "id": "T1595.002",
+      "score": 8,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; KQL hunt: Pensar Apex testing you: its user agents and sign-up test account in web and proxy logs; Sentinel analytics: Pensar Apex AI pentest agent commands on a host; Sigma: Pensar Apex Agent Command Markers; Sigma: Pensar Apex User Agent in Web Server Logs; Suricata: 3813241 TD Pensar Apex default user agent pensar-apex; Suricata: 3813242 TD Pensar Apex get_page user agent PensarBot; Suricata: 3813243 TD Pensar Apex sign-up test account from the registration prompt"
+    },
+    {
+      "id": "T1699",
+      "score": 1,
+      "comment": "Suricata: 3813244 TD Pensar Apex example prompt injection marker"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "user_agent",
+      "value": "pensar-apex",
+      "confidence": "high",
+      "context": "Default User-Agent of every Apex session (config defaultHeaders and the session fallback). Sent by the http_request tool and added with -H to curl, wget, nuclei, ffuf, gobuster, httpx, feroxbuster, dirb, wfuzz, wpscan, sqlmap and nikto commands for in-scope hosts. The operator can change it with pensar config headers",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/config/config.ts#L19",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (compatible; PensarBot/1.0; +https://pensar.dev)",
+      "confidence": "high",
+      "context": "User-Agent of the Apex get_page tool when it fetches a target page for readable text",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/tools/backends/local.ts#L83-L84",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+      "confidence": "low",
+      "context": "Default User-Agent of the Apex Playwright browser. An ordinary Chrome user agent shared by many clients: context only",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/agents/offSecAgent/tools/playwrightMcp.ts#L345-L346",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "apex-callback",
+      "confidence": "high",
+      "context": "Body of the Apex callback listener's answer to a correlated callback: apex-callback <32 hex nonce> (text/plain). Also the [apex-callback] prefix of its log lines",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/agents/offSecAgent/tools/callbackListener.ts#L162",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "APEX_CB_PROBE",
+      "confidence": "high",
+      "context": "Environment variable in the callback listener readiness probe command node -e \"eval(Buffer.from(process.env.APEX_CB_PROBE,'base64')...)\"",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/agents/offSecAgent/tools/callbackListener.ts#L39-L42",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "InVzZSBzdHJpY3QiOwovLyBBcGV4IGNhbGxiYWNr",
+      "confidence": "high",
+      "context": "Start of the base64 in the callback listener command node -e \"eval(Buffer.from('<base64>','base64')...)\": the encoding of the generated script's first lines \"use strict\"; // Apex callback",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/agents/offSecAgent/tools/callbackListener.ts#L32-L35",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "APEX_HIDDEN_PAYLOAD_COUNT",
+      "confidence": "high",
+      "context": "Environment variable read by the command that writes a prompt injection payload to /tmp/apex_payload_<uuid>.txt in a sandbox",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/agents/offSecAgent/tools/executeCommand.ts#L244-L257",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "__APEX_GREP_EXIT_",
+      "confidence": "high",
+      "context": "Exit marker printed by the Apex grep helper in sandbox and remote command backends (__APEX_GREP_EXIT_<16 hex>_)",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/agents/offSecAgent/tools/grepImpl.ts#L468",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "APEX_GLOB_PY",
+      "confidence": "medium",
+      "context": "Heredoc delimiter of the Apex glob helper: python3 - <<'APEX_GLOB_PY' (sandbox and remote command backends)",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/agents/offSecAgent/tools/globImpl.ts#L97",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "APEX_LIST_PY",
+      "confidence": "medium",
+      "context": "Heredoc delimiter of the Apex list_files helper: python3 - <<'APEX_LIST_PY' (sandbox and remote command backends)",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/agents/offSecAgent/tools/listFilesImpl.ts#L195",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "TestPassword123!@#",
+      "confidence": "medium",
+      "context": "Password in the Apex authentication agent's registration prompt, with username testuser-<13-digit time> and email test-<13-digit time>@example.com. Prompt text the model copies, so it can vary",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/agents/specialized/authenticationAgent/prompts.ts#L410-L412",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "PROMPT_INJECTION_TEST_DIRECT_OVERRIDE",
+      "confidence": "low",
+      "context": "Reply marker in the example prompt injection library shipped in examples/prompt-injection. The library Apex uses in practice is supplied separately",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/examples/prompt-injection/payloads/direct-override.txt#L1",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "@pensar/apex",
+      "confidence": "medium",
+      "context": "npm package name of Apex, in install commands and in the update check URL https://registry.npmjs.org/@pensar/apex/latest",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/package.json#L344",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/.pensar/sessions/",
+      "confidence": "medium",
+      "context": "Apex session folders ~/.pensar/sessions/<id>/ with session.json, README.md, findings/, scratchpad/, logs/ and pocs/",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/session/index.ts#L393-L437",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/.pensar/runtime/runs.sqlite",
+      "confidence": "medium",
+      "context": "Apex local run store (PENSAR_DATA_DIR moves it)",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/runtime/runStorePath.ts#L4-L12",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "callback-listeners/listener-",
+      "confidence": "medium",
+      "context": "Staged copy of a generated callback listener: callback-listeners/listener-<32 hex nonce>.cjs",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/agents/offSecAgent/tools/callbackListener.ts#L693-L697",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/tmp/apex_payload_",
+      "confidence": "medium",
+      "context": "Prompt injection payload written in a sandbox: /tmp/apex_payload_<uuid>.txt",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/agents/offSecAgent/tools/executeCommand.ts#L251-L257",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "docker_image",
+      "value": "kali-apex:latest",
+      "confidence": "low",
+      "context": "Image name of the optional Kali container in container/docker-compose.yml (container kali-apex, NET_ADMIN and NET_RAW, seccomp unconfined). Built locally from the repository, not pulled",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/container/docker-compose.yml#L2-L5",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "domain",
+      "value": "gateway.pensar.dev",
+      "confidence": "medium",
+      "context": "Pensar model gateway (/gateway/invoke) Apex uses when signed in to Pensar Console. Pensar's own service: it shows Apex or Pensar Console use, not an attack",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/api/constants.ts#L2",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "domain",
+      "value": "api.pensar.dev",
+      "confidence": "low",
+      "context": "Pensar Console API (login, web search gateway, workspace data). Pensar's own service",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/api/constants.ts#L1",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "url",
+      "value": "https://pensarai.com/install.sh",
+      "confidence": "medium",
+      "context": "Apex install script (README) and the upgrade command curl -fsSL https://pensarai.com/install.sh | bash",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/installation/index.ts#L107",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "url",
+      "value": "https://registry.npmjs.org/@pensar/apex/latest",
+      "confidence": "medium",
+      "context": "Apex update check",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/installation/index.ts#L35",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "http_header",
+      "value": "X-Pensar-Client: cli",
+      "confidence": "low",
+      "context": "Header Apex sends to the Pensar Console API with X-Pensar-Client-Version and X-Pensar-Command. Over HTTPS: visible only with TLS inspection",
+      "source": "ThreatDefence review of the Pensar Apex source code",
+      "sourceUrl": "https://github.com/pensarai/apex/blob/6e3c5488d1dcdc63b1c37fd207e65919873489e6/src/core/api/clientIdentity.ts#L15-L19",
+      "reported": "2026-11-25"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/apex",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

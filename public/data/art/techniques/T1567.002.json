@@ -1,0 +1,48 @@
+{
+  "id": "T1567.002",
+  "displayName": "Exfiltration Over Web Service: Exfiltration to Cloud Storage",
+  "tests": [
+    {
+      "name": "Exfiltrate data with rclone to cloud Storage - Mega (Windows)",
+      "guid": "8529ee44-279a-4a19-80bf-b846a40dda58",
+      "description": "This test uses rclone to exfiltrate data to a remote cloud storage instance. (Mega)\nSee https://thedfirreport.com/2022/06/16/sans-ransomware-summit-2022-can-you-detect-this/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [
+        "rclone_path",
+        "rclone_config_path",
+        "dir_to_copy",
+        "mega_user_account",
+        "mega_user_password",
+        "remote_share"
+      ],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Exfiltrate data with rclone to cloud Storage - AWS S3",
+      "guid": "a4b74723-5cee-4300-91c3-5e34166909b4",
+      "description": "This test uses rclone to exfiltrate data to a remote cloud storage instance. (AWS S3)\nSee https://thedfirreport.com/2022/06/16/sans-ransomware-summit-2022-can-you-detect-this/",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [
+        "rclone_path",
+        "exfil_directory",
+        "terraform_path",
+        "aws_access_key",
+        "aws_secret_key",
+        "aws_region",
+        "aws_profile"
+      ],
+      "dependencyCount": 3
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1567.002/T1567.002.yaml"
+}

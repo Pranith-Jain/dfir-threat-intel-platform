@@ -1,0 +1,41 @@
+{
+  "id": "T1578.002",
+  "displayName": "Modify Cloud Compute Infrastructure: Create Cloud Instance",
+  "tests": [
+    {
+      "name": "Create EC2 Instance from Launch Template",
+      "guid": "09186a16-e7f1-4d26-9524-6999a95a2ea5",
+      "description": "Creating and launching an instance using RunInstances, with a launch template.\nThis launch template will contain all the necessary parameters for the instance.\n\nReference for the launch templates\nhttps://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-launch-template.html\nhttps://docs.aws.amazon.com/cli/latest/reference/ec2/run-instances.html#examples",
+      "platforms": ["iaas:aws", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [
+        "template_name",
+        "version",
+        "ami_id",
+        "instance_type",
+        "instance_id",
+        "aws_region",
+        "profile_name"
+      ],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Create EC2 Instance with user data",
+      "guid": "e0c5c285-8903-4927-a9f8-a7c37eac37e2",
+      "description": "Creates an EC2 instance with a keypair while passing user data in a script.\nThe script runs at launch.",
+      "platforms": ["iaas:aws", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ami_id", "instance_type", "instance_id", "aws_region", "profile_name"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1578.002/T1578.002.yaml"
+}

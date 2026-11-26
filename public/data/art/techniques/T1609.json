@@ -1,0 +1,33 @@
+{
+  "id": "T1609",
+  "displayName": "Container Administration Command",
+  "tests": [
+    {
+      "name": "ExecIntoContainer",
+      "guid": "d03bfcd3-ed87-49c8-8880-44bb772dea4b",
+      "description": "Attackers who have permissions, can run malicious commands in containers in the cluster using exec command (“kubectl exec”). In this method, attackers can use legitimate images, such as an OS image (e.g., Ubuntu) as a backdoor container, and run their malicious code remotely by using “kubectl exec”.",
+      "platforms": ["containers"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["namespace", "command", "path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Docker Exec Into Container",
+      "guid": "900e2c49-221b-42ec-ae3c-4717e41e6219",
+      "description": "Attackers who have permissions, can run malicious commands in containers in the cluster using exec command (“docker exec”). In this method, attackers can use legitimate images, such as an OS image (e.g., Ubuntu) as a backdoor container, and run their malicious code remotely by using “docker exec”. Kinsing (Golang-based malware) was executed with an Ubuntu container entry point that runs shell scripts.",
+      "platforms": ["containers"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1609/T1609.yaml"
+}

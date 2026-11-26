@@ -1,0 +1,46 @@
+{
+  "id": "T1564.003",
+  "displayName": "Hide Artifacts: Hidden Window",
+  "tests": [
+    {
+      "name": "Hidden Window",
+      "guid": "f151ee37-9e2b-47e6-80e4-550b9f999b7a",
+      "description": "Launch PowerShell with the \"-WindowStyle Hidden\" argument to conceal PowerShell windows by setting the WindowStyle parameter to hidden.\nUpon execution a hidden PowerShell window will launch calc.exe",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["powershell_command"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Headless Browser Accessing Mockbin",
+      "guid": "0ad9ab92-c48c-4f08-9b20-9633277c4646",
+      "description": "The following Atomic Red Team test leverages the Chrome headless browser to access a mockbin site. Create your own Mockbin.org site and replace the BIN in the inputs.\nThe default Mockbin ID forwards to google.com and you may view the details here https://mockbin.org/bin/f6b9a876-a826-4ac0-83b8-639d6ad516ec/view.\nReference: https://cert.gov.ua/article/5702579",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["bin_id", "browser"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Hidden Window-Conhost Execution",
+      "guid": "5510d22f-2595-4911-8456-4d630c978616",
+      "description": "Launch conhost.exe in \"headless\" mode, it means that no visible window will pop up on the victim's machine. \nThis could be a sign of \"conhost\" usage as a LOLBIN or potential process injection activity.\nconhost.exe can be used as proxy the execution of arbitrary commands",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1564.003/T1564.003.yaml"
+}

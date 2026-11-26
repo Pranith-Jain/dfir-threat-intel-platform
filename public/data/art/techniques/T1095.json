@@ -1,0 +1,72 @@
+{
+  "id": "T1095",
+  "displayName": "Non-Application Layer Protocol",
+  "tests": [
+    {
+      "name": "ICMP C2",
+      "guid": "0268e63c-e244-42db-bef7-72a9e59fc1fc",
+      "description": "This will attempt to  start C2 Session Using ICMP. For information on how to set up the listener\nrefer to the following blog: https://www.blackhillsinfosec.com/how-to-c2-over-icmp/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["server_ip"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Netcat C2",
+      "guid": "bcf0d1c1-3f6a-4847-b1c9-7ed4ea321f37",
+      "description": "Start C2 Session Using Ncat\nTo start the listener on a Linux device, type the following: \nnc -l -p <port>",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["server_port", "ncat_exe", "ncat_path", "server_ip"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Powercat C2",
+      "guid": "3e0e0e7f-6aa2-4a61-b61d-526c2cc9330e",
+      "description": "Start C2 Session Using Powercat\nTo start the listener on a Linux device, type the following: \nnc -l -p <port>",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["server_ip", "server_port"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Linux ICMP Reverse Shell using icmp-cnc",
+      "guid": "8e139e1f-1f3a-4be7-901d-afae9738c064",
+      "description": "ICMP C2 (Command and Control) utilizes the Internet Control Message Protocol (ICMP), traditionally used for network diagnostics, as a covert communication channel for attackers. By using ICMP, adversaries can send commands, exfiltrate data, or maintain access to compromised systems without triggering network detection systems.\nThis method allows attackers to communicate and control compromised devices while remaining undetected.\n\nFor more details, check this blog: [ICMP Reverse Shell Blog](https://cryptsus.com/blog/icmp-reverse-shell.html)\n\n**Important Notes:**\n- Use `[icmp-cnc]` for the C2 server (Attacker) and `[icmpdoor]` for the C2 client (Victim).\n- Binaries work on Ubuntu 22.04.5 LTS; ",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "manual",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Turla Topinambour TCP Callback via Inline .NET",
+      "guid": "b2858526-001a-4b94-8036-d18dab2898a6",
+      "description": "Attempts a TCP socket connection to a specified IP on port 13277 with a .NET payload, mirroring how Topinambour connects to hardcoded C2 addresses to establish a remote shell.\nDefaults to 127.0.0.1 so the attempt fails safely without a listener. The socket has a 5 second connection\ntimeout via Poll, and a 20 second receive timeout.\n\nReference: https://securelist.com/turla-renews-its-arsenal-with-topinambour/91687/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["callback_ip"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1095/T1095.yaml"
+}

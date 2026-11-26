@@ -1,0 +1,98 @@
+{
+  "id": "T1574.001",
+  "displayName": "Hijack Execution Flow: DLL",
+  "tests": [
+    {
+      "name": "DLL Search Order Hijacking - amsi.dll",
+      "guid": "8549ad4b-b5df-4a2d-a3d7-2aee9e7052a3",
+      "description": "Adversaries can take advantage of insecure library loading by PowerShell to load a vulnerable version of amsi.dll in order to bypass AMSI (Anti-Malware Scanning Interface)\nhttps://enigma0x3.net/2017/07/19/bypassing-amsi-via-com-server-hijacking/\n\nUpon successful execution, powershell.exe will be copied and renamed to updater.exe and load amsi.dll from a non-standard path.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Phantom Dll Hijacking - WinAppXRT.dll",
+      "guid": "46ed938b-c617-429a-88dc-d49b5c9ffedb",
+      "description": ".NET components (a couple of DLLs loaded anytime .NET apps are executed) when they are loaded they look for an environment variable called APPX_PROCESS\nSetting the environmental variable and dropping the phantom WinAppXRT.dll in e.g. c:\\windows\\system32 (or any other location accessible via PATH) will ensure the \nWinAppXRT.dll is loaded everytime user launches an application using .NET.\n\nUpon successful execution, amsi.dll will be copied and renamed to WinAppXRT.dll and then WinAppXRT.dll will be copied to system32 folder for loading during execution of any .NET application.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Phantom Dll Hijacking - ualapi.dll",
+      "guid": "5898902d-c5ad-479a-8545-6f5ab3cfc87f",
+      "description": "Re-starting the Print Spooler service leads to C:\\Windows\\System32\\ualapi.dll being loaded\nA malicious ualapi.dll placed in the System32 directory will lead to its execution whenever the system starts\n\nUpon successful execution, amsi.dll will be copied and renamed to ualapi.dll and then ualapi.dll will be copied to system32 folder for loading during system restart.\nPrint Spooler service is also configured to auto start. Reboot of system is required",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "DLL Side-Loading using the Notepad++ GUP.exe binary",
+      "guid": "65526037-7079-44a9-bda1-2cb624838040",
+      "description": "GUP is an open source signed binary used by Notepad++ for software updates, and is vulnerable to DLL Side-Loading, thus enabling the libcurl dll to be loaded.\nUpon execution, calc.exe will be opened.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["process_name", "gup_executable"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "DLL Side-Loading using the dotnet startup hook environment variable",
+      "guid": "d322cdd7-7d60-46e3-9111-648848da7c02",
+      "description": "Utilizing the dotnet_startup_hooks environment variable, this method allows for registering a global method in an assembly that will be executed whenever a .net core application is started. This unlocks a whole range of scenarios, from injecting a profiler to tweaking a static context in a given environment. [blog post](https://medium.com/criteo-engineering/c-have-some-fun-with-net-core-startup-hooks-498b9ad001e1)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["process_name", "preloader_dll"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "DLL Search Order Hijacking,DLL Sideloading Of KeyScramblerIE.DLL Via KeyScrambler.EXE",
+      "guid": "c095ad8e-4469-4d33-be9d-6f6d1fb21585",
+      "description": "Various threat actors and malware have been found side loading a masqueraded \"KeyScramblerIE.dll\" through \"KeyScrambler.exe\", which can load further executables embedded in modified KeyScramblerIE.dll file.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "DLL Search Order Hijacking - ntprint",
+      "guid": "e96b8105-d7f7-484e-8d81-2d0c7086971b",
+      "description": "This technique abuses the legitimate, Microsoft-signed ntprint.exe as a living-off-the-land loader by copying it out of C:\\Windows\\System32 into a user-controlled directory and launching it with the next command-line PSetupElevatedLegacyPrintDriverInstallW, which causes the process to attempt to load ntprint.dll; due to Windows DLL search behavior, placing a malicious ntprint.dll in the same directory results in that DLL being loaded alongside the trusted binary, providing code execution inside a seemingly benign Windows component and blending activity under a signed process name (a classic DLL sideloading/search-order hijack pattern)\nReference: https://www.hexacorn.com/blog/2025/10/06/ntpri",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ntprint_dll_file"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1574.001/T1574.001.yaml"
+}

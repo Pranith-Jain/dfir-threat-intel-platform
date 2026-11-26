@@ -1,0 +1,33 @@
+{
+  "id": "T1547.015",
+  "displayName": "Boot or Logon Autostart Execution: Login Items",
+  "tests": [
+    {
+      "name": "Persistence by modifying Windows Terminal profile",
+      "guid": "ec5d76ef-82fe-48da-b931-bdb25a62bc65",
+      "description": "Modify Windows Terminal settings.json file to gain persistence. [Twitter Post](https://twitter.com/nas_bench/status/1550836225652686848)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["calculator", "settings_json_def", "settings_json_tmp", "wt_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Add macOS LoginItem using Applescript",
+      "guid": "716e756a-607b-41f3-8204-b214baf37c1d",
+      "description": "Runs osascript on a file to create new LoginItem for current user.\nNOTE: Will popup dialog prompting user to Allow or Deny Terminal.app to control \"System Events\"\nTherefore, it can't be automated until the TCC is granted.\nThe login item launches Safari.app when user logs in, but there is a cleanup script to remove it as well.\nIn addition to the `osascript` Process Events, file modification events to\n`/Users/*/Library/Application Support/com.apple.backgroundtaskmanagementagent/backgrounditems.btm` should be seen.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["scriptfile", "cleanup_script"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1547.015/T1547.015.yaml"
+}

@@ -1,0 +1,46 @@
+{
+  "id": "T1620",
+  "displayName": "Reflective Code Loading",
+  "tests": [
+    {
+      "name": "WinPwn - Reflectively load Mimik@tz into memory",
+      "guid": "56b9589c-9170-4682-8c3d-33b86ecb5119",
+      "description": "Reflectively load Mimik@tz into memory technique via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Reflective PE Injection via PowerSploit",
+      "guid": "114c2b95-d992-4c03-8c38-fc58420a3eb5",
+      "description": "Uses PowerSploit's Invoke-ReflectivePEInjection to reflectively load a PE file into the\ncurrent PowerShell process.\n\nReference: https://github.com/PowerShellMafia/PowerSploit/blob/master/CodeExecution/Invoke-ReflectivePEInjection.ps1",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["script_url", "script_path", "pe_path", "pe_url", "exe_args"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Turla Mosquito (CommanderDLL.dll) Dynamic Export Address Table (EAT) Patching",
+      "guid": "7c3e0b89-09e6-4f3c-a1e8-1c1dfa9288ce",
+      "description": "Emulates the behavior of Turla's Mosquito main backdoor. Loads a benign DLL that has no export for \"StartRoutine\" on disk. During\nDllMain, the DLL constructs an IMAGE_EXPORT_DIRECTORY in memory at the tail of its mapped image (past .reloc), then patches its own PE header's\ndata-directory entry so the export RVA points to the fabricated table. Effectively hides the DLL's real entry point from static analysis and export-name-based detection.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["dll_path"],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1620/T1620.yaml"
+}

@@ -1,0 +1,98 @@
+{
+  "id": "T1003",
+  "displayName": "OS Credential Dumping",
+  "tests": [
+    {
+      "name": "Gsecdump",
+      "guid": "96345bfc-8ae7-4b6a-80b7-223200f24ef9",
+      "description": "Dump credentials from memory using Gsecdump.\n\nUpon successful execution, you should see domain\\username's followed by two 32 character hashes.\n\nIf you see output that says \"compat: error: failed to create child process\", execution was likely blocked by Anti-Virus. \nYou will receive only error output if you do not run this test from an elevated context (run as administrator)\n\nIf you see a message saying \"The system cannot find the path specified\", try using the get-prereq_commands to download and install Gsecdump first.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["gsecdump_exe", "gsecdump_bin_hash", "gsecdump_url"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Credential Dumping with NPPSpy",
+      "guid": "9e2173c0-ba26-4cdf-b0ed-8c54b27e3ad6",
+      "description": "Changes ProviderOrder Registry Key Parameter and creates Key for NPPSpy.\nAfter user's logging in cleartext password is saved in C:\\NPPSpy.txt.\nClean up deletes the files and reverses Registry changes.\nNPPSpy Source: https://github.com/gtworek/PSBits/tree/master/PasswordStealing/NPPSpy",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Dump svchost.exe to gather RDP credentials",
+      "guid": "d400090a-d8ca-4be0-982e-c70598a23de9",
+      "description": "The svchost.exe contains the RDP plain-text credentials.\nSource: https://www.n00py.io/2021/05/dumping-plaintext-rdp-credentials-from-svchost-exe/\n\nUpon successful execution, you should see the following file created $env:TEMP\\svchost-exe.dmp.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Retrieve Microsoft IIS Service Account Credentials Using AppCmd (using list)",
+      "guid": "6c7a4fd3-5b0b-4b30-a93e-39411b25d889",
+      "description": "AppCmd.exe is a command line utility which is used for managing an IIS web server. The list command within the tool reveals the service account credentials configured for the webserver. An adversary may use these credentials for other malicious purposes.\n[Reference](https://twitter.com/0gtweet/status/1588815661085917186?cxt=HHwWhIDUyaDbzYwsAAAA)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Retrieve Microsoft IIS Service Account Credentials Using AppCmd (using config)",
+      "guid": "42510244-5019-48fa-a0e5-66c3b76e6049",
+      "description": "AppCmd.exe is a command line utility which is used for managing an IIS web server. The config command within the tool reveals the service account credentials configured for the webserver. An adversary may use these credentials for other malicious purposes.\n[Reference](https://twitter.com/0gtweet/status/1588815661085917186?cxt=HHwWhIDUyaDbzYwsAAAA)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Dump Credential Manager using keymgr.dll and rundll32.exe",
+      "guid": "84113186-ed3c-4d0d-8a3c-8980c86c1f4a",
+      "description": "This test executes the exported function `KRShowKeyMgr` located in `keymgr.dll` using `rundll32.exe`. It opens a window that allows to export stored Windows credentials from the credential manager to a file (`.crd` by default). The file can then be retrieved and imported on an attacker-controlled computer to list the credentials get the passwords. The only limitation is that it requires a CTRL+ALT+DELETE input from the attacker, which can be achieve multiple ways (e.g. a custom implant with remote control capabilities, enabling RDP, etc.).\nReference: https://twitter.com/0gtweet/status/1415671356239216653",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Send NTLM Hash with RPC Test Connection",
+      "guid": "0b207037-813c-4444-ac3f-b597cf280a67",
+      "description": "RpcPing command can be used to send an RPC test connection to the target server (-s) and force the NTLM hash to be sent in the process. \nRef: https://twitter.com/vysecurity/status/974806438316072960",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["custom_port", "server_ip"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1003/T1003.yaml"
+}

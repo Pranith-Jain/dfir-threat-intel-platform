@@ -1,0 +1,1 @@
+../../../worker/lib/art-manifest.ts

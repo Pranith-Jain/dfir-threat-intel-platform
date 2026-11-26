@@ -1,0 +1,228 @@
+{
+  "id": "T1059.004",
+  "displayName": "Command and Scripting Interpreter: Unix Shell",
+  "tests": [
+    {
+      "name": "Create and Execute Bash Shell Script",
+      "guid": "7e7ac3ed-f795-4fa5-b711-09d6fbe9b873",
+      "description": "Creates and executes a simple sh script.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["script_path", "host"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Command-Line Interface",
+      "guid": "d0c88567-803d-4dca-99b4-7ce65e7b257c",
+      "description": "Using Curl to download and pipe a payload to Bash. NOTE: Curl-ing to Bash is generally a bad idea if you don't control the server.\n\nUpon successful execution, sh will download via curl and wget the specified payload (echo-art-fish.sh) and set a marker file in `/tmp/art-fish.txt`.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Harvest SUID executable files",
+      "guid": "46274fc6-08a7-4956-861b-24cbbaa0503c",
+      "description": "AutoSUID application is the Open-Source project, the main idea of which is to automate harvesting the SUID executable files and to find a way for further escalating the privileges.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["autosuid", "autosuid_url"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "LinEnum tool execution",
+      "guid": "a2b35a63-9df1-4806-9a4d-5fe0500845f2",
+      "description": "LinEnum is a bash script that performs discovery commands for accounts,processes, kernel version, applications, services, and uses the information from these commands to present operator with ways of escalating privileges or further exploitation of targeted host.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["linenum", "linenum_url"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "New script file in the tmp directory",
+      "guid": "8cd1947b-4a54-41fb-b5ea-07d0ace04f81",
+      "description": "An attacker may create script files in the /tmp directory using the mktemp utility and execute them. The following commands creates a temp file and places a pointer to it in the variable $TMPFILE, echos the string id into it, and then executes the file using bash, which results in the id command being executed.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "What shell is running",
+      "guid": "7b38e5cc-47be-44f0-a425-390305c76c17",
+      "description": "An adversary will want to discover what shell is running so that they can tailor their attacks accordingly. The following commands will discover what shell is running.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "What shells are available",
+      "guid": "bf23c7dc-1004-4949-8262-4c1d1ef87702",
+      "description": "An adversary may want to discover which shell's are available so that they might switch to that shell to tailor their attacks to suit that shell. The following commands will discover what shells are available on the host.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Command line scripts",
+      "guid": "b04ed73c-7d43-4dc8-b563-a2fc595cba1a",
+      "description": "An adversary may type in elaborate multi-line shell commands into a terminal session because they can't or don't wish to create script files on the host. The following command is a simple loop, echoing out Atomic Red Team was here!",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Obfuscated command line scripts",
+      "guid": "5bec4cc8-f41e-437b-b417-33ff60acf9af",
+      "description": "An adversary may pre-compute the base64 representations of the terminal commands that they wish to execute in an attempt to avoid or frustrate detection. The following commands base64 encodes the text string id, then base64 decodes the string, then pipes it as a command to bash, which results in the id command being executed.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Change login shell",
+      "guid": "c7ac59cb-13cc-4622-81dc-6d2fee9bfac7",
+      "description": "An adversary may want to use a different login shell. The chsh command changes the user login shell. The following test, creates an art user with a /bin/bash shell, changes the users shell to sh, then deletes the art user.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Environment variable scripts",
+      "guid": "bdaebd56-368b-4970-a523-f905ff4a8a51",
+      "description": "An adversary may place scripts in an environment variable because they can't or don't wish to create script files on the host. The following test, in a bash shell, exports the ART variable containing an echo command, then pipes the variable to /bin/bash",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Detecting pipe-to-shell",
+      "guid": "fca246a8-a585-4f28-a2df-6495973976a1",
+      "description": "An adversary may develop a useful utility or subvert the CI/CD pipe line of a legitimate utility developer, who requires or suggests installing their utility by piping a curl download directly into bash. Of-course this is a very bad idea. The adversary may also take advantage of this BLIND install method and selectively running extra commands in the install script for those who DO pipe to bash and not for those who DO NOT. This test uses curl to download the pipe-to-shell.sh script, the first time without piping it to bash and the second piping it into bash which executes the echo command.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_url"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Current kernel information enumeration",
+      "guid": "3a53734a-9e26-4f4b-ad15-059e767f5f14",
+      "description": "An adversary may want to enumerate the kernel information to tailor their attacks for that particular kernel. The following command will enumerate the kernel information.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Shell Creation using awk command",
+      "guid": "ee72b37d-b8f5-46a5-a9e7-0ff50035ffd5",
+      "description": "In awk the begin rule runs the first record without reading or interpreting it. This way a shell can be created and used to break out from restricted environments with the awk command.\nReference - https://gtfobins.github.io/gtfobins/awk/#shell",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Creating shell using cpan command",
+      "guid": "bcd4c2bc-490b-4f91-bd31-3709fe75bbdf",
+      "description": "cpan lets you execute perl commands with the ! command. It can be used to break out from restricted environments by spawning an interactive system shell.\nReference - https://gtfobins.github.io/gtfobins/cpan/",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Shell Creation using busybox command",
+      "guid": "ab4d04af-68dc-4fee-9c16-6545265b3276",
+      "description": "BusyBox is a multi-call binary. A multi-call binary is an executable program that performs the same job as more than one utility program. It can be used to break out from restricted environments by spawning an interactive system shell. \nReference - https://gtfobins.github.io/gtfobins/busybox/",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "emacs spawning an interactive system shell",
+      "guid": "e0742e38-6efe-4dd4-ba5c-2078095b6156",
+      "description": "emacs can be used to break out from restricted environments by spawning an interactive system shell. Ref: https://gtfobins.github.io/gtfobins/emacs/",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1059.004/T1059.004.yaml"
+}

@@ -1,0 +1,282 @@
+{
+  "slug": "burp-ai-agent",
+  "name": "Custom AI Agent (burp-ai-agent)",
+  "description": "Burp Suite extension (Custom AI Agent) that lets models and MCP clients drive Burp and adds AI scanners with fixed payload markers",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 5,
+    "suricata": 17,
+    "yara": 2,
+    "indicators": 25
+  },
+  "techniques": [
+    {
+      "id": "T1071.001",
+      "score": 5,
+      "comment": "Suricata: 3818713 TD Burp AI Agent MCP server auto-generated certificate (CN=burp-mcp); Suricata: 3818714 TD Burp AI Agent MCP health answer identity header; Suricata: 3818715 TD Burp AI Agent MCP health or shutdown route request; Suricata: 3818716 TD Burp AI Agent MCP server name in initialize answer; Suricata: 3818717 TD Burp AI Agent MCP client name sent to an MCP server (burp-ai-agent-ext)"
+    },
+    {
+      "id": "T1071.004",
+      "score": 2,
+      "comment": "Sigma: Custom AI Agent (burp-ai-agent) Test Domain Lookup; Suricata: 3818710 TD Burp AI Agent test domain lookup (evil-burp-ai)"
+    },
+    {
+      "id": "T1190",
+      "score": 18,
+      "comment": "KQL hunt: Custom AI Agent (burp-ai-agent) testing you: its payload markers and test domains in web, proxy and DNS logs; KQL hunt: Indicator sweep with the agentic watchlist; Sentinel analytics: Custom AI Agent (burp-ai-agent) payload markers in web or proxy logs; Sigma: Custom AI Agent (burp-ai-agent) Active Scanner Payload Markers in Web Logs; Sigma: Custom AI Agent (burp-ai-agent) Test Domain Lookup; Sigma: Custom AI Agent (burp-ai-agent) Test Domains or Payload Markers in Proxy Logs; Suricata: 3818701 TD Burp AI Agent XSS payload marker in URI (XSS-BURP-AI); Suricata: 3818702 TD Burp AI Age"
+    },
+    {
+      "id": "T1587.003",
+      "score": 3,
+      "comment": "KQL hunt: Custom AI Agent (burp-ai-agent) on a host you monitor; Sigma: Custom AI Agent (burp-ai-agent) MCP Server Certificate or MCP Bridge; Suricata: 3818713 TD Burp AI Agent MCP server auto-generated certificate (CN=burp-mcp)"
+    },
+    {
+      "id": "T1588.002",
+      "score": 5,
+      "comment": "KQL hunt: Custom AI Agent (burp-ai-agent) on a host you monitor; Sigma: Custom AI Agent (burp-ai-agent) Extension Files Written; Sigma: Custom AI Agent (burp-ai-agent) MCP Server Certificate or MCP Bridge; YARA: BurpAiAgent_Extension_Jar; YARA: BurpAiAgent_Source_Or_Classes"
+    },
+    {
+      "id": "T1595",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1595.002",
+      "score": 15,
+      "comment": "KQL hunt: Custom AI Agent (burp-ai-agent) testing you: its payload markers and test domains in web, proxy and DNS logs; Sentinel analytics: Custom AI Agent (burp-ai-agent) payload markers in web or proxy logs; Sigma: Custom AI Agent (burp-ai-agent) Active Scanner Payload Markers in Web Logs; Sigma: Custom AI Agent (burp-ai-agent) Test Domains or Payload Markers in Proxy Logs; Suricata: 3818701 TD Burp AI Agent XSS payload marker in URI (XSS-BURP-AI); Suricata: 3818702 TD Burp AI Agent XSS payload marker in request body (XSS-BURP-AI); Suricata: 3818703 TD Burp AI Agent XSS payload marker in a r"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "string",
+      "value": "XSS-BURP-AI-1337",
+      "confidence": "high",
+      "context": "Marker in the eight reflected XSS payloads of the Custom AI Agent Burp extension's active scanners, e.g. <script>alert('XSS-BURP-AI-1337')</script>; reflected XSS is tested on every insertion point (scanner/PayloadGenerator.kt:49-99)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/scanner/PayloadGenerator.kt#L49",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "string",
+      "value": "DOM-XSS-BURP-AI",
+      "confidence": "high",
+      "context": "Marker in its DOM XSS payloads #<script>alert('DOM-XSS-BURP-AI')</script> and '-alert('DOM-XSS-BURP-AI')-' (scanner/PayloadGenerator.kt:111,125)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/scanner/PayloadGenerator.kt#L111",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "string",
+      "value": "burp-ai-test",
+      "confidence": "high",
+      "context": "Value in its header and CRLF injection payloads: X-Injected: burp-ai-test and Set-Cookie: burp-ai-test=true, raw and URL-encoded (scanner/PayloadGenerator.kt:237-261)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/scanner/PayloadGenerator.kt#L237",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "domain",
+      "value": "evil-burp-ai.com",
+      "confidence": "medium",
+      "context": "Made-up domain in its OAuth redirect payloads: https://evil-burp-ai.com/callback, legitimate.com.evil-burp-ai.com, legitimate.com@evil-burp-ai.com (scanner/PayloadGenerator.kt:463-484). Not checked whether it resolves; a server looking it up followed a payload",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/scanner/PayloadGenerator.kt#L463",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "domain",
+      "value": "evil-burp-ai-test.com",
+      "confidence": "medium",
+      "context": "Made-up domain in its host header injection payload, sent in Host, X-Forwarded-Host, X-Host, X-Original-Host, Origin or Referer (scanner/PayloadGenerator.kt:411, scanner/ScannerUtils.kt:4-13). Not checked whether it resolves",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/scanner/PayloadGenerator.kt#L411",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "domain",
+      "value": "evil-burp-ai-cache.com",
+      "confidence": "medium",
+      "context": "Made-up domain in its cache poisoning payload; the scanner then repeats the original request to see if it was cached (scanner/PayloadGenerator.kt:521). Not checked whether it resolves",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/scanner/PayloadGenerator.kt#L521",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "string",
+      "value": "{{1337*73}}",
+      "confidence": "low",
+      "context": "SSTI probe in its payload table, with ${1337*73}, <%= 1337*73 %>, #{1337*73} and *{1337*73}; it looks for 97601 in the answer. Short and easy to copy (scanner/PayloadGenerator.kt:165-171)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/scanner/PayloadGenerator.kt#L165",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "string",
+      "value": "{{31337*3}}",
+      "confidence": "low",
+      "context": "SSTI probe in its payload table; it looks for 94011 in the answer (scanner/PayloadGenerator.kt:166)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/scanner/PayloadGenerator.kt#L166",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "string",
+      "value": "CN=burp-mcp",
+      "confidence": "high",
+      "context": "Subject and issuer of the self-signed RSA 2048 certificate (365 days) the extension makes with keytool for its MCP server; TLS is forced when external access is on (mcp/McpTls.kt:96-122)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/mcp/McpTls.kt#L118",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "port",
+      "value": "9876",
+      "confidence": "low",
+      "context": "Default port of its MCP server (SSE at /sse and /message), bound to 127.0.0.1 unless external access is on (config/AgentSettings.kt:1305-1306). Other Burp MCP extensions are documented on the same port",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/config/AgentSettings.kt#L1306",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "http_header",
+      "value": "X-Burp-AI-Agent",
+      "confidence": "high",
+      "context": "Response header X-Burp-AI-Agent: mcp on its MCP health route /__mcp/health, local mode only (mcp/KtorMcpServerManager.kt:210-218)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/mcp/KtorMcpServerManager.kt#L216",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "http_header",
+      "value": "X-Mcp-Takeover-Proof",
+      "confidence": "high",
+      "context": "Request header with an HMAC proof the extension sends in POST /__mcp/shutdown to whatever holds its MCP port (mcp/McpTakeoverProof.kt:52)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/mcp/McpTakeoverProof.kt#L52",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "uri_string",
+      "value": "/__mcp/health",
+      "confidence": "medium",
+      "context": "Health route of its MCP server; answers ok without a token, also in external mode (mcp/McpAccessControlDecision.kt:16)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/mcp/McpAccessControlDecision.kt#L16",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "uri_string",
+      "value": "/__mcp/shutdown",
+      "confidence": "medium",
+      "context": "Shutdown route of its MCP server, POST with the bearer token or takeover proof (mcp/McpAccessControlDecision.kt:24)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/mcp/McpAccessControlDecision.kt#L24",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "string",
+      "value": "burp-ai-agent-ext",
+      "confidence": "high",
+      "context": "Client name (version 0.9.0) the full build sends in the MCP initialize request to external MCP servers it connects to (mcp/external/ExternalMcpClientManager.kt:223)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/full/kotlin/com/six2dez/burp/aiagent/mcp/external/ExternalMcpClientManager.kt#L223",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "string",
+      "value": "BURP_AI_AGENT_EMBEDDED",
+      "confidence": "high",
+      "context": "Environment variable set to 1 for the claude, codex, gemini, opencode and copilot CLIs the full build starts as backends (backends/cli/CliEnvironment.kt:91)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/full/kotlin/com/six2dez/burp/aiagent/backends/cli/CliEnvironment.kt#L91",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "file_path",
+      "value": "~/.burp-ai-agent/",
+      "confidence": "medium",
+      "context": "Configuration folder: audit.jsonl, bundles/, contexts/, logs/ai-request-log.jsonl, cache/, AGENTS/, certs/, backends/ (audit/AuditLogger.kt:27)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/audit/AuditLogger.kt#L27",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "file_path",
+      "value": "~/.burp-ai-agent/certs/mcp-keystore.p12",
+      "confidence": "high",
+      "context": "PKCS12 keystore of the CN=burp-mcp certificate, written when its MCP server first needs TLS (config/AgentSettings.kt:1177)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/config/AgentSettings.kt#L1177",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "file_path",
+      "value": "~/.burp-ai-agent/logs/ai-request-log.jsonl",
+      "confidence": "high",
+      "context": "Rolling log of model requests, rolled to ai-request-log.<n>.jsonl (App.kt:412, audit/AiRequestLogger.kt:46)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/App.kt#L412",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "file_name",
+      "value": "custom-ai-agent-bapp.jar",
+      "confidence": "high",
+      "context": "BApp Store build of the extension (build.gradle.kts:292, BappManifest.bmf)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/build.gradle.kts#L292",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "file_name",
+      "value": "Custom-AI-Agent-full-1.1.0.jar",
+      "confidence": "high",
+      "context": "GitHub release JAR of the full build, version 1.1.0 (October 18, 2026); earlier releases follow the same pattern (build.gradle.kts:311)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/build.gradle.kts#L311",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "file_name",
+      "value": "Custom-AI-Agent-bapp-1.1.0.jar",
+      "confidence": "high",
+      "context": "GitHub release JAR of the BApp Store build, version 1.1.0 (October 18, 2026)",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/README.md#L110",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "domain",
+      "value": "burp-ai-agent.six2dez.com",
+      "confidence": "low",
+      "context": "Documentation site linked from the extension's Help tab (ui/panels/HelpConfigPanel.kt:34). Reading it is not use; context only",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/ui/panels/HelpConfigPanel.kt#L34",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "domain",
+      "value": "api.perplexity.ai",
+      "confidence": "low",
+      "context": "AI model API, one of the extension's HTTP backends (backends/perplexity/PerplexityBackendFactory.kt:35). Investigate only when a server calls it unexpectedly alongside other activity",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/backends/perplexity/PerplexityBackendFactory.kt#L35",
+      "reported": "2026-10-21"
+    },
+    {
+      "type": "domain",
+      "value": "integrate.api.nvidia.com",
+      "confidence": "low",
+      "context": "AI model API (NVIDIA NIM), one of the extension's HTTP backends (backends/nvidia/NvidiaNimBackendFactory.kt:39). Investigate only when a server calls it unexpectedly alongside other activity",
+      "source": "ThreatDefence review of the burp-ai-agent source code",
+      "sourceUrl": "https://github.com/six2dez/burp-ai-agent/blob/b1738c0ef310faee85c59df45827555a6345376a/src/main/kotlin/com/six2dez/burp/aiagent/backends/nvidia/NvidiaNimBackendFactory.kt#L39",
+      "reported": "2026-10-21"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/burp-ai-agent",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

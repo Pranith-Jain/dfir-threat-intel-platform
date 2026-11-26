@@ -1,0 +1,46 @@
+{
+  "id": "T1136.003",
+  "displayName": "Create Account: Cloud Account",
+  "tests": [
+    {
+      "name": "AWS - Create a new IAM user",
+      "guid": "8d1c2368-b503-40c9-9057-8e42f21c58ad",
+      "description": "Creates a new IAM user in AWS. Upon successful creation, a new user will be created. Adversaries create new IAM users so that their malicious activity do not interupt the normal functions of the compromised users and can remain undetected for a long time",
+      "platforms": ["iaas:aws"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Azure AD - Create a new user",
+      "guid": "e62d23ef-3153-4837-8625-fa4a3829134d",
+      "description": "Creates a new user in Azure AD. Upon successful creation, a new user will be created. Adversaries create new users so that their malicious activity does not interrupt the normal functions of the compromised users and can remain undetected for a long time.",
+      "platforms": ["azure-ad"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username", "userprincipalname", "password"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Azure AD - Create a new user via Azure CLI",
+      "guid": "228c7498-be31-48e9-83b7-9cb906504ec8",
+      "description": "Creates a new user in Azure AD via the Azure CLI. Upon successful creation, a new user will be created. Adversaries create new users so that their malicious activity does not interrupt the normal functions of the compromised users and can remain undetected for a long time.",
+      "platforms": ["azure-ad"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["username", "userprincipalname", "password"],
+      "dependencyCount": 3
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1136.003/T1136.003.yaml"
+}

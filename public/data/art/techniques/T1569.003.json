@@ -1,0 +1,111 @@
+{
+  "id": "T1569.003",
+  "displayName": "System Services: Systemctl",
+  "tests": [
+    {
+      "name": "Create and Enable a Malicious systemd Service Unit",
+      "guid": "e58c8723-5503-4533-b642-535cd20ec648",
+      "description": "Creates a new systemd service unit file in /etc/systemd/system/ and enables it using\nsystemctl enable followed by systemctl start. Adversaries commonly abuse this workflow\nto establish persistence or execute arbitrary commands under the context of systemd.\n\nThis simulates the full attacker workflow: writing the unit file, reloading the systemd\ndaemon, enabling the service to survive reboots, and starting it immediately. This is\nconsistent with techniques observed in ransomware precursor activity and post-exploitation\nframeworks targeting Linux infrastructure.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["service_name", "command_to_run"],
+      "dependencyCount": 3
+    },
+    {
+      "name": "Create systemd Service Unit from /tmp (Unusual Location)",
+      "guid": "a1fa406e-2354-4a24-b6d6-94157e7564d4",
+      "description": "Creates a systemd service unit file in /tmp and loads it using systemctl start with\nan absolute path. Adversaries may write service unit files to world-writable directories\nsuch as /tmp to avoid triggering alerts on new file creation in standard service\ndirectories, or to execute payloads transiently without permanently installing a service.\n\nLoading a service unit from an arbitrary path rather than a standard systemd directory\nis unusual behaviour that should be detectable by monitoring systemctl command arguments.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["service_path", "command_to_run"],
+      "dependencyCount": 3
+    },
+    {
+      "name": "Create systemd Service Unit from /dev/shm (Unusual Location)",
+      "guid": "dce49381-a26b-4d95-bdfa-c607ffe8bee5",
+      "description": "Creates a systemd service unit file in /dev/shm and loads it using systemctl.\n/dev/shm is a memory-backed filesystem that is world-writable on most Linux systems\nand does not persist across reboots, making it particularly attractive to adversaries\nseeking to execute transient payloads while evading file-based forensic detection.\n\nThis technique has been observed in post-exploitation scenarios where attackers\ndeliberately avoid writing to disk-backed locations to limit forensic artefacts.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["service_path", "command_to_run"],
+      "dependencyCount": 3
+    },
+    {
+      "name": "Modify Existing systemd Service to Execute Malicious Command",
+      "guid": "6123928f-6389-4914-8d25-a5d69bd657fa",
+      "description": "Creates a service unit file that initially runs a benign command, then modifies the\nExecStart directive using sed to substitute a malicious command before reloading and\nrestarting the service. Adversaries may hijack existing services to blend in with normal\nservice activity and avoid triggering detections focused solely on new service creation.\n\nThis technique reflects the tradecraft observed in more sophisticated intrusions where\nblending into existing process trees is a priority over creating net-new services.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["service_name", "malicious_command"],
+      "dependencyCount": 4
+    },
+    {
+      "name": "Execute Command via Transient systemd Service (systemd-run)",
+      "guid": "a73a886f-23c5-4e8f-b1ab-b1bbc1f5e236",
+      "description": "Uses systemd-run to execute a command as a transient systemd service without creating\na persistent unit file on disk. Adversaries may use systemd-run to execute arbitrary\ncommands under the context of systemd while bypassing controls that monitor for new\nunit file creation, since transient services exist only in memory for their lifetime.\n\nThis is a particularly stealthy technique as it leaves minimal on-disk artefacts and\nthe service disappears from systemctl list-units once execution completes.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["unit_name", "command_to_run"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Enumerate All systemd Services Using systemctl",
+      "guid": "1e5be8d4-605a-4acb-8709-2f80b2d8ea95",
+      "description": "Enumerates all systemd services and their current states using systemctl list-units\nand systemctl list-unit-files. Adversaries may enumerate running and enabled services\nto identify targets for hijacking, understand the host environment, map installed\nsecurity tooling, or identify gaps in monitoring coverage.\n\nService enumeration is a common reconnaissance step during post-exploitation and may\nprecede service hijacking or masquerading activity. This test does not require\nelevation as service listing is available to unprivileged users on most Linux systems.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Enable systemd Service for Persistence with Auto-Restart",
+      "guid": "2fc6c0ab-4f88-4eb8-ab1b-f739fc22bba7",
+      "description": "Creates a payload script and a systemd service unit that executes it, then enables\nthe service to survive reboots using systemctl enable. The service is configured with\nRestart=always to automatically restart on failure, mimicking the persistence mechanism\nused by adversaries deploying backdoors or beacons on Linux hosts.\n\nThis technique is consistent with observed post-exploitation tradecraft where adversaries\nestablish a foothold that survives reboots and self-heals after interruption, complicating\nincident response and remediation efforts.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["service_name", "payload_path"],
+      "dependencyCount": 4
+    },
+    {
+      "name": "Masquerade Malicious Service as Legitimate System Service",
+      "guid": "6fec8560-ff64-4bbf-bc79-734fea48f7ca",
+      "description": "Creates a systemd service with a name and description closely resembling a legitimate\nsystem service to blend in with normal service activity. Adversaries may deliberately\nchoose service names similar to well-known system services such as systemd-networkd,\ncron, or ssh to evade detection from analysts reviewing service lists or automated\nalerting on service names.\n\nThis masquerading technique is particularly effective in environments where detection\nrelies on service name allowlists or manual review of systemctl list-units output\nrather than behavioural analysis of service unit file contents and ExecStart paths.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["masquerade_name", "command_to_run"],
+      "dependencyCount": 4
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1569.003/T1569.003.yaml"
+}

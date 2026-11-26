@@ -1,0 +1,46 @@
+{
+  "id": "T1550.002",
+  "displayName": "Use Alternate Authentication Material: Pass the Hash",
+  "tests": [
+    {
+      "name": "Mimikatz Pass the Hash",
+      "guid": "ec23cef9-27d9-46e4-a68d-6f75f7b86908",
+      "description": "Note: must dump hashes first\n[Reference](https://github.com/gentilkiwi/mimikatz/wiki/module-~-sekurlsa#pth)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["user_name", "ntlm", "domain", "mimikatz_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "crackmapexec Pass the Hash",
+      "guid": "eb05b028-16c8-4ad8-adea-6f5b219da9a9",
+      "description": "command execute with crackmapexec",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["user_name", "crackmapexec_exe", "command", "ntlm", "domain"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Invoke-WMIExec Pass the Hash",
+      "guid": "f8757545-b00a-4e4e-8cfb-8cfb961ee713",
+      "description": "Use Invoke-WMIExec to Pass the Hash\nNote: must dump hashes first\n[Reference](https://github.com/gentilkiwi/mimikatz/wiki/module-~-sekurlsa#pth)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["ntlm", "user_name", "command", "target"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1550.002/T1550.002.yaml"
+}

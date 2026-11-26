@@ -1,0 +1,390 @@
+{
+  "slug": "nebula",
+  "name": "Nebula",
+  "description": "Operator workstation by BerylliumSec whose agents run commands in a local Kali container, with an interception proxy",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 5,
+    "suricata": 15,
+    "yara": 3,
+    "indicators": 37
+  },
+  "techniques": [
+    {
+      "id": "T1016",
+      "score": 1,
+      "comment": "Suricata: 3818502 TD Nebula Kali container public address check"
+    },
+    {
+      "id": "T1059.004",
+      "score": 3,
+      "comment": "KQL hunt: Nebula running on a host you monitor; Sentinel analytics: Nebula agent commands or core on a host; Sigma: Nebula Agent Command in Its Kali Container"
+    },
+    {
+      "id": "T1071",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1071.001",
+      "score": 13,
+      "comment": "KQL hunt: Nebula in web and proxy logs: its user agents, paired clients, tool callbacks and an exposed core; Sigma: Nebula User Agents or Core API in Proxy Logs; Suricata: 3818501 TD Nebula terminal client user agent (nebula-chat to a remote core); Suricata: 3818503 TD Nebula knowledge source fetcher or renderer user agent; Suricata: 3818504 TD Nebula paired-device CSRF header in a request; Suricata: 3818505 TD Nebula paired-device cookie in a request; Suricata: 3818507 TD Nebula background tool result posted to its core; Suricata: 3818510 TD Nebula browser workspace page; Suricata: 3818511 TD"
+    },
+    {
+      "id": "T1133",
+      "score": 5,
+      "comment": "KQL hunt: Nebula in web and proxy logs: its user agents, paired clients, tool callbacks and an exposed core; Sigma: Nebula Core Pairing, Tool Results or Terminal Client in Web Logs; Suricata: 3818506 TD Nebula device pairing redeemed on a core; Suricata: 3818515 TD Nebula core refusing a remote device pairing; Suricata: 3818517 TD Nebula core refusing device pairing over plain HTTP"
+    },
+    {
+      "id": "T1588.002",
+      "score": 7,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; KQL hunt: Nebula running on a host you monitor; Sigma: Nebula Core, Desktop Sidecar or Browser Sidecar Process; Sigma: Nebula Data Folder, Runtime or Container Files Written; YARA: Nebula_Browser_Workspace; YARA: Nebula_Core_Source; YARA: Nebula_Runtime_And_Container_Files"
+    },
+    {
+      "id": "T1610",
+      "score": 2,
+      "comment": "KQL hunt: Nebula running on a host you monitor; Sigma: Nebula Agent Command in Its Kali Container"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "user_agent",
+      "value": "nebula-chat",
+      "confidence": "medium",
+      "context": "User agent of Nebula's terminal client (nebula-chat) on every request to a remote Nebula core, with Origin, X-Nebula-CSRF and the nebula_device cookie once paired. HTTPS unless pairing allowed plain HTTP",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/terminal/transport.py#L357",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "user_agent",
+      "value": "Nebula-Terminal/1",
+      "confidence": "high",
+      "context": "User agent of the public address check Nebula's Kali containers run at start and every 5 minutes from cron (GET https://api.ipify.org, Accept: text/plain); visible where TLS is decrypted",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/public_ip_update.py#L21",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "user_agent",
+      "value": "Nebula/3 knowledge-source-fetcher",
+      "confidence": "high",
+      "context": "User agent of the httpx client Nebula uses to fetch a web page an operator adds as project knowledge",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/knowledge.py#L504",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "user_agent",
+      "value": "Nebula/3 knowledge-source-renderer",
+      "confidence": "high",
+      "context": "User agent of the headless Chromium context Nebula uses to render a web page an operator adds as project knowledge",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/knowledge.py#L657",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "Nebula 3 local-first security engagement workspace",
+      "confidence": "high",
+      "context": "Meta description of the Nebula browser workspace page served at / by a core run with nebula-core ui or a desktop build; Shodan http.html. The page title is Nebula 3",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/ui/index.html#L13",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "Nebula Core is running. Connect with a paired client.",
+      "confidence": "high",
+      "context": "Body of the placeholder page a Nebula core serves at / when it has no workspace build (its container image, nebula-core headless, an unbuilt source install), titled Nebula Core; Shodan http.html",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/runtime_launcher.py#L210",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "Nebula Operator Companion",
+      "confidence": "medium",
+      "context": "name field of the Nebula workspace web manifest /manifest.webmanifest (description: Secure mobile companion for Nebula engagements)",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/ui/public/manifest.webmanifest#L2",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "valid bearer token required",
+      "confidence": "medium",
+      "context": "401 detail (with WWW-Authenticate: Bearer) a Nebula core returns for an API request without a token or paired-device cookie, e.g. GET /api/v1/health; also the reason of WebSocket close code 4401",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/authentication.py#L198",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "new device pairings may be created only from the local machine",
+      "confidence": "high",
+      "context": "403 detail from POST /api/v1/auth/pairings on a Nebula core when the request does not come from loopback",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/authentication_api.py#L259",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "paired-device origin validation failed",
+      "confidence": "high",
+      "context": "403 detail from a Nebula core when a paired-device request carries a foreign Origin",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/authentication.py#L220",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "paired-device CSRF validation failed",
+      "confidence": "high",
+      "context": "403 detail from a Nebula core when a paired-device write lacks a matching X-Nebula-CSRF header and nebula_csrf cookie",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/authentication.py#L233",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "nebula-desktop-runtime-v1",
+      "confidence": "high",
+      "context": "Protocol value in the core discovery file <data>/runtime/connection.json that a running Nebula core writes",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/runtime_launcher.py#L24",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "os.execv('/bin/bash',['/bin/bash','--noprofile','--norc','-c',sys.argv[2]])",
+      "confidence": "high",
+      "context": "End of the Python wrapper Nebula passes to docker/podman exec for every agent command in its container (python3 -c ... /tmp/nebula-process-<id>.pid <command>)",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/automation_runtime.py#L855",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "Nebula provider session.",
+      "confidence": "medium",
+      "context": "Start of the instructions Nebula sends with every chat request to a model provider; matchable where an LLM gateway logs prompts",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/chat.py#L1872",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "org.nebula.human-terminal.profile",
+      "confidence": "high",
+      "context": "Docker label on the Kali image Nebula builds locally (value kali-linux-headless); with org.nebula.human-terminal.base and org.nebula.human-terminal.recipe",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/sandbox.py#L2522",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "nebula-runtime-",
+      "confidence": "medium",
+      "context": "Name prefix of the containers Nebula runs agent sessions in (nebula-runtime-<session id, 40 chars>); docker exec targets it for every agent command",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/automation_runtime.py#L873",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "nebula-terminal-",
+      "confidence": "medium",
+      "context": "Name prefix of the Kali containers Nebula starts for operator terminals (nebula-terminal-<40 hex>), run with /usr/local/bin/nebula-terminal-entrypoint",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/container_terminal.py#L1619",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "nebula-api-ready",
+      "confidence": "medium",
+      "context": "kind field of the JSON line nebula-core serve prints when its API is up, with url, token and authentication: bearer",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/runtime_service.py#L435",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "http_header",
+      "value": "X-Nebula-CSRF",
+      "confidence": "medium",
+      "context": "Header paired Nebula clients (browser workspace, nebula-chat) send to a core with the nebula_csrf cookie on writes",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/authentication.py#L223",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "http_header",
+      "value": "X-Nebula-Api-Key",
+      "confidence": "high",
+      "context": "Header a background command in Nebula's container uses to POST its result to <core>/api/v1/automation-processes/<id>/results; plain HTTP on the LAN when the core binds 0.0.0.0",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/execution_kernel.py#L9552",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "string",
+      "value": "nebula_device",
+      "confidence": "medium",
+      "context": "Name of the paired-device session cookie a Nebula core sets on POST /api/v1/auth/pairings/redeem (HttpOnly, SameSite=Strict, 90 days), with nebula_csrf",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/authentication_api.py#L274",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "uri_string",
+      "value": "/api/v1/auth/pairings/redeem",
+      "confidence": "medium",
+      "context": "Unauthenticated Nebula core endpoint a browser or nebula-chat posts {secret, confirmation_code, name} to when pairing a device",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/authentication_api.py#L263",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "uri_string",
+      "value": "/api/v1/automation-processes/",
+      "confidence": "medium",
+      "context": "Path prefix of Nebula's tool result callback: POST /api/v1/automation-processes/<uuid>/results with X-Nebula-Api-Key",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/automation_runtime.py#L2026",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/tmp/nebula-process-",
+      "confidence": "high",
+      "context": "Process group file /tmp/nebula-process-<id>.pid that Nebula's exec wrapper writes inside its container for every agent command; also on the command line of docker/podman exec",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/automation_runtime.py#L1064",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": ".local/share/nebula/v3",
+      "confidence": "medium",
+      "context": "Default data folder of nebula-core run by hand (~/.local/share/nebula/v3, NEBULA_V3_DATA_DIR): nebula.db, artifacts/, workspaces/, logs/, runtime/operator-token, runtime/connection.json, runtime/supervisor.log (cli.py:176-186)",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/cli.py#L1083",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "io.nebula.security",
+      "confidence": "medium",
+      "context": "Tauri identifier of the Nebula desktop app; its core keeps data in <app data>/core (sidecar.rs:753-754), normally ~/.local/share/io.nebula.security/core on Linux (location inferred from the identifier)",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/ui/src-tauri/tauri.conf.json#L5",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/run/nebula",
+      "confidence": "high",
+      "context": "Folder in Nebula's Kali containers (created by its terminal entrypoint) holding public-ip, the public egress address rewritten every 5 minutes by /usr/local/lib/nebula-public-ip-update",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/public_ip_update.py#L13",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/etc/cron.d/nebula-public-ip",
+      "confidence": "high",
+      "context": "Cron file in the Kali image Nebula builds: */5 * * * * root /usr/local/lib/nebula-public-ip-update",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/sandbox.py#L3133",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/usr/local/bin/nebula-terminal-entrypoint",
+      "confidence": "high",
+      "context": "Entrypoint Nebula bakes into its Kali image and puts in front of every operator terminal command",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/sandbox.py#L3132",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "file_path",
+      "value": "/usr/local/share/nebula/security-tools.json",
+      "confidence": "high",
+      "context": "Tool inventory Nebula writes into its Kali image when it builds it",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/sandbox.py#L2520",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "docker_image",
+      "value": "localhost/nebula-kali-headless",
+      "confidence": "high",
+      "context": "Kali image Nebula builds locally from docker.io/kalilinux/kali-rolling for agent and operator commands, tagged v11-<digest> at this commit",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/src/nebula/v3/sandbox.py#L2503",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "docker_image",
+      "value": "nebula-v3:dev",
+      "confidence": "low",
+      "context": "Image name compose.v3.yaml gives the Nebula core it builds from Dockerfile.v3 (serve --host 0.0.0.0 --port 8000 --allow-remote, published on 127.0.0.1:8000). Generic name, context only",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/compose.v3.yaml#L6",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "1869598234",
+      "confidence": "medium",
+      "context": "Nebula browser workspace icon /nebula-icon.svg (981 bytes, linked with rel=icon; there is no /favicon.ico). Shodan http.favicon.hash only if Shodan fetched the SVG",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/ui/public/nebula-icon.svg",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "md5",
+      "value": "5221058b5fb9514dea35b3264fa5aef3",
+      "confidence": "medium",
+      "context": "Nebula browser workspace icon nebula-icon.svg (981 bytes)",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/ui/public/nebula-icon.svg",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "sha256",
+      "value": "454b6a2f9ef4d7ca509cd5b165894ea6d4eecf4bc63a0a2b7c6a39e185115e41",
+      "confidence": "medium",
+      "context": "Nebula browser workspace icon nebula-icon.svg (981 bytes)",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/ui/public/nebula-icon.svg",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "1280231467",
+      "confidence": "low",
+      "context": "Nebula workspace apple-touch-icon /nebula-icon-180.png (8,887 bytes, MD5 c8ef41d8717b5b5cac1e8e702d4e2eea)",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/ui/public/nebula-icon-180.png",
+      "reported": "2026-11-25"
+    },
+    {
+      "type": "md5",
+      "value": "c8ef41d8717b5b5cac1e8e702d4e2eea",
+      "confidence": "low",
+      "context": "Nebula workspace apple-touch-icon nebula-icon-180.png (8,887 bytes)",
+      "source": "ThreatDefence review of the Nebula source code",
+      "sourceUrl": "https://github.com/BerylliumSec/nebula/blob/409bf4f9f8b5d6e31ce952d58be72d9375224bba/ui/public/nebula-icon-180.png",
+      "reported": "2026-11-25"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/nebula",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

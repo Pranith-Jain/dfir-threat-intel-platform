@@ -1,0 +1,423 @@
+{
+  "id": "T1552.001",
+  "displayName": "Unsecured Credentials: Credentials In Files",
+  "tests": [
+    {
+      "name": "Find AWS credentials",
+      "guid": "37807632-d3da-442e-8c2e-00f44928ff8f",
+      "description": "Find local AWS credentials from file, defaults to using / as the look path.",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["file_path", "filename"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Extract Browser and System credentials with LaZagne",
+      "guid": "9e507bb8-1d30-4e3b-a49b-cb5727d7ea79",
+      "description": "[LaZagne Source](https://github.com/AlessandroZ/LaZagne)",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Extract passwords with grep",
+      "guid": "bd4cf0d1-7646-474e-8610-78ccf5a097c4",
+      "description": "Extracting credentials from files",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["file_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Extracting passwords with findstr",
+      "guid": "0e56bf29-ff49-4ea5-9af4-3b81283fd513",
+      "description": "Extracting Credentials from Files. Upon execution, the contents of files that contain the word \"password\" will be displayed.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Access unattend.xml",
+      "guid": "367d4004-5fc0-446d-823f-960c74ae52c3",
+      "description": "Attempts to access unattend.xml, where credentials are commonly stored, within the Panther directory where installation logs are stored.\nIf these files exist, their contents will be displayed. They are used to store credentials/answers during the unattended windows install process.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find and Access Github Credentials",
+      "guid": "da4f751a-020b-40d7-b9ff-d433b7799803",
+      "description": "Find .netrc files, which store GitHub credentials in clear text, and dump their contents if found.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "filename", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - sensitivefiles",
+      "guid": "114dd4e3-8d1c-4ea7-bb8d-8d8f6aca21f0",
+      "description": "Search for sensitive files on this local system using the SensitiveFiles function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - Snaffler",
+      "guid": "fdd0c913-714b-4c13-b40f-1824d6c015f2",
+      "description": "Check Domain Network-Shares for cleartext passwords using Snaffler function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - powershellsensitive",
+      "guid": "75f66e03-37d3-4704-9520-3210efbe33ce",
+      "description": "Check Powershell event logs for credentials or other sensitive information via winpwn powershellsensitive function.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - passhunt",
+      "guid": "00e3e3c7-6c3c-455e-bd4b-461c7f0e7797",
+      "description": "Search for Passwords on this system using passhunt via WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - SessionGopher",
+      "guid": "c9dc9de3-f961-4284-bd2d-f959c9f9fda5",
+      "description": "Launches SessionGopher on this system via WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - Loot local Credentials - AWS, Microsoft Azure, and Google Compute credentials",
+      "guid": "aaa87b0e-5232-4649-ae5c-f1724a4b2798",
+      "description": "Loot local Credentials - AWS, Microsoft Azure, and Google Compute credentials technique via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "List Credential Files via PowerShell",
+      "guid": "0d4f2281-f720-4572-adc8-d5bb1618affe",
+      "description": "Via PowerShell,list files where credentials are stored in Windows Credential Manager",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "List Credential Files via Command Prompt",
+      "guid": "b0cdacf6-8949-4ffe-9274-a9643a788e55",
+      "description": "Via Command Prompt,list files where credentials are stored in Windows Credential Manager",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find Azure credentials",
+      "guid": "a8f6148d-478a-4f43-bc62-5efee9f931a4",
+      "description": "Find local Azure credentials from file, defaults to using / as the look path.",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "filename", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find GCP credentials",
+      "guid": "aa12eb29-2dbb-414e-8b20-33d34af93543",
+      "description": "Find local Google Cloud Platform credentials from file, defaults to using / as the look path.",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "filename", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find OCI credentials",
+      "guid": "9d9c22c9-fa97-4008-a204-478cf68c40af",
+      "description": "Find local Oracle cloud credentials from file, defaults to using / as the look path.",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["file_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Access Travis CI Config File",
+      "guid": "5312c7c3-775b-4437-a8b0-914b30cfebd4",
+      "description": "Find Travis CI configuration files (.travis.yml), which may contain credentials, secrets, or sensitive environment variables.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "filename", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Access Gitlab CI Config File",
+      "guid": "98618067-a2c7-4d4b-9c89-403a90f43656",
+      "description": "Find GitLab CI configuration files (.gitlab-ci.yml), which may contain credentials, secrets, or sensitive environment variables.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "filename", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find Terraform credential files",
+      "guid": "c3372ae9-b9bf-427a-b330-cb04fecb9c1d",
+      "description": "Find Terraform credential files which may contain sensitive values such as API keys, passwords, and infrastructure secrets. Searches for both terraform.tfvars and terraform.tfstate.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "filenames", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find Docker credentials",
+      "guid": "5a668739-3a2f-4265-895f-c0e1e0b09eaa",
+      "description": "Find local Docker credentials from file, defaults to using / as the look path.",
+      "platforms": ["macos", "linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "filename", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find HashiCorp Vault token files",
+      "guid": "2951c09f-b4f9-4248-ba75-6373709ebd55",
+      "description": "Find HashiCorp Vault token files (~/.vault-token), which contain plaintext Vault tokens that grant access to secrets stored in Vault.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "filename", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Access Drone CI Config File",
+      "guid": "a11f22fb-a037-4cc2-bcfc-a133b287aa1b",
+      "description": "Find Drone CI configuration files (.drone.yml), which may contain credentials, secrets, or sensitive environment variables used in Drone CI/CD pipelines.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "filename", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Dump GitHub Actions Runner Environment Variables from procfs",
+      "guid": "51cde30c-0311-449a-8e15-542b59f95939",
+      "description": "Locates GitHub Actions runner processes (Runner.Worker, Runner.Listener, runsvc, run.sh)\nand reads their environment variables from /proc/<pid>/environ, filtering for keys\ncontaining \"env\" or \"ssh\". This mirrors TeamPCP malware behavior that harvests\ncredentials and secrets from self-hosted runner processes.\n\nReference: https://www.aquasec.com/blog/trivy-supply-chain-attack-what-you-need-to-know/",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Search for Git Credential Files",
+      "guid": "c8367142-cbb0-47a4-96c7-ff9969fd64ea",
+      "description": "Searches the specified directory for a git credential file, which\nmay contain plaintext credentials, access tokens, or credential helper\nconfigurations. Example files include .git-credentials and .gitconfig.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "filename", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find .env Files Containing Application Credentials",
+      "guid": "bcf8e58a-1cb7-4988-9227-3d3c70751811",
+      "description": "Searches common web application and service directories for .env files\n(.env, .env.local, .env.production, .env.development, .env.staging) that may\ncontain credentials such as API keys, database passwords, and service secrets.\nAdversaries targeting web servers or containerized environments search for these\nfiles after gaining host access to harvest application-level credentials.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "filename", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find database credential files",
+      "guid": "e62bccc4-0200-47e9-b40a-4ea5328495b3",
+      "description": "Find user-level database credential files. Examples include ~/.pgpass, ~/.my.cnf, and ~/.mongorc.js.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "filenames", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find system database configuration files",
+      "guid": "d1665562-c389-49fc-9cbe-92236816a105",
+      "description": "Find system-level database configuration files (/etc/mysql/my.cnf, /etc/redis/redis.conf) which may contain credentials. Requires root privileges.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find npm registry credential files",
+      "guid": "2a24627b-061b-43e6-bece-a5b0638841dd",
+      "description": "Find .npmrc files, which may contain plaintext npm registry authentication tokens.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "filename", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Access Jenkinsfile",
+      "guid": "18318786-e0c0-4bdf-979f-f022e6f5f2ef",
+      "description": "Find Jenkinsfiles, which may contain credentials, secrets, or sensitive environment variables used in Jenkins CI/CD pipelines.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "filename", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find Kubernetes user configuration files",
+      "guid": "14575d1f-16b3-4a0b-8986-540e42e6a6cc",
+      "description": "Find Kubernetes user configuration files (~/.kube/config), which contain API server addresses, client certificates, and bearer tokens that grant access to the Kubernetes cluster. Defaults to using / as the search path.",
+      "platforms": ["linux", "macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["file_path", "optional_flags"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find Kubernetes cluster configuration files",
+      "guid": "af664fc0-0772-4866-a661-d49a22a13487",
+      "description": "Find Kubernetes configuration files requiring root privileges, including the root user kubeconfig (~/.kube/config) and cluster-level configuration files in /etc/kubernetes/. These files contain API server addresses, client certificates, and bearer tokens that grant access to the Kubernetes cluster.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["optional_flags"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1552.001/T1552.001.yaml"
+}

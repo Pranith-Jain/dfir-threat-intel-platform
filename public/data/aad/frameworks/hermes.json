@@ -1,0 +1,501 @@
+{
+  "slug": "hermes",
+  "name": "Hermes Agent",
+  "description": "A legitimate general-purpose agent turned into an attack console: approvals off, a bundled jailbreak skill, red-team personas",
+  "seenIn": "The Gambit retail operator, the Carbonato Docker botnet, and Thailand's Ministry of Finance",
+  "counts": {
+    "kqlHunts": 4,
+    "analytics": 2,
+    "sigma": 3,
+    "suricata": 7,
+    "yara": 4,
+    "indicators": 46
+  },
+  "techniques": [
+    {
+      "id": "T1005",
+      "score": 1,
+      "comment": "Sigma: Hermes Agent Jailbreak, Loot or Carbonato Files Written"
+    },
+    {
+      "id": "T1036.005",
+      "score": 1,
+      "comment": "Sentinel analytics: Carbonato Docker worm host escape or persistence"
+    },
+    {
+      "id": "T1053.003",
+      "score": 1,
+      "comment": "Sentinel analytics: Carbonato Docker worm host escape or persistence"
+    },
+    {
+      "id": "T1059",
+      "score": 3,
+      "comment": "KQL hunt: Hermes Agent set up for attack on a host you monitor: yolo mode, jailbreak skill, red-team persona, attack tools; Sentinel analytics: Hermes Agent set up for attack (approvals off, jailbreak skill or attack persona); Sigma: Hermes Agent With Approvals Off or Its Jailbreak Skill"
+    },
+    {
+      "id": "T1071",
+      "score": 14,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; Suricata: 3806500 TD Hermes Agent reported address, Carbonato Docker botnet (Costa Rica, assessed), Beacon and reverse shell, ports 8080 and 4444 (Contabo) (outbound); Suricata: 3806502 TD Hermes Agent reported address, Carbonato Docker botnet (Costa Rica, assessed), C2 hub (Linode) (outbound); Suricata: 3806504 TD Hermes Agent reported address, Carbonato Docker botnet (Costa Rica, assessed), LLM gateway for the bots (Contabo) (outbound); Suricata: 3806506 TD Hermes Agent reported address, Carbonato Docker botnet (Costa Rica, assessed), Rev"
+    },
+    {
+      "id": "T1071.001",
+      "score": 5,
+      "comment": "KQL hunt: Hermes consoles, Telegram control from servers, and Hermes results left on web servers; Suricata: 3806010 TD Hermes WebUI server header; Suricata: 3806011 TD Hermes Agent dashboard page; Suricata: 3806012 TD Hermes results folder requested from a web server; Suricata: 3806013 TD Hermes Agent sign-in page"
+    },
+    {
+      "id": "T1102.002",
+      "score": 2,
+      "comment": "KQL hunt: Carbonato: a Docker worm that turns exposed Docker hosts into Telegram-controlled Hermes agents; KQL hunt: Hermes consoles, Telegram control from servers, and Hermes results left on web servers"
+    },
+    {
+      "id": "T1105",
+      "score": 1,
+      "comment": "Suricata: 3806003 TD Carbonato worm pulls system/resolved"
+    },
+    {
+      "id": "T1595",
+      "score": 14,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; Suricata: 3806501 TD Hermes Agent reported address, Carbonato Docker botnet (Costa Rica, assessed), Beacon and reverse shell, ports 8080 and 4444 (Contabo) (inbound); Suricata: 3806503 TD Hermes Agent reported address, Carbonato Docker botnet (Costa Rica, assessed), C2 hub (Linode) (inbound); Suricata: 3806505 TD Hermes Agent reported address, Carbonato Docker botnet (Costa Rica, assessed), LLM gateway for the bots (Contabo) (inbound); Suricata: 3806507 TD Hermes Agent reported address, Carbonato Docker botnet (Costa Rica, assessed), Revers"
+    },
+    {
+      "id": "T1609",
+      "score": 1,
+      "comment": "Suricata: 3806004 TD Docker API exec into host namespaces with nsenter"
+    },
+    {
+      "id": "T1610",
+      "score": 5,
+      "comment": "KQL hunt: Carbonato: a Docker worm that turns exposed Docker hosts into Telegram-controlled Hermes agents; Suricata: 3806001 TD Carbonato privileged host-mount container created through the Docker API; Suricata: 3806002 TD Carbonato container name netns-probe or net-setup; Suricata: 3806003 TD Carbonato worm pulls system/resolved; YARA: Carbonato_Docker_Worm_Script"
+    },
+    {
+      "id": "T1611",
+      "score": 6,
+      "comment": "KQL hunt: Carbonato: a Docker worm that turns exposed Docker hosts into Telegram-controlled Hermes agents; Sentinel analytics: Carbonato Docker worm host escape or persistence; Sigma: Carbonato Docker Worm Host Escape or Persistence; Suricata: 3806001 TD Carbonato privileged host-mount container created through the Docker API; Suricata: 3806004 TD Docker API exec into host namespaces with nsenter; YARA: Carbonato_Docker_Worm_Script"
+    },
+    {
+      "id": "T1699",
+      "score": 6,
+      "comment": "KQL hunt: Hermes Agent set up for attack on a host you monitor: yolo mode, jailbreak skill, red-team persona, attack tools; Sentinel analytics: Hermes Agent set up for attack (approvals off, jailbreak skill or attack persona); Sigma: Hermes Agent Jailbreak, Loot or Carbonato Files Written; YARA: Hermes_Carbonato_GH0ST_Persona; YARA: Hermes_Godmode_Jailbreak_Installed; YARA: Hermes_Red_Team_Operator_Persona"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "string",
+      "value": "HERMES_YOLO_MODE",
+      "confidence": "high",
+      "context": "Environment variable that switches off Hermes command approvals, same as hermes --yolo or approvals.mode: off in config.yaml (hermes_cli/config.py:133). Hunt.io's operator ran Hermes this way against Thailand's Ministry of Finance",
+      "source": "ThreatDefence review of the Hermes Agent source code",
+      "sourceUrl": "https://github.com/NousResearch/hermes-agent",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "file_path",
+      "value": "/.hermes/skills/security/godmode/",
+      "confidence": "high",
+      "context": "Hermes' bundled jailbreak skill (G0DM0D3, Parseltongue) installed: scripts auto_jailbreak.py, load_godmode.py, parseltongue.py, godmode_race.py (optional-skills/security/godmode). Unit 42's actor used it",
+      "source": "ThreatDefence review of the Hermes Agent source code",
+      "sourceUrl": "https://github.com/NousResearch/hermes-agent",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "file_name",
+      "value": "prefill.json",
+      "confidence": "medium",
+      "context": "Written to ~/.hermes/ by the godmode skill, with prefill_messages_file: \"prefill.json\" and a replaced agent.system_prompt in config.yaml",
+      "source": "ThreatDefence review of the Hermes Agent source code",
+      "sourceUrl": "https://github.com/NousResearch/hermes-agent",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "prefill_messages_file",
+      "confidence": "medium",
+      "context": "config.yaml key the godmode skill sets to make a jailbreak persistent",
+      "source": "ThreatDefence review of the Hermes Agent source code",
+      "sourceUrl": "https://github.com/NousResearch/hermes-agent",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "string",
+      "value": "Hermes Agent - Dashboard",
+      "confidence": "medium",
+      "context": "Title of the Hermes dashboard (hermes dashboard, port 9119)",
+      "source": "ThreatDefence review of the Hermes Agent source code",
+      "sourceUrl": "https://github.com/NousResearch/hermes-agent",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "port",
+      "value": "9119",
+      "confidence": "low",
+      "context": "Hermes dashboard default port",
+      "source": "ThreatDefence review of the Hermes Agent source code",
+      "sourceUrl": "https://github.com/NousResearch/hermes-agent",
+      "reported": "2026-11-21"
+    },
+    {
+      "type": "domain",
+      "value": "code.newcli.com",
+      "confidence": "medium",
+      "context": "Third-party proxy the actor used for Codex and Claude Code (code.newcli.com/codex/v1, /ultra); Hermes ran on DeepSeek directly",
+      "source": "Unit 42",
+      "sourceUrl": "https://unit42.paloaltonetworks.com/autonomous-ai-cyber-attack-campaign/",
+      "reported": "2026-07-30"
+    },
+    {
+      "type": "string",
+      "value": "web-terminal-exploitation",
+      "confidence": "medium",
+      "context": "Custom Hermes skill the actor wrote for unauthenticated WebSocket terminal exploitation, next to godmode and fofa-cyberspace-search",
+      "source": "Unit 42",
+      "sourceUrl": "https://unit42.paloaltonetworks.com/autonomous-ai-cyber-attack-campaign/",
+      "reported": "2026-07-30"
+    },
+    {
+      "type": "string",
+      "value": "fofa-cyberspace-search",
+      "confidence": "medium",
+      "context": "Custom Hermes skill telling DeepSeek to run the actor's fofoapi.py; MCP server FofaMap-Platinum-Full-Expert",
+      "source": "Unit 42",
+      "sourceUrl": "https://unit42.paloaltonetworks.com/autonomous-ai-cyber-attack-campaign/",
+      "reported": "2026-07-30"
+    },
+    {
+      "type": "string",
+      "value": "python3 -m http.server 8888",
+      "confidence": "low",
+      "context": "File server Hermes started from the actor's home directory (/home/worker) on a Telegram command, exposing API keys, exploit scripts, target lists and Hermes session logs",
+      "source": "Unit 42",
+      "sourceUrl": "https://unit42.paloaltonetworks.com/autonomous-ai-cyber-attack-campaign/",
+      "reported": "2026-07-30"
+    },
+    {
+      "type": "ipv4",
+      "value": "43.246.208.207",
+      "confidence": "medium",
+      "context": "Staging server with open directories (Hermes results, Hades and VShell builds), VShell C2 on 21083, Hades Windows C2 on 443, Hermes web UI on 8878; AS132883 TOPIDC, Hong Kong",
+      "source": "Hunt.io",
+      "sourceUrl": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+      "reported": "2026-07-23"
+    },
+    {
+      "type": "ipv4",
+      "value": "103.97.0.57",
+      "confidence": "medium",
+      "context": "SSH client of the Hermes environment, connecting to 43.246.208.207; AS133073, Hong Kong",
+      "source": "Hunt.io",
+      "sourceUrl": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+      "reported": "2026-07-23"
+    },
+    {
+      "type": "ipv4",
+      "value": "118.107.222.232",
+      "confidence": "medium",
+      "context": "Same CN=www certificate family as the staging server; AS55720, Malaysia",
+      "source": "Hunt.io",
+      "sourceUrl": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+      "reported": "2026-07-23"
+    },
+    {
+      "type": "ipv4",
+      "value": "202.181.27.115",
+      "confidence": "medium",
+      "context": "Hades Linux C2 on 12443; AS134196, Hong Kong",
+      "source": "Hunt.io",
+      "sourceUrl": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+      "reported": "2026-07-23"
+    },
+    {
+      "type": "domain",
+      "value": "redhatupdating432.dnsrd.com",
+      "confidence": "medium",
+      "context": "Resolves to the staging server 43.246.208.207 (predates the Hermes activity)",
+      "source": "Hunt.io",
+      "sourceUrl": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+      "reported": "2026-07-23"
+    },
+    {
+      "type": "sha256",
+      "value": "d252ee7b348b7e43e432d8fb154465838f5cd5fb564905323460e6f0a0c7d1e2",
+      "confidence": "high",
+      "context": "Hades Go implant, Linux (multipathd_04d0), C2 202.181.27.115:12443. The Windows sample (dwm_33b7.exe, C2 43.246.208.207:443) is left out: Hunt.io printed its SHA-256 one character short",
+      "source": "Hunt.io",
+      "sourceUrl": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+      "reported": "2026-07-23"
+    },
+    {
+      "type": "sha256",
+      "value": "0f8c905aa25c86f85454acb7e77bf5c50220c2a82e5b69a33741e55c8a85f2fc",
+      "confidence": "high",
+      "context": "VShell stage 1, Linux",
+      "source": "Hunt.io",
+      "sourceUrl": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+      "reported": "2026-07-23"
+    },
+    {
+      "type": "sha256",
+      "value": "a9447ae174f4aa54f760b7d7cc985c1a970f31e151d3ff66fac247f99ba1b509",
+      "confidence": "high",
+      "context": "VShell stage 1, Windows",
+      "source": "Hunt.io",
+      "sourceUrl": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+      "reported": "2026-07-23"
+    },
+    {
+      "type": "sha256",
+      "value": "ec7e9ab43a0cc65d29f0b84a93ba88c43d01fed3dec5c968525dc73c03cbfda2",
+      "confidence": "high",
+      "context": "VShell stage 2, Linux",
+      "source": "Hunt.io",
+      "sourceUrl": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+      "reported": "2026-07-23"
+    },
+    {
+      "type": "sha256",
+      "value": "b65b7ede835ebba36294d52d7780065523340ee09bb8b209ef2dc495e53dfd53",
+      "confidence": "high",
+      "context": "VShell stage 2, Windows",
+      "source": "Hunt.io",
+      "sourceUrl": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+      "reported": "2026-07-23"
+    },
+    {
+      "type": "uri_string",
+      "value": "/assets/app.min.js",
+      "confidence": "low",
+      "context": "Hades check-in path (also /assets/vendor.js for tasking and /assets/main.js for upload), POST with AES-GCM bodies",
+      "source": "Hunt.io",
+      "sourceUrl": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+      "reported": "2026-07-23"
+    },
+    {
+      "type": "file_name",
+      "value": ".journald-cache.php",
+      "confidence": "high",
+      "context": "PHP web shell posing as a journal cache on a ministry web server (/storage/Counter/nine/.journald-cache.php)",
+      "source": "Hunt.io",
+      "sourceUrl": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+      "reported": "2026-07-23"
+    },
+    {
+      "type": "string",
+      "value": "/hermes-results/",
+      "confidence": "medium",
+      "context": "Folder of Hermes tool outputs (call_00_<id>.txt) left in the operator's open directory; Hunt.io counted 575 hits for the name",
+      "source": "Hunt.io",
+      "sourceUrl": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+      "reported": "2026-07-23"
+    },
+    {
+      "type": "string",
+      "value": "HermesWebUI",
+      "confidence": "medium",
+      "context": "Server header of the Hermes web UI on the staging server, port 8878, Basic realm \"Hermes WebUI\" (a separate web UI for Hermes); Hunt.io counted about 5,900 banners",
+      "source": "Hunt.io",
+      "sourceUrl": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+      "reported": "2026-07-23"
+    },
+    {
+      "type": "string",
+      "value": "7d5dbb3783b4_7d5dbb3783b4_e1926048963f",
+      "confidence": "medium",
+      "context": "JA4X of the CN=www certificates on the staging, Hades and related servers",
+      "source": "Hunt.io",
+      "sourceUrl": "https://hunt.io/blog/thailand-ministry-finance-targeted-with-hermes-ai-agent",
+      "reported": "2026-07-23"
+    },
+    {
+      "type": "ipv4",
+      "value": "45.79.183.61",
+      "confidence": "medium",
+      "context": "C2 hub (Linode)",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "ipv4",
+      "value": "91.99.195.164",
+      "confidence": "medium",
+      "context": "fsociety-era C2 (Hetzner)",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "ipv4",
+      "value": "213.136.79.115",
+      "confidence": "medium",
+      "context": "Beacon and reverse shell, ports 8080 and 4444 (Contabo)",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "ipv4",
+      "value": "213.136.83.197",
+      "confidence": "medium",
+      "context": "LLM gateway for the bots (Contabo)",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "ipv4",
+      "value": "190.211.124.187",
+      "confidence": "medium",
+      "context": "Reverse SSH tunnel sink, AS262145 Costa Rica",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "domain",
+      "value": "carbonato-proxy-drab.vercel.app",
+      "confidence": "high",
+      "context": "Carbonato LLM proxy on Vercel (suspended)",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "domain",
+      "value": "carbonato-proxy-zeta.vercel.app",
+      "confidence": "high",
+      "context": "Carbonato LLM proxy on Vercel (suspended)",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "domain",
+      "value": "carbonato-proxy-zeta-2.vercel.app",
+      "confidence": "high",
+      "context": "Carbonato LLM proxy on Vercel (suspended)",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "string",
+      "value": "You are GH0ST",
+      "confidence": "high",
+      "context": "Opening of the 39-line SOUL.md persona Carbonato writes over /root/.hermes/SOUL.md, telling Hermes to take Telegram orders and loot AI API keys first into /root/.hermes/loot/",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "file_path",
+      "value": "/root/.hermes/loot/",
+      "confidence": "high",
+      "context": "Where Carbonato's Hermes persona stores stolen keys and credentials in plain text",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "string",
+      "value": "CARBONATO_API_KEY",
+      "confidence": "high",
+      "context": "Variable in the .env Carbonato drops for its Hermes instances",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "file_path",
+      "value": "/usr/local/bin/.docker-network-monitor",
+      "confidence": "high",
+      "context": "Carbonato watchdog that re-pulls its image",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "file_path",
+      "value": "/usr/sbin/systemd-logind",
+      "confidence": "high",
+      "context": "Carbonato miner disguised as a system service (the real systemd-logind lives under /usr/lib/systemd/ or /lib/systemd/)",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "file_path",
+      "value": "/opt/gh0st/",
+      "confidence": "high",
+      "context": "Carbonato scripts: entry.sh and auto-persist-host.sh",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "string",
+      "value": "netns-probe",
+      "confidence": "high",
+      "context": "Container name Carbonato creates through an exposed Docker API (alpine, privileged, Binds /:/host, PidMode host), then nsenter -t 1 into the host; worm copies are named net-setup and pull system/resolved",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "string",
+      "value": "750752697",
+      "confidence": "medium",
+      "context": "Telegram chat ID for Carbonato deployment reports and C2 (operator handle Carbo506)",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "string",
+      "value": "[kworker/u2:0]",
+      "confidence": "medium",
+      "context": "Process name Carbonato disguises itself as",
+      "source": "ThreatDown",
+      "sourceUrl": "https://www.threatdown.com/blog/carbonato/",
+      "reported": "2026-09-22"
+    },
+    {
+      "type": "docker_image",
+      "value": "gh0st/mydocker-kali",
+      "confidence": "medium",
+      "context": "Repository found on 11 open container registries in November 2026, next to gh0st/ping and the fsociety/ images. The names match the GH0ST persona and the fsociety-era infrastructure ThreatDown reported for Carbonato; attribution is by name only",
+      "source": "ThreatDefence review of open container registries in internet scan data",
+      "sourceUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/behaviors",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "docker_image",
+      "value": "gh0st/ping",
+      "confidence": "medium",
+      "context": "Repository found on 12 open container registries in November 2026, often with gh0st/mydocker-kali. Attributed to Carbonato by name only",
+      "source": "ThreatDefence review of open container registries in internet scan data",
+      "sourceUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/behaviors",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "docker_image",
+      "value": "fsociety/xmrig",
+      "confidence": "medium",
+      "context": "Miner image found on open container registries next to fsociety/beacon, fsociety/owned and the gh0st/ images. Not from the fsociety-team/fsociety tool, which has one image and no miner. Attributed to Carbonato by name only",
+      "source": "ThreatDefence review of open container registries in internet scan data",
+      "sourceUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/behaviors",
+      "reported": "2026-11-23"
+    },
+    {
+      "type": "docker_image",
+      "value": "fsociety/beacon",
+      "confidence": "medium",
+      "context": "Repository found on open container registries next to fsociety/xmrig, fsociety/owned and the gh0st/ images. Attributed to Carbonato by name only",
+      "source": "ThreatDefence review of open container registries in internet scan data",
+      "sourceUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/behaviors",
+      "reported": "2026-11-23"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/hermes",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

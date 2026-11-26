@@ -1,0 +1,347 @@
+{
+  "slug": "decepticon",
+  "name": "Decepticon",
+  "description": "Python LangGraph red team agents that run commands in a Kali sandbox and start Sliver or Havoc C2 on demand; telemetry on unless the operator declines",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 6,
+    "suricata": 15,
+    "yara": 6,
+    "indicators": 30
+  },
+  "techniques": [
+    {
+      "id": "T1059.004",
+      "score": 5,
+      "comment": "KQL hunt: Decepticon running on a host you monitor; Sentinel analytics: Decepticon AI red team agent on a host or reporting from your network; Sigma: Decepticon Sandbox, Agent Server or C2 Container Process; Suricata: 3811305 TD Decepticon sandbox command transport; YARA: Decepticon_Sandbox_Session_Log"
+    },
+    {
+      "id": "T1071",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1071.001",
+      "score": 11,
+      "comment": "KQL hunt: Decepticon in web and proxy logs: its own user agents, unfilled user agent templates and its API routes; KQL hunt: Decepticon running on a host you monitor; Sentinel analytics: Decepticon AI red team agent on a host or reporting from your network; Sigma: Decepticon Telemetry, Discovery, Sandbox or Model Gateway Requests in Proxy Logs; Suricata: 3811302 TD Decepticon telemetry TLS (decepticon-telemetry-gateway.purpleailab.workers.dev); Suricata: 3811303 TD Decepticon telemetry client user agent; Suricata: 3811306 TD Decepticon ChatGPT subscription gateway default user agent; Suricata:"
+    },
+    {
+      "id": "T1071.004",
+      "score": 2,
+      "comment": "Sigma: Decepticon Telemetry or Installer Domain Lookup; Suricata: 3811301 TD Decepticon telemetry DNS query (decepticon-telemetry-gateway.purpleailab.workers.dev)"
+    },
+    {
+      "id": "T1219",
+      "score": 3,
+      "comment": "Sigma: Decepticon Sandbox, Agent Server or C2 Container Process; YARA: Decepticon_Havoc_Default_Profile; YARA: Decepticon_Sliver_Operator_Config"
+    },
+    {
+      "id": "T1566.002",
+      "score": 1,
+      "comment": "Suricata: 3811324 TD Decepticon phishing lure engagement header in SMTP"
+    },
+    {
+      "id": "T1588.002",
+      "score": 7,
+      "comment": "KQL hunt: Decepticon running on a host you monitor; Sigma: Decepticon AI Red Team Agent Installed or Started; Sigma: Decepticon Configuration, Telemetry ID or C2 Operator Config Written; Sigma: Decepticon Telemetry or Installer Domain Lookup; YARA: Decepticon_Launcher; YARA: Decepticon_Package; YARA: Decepticon_RoE_File"
+    },
+    {
+      "id": "T1595",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1595.002",
+      "score": 6,
+      "comment": "KQL hunt: Decepticon in web and proxy logs: its own user agents, unfilled user agent templates and its API routes; Sigma: Decepticon Markers in Web Server Logs; Suricata: 3811320 TD Decepticon user agent token; Suricata: 3811321 TD Decepticon opsec skill user agent template sent unfilled; Suricata: 3811322 TD Decepticon web fetch engine headers with a Chrome user agent; Suricata: 3811323 TD Decepticon web fetch platform probe headers"
+    },
+    {
+      "id": "T1596.003",
+      "score": 3,
+      "comment": "KQL hunt: Decepticon in web and proxy logs: its own user agents, unfilled user agent templates and its API routes; Sigma: Decepticon Telemetry, Discovery, Sandbox or Model Gateway Requests in Proxy Logs; Suricata: 3811304 TD Decepticon passive subdomain discovery on crt.sh"
+    },
+    {
+      "id": "T1610",
+      "score": 1,
+      "comment": "Sigma: Decepticon AI Red Team Agent Installed or Started"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "domain",
+      "value": "decepticon-telemetry-gateway.purpleailab.workers.dev",
+      "confidence": "high",
+      "context": "Decepticon usage telemetry gateway (Cloudflare Worker forwarding to PostHog). Shipped in the launcher's .env template; the setup wizard defaults to sharing (DECEPTICON_TELEMETRY=research) unless the operator declines (clients/launcher/cmd/onboard.go:280,916). POST /v1/telemetry from the langgraph container. Seen from y",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/clients/launcher/internal/config/env.example#L200",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "user_agent",
+      "value": "decepticon-telemetry/1.0",
+      "confidence": "high",
+      "context": "User agent of Decepticon's telemetry exporter on POST /v1/telemetry to its gateway. Visible only with TLS inspection",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/packages/decepticon/decepticon/telemetry/exporter.py#L35",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "user_agent",
+      "value": "decepticon-roe/1",
+      "confidence": "high",
+      "context": "User agent of Decepticon's passive subdomain discovery, which queries https://crt.sh/?q=%.<root>&output=json when an engagement is created (passive_discovery.py:71). Sent to crt.sh, never to the target. Visible only with TLS inspection",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/packages/decepticon/decepticon/passive_discovery.py#L40",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "user_agent",
+      "value": "decepticon-http-sandbox/1",
+      "confidence": "high",
+      "context": "User agent of the HTTP client that sends every agent command to the Decepticon sandbox daemon (POST /execute, /execute_tmux and others on port 9999). Normally on a Docker bridge network; crosses your network only when the sandbox is remote",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/packages/decepticon/decepticon/backends/http_transport.py#L139",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (compatible; Decepticon/1.0)",
+      "confidence": "medium",
+      "context": "Default user agent of Decepticon's http_recon helper. The helper is in the package but not bound to any agent at 6b15092d or v2.2.2, so expect it only from forks or plugins",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/packages/decepticon/decepticon/tools/network/protocols.py#L84",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "user_agent",
+      "value": "Decepticon/1.0",
+      "confidence": "medium",
+      "context": "User agent Decepticon's LiteLLM gateway sends to the Vercel AI Gateway for the vercel/anthropic/claude-haiku-4.5 model entry only. Visible only with TLS inspection",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/config/litellm.yaml#L622",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "user_agent",
+      "value": "codex_cli_rs/0.0.0 (Unknown 0; unknown) unknown",
+      "confidence": "medium",
+      "context": "Placeholder user agent Decepticon's LiteLLM handler sends to chatgpt.com/backend-api/codex when it runs on a ChatGPT subscription (originator codex_cli_rs). The real Codex CLI sends its version and OS. Override: CHATGPT_USER_AGENT. Visible only with TLS inspection",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/config/codex_chatgpt_handler.py#L54",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "string",
+      "value": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+      "confidence": "low",
+      "context": "User agent of Decepticon's detect_tech_stack tool. Chrome/124.0 with two parts is not a real Chrome string, but the tool is not bound to any agent at 6b15092d: context only",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/packages/decepticon/decepticon/tools/research/tech_detection.py#L62-L65",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "http_header",
+      "value": "X-Decepticon-Eng",
+      "confidence": "medium",
+      "context": "Engagement header the Decepticon phisher skill tells the agent to put on every phishing lure so a SOC can tell an agreed test apart (X-Decepticon-Eng: <slug>). An instruction in the skill text, so the model may leave it out",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/packages/decepticon/decepticon/skills/standard/phisher/SKILL.md#L65-L66",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "string",
+      "value": "[DCPTN:",
+      "confidence": "high",
+      "context": "Prompt marker [DCPTN:<exit status>:<cwd>] Decepticon sets in every sandbox tmux shell; it lands in <workspace>/.sessions/<session>.log next to every command the agent ran",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/packages/decepticon/decepticon_sandbox/kernel/tmux.py#L543",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "string",
+      "value": "@dcptn_completion",
+      "confidence": "high",
+      "context": "tmux pane option Decepticon's PROMPT_COMMAND hook sets after every sandbox command (tmux -L <session> set-option -p -t $TMUX_PANE @dcptn_completion ...), so it appears in process command lines",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/packages/decepticon/decepticon_sandbox/kernel/tmux.py#L541-L542",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "string",
+      "value": "decepticon_sandbox.server",
+      "confidence": "high",
+      "context": "Decepticon sandbox command daemon, started as python3 -m decepticon_sandbox.server (FastAPI on 0.0.0.0:9999 inside the sandbox container, bearer token only when SANDBOX_TOKEN is set)",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/containers/sandbox-entrypoint.sh#L17",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "string",
+      "value": "Decepticon sandbox daemon",
+      "confidence": "high",
+      "context": "FastAPI title of the Decepticon sandbox daemon, shown on /docs and /openapi.json. The daemon runs any command it is sent; it is not published by the compose file",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/packages/decepticon/decepticon_sandbox/server/app.py#L260",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "uri_string",
+      "value": "/_decepticon/",
+      "confidence": "medium",
+      "context": "Route prefix of Decepticon's routes on its LangGraph server (port 2024): /_decepticon/bundles, /_decepticon/roe/validate, /_decepticon/roles/<role>/purpose. No authentication on langgraph dev",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/packages/decepticon/decepticon/server/operator_contracts.py#L13",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "docker_image",
+      "value": "ghcr.io/bittersecurity/decepticon-sandbox",
+      "confidence": "high",
+      "context": "Decepticon Kali sandbox (nmap, masscan, sqlmap, hydra, nikto, nuclei, httpx, katana, subfinder, naabu, gobuster, impacket, responder, sliver client, Obscura browser); container decepticon-sandbox",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/docker-compose.yml#L196",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "docker_image",
+      "value": "ghcr.io/bittersecurity/decepticon-langgraph",
+      "confidence": "high",
+      "context": "Decepticon agent server (langgraph dev --host 0.0.0.0 --port 2024, published on 127.0.0.1:2024); container decepticon-langgraph",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/docker-compose.yml#L393",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "docker_image",
+      "value": "ghcr.io/bittersecurity/decepticon-litellm",
+      "confidence": "high",
+      "context": "Decepticon LiteLLM model gateway on 127.0.0.1:4000; container decepticon-litellm",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/docker-compose.yml#L16",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "docker_image",
+      "value": "ghcr.io/bittersecurity/decepticon-c2-sliver",
+      "confidence": "high",
+      "context": "Decepticon Sliver C2 server started on demand (profile c2-sliver); exposes 443, 53, 8888 and 31337 inside sandbox-net",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/docker-compose.yml#L601",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "docker_image",
+      "value": "ghcr.io/bittersecurity/decepticon-c2-havoc",
+      "confidence": "high",
+      "context": "Decepticon Havoc C2 teamserver started on demand (profile c2-havoc, port 40056, HTTPS listener on 443)",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/docker-compose.havoc.yml#L3",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "docker_image",
+      "value": "ghcr.io/bittersecurity/decepticon-web",
+      "confidence": "high",
+      "context": "Image of the Decepticon web console (Next.js, port 3000, terminal WebSocket 3003, no login), removed on November 11, 2026 in 02864fbd; older installs still run it",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/d26ddaa1e3b0ccaffd50b982fcc2debeb650c840/docker-compose.yml#L437",
+      "reported": "2026-11-10"
+    },
+    {
+      "type": "string",
+      "value": "Decepticon — Autonomous Red Team Platform",
+      "confidence": "high",
+      "context": "Page title of the removed Decepticon web console (port 3000, no authentication in the OSS build: clients/web/src/lib/auth-bridge.ts)",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/d26ddaa1e3b0ccaffd50b982fcc2debeb650c840/clients/web/src/app/layout.tsx#L21",
+      "reported": "2026-11-10"
+    },
+    {
+      "type": "favicon_mmh3",
+      "value": "-1814445533",
+      "confidence": "high",
+      "context": "Icon of the removed Decepticon web console (Shodan http.favicon.hash), recomputed from clients/web/src/app/icon.png at d26ddaa1; clients/web/public/logo.png, the <link rel=icon> target, is the same file",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/d26ddaa1e3b0ccaffd50b982fcc2debeb650c840/clients/web/src/app/icon.png",
+      "reported": "2026-11-10"
+    },
+    {
+      "type": "md5",
+      "value": "0d9eb87ab032844a4bed864085981964",
+      "confidence": "high",
+      "context": "Decepticon web console icon icon.png / logo.png (79,060 bytes)",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/d26ddaa1e3b0ccaffd50b982fcc2debeb650c840/clients/web/public/logo.png",
+      "reported": "2026-11-10"
+    },
+    {
+      "type": "sha256",
+      "value": "3bd7f5a8f315b398fc9ec1ccd8c5e47dadaf67923051b1e89a5ac2acb0501f65",
+      "confidence": "high",
+      "context": "Decepticon web console icon icon.png / logo.png (79,060 bytes)",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/d26ddaa1e3b0ccaffd50b982fcc2debeb650c840/clients/web/public/logo.png",
+      "reported": "2026-11-10"
+    },
+    {
+      "type": "file_path",
+      "value": ".sliver-configs/decepticon.cfg",
+      "confidence": "high",
+      "context": "Sliver operator config the Decepticon c2-sliver container writes into the engagement workspace (sliver-server operator --name decepticon --lhost c2-sliver --permissions all)",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/containers/c2-sliver-entrypoint.sh#L10",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "string",
+      "value": "decepticon-havoc-c2",
+      "confidence": "high",
+      "context": "Default password of the Havoc operator decepticon in the profile the Decepticon c2-havoc container generates (/opt/havoc/profiles/havoc.yaotl, listener decepticon-https)",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/containers/c2-havoc-entrypoint.sh#L23",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "string",
+      "value": "sk-decepticon-master",
+      "confidence": "medium",
+      "context": "Default LiteLLM master key of a Decepticon stack (LITELLM_MASTER_KEY), sent as a bearer token to the gateway on port 4000; the launcher replaces it with a generated secret when it writes .env (clients/launcher/internal/config/secrets.go)",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/.env.example#L204",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "url",
+      "value": "https://decepticon.red/install",
+      "confidence": "medium",
+      "context": "Decepticon install script (curl -fsSL https://decepticon.red/install | bash); Windows: irm https://decepticon.red/install.ps1 | iex",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/scripts/install.sh#L6",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "domain",
+      "value": "decepticon.red",
+      "confidence": "low",
+      "context": "Decepticon web site, installer and hosted console (app.decepticon.red, docs.decepticon.red). A lookup also comes from reading about the project",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/README.md#L40",
+      "reported": "2026-11-20"
+    },
+    {
+      "type": "file_path",
+      "value": ".decepticon/",
+      "confidence": "medium",
+      "context": "Decepticon install folder ($DECEPTICON_HOME, default ~/.decepticon): docker-compose.yml, .env, config/litellm.yaml, workspace/<engagement>/ and telemetry/install_id",
+      "source": "ThreatDefence review of the Decepticon source code",
+      "sourceUrl": "https://github.com/BitterSecurity/Decepticon/blob/6b15092d2e0b41f2ef5af79a16333582cc3fb353/scripts/install.sh#L503",
+      "reported": "2026-11-20"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/decepticon",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

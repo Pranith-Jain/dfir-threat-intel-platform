@@ -1,0 +1,46 @@
+{
+  "id": "T1005",
+  "displayName": "Data from Local System",
+  "tests": [
+    {
+      "name": "Search files of interest and save them to a single zip file (Windows)",
+      "guid": "d3d9af44-b8ad-4375-8b0a-4bff4b7e419c",
+      "description": "This test searches for files of certain extensions and saves them to a single zip file prior to extraction.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["starting_directory", "output_zip_folder_path", "file_extensions"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Find and dump sqlite databases (Linux)",
+      "guid": "00cbb875-7ae4-4cf1-b638-e543fd825300",
+      "description": "An adversary may know/assume that the user of a system uses sqlite databases which contain interest and sensitive data. In this test we download two databases and a sqlite dump script, then run a find command to find & dump the database content.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["remote_url"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Copy Apple Notes database files using AppleScript",
+      "guid": "cfb6d400-a269-4c06-a347-6d88d584d5f7",
+      "description": "This command will copy Apple Notes database files using AppleScript as seen in Atomic Stealer.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["destination_path"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1005/T1005.yaml"
+}

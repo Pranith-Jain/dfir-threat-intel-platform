@@ -1,0 +1,371 @@
+{
+  "id": "T1548.002",
+  "displayName": "Abuse Elevation Control Mechanism: Bypass User Account Control",
+  "tests": [
+    {
+      "name": "Bypass UAC using Event Viewer (cmd)",
+      "guid": "5073adf8-9a50-4bd9-b298-a9bd2ead8af9",
+      "description": "Bypasses User Account Control using Event Viewer and a relevant Windows Registry modification. More information here - https://enigma0x3.net/2016/08/15/fileless-uac-bypass-using-eventvwr-exe-and-registry-hijacking/\nUpon execution command prompt should be launched with administrative privileges.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["executable_binary"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Bypass UAC using Event Viewer (PowerShell)",
+      "guid": "a6ce9acf-842a-4af6-8f79-539be7608e2b",
+      "description": "PowerShell code to bypass User Account Control using Event Viewer and a relevant Windows Registry modification. More information here - https://enigma0x3.net/2016/08/15/fileless-uac-bypass-using-eventvwr-exe-and-registry-hijacking/\nUpon execution command prompt should be launched with administrative privalages",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["executable_binary"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Bypass UAC using Fodhelper",
+      "guid": "58f641ea-12e3-499a-b684-44dee46bd182",
+      "description": "Bypasses User Account Control using the Windows 10 Features on Demand Helper (fodhelper.exe). Requires Windows 10.\nUpon execution, \"The operation completed successfully.\" will be shown twice and command prompt will be opened.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["executable_binary"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Bypass UAC using Fodhelper - PowerShell",
+      "guid": "3f627297-6c38-4e7d-a278-fc2563eaaeaa",
+      "description": "PowerShell code to bypass User Account Control using the Windows 10 Features on Demand Helper (fodhelper.exe). Requires Windows 10.\nUpon execution command prompt will be opened.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["executable_binary"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Bypass UAC using ComputerDefaults (PowerShell)",
+      "guid": "3c51abf2-44bf-42d8-9111-dc96ff66750f",
+      "description": "PowerShell code to bypass User Account Control using ComputerDefaults.exe on Windows 10\nUpon execution administrative command prompt should open",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["executable_binary"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Bypass UAC by Mocking Trusted Directories",
+      "guid": "f7a35090-6f7f-4f64-bb47-d657bf5b10c1",
+      "description": "Creates a fake \"trusted directory\" and copies a binary to bypass UAC. The UAC bypass may not work on fully patched systems\nUpon execution the directory structure should exist if the system is patched, if unpatched Microsoft Management Console should launch",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["executable_binary"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Bypass UAC using sdclt DelegateExecute",
+      "guid": "3be891eb-4608-4173-87e8-78b494c029b7",
+      "description": "Bypasses User Account Control using a fileless method, registry only.\nUpon successful execution, sdclt.exe will spawn cmd.exe to spawn notepad.exe\n[Reference - sevagas.com](http://blog.sevagas.com/?Yet-another-sdclt-UAC-bypass)\nAdapted from [MITRE ATT&CK Evals](https://github.com/mitre-attack/attack-arsenal/blob/66650cebd33b9a1e180f7b31261da1789cdceb66/adversary_emulation/APT29/CALDERA_DIY/evals/payloads/stepFourteen_bypassUAC.ps1)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["command_to_execute"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable UAC using reg.exe",
+      "guid": "9e8af564-53ec-407e-aaa8-3cb20c3af7f9",
+      "description": "Disable User Account Conrol (UAC) using the builtin tool reg.exe by changing its registry key\nHKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\\EnableLUA from 1 to 0",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Bypass UAC using SilentCleanup task",
+      "guid": "28104f8a-4ff1-4582-bcf6-699dce156608",
+      "description": "Bypass UAC using SilentCleanup task on Windows 8-10 using bat file from https://www.reddit.com/r/hacking/comments/ajtrws/bypassing_highest_uac_level_windows_810/\n\nThere is an auto-elevated task called SilentCleanup located in %windir%\\system32\\cleanmgr.exe This can be abused to elevate any file with Administrator privileges without prompting UAC (even highest level).\n\nFor example, we can set the windir registry kye to: \"cmd /k REM \"\n\nAnd forcefully run SilentCleanup task:\n\nschtasks /run /tn \\Microsoft\\Windows\\DiskCleanup\\SilentCleanup /I\n\nREM will tell it to ignore everything after %windir% and treat it just as a NOTE. Therefore just executing cmd with admin privs.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": ["file_path"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "UACME Bypass Method 23",
+      "guid": "8ceab7a2-563a-47d2-b5ba-0995211128d7",
+      "description": "Executes User Account Control Bypass according to the methods listed below. Upon successful execution you should see event viewer load and two administrative command prompts.\nNote: The cleanup_command's which kill the spawned cmd and event viewer processes only work if run as admin.\n\nAuthor: Leo Davidson derivative\n\nType:\tDll Hijack\n\nMethod: IFileOperation\n\nTarget:\t\\system32\\pkgmgr.exe\n\nComponent: DismCore.dll\n\nImplementation:\tucmDismMethod\n\nUCM Method:\tUacMethodDISM\n\nhttps://github.com/hfiref0x/UACME",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["uacme_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "UACME Bypass Method 31",
+      "guid": "b0f76240-9f33-4d34-90e8-3a7d501beb15",
+      "description": "Executes User Account Control Bypass according to the methods listed below. Upon successful execution you should see event viewer load and two administrative command prompts.\nNote: The cleanup_command's which kill the spawned cmd and event viewer processes only work if run as admin.\n\nAuthor: Enigma0x3\n\nType:\tShell API\n\nMethod: Registry key manipulation\n\nTarget:\t\\system32\\sdclt.exe\n\nComponent: Attacker defined\n\nImplementation:\tucmSdcltIsolatedCommandMethod\n\nUCM Method:\tUacMethodShellSdclt\n\nhttps://github.com/hfiref0x/UACME",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["uacme_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "UACME Bypass Method 33",
+      "guid": "e514bb03-f71c-4b22-9092-9f961ec6fb03",
+      "description": "Executes User Account Control Bypass according to the methods listed below. Upon successful execution you should see event viewer load and two administrative command prompts.\nNote: The cleanup_command's which kill the spawned cmd and event viewer processes only work if run as admin.\n\nAuthor: winscripting.blog\n\nType:\tShell API\n\nMethod: Registry key manipulation\n\nTarget:\t\\system32\\fodhelper.exe\n\nComponent:\tAttacker defined\n\nImplementation:\tucmShellRegModMethod\n\nUCM Method:\tUacMethodMsSettings2\n\nhttps://github.com/hfiref0x/UACME",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["uacme_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "UACME Bypass Method 34",
+      "guid": "695b2dac-423e-448e-b6ef-5b88e93011d6",
+      "description": "Executes User Account Control Bypass according to the methods listed below. Upon successful execution you should see event viewer load and two administrative command prompts.\nNote: The cleanup_command's which kill the spawned cmd and event viewer processes only work if run as admin.\n\nAuthor: James Forshaw\n\nType:\tShell API\n\nMethod: Environment variables expansion\n\nTarget:\t\\system32\\svchost.exe via \\system32\\schtasks.exe\n\nComponent:\tAttacker defined\n\nImplementation:\tucmDiskCleanupEnvironmentVariable\n\nUCM Method:\tUacMethodDiskSilentCleanup\n\nhttps://github.com/hfiref0x/UACME",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["uacme_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "UACME Bypass Method 39",
+      "guid": "56163687-081f-47da-bb9c-7b231c5585cf",
+      "description": "Executes User Account Control Bypass according to the methods listed below. Upon successful execution you should see event viewer load and two administrative command prompts.\nNote: The cleanup_command's which kill the spawned cmd and event viewer processes only work if run as admin.\n\nAuthor: Stefan Kanthak\n\nType:\tDll Hijack\n\nMethod: .NET Code Profiler\n\nTarget:\t\\system32\\mmc.exe\n\nComponent:\tAttacker defined\n\nImplementation:\tucmCorProfilerMethod\n\nUCM Method:\tUacMethodCorProfiler\n\nhttps://github.com/hfiref0x/UACME",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["uacme_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "UACME Bypass Method 56",
+      "guid": "235ec031-cd2d-465d-a7ae-68bab281e80e",
+      "description": "Executes User Account Control Bypass according to the methods listed below. Upon successful execution you should see event viewer load and two administrative command prompts.\nNote: The cleanup_command's which kill the spawned cmd and event viewer processes only work if run as admin.\n\nAuthor: Hashim Jawad\n\nType:\tShell API\n\nMethod: Registry key manipulation\n\nTarget:\t\\system32\\WSReset.exe\n\nComponent:\tAttacker defined\n\nImplementation:\tucmShellRegModMethod\n\nUCM Method:\tUacMethodShellWSReset\n\nhttps://github.com/hfiref0x/UACME",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["uacme_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "UACME Bypass Method 59",
+      "guid": "dfb1b667-4bb8-4a63-a85e-29936ea75f29",
+      "description": "Executes User Account Control Bypass according to the methods listed below. Upon successful execution you should see event viewer load and two administrative command prompts.\nNote: The cleanup_command's which kill the spawned cmd and event viewer processes only work if run as admin.\n\nAuthor: James Forshaw\n\nType:\tAppInfo ALPC\n\nMethod: RAiLaunchAdminProcess and DebugObject\n\nTarget:\tAttacker defined\n\nComponent:\tAttacker defined\n\nImplementation:\tucmDebugObjectMethod\n\nUCM Method:\tUacMethodDebugObject\n\nhttps://github.com/hfiref0x/UACME",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["uacme_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "UACME Bypass Method 61",
+      "guid": "7825b576-744c-4555-856d-caf3460dc236",
+      "description": "Executes User Account Control Bypass according to the methods listed below. Upon successful execution you should see event viewer load and two administrative command prompts.\nNote: The cleanup_command's which kill the spawned cmd and event viewer processes only work if run as admin.\n\nAuthor: Enigma0x3/bytecode77 derivative by Nassim Asrir\n\nType:\tShell API\n\nMethod: Registry key manipulation\n\nTarget:\t\\system32\\slui.exe, \\system32\\changepk.exe\n\nComponent:\tAttacker defined\n\nImplementation:\tucmShellRegModMethod\n\nUCM Method:\tUacMethodDebugObject\n\nhttps://github.com/hfiref0x/UACME",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["uacme_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "WinPwn - UAC Magic",
+      "guid": "964d8bf8-37bc-4fd3-ba36-ad13761ebbcc",
+      "description": "UAC bypass using Magic technique via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - UAC Bypass ccmstp technique",
+      "guid": "f3c145f9-3c8d-422c-bd99-296a17a8f567",
+      "description": "UAC bypass using ccmstp technique via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - UAC Bypass DiskCleanup technique",
+      "guid": "1ed67900-66cd-4b09-b546-2a0ef4431a0c",
+      "description": "UAC bypass using DiskCleanup technique via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WinPwn - UAC Bypass DccwBypassUAC technique",
+      "guid": "2b61977b-ae2d-4ae4-89cb-5c36c89586be",
+      "description": "UAC Bypass DccwBypassUAC technique via function of WinPwn",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable UAC admin consent prompt via ConsentPromptBehaviorAdmin registry key",
+      "guid": "251c5936-569f-42f4-9ac2-87a173b9e9b8",
+      "description": "Disable User Account Conrol (UAC) for admin by setting the registry key \nHKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\\ConsentPromptBehaviorAdmin to 0.\n\n[MedusaLocker Ransomware](https://cloudsek.com/technical-analysis-of-medusalocker-ransomware/), \n[Purple Fox Rootkit](https://blogs.blackberry.com/en/2022/01/threat-thursday-purple-fox-rootkit), \n[Avaddon Ransomware](https://blogs.blackberry.com/en/2021/06/threat-thursday-avaddon-ransomware-uses-ddos-attacks-as-triple-threat)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "UAC Bypass with WSReset Registry Modification",
+      "guid": "3b96673f-9c92-40f1-8a3e-ca060846f8d9",
+      "description": "The following UAC bypass is focused on a registry key under \"HKCU:\\Software\\Classes\\AppX82a6gwre4fdg3bt635tn5ctqjf8msdd2\\Shell\\open\\command\" that will trigger a command once wsreset.exe runs. \nThis bypass is limited to Windows 10 1803/1809 and may not run on Server platforms. The registry mod is where interest will be.\nIf successful, the command to run will spawn off wsreset.exe. \n[UAC Bypass in Windows 10 Store Binary](https://0x1.gitlab.io/exploit/UAC-Bypass-in-Windows-10-Store-Binary/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["commandpath", "commandtorun"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable UAC - Switch to the secure desktop when prompting for elevation via registry key",
+      "guid": "85f3a526-4cfa-4fe7-98c1-dea99be025c7",
+      "description": "User Account Control (UAC) is a security mechanism for limiting the elevation of privileges, including administrative accounts, unless authorized. \nThis setting ensures that the elevation prompt is only used in secure desktop mode.\nDisable User Account Conrol (UAC) for secure desktop by setting the registry key HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\\PromptOnSecureDesktop to 0.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable UAC notification via registry keys",
+      "guid": "160a7c77-b00e-4111-9e45-7c2a44eda3fd",
+      "description": "This atomic regarding UACDisableNotify pertains to the notification behavior of UAC. UAC is a critical security feature in Windows that prevents unauthorized changes to the operating system. It prompts the user for permission or an administrator password before allowing actions that could affect the system's operation or change settings that affect other users. The BlotchyQuasar RAT defense evasion activities that the adversary to disable UAC notifications makes it easier for malware and malicious software to execute with elevated privileges. [Article](https://securityintelligence.com/x-force/x-force-hive0129-targeting-financial-institutions-latam-banking-trojan/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Disable ConsentPromptBehaviorAdmin via registry keys",
+      "guid": "a768aaa2-2442-475c-8990-69cf33af0f4e",
+      "description": "This atomic regarding setting ConsentPromptBehaviorAdmin to 0 configures the UAC so that it does not prompt for consent or credentials when actions requiring elevated privileges are performed by users in the administrators group. This means that any operation that would normally trigger a UAC prompt will proceed automatically without user interaction.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "UAC bypassed by Utilizing ProgIDs registry.",
+      "guid": "b6f4645c-34ea-4c7c-98f2-d5a2747efb08",
+      "description": "This atomic designed to simulate the UAC bypassed made by ValleyRAT by adding customized ProgIDs registry entry.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Warzone/AveMaria RAT style UAC bypass",
+      "guid": "350b8e4b-520b-4673-bac2-d15aa1862128",
+      "description": "PowerShell code to bypass User Account Control using registry modification and sdclt.exe. sdclt.exe is an auto-elevated binary, and through editing the registry, it can be hijacked and a user-input process can run with those same privileges. Used by the RAT Warzone/AveMaria, most likely patched on modern Windows versions",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["commandtorun"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1548.002/T1548.002.yaml"
+}

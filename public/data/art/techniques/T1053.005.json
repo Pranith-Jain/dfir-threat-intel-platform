@@ -1,0 +1,189 @@
+{
+  "id": "T1053.005",
+  "displayName": "Scheduled Task/Job: Scheduled Task",
+  "tests": [
+    {
+      "name": "Scheduled Task Startup Script",
+      "guid": "fec27f65-db86-4c2d-b66c-61945aee87c2",
+      "description": "Run an exe on user logon or system startup.  Upon execution, success messages will be displayed for the two scheduled tasks. To view\nthe tasks, open the Task Scheduler and look in the Active Tasks pane.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Scheduled task Local",
+      "guid": "42f53695-ad4a-4546-abb6-7d837f644a71",
+      "description": "Upon successful execution, cmd.exe will create a scheduled task to spawn cmd.exe at 20:10.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["task_command", "time"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Scheduled task Remote",
+      "guid": "2e5eac3e-327b-4a88-a0c0-c4057039a8dd",
+      "description": "Create a task on a remote system.\nUpon successful execution, cmd.exe will create a scheduled task to spawn cmd.exe at 20:10 on a remote endpoint.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["task_command", "time", "target", "user_name", "password"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Powershell Cmdlet Scheduled Task",
+      "guid": "af9fd58f-c4ac-4bf2-a9ba-224b71ff25fd",
+      "description": "Create an atomic scheduled task that leverages native powershell cmdlets.\n\nUpon successful execution, powershell.exe will create a scheduled task to spawn cmd.exe at 20:10.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Task Scheduler via VBA",
+      "guid": "ecd3fa21-7792-41a2-8726-2c5c673414d3",
+      "description": "This module utilizes the Windows API to schedule a task for code execution (notepad.exe). The task scheduler will execute \"notepad.exe\" within\n30 - 40 seconds after this module has run",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["ms_product"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "WMI Invoke-CimMethod Scheduled Task",
+      "guid": "e16b3b75-dc9e-4cde-a23d-dfa2d0507b3b",
+      "description": "Create an scheduled task that executes notepad.exe after user login from XML by leveraging WMI class PS_ScheduledTask. Does the same thing as Register-ScheduledTask cmdlet behind the scenes.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["xml_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Scheduled Task Executing Base64 Encoded Commands From Registry",
+      "guid": "e895677d-4f06-49ab-91b6-ae3742d0a2ba",
+      "description": "A Base64 Encoded command will be stored in the registry (ping 127.0.0.1) and then a scheduled task will be created.\nThe scheduled task will launch powershell to decode and run the command in the registry daily.\nThis is a persistence mechanism recently seen in use by Qakbot.  \n\n[Additiona Information](https://thedfirreport.com/2022/02/07/qbot-likes-to-move-it-move-it/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["time"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Import XML Schedule Task with Hidden Attribute",
+      "guid": "cd925593-fbb4-486d-8def-16cbdf944bf4",
+      "description": "Create an scheduled task that executes calc.exe after user login from XML that contains hidden setting attribute. \nThis technique was seen several times in tricbot malware and also with the targetted attack campaigne the industroyer2.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["xml_path"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "PowerShell Modify A Scheduled Task",
+      "guid": "dda6fc7b-c9a6-4c18-b98d-95ec6542af6d",
+      "description": "Create a scheduled task with an action and modify the action to do something else. The initial idea is to showcase Microsoft Windows TaskScheduler Operational log modification of an action on a Task already registered. \nIt will first be created to spawn cmd.exe, but modified to run notepad.exe.\n\nUpon successful execution, powershell.exe will create a scheduled task and modify the action.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Scheduled Task (\"Ghost Task\") via Registry Key Manipulation",
+      "guid": "704333ca-cc12-4bcf-9916-101844881f54",
+      "description": "Create a scheduled task through manipulation of registry keys. This procedure is implemented using the [GhostTask](https://github.com/netero1010/GhostTask) utility. By manipulating registry keys under HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tree, the tool creates user-specified scheduled tasks without a corresponding Windows Event 4698, which is logged when scheduled tasks are created through conventional means.\nThis requires a download of the GhostTask binary, which must be run as NT Authority\\SYSTEM. Upon successful execution of this test, a scheduled task will be set to run at logon which launches notepad.exe or runs a user-specified command.\nFor further explo",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["task_name", "task_command", "target", "user_name"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Scheduled Task Persistence via CompMgmt.msc",
+      "guid": "8fcfa3d5-ea7d-4e1c-bd3e-3c4ed315b7d2",
+      "description": "Adds persistence by abusing `compmgmt.msc` via a scheduled task.\nWhen the Computer Management console is opened, it will run a malicious payload (in this case, `calc.exe`). \nThis technique abuses scheduled tasks and registry modifications to hijack legitimate system processes.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["task_name", "payload"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Scheduled Task Persistence via Eventviewer.msc",
+      "guid": "02124c37-767e-4b76-9383-c9fc366d9d4c",
+      "description": "Adds persistence by abusing `eventviewer.msc` via a scheduled task.\nWhen the eventviewer console is opened, it will run a malicious payload (in this case, `calc.exe`).",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["task_name", "payload"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Turla Topinambour Dropper and Scheduled Task Persistence",
+      "guid": "1a73e89e-a5de-404d-9784-5c2aa0b38a29",
+      "description": "Emulates the dropper behavior of Turla's Topinambour. Uses inline C# compiled via\nAdd-Type to replicate the dropper's unpack_p() and make_some_noise() functions. unpack_p() drops a\nbenign stand-in executable to %LOCALAPPDATA%\\VirtualStore\\certcheck.exe, and make_some_noise() creates\na scheduled task named VerifiedPublisherCertCheck that runs certcheck.exe every 30 minutes.\n\nReference: https://securelist.com/turla-renews-its-arsenal-with-topinambour/91687/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["benign_exe"],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Turla KopiLuwak Scheduled Task for JavaScript Stager",
+      "guid": "6731e8a0-5aeb-4180-8a90-4f8852e56de6",
+      "description": "Emulates the KopiLuwak dropper's scheduled task creation stage. Creates a logon-triggered\nscheduled task named ProactiveScan with description \"NTFS Volume Health Scan\" that runs\nChkdsk.js from the current user's AppData\\Roaming\\Microsoft directory with an RC4 decryption\nkey passed via the -scan parameter. The task is created using schtasks.exe matching the\nmalware's use of CreateScheduledTaskLogon. Chkdsk.js does not need to exist for the\nscheduled task to be created.\n\nReference: https://securelist.com/turla-renews-its-arsenal-with-topinambour/91687/",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1053.005/T1053.005.yaml"
+}

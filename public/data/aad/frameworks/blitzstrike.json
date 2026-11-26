@@ -1,0 +1,291 @@
+{
+  "slug": "blitzstrike",
+  "name": "Blitz Strike",
+  "description": "MCP server for AI coding clients that runs a one-call web engagement with fixed user agents, canaries and redirect probes",
+  "seenIn": "No public report of use in an attack. Covered from its source code",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 5,
+    "suricata": 15,
+    "yara": 2,
+    "indicators": 26
+  },
+  "techniques": [
+    {
+      "id": "T1059.004",
+      "score": 2,
+      "comment": "KQL hunt: Blitz Strike on a host you monitor; Sigma: Tools Started by the Blitz Strike MCP Server"
+    },
+    {
+      "id": "T1071",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1071.001",
+      "score": 1,
+      "comment": "Suricata: 3819015 TD Blitz Strike self-hosted callback listener answer"
+    },
+    {
+      "id": "T1190",
+      "score": 14,
+      "comment": "KQL hunt: Blitz Strike testing you: its user agents and probe markers in web and proxy logs; Sentinel analytics: Blitz Strike AI pentest MCP server scanned a web server; Sigma: Blitz Strike SSRF Canary Fetched or Blitz Strike User Agent Through a Proxy; Sigma: Blitz Strike Scan Markers in Web Logs; Suricata: 3819003 TD Blitz Strike open redirect host in URI; Suricata: 3819005 TD Blitz Strike SSRF canary URL in request; Suricata: 3819006 TD Blitz Strike SSRF canary fetched by your server; Suricata: 3819007 TD Blitz Strike CRLF injection probe header name; Suricata: 3819009 TD Blitz Strike file "
+    },
+    {
+      "id": "T1588.002",
+      "score": 5,
+      "comment": "KQL hunt: Blitz Strike on a host you monitor; Sigma: Blitz Strike Home Folder, Reports or Agent Personas Written; Sigma: Blitz Strike MCP Server or CLI on a Host; YARA: BlitzStrike_Report_Or_Log; YARA: BlitzStrike_Source_Or_Package"
+    },
+    {
+      "id": "T1595",
+      "score": 1,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist"
+    },
+    {
+      "id": "T1595.002",
+      "score": 18,
+      "comment": "KQL hunt: Blitz Strike testing you: its user agents and probe markers in web and proxy logs; Sentinel analytics: Blitz Strike AI pentest MCP server scanned a web server; Sigma: Blitz Strike SSRF Canary Fetched or Blitz Strike User Agent Through a Proxy; Sigma: Blitz Strike Scan Markers in Web Logs; Sigma: Tools Started by the Blitz Strike MCP Server; Suricata: 3819001 TD Blitz Strike user agent; Suricata: 3819002 TD Blitz Strike leaked key check user agent; Suricata: 3819003 TD Blitz Strike open redirect host in URI; Suricata: 3819004 TD Blitz Strike CORS check origin; Suricata: 3819005 TD Bli"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "user_agent",
+      "value": "blitzstrike/1.0",
+      "confidence": "high",
+      "context": "User agent of Blitz Strike's strike_verify reflection check; run_engagement sends it 27 times by default (9 parameters x baseline, marker and control), with a marker BS<base36 time><random> as the value",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/strike.ts#L42",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "user_agent",
+      "value": "blitzstrike/2",
+      "confidence": "high",
+      "context": "User agent of Blitz Strike's sibling_scan (IDOR, mass assignment with {\"<field>\":\"admin\",\"email\":\"attacker@example.com\",\"name\":\"attacker\"}, and 15 rapid requests for a rate limit check)",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/sibling-scan.ts#L111",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (compatible; BlitzStrike/2.4)",
+      "confidence": "high",
+      "context": "User agent of Blitz Strike's auth_login, target_health, nuclei_scan fingerprint and param_surface requests; fixed at 2.4 whatever the package version",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/auth-session.ts#L57",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (blitzstrike oracle probe)",
+      "confidence": "high",
+      "context": "User agent of Blitz Strike's blind_oracle probe, which sends a reflection marker zz<8 base36>zz and SQL, SSTI and timing probes",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/blind-oracle.ts#L142",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (blitzstrike)",
+      "confidence": "high",
+      "context": "User agent of Blitz Strike's blind_sqli_confirm and blind_sqli_extract boolean and time oracles",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/blind-oracle.ts#L303",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (blitzstrike cache probe)",
+      "confidence": "high",
+      "context": "User agent of Blitz Strike's cache_gap web cache deception check (/style.css, /..;/style.css, /%2e%2e/style.css and similar suffixes)",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/cache-gap.ts#L127",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (blitzstrike precedence probe)",
+      "confidence": "high",
+      "context": "User agent of Blitz Strike's param_precedence HTTP parameter pollution check",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/param-precedence.ts#L70",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (blitzstrike race probe)",
+      "confidence": "high",
+      "context": "User agent of Blitz Strike's race_test parallel request check",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/race-test.ts#L48",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "user_agent",
+      "value": "Mozilla/5.0 (recon-agent)",
+      "confidence": "medium",
+      "context": "User agent of Blitz Strike's validate_leaked_key: fetches a leaked secret from a raw blob URL, then calls the API once without and once with the key",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/key-validation.ts#L81",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "string",
+      "value": "evil-blitz.example.com",
+      "confidence": "high",
+      "context": "Host Blitz Strike's run_engagement puts in 11 redirect parameters (redirect, url, return, next, callback, redirect_uri, return_url, goto, dest, target, continue) as https://evil-blitz.example.com and sends as Origin: https://evil-blitz.example.com for its CORS check",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/orchestrator.ts#L513",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "url",
+      "value": "http://httpbin.org/anything/blitzstrike-ssrf-canary",
+      "confidence": "high",
+      "context": "SSRF canary URL Blitz Strike's run_engagement puts in 23 URL-like parameters; a request for it from one of your servers means the server fetched it",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/orchestrator.ts#L632",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "string",
+      "value": "blitzstrike-ssrf-canary",
+      "confidence": "high",
+      "context": "Path segment of Blitz Strike's SSRF canary URL http://httpbin.org/anything/blitzstrike-ssrf-canary",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/orchestrator.ts#L633",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "string",
+      "value": "%0d%0aX-BlitzStrike%3A%20injected",
+      "confidence": "high",
+      "context": "CRLF injection probe Blitz Strike's run_engagement sends as-is in the parameters url, redirect, return, next, callback, state, token and id",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/orchestrator.ts#L644",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "http_header",
+      "value": "X-BlitzStrike",
+      "confidence": "high",
+      "context": "Header name Blitz Strike's CRLF probe tries to inject into the response",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/orchestrator.ts#L644",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "string",
+      "value": "bs-marker.example.com",
+      "confidence": "high",
+      "context": "Host header Blitz Strike's run_engagement sends to test host header poisoning",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/orchestrator.ts#L646",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "uri_string",
+      "value": "/bs-nonexistent-",
+      "confidence": "high",
+      "context": "Negative control path of Blitz Strike's verify_file_read: /bs-nonexistent-<base36 time><4 random>, sent after /etc/passwd in the same parameter (default path) or as the raw body",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/strike.ts#L288",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "string",
+      "value": "blitzstrike_pollution_canary_9f3a",
+      "confidence": "high",
+      "context": "Canary in the JSON bodies of Blitz Strike's proto_pollution_probe ({\"<param>\":{\"constructor\":{\"prototype\":{\"polluted\":\"blitzstrike_pollution_canary_9f3a\"}}}} and the same at the top level)",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/proto-pollution.ts#L8",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "string",
+      "value": "__blitz_xss__",
+      "confidence": "high",
+      "context": "Flag in the default payload of Blitz Strike's browser_validate DOM XSS check, <img src=x onerror=\"window.__blitz_xss__=true\">, put URL-encoded into the target URL by headless Chromium",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/browser.ts#L91",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "string",
+      "value": "zzblitz",
+      "confidence": "medium",
+      "context": "Marker in the reproduction requests Blitz Strike's auto_poc writes for the model to send: <img src=x onerror=alert(\"zzblitz\")>, ; echo zzblitz$(id), X-Injected: zzblitz, {\"__proto__\":{\"polluted\":\"zzblitz\"}}, poc.php with <?php echo \"zzblitz\"; ?>. The model decides whether to send them",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/auto-poc.ts#L47",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "string",
+      "value": "http://CANARY.example",
+      "confidence": "low",
+      "context": "Default SSRF canary in Blitz Strike's auto_poc reproduction request when no canary is given; the model may replace it",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/auto-poc.ts#L76",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "string",
+      "value": "oob-ok",
+      "confidence": "low",
+      "context": "Whole response body (text/plain, status 200) of Blitz Strike's self-hosted callback listener, open on 0.0.0.0 and a random port while oob_start runs without interactsh-client installed. Short and generic",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/oob.ts#L174",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "http_header",
+      "value": "X-HackerOne-Research",
+      "confidence": "low",
+      "context": "Header Blitz Strike adds to most of its requests when the operator sets H1_USERNAME; a bug bounty convention used by other tools too",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/http.ts#L17",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "file_path",
+      "value": "/.blitzstrike/",
+      "confidence": "medium",
+      "context": "Blitz Strike home folder (BLITZSTRIKE_HOME): audit.jsonl, memory.jsonl, intelligence.jsonl, obligations.jsonl, circuit-breaker.json, reports/, data/payloads, data/templates, tools/, shot-<time>.png",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/audit.ts#L14",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "file_name",
+      "value": "Blitz Strike.md",
+      "confidence": "medium",
+      "context": "OpenCode agent persona that blitzstrike install copies to ~/.config/opencode/agents/ with Blitz.md, Eagle Eye.md and Strike.md; it allows bash without asking",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/cli.ts#L205",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "string",
+      "value": "blitzstrike serve --mcp",
+      "confidence": "high",
+      "context": "Command line of the Blitz Strike MCP server that blitzstrike install writes into AI client settings (blitzstrike, npx -y blitzstrike, bunx blitzstrike or bun run <dir>/src/index.ts, each followed by serve --mcp)",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/cli.ts#L140",
+      "reported": "2026-11-04"
+    },
+    {
+      "type": "string",
+      "value": "Blitz Strike — Security Assessment Report",
+      "confidence": "medium",
+      "context": "Default title of the report Blitz Strike's generate_report writes; engagement reports are titled Blitz Strike — Engagement Report (<target>) and Blitz Strike — Live Engagement (<url>)",
+      "source": "ThreatDefence review of the Blitz Strike source code",
+      "sourceUrl": "https://github.com/shinthink/blitzstrike/blob/9d7a6ecba034793fd757899de9a6424339fc9470/src/report.ts#L108",
+      "reported": "2026-11-04"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/blitzstrike",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

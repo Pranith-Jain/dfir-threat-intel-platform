@@ -1,0 +1,124 @@
+{
+  "id": "T1546",
+  "displayName": "Event Triggered Execution",
+  "tests": [
+    {
+      "name": "Persistence with Custom AutodialDLL",
+      "guid": "aca9ae16-7425-4b6d-8c30-cad306fdbd5b",
+      "description": "The DLL pointed to by the AutodialDLL registry key is loaded every time a process connects to the internet. Attackers can gain persistent code execution by setting this key to a DLL of their choice. \n\nThe sample dll provided, AltWinSock2DLL, will launch the notepad process. Starting and stopping a web browser such as MS Edge or Chrome should result in the dll executing.\n[Blog](https://www.mdsec.co.uk/2022/10/autodialdlling-your-way/)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "HKLM - Persistence using CommandProcessor AutoRun key (With Elevation)",
+      "guid": "a574dafe-a903-4cce-9701-14040f4f3532",
+      "description": "An adversary may abuse the CommandProcessor AutoRun registry key to persist. Every time cmd.exe is executed, the command defined in the AutoRun key also gets executed.\n[reference](https://devblogs.microsoft.com/oldnewthing/20071121-00/?p=24433)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["command"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "HKCU - Persistence using CommandProcessor AutoRun key (Without Elevation)",
+      "guid": "36b8dbf9-59b1-4e9b-a3bb-36e80563ef01",
+      "description": "An adversary may abuse the CommandProcessor AutoRun registry key to persist. Every time cmd.exe is executed, the command defined in the AutoRun key also gets executed.\n[reference](https://devblogs.microsoft.com/oldnewthing/20071121-00/?p=24433)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["command"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "WMI Invoke-CimMethod Start Process",
+      "guid": "adae83d3-0df6-45e7-b2c3-575f91584577",
+      "description": "The following Atomic will create a New-CimSession on a remote endpoint and start a process usnig Invoke-CimMethod.\nThis is a novel way to perform lateral movement or to start a remote process.\nThis does require WinRM to be enabled. The account performing the run will also need to be elevated.\nA successful execution will stdout that the process started. On the remote endpoint, wmiprvse.exe will spawn the given process.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["dest", "password", "username", "process"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Adding custom debugger for Windows Error Reporting",
+      "guid": "17d1a3cc-3373-495a-857a-e5dd005fb302",
+      "description": "When applications hang, the Windows Error Reporting framework allows us to attach a debugger, if it is set up in the Registry.\nAdding executable of choice will let the executable to auto-execute when during any application crash due to functioning of WER framework",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Load custom DLL on mstsc execution",
+      "guid": "2db7852e-5a32-4ec7-937f-f4e027881700",
+      "description": "Adding ClxDllPath under Terminal Server Client subkey of HKLM hive with a path to custom DLL allows for DLL loading during execution of mstsc.exe",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["dll_inf"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Persistence using automatic execution of custom DLL during RDP session",
+      "guid": "b7fc4c3f-fe6e-479a-ba27-ef91b88536e3",
+      "description": "When remote desktop session is accepted, the system queries the key it queries the Registry key:HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\AddIns\\TestDVCPlugin. \nIf such key exists, the OS will attempt to read the Path value underneath.Once the Path is read, the DLL that it points to will be loaded via LoadLibrary.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Persistence via ErrorHandler.cmd script execution",
+      "guid": "547a4736-dd1c-4b48-b4fe-e916190bb2e7",
+      "description": "Create persistence by triggering script within ErrorHandler.cmd upon the execution of specific binaries within the oobe directory.\nUpon test execution, Setup.exe will be executed to further execute script within ErrorHandlercmd to launch Notepad.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "Persistence using STARTUP-PATH in MS-WORD",
+      "guid": "f0027655-25ef-47b0-acaf-3d83d106156c",
+      "description": "When Word starts, it searches for the registry key HKCU\\Software\\Microsoft\\Office\\<version>\\Word\\Options\\STARTUP-PATH and if it exists,\nit will treat it as a user specific start-up folder and load the contents of the folder with file extensions of .wll,.lnk,.dotm,.dot,.dotx\nThe registry key can be abused to load malware from the mentioned path. Reboot might be required.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1546/T1546.yaml"
+}

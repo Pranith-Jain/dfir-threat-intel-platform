@@ -1,0 +1,20 @@
+{
+  "id": "T1564.012",
+  "displayName": "Hide Artifacts: File/Path Exclusions",
+  "tests": [
+    {
+      "name": "Stage and execute a payload from a Windows Defender excluded path",
+      "guid": "0303c07b-545e-4c0b-89f4-aea84a7a8d8e",
+      "description": "Writes an executable payload into a directory that is excluded from Microsoft Defender scanning\nand executes it from that location. Rather than modifying tool settings to create a new\nexclusion, adversaries may place file-based payloads in existing default or otherwise\nwell-known exclusions so that the artifact is never scanned.\n\nA copy of a benign signed binary (calc.exe) is used as the payload so that no malicious content\nis written to disk.\n\nUpon successful execution, the payload is copied into the excluded directory and launched from\nthere.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["excluded_path", "payload_source", "payload_name"],
+      "dependencyCount": 2
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1564.012/T1564.012.yaml"
+}

@@ -1,0 +1,72 @@
+{
+  "id": "T1003.008",
+  "displayName": "OS Credential Dumping: /etc/passwd and /etc/shadow",
+  "tests": [
+    {
+      "name": "Access /etc/shadow (Local)",
+      "guid": "3723ab77-c546-403c-8fb4-bb577033b235",
+      "description": "/etc/shadow file is accessed in Linux environments",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "bash",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Access /etc/master.passwd (Local)",
+      "guid": "5076874f-a8e6-4077-8ace-9e5ab54114a5",
+      "description": "/etc/master.passwd file is accessed in FreeBSD environments",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Access /etc/passwd (Local)",
+      "guid": "60e860b6-8ae6-49db-ad07-5e73edd88f5d",
+      "description": "/etc/passwd file is accessed in FreeBSD and Linux environments",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Access /etc/{shadow,passwd,master.passwd} with a standard bin that's not cat",
+      "guid": "df1a55ae-019d-4120-bc35-94f4bc5c4b0a",
+      "description": "Dump /etc/passwd, /etc/master.passwd and /etc/shadow using ed",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Access /etc/{shadow,passwd,master.passwd} with shell builtins",
+      "guid": "f5aa6543-6cb2-4fae-b9c2-b96e14721713",
+      "description": "Dump /etc/passwd, /etc/master.passwd and /etc/shadow using sh builtins",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": true
+      },
+      "inputArguments": ["output_file"],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1003.008/T1003.008.yaml"
+}

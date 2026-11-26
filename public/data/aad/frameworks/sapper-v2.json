@@ -1,0 +1,249 @@
+{
+  "slug": "sapper-v2",
+  "name": "sapper-v2",
+  "description": "Contest kit that coordinates several coding assistants around a shared engagement graph, with a web board",
+  "seenIn": "No public report of use in an attack. Covered from its source code and scan data",
+  "counts": {
+    "kqlHunts": 3,
+    "analytics": 1,
+    "sigma": 3,
+    "suricata": 6,
+    "yara": 2,
+    "indicators": 23
+  },
+  "techniques": [
+    {
+      "id": "T1059.004",
+      "score": 4,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; KQL hunt: sapper-v2 running on a host you monitor; Sentinel analytics: sapper-v2 autonomous pentest agents on a host; Sigma: sapper-v2 Agent Orchestration on a Host"
+    },
+    {
+      "id": "T1071.001",
+      "score": 10,
+      "comment": "KQL hunt: Indicator sweep with the agentic watchlist; KQL hunt: sapper-v2 board and contest client in web and proxy logs; Sigma: sapper-v2 Engagement Graph Board in Proxy Logs; Suricata: 3817101 TD sapper-v2 engagement graph board page; Suricata: 3817102 TD sapper-v2 live board page with graph poll path; Suricata: 3817103 TD sapper-v2 board template graph marker (any title); Suricata: 3817104 TD sapper-v2 board graph JSON request; Suricata: 3817105 TD sapper-v2 engagement graph JSON in a response; Suricata: 3817106 TD TSecBench contest API client (sapper-v2 arena); YARA: sapper_v2_Board_Page"
+    },
+    {
+      "id": "T1588.002",
+      "score": 2,
+      "comment": "Sigma: sapper-v2 Engagement Graph or Run Files Written; YARA: sapper_v2_Source_Or_Image_Scripts"
+    },
+    {
+      "id": "T1595.002",
+      "score": 3,
+      "comment": "KQL hunt: sapper-v2 running on a host you monitor; Sentinel analytics: sapper-v2 autonomous pentest agents on a host; Sigma: sapper-v2 Agent Orchestration on a Host"
+    }
+  ],
+  "indicators": [
+    {
+      "type": "string",
+      "value": "sapper — engagement graph",
+      "confidence": "high",
+      "context": "HTML title of the sapper-v2 board (sapper view --serve, plain HTTP, no login, 127.0.0.1:8765 by default) and of the sapper-graph.html snapshot. The em dash is U+2014. An exposed board shows an engagement's targets, credentials and flags",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/lib/view_template.html#L6",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "uri_string",
+      "value": "/__sapper_graph__/",
+      "confidence": "high",
+      "context": "Path of the graph JSON on the sapper-v2 board, /__sapper_graph__/<24 hex>.json, polled every 2 seconds by the open board page. The token is printed in the page at /, so anyone who loads the page can read the graph",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/lib/sapper.py#L3600-L3602",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "string",
+      "value": "echo DRIVE_PANE_EXITED; exec sleep infinity",
+      "confidence": "high",
+      "context": "End of the command of every sapper-v2 agent window in tmux, after claude, codex or sapper auto (worker.sh:395-410, watchdog.sh:329-331, entrypoint.sh:105, tmux-drive.sh:181). Seen in tmux new-window and sh -c command lines",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/docker/commander/worker.sh#L398",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "string",
+      "value": "sapper-cmd",
+      "confidence": "medium",
+      "context": "tmux session of the sapper-v2 commander mode (window 0 commander, workers <code>-w<n>), in tmux new-session -s and send-keys -t command lines. A short name: match it as a tmux target",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/docker/commander/entrypoint.sh#L28",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "string",
+      "value": "sapper-tui",
+      "confidence": "medium",
+      "context": "tmux session of the sapper-v2 TUI mode, created with new-session -d -s sapper-tui -n boot",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/docker/tmux-drive.sh#L20",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "string",
+      "value": "sapper-fleet",
+      "confidence": "medium",
+      "context": "Default tmux session of sapper fleet (fleet.json)",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/lib/sapper.py#L2489-L2491",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "string",
+      "value": "You are an autonomous executor in a penetration-testing fact-graph agent system",
+      "confidence": "high",
+      "context": "Start of the system prompt sapper-v2 passes as claude -p --append-system-prompt on every dispatch step, so it is in the process command line",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/lib/sapper.py#L2899-L2902",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "string",
+      "value": "You are the autonomous field commander of a pentest campaign (TSecBench)",
+      "confidence": "high",
+      "context": "Start of the bootstrap mission sapper-v2 types into the commander Claude Code session with tmux send-keys -l, so it is in the tmux command line",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/docker/commander/entrypoint.sh#L125",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "string",
+      "value": "You are an autonomous pentest operator in a CTF benchmark",
+      "confidence": "high",
+      "context": "Start of the default worker mission sapper-v2 types into each worker Claude Code session with tmux send-keys -l",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/docker/commander/worker.sh#L251",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "string",
+      "value": "You are a GENERAL (senior operator) on challenge",
+      "confidence": "high",
+      "context": "Start of the general mission sapper-v2 types into a lead worker session with tmux send-keys -l",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/docker/commander/worker.sh#L244",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "file_path",
+      "value": "/opt/sapper/docker/commander/SKILL.md",
+      "confidence": "high",
+      "context": "Commander doctrine in the sapper-v2 commander image, named in its bootstrap and restart prompts; worker.sh, watchdog.sh and entrypoint.sh sit next to it",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/docker/commander/watchdog.sh#L42",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "file_path",
+      "value": "/opt/sapper/lib/sapper.py",
+      "confidence": "medium",
+      "context": "The sapper CLI in the sapper-v2 images, linked as /home/agent/.local/bin/sapper; arena.py, kb.py and sapper-hook.py sit next to it",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/docker/Dockerfile#L95",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "file_name",
+      "value": "commander-state.md",
+      "confidence": "medium",
+      "context": "Handover note the sapper-v2 commander writes in SAPPER_ROOT for its next incarnation; read by the bootstrap and restart prompts",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/docker/commander/entrypoint.sh#L125",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "file_name",
+      "value": "sapper-graph.html",
+      "confidence": "medium",
+      "context": "Board snapshot written by sapper view next to the .sapper/ graph, with the whole graph inlined as JSON",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/lib/sapper.py#L3560",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "file_path",
+      "value": ".sapper/facts/",
+      "confidence": "medium",
+      "context": "Folder of the sapper-v2 engagement graph: one JSON file per fact (host, service, cred, vuln, loot, flag, note), next to intents/, hints/ and project.json",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/docker/commander/worker.sh#L93",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "file_path",
+      "value": "~/.claude/skills/sapper-setup",
+      "confidence": "medium",
+      "context": "Claude Code skill link created by the sapper-v2 install.sh, pointing at the repository's skill/ folder; ~/.local/bin/sapper links to lib/sapper.py",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/install.sh#L29-L31",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "string",
+      "value": "sapper-hook.py",
+      "confidence": "medium",
+      "context": "Script of the SessionStart and UserPromptSubmit hooks sapper setup writes into a project's .claude/settings.json (<python> <path>/sapper-hook.py sessionstart)",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/lib/_settings_patch.py#L37",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "docker_image",
+      "value": "sapper-agent:commander",
+      "confidence": "medium",
+      "context": "Local tag of the sapper-v2 commander image (Kali, Claude Code, Codex 0.42.0), exported as dist/sapper-agent-commander.tar.gz for upload to the contest platform. Not in a public registry",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/docker/Dockerfile.commander#L5",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "docker_image",
+      "value": "sapper-agent:tmux",
+      "confidence": "medium",
+      "context": "Local tag of the sapper-v2 TUI image, built on sapper-agent:latest (kalilinux/kali-rolling with the Kali tools and Claude Code). Not in a public registry",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/docker/Dockerfile.tmux#L5",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "http_header",
+      "value": "BENCHMARK_TOKEN",
+      "confidence": "low",
+      "context": "Auth header of the TSecBench contest Challenges API that the sapper-v2 arena client and entrypoints send to /openapi/v1/challenges. Any client of that contest platform sends it: an autonomous contest agent, not sapper-v2 alone",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/lib/arena.py#L39-L40",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "uri_string",
+      "value": "/openapi/v1/challenges/submit",
+      "confidence": "low",
+      "context": "TSecBench flag submission path the sapper-v2 arena client calls with the BENCHMARK_TOKEN header; the missions also tell the model to POST to it directly. Shared with every client of that platform",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/lib/arena.py#L13",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "url",
+      "value": "https://open.bigmodel.cn/api/anthropic",
+      "confidence": "low",
+      "context": "Zhipu GLM Anthropic-compatible endpoint documented as ANTHROPIC_BASE_URL for the sapper-v2 image. Used by many Claude Code users: context only",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/docker/ENV.md#L23",
+      "reported": "2026-11-11"
+    },
+    {
+      "type": "url",
+      "value": "https://api.deepseek.com/anthropic",
+      "confidence": "low",
+      "context": "Default DEEPSEEK_BASE_URL of the sapper-v2 reserve workers. Used by many Claude Code users: context only",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/docker/commander/worker.sh#L43",
+      "reported": "2026-11-11"
+    }
+  ],
+  "indicatorsTruncated": false,
+  "upstreamUrl": "https://github.com/ThreatDefence/agentic-attack-detections/tree/main/frameworks/sapper-v2",
+  "source": "github.com/ThreatDefence/agentic-attack-detections",
+  "license": "MIT"
+}

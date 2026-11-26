@@ -1,0 +1,59 @@
+{
+  "id": "T1685.005",
+  "displayName": "Disable or Modify Tools: Clear Windows Event Logs",
+  "tests": [
+    {
+      "name": "Clear Logs",
+      "guid": "e6abb60e-26b8-41da-8aae-0c35174b0967",
+      "description": "Upon execution this test will clear Windows Event Logs. Open the System.evtx logs at C:\\Windows\\System32\\winevt\\Logs and verify that it is now empty.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": ["log_name"],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Delete System Logs Using Clear-EventLog",
+      "guid": "b13e9306-3351-4b4b-a6e8-477358b0b498",
+      "description": "Clear event logs using built-in PowerShell commands.\nUpon successful execution, you should see the list of deleted event logs\nUpon execution, open the Security.evtx logs at C:\\Windows\\System32\\winevt\\Logs and verify that it is now empty or has very few logs in it.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Clear Event Logs via VBA",
+      "guid": "1b682d84-f075-4f93-9a89-8a8de19ffd6e",
+      "description": "This module utilizes WMI via VBA to clear the Security and Backup eventlogs from the system. \n\nElevation is required for this module to execute properly, otherwise WINWORD will throw an \"Access Denied\" error",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 1
+    },
+    {
+      "name": "BlackCat Ransomware Full Log Clear",
+      "guid": "83dac837-5685-45ed-b10b-9f047572100b",
+      "description": "Emulates the iterative Windows event log clearing behavior of BlackCat ransomware using wevtutil.exe",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1685.005/T1685.005.yaml"
+}

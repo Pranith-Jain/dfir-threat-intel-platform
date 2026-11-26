@@ -1,0 +1,124 @@
+{
+  "id": "T1497.001",
+  "displayName": "Virtualization/Sandbox Evasion: System Checks",
+  "tests": [
+    {
+      "name": "Detect Virtualization Environment (Linux)",
+      "guid": "dfbd1a21-540d-4574-9731-e852bd6fe840",
+      "description": "systemd-detect-virt detects execution in a virtualized environment.\nAt boot, dmesg stores a log if a hypervisor is detected.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Detect Virtualization Environment (FreeBSD)",
+      "guid": "e129d73b-3e03-4ae9-bf1e-67fc8921e0fd",
+      "description": "Detects execution in a virtualized environment.\nAt boot, dmesg stores a log if a hypervisor is detected.",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": true,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Detect Virtualization Environment (Windows)",
+      "guid": "502a7dc4-9d6f-4d28-abf2-f0e84692562d",
+      "description": "Windows Management Instrumentation(WMI) objects contains system information which helps to detect virtualization. This command will specifically attempt to get the CurrentTemperature value from this object and will check to see if the attempt results in an error that contains the word supported. This is meant to find the result of Not supported, which is the result if run in a virtual machine",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Detect Virtualization Environment via ioreg",
+      "guid": "a960185f-aef6-4547-8350-d1ce16680d09",
+      "description": "ioreg contains registry entries for all the device drivers in the system. If it's a virtual machine, one of the device manufacturer will be a Virtualization Software.",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Detect Virtualization Environment via WMI Manufacturer/Model Listing (Windows)",
+      "guid": "4a41089a-48e0-47aa-82cb-5b81a463bc78",
+      "description": "Windows Management Instrumentation(WMI) objects contain system information which helps to detect virtualization. This test will get the model and manufacturer of the machine to determine if it is a virtual machine, such as through VMware or VirtualBox.",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Detect Virtualization Environment using sysctl (hw.model)",
+      "guid": "6beae646-eb4c-4730-95be-691a4094408c",
+      "description": "sysctl hw.model will return the model name of the hardware(Macmini8,1, MacBookAir10,1, etc.) in case of native Apple hardware\nbut will return the hypervisor name (VMware7,0).\nReference: https://evasions.checkpoint.com/src/MacOS/macos.html#hardware-model",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Check if System Integrity Protection is enabled",
+      "guid": "2b73cd9b-b2fb-4357-b9d7-c73c41d9e945",
+      "description": "The latest versions of macOS have the System Integrity Protection feature (SIP). If a sandbox uses a non-signed \nkernel extension for monitoring purposes the, SIP feature must be disabled to load this kind of kernel extension.\nMalware may check if the SIP is enabled.\nReference: https://evasions.checkpoint.com/src/MacOS/macos.html#sip",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Detect Virtualization Environment using system_profiler",
+      "guid": "e04d2e89-de15-4d90-92f9-a335c7337f0f",
+      "description": "system_profiler provides system hardware and software configuration and the Model Identifier should provide the value similar to (sysctl -n hw.model). \nWe should be able to find whether virtualization is enabled by checking whether the Model Identifier does not contain \"Mac\".",
+      "platforms": ["macos"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    },
+    {
+      "name": "Turla Mosquito Sandbox Evasion via SetupDiGetClassDevs Check",
+      "guid": "eed8b13f-ad93-4b1e-8fa8-57cd400a0399",
+      "description": "Emulates the anti-sandbox / anti-emulation system check performed by the crypter used with Turla's Mosquito\nbackdoor, where after de-obfuscating its first layer, the backdoor calls the Win32 API SetupDiGetClassDevs(0,0,0,0xFFFFFFFF). On real Windows 7/10\nhosts the call reliably returns 0xE000021A, whereas sandboxes and emulators that do not implement SetupAPI\ncorrectly return a different value, allowing the malware to detect and evade analysis environments.\n\nThis test reproduces the same SetupDiGetClassDevs call via P/Invoke. It performs the API call the malware makes\nbut deliberately does not branch or exit on the result; the observable behavior under test is the anomalous\ninvocation of set",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "powershell",
+        "elevationRequired": false,
+        "hasCleanup": false
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1497.001/T1497.001.yaml"
+}

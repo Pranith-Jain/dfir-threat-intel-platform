@@ -137,6 +137,17 @@ import { filterKpExploits, filterKpTools, getKpFeed, kpCacheStats, loadKpIndex }
 // MMD — MalwareMustDie shared codes & tools catalog (public share).
 import { loadMmdIndex, listMmdTools, getMmdCategory, loadMmdCommits, mmdCacheStats } from '../mmd-manifest';
 
+// AAD — ThreatDefence agentic attack detections (MIT) + ART — Atomic Red Team.
+import {
+  aadCacheStats,
+  filterAadFrameworks,
+  filterAadIndicators,
+  getAadFramework,
+  loadAadAttack,
+  loadAadIndex,
+} from '../aad-manifest';
+import { artCacheStats, filterArtTechniques, getArtTechnique, loadArtIndex } from '../art-manifest';
+
 // Denali (evidence-led AI security, Apache-2.0): rules, taxonomy, stateless checks
 import {
   loadDenaliIndex,
@@ -4058,6 +4069,175 @@ export function bridgeMcpTools(
         lastCommit: idx.lastCommit,
         commits: commits?.commits ?? idx.recentCommits,
         cache: mmdCacheStats(),
+      };
+    },
+  });
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  AAD — ThreatDefence agentic attack detections (aad_*)
+  // ══════════════════════════════════════════════════════════════════════
+  add({
+    name: 'aad_list_frameworks',
+    description:
+      'List AI-agent attack frameworks covered by ThreatDefence Agentic Attack Detections (MIT): 100+ frameworks with KQL hunts, Sigma, Suricata, YARA, indicator counts and reported in-the-wild use. Filter by keyword or minimum rule/indicator counts.',
+    params: [
+      {
+        name: 'keyword',
+        type: 'string',
+        description: 'Substring match against name/slug/description',
+        required: false,
+      },
+      { name: 'min_indicators', type: 'number', description: 'Minimum sourced indicator count', required: false },
+      { name: 'min_rules', type: 'number', description: 'Minimum combined hunt/rule count', required: false },
+      { name: 'limit', type: 'number', description: 'Max rows (default 50, max 200)', required: false },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadAadIndex(assets);
+      return {
+        total: idx.frameworks.length,
+        source: idx.source,
+        frameworks: filterAadFrameworks(idx.frameworks, {
+          keyword: args.keyword as string | undefined,
+          minIndicators: args.min_indicators as number | undefined,
+          minRules: args.min_rules as number | undefined,
+          limit: Math.min((args.limit as number) ?? 50, 200),
+        }),
+      };
+    },
+  });
+
+  add({
+    name: 'aad_get_framework',
+    description:
+      'Return one agentic attack framework: coverage counts, ATT&CK techniques with rule-count scores, sourced indicators (value, confidence, context, publication) and an upstream deep link. Use aad_list_frameworks first to discover slugs.',
+    params: [
+      { name: 'slug', type: 'string', description: 'Framework slug, e.g. artex, cairn, pentagi', required: true },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      return getAadFramework(assets, args.slug as string);
+    },
+  });
+
+  add({
+    name: 'aad_list_indicators',
+    description:
+      'Search the sourced indicator set (1,800+ values across 16 IOC types: user_agent, ipv4, domain, url, sha256, file_path, uri_string, docker_image, favicon_mmh3, etc). Each row carries confidence, context, source publication and framework.',
+    params: [
+      { name: 'type', type: 'string', description: 'IOC type, e.g. user_agent, ipv4, domain', required: false },
+      { name: 'framework', type: 'string', description: 'Framework slug filter', required: false },
+      { name: 'keyword', type: 'string', description: 'Substring match against value/context/source', required: false },
+      { name: 'limit', type: 'number', description: 'Max rows (default 50, max 500)', required: false },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const items = await filterAadIndicators(assets, {
+        type: args.type as string | undefined,
+        framework: args.framework as string | undefined,
+        keyword: args.keyword as string | undefined,
+        limit: Math.min((args.limit as number) ?? 50, 500),
+      });
+      return { returned: items.length, indicators: items };
+    },
+  });
+
+  add({
+    name: 'aad_attack_coverage',
+    description:
+      'Return the consolidated ATT&CK Navigator layer: 124 techniques scored by how many rules name each one, with rule descriptions in the comments.',
+    params: [],
+    execute: async () => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      return loadAadAttack(assets);
+    },
+  });
+
+  add({
+    name: 'aad_stats',
+    description:
+      'Agentic Attack Detections corpus stats (frameworks, indicators by type, ATT&CK techniques, shared rule inventory) and cache state.',
+    params: [],
+    execute: async () => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadAadIndex(assets);
+      return {
+        source: idx.source,
+        sourceUrl: idx.sourceUrl,
+        license: idx.license,
+        stats: idx.stats,
+        indicatorTypes: idx.indicatorTypes,
+        cache: aadCacheStats(),
+      };
+    },
+  });
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  ART — Atomic Red Team catalog (art_*)
+  // ══════════════════════════════════════════════════════════════════════
+  add({
+    name: 'art_list_techniques',
+    description:
+      'List Atomic Red Team ATT&CK techniques (353 techniques, ~1,950 tests) as presented by atomicredteam.io. Filter by platform, executor type, subtechnique flag, minimum test count or keyword.',
+    params: [
+      { name: 'keyword', type: 'string', description: 'Substring match against id/display name', required: false },
+      { name: 'platform', type: 'string', description: 'windows, linux, macos, containers, iaas:aws', required: false },
+      {
+        name: 'executor',
+        type: 'string',
+        description: 'powershell, sh, bash, command_prompt, manual',
+        required: false,
+      },
+      { name: 'subtechnique', type: 'boolean', description: 'Only sub-techniques', required: false },
+      { name: 'min_tests', type: 'number', description: 'Minimum number of atomic tests', required: false },
+      { name: 'limit', type: 'number', description: 'Max rows (default 50, max 400)', required: false },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadArtIndex(assets);
+      return {
+        total: idx.techniques.length,
+        source: idx.source,
+        techniques: filterArtTechniques(idx.techniques, {
+          keyword: args.keyword as string | undefined,
+          platform: args.platform as string | undefined,
+          executor: args.executor as string | undefined,
+          subtechnique: args.subtechnique as boolean | undefined,
+          minTests: args.min_tests as number | undefined,
+          limit: Math.min((args.limit as number) ?? 50, 400),
+        }),
+      };
+    },
+  });
+
+  add({
+    name: 'art_get_technique',
+    description:
+      'Return one Atomic Red Team technique with test metadata: test names, GUIDs, plain descriptions, platforms, executor type/elevation, input argument names and dependency counts. Raw commands are not vendored; every test deep-links upstream.',
+    params: [{ name: 'id', type: 'string', description: 'ATT&CK technique id, e.g. T1059.001', required: true }],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      return getArtTechnique(assets, String(args.id).toUpperCase());
+    },
+  });
+
+  add({
+    name: 'art_stats',
+    description:
+      'Atomic Red Team catalog stats: techniques, tests, platform and executor breakdowns, plus cache state.',
+    params: [],
+    execute: async () => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadArtIndex(assets);
+      return {
+        source: idx.source,
+        sourceUrl: idx.sourceUrl,
+        siteUrl: idx.siteUrl,
+        license: idx.license,
+        stats: idx.stats,
+        platformCounts: idx.platformCounts,
+        executorCounts: idx.executorCounts,
+        cache: artCacheStats(),
       };
     },
   });

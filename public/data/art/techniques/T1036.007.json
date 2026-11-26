@@ -1,0 +1,33 @@
+{
+  "id": "T1036.007",
+  "displayName": "Masquerading: Double File Extension",
+  "tests": [
+    {
+      "name": "File Extension Masquerading",
+      "guid": "c7fa0c3b-b57f-4cba-9118-863bf4e653fc",
+      "description": "download and execute a file masquerading as images or Office files. Upon execution 3 calc instances and 3 vbs windows will be launched.\n\ne.g SOME_LEGIT_NAME.[doc,docx,xls,xlsx,pdf,rtf,png,jpg,etc.].[exe,vbs,js,ps1,etc] (Quartelyreport.docx.exe)",
+      "platforms": ["windows"],
+      "executor": {
+        "name": "command_prompt",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": ["exe_path", "vbs_path", "ps1_path"],
+      "dependencyCount": 2
+    },
+    {
+      "name": "Linux File Extension Masquerading",
+      "guid": "26cde240-0112-4806-8c97-bdde43dab298",
+      "description": "Creates and executes a shell script masquerading as a PDF document using a double extension (.pdf.sh).",
+      "platforms": ["linux"],
+      "executor": {
+        "name": "sh",
+        "elevationRequired": false,
+        "hasCleanup": true
+      },
+      "inputArguments": [],
+      "dependencyCount": 0
+    }
+  ],
+  "upstreamUrl": "github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1036.007/T1036.007.yaml"
+}
