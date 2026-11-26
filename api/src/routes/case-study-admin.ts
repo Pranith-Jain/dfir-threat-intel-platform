@@ -71,13 +71,22 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
       .replace(/-+/g, '-')
       .slice(0, 80);
 
-    /** Brand-configuration hints folded into the source body (n8n layer 1). */
+    /**
+     * Brand-configuration hints folded into the source body (n8n layer 1).
+     * Notes are NOT included here: the blog writer gets them once through
+     * `generatePost`'s `notes` dep (which renders a single `<editor_notes>`
+     * block), and duplicating them in the dossier evidence put the same
+     * guidance in the prompt twice. Social copy still needs them in its body,
+     * so it gets a separate `socialBody`.
+     */
     const brandConfig = [
       content?.trim() ?? '',
-      notes?.trim() ? `<admin_notes>${notes.trim()}</admin_notes>` : '',
       audience?.trim() ? `Target audience: ${audience.trim()}.` : '',
       tone?.trim() ? `Tone: ${tone.trim()}.` : '',
     ]
+      .filter(Boolean)
+      .join('\n\n');
+    const socialBody = [brandConfig, notes?.trim() ? `<admin_notes>${notes.trim()}</admin_notes>` : '']
       .filter(Boolean)
       .join('\n\n');
 
@@ -178,7 +187,7 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
           const notesBody = {
             slug: `custom-${slug}`,
             title: subject,
-            body: brandConfig,
+            body: socialBody,
             type: pseudo.type,
             dossier: await ensureDossier(),
           };
@@ -202,6 +211,8 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
             final_post: text ?? '',
             generatedAt: out.generatedAt,
             validation: out._validation,
+            // Same research pass as the blog, surfaced for every format.
+            research: sharedDossier?.meta,
             status: gate.rejected ? 'rejected' : 'ready',
             ...gate,
           };

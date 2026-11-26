@@ -339,7 +339,7 @@ export default function GenerateTab() {
                     </button>
                   )}
                 </div>
-                {fmt === 'blog' && r.research && (
+                {r.research && (
                   <p className="mb-2 text-xs font-mono text-muted">
                     Research before writing: {r.research.pagesRead ?? 0}/{r.research.pagesFetched ?? 0} sources read
                     {r.research.cvesEnriched ? ` · ${r.research.cvesEnriched} CVEs enriched` : ''}
