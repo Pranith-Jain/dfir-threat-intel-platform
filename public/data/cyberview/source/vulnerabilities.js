@@ -29,6 +29,25 @@
       var n = p.querySelector(":scope > .fault"); if (!n) { n = el("p", "caveat fault", "This part of the page could not be drawn. Reload the page; if it keeps happening, report it from the About page."); p.insertBefore(n, p.firstChild); }
     }
   }
+  /* the detail pane beside each list (Known exploited, All CVEs, Industrial): filled when a row is open. On a wide screen it is
+     the third column; on a narrower one it is a sheet over the page with a Close button. */
+  function narrow() { return window.innerWidth < 1240; }
+  function paneSync(id) {
+    var p = $(id); if (!p) return;
+    var full = [].filter.call(p.querySelectorAll(".vdc"), function (c) { return c.childNodes.length > 0; })[0], has = !!full;
+    p.classList.toggle("has", has);
+    var g = p.closest(".vgrid"); if (g) g.classList.toggle("vopen", has);
+    var title = has ? full.getAttribute("data-title") || "" : "", t = p.querySelector(".vdtitle"); if (t) t.textContent = title;
+    if (has && p.getAttribute("data-shown") !== title) p.scrollTop = 0;
+    p.setAttribute("data-shown", title);
+    document.documentElement.classList.toggle("vsheet", narrow() && !!document.querySelector(".vpanel:not([hidden]) .vdet.has"));
+  }
+  function paneFill(detId, title, node) { var d = $(detId); d.textContent = ""; d.setAttribute("data-title", title || ""); if (node) d.appendChild(node); }
+  /* after opening a row: on a wide screen keep focus on the row; over the page, move it to the sheet's Close button */
+  function focusOpen(paneId, rowId) {
+    if (narrow()) { var c = $(paneId) && $(paneId).querySelector(".vdclose"); if (c) { c.focus({ preventScroll: true }); return; } }
+    var n = document.getElementById(rowId); if (n) n.querySelector("button").focus({ preventScroll: true });
+  }
   var FORMATS = { stix: "STIX", sigma: "Sigma rule", yara: "YARA rule", snort: "Snort rule", suricata: "Suricata rule", kql: "KQL query", spl: "Splunk query", csv: "CSV indicators", json: "JSON indicators", misp: "MISP event", openioc: "OpenIOC", text: "Indicator list", pdf: "PDF with indicators" };
 
   var cleanRange = W.cleanRange;
@@ -190,7 +209,10 @@
   }
   function renderQueue() { safe("queue", drawQueue); }
   function drawQueue() {
-    var vis = visibleRows(), box = $("wbList"); box.textContent = "";
+    var vis = visibleRows(), box = $("wbList"); box.textContent = ""; paneFill("wbDet", "", null);
+    try { drawQueueRows(vis, box); } finally { paneSync("wbPane"); }
+  }
+  function drawQueueRows(vis, box) {
     $("wbNoInv").hidden = inv.length > 0;
     var mine = rows.filter(function (r) { return r.m && r.m.state === "affected"; }).length, chk = rows.filter(function (r) { return r.m && r.m.state === "check"; }).length;
     var over = rows.filter(function (r) { var n = dueLeft(r.f); return n !== null && n < 0; }).length;
@@ -199,7 +221,7 @@
     $("wbCount").textContent = vis.length === rows.length ? "Highest priority first." : vis.length + " of " + rows.length + " shown.";
     if (!vis.length) { box.appendChild(el("li", "empty", "Nothing matches. Clear the search or the filter.")); return; }
     vis.slice(0, 150).forEach(function (r, i) {
-      var f = r.f, li = el("li", "wbrow" + (r.m && r.m.state === "clear" ? " clear" : "")), open = openCve === f.cve;
+      var f = r.f, open = openCve === f.cve, li = el("li", "wbrow" + (r.m && r.m.state === "clear" ? " clear" : "") + (open ? " on" : ""));
       var b = el("button", "wbhead"); b.type = "button"; b.setAttribute("aria-expanded", open ? "true" : "false");
       var sc = el("span", "wbscore", String(r.score)); sc.title = "Patch queue rank: points out of 100 that order this list (not a CVSS score or the CyberView rating)"; b.appendChild(sc);
       var mid = el("span", "wbmid");
@@ -216,9 +238,9 @@
       if (OT.data && OT.data.byCve[f.cve]) chips.appendChild(el("span", "badge info", "Industrial advisory"));
       mid.appendChild(chips); b.appendChild(mid);
       b.appendChild(el("span", "wbrank", "#" + (i + 1)));
-      b.addEventListener("click", function () { openCve = open ? "" : f.cve; renderQueue(); if (!open) { var n = document.getElementById("row-" + f.cve); if (n) n.querySelector("button").focus(); } });
+      b.addEventListener("click", function () { openCve = open ? "" : f.cve; renderQueue(); if (!open) focusOpen("wbPane", "row-" + f.cve); });
       li.id = "row-" + f.cve; li.appendChild(b);
-      if (open) li.appendChild(detail(r));
+      if (open) paneFill("wbDet", f.cve + (f.name ? " · " + f.name : ""), detail(r));
       box.appendChild(li);
     });
   }
@@ -352,7 +374,7 @@
   function flash(btn, t) { var old = btn.textContent; btn.textContent = t; setTimeout(function () { btn.textContent = old; }, 2200); }
 
   /* bring the opened flaw into view (on a phone it is otherwise below the fold) */
-  function showOpen() { var n = openCve && document.getElementById("row-" + openCve); if (n) { try { n.scrollIntoView({ block: "start" }); } catch (e) { n.scrollIntoView(); } var b = n.querySelector("button"); if (b) b.focus({ preventScroll: true }); } }
+  function showOpen() { var n = openCve && document.getElementById("row-" + openCve); if (n) { try { n.scrollIntoView({ block: "nearest" }); } catch (e) { n.scrollIntoView(false); } focusOpen("wbPane", n.id); } }
 
   /* ---- patch deadlines: chart and calendar file (built here; nothing is sent) ---- */
   function openDeadlines() { return flaws.filter(function (f) { return f.kev && f.due && f.due >= TODAY; }); }
@@ -550,11 +572,11 @@
     box.appendChild(el("h4", null, "How it was decided"));
     var il = el("ul"); rt.inputs.forEach(function (x) { var li = el("li"); li.appendChild(el("b", null, x.name + ": " + x.value)); li.appendChild(document.createTextNode(" · " + x.basis)); il.appendChild(li); }); box.appendChild(il);
     if (rt.signals.length) { box.appendChild(el("h4", null, "Supporting signals")); var sl = el("ul"); rt.signals.forEach(function (x) { sl.appendChild(el("li", null, x.text)); }); box.appendChild(sl); }
-    var how = el("button", "linkbtn", "How CyberView rates vulnerabilities"); how.type = "button"; how.addEventListener("click", function () { var h = $("cvHow"); h.open = true; h.scrollIntoView({ block: "start" }); }); box.appendChild(how);
+    var how = el("button", "linkbtn", "How CyberView rates vulnerabilities"); how.type = "button"; how.addEventListener("click", function () { if (narrow()) closePane("cvPane"); var h = $("cvHow"); h.open = true; try { h.scrollIntoView({ block: "nearest" }); } catch (e) {} h.querySelector("summary").focus({ preventScroll: true }); }); box.appendChild(how);
     return box;
   }
   function cvCard(r, open, rank) {
-    var li = el("li", "wbrow cvrow" + (r.rejected ? " clear" : "")), b = el("button", "wbhead cvhead"); b.type = "button"; b.setAttribute("aria-expanded", open ? "true" : "false");
+    var li = el("li", "wbrow cvrow" + (r.rejected ? " clear" : "") + (open && rank ? " on" : "")), b = el("button", "wbhead cvhead"); b.type = "button"; b.setAttribute("aria-expanded", open ? "true" : "false");
     // the square is the plain CVSS base score (the same one the rating starts from), captioned so it is never read as the rating
     var base = r.cvss !== null ? r.cvss : (r.ncvss != null ? r.ncvss : null), fromNvd = r.cvss === null && base !== null;
     var sc = el("span", "wbscore cvscore"); sc.appendChild(el("span", "cvnum", base !== null ? base.toFixed(1) : "-")); sc.appendChild(el("span", "cvcap", fromNvd ? "CVSS (NVD)" : "CVSS"));
@@ -578,8 +600,9 @@
     if (r.cwe) chips.appendChild(el("span", "badge info", r.cwe));
     if (r.pub) chips.appendChild(el("span", "badge info", r.pub));
     mid.appendChild(chips); b.appendChild(mid); b.appendChild(el("span", "wbrank", rank ? "#" + rank : ""));
-    if (rank) b.addEventListener("click", function () { CV.open = open ? "" : r.id; renderAll(); var n = document.getElementById("cv-" + r.id); if (n) n.querySelector("button").focus({ preventScroll: true }); });
-    li.id = rank ? "cv-" + r.id : "cvr-" + r.id; li.appendChild(b); if (open) li.appendChild(cvDetail(r));
+    if (rank) b.addEventListener("click", function () { CV.open = open ? "" : r.id; if (!open) paneFill("cvResult", "", null); renderAll(); if (!open) focusOpen("cvPane", "cv-" + r.id); });
+    // a listed CVE opens in the pane beside the list (drawAll); a looked-up one carries its details with it
+    li.id = rank ? "cv-" + r.id : "cvr-" + r.id; li.appendChild(b); if (open && !rank) li.appendChild(cvDetail(r));
     return li;
   }
   function cvDetail(r) {
@@ -642,17 +665,42 @@
   function renderAll() { safe("all", drawAll); }
   function drawAll() {
     if (CV.state !== "ready") return;
+    paneFill("cvDet", "", null);
+    try { drawAllRows(); } finally { paneSync("cvPane"); }
+  }
+  function drawAllRows() {
     var names = Object.keys(CV.sets).filter(function (k) { return CV.sets[k].state === "done"; }).sort().reverse();
     $("cvLoaded").textContent = names.length ? "Loaded: " + names.map(function (k) { return k === "recent" ? "last two weeks" : k; }).join(", ") + " (" + fmtN(CV.pool.length) + " CVEs). Filters and search apply to these only." : "Nothing loaded yet. Choose a year (or the last two weeks) and load it to browse and filter, or look up one CVE above.";
     var box = $("cvList"); box.textContent = "";
-    if (!CV.pool.length) { $("cvCount").textContent = ""; $("cvPager").hidden = true; return; }
+    $("cvYears").hidden = !!CV.pool.length;
+    if (!CV.pool.length) { $("cvCount").textContent = "Nothing loaded yet: choose what to load."; $("cvPager").hidden = true; drawYears(); return; }
     CV.list = D.filter(CV.pool, cvFilters(), CV.kev, $("cvSort").value);
     var pg = D.page(CV.list, CV.page, PAGE); CV.page = pg.page;
     $("cvCount").textContent = CV.list.length === CV.pool.length ? fmtN(CV.list.length) + " CVEs in what is loaded." : fmtN(CV.list.length) + " of " + fmtN(CV.pool.length) + " CVEs match.";
     if (!CV.list.length) box.appendChild(el("li", "empty", "Nothing matches. Clear the search or a filter, or load another year."));
-    pg.items.forEach(function (r, i) { box.appendChild(cvCard(r, CV.open === r.id, pg.page * PAGE + i + 1)); });
+    pg.items.forEach(function (r, i) { var open = CV.open === r.id; box.appendChild(cvCard(r, open, pg.page * PAGE + i + 1)); if (open) paneFill("cvDet", r.id + (r.vendor || r.product ? " · " + [r.vendor, r.product].filter(Boolean).join(" ") : ""), cvDetail(r)); });
     $("cvPager").hidden = pg.pages <= 1; $("cvPage").textContent = "Page " + (pg.page + 1) + " of " + pg.pages + " (" + PAGE + " per page)";
     $("cvPrev").disabled = pg.page === 0; $("cvNext").disabled = pg.page >= pg.pages - 1;
+  }
+  /* the database at a glance while nothing is loaded: the last two weeks, then one single-colour bar per year; choosing one loads it */
+  function drawYears() {
+    var box = $("cvYears"); box.textContent = "";
+    var years = (CV.idx && CV.idx.years || []).slice().sort(function (a, b) { return b.year - a.year; });
+    box.appendChild(el("h3", null, "How many CVEs are on file for each year?"));
+    box.appendChild(el("p", null, "The whole CVE list is on file. Choose a span to load it into this list; each loads only its own data files, in this browser."));
+    var pick = function (key) { $("cvYear").value = key; loadSet(key); };
+    var rb = el("button", "cvyr recent"); rb.type = "button";
+    rb.appendChild(el("span", null, "Last two weeks")); rb.appendChild(el("span", "note", "Published or changed recently")); rb.appendChild(el("span", "n", "Load"));
+    rb.addEventListener("click", function () { pick("recent"); }); box.appendChild(rb);
+    var max = years.reduce(function (m, y) { return Math.max(m, y.count || 0); }, 0) || 1;
+    years.forEach(function (y) {
+      var b = el("button", "cvyr"); b.type = "button"; b.setAttribute("aria-label", "Load " + y.year + ", " + fmtN(y.count) + " CVEs");
+      b.appendChild(el("span", null, String(y.year)));
+      var t = el("span", "t"), i = el("i"); i.style.width = Math.max(1, Math.round((y.count || 0) / max * 100)) + "%"; t.appendChild(i); b.appendChild(t);
+      b.appendChild(el("span", "n", fmtN(y.count)));
+      b.addEventListener("click", function () { pick(String(y.year)); }); box.appendChild(b);
+    });
+    box.appendChild(el("p", "note", "Counts are CVEs by the year in their id, rejected ones included. Searching an id in the box above looks up one CVE without loading anything."));
   }
   /* a year's lookup files are listed in the index (files_by_year); an older index without the list falls back to probing <year>/0.json, 1.json ... in groups until a whole group is missing */
   function loadSet(key) {
@@ -689,7 +737,7 @@
   function loadYear() { loadSet($("cvYear").value); }
   function unloadYears() { CV.sets = {}; CV.pool = []; CV.page = 0; $("cvProg").textContent = "Unloaded."; rebuildPool(); renderAll(); }
   function lookup() {
-    var out = $("cvResult"), msg = $("cvLookMsg"); out.textContent = ""; msg.textContent = "";
+    var out = $("cvResult"), msg = $("cvLookMsg"); paneFill("cvResult", "", null); paneSync("cvPane"); msg.textContent = "";
     var id = D.normId($("wbQ").value);
     if (!id) { msg.textContent = "Type a full CVE id in the search box, for example CVE-2024-3400."; return Promise.resolve(); }
     return ensureIndex().then(function (ix) {
@@ -698,7 +746,7 @@
       return getFile(D.bucketFile(id)).then(function (rows) {
         var hit = rows.filter(function (r) { return r.id === id; })[0];
         msg.textContent = hit ? "" : id + " is not in the CVE List. It may be reserved but not yet published.";
-        if (hit) { buildKev(); var ul = el("ol", "wblist cvlist"); ul.appendChild(cvCard(hit, true, 0)); out.appendChild(ul); }
+        if (hit) { buildKev(); var ul = el("ol", "wblist cvlist"); ul.appendChild(cvCard(hit, true, 0)); CV.open = ""; renderAll(); paneFill("cvResult", hit.id, ul); paneSync("cvPane"); if (narrow()) focusOpen("cvPane", ""); }
       }, function () { msg.textContent = id + " is not in the CVE List, or the lookup files are not available right now."; });
     });
   }
@@ -741,16 +789,19 @@
   function goCve(c) { try { history.replaceState(null, "", "#" + c); } catch (e) {} route("#" + c); }
   function goOt(a) {
     OT.open = a.source + ":" + a.id; $("otQ").value = a.id; $("otShow").value = ""; OT.shown = 40; tab("ot");
-    ensureOt().then(function () { var n = document.getElementById("ot-" + OT.open.replace(/[^\w-]/g, "_")); if (n) { try { n.scrollIntoView({ block: "start" }); } catch (e) {} } });
+    ensureOt().then(function () { var n = document.getElementById("ot-" + OT.open.replace(/[^\w-]/g, "_")); if (n) { try { n.scrollIntoView({ block: "nearest" }); } catch (e) {} } });
   }
   function renderOt() { safe("ot", drawOt); }
   function drawOt() {
     if (!OT.data) return;
-    var list = OL.filter(OT.data.list, otFilters()), box = $("otList"); box.textContent = "";
+    var list = OL.filter(OT.data.list, otFilters()), box = $("otList"); box.textContent = ""; paneFill("otDet", "", null);
+    try { drawOtRows(list, box); } finally { paneSync("otPane"); }
+  }
+  function drawOtRows(list, box) {
     $("otCount").textContent = list.length === OT.data.list.length ? list.length + " advisories, highest rank first." : list.length + " of " + OT.data.list.length + " advisories match.";
     if (!list.length) box.appendChild(el("li", "empty", "Nothing matches. Clear the search or a filter."));
     list.slice(0, OT.shown).forEach(function (x, i) {
-      var a = x.a, key = a.source + ":" + a.id, open = OT.open === key, li = el("li", "wbrow" + (a.notAffected ? " clear" : ""));
+      var a = x.a, key = a.source + ":" + a.id, open = OT.open === key, li = el("li", "wbrow" + (a.notAffected ? " clear" : "") + (open ? " on" : ""));
       var b = el("button", "wbhead"); b.type = "button"; b.setAttribute("aria-expanded", open ? "true" : "false");
       var sc = el("span", "wbscore", String(x.score)); sc.title = "Rank points that order this list (not a CVSS score or the CyberView rating)"; b.appendChild(sc);
       var mid = el("span", "wbmid"), top = el("span", "wbtop"); top.appendChild(el("b", null, a.id)); if (a.vendor) top.appendChild(document.createTextNode(" " + a.vendor));
@@ -766,8 +817,8 @@
       chips.appendChild(el("span", "badge info", a.sourceName));
       if (a.published || a.updated) chips.appendChild(el("span", "badge info", a.published || a.updated));
       mid.appendChild(chips); b.appendChild(mid); b.appendChild(el("span", "wbrank", "#" + (i + 1)));
-      b.addEventListener("click", function () { OT.open = open ? "" : key; renderOt(); var n = document.getElementById("ot-" + key.replace(/[^\w-]/g, "_")); if (n) n.querySelector("button").focus({ preventScroll: true }); });
-      li.id = "ot-" + key.replace(/[^\w-]/g, "_"); li.appendChild(b); if (open) li.appendChild(otDetail(x));
+      b.addEventListener("click", function () { OT.open = open ? "" : key; renderOt(); if (!open) focusOpen("otPane", "ot-" + key.replace(/[^\w-]/g, "_")); });
+      li.id = "ot-" + key.replace(/[^\w-]/g, "_"); li.appendChild(b); if (open) paneFill("otDet", a.id + (a.vendor ? " · " + a.vendor : ""), otDetail(x));
       box.appendChild(li);
     });
     $("otMore").hidden = list.length <= OT.shown;
@@ -825,11 +876,14 @@
   $("otMore").addEventListener("click", function () { OT.shown += 40; renderOt(); });
 
   /* ---- tabs, links and wiring ---- */
-  var VIEWS = ["queue", "all", "inv", "hunt", "ot"], HASH = { known: "queue", queue: "queue", all: "all", inv: "inv", hunt: "hunt", ot: "ot", industrial: "ot", scanner: "inv" }, cur = "queue";
+  var VIEWS = ["queue", "all", "inv", "hunt", "ot"], HASH = { known: "queue", queue: "queue", all: "all", inv: "inv", hunt: "hunt", ot: "ot", industrial: "ot" }, cur = "queue";
   function tab(t, keepHash) {
     cur = t;
     VIEWS.forEach(function (k) { $("wbt-" + k).setAttribute("aria-selected", k === t ? "true" : "false"); $("wbp-" + k).hidden = k !== t; });
+    var tb = $("wbt-" + t), bar = tb && tb.parentNode; // phones: the tab bar scrolls sideways; bring the chosen tab into it without moving the page
+    if (bar && bar.scrollWidth > bar.clientWidth) bar.scrollLeft = Math.max(0, tb.offsetLeft - (bar.clientWidth - tb.offsetWidth) / 2);
     $("wbSearchBar").hidden = t !== "queue" && t !== "all";
+    ["wbPane", "cvPane", "otPane"].forEach(paneSync);
     $("wbSearchHint").textContent = t === "all" ? "Filters the years you have loaded. To look up one CVE, type its id and press Enter. Nothing you type is sent anywhere." : "Filters the list below. Nothing you type is sent anywhere.";
     if (!keepHash) { try { history.replaceState(null, "", "#" + (t === "queue" ? "known" : t)); } catch (e) {} }
     if (t === "inv") renderInv(); if (t === "hunt") renderHunt();
@@ -846,7 +900,6 @@
       $("wbQ").value = h; tab("all", true); lookup(); return;
     }
     tab(HASH[h] || "queue", true);
-    if (h === "scanner") { var sc = $("scanner"); if (sc) try { sc.scrollIntoView({ block: "start" }); } catch (e) {} }
   }
   VIEWS.forEach(function (k) { $("wbt-" + k).addEventListener("click", function () { tab(k); }); });
   $("wbGoInv").addEventListener("click", function () { tab("inv"); $("wbText").focus(); });
@@ -868,8 +921,23 @@
   D.rateOpts = rateOpts();
   loadEvents().then(function (list) { onMapIds = {}; list.forEach(function (e) { e.cves.forEach(function (c) { onMapIds[c] = 1; }); }); D.rateOpts = rateOpts(); renderAll(); }, function () {});
   var ct = 0; ["cvVendor", "cvCwe"].forEach(function (id) { $(id).addEventListener("input", function () { clearTimeout(ct); ct = setTimeout(function () { CV.page = 0; renderAll(); }, 160); }); });
-  $("cvPrev").addEventListener("click", function () { CV.page--; renderAll(); try { $("cvCount").scrollIntoView({ block: "start" }); } catch (e) {} });
-  $("cvNext").addEventListener("click", function () { CV.page++; renderAll(); try { $("cvCount").scrollIntoView({ block: "start" }); } catch (e) {} });
+  function listTop() { var v = $("cvList").closest(".vlist"); if (v) v.scrollTop = 0; try { $("cvCount").scrollIntoView({ block: "nearest" }); } catch (e) {} }
+  $("cvPrev").addEventListener("click", function () { CV.page--; renderAll(); listTop(); });
+  $("cvNext").addEventListener("click", function () { CV.page++; renderAll(); listTop(); });
+  /* closing a detail pane: its Close button, or Escape anywhere but a form field */
+  function closePane(id) {
+    var back = "";
+    if (id === "wbPane") { back = openCve ? "row-" + openCve : ""; openCve = ""; renderQueue(); }
+    if (id === "cvPane") { back = CV.open ? "cv-" + CV.open : ""; CV.open = ""; paneFill("cvResult", "", null); renderAll(); paneSync("cvPane"); }
+    if (id === "otPane") { back = OT.open ? "ot-" + OT.open.replace(/[^\w-]/g, "_") : ""; OT.open = ""; renderOt(); }
+    var n = back && document.getElementById(back); if (n) n.querySelector("button").focus({ preventScroll: true });
+  }
+  ["wbPane", "cvPane", "otPane"].forEach(function (id) { $(id).querySelector(".vdclose").addEventListener("click", function () { closePane(id); }); });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key !== "Escape" || /^(INPUT|SELECT|TEXTAREA)$/.test((ev.target && ev.target.tagName) || "")) return;
+    var p = document.querySelector(".vpanel:not([hidden]) .vdet.has"); if (p) { ev.preventDefault(); closePane(p.id); }
+  });
+  var rz = 0; window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(function () { ["wbPane", "cvPane", "otPane"].forEach(paneSync); }, 120); });
   window.addEventListener("hashchange", function () { route(location.hash); });
   $("wbCsv").addEventListener("click", function () { var a = el("a"); a.href = blobUrl(new Blob([toCsv()], { type: "text/csv" })); var u = a.href; a.download = "cyberview-patch-queue-" + TODAY + ".csv"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 4000); });
   $("wbCopy").addEventListener("click", function () { var b = $("wbCopy"); try { navigator.clipboard.writeText(toChange()).then(function () { flash(b, "Copied"); }, function () { flash(b, "Copy blocked"); }); } catch (e) { flash(b, "Copy blocked"); } });

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; form-action 'self'; base-uri 'none'; object-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>CyberView library</title>
+<meta name="description" content="A searchable catalogue of public threat-intelligence reports and tracked threat actors. The title, source and links are mirrored from ORKL; where CyberView AI (a Claude model) has read a report, its own short summary and, for actors, a reviewed story are shown. Each report is read on ORKL.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="archive.css">
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="./"><img src="logo.svg" alt="" width="26" height="26">CyberView</a>
+  <nav class="sitenav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="tools.html">Tools</a><a href="library.html" aria-current="page">Library</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html">Community</a><a href="status.html">Status</a><a href="about.html">About</a></nav>
+  <span class="spacer"></span>
+  <button type="button" class="navbtn" id="navBtn" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+</header>
+<div class="navsheet" id="navSheet" hidden role="dialog" aria-modal="true" aria-label="Menu"><div class="sheethead">CyberView<button type="button" class="sheetclose" id="navClose" aria-label="Close menu">&times;</button></div><nav class="sheetnav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="tools.html">Tools</a><a href="library.html" aria-current="page">Library</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html">Community</a><a href="status.html">Status</a><a href="about.html">About</a></nav></div>
+<main class="ar">
+  <div class="arview">
+  <section class="intro phead">
+    <div>
+      <h1>The threat-report library</h1>
+      <p id="summary" class="sub" aria-live="polite">Loading the library</p>
+    </div>
+    <span class="hl"></span>
+    <form class="psearch" id="qform" role="search"><label><span class="sr-only">Search the library</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Report title, actor, alias" autocomplete="off" spellcheck="false"><kbd>/</kbd></label></form>
+  </section>
+  <!-- Featured reads follow the page heading (its h2 comes after the h1) and sit above the section strip -->
+  <section class="panel featured" id="featured" aria-labelledby="featH" hidden><h2 id="featH">Featured reads</h2><ul class="fgrid" id="featList"></ul></section>
+  <nav class="libnav" id="libnav" aria-label="Library sections"><a href="library.html#tab=reports" id="tabReports" aria-current="page">Reports<span class="n" id="repN"></span></a><a href="library.html#tab=actors" id="tabActors">Actor catalogue<span class="n" id="actN"></span></a><a href="actors.html">Actors in events</a><a href="archive.html">Event archive</a></nav>
+  <div class="vgrid argrid" id="repGrid">
+    <div class="vrail">
+      <form class="filters" id="filters" aria-label="Filter the reports">
+        <label><span>Source</span><select id="source"><option value="">All sources</option></select></label>
+        <label><span>Year</span><select id="year"><option value="">All years</option></select></label>
+        <label><span>Language</span><select id="lang"><option value="">All languages</option></select></label>
+        <p class="note" id="actorChip" hidden></p>
+        <button type="button" class="btn ghost" id="clear" hidden>Clear filters</button>
+      </form>
+      <section class="panel" aria-labelledby="aboutHead">
+        <h2 id="aboutHead">About this library</h2>
+        <p class="note">A mirror of ORKL's catalogue of public threat-intelligence reports and the actors they track. CyberView keeps each report's title, source, year, language and the links back to ORKL &mdash; never the report text, which you read on ORKL itself. Where CyberView AI (a Claude model) has read a report and the audit has checked it, a short summary is shown; stories about threat actors are reviewed before they appear and cite the reports every fact came from. Each summary and story has a Report an error link.</p>
+      </section>
+    </div>
+    <div class="vlist" tabindex="-1">
+      <p class="count" id="count"></p>
+      <ol class="list" id="list"></ol>
+      <div class="wbacts pager" id="repPager" hidden><button type="button" class="btn" id="repPrev">Previous</button><span class="note" id="repPage"></span><button type="button" class="btn" id="repNext">Next</button></div>
+    </div>
+    <aside class="vdet" id="pane" aria-label="Report details">
+      <div class="vdbar"><span class="vdtitle"></span><button type="button" class="vdclose" aria-label="Close the details">Close</button></div>
+      <p class="vdempty">Pick a report to see its source, the actors it names and the links to read it on ORKL.</p>
+      <div class="vdc more-info" id="det"></div>
+    </aside>
+  </div>
+  <div class="vgrid argrid" id="actView" hidden>
+    <div class="vrail">
+      <form class="filters" id="actFilters" aria-label="Filter the actors">
+        <label><span>Catalogue</span><select id="actSrc"><option value="">All catalogues</option></select></label>
+        <label class="check"><input id="actHas" type="checkbox"> Only actors with reports in the library</label>
+      </form>
+      <section class="panel" aria-labelledby="actAboutHead">
+        <h2 id="actAboutHead">About the actor catalogue</h2>
+        <p class="note">Threat-actor entries ORKL keeps from MITRE ATT&amp;CK, ETDA, MISP Galaxy and Secureworks, with their aliases and tools. Open an actor to see its record, the reports in the library that name it and its ORKL profile.</p>
+      </section>
+    </div>
+    <div class="vlist" tabindex="-1">
+      <p class="count" id="actCount"></p>
+      <ol class="list" id="actList"></ol>
+      <div class="wbacts pager" id="actPager" hidden><button type="button" class="btn" id="actPrev">Previous</button><span class="note" id="actPage"></span><button type="button" class="btn" id="actNext">Next</button></div>
+    </div>
+    <aside class="vdet" id="actPane" aria-label="Actor record">
+      <div class="vdbar"><span class="vdtitle"></span><button type="button" class="vdclose" aria-label="Close the record">Close</button></div>
+      <p class="vdempty">Pick an actor to see its aliases, tools, the reports in the library that name it and its profile on ORKL.</p>
+      <div class="vdc more-info" id="actDet"></div>
+    </aside>
+  </div>
+  </div>
+  <section class="downloads">
+    <div>
+      <h2>Where this comes from</h2>
+      <p>The catalogue is mirrored from the <a href="https://orkl.eu/" target="_blank" rel="noopener noreferrer">Open Research Knowledge Library (ORKL)</a>, a community archive of public threat-intelligence reporting. The title, source and links are mirrored from ORKL, and each report is read on ORKL. Where CyberView AI (a Claude model) has read a report, its own short summary is shown, and for actors a story that a separate review passed; both are written by an AI model, and each has a Report an error link. Indicators of compromise are linked, never copied.</p>
+    </div>
+  </section>
+</main>
+<footer class="foot"><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="about.html#corrections">Corrections</a><a href="about.html#security">Report a security issue</a><a href="account.html">Account</a></footer>
+<script src="library.js"></script>
+<script src="nav.js"></script>
+</body>
+</html>

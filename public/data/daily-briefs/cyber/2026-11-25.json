@@ -1,0 +1,99 @@
+{
+  "type": "cyber",
+  "date": "2026-11-25",
+  "threatLevel": "",
+  "executiveSummary": "Active, AI-assisted reconnaissance and access attempts against Siemens S7 PLCs across multiple U.S. critical sectors raise immediate risk of OT process disruption; urgent segmentation, S7 protections, and monitoring are advised. Security Advisory Firewall management planes were directly targeted: 24 Check Point Security Management servers were compromised in a multi-country, automated campaign that enabled policy tampering and certificate theft-potentially exposing OT segmentation. View Article CISA added actively exploited vulnerabilities to KEV affecting healthcare imaging (MONAI Label) and N-able Mail Assure; exploitation enables server compromise and lateral movement in environments supporting critical services. CISA KEV Multiple OT/ICS products have critical weaknesses: Advantech protocol gateways (unauth RCE, missing auth), Danfoss iC7 drives (improper access control to service interfaces), and Eclipse Milo (OPC UA auth/DoS flaws) affecting industrial control messaging. CISA Weekly CISA Weekly CISA Weekly Maritime risk: ongoing exploitation of FortiGate devices aboard vessels is under investigation; reporting indicates possible OT propulsion impact and crew intimidation. View Article Ransomware remains elevated with two joint government advisories (SafePay, Gunra) detailing active TTPs through August 2026; hypervisor-layer attacks against ESXi/vCenter demonstrate rapid destructive potential to mixed IT/OT estates. #StopRansomware: SafePay #StopRansomware: Gunra Research Priority: inventory internet/DMS-exposed assets, lock down management planes, validate IT/OT conduits, and accelerate patching of KEV and ICS advisories over the next 72 hours.",
+  "keyFindings": [
+    {
+      "title": "Direct OT targeting",
+      "summary": "Active attempts to enumerate and access Siemens S7 PLCs via S7comm (TCP/102) observed at scale; hardening guidance available. Security Advisory"
+    },
+    {
+      "title": "Firewall management system compromise can dismantle segmentation",
+      "summary": "attackers stole Check Point internal CA material and unloaded policies. View Article"
+    },
+    {
+      "title": "Actively exploited healthcare/MSP components (MONAI Label, N-able Mail Assure) e",
+      "summary": "Actively exploited healthcare/MSP components (MONAI Label, N-able Mail Assure) expand footholds for lateral movement. CISA KEV"
+    },
+    {
+      "title": "OT gateways and industrial messaging stacks carry unauthenticated RCE/DoS risk (",
+      "summary": "OT gateways and industrial messaging stacks carry unauthenticated RCE/DoS risk (Advantech EKI-1242, Eclipse Milo/OPC UA) requiring urgent segmentation and patching. CISA Weekly CISA Weekly"
+    },
+    {
+      "title": "Maritime networks using FortiGate edge devices are threatened; an incident repor",
+      "summary": "Maritime networks using FortiGate edge devices are threatened; an incident reportedly impacted propulsion on a tanker. View Article"
+    }
+  ],
+  "dashboard": {
+    "kpis": [],
+    "activelyExploited": [],
+    "vendors": [
+      "Siemens (S7-1200/1500/200/300/400, STEP 7/TIA Portal)",
+      "Check Point Security Management",
+      "Advantech (EKI-1242 IEIMS/EIMS)",
+      "Danfoss (AK-SM 8xxA; iC7 drives)",
+      "Schneider Electric (EcoStruxure Power Build Rapsody)",
+      "Eclipse Foundation (Milo/OPC UA, Arrowhead, Ditto)",
+      "OpenPLC Runtime",
+      "Elecbrakes (EB2/VM1/ELBC2000)",
+      "VMware (vCenter/vSphere)",
+      "N-able (Mail Assure; N-central)",
+      "MONAI Label (healthcare imaging)",
+      "Fortinet FortiGate/SSL-VPN",
+      "OPC UA stacks/protocols; MQTT (libumqtt)."
+    ],
+    "sectors": [
+      "Energy",
+      "Water/Wastewater",
+      "Transportation (incl. Maritime)",
+      "Critical Manufacturing",
+      "Commercial Facilities (HVAC/Refrigeration)",
+      "Healthcare (Imaging/PACS)",
+      "Communications",
+      "Government Services and Facilities",
+      "Finance (segmentation & identity spillover)."
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "State-linked operations: Russian FSB Center 16 campaigns against routers and network devices, enabling pivots toward OT/ICS enclaves. Security Advisory",
+        "China-nexus covert device networks (SOHO/IoT) used to mask targeting and pre-position in critical infrastructure. Security Advisory",
+        "Ransomware: SafePay and Gunra advisories reflect active operations across sectors; techniques include VPN misuse, PsExec/WinRM, and data exfiltration prior to encryption. SafePay Gunra",
+        "Hypervisor-layer destruction leveraging vCenter/ESXi admin features shows high-impact blast radius for mixed IT/OT estates. Research",
+        "Cloud-service C2 and MeshCentral abuse observed in Operation ShadowCloud against public sector; TTPs applicable to CI perimeters. Part 1 Part 2"
+      ]
+    }
+  ],
+  "relevance": "This cycle features multiple, concurrent risks to industrial operations: 1) direct PLC targeting (Siemens S7 series), 2) compromise of firewall management servers that can eliminate OT segmentation safeguards, and 3) critical flaws in industrial gateways and control messaging stacks (OPC UA via Eclipse Milo; Advantech EKI) that provide pre-authentication paths to manipulate or disrupt ICS data paths. Maritime reports add real-world operational concerns for navigation/propulsion. Ransomware operators continue to abuse management features (vCenter/ESXi) to rapidly destroy virtualized workloads, which frequently host HMIs, historians, and engineering tooling.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Danfoss iC7 industrial drives: improper access controls on service/update paths; potential unsafe operations. CISA Weekly",
+        "Advantech EKI-1242 IEIMS/EIMS: unauth RCE, missing auth on reboot/upgrade, code injection. CISA Weekly",
+        "Eclipse Milo (OPC UA): auth bypass, diagnostics info leak, username-token weakness, DoS. CISA Weekly",
+        "Eclipse Arrowhead & Ditto (IIoT backplanes/digital twins): MQTT cert-auth bypass, management path bypass, policy injection/SSRF. CISA Weekly",
+        "Danfoss AK-SM 8xxA controllers: stack overflow via CGI POST (webserver restart/possible RCE). ICS Advisory",
+        "Schneider Electric EcoStruxure Power Build Rapsody: local UAF via malicious SSD file on eng. workstations. ICS Advisory",
+        "OpenPLC Runtime ≤4.2.4: unauth race leads to multiple admin accounts; update to 4.3.0+. ICS Advisory",
+        "libumqtt (uMQTT) ≤1.1.1: integer underflow-DoS/memory corruption; no patch yet (apply compensating controls). ICS Advisory",
+        "Elecbrakes EB2/VM1/ELBC2000: BLE command injection/replay and unprotected updates (safety risk, transport). ICS Advisory",
+        "VMware vCenter/vSphere/Cloud Foundation: new critical auth bypass after prior zero-day exploitation reported. View Article"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [],
+    "mitreIds": []
+  },
+  "outlook72h": "Expect increased automated probing of PLC and firewall management surfaces, continued exploitation of KEV-listed services, and opportunistic scans for industrial gateways/OPC UA endpoints. Prioritize: 1) emergency review of S7 exposure and firewall Mgmt-plane access, 2) KEV patching/hardening with compromise checks, 3) isolation of OT gateways and validation of certificate/auth policies, and 4) hypervisor security posture (vCenter/ESXi) with restricted access and enhanced monitoring.",
+  "relatedCves": [
+    "CVE-2026-16232",
+    "CVE-2026-113443"
+  ]
+}

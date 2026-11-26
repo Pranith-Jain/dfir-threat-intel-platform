@@ -70,6 +70,8 @@
     if (p.named.length) badges.appendChild(el("span", "pill", "named in " + plural(p.named.length, "event")));
     if (p.claimed.length) badges.appendChild(el("span", "pill claimed", plural(p.claimed.length, "claim") + ", not confirmed"));
     sm.appendChild(badges);
+    var mix = [p.sectors[0] && p.sectors[0].k, p.countries[0] && p.countries[0].k].filter(Boolean);
+    if (mix.length) sm.appendChild(el("span", "amix", "Mostly: " + mix.join(" · ")));
     if (p.last) sm.appendChild(el("span", "alast", "last on file " + fmt(p.last)));
     d.appendChild(sm);
     var body = el("div", "abody"); d.appendChild(body);
@@ -137,16 +139,28 @@
     var foot = el("p", "afoot");
     if (p.first) foot.appendChild(document.createTextNode("On file " + (p.first === p.last ? fmt(p.first) : fmt(p.first) + " to " + fmt(p.last)) + ". "));
     var aa = el("a", null, "Search the archive for " + p.name); aa.href = "archive.html#q=" + encodeURIComponent(p.name); foot.appendChild(aa);
+    // the same group in the Library's actor catalogue (ORKL: aliases, tools, the reports that name it), found by name or alias
+    var lb = el("a", null, "Its record in the actor catalogue"); lb.href = "library.html#tab=actors&q=" + encodeURIComponent(p.name); foot.appendChild(document.createTextNode(" · ")); foot.appendChild(lb);
     var pl = el("a", "aperm", "Link to this profile"); pl.href = "#a=" + encodeURIComponent(p.id); foot.appendChild(document.createTextNode(" · ")); foot.appendChild(pl);
     body.appendChild(foot);
     return d;
   }
 
   function want() { var h = location.hash.slice(1); if (h.indexOf("a=") !== 0) return ""; try { return id(decodeURIComponent(h.slice(2))); } catch (e) { return ""; } }
+  function evCount(p) { var seen = {}; p.attributed.concat(p.named).forEach(function (r) { seen[r.event_id] = 1; }); return Object.keys(seen).length; }
+  var sector = "";
+  function sorter(how) {
+    if (how === "name") return function (a, b) { return a.name.localeCompare(b.name); };
+    if (how === "events") return function (a, b) { return (b.events || b.claimed.length) - (a.events || a.claimed.length) || (b.last > a.last ? 1 : b.last < a.last ? -1 : 0); };
+    return function (a, b) { return (b.last > a.last ? 1 : b.last < a.last ? -1 : 0) || a.name.localeCompare(b.name); };
+  }
   function render() {
     var q = $("q").value.trim().toLowerCase(), showClaims = $("claims").checked, target = want();
     while (box.firstChild) box.removeChild(box.firstChild);
-    var shown = all.filter(function (p) { return (showClaims || !p.claimsOnly || p.id === target) && (!q || p.hay.indexOf(q) >= 0); });
+    var shown = all.filter(function (p) {
+      return (showClaims || !p.claimsOnly || p.id === target) && (!q || p.hay.indexOf(q) >= 0)
+        && (!sector || p.sectors.some(function (c) { return c.k === sector; }));
+    }).sort(sorter($("sort").value));
     var checked = shown.filter(function (p) { return !p.claimsOnly; }), claims = shown.filter(function (p) { return p.claimsOnly; });
     checked.forEach(function (p) { safe(p.name, function () { box.appendChild(profile(p)); }, box); });
     if (claims.length) {
@@ -154,21 +168,92 @@
       box.appendChild(el("p", "note", "These groups appear on file only through their own claims. Nothing here is confirmed."));
       claims.forEach(function (p) { safe(p.name, function () { box.appendChild(profile(p)); }, box); });
     }
-    var hidden = all.filter(function (p) { return p.claimsOnly && shown.indexOf(p) < 0; }).length;
-    $("count").textContent = shown.length ? plural(shown.length, "group") + " shown" + (!showClaims && hidden ? "; " + hidden + " seen only in claims " + (hidden === 1 ? "is" : "are") + " hidden" : "") + "." : "No group matches. Try another name, or show groups seen only in claims.";
+    var hidden = sector ? 0 : all.filter(function (p) { return p.claimsOnly && shown.indexOf(p) < 0; }).length;
+    $("count").textContent = shown.length ? plural(shown.length, "group") + " shown" + (sector ? " in " + sector : "") + (!showClaims && hidden ? "; " + hidden + " seen only in claims " + (hidden === 1 ? "is" : "are") + " hidden" : "") + "."
+      : "No group matches. Try another name" + (sector ? " or clear the sector" : ", or show groups seen only in claims") + ".";
+    var chip = $("secChip"); chip.hidden = !sector; chip.textContent = sector ? "Sector: " + sector : ""; chip.setAttribute("aria-label", sector ? "Clear the sector filter " + sector : "");
+    Array.prototype.forEach.call(document.querySelectorAll("#secBars .acbar"), function (b) { var on = b.getAttribute("data-k") === sector; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false"); });
     if (target) { var t = $("a-" + target); if (t) { t.open = true; try { t.scrollIntoView({ block: "start" }); } catch (e) {} } }
   }
+  // opening one profile closes the others, so the open one takes the row and stays in view
+  box.addEventListener("toggle", function (e) {
+    var d = e.target; if (!d || !d.classList || !d.classList.contains("actor") || !d.open) return;
+    Array.prototype.forEach.call(box.querySelectorAll("details.actor[open]"), function (o) { if (o !== d) o.open = false; });
+    try { d.scrollIntoView({ block: "nearest" }); } catch (x) {}
+  }, true);
+
+  function bars(holder, rows, label, onPick) {
+    while (holder.firstChild) holder.removeChild(holder.firstChild);
+    var max = rows.reduce(function (m, r) { return Math.max(m, r.n); }, 1);
+    rows.forEach(function (r) {
+      var b = el("button", "acbar"); b.type = "button"; b.setAttribute("data-k", r.k); b.setAttribute("aria-label", label(r));
+      b.appendChild(el("span", "l", r.label || r.k)); var t = el("span", "t"), i = el("i"); i.style.width = Math.max(4, Math.round(r.n / max * 100)) + "%"; t.appendChild(i); b.appendChild(t);
+      b.appendChild(el("span", "n", r.n)); b.title = label(r);
+      b.addEventListener("click", function () { onPick(r); }); holder.appendChild(b);
+    });
+  }
+  function openProfile(pid) {
+    $("q").value = ""; sector = "";
+    var p = all.filter(function (x) { return x.id === pid; })[0]; if (p && p.claimsOnly) $("claims").checked = true;
+    var h = "#a=" + encodeURIComponent(pid);
+    if (location.hash === h) render(); else location.hash = h;
+  }
+  function overview(n, co) {
+    var kb = $("kpis"); while (kb.firstChild) kb.removeChild(kb.firstChild);
+    function kpi(lbl, val, sub, act, title) {
+      var k = el(act ? "button" : "div", "kpi" + (act ? " go" : "")); k.setAttribute("role", "listitem");
+      if (act) { k.type = "button"; k.title = title; k.addEventListener("click", act); }
+      k.appendChild(el("div", "kl", lbl)); k.appendChild(el("div", "kv", val)); if (sub) k.appendChild(el("span", "kd flat", sub)); kb.appendChild(k);
+    }
+    var att = n.filter(function (p) { return p.attributed.length; }).length;
+    var namedOnly = n.length - att;
+    var cut = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10);
+    var active = n.filter(function (p) { return p.last && p.last >= cut; }).length;
+    var cves = {}; n.forEach(function (p) { p.cves.forEach(function (c) { cves[c.id] = 1; }); });
+    kpi("Groups named", n.length, "in checked events");
+    kpi("Attributed", att, "by a government or the investigating firm");
+    kpi("Named in reporting only", namedOnly, "the sources' words");
+    kpi("Active in the last 30 days", active, "an event on file since " + fmt(cut));
+    kpi("CVEs linked", Object.keys(cves).length, "in attributed or named events");
+    kpi("Seen only in claims", co, "not confirmed; show them", function () { var c = $("claims"); c.checked = true; render(); try { box.querySelector(".agroup").scrollIntoView({ block: "start", behavior: "smooth" }); } catch (e) {} }, "Show the groups seen only in leak-site claims");
+    kb.hidden = false;
+
+    var top = n.filter(function (p) { return p.events; }).sort(function (a, b) { return b.events - a.events || a.name.localeCompare(b.name); }).slice(0, 10);
+    if (top.length) {
+      bars($("topBars"), top.map(function (p) { return { k: p.id, label: p.name, n: p.events }; }),
+        function (r) { return r.label + ": " + plural(r.n, "checked event") + ". Open the profile."; }, function (r) { openProfile(r.k); });
+      $("topPanel").hidden = false;
+    }
+    var sec = {}; n.forEach(function (p) { p.sectors.forEach(function (c) { sec[c.k] = (sec[c.k] || 0) + 1; }); });
+    var srows = Object.keys(sec).map(function (k) { return { k: k, n: sec[k] }; }).sort(function (a, b) { return b.n - a.n || a.k.localeCompare(b.k); }).slice(0, 12);
+    if (srows.length) {
+      bars($("secBars"), srows, function (r) { return r.k + ": " + plural(r.n, "group") + ". Show only these groups."; },
+        function (r) { sector = sector === r.k ? "" : r.k; render(); });
+      $("secPanel").hidden = false;
+    }
+  }
+
+  $("qform").addEventListener("submit", function (e) { e.preventDefault(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
+    var t = e.target, tag = t && t.tagName; if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (t && t.isContentEditable)) return;
+    e.preventDefault(); $("q").focus();
+  });
 
   fetch("data/actors.json", { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(); return r.json(); }).then(function (j) {
     if (!j || typeof j !== "object") throw new Error();
     all = list(j.profiles, 2000).map(function (p) { try { return cleanProfile(p); } catch (e) { return null; } }).filter(Boolean);
+    all.forEach(function (p) { p.events = evCount(p); });
     var n = all.filter(function (p) { return !p.claimsOnly; }), att = n.filter(function (p) { return p.attributed.length; }).length, co = all.length - n.length;
     $("summary").textContent = j.error && !all.length ? "The actor profiles could not be built this time. The last good copy will return with the next build."
       : plural(n.length, "group") + " named in CyberView's checked events, " + att + " of them attributed by a government or the investigating firm; " + co + (co === 1 ? " more appears only in its own" : " more appear only in their own") + " leak-site claims.";
     var notice = str(j.attack_notice, 300);
     if (notice) { var an = $("attackNote"); an.hidden = false; an.textContent = "Other names and IDs from MITRE ATT&CK" + (str(j.attack_version, 20) ? " v" + str(j.attack_version, 20) : "") + " (names, aliases and IDs only). " + notice; }
+    safe("overview", function () { overview(n, co); });
     $("q").addEventListener("input", render);
     $("claims").addEventListener("change", render);
+    $("sort").addEventListener("change", render);
+    $("secChip").addEventListener("click", function () { sector = ""; render(); });
     window.addEventListener("hashchange", render);
     render();
   }).catch(function () { $("summary").textContent = "The actor profiles can't be loaded right now. Try again in a minute."; });

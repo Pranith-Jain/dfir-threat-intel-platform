@@ -13,13 +13,16 @@
   Array.prototype.forEach.call(document.querySelectorAll("table.stack"), function (t) { label(t); try { new MutationObserver(function () { label(t); }).observe(t, { childList: true, subtree: true }); } catch (e) {} });
   // pages added after a page's markup was written: added to its links (inline and menu) after the named link, once
   function safeUrl(u) { return /^[a-z]+\.html$/.test(u) ? u : "./"; }   // own pages only
-  [["scanner.html", "Scanner", "vulnerabilities.html"], ["actors.html", "Actors", "trends.html"]].forEach(function (x) {
+  [["tools.html", "Tools", "vulnerabilities.html"]].forEach(function (x) {
     Array.prototype.forEach.call(document.querySelectorAll("nav.sitenav, nav.sheetnav"), function (nav) {
       if (nav.querySelector('a[href="' + x[0] + '"]')) return;
       var after = nav.querySelector('a[href="' + x[2] + '"]'), a = document.createElement("a"); a.href = safeUrl(x[0]); a.textContent = x[1];
       if (after) after.parentNode.insertBefore(a, after.nextSibling); else nav.appendChild(a);
     });
   });
+  // Archive and Actors moved under Library (owner, 2026-11-25): a page copy kept from before drops them from the bar
+  Array.prototype.forEach.call(document.querySelectorAll('nav.sitenav a[href="archive.html"], nav.sitenav a[href="actors.html"], nav.sheetnav a[href="archive.html"], nav.sheetnav a[href="actors.html"]'), function (a) { a.parentNode.removeChild(a); });
+  if (/(^|\/)(archive|actors)\.html$/.test(location.pathname)) Array.prototype.forEach.call(document.querySelectorAll('nav.sitenav a[href="library.html"], nav.sheetnav a[href="library.html"]'), function (a) { a.setAttribute("aria-current", "page"); });
   var bar = document.querySelector("header.bar, .bar");
   function barh() { if (bar && getComputedStyle(bar).position === "sticky") document.documentElement.style.setProperty("--barh", bar.offsetHeight + "px"); }
   if (bar && !document.getElementById("stage")) { barh(); window.addEventListener("resize", barh); }

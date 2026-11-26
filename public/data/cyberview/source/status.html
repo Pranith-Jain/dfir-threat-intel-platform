@@ -16,16 +16,22 @@
 <body>
 <header class="bar">
   <a class="brand" href="./"><img src="logo.svg" alt="" width="26" height="26">CyberView</a>
-  <nav class="sitenav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="scanner.html">Scanner</a><a href="archive.html">Archive</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html">Community</a><a href="status.html" aria-current="page">Status</a><a href="about.html">About</a></nav>
+  <nav class="sitenav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="tools.html">Tools</a><a href="library.html">Library</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html">Community</a><a href="status.html" aria-current="page">Status</a><a href="about.html">About</a></nav>
   <span class="spacer"></span>
   <button type="button" class="navbtn" id="navBtn" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 </header>
-<div class="navsheet" id="navSheet" hidden role="dialog" aria-modal="true" aria-label="Menu"><div class="sheethead">CyberView<button type="button" class="sheetclose" id="navClose" aria-label="Close menu">&times;</button></div><nav class="sheetnav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="scanner.html">Scanner</a><a href="archive.html">Archive</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html">Community</a><a href="status.html" aria-current="page">Status</a><a href="about.html">About</a></nav></div>
+<div class="navsheet" id="navSheet" hidden role="dialog" aria-modal="true" aria-label="Menu"><div class="sheethead">CyberView<button type="button" class="sheetclose" id="navClose" aria-label="Close menu">&times;</button></div><nav class="sheetnav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="tools.html">Tools</a><a href="library.html">Library</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html">Community</a><a href="status.html" aria-current="page">Status</a><a href="about.html">About</a></nav></div>
 <main class="st">
-  <section class="intro">
-    <h1>CyberView status</h1>
-    <p id="summary" aria-live="polite">Loading status</p>
+  <section class="intro phead">
+    <div>
+      <h1>CyberView status</h1>
+      <p id="summary" class="sub" aria-live="polite">Loading status</p>
+    </div>
+    <span class="hl"></span>
+    <form class="psearch" id="qform" role="search"><label><span class="sr-only">Search the status page</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Routine, feed, collector, check" autocomplete="off" spellcheck="false"><kbd>/</kbd></label></form>
   </section>
+  <div class="kpis" id="kpis" role="list" aria-label="Status at a glance" hidden></div>
+  <p class="qcount" id="qcount" aria-live="polite" hidden></p>
 
   <section class="panel" id="secHealth" aria-labelledby="hHealth">
     <h2 id="hHealth">Is the site healthy right now?</h2>
@@ -53,11 +59,12 @@
   </section>
 
   <h2 class="dhead">Details</h2>
+  <div class="dgrid">
 
   <details class="panel dpanel" id="dHow">
     <summary><span class="dt">How it works</span><span class="ds">collectors, rules, AI researchers, second review, publishing</span></summary>
     <ol class="how">
-      <li>Collectors, which are scripts with no AI model, check hundreds of government, vendor and news feeds, news searches in many languages and public databases every 30 minutes, and file each new item as a lead.</li>
+      <li>Collectors, which are scripts with no AI model, check thousands of government, vendor and news feeds (banks and financial regulators, critical-infrastructure operators and crypto security firms among them), official breach registers, news searches in many languages and public databases such as SlowMist's crypto-hack archive every few minutes, and file each new item as a lead.</li>
       <li>Leads about the same thing are grouped into one story. Fixed rules, also with no AI model, close routine bulletins, commentary, bare database rows and repeats of what is already on file.</li>
       <li>AI researchers, CyberView AI (a Claude model), read the original pages behind every remaining story and write up only what those pages say.</li>
       <li>A different AI agent gives every new or changed event a second review, and corrects or flags what it finds.</li>
@@ -106,6 +113,16 @@
     </details>
     <p id="retiredFeeds" class="note" hidden></p>
     <p class="note">Yield is the share of a feed's leads whose story became an event or updated one; the bars are that share, one colour. A feed with few leads can swing a long way on one story. Leads about the same thing are grouped into a story, and stories reported by more independent publishers are researched first. Leak-site listings are attackers' claims and are never published as facts.</p>
+    <details class="inner" id="dOrkl" hidden>
+      <summary><span class="dt">Threat-report library (ORKL mirror)</span><span class="ds" id="orklSum"></span></summary>
+      <p id="orklBig" class="big"></p>
+      <p id="orklNote" class="note">Waiting for the first ORKL mirror.</p>
+      <h3>Most-named threat actors</h3>
+      <ul class="plain" id="orklActors"></ul>
+      <h3>Recently added reports</h3>
+      <ul class="plain" id="orklRecent"></ul>
+      <p class="note">A keyless mirror of ORKL's public library of historical threat-intelligence reports (<a href="https://orkl.eu/" target="_blank" rel="noopener noreferrer">orkl.eu</a>): metadata and links only — title, authors, date, language, sources and named actors, with links to the report page and the archived copy — never the report text itself. It feeds no events and is drawn on no map. The mirror is collected by a script with no AI model; the AI-written summaries and stories on the Library page come from a separate job.</p>
+    </details>
   </details>
 
   <details class="panel dpanel" id="gridSrcBox" hidden>
@@ -160,6 +177,8 @@
     <ul class="plain runs" id="runs"></ul>
     <p class="note">From the run logs in data/runs, which keep every search, page read and rejected lead.</p>
   </details>
+
+  </div>
 
   <p class="note foot-note">Every build validates every record. A record that breaks a rule is left out and reported, so it cannot hold back the rest. Before publishing, the build is checked for completeness and compared with the live site; after publishing, the live copy is fetched and compared byte for byte with the build. If the site cannot be reached, your browser shows its last good copy and says how old it is. The figures on this page are worked out by scripts with no AI model at every build.</p>
 </main>

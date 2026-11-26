@@ -16,49 +16,67 @@
 <body>
 <header class="bar">
   <a class="brand" href="./"><img src="logo.svg" alt="" width="26" height="26">CyberView</a>
-  <nav class="sitenav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="scanner.html">Scanner</a><a href="archive.html">Archive</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html" aria-current="page">Community</a><a href="status.html">Status</a><a href="about.html">About</a></nav>
+  <nav class="sitenav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="tools.html">Tools</a><a href="library.html">Library</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html" aria-current="page">Community</a><a href="status.html">Status</a><a href="about.html">About</a></nav>
   <span class="spacer"></span>
   <button type="button" class="navbtn" id="navBtn" aria-expanded="false" aria-controls="navSheet" aria-label="Open menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
 </header>
-<div class="navsheet" id="navSheet" hidden role="dialog" aria-modal="true" aria-label="Menu"><div class="sheethead">CyberView<button type="button" class="sheetclose" id="navClose" aria-label="Close menu">&times;</button></div><nav class="sheetnav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="scanner.html">Scanner</a><a href="archive.html">Archive</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html" aria-current="page">Community</a><a href="status.html">Status</a><a href="about.html">About</a></nav></div>
+<div class="navsheet" id="navSheet" hidden role="dialog" aria-modal="true" aria-label="Menu"><div class="sheethead">CyberView<button type="button" class="sheetclose" id="navClose" aria-label="Close menu">&times;</button></div><nav class="sheetnav" aria-label="Site"><a href="./">Map</a><a href="vulnerabilities.html">Vulnerabilities</a><a href="tools.html">Tools</a><a href="library.html">Library</a><a href="trends.html">Trends</a><a href="tabletop.html">Exercise</a><a href="community.html" aria-current="page">Community</a><a href="status.html">Status</a><a href="about.html">About</a></nav></div>
 <main class="cm">
-  <section class="intro">
-    <h1>Community feed</h1>
-    <p id="cmSummary" aria-live="polite">Loading posts</p>
+  <section class="intro phead">
+    <div>
+      <h1>Community feed</h1>
+      <p id="cmSummary" class="sub" aria-live="polite">Loading posts</p>
+    </div>
+    <span class="hl"></span>
+    <form class="psearch" id="qform" role="search"><label><span class="sr-only">Search the posts</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="Search posts, authors, event ids" autocomplete="off" spellcheck="false"><kbd>/</kbd></label></form>
   </section>
+  <div class="kpis" id="kpis" role="list" aria-label="The community feed at a glance" hidden></div>
   <p class="caveat"><b>Posts are visitors' own words, not CyberView's reporting.</b> Each one is reviewed before it appears: fixed rules first (no personal data, credentials, files or risky links), then the CyberView AI moderator (a Claude model) checks it for harm and for claims that have no public source. Reviewed does not mean verified: treat a post as a lead, and the events on the map as the record.</p>
 
-  <section class="panel" aria-labelledby="cmNewH">
-    <h2 id="cmNewH">Post something</h2>
-    <div class="cmform">
-      <label class="cmfield">Message
-        <textarea id="cmText" rows="3" maxlength="600" placeholder="A tip, a question or a comment for other defenders. Plain text."></textarea></label>
-      <div class="cmrow">
-        <label>Kind <select id="cmKind"><option>Comment</option><option>Tip</option><option>Question</option></select></label>
-        <label class="grow">About an event (optional) <input type="text" id="cmEvent" placeholder="event id from its link" autocomplete="off" spellcheck="false"></label>
-        <span class="note" id="cmCount">0 / 600</span>
+  <div class="cmgrid">
+    <section class="cmfeed" aria-labelledby="cmFeedH">
+      <div class="cmfeedhead">
+        <h2 id="cmFeedH">What defenders are saying</h2>
+        <div class="cmseg" id="cmSeg" role="group" aria-label="Show which kind of post">
+          <button type="button" class="pill" data-k="" aria-pressed="true">All</button><button type="button" class="pill" data-k="tip" aria-pressed="false">Tips</button><button type="button" class="pill" data-k="question" aria-pressed="false">Questions</button><button type="button" class="pill" data-k="comment" aria-pressed="false">Comments</button>
+        </div>
+        <label class="sr-only">Show<select id="cmShow"><option value="">All posts</option><option value="tip">Tips</option><option value="question">Questions</option><option value="comment">Comments</option></select></label>
       </div>
-      <p class="note bad" id="cmWarn" role="alert" hidden></p>
-      <div class="wbacts"><button type="button" class="btn primary" id="cmPost">Continue on GitHub to post</button>
-        <span class="note">You post with a GitHub account and your username is shown. Posts appear after review, usually within the hour.</span></div>
-    </div>
-    <details class="wbhow"><summary>The rules</summary>
-      <ul>
-        <li>Be useful to defenders: what you are seeing, what worked, a question, context on an event.</li>
-        <li>No claim that a named organisation or person was breached, at fault or behind an attack unless you link a public source that says so. Unsourced tips are passed to the research jobs as leads instead of being published.</li>
-        <li>No personal information, credentials, internal hostnames, indicators of compromise, exploit code or attack instructions.</li>
-        <li>No advertising, recruiting, abuse or harassment. At most 2 https links, no shortened links and no file downloads.</li>
-        <li>At most 5 posts a day, from GitHub accounts at least 3 days old. Found an error in an event? Use "Report an error" on the event instead.</li>
-        <li>Posts can be taken down later if they prove false or harmful. Every post has a Report link.</li>
-      </ul>
-    </details>
-  </section>
+      <div class="cmscope"><span class="note" id="cmScope"></span><button type="button" class="btn ghost" id="cmClear" hidden>Show all events</button></div>
+      <p class="qcount" id="qcount" hidden></p>
+      <ol class="cmlist" id="cmList"></ol>
+    </section>
 
-  <div class="filters wbfilters">
-    <label>Show<select id="cmShow"><option value="">All posts</option><option value="tip">Tips</option><option value="question">Questions</option><option value="comment">Comments</option></select></label>
-    <span class="note" id="cmScope"></span><button type="button" class="btn" id="cmClear" hidden>Show all events</button>
+    <aside class="cmside">
+      <section class="panel cmcompose" aria-labelledby="cmNewH">
+        <h2 id="cmNewH">Post something</h2>
+        <div class="cmform">
+          <label class="cmfield">Message
+            <textarea id="cmText" rows="4" maxlength="600" placeholder="A tip, a question or a comment for other defenders. Plain text."></textarea></label>
+          <div class="cmrow">
+            <label>Kind <select id="cmKind"><option>Comment</option><option>Tip</option><option>Question</option></select></label>
+            <label class="grow">About an event (optional) <input type="text" id="cmEvent" placeholder="event id from its link" autocomplete="off" spellcheck="false"></label>
+          </div>
+          <div class="cmmeter"><span class="cmmbar"><span id="cmMeter"></span></span><span class="note" id="cmCount">0 / 600</span></div>
+          <p class="note bad" id="cmWarn" role="alert" hidden></p>
+          <button type="button" class="btn primary" id="cmPost">Continue on GitHub to post</button>
+          <p class="note">You post with a GitHub account and your username is shown. Posts appear after review, usually within the hour.</p>
+        </div>
+      </section>
+      <section class="panel cmrules" aria-labelledby="cmRulesH">
+        <h2 id="cmRulesH">The rules</h2>
+        <ul>
+          <li>Be useful to defenders: what you are seeing, what worked, a question, context on an event.</li>
+          <li>No claim that a named organisation or person was breached, at fault or behind an attack unless you link a public source that says so. Unsourced tips are passed to the research jobs as leads instead of being published.</li>
+          <li>No personal information, credentials, internal hostnames, indicators of compromise, exploit code or attack instructions.</li>
+          <li>No advertising, recruiting, abuse or harassment. At most 2 https links, no shortened links and no file downloads.</li>
+          <li>At most 5 posts a day, from GitHub accounts at least 3 days old. Found an error in an event? Use "Report an error" on the event instead.</li>
+          <li>Posts can be taken down later if they prove false or harmful. Every post has a Report link.</li>
+        </ul>
+        <p class="note">The full text is in the <a href="terms.html#community">community terms</a>.</p>
+      </section>
+    </aside>
   </div>
-  <ol class="cmlist" id="cmList"></ol>
 </main>
 <footer class="foot"><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html#community">Community rules</a><a href="terms.html">Terms</a><a href="about.html#corrections">Corrections</a><a href="about.html#security">Report a security issue</a></footer>
 <script src="community.js"></script>

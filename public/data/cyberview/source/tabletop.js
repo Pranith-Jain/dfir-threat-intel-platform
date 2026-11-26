@@ -51,8 +51,12 @@
     cur = all[i]; stopClock(true);
     try { history.replaceState(null, "", cur.date && i ? "#d=" + cur.date : location.pathname); } catch (e) {}
     $("ttTitle").textContent = cur.title;
-    $("ttMeta").textContent = [cur.date ? fmtDay(cur.date) : "", cur.duration + " minutes", cur.roles.length ? "for " + cur.roles.join(", ") : ""].filter(Boolean).join(" · ");
-    var b = $("ttBody"); b.textContent = "";
+    $("ttMeta").textContent = [cur.date ? fmtDay(cur.date) : "", cur.duration + " minutes", cur.roles.length ? cur.roles.length + " roles at the table" : ""].filter(Boolean).join(" · ");
+    var root = $("ttBody"); root.textContent = "";
+    renderKpis(i);
+    var grid = el("div", "ttgrid"), left = el("div", "ttcol ttleft"), right = el("div", "ttcol ttright"), below = el("div", "ttbelow");
+    grid.appendChild(left); grid.appendChild(right); root.appendChild(grid); root.appendChild(below);
+    var b = left;
 
     var real = el("section", "panel");
     real.appendChild(el("h2", null, "What really happened"));
@@ -70,9 +74,12 @@
     sc.appendChild(el("h2", null, "Your scenario"));
     sc.appendChild(el("p", "note", "Hypothetical: read this aloud to start. It adapts the real event to an organisation like yours."));
     sc.appendChild(el("p", "ttlead", cur.scenario));
+    if (cur.roles.length) { var rl = el("ul", "ttroles"); rl.setAttribute("aria-label", "Roles at the table"); cur.roles.forEach(function (r) { rl.appendChild(el("li", null, r)); }); sc.appendChild(el("h3", null, "Roles at the table")); sc.appendChild(rl); }
     b.appendChild(sc);
+    if (cur.adapt) { var ad = el("section", "panel"); ad.appendChild(el("h2", null, "Make it yours")); ad.appendChild(el("p", null, cur.adapt)); b.appendChild(ad); }
+    b = right;
 
-    var inj = el("section", "panel");
+    var inj = el("section", "panel ttinjp");
     var ih = el("div", "tthead"); ih.appendChild(el("h2", null, "Timed updates (injects)"));
     var ctl = el("div", "ttclock");
     var face = el("span", "ttface", "00:00"); face.id = "ttFace"; face.setAttribute("role", "timer"); face.setAttribute("aria-label", "Elapsed time");
@@ -94,15 +101,72 @@
     rs.addEventListener("click", function () { stopClock(true); });
     cb.addEventListener("change", function () { clock.reveal = cb.checked; tick(); });
 
+    b = below;
     var q = el("section", "panel"); q.appendChild(el("h2", null, "Discussion questions"));
     var qo = el("ol", "ttlist"); cur.questions.forEach(function (x) { qo.appendChild(el("li", null, x)); }); q.appendChild(qo); b.appendChild(q);
     var g = el("section", "panel"); g.appendChild(el("h2", null, "What good looks like"));
     var gu = el("ul", "ttlist good"); cur.good.forEach(function (x) { gu.appendChild(el("li", null, x)); }); g.appendChild(gu); b.appendChild(g);
-    if (cur.adapt) { var ad = el("section", "panel"); ad.appendChild(el("h2", null, "Make it yours")); ad.appendChild(el("p", null, cur.adapt)); b.appendChild(ad); }
+    b = root;
     if (cur.sources.length) { var so = el("p", "note ttsrc", "Sources read: "); cur.sources.forEach(function (s, k) { if (k) so.appendChild(document.createTextNode(" · ")); so.appendChild(link(s.url, s.name)); }); b.appendChild(so); }
     b.appendChild(el("p", "note", "Written by CyberView AI (a Claude model) from the event's verified record and the sources above, under the same rules as every event. Check the facts against the sources before you rely on them. Free to use and adapt for your own team's exercises."));
     tick();
+    applySearch();
   }
+
+  /* ---- at-a-glance band ---- */
+  function renderKpis(i) {
+    var k = $("kpis"); if (!k) return; k.textContent = "";
+    var last = cur.injects.length ? cur.injects[cur.injects.length - 1].at : 0;
+    var oldest = all.reduce(function (m, x) { return x.date && (!m || x.date < m) ? x.date : m; }, "");
+    [["Length", cur.duration + " min", "updates run to +" + last + " min"],
+     ["Timed updates", String(cur.injects.length), cur.injects.length ? "first at +" + cur.injects[0].at + " min" : ""],
+     ["Roles at the table", String(cur.roles.length || "Any"), cur.roles.slice(0, 2).join(", ") + (cur.roles.length > 2 ? " and " + (cur.roles.length - 2) + " more" : "")],
+     ["Discussion questions", String(cur.questions.length), cur.good.length + " marks of a good answer"],
+     ["Verified facts", String(cur.facts.length), cur.sources.length + " source" + (cur.sources.length === 1 ? "" : "s") + " read"],
+     ["Exercises on file", String(all.length), i === 0 ? "this is the newest" : (oldest ? "since " + oldest : "")]
+    ].forEach(function (r) {
+      var d = el("div", "kpi"); d.setAttribute("role", "listitem");
+      d.appendChild(el("div", "kl", r[0])); d.appendChild(el("div", "kv", r[1])); if (r[2]) d.appendChild(el("span", "kd flat", r[2]));
+      k.appendChild(d);
+    });
+    k.hidden = false;
+  }
+
+  /* ---- search: filters this exercise's lists and says which other exercises match ---- */
+  function hay(x) { return [x.title, x.story, x.scenario, x.adapt, x.roles.join(" ")].concat(x.facts.map(function (f) { return f.text; }), x.injects.map(function (j) { return j.title + " " + j.text + " " + j.ask; }), x.questions, x.good).join(" ").toLowerCase(); }
+  function applySearch() {
+    var inp = $("q"), qc = $("qcount"); if (!inp || !qc || !cur) return;
+    var t = inp.value.trim().toLowerCase(), n = 0;
+    var items = document.querySelectorAll("#ttBody li, #ttBody .ttleft section.panel > p:not(.note)");
+    Array.prototype.forEach.call(items, function (li) {
+      var hit = !t || li.textContent.toLowerCase().indexOf(t) !== -1;
+      if (hit && t) n++;
+      if (hit || li.tagName !== "LI") li.removeAttribute("data-qhide"); else li.setAttribute("data-qhide", "");
+      li.classList.toggle("qhit", !!t && hit);
+    });
+    qc.textContent = ""; qc.hidden = !t;
+    if (!t) return;
+    qc.appendChild(document.createTextNode(n ? n + (n === 1 ? " part" : " parts") + " of this exercise mention \u201c" + inp.value.trim() + "\u201d. " : "Nothing in this exercise mentions \u201c" + inp.value.trim() + "\u201d. "));
+    var others = [];
+    all.forEach(function (x, j) { if (x !== cur && hay(x).indexOf(t) !== -1) others.push(j); });
+    if (others.length) {
+      qc.appendChild(document.createTextNode("Also in: "));
+      others.forEach(function (j, k) {
+        if (k) qc.appendChild(document.createTextNode(" "));
+        var bt = el("button", "chipbtn", (all[j].date ? all[j].date + " · " : "") + all[j].title.replace(/^Exercise:\s*/i, "")); bt.type = "button";
+        bt.addEventListener("click", function () { $("ttPick").value = String(j); show(j); });
+        qc.appendChild(bt);
+      });
+    } else qc.appendChild(document.createTextNode("Clear the search to see everything."));
+  }
+  (function wireSearch() {
+    var inp = $("q"), f = $("qform"), tmr = 0; if (!inp || !f) return;
+    f.addEventListener("submit", function (e) { e.preventDefault(); applySearch(); });
+    inp.addEventListener("input", function () { clearTimeout(tmr); tmr = setTimeout(applySearch, 120); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "/" && !/^(INPUT|SELECT|TEXTAREA)$/.test((document.activeElement || {}).tagName || "")) { e.preventDefault(); inp.focus(); }
+    });
+  })();
 
   function elapsed() { return clock.held + (clock.start ? Date.now() - clock.start : 0); }
   function startClock() { clock.start = Date.now(); clock.timer = setInterval(tick, 1000); $("ttGo").textContent = "Pause"; tick(); }
