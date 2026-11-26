@@ -31,6 +31,14 @@ const CASE_TYPES = [
   { value: 'trend', label: 'Trend' },
 ];
 
+interface ResearchMeta {
+  pagesFetched?: number;
+  pagesRead?: number;
+  cvesEnriched?: number;
+  corpusHits?: number;
+  tookMs?: number;
+}
+
 interface FormatResult {
   slug?: string;
   title?: string;
@@ -39,6 +47,8 @@ interface FormatResult {
   rejected?: boolean;
   reason?: string;
   generatedAt?: string;
+  /** Research measurements returned with the blog draft. */
+  research?: ResearchMeta;
 }
 
 interface GenerateResponse {
@@ -61,6 +71,7 @@ export default function GenerateTab() {
   const [audience, setAudience] = useState('');
   const [tone, setTone] = useState('professional');
   const [type, setType] = useState('analysis');
+  const [sources, setSources] = useState('');
   const [notes, setNotes] = useState('');
   const [formats, setFormats] = useState({ blog: true, linkedin: true, twitter: false });
   const [dryRun, setDryRun] = useState(false);
@@ -91,6 +102,7 @@ export default function GenerateTab() {
     try {
       const r = await postJsonWithBody<GenerateResponse>('/generate', {
         topic: topic.trim(),
+        content: sources.trim() || undefined,
         audience: audience.trim() || undefined,
         tone: tone.trim() || undefined,
         type,
@@ -240,6 +252,24 @@ export default function GenerateTab() {
           </div>
 
           <div>
+            <label htmlFor="gen-sources" className={labelCls}>
+              Source material <span className="normal-case">(optional — paste URLs or reference text)</span>
+            </label>
+            <textarea
+              id="gen-sources"
+              value={sources}
+              onChange={(e) => setSources(e.target.value)}
+              rows={4}
+              placeholder="Paste advisory URLs, reports or notes. Pasted URLs are fetched and verified before the article is written…"
+              className={`${inputCls} font-mono`}
+            />
+            <p className="mt-1 text-xs text-muted">
+              Pasted URLs are read as real sources. If you leave this empty, the pipeline still searches the platform
+              corpus for sources on the topic before writing.
+            </p>
+          </div>
+
+          <div>
             <label htmlFor="gen-notes" className={labelCls}>
               Notes <span className="normal-case">(optional — facts to include, angle to take)</span>
             </label>
@@ -309,6 +339,14 @@ export default function GenerateTab() {
                     </button>
                   )}
                 </div>
+                {fmt === 'blog' && r.research && (
+                  <p className="mb-2 text-xs font-mono text-muted">
+                    Research before writing: {r.research.pagesRead ?? 0}/{r.research.pagesFetched ?? 0} sources read
+                    {r.research.cvesEnriched ? ` · ${r.research.cvesEnriched} CVEs enriched` : ''}
+                    {r.research.corpusHits ? ` · ${r.research.corpusHits} corpus hits` : ''}
+                    {r.research.tookMs ? ` · ${r.research.tookMs}ms` : ''}
+                  </p>
+                )}
                 {r.rejected ? (
                   <p className="text-sm text-amber-800 dark:text-amber-300">
                     Rejected by quality gate{r.reason ? ` — ${r.reason}` : ''}. Try adding concrete facts to Notes and

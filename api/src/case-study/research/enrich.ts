@@ -230,6 +230,8 @@ export interface PlatformFacts {
    * "(no CVE could be resolved for this topic)" dossier happened.
    */
   victimClaims: Array<{ victim: string; groups: string[]; latest?: string; sector?: string }>;
+  /** Bare-topic corpus hits found by `topic.ts`, with upstream URLs. */
+  topicHits?: import('./topic').TopicHit[];
 }
 
 /** Minimal shape of the SELF service binding — matches `self-fetch.ts`. */

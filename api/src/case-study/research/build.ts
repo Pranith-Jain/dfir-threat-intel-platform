@@ -322,6 +322,7 @@ export function buildDossier(input: BuildDossierInput): ResearchDossier {
       pagesFetched: pages.length + unread.length,
       pagesRead: pages.filter((p) => p.ok).length,
       cvesEnriched: cves.length,
+      corpusHits: platform.topicHits?.length ?? 0,
       tookMs: 0,
     },
   };

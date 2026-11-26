@@ -11,6 +11,7 @@ import { countAllCandidates } from '../case-study/storage/candidates';
 import { countApproved } from '../case-study/storage/approved';
 import { countFailures } from '../case-study/storage/failed';
 import { generatePost } from '../case-study/generation';
+import { suppliedCveIds, suppliedUrls } from '../case-study/research/topic';
 import { putDraft } from '../case-study/storage/drafts';
 import { generateLinkedinFromNotes, generateTwitterFromNotes } from '../case-study/generation/social';
 import type { Candidate, CaseStudyType } from '../case-study/types';
@@ -78,6 +79,14 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
       .filter(Boolean)
       .join('\n\n');
 
+    // A pasted URL or CVE id is a research input, not just prompt prose. Hand
+    // it to the research stage as evidence so it is fetched, verified and
+    // quoted in the dossier before the writer sees it. Without this, a topic
+    // submitted through this tab produced a dossier with zero sources read.
+    const suppliedText = [content, notes].filter(Boolean).join('\n');
+    const suppliedLinks = suppliedUrls(suppliedText);
+    const suppliedCves = suppliedCveIds(suppliedText);
+
     const result: Record<string, unknown> = {};
     const errors: string[] = [];
 
@@ -114,7 +123,12 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
             title: subject,
             rationale: subject,
             score: 0.8,
-            evidence: { userContent: brandConfig },
+            evidence: {
+              userContent: brandConfig,
+              urls: suppliedLinks.map((h) => h.url),
+              titles: suppliedLinks.map((h) => h.label),
+              cveIds: suppliedCves,
+            },
             discoveredAt: now.toISOString(),
             status: 'pending',
           };
@@ -129,6 +143,7 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
             // (writeups, trending CVEs, darkweb hits) via the SELF binding.
             self: c.env.SELF,
             internalTokenSecret: c.env.INTERNAL_TOKEN_SECRET,
+            notes: notes?.trim(),
           });
           const gate = approve(post.body, 500);
           if (!gate.rejected && !dry_run) await putDraft(c.env.CASE_STUDIES, post);
@@ -136,6 +151,8 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
             slug: post.slug,
             title: post.title,
             final_post: post.body,
+            // Visible proof that research ran before the write, not after it.
+            research: post.researchMeta,
             status: dry_run ? 'dry_run' : gate.rejected ? 'rejected' : 'draft',
             ...gate,
           };

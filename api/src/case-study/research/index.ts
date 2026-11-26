@@ -22,6 +22,7 @@
 import type { Candidate } from '../types';
 import { extractPage, MAX_PAGES } from './extract';
 import { findCveIds, enrichCves, enrichFromPlatform, topicKeyword, type PlatformFacts } from './enrich';
+import { discoverTopicCorpus, suppliedCveIds, suppliedUrls } from './topic';
 import { renderDossier, type ResearchDossier } from './dossier';
 
 export interface ResearchDeps {
@@ -99,27 +100,55 @@ export async function researchCandidate(deps: ResearchDeps): Promise<ResearchDos
   const { candidate, now } = deps;
   const startedAt = Date.now();
   const fetchFn = deps.fetchFn ?? globalThis.fetch;
+  const self: SelfBinding | undefined = deps.self;
+  const keyword = topicKeyword(candidate.title);
 
-  // 1. CVEs — resolve in parallel with page fetching.
-  const cveIds = findCveIds(candidate.type, candidate.title, candidate.evidence ?? {});
-  const urls = candidateUrls(candidate);
+  // 1. Find sources before writing. A discovery candidate already carries its
+  //    URLs; a bare operator topic does not. For the latter, read URLs out of
+  //    the supplied text and search the platform corpus once via SELF. Both
+  //    are candidates only — extractPage verifies them below.
+  const operatorText =
+    typeof candidate.evidence?.userContent === 'string' ? (candidate.evidence.userContent as string) : '';
+  const operatorHits = suppliedUrls(operatorText);
+  const evidenceUrls = candidateUrls(candidate);
+  // `userContent` marks an operator-submitted topic. Discovery candidates
+  // never carry it, so they keep their existing (cheaper) path.
+  const corpus = operatorText
+    ? await discoverTopicCorpus({
+        keyword,
+        self,
+        env: { INTERNAL_TOKEN_SECRET: deps.internalTokenSecret },
+      })
+    : { hits: [], cveIds: [] };
+
+  const urls = [...operatorHits.map((h) => h.url), ...evidenceUrls, ...corpus.hits.map((h) => h.url)]
+    .filter((u, i, all) => all.indexOf(u) === i)
+    .slice(0, MAX_PAGES);
+  const cveIds = [
+    ...new Set([
+      ...findCveIds(candidate.type, candidate.title, candidate.evidence ?? {}),
+      ...suppliedCveIds(operatorText),
+      ...corpus.cveIds,
+    ]),
+  ].slice(0, 4);
 
   const [cveResults, pageResults] = await Promise.all([
     enrichCves(cveIds).catch(() => []),
-    withConcurrency(urls.slice(0, MAX_PAGES), 3, (url) => extractPage(url, fetchFn).catch(() => null)).then((pages) =>
+    withConcurrency(urls, 3, (url) => extractPage(url, fetchFn).catch(() => null)).then((pages) =>
       pages.filter((p): p is NonNullable<typeof p> => p !== null)
     ),
   ]);
 
-  // 2. Platform corpus.
-  const keyword = topicKeyword(candidate.title);
-  const self: SelfBinding | undefined = deps.self;
-  const platform = await enrichFromPlatform(
+  // 2. Platform corpus. Corpus hits are carried through even when their pages
+  //    cannot be read: they are still real records with upstream URLs, and the
+  //    writer may cite them as corpus signals (never as page quotations).
+  const platformFacts = await enrichFromPlatform(
     self,
     { INTERNAL_TOKEN_SECRET: deps.internalTokenSecret },
     keyword,
     candidate.type
   ).catch(() => EMPTY_PLATFORM);
+  const platform: PlatformFacts = { ...platformFacts, topicHits: corpus.hits };
 
   // 3. A page that failed is not a source. Keep only readable pages in the
   //    citable list, but record the failures so the writer does not "cite"
@@ -146,6 +175,7 @@ export async function researchCandidate(deps: ResearchDeps): Promise<ResearchDos
     pagesFetched: pageResults.length,
     pagesRead: pages.length,
     cvesEnriched: cveResults.length,
+    corpusHits: corpus.hits.length,
     tookMs: Date.now() - startedAt,
   };
   return dossier;

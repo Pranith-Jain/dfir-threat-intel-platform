@@ -174,7 +174,20 @@ export async function generatePost(deps: GeneratePostDeps): Promise<Post> {
     internalTokenSecret: deps.internalTokenSecret,
   });
 
-  const sources = extractSources(candidate.evidence);
+  // Pages the research stage actually read are citable even when their URLs
+  // were discovered for a bare topic rather than supplied in the candidate
+  // evidence. Fold them into the citation set or a verified source would be
+  // dropped silently by step 4's HEAD check.
+  const sources: PostSource[] = [];
+  const seenSources = new Set<string>();
+  for (const s of [
+    ...extractSources(candidate.evidence),
+    ...dossier.pages.filter((p) => p.ok).map((p) => ({ url: p.url, title: p.title || p.publisher || '' })),
+  ]) {
+    if (!s.url || seenSources.has(s.url)) continue;
+    seenSources.add(s.url);
+    sources.push(s);
+  }
 
   // ── Step 2: Write ──────────────────────────────────────────────────
   const { system, user } = buildPrompt({
@@ -287,5 +300,6 @@ export async function generatePost(deps: GeneratePostDeps): Promise<Post> {
     // Compact research facts so social copy (generated later, from the stored
     // Post) can cite exact affected versions, CVSS numbers and dates.
     research: snapshotDossier(dossier),
+    researchMeta: dossier.meta,
   };
 }
