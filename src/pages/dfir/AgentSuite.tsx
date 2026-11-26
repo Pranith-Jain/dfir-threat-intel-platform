@@ -10,8 +10,9 @@ const TieEnrich = lazy(() => import('./TieEnrich'));
 const AgentMap = lazy(() => import('./AgentMap'));
 const AgentMetrics = lazy(() => import('./AgentMetrics'));
 const AgentReports = lazy(() => import('./AgentReports'));
+const SophonWorkbench = lazy(() => import('./SophonWorkbench'));
 
-type TabId = 'investigator' | 'enrich' | 'map' | 'metrics' | 'reports';
+type TabId = 'investigator' | 'enrich' | 'map' | 'metrics' | 'reports' | 'sophon';
 
 const TABS: Array<{ id: TabId; label: string; desc: string }> = [
   { id: 'investigator', label: 'INVESTIGATOR', desc: 'Autonomous investigation agent for threat triage' },
@@ -26,6 +27,11 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
     id: 'reports',
     label: 'REPORTS',
     desc: 'Archive of completed investigations — read, audit and download reports',
+  },
+  {
+    id: 'sophon',
+    label: 'WORKBENCH',
+    desc: 'Scoped, evidence-backed security testing with a task profile and mission policy',
   },
 ];
 
@@ -55,6 +61,7 @@ export default function AgentSuite(): JSX.Element {
               {active === 'map' && <AgentMap />}
               {active === 'metrics' && <AgentMetrics />}
               {active === 'reports' && <AgentReports />}
+              {active === 'sophon' && <SophonWorkbench />}
             </Suspense>
           </>
         )}

@@ -1409,3 +1409,31 @@ endpoints (the SPA has local equivalents). Incident-page ld+json omits status /
 type / records / location, so the RSS mirror remains the map's backbone.
 Candidate layers already in this platform's corpora: ThreatCluster victims,
 ransomware-group origins, OffSeq exploitation flags and CTIWatch actors/victims.
+
+## Sophon workbench (DFIR agent)
+
+A working agent surface at `/dfir/sophon` (also Agent Suite → WORKBENCH) that
+ports the WORKFLOW concept of github.com/i11us0ry/Sophon onto the existing
+`InvestigatorAgentDO`: Main → Planner → Worker → review → report, with an
+explicit mission scope and evidence-backed findings. Upstream has **no reuse
+licence** (all rights reserved), so no upstream prose, prompts, roles, skills or
+code are vendored — the implementation and prompts are original.
+
+- `api/src/lib/agent/sophon.ts` — 10 task profiles (method guidance only, never
+  identity/permissions), deterministic profile suggestion, mission-scope parser
+  (domains cover subdomains, CIDRs, wildcard suffixes), a tool-call guardrail
+  that blocks out-of-scope hosts, the planner context builder and a dedicated
+  `LoopDefinition` (separate from the pinned CTI loop).
+- `worker/durable-objects/investigator-agent.ts` — accepts `sophonProfile` +
+  `missionScope`, injects the mission context into both planner call sites and
+  applies the scope guardrail before tool execution. Ordinary runs are unchanged.
+- `api/src/routes/agent.ts` — `GET /api/v1/agent/sophon/profiles` and
+  `POST /api/v1/agent/sophon`; both sit under the existing admin-gated
+  `/api/v1/agent/*` prefix and share the 5-runs/hour/key limit.
+- `src/pages/dfir/SophonWorkbench.tsx` — setup (profile + scope + goal), live
+  WS trace, evidence/gaps panels and report export; reuses the investigator UI
+  components (`InvestigationTrace`, `ReportView`, `DataGapsPanel`).
+- Tests: `api/test/lib/sophon.test.ts` (11) + `api/test/routes/sophon.test.ts` (5).
+
+Nothing is persisted beyond the normal agent session; no new DO binding, cron
+trigger or KV namespace is introduced.

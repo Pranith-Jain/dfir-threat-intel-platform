@@ -87,6 +87,7 @@ const IamHub = lazy(() => import('./pages/dfir/IamHub'));
 const ImageIntel = lazy(() => import('./pages/dfir/ImageIntel'));
 const PhoneHub = lazy(() => import('./pages/dfir/PhoneHub'));
 const AgentSuite = lazy(() => import('./pages/dfir/AgentSuite'));
+const SophonWorkbench = lazy(() => import('./pages/dfir/SophonWorkbench'));
 const StixHub = lazy(() => import('./pages/threatintel/StixHub'));
 const RansomwareHub = lazy(() => import('./pages/threatintel/RansomwareHub'));
 const ExposureCheck = lazy(() => import('./pages/threatintel/Exposure'));
@@ -533,6 +534,7 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/dfir/powershell-deobf', Component: PowershellDeobf },
   { path: '/dfir/powershell-analyzer', Component: PowershellAnalyzer },
   { path: '/dfir/agent-suite', Component: AgentSuite },
+  { path: '/dfir/sophon', Component: SophonWorkbench },
   { path: '/dfir/detection-chokepoints', Component: DetectionChokepointsHub },
   { path: '/dfir/subdomain-takeover', Component: SubdomainTakeover },
   { path: '/dfir/grc', Component: Grc },
@@ -805,6 +807,7 @@ const REDIRECTS: ReadonlyArray<{ path: string; to: string; preserveQuery?: boole
   { path: '/dfir/agent', to: '/dfir/agent-suite?tab=investigator' },
   { path: '/dfir/agent-enrich', to: '/dfir/agent-suite?tab=enrich' },
   { path: '/dfir/agent-map', to: '/dfir/agent-suite?tab=map' },
+  { path: '/dfir/workbench', to: '/dfir/agent-suite?tab=sophon' },
   { path: '/agent', to: '/dfir/agent-suite' },
   { path: '/osint', to: '/dfir' },
   { path: '/threat-intel', to: '/threatintel' },

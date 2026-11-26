@@ -142,6 +142,14 @@ export interface AgentState {
    *  planner follows the right methodology (IOC pivot, ransomware deep-dive,
    *  CVE triage, APT profiling, etc.). */
   ctiSkillPlaybook?: { slug: string; name: string; playbook: string };
+  /** Sophon-style authorized workbench session: task profile + mission scope.
+   *  The scope is enforced deterministically on every proposed tool call. */
+  sophon?: {
+    profileId: string;
+    scope: string;
+    parsedTargets: number;
+    blockedCalls: number;
+  };
   /** Current specialist role in the mesh (e.g. 'vulnerability', 'ioc-reputation'). */
   currentSpecialist?: string;
   /** QA verification results (populated after QA phase) */

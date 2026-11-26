@@ -880,6 +880,15 @@ export const HUB_META: readonly HubMeta[] = [
         compVar: 'AgentSuite',
         keywords: ['agent', 'investigator', 'enrich', 'map', 'ai', 'tool calls', 'exfil'],
       },
+      {
+        path: '/dfir/sophon',
+        tabId: 'sophon',
+        label: 'Sophon Workbench',
+        desc: 'Scoped, evidence-backed security testing with task profiles, mission policy and Main/Planner/Worker review.',
+        compVar: 'SophonWorkbench',
+        keywords: ['sophon', 'workbench', 'mission scope', 'task profile', 'planner', 'worker', 'evidence'],
+        badge: 'new',
+      },
 
       {
         path: '/dfir/ai-threats',

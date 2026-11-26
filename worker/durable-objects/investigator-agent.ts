@@ -20,6 +20,12 @@ import { selfEvaluateReport } from '../../api/src/lib/agent/self-eval';
 import { extractToolFailures, type ToolFailure } from '../../api/src/lib/agent/introspection';
 import { signInternalToken } from '../../api/src/lib/internal-token';
 import {
+  buildSophonContext,
+  filterSophonToolCalls,
+  getSophonProfile,
+  parseMissionScope,
+} from '../../api/src/lib/agent/sophon';
+import {
   buildOrchestratorPlan,
   checkSpecialistExit,
   getSpecialistPrompt,
@@ -175,6 +181,8 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
         rolePreamble?: string;
         responseFormat?: string;
         tiMindmapApiKey?: string;
+        sophonProfile?: string;
+        missionScope?: string;
       };
       const existingId = await checkDuplicate(body.query);
       if (existingId && existingId !== body.id) {
@@ -216,6 +224,16 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
         rolePreamble: body.rolePreamble,
         responseFormat: body.responseFormat,
         tiMindmapApiKey: body.tiMindmapApiKey,
+        ...(body.sophonProfile && body.missionScope
+          ? {
+              sophon: {
+                profileId: body.sophonProfile,
+                scope: body.missionScope,
+                parsedTargets: 0,
+                blockedCalls: 0,
+              },
+            }
+          : {}),
       };
       // Reset session-scoped tool-failure state for the new investigation (fix #7).
       this.resetSessionToolState();
@@ -360,6 +378,24 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
       await this.persist(state);
       this.broadcastToWatchers({ type: 'error', error: errMsg });
     }
+  }
+
+  /** Original Sophon-style mission guidance injected into the planner context.
+   *  Empty for ordinary investigations — no behaviour change to existing runs. */
+  private sophonContext(state: AgentState): string {
+    if (!state.sophon) return '';
+    const profile = getSophonProfile(state.sophon.profileId);
+    if (!profile) return '';
+    return `\n${buildSophonContext(profile, parseMissionScope(state.sophon.scope))}`;
+  }
+
+  private sophonScopeFilter(
+    state: AgentState,
+    calls: readonly AgentToolCall[]
+  ): { kept: AgentToolCall[]; blocked: number } {
+    if (!state.sophon) return { kept: [...calls], blocked: 0 };
+    const kept = filterSophonToolCalls(calls, parseMissionScope(state.sophon.scope));
+    return { kept, blocked: calls.length - kept.length };
   }
 
   private async advanceOneStep(state: AgentState): Promise<AgentState> {
@@ -597,6 +633,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
             ? `\n<cti_methodology_skill slug="${state.ctiSkillPlaybook.slug}" name="${state.ctiSkillPlaybook.name}">\n${state.ctiSkillPlaybook.playbook}\n</cti_methodology_skill>`
             : '') +
           degradedNote +
+          this.sophonContext(state) +
           (state.priorIntelligence ?? '') || undefined;
 
       const plan = await planNextStep(
@@ -637,6 +674,9 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
       let toolCalls = filterCtiToolCalls(plan.toolCalls, view, validToolNames, degradedTools);
       const droppedCalls = getDroppedCalls(plan.toolCalls, view, validToolNames, degradedTools);
       toolCalls = applySpecialistGuardrails(currentRole, toolCalls, view);
+      const sophonFilter = this.sophonScopeFilter(state, toolCalls);
+      toolCalls = sophonFilter.kept;
+      if (sophonFilter.blocked > 0 && state.sophon) state.sophon.blockedCalls += sophonFilter.blocked;
 
       if (toolCalls.length === 0) {
         const specialistCheck = checkSpecialistExit(
@@ -728,7 +768,7 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
         googleKey,
         nvidiaKey,
         workingMemory,
-        specialistContext: degradedNote + (state.priorIntelligence ?? '') || undefined,
+        specialistContext: degradedNote + this.sophonContext(state) + (state.priorIntelligence ?? '') || undefined,
       }
     );
 
@@ -753,7 +793,12 @@ export class InvestigatorAgentDO extends Agent<Env, InvestigatorAgentState> {
 
     const validToolNames = new Set(availableTools.map((t) => t.name));
     const degradedTools = await this.degradedToolsSet();
-    const toolCalls = filterCtiToolCalls(plan.toolCalls, view, validToolNames, degradedTools);
+    const scopeFiltered = this.sophonScopeFilter(
+      state,
+      filterCtiToolCalls(plan.toolCalls, view, validToolNames, degradedTools)
+    );
+    const toolCalls = scopeFiltered.kept;
+    if (scopeFiltered.blocked > 0 && state.sophon) state.sophon.blockedCalls += scopeFiltered.blocked;
     const droppedCalls = getDroppedCalls(plan.toolCalls, view, validToolNames, degradedTools);
     if (toolCalls.length === 0) {
       return await this.doSynthesize(

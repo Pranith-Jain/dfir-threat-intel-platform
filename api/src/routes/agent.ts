@@ -12,6 +12,14 @@ import type { Env } from '../env';
 import { logError } from '../lib/logger';
 import { badRequest, notFound, internalError, serviceUnavailable } from '../lib/api-error';
 import type { AgentState } from '../lib/agent/types';
+import {
+  SOPHON_PROFILES,
+  SOPHON_PROFILE_IDS,
+  getSophonProfile,
+  parseMissionScope,
+  suggestSophonProfile,
+  type SophonProfile,
+} from '../lib/agent/sophon';
 import { trackEvent, visitorCountry } from '../lib/analytics';
 
 /** Maximum investigations per user per hour. Each runs up to 10 LLM steps. */
@@ -109,6 +117,102 @@ export async function agentInvestigateHandler(c: Context<{ Bindings: Env }>): Pr
   } catch (err) {
     logError('agentInvestigateHandler error:', err);
     return internalError(c, err);
+  }
+}
+
+/** GET /api/v1/agent/sophon/profiles — task profiles are method guidance only. */
+export async function sophonProfilesHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
+  const profiles: Array<Omit<SophonProfile, 'methodHint'>> = SOPHON_PROFILE_IDS.map((id) => {
+    const p = SOPHON_PROFILES[id];
+    return {
+      id: p.id,
+      label: p.label,
+      description: p.description,
+      queryType: p.queryType,
+      specialists: p.specialists,
+      maxSteps: p.maxSteps,
+    };
+  });
+  return c.json(
+    {
+      profiles,
+      workflow: ['main', 'planner', 'worker', 'review', 'report'],
+      note: 'Profiles add method guidance only. They do not change agent identity, tools or permissions; the mission scope is enforced on every tool call.',
+      source:
+        'github.com/i11us0ry/Sophon (workflow concept only; no upstream prose or code vendored — repository has no reuse licence)',
+    },
+    200,
+    { 'cache-control': 'public, max-age=3600' }
+  );
+}
+
+/**
+ * POST /api/v1/agent/sophon — start an authorized, evidence-backed workbench
+ * run. Reuses the InvestigatorAgentDO so all existing cost, subrequest and
+ * review guardrails apply. Requires an explicit mission scope.
+ */
+export async function sophonInvestigateHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
+  try {
+    const body = await c.req.json<{ query?: string; profile?: string; missionScope?: string; maxSteps?: number }>();
+    const query = body.query?.trim();
+    if (!query || query.length > 2000) return badRequest(c, 'query is required (max 2000 chars)');
+    const missionScope = String(body.missionScope ?? '').trim();
+    if (!missionScope || missionScope.length > 2000) return badRequest(c, 'missionScope is required (max 2000 chars)');
+    const parsed = parseMissionScope(missionScope);
+    if (!parsed.targets.length && !parsed.suffixes.length && !parsed.networks.length) {
+      return badRequest(c, 'missionScope must name at least one domain, IP, CIDR or wildcard target');
+    }
+
+    const profile = getSophonProfile(body.profile) ?? SOPHON_PROFILES[suggestSophonProfile(query)];
+    const maxSteps = Math.min(Math.max(body.maxSteps ?? profile.maxSteps, 1), 10);
+
+    // Same per-key ceiling as /agent/investigate — a Sophon run costs the same
+    // LLM steps and must not become a cheap way around the limit.
+    const user = (c as Context & { user?: { keyId: string } }).user;
+    if (user?.keyId) {
+      const bucket = Math.floor(Date.now() / 1000 / AGENT_RATE_WINDOW_SEC);
+      const count = await atomicAgentIncr(c, `sophon:${user.keyId}`, bucket);
+      if (count !== null && count > AGENT_RATE_LIMIT) {
+        return c.json({ error: 'rate_limited', message: `${AGENT_RATE_LIMIT} workbench runs per hour exceeded` }, 429, {
+          'retry-after': String(AGENT_RATE_WINDOW_SEC),
+        });
+      }
+    }
+
+    const doNamespace = c.env.INVESTIGATOR_AGENT;
+    if (!doNamespace) return serviceUnavailable(c, 'Agent not configured');
+    const id = crypto.randomUUID();
+    const stub = doNamespace.get(doNamespace.idFromName(id));
+    const doRes = await stub.fetch('https://agent/investigate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        id,
+        query,
+        queryType: profile.queryType,
+        maxSteps,
+        rolePreamble: profile.methodHint,
+        sophonProfile: profile.id,
+        missionScope,
+      }),
+    });
+    if (!doRes.ok) return internalError(c, await doRes.text().catch(() => 'agent start failed'));
+
+    trackEvent(c.env, 'api_call', { blobs: ['/api/v1/agent/sophon'], indexes: [visitorCountry(c.req.raw)] });
+    return c.json(
+      {
+        id,
+        profile: profile.id,
+        queryType: profile.queryType,
+        maxSteps,
+        scopeTargets: parsed.targets.length + parsed.networks.length + parsed.suffixes.length,
+        status: 'running',
+      },
+      201
+    );
+  } catch (err) {
+    logError('sophonInvestigateHandler error:', err);
+    return internalError(c, 'Could not start workbench run');
   }
 }
 

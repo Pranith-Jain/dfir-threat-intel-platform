@@ -526,6 +526,8 @@ import { feedQualityHandler as tifceFeedQualityHandler } from './routes/tifce';
 import {
   agentDebugLlmHandler,
   agentInvestigateHandler,
+  sophonProfilesHandler,
+  sophonInvestigateHandler,
   agentStateHandler,
   agentStreamHandler,
   agentSessionsHandler,
@@ -1621,6 +1623,8 @@ app.get('/api/v1/feed-status', feedStatusHandler);
 app.get('/api/v1/feed-quality', tifceFeedQualityHandler);
 app.get('/api/v1/agent/debug-llm', agentDebugLlmHandler);
 app.post('/api/v1/agent/investigate', validate('json', agentInvestigateSchema), agentInvestigateHandler);
+app.get('/api/v1/agent/sophon/profiles', sophonProfilesHandler);
+app.post('/api/v1/agent/sophon', sophonInvestigateHandler);
 app.delete('/api/v1/agent/:id', agentDeleteHandler);
 app.get('/api/v1/agent/sessions', agentSessionsHandler);
 app.get('/api/v1/agent/metrics', agentMetricsHandler);

@@ -604,6 +604,15 @@ const DFIR_PAGES: readonly PageEntry[] = [
     keywords: ['agent', 'investigator', 'enrich', 'map', 'ai', 'tool calls', 'exfil'],
   },
   {
+    path: '/dfir/sophon',
+    label: 'Sophon Workbench',
+    description:
+      'Authorized, evidence-backed security testing agent - task profiles, mission scope, Main/Planner/Worker trace and review.',
+    sectionLabel: 'DFIR · AI Security',
+    group: 'dfir',
+    keywords: ['sophon', 'workbench', 'authorized test', 'mission scope', 'planner', 'worker', 'evidence'],
+  },
+  {
     path: '/dfir/phishops',
     label: 'PhishOps',
     description: 'Phishing response runbook - extract, enrich, block, and notify in one workspace.',
