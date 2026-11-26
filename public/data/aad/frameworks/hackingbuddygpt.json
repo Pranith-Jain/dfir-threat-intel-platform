@@ -9,7 +9,7 @@
     "sigma": 5,
     "suricata": 7,
     "yara": 3,
-    "indicators": 15
+    "indicators": 16
   },
   "techniques": [
     {
@@ -75,139 +75,196 @@
   ],
   "indicators": [
     {
-      "type": "string",
       "value": "__CMDSTART_",
       "confidence": "high",
       "context": "Start of the marker hackingBuddyGPT types before every command in its persistent SSH shell on a Linux target: echo __CMDSTART_<8 hex>__ (utils/connectors/ssh_interactive_connection.py:114,121). Seen in the target account's shell history and TTY audit logs, not in process events (echo is a builtin)",
+      "actor": "hackingBuddyGPT operators",
       "source": "ThreatDefence review of the hackingBuddyGPT source code",
       "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/src/hackingBuddyGPT/utils/connectors/ssh_interactive_connection.py#L114-L121",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": ":$?:$(id -u):$(id -un)\"",
       "confidence": "high",
       "context": "Tail of the end marker hackingBuddyGPT types after every command on a Linux target: echo \"__CMDEND_<8 hex>__:$?:$(id -u):$(id -un)\" (ssh_interactive_connection.py:143). It also starts an id -u and an id -un process after each command",
+      "actor": "hackingBuddyGPT operators",
       "source": "ThreatDefence review of the hackingBuddyGPT source code",
       "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/src/hackingBuddyGPT/utils/connectors/ssh_interactive_connection.py#L143",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "echo 'CMDSTART",
       "confidence": "medium",
       "context": "Marker the hackingBuddyGPT local_shell connector types through tmux send-keys before each command: echo 'CMDSTART<8 hex>', then echo 'CMDEND<8 hex>' after it (utils/connectors/local_shell.py:171-183). Seen in tmux process command lines and shell history on the operator host",
+      "actor": "hackingBuddyGPT operators",
       "source": "ThreatDefence review of the hackingBuddyGPT source code",
       "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/src/hackingBuddyGPT/utils/connectors/local_shell.py#L171-L183",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt"],
+      "type": "string"
     },
     {
-      "type": "uri_string",
       "value": "api_key=YourAPIKeyHere",
       "confidence": "medium",
       "context": "Query parameter the hackingBuddyGPT WebAPITesting discovery code appends to an endpoint in its query step, sent with python-requests (usecases/web_api/detection_response_handler.py:413). A documentation placeholder, so a developer may send it too",
+      "actor": "hackingBuddyGPT operators",
       "source": "ThreatDefence review of the hackingBuddyGPT source code",
       "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/src/hackingBuddyGPT/usecases/web_api/detection_response_handler.py#L400-L428",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt"],
+      "type": "uri_string"
     },
     {
-      "type": "uri_string",
       "value": "access_token=YourAccessToken",
       "confidence": "medium",
       "context": "Query parameter the hackingBuddyGPT WebAPITesting discovery code appends to an endpoint in its query step (usecases/web_api/detection_response_handler.py:414)",
+      "actor": "hackingBuddyGPT operators",
       "source": "ThreatDefence review of the hackingBuddyGPT source code",
       "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/src/hackingBuddyGPT/usecases/web_api/detection_response_handler.py#L400-L428",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt"],
+      "type": "uri_string"
     },
     {
-      "type": "uri_string",
       "value": "/products/1/users/profile",
       "confidence": "low",
       "context": "Path requested by hackingBuddyGPT WebAPITesting: a missing comma joins '/products/{id}' and '/users/profile' in its common-path list and {id} becomes 1 (detection_response_handler.py:59-60,249). A real application may have this route",
+      "actor": "hackingBuddyGPT operators",
       "source": "ThreatDefence review of the hackingBuddyGPT source code",
       "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/src/hackingBuddyGPT/usecases/web_api/detection_response_handler.py#L59-L60",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt"],
+      "type": "uri_string"
     },
     {
-      "type": "string",
       "value": "adam007@example.com",
       "confidence": "low",
       "context": "Victim e-mail in the hackingBuddyGPT WebAPITesting OTP brute-force test, sent with password Az123### and OTP 8859 first (utils/prompt_generation/information/_pentesting_auth.py:530-542). It is the victim account of the OWASP crAPI training API, so crAPI walkthroughs send it too",
+      "actor": "hackingBuddyGPT operators",
       "source": "ThreatDefence review of the hackingBuddyGPT source code",
       "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/src/hackingBuddyGPT/utils/prompt_generation/information/_pentesting_auth.py#L530-L542",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "' or 1=1--",
       "confidence": "low",
       "context": "E-mail value of the hackingBuddyGPT login SQL injection test, sent as {'email': \"' or 1=1--\", 'password': 'a', 'x': <counter>} (utils/prompt_generation/information/_pentesting_injection.py:181). The payload is generic; the x field is the tool's account counter",
+      "actor": "hackingBuddyGPT operators",
       "source": "ThreatDefence review of the hackingBuddyGPT source code",
       "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/src/hackingBuddyGPT/utils/prompt_generation/information/_pentesting_injection.py#L176-L198",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "wget -q 'https://github.com/diego-treitos/linux-smart-enumeration/releases/latest/download/lse.sh' -O lse.sh;chmod 700 lse.sh; ./lse.sh -c -i -l 0",
       "confidence": "medium",
       "context": "Command the hackingBuddyGPT ExPrivEscLinuxLSE use-case runs on a Linux target over SSH before asking the model for privilege escalation ideas (usecases/call_usecase_from_usecase.py:36)",
+      "actor": "hackingBuddyGPT operators",
       "source": "ThreatDefence review of the hackingBuddyGPT source code",
       "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/src/hackingBuddyGPT/usecases/call_usecase_from_usecase.py#L36",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "hackingBuddyGPT.cli.wintermute",
       "confidence": "high",
       "context": "Module of the hackingBuddyGPT CLI (console scripts wintermute and hackingBuddyGPT); its benchmark launcher runs python -m hackingBuddyGPT.cli.wintermute <UseCase> (pyproject.toml:83-84, benchmark_privesc.py:236)",
+      "actor": "hackingBuddyGPT operators",
       "source": "ThreatDefence review of the hackingBuddyGPT source code",
       "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/pyproject.toml#L82-L86",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt"],
+      "type": "string"
     },
     {
-      "type": "docker_image",
       "value": "ghcr.io/ipa-lab/hackingbuddygpt",
       "confidence": "high",
       "context": "Container image of hackingBuddyGPT, entrypoint wintermute, pushed with tags latest and a timestamp on every push to main (.github/workflows/publish-docker.yml:23-40, README.md:181)",
+      "actor": "hackingBuddyGPT operators",
       "source": "ThreatDefence review of the hackingBuddyGPT source code",
       "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/.github/workflows/publish-docker.yml#L23-L40",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt"],
+      "type": "docker_image"
     },
     {
-      "type": "string",
       "value": "hackingbuddygpt.run.name",
       "confidence": "high",
       "context": "Attribute key in every hackingBuddyGPT run log logs/log-<YYYYMMDD-HHMMSS>.jsonl, next to hackingbuddygpt.run.configuration and hackingbuddygpt.tool.result; the log holds every prompt, command and output (utils/log_storage.py:41-51)",
+      "actor": "hackingBuddyGPT operators",
       "source": "ThreatDefence review of the hackingBuddyGPT source code",
       "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/src/hackingBuddyGPT/utils/log_storage.py#L41-L51",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt"],
+      "type": "string"
     },
     {
-      "type": "file_path",
       "value": "hackingBuddyGPT/usecases/web_api/reports/",
       "confidence": "high",
       "context": "Folder inside the installed hackingBuddyGPT package where WebAPITesting writes report_<YYYY-MM-DD_HH-MM-SS>.md (usecases/web_api/report_handler.py:34-42); the generated OpenAPI document goes to .../web_api/openapi_spec/<strategy>/<name>/<timestamp>/<name>_spec.yaml",
+      "actor": "hackingBuddyGPT operators",
       "source": "ThreatDefence review of the hackingBuddyGPT source code",
       "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/src/hackingBuddyGPT/usecases/web_api/report_handler.py#L34-L42",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt"],
+      "type": "file_path"
     },
     {
-      "type": "file_name",
       "value": "benchmark_privesc.py",
       "confidence": "low",
       "context": "Benchmark launcher in the hackingBuddyGPT repository root; it runs a use-case against every local Docker container whose image name starts with privesc_ and writes benchmark_results/<timestamp>/ (benchmark_privesc.py:95,573). A generic name",
+      "actor": "hackingBuddyGPT operators",
       "source": "ThreatDefence review of the hackingBuddyGPT source code",
       "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/benchmark_privesc.py#L95",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt"],
+      "type": "file_name"
     },
     {
-      "type": "account_name",
       "value": "lowpriv",
       "confidence": "low",
       "context": "Low-privilege SSH account (password trustno1) of the IPA lab privilege-escalation VMs, the default in hackingBuddyGPT's .env.example, README and benchmark launcher (.env.example:34-36, benchmark_privesc.py:552-553). Only seen if the target has that account",
+      "actor": "hackingBuddyGPT operators",
       "source": "ThreatDefence review of the hackingBuddyGPT source code",
       "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/.env.example#L34-L36",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt"],
+      "type": "account_name"
+    },
+    {
+      "value": "openrouter.ai",
+      "confidence": "low",
+      "context": "Model API reached by hackingBuddyGPT with the shipped .env.example model openrouter/anthropic/claude-3.5-sonnet (.env.example:13); also the documented default api_base. A public service many tools use, so only context",
+      "actor": "hackingBuddyGPT operators",
+      "source": "ThreatDefence review of the hackingBuddyGPT source code",
+      "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/.env.example#L13-L19",
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt", "cybermes", "cochise"],
+      "type": "domain"
     }
   ],
   "indicatorsTruncated": false,

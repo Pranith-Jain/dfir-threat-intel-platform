@@ -9,7 +9,7 @@
     "sigma": 3,
     "suricata": 1,
     "yara": 3,
-    "indicators": 8
+    "indicators": 9
   },
   "techniques": [
     {
@@ -40,76 +40,112 @@
   ],
   "indicators": [
     {
-      "type": "file_path",
+      "value": "openrouter.ai",
+      "confidence": "low",
+      "context": "Model API reached by hackingBuddyGPT with the shipped .env.example model openrouter/anthropic/claude-3.5-sonnet (.env.example:13); also the documented default api_base. A public service many tools use, so only context",
+      "actor": "hackingBuddyGPT operators",
+      "source": "ThreatDefence review of the hackingBuddyGPT source code",
+      "sourceUrl": "https://github.com/ipa-lab/hackingBuddyGPT/blob/e23d918592556f71b8e3b2ee152449e82fa14794/.env.example#L13-L19",
+      "reported": "2026-10-24",
+      "framework": "hackingbuddygpt",
+      "frameworks": ["hackingbuddygpt", "cybermes", "cochise"],
+      "type": "domain"
+    },
+    {
       "value": "/osint_users.txt",
       "confidence": "medium",
       "context": "User list at the root of the Kali VM that the Cochise scenario prompt names for password spraying; the model passes it to nxc and impacket GetNPUsers (scenario.md:31; 39 of the 59 shipped run logs). The operator places the file",
+      "actor": "Cochise operators",
       "source": "ThreatDefence review of the Cochise source code",
       "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/src/cochise/templates/scenario.md#L28-L34",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "cochise",
+      "frameworks": ["cochise"],
+      "type": "file_path"
     },
     {
-      "type": "string",
       "value": "You MUST call the perform_task tool to delegate work to the executor",
       "confidence": "high",
       "context": "Planner nudge Cochise sends to the model when it answers without a tool call (planner.py:205); in model traffic and in the run log",
+      "actor": "Cochise operators",
       "source": "ThreatDefence review of the Cochise source code",
       "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/src/cochise/planner.py#L205",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "cochise",
+      "frameworks": ["cochise"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Timeout during command execution over SSH command execution",
       "confidence": "high",
       "context": "Text Cochise returns to the model when a command on the Kali VM passes the 600 second SSH timeout (ssh_connection.py:61); in model traffic and in the run log",
+      "actor": "Cochise operators",
       "source": "ThreatDefence review of the Cochise source code",
       "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/src/cochise/ssh_connection.py#L61-L68",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "cochise",
+      "frameworks": ["cochise"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Mandiant Attack Lifecycle Model or the Lockheed-Martin Cyber Killchain",
       "confidence": "medium",
       "context": "Cochise scenario system prompt (scenario.md:13), sent on every model call and copied into the configuration event of every run log",
+      "actor": "Cochise operators",
       "source": "ThreatDefence review of the Cochise source code",
       "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/src/cochise/templates/scenario.md#L13",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "cochise",
+      "frameworks": ["cochise"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "uv run cochise",
       "confidence": "medium",
       "context": "Cochise launcher from the README (README.md:103); starts <venv>/bin/cochise",
+      "actor": "Cochise operators",
       "source": "ThreatDefence review of the Cochise source code",
       "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/README.md#L103",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "cochise",
+      "frameworks": ["cochise"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "cochise-replay",
       "confidence": "medium",
       "context": "Cochise console script that replays a run log, cochise-replay logs/run-<YYYYmmdd-HHMMSS>.json (pyproject.toml:23)",
+      "actor": "Cochise operators",
       "source": "ThreatDefence review of the Cochise source code",
       "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/pyproject.toml#L21-L25",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "cochise",
+      "frameworks": ["cochise"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "\"event\": \"starting test-run\"",
       "confidence": "high",
       "context": "First line of every Cochise run log logs/run-<YYYYmmdd-HHMMSS>.json, which holds every command, output and credential of the run (cochise.py:29, logger.py:48). File content, not a path",
+      "actor": "Cochise operators",
       "source": "ThreatDefence review of the Cochise source code",
       "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/src/cochise/logger.py#L33-L52",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "cochise",
+      "frameworks": ["cochise"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "AsyncSSH_",
       "confidence": "low",
       "context": "SSH client software version Cochise sends to the Kali VM it drives (SSH-2.0-AsyncSSH_2.24.0 with the locked dependency); asyncssh's default, shared with every asyncssh client: context only",
+      "actor": "Cochise operators",
       "source": "ThreatDefence review of the Cochise source code",
       "sourceUrl": "https://github.com/andreashappe/cochise/blob/4db4fded894305083366b83e5cdba5fb68fcebc3/src/cochise/ssh_connection.py#L19",
-      "reported": "2026-10-24"
+      "reported": "2026-10-24",
+      "framework": "cochise",
+      "frameworks": ["cochise"],
+      "type": "string"
     }
   ],
   "indicatorsTruncated": false,

@@ -9,7 +9,7 @@
     "sigma": 5,
     "suricata": 10,
     "yara": 4,
-    "indicators": 16
+    "indicators": 18
   },
   "techniques": [
     {
@@ -60,148 +60,220 @@
   ],
   "indicators": [
     {
-      "type": "user_agent",
+      "value": "webhook.site",
+      "confidence": "low",
+      "context": "Legitimate request-collection service used to receive command output. Suspicious from production servers only numasec's interact tool falls back to webhook.site for out-of-band callbacks (FrancescoStabile/numasec).",
+      "actor": "ARTEX operators",
+      "source": "Google Threat Intelligence Group",
+      "sourceUrl": "https://cloud.google.com/blog/topics/threat-intelligence/artex-and-friends-enter-agentic-offensive-frameworks",
+      "reported": "2026-10-31",
+      "framework": "artex",
+      "frameworks": ["artex", "numasec"],
+      "type": "domain"
+    },
+    {
       "value": "numasec-appsec-probe/1.2",
       "confidence": "high",
       "context": "User agent of every request numasec's appsec_probe tool sends (SQL injection, XSS, login, IDOR and CORS candidate probes), which its appsec-web-triage runbook runs",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/numasec/src/tool/appsec-probe.ts#L218",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "numasec-knowledge-broker/1.2",
       "confidence": "high",
       "context": "User agent of numasec's vulnerability-intelligence broker on the operator's host, to services.nvd.nist.gov, www.cisa.gov, api.first.org, api.osv.dev and api.github.com/advisories. HTTPS: proxy logs with TLS inspection",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/numasec/src/core/knowledge/broker.ts#L39",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "numasec",
       "confidence": "medium",
       "context": "Exact user agent of numasec's page fetch tool when a Cloudflare challenge (403, cf-mitigated: challenge) blocked its first try with a Chrome 143 string. Short word: match the whole value",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/numasec/src/tool/webfetch.ts#L99",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "numasec/",
       "confidence": "medium",
       "context": "Start of the user agents numasec sends from the operator's host: numasec/<channel>/<version>/<client> to models.dev/api.json (for example numasec/latest/1.2.1/cli) and numasec/<version> to model APIs. Inherited from OpenCode with the name changed. HTTPS: proxy logs with TLS inspection",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/numasec/src/installation/installation.ts#L57",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "user_agent"
     },
     {
-      "type": "uri_string",
       "value": "/numasec_404_check_",
       "confidence": "high",
       "context": "Path numasec's directory fuzzer requests before every run to learn what not found looks like: /numasec_404_check_<epoch milliseconds>, then a built-in wordlist with OWASP Juice Shop routes",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/numasec/src/scanner/dir-fuzzer.ts#L123",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "uri_string"
     },
     {
-      "type": "string",
       "value": "<script>numasec-xss</script>",
       "confidence": "high",
       "context": "XSS probe value numasec's appsec_probe puts in the first text field of an observed form or the first query parameter of a search route (GET query or JSON body); it then looks for numasec-xss in the answer",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/numasec/src/tool/appsec-probe.ts#L333",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "numasec-probe@example.invalid",
       "confidence": "high",
       "context": "Identity numasec's appsec_probe POSTs as JSON to an observed login form, with the password numasec-probe",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/numasec/src/tool/appsec-probe.ts#L401",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "string"
     },
     {
-      "type": "http_header",
       "value": "x-numasec-directory",
       "confidence": "medium",
       "context": "Request header a numasec client (numasec attach, numasec run --attach, the SDK) sends on POSTs to a numasec API server to select the working directory; GETs carry ?directory= instead. Renamed from OpenCode's x-opencode-directory",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/sdk/src/v2/client.ts#L62",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "http_header"
     },
     {
-      "type": "string",
       "value": "Penetration testing specialist. Systematic recon, enumeration, exploitation, and reporting.",
       "confidence": "medium",
       "context": "Description of numasec's pentest agent, returned with the other agents and their prompts by GET /agent on an open numasec API server (no authentication unless NUMASEC_SERVER_PASSWORD is set)",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/numasec/src/agent/agent.ts#L145",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "string"
     },
     {
-      "type": "file_path",
+      "value": "4096",
+      "confidence": "low",
+      "context": "Default port of the numasec API server (numasec serve, numasec acp), on 127.0.0.1 unless --hostname or --mdns is given; a random port if 4096 is taken. The same default as OpenCode and its other forks: use only with a numasec response fingerprint",
+      "actor": "numasec operators",
+      "source": "ThreatDefence review of the numasec source code",
+      "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/numasec/src/server/adapter.bun.ts#L24",
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec", "pentestcode"],
+      "type": "port"
+    },
+    {
       "value": "/.numasec/operation/",
       "confidence": "high",
       "context": "numasec operation folder in the tested workspace: <workspace>/.numasec/operation/<slug>/ with cyber/ledger.jsonl, facts.jsonl, relations.jsonl, evidence/, context/active-context.md, workflow/ and deliverable/",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/numasec/src/core/operation/operation.ts#L114",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "file_path"
     },
     {
-      "type": "file_name",
       "value": "numasec.db",
       "confidence": "medium",
       "context": "numasec database in its data folder (~/.local/share/numasec/numasec.db; numasec-<channel>.db for preview builds)",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/numasec/src/storage/db.ts#L32",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "file_name"
     },
     {
-      "type": "file_name",
       "value": "interact-sessions.json",
       "confidence": "medium",
       "context": "numasec out-of-band session store in its state folder (~/.local/state/numasec/), with interactsh or webhook.site sessions named int_<12 hex>. Generic file name: confirm with the numasec folder",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/numasec/src/tool/interact.ts#L31",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "file_name"
     },
     {
-      "type": "docker_image",
       "value": "francescostabile/numasec",
       "confidence": "medium",
       "context": "Docker image in the numasec README (docker run -it --rm -v $PWD:/work -w /work francescostabile/numasec:latest), Alpine with Chromium and entrypoint numasec. The release workflow pushes <DOCKERHUB_USERNAME>/numasec; the Docker Hub repository did not answer the public API on November 26, 2026",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/README.md#L270",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "docker_image"
     },
     {
-      "type": "url",
       "value": "https://api.github.com/repos/FrancescoStabile/numasec/releases/latest",
       "confidence": "medium",
       "context": "numasec update check for installs it cannot attribute to npm, bun, pnpm, brew, scoop or choco, one second after the TUI starts (npm installs ask registry.npmjs.org/numasec/latest). HTTPS: proxy logs with TLS inspection",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/numasec/src/installation/installation.ts#L250",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "url"
     },
     {
-      "type": "domain",
       "value": "numasec.ai",
       "confidence": "low",
       "context": "OpenCode's opencode.ai renamed in the numasec code: HTTP-Referer on OpenRouter, Vercel and ZenMux model calls, the CORS allow list of its API server, and https://numasec.ai/install, which the upgrade pipes into bash for curl installs. Ownership not verified and not contacted for this review",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/numasec/src/installation/installation.ts#L145",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "domain"
     },
     {
-      "type": "domain",
       "value": "models.dev",
       "confidence": "low",
       "context": "Model catalogue numasec (and OpenCode, from which it inherits the call) fetches as /api.json at start and every five minutes at most. Shared with every OpenCode-based tool: context only",
+      "actor": "numasec operators",
       "source": "ThreatDefence review of the numasec source code",
       "sourceUrl": "https://github.com/FrancescoStabile/numasec/blob/1237a2f3515aebbd5260383c7088aa0ea806b600/packages/numasec/src/provider/models.ts#L111",
-      "reported": "2026-05-08"
+      "reported": "2026-05-08",
+      "framework": "numasec",
+      "frameworks": ["numasec"],
+      "type": "domain"
     }
   ],
   "indicatorsTruncated": false,

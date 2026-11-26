@@ -9,7 +9,7 @@
     "sigma": 9,
     "suricata": 22,
     "yara": 4,
-    "indicators": 29
+    "indicators": 30
   },
   "techniques": [
     {
@@ -95,265 +95,364 @@
   ],
   "indicators": [
     {
-      "type": "user_agent",
+      "value": "X-Implant-Token",
+      "confidence": "high",
+      "context": "Header every CyberStrikeAI implant and curl one-liner request carries, with a fixed value per C2 listener (beacon.go.tmpl:375, payload_oneliner.go:184). Kaspersky used it to identify the implant NeuroSploit's C2 beacons send the same header (JoasASantos/NeuroSploit).",
+      "actor": "CyberStrikeAI operators",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21",
+      "framework": "cyberstrikeai",
+      "frameworks": ["cyberstrikeai", "neurosploit"],
+      "type": "http_header"
+    },
+    {
       "value": "NeuroSploit/4.4.3",
       "confidence": "high",
       "context": "Default user agent of NeuroSploit's own HTTP client (NeuroSploit/<version>; 4.4.3 at the reviewed commit), on the first probe, the replay of every finding and the authorization sweep. Overridable with NEUROSPLOIT_UA",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/pipeline.rs#L629",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "user_agent"
     },
     {
-      "type": "http_header",
       "value": "X-NeuroSploit-Scan",
       "confidence": "high",
       "context": "Attribution header with the version on every request NeuroSploit's HTTP client sends (lower case x-neurosploit-scan from reqwest), and on every agent curl command per the prompt; kept when the user agent switches to a browser string",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/pipeline.rs#L636",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "http_header"
     },
     {
-      "type": "uri_string",
       "value": "/nrsplt_baseline_404_check_9x7",
       "confidence": "high",
       "context": "Soft-404 baseline path NeuroSploit requests right after the first GET of every run, with its user agent",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/probe.rs#L415",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "uri_string"
     },
     {
-      "type": "string",
       "value": "NEUROSPLOIT",
       "confidence": "medium",
       "context": "Provenance sigil at the start of every NeuroSploit canary: NEUROSPLOIT<kind><12 hex> (NEUROSPLOITsub... soft-404 paths, NEUROSPLOITnsxss... XSS payloads). Case-sensitive upper case; NEUROSPLOIT_WATERMARK=off removes it from canaries",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/provenance.rs#L34",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "neurosploit.example",
       "confidence": "high",
       "context": "Attacker host in NeuroSploit's open redirect payloads (//neurosploit.example, https://neurosploit.example/, /\\neurosploit.example, https://target@neurosploit.example)",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/typesafe_agent.rs#L107",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "oob.invalid",
       "confidence": "medium",
       "context": "Placeholder in NeuroSploit's SSRF payload url=http://oob.invalid/ when no out-of-band domain is configured",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/typesafe_agent.rs#L157",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "nrsplt_",
       "confidence": "medium",
       "context": "Prefix of the test account NeuroSploit's prompt tells agents to register (nrsplt_<rand>@example.test, username nrsplt_<rand>). An example in the prompt",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/pipeline.rs#L1315",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "string"
     },
     {
-      "type": "user_agent",
       "value": "Mozilla/5.0 (compatible; NeuroSploit-WebShell/1.0)",
       "confidence": "high",
       "context": "User agent of NeuroSploit's web shell manager on every command sent to a planted web shell",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/c2/manager.rs#L1406",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "user_agent"
     },
     {
-      "type": "string",
       "value": "pass=ns_pass&cmd=",
       "confidence": "medium",
       "context": "Default password and parameters of NeuroSploit's generated web shells as sent by its web shell manager (POST body or query). Operator can change them",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/c2/manager.rs#L1036",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "NeuroSploit WebShell",
       "confidence": "high",
       "context": "Comment on the first lines of the PHP, ASPX, ASP and JSP web shells NeuroSploit generates (NeuroSploit WebShell — authorized engagements only)",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/c2/templates.rs#L10",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "string"
     },
     {
-      "type": "uri_string",
       "value": "/api/beacon",
       "confidence": "medium",
       "context": "NeuroSploit C2 beacon check-in path (POST, ?format=sh for the bash beacon), always with the header X-Implant-Token",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/c2/manager.rs#L297",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "uri_string"
     },
     {
-      "type": "string",
       "value": "NeuroSploit C2 beacon (HTTP",
       "confidence": "high",
       "context": "Banner comment in NeuroSploit's bash, Python, PowerShell and PHP beacon scripts",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/c2/templates.rs#L50",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "NSUpdate",
       "confidence": "medium",
       "context": "Name of the scheduled task, Run value, systemd user unit (nsupdate.service) and .bashrc marker NeuroSploit's C2 persistence commands create",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/c2/templates.rs#L378",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "string"
     },
     {
-      "type": "file_name",
       "value": "nsupdate.service",
       "confidence": "medium",
       "context": "systemd user unit ~/.config/systemd/user/nsupdate.service (Description=NSUpdate) that NeuroSploit's Linux persistence writes",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/c2/templates.rs#L406",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "file_name"
     },
     {
-      "type": "file_path",
       "value": "/.neurosploit/",
       "confidence": "medium",
       "context": "NeuroSploit project store in the working directory: keys.json (model API keys), vault/ (credentials of created test accounts), c2/ (state.json, control.json, audit.jsonl, payloads/)",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/c2/mod.rs#L53",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": "/tmp/ns_browser_prefetch.js",
       "confidence": "medium",
       "context": "Playwright script NeuroSploit writes and runs with node to pre-fetch pages behind a WAF",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/pipeline.rs#L707",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "file_path"
     },
     {
-      "type": "string",
       "value": "nrsplt_baseline_404_check_9x7",
       "confidence": "high",
       "context": "String in the NeuroSploit binary and source (soft-404 probe path); finds the binary on disk",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/probe.rs#L415",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Identified and validated by NeuroSploit",
       "confidence": "high",
       "context": "Attribution line appended to every NeuroSploit finding in findings.json, the report and SARIF",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/pipeline.rs#L1081",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "string"
     },
     {
-      "type": "docker_image",
       "value": "neurosploit-kali",
       "confidence": "medium",
       "context": "Container name of NeuroSploit's sandbox (kalilinux/kali-rolling, docker exec neurosploit-kali sh -lc <cmd>)",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/sandbox.rs#L86",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "docker_image"
     },
     {
-      "type": "docker_image",
       "value": "neurosploit-neo4j",
       "confidence": "low",
       "context": "Container name of NeuroSploit's Neo4j graph store (neo4j:5-community, volume neurosploit-neo4j-data)",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/neo4j_managed.rs#L22",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "docker_image"
     },
     {
-      "type": "user_agent",
       "value": "neurosploit-logship/4.4",
       "confidence": "medium",
       "context": "User agent of NeuroSploit's log shipping to a SIEM",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/logship.rs#L270",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "NeuroSploit",
       "confidence": "low",
       "context": "Bare user agent of NeuroSploit's GitHub, GitLab, Jira, Slack and Microsoft Graph integrations from the operator host",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/crates/harness/src/integrations.rs#L140",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "user_agent"
     },
     {
-      "type": "string",
       "value": "NeuroSploit — Console",
       "confidence": "medium",
       "context": "Title of the NeuroSploit web console (plain HTTP on port 4173, no authentication). Before November 22, 2026: NeuroSploit v<version> — Console",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/web/public/index.html#L6",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "NeuroSploit Interceptor (record + passive discovery)",
       "confidence": "medium",
       "context": "Option text in the NeuroSploit web console page, kept under a renamed title",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/web/public/index.html#L749",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "string"
     },
     {
-      "type": "favicon_mmh3",
       "value": "-1162147578",
       "confidence": "medium",
       "context": "NeuroSploit web console icon logo.svg (link rel=icon; there is no /favicon.ico), Shodan http.favicon.hash computed from web/public/logo.svg, unchanged since at least October 16, 2026",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/web/public/logo.svg",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "favicon_mmh3"
     },
     {
-      "type": "md5",
       "value": "f8fb482e183c10bb03aaf940dde7b18c",
       "confidence": "medium",
       "context": "NeuroSploit web console icon web/public/logo.svg (863 bytes); also the favicon md5 ONYPHE and offensive.agency use",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/web/public/logo.svg",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "md5"
     },
     {
-      "type": "port",
       "value": "4173",
       "confidence": "low",
       "context": "Default NeuroSploit web console port (NEUROSPLOIT_WEB_PORT), all interfaces. Also the default vite preview port: context only",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/web/server.js#L160",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "port"
     },
     {
-      "type": "url",
       "value": "https://codeload.github.com/JoasASantos/NeuroSploit/tar.gz/refs/tags/",
       "confidence": "low",
       "context": "Agent library download the NeuroSploit binary makes when agents_md/ is missing (followed by the release tag)",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/neurosploit-rs/app/src/main.rs#L963",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "url"
     },
     {
-      "type": "url",
       "value": "https://raw.githubusercontent.com/JoasASantos/NeuroSploit/main/setup.sh",
       "confidence": "medium",
       "context": "NeuroSploit install script (curl -fsSL ... | bash); Windows: install.ps1 from the same path",
+      "actor": "NeuroSploit operators",
       "source": "ThreatDefence review of the NeuroSploit source code",
       "sourceUrl": "https://github.com/JoasASantos/NeuroSploit/blob/54d8e86039c0821017ced8c79e4fb9b55a9c4614/setup.sh#L4",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "neurosploit",
+      "frameworks": ["neurosploit"],
+      "type": "url"
     }
   ],
   "indicatorsTruncated": false,

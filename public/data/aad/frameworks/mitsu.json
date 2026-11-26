@@ -55,238 +55,316 @@
   ],
   "indicators": [
     {
-      "type": "user_agent",
       "value": "Mitsu/0.1 (terminal assistant; public search)",
       "confidence": "high",
       "context": "User agent of Mitsu's web_search MCP tool when it opens a URL (target pages: the system prompt tells the model to open every URL the operator gives this way before curl or wget), and of its search-engine scraping and search API calls (search/engines.py:77,123,293,449)",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/search/engines.py#L77",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "Mitsu updater",
       "confidence": "high",
       "context": "User agent of Mitsu's update check, GET https://pypi.org/pypi/mitsu/json when the operator opens the update panel of a PyPI install (tui/updates.py:16,186). HTTPS: visible only with TLS inspection",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/tui/updates.py#L186",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "Mitsu/0.1",
       "confidence": "low",
       "context": "User agent of the probe Mitsu sends to its own SearXNG container on 127.0.0.1 (GET /search?q=mitsu%20local%20search&format=json). Loopback only and a short string: context",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/services/searxng.py#L181-L184",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "user_agent"
     },
     {
-      "type": "string",
       "value": "mcp_servers.mitsu.url",
       "confidence": "high",
       "context": "Codex CLI option Mitsu passes on every turn of its Codex provider: codex exec --json ... --config mcp_servers.mitsu.url=\"http://127.0.0.1:<port>/<token>/mcp\" --config mcp_servers.mitsu.enabled=true. Seen in process command lines",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/providers/codex_cli.py#L147",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "mcp__mitsu__",
       "confidence": "high",
       "context": "Tool-name prefix Mitsu passes to claude -p on every turn of its Claude Code provider (--allowedTools mcp__mitsu__<tool>, with --mcp-config {\"mcpServers\":{\"mitsu\":{\"type\":\"http\",\"url\":\"http://127.0.0.1:<port>/<token>/mcp\"}}} and --permission-mode dontAsk). Seen in process command lines and in decrypted Claude Code model",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/providers/claude_code.py#L302",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "You are Mitsu: the operator",
       "confidence": "high",
       "context": "Start of Mitsu's system prompt, sent to the model on every turn and put on the Codex and Claude Code command lines (developer_instructions, --system-prompt). Visible in process command lines and in decrypted model traffic",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/tui/session.py#L5549",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "You are Mitsu, a security assessment assistant.",
       "confidence": "high",
       "context": "Fallback system prompt of Mitsu's Codex and Claude Code providers when the conversation has none",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/providers/claude_code.py#L339",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Reply exactly MITSU_OK",
       "confidence": "high",
       "context": "Prompt of Mitsu's provider connection check for the Codex and Claude Code CLIs (codex exec ... \"Reply exactly MITSU_OK.\"); seen once per provider setup in process command lines",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/providers/codex_cli.py#L243-L245",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "mitsu__intel_upsert_asset",
       "confidence": "high",
       "context": "Name of a built-in Mitsu MCP tool (server slug mitsu + tool intel_upsert_asset, tools/agent_host.py:588,853), named in the system prompt and sent in the tools list of every model request. Visible in decrypted model traffic",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/tui/session.py#L5580-L5581",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "mitsu-searxng-config",
       "confidence": "high",
       "context": "Docker volume Mitsu creates for its managed SearXNG settings (docker volume create mitsu-searxng-config, then run with --volume mitsu-searxng-config:/etc/searxng)",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/services/searxng.py#L237-L249",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "mitsu-searxng-",
       "confidence": "medium",
       "context": "Prefix of the container name of Mitsu's managed SearXNG, mitsu-searxng-<port> (8888 by default), published on 127.0.0.1:<port>:8080 from ghcr.io/searxng/searxng:latest",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/services/searxng.py#L209",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Agentic RedTeam Framework",
       "confidence": "medium",
       "context": "Tagline in the header and cover of Mitsu's HTML and PDF assessment reports (<strong>Mitsu</strong><span>Agentic RedTeam Framework</span>)",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/workspace/assessment_report.py#L1025",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "string"
     },
     {
-      "type": "file_path",
       "value": "/mitsu-codex-sessions/",
       "confidence": "high",
       "context": "Working folder of Mitsu's Codex provider under the system temp folder (/tmp/mitsu-codex-sessions/<thread id>)",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/providers/codex_cli.py#L334",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": "/mitsu-claude-sessions/",
       "confidence": "high",
       "context": "Working folder of Mitsu's Claude Code provider under the system temp folder (/tmp/mitsu-claude-sessions/<session id>)",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/providers/claude_code.py#L407",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": ".local/share/mitsu/sessions/",
       "confidence": "medium",
       "context": "Mitsu session store: <32 hex>.json with the conversation and the Intel record (targets, services, findings, accounts and credentials), <id>.images/ and <id>/artifacts/ (reports, attack-surface map). XDG_DATA_HOME moves it",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/config/storage.py#L21-L23",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": ".config/mitsu/credentials.json",
       "confidence": "medium",
       "context": "Mitsu provider profiles and API keys in clear text, mode 0600. XDG_CONFIG_HOME moves it",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/config/storage.py#L57",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": ".config/mitsu/mcp_servers.json",
       "confidence": "medium",
       "context": "Mitsu MCP configuration: Armory selection, custom CLI tools and external MCP servers",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/tui/menu.py#L132",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": ".local/share/mitsu/armory/",
       "confidence": "medium",
       "context": "Folder where Mitsu installs Armory tools from git sources and official install scripts (one folder per tool, plus managed.json)",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/services/redteam_armory.py#L166-L176",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "file_path"
     },
     {
-      "type": "file_name",
       "value": ".mitsu-armory-managed",
       "confidence": "high",
       "context": "Ownership marker Mitsu writes into each Armory tool folder it installed from source",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/services/redteam_armory.py#L133",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "file_name"
     },
     {
-      "type": "file_name",
       "value": "mitsu-logo.png",
       "confidence": "medium",
       "context": "Logo Mitsu writes next to every assessment report in <session>/artifacts/, decoded from assets/example/icon.svg",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/workspace/assessment_report.py#L1052-L1059",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "file_name"
     },
     {
-      "type": "sha256",
       "value": "9b76c1d35bde6eac16fca735039fa8c65f4942e26851ab00f45aee5ab99339de",
       "confidence": "medium",
       "context": "SHA-256 of mitsu-logo.png, the PNG embedded in assets/example/icon.svg that Mitsu decodes and writes next to each assessment report (225,825 bytes)",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/workspace/assessment_report.py#L1052-L1059",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "sha256"
     },
     {
-      "type": "md5",
       "value": "d367f4c55f375e3ddf72fa13054a61b1",
       "confidence": "medium",
       "context": "MD5 of mitsu-logo.png, the PNG embedded in assets/example/icon.svg that Mitsu writes next to each assessment report",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/workspace/assessment_report.py#L1052-L1059",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "md5"
     },
     {
-      "type": "file_name",
       "value": "attack-surface-map.html",
       "confidence": "low",
       "context": "Interactive attack-surface map Mitsu writes to <session>/artifacts/ (title \"<session> · Mitsu\"). Generic name: check the folder",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/workspace/surface_map.py#L311",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "file_name"
     },
     {
-      "type": "url",
       "value": "https://pypi.org/pypi/mitsu/json",
       "confidence": "medium",
       "context": "Update check of a PyPI install of Mitsu, sent with user agent Mitsu updater only when the operator opens the update panel. Other tools can read the same PyPI metadata",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/tui/updates.py#L16",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "url"
     },
     {
-      "type": "docker_image",
       "value": "ghcr.io/searxng/searxng:latest",
       "confidence": "low",
       "context": "Official SearXNG image Mitsu pulls for its managed search engine (docker.io/searxng/searxng:latest as fallback). Used by many people: context only",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/services/searxng.py#L20-L23",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "docker_image"
     },
     {
-      "type": "domain",
       "value": "api.uberllm.dev",
       "confidence": "low",
       "context": "Model marketplace in Mitsu's provider list, described there as offering open-weight and uncensored models. One of 20 listed providers and used by other software: context only",
+      "actor": "Mitsu operators",
       "source": "ThreatDefence review of the Mitsu source code",
       "sourceUrl": "https://github.com/ARCANGEL0/Mitsu/blob/a4844932fd1bd0e7b26a442bd0cc8b4a25460521/config/catalog.py#L51-L57",
-      "reported": "2026-11-20"
+      "reported": "2026-11-20",
+      "framework": "mitsu",
+      "frameworks": ["mitsu"],
+      "type": "domain"
     }
   ],
   "indicatorsTruncated": false,

@@ -9,7 +9,7 @@
     "sigma": 4,
     "suricata": 10,
     "yara": 3,
-    "indicators": 16
+    "indicators": 34
   },
   "techniques": [
     {
@@ -50,148 +50,412 @@
   ],
   "indicators": [
     {
-      "type": "uri_string",
+      "value": "HexStrike-HTTP-Framework/1.0",
+      "confidence": "high",
+      "context": "HexStrike HTTP testing framework user agent prefix; full string HexStrike-HTTP-Framework/1.0 (Advanced Security Testing) (hexstrike_server.py:13287)",
+      "actor": "HexStrike operators",
+      "source": "Elastic Security Labs",
+      "sourceUrl": "https://www.elastic.co/security-labs/threat-command/agentic-offensive-frameworks-detection-artex",
+      "reported": "2026-11-13",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "hexstrike-redteam"],
+      "type": "user_agent"
+    },
+    {
+      "value": "HexStrike-BrowserAgent/1.0",
+      "confidence": "high",
+      "context": "HexStrike Selenium browser agent user agent prefix; full string HexStrike-BrowserAgent/1.0 (Security Testing) (hexstrike_server.py:13644)",
+      "actor": "HexStrike operators",
+      "source": "Elastic Security Labs",
+      "sourceUrl": "https://www.elastic.co/security-labs/threat-command/agentic-offensive-frameworks-detection-artex",
+      "reported": "2026-11-13",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "hexstrike-redteam"],
+      "type": "user_agent"
+    },
+    {
+      "value": "HexStrike-HTTP-Framework/1.0 (Advanced Security Testing)",
+      "confidence": "high",
+      "context": "HexStrike HTTP testing framework requests session user agent (hexstrike_server.py:13287)",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "hexstrike-redteam"],
+      "type": "user_agent"
+    },
+    {
+      "value": "HexStrike-BrowserAgent/1.0 (Security Testing)",
+      "confidence": "high",
+      "context": "HexStrike headless Chrome browser agent user agent (hexstrike_server.py:13644)",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "hexstrike-redteam"],
+      "type": "user_agent"
+    },
+    {
+      "value": "Mozilla/5.0 (Compatible Exploit)",
+      "confidence": "medium",
+      "context": "User agent in the CVE exploit scripts HexStrike generates (hexstrike_server.py:7098)",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "nyxstrike", "hexstrike-redteam"],
+      "type": "user_agent"
+    },
+    {
+      "value": "<hexstrikeXSSTest123>",
+      "confidence": "high",
+      "context": "Reflection probe the HexStrike browser agent submits into GET forms during active tests (hexstrike_server.py:13819). URL-encoded as %3ChexstrikeXSSTest123%3E",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "hexstrike-redteam"],
+      "type": "string"
+    },
+    {
+      "value": "hexstrikeXSSTest123",
+      "confidence": "high",
+      "context": "HexStrike reflection probe value in query strings",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "hexstrike-redteam"],
+      "type": "uri_string"
+    },
+    {
+      "value": "HexStrike AI Tools API Server is operational",
+      "confidence": "high",
+      "context": "Unauthenticated /health response of the HexStrike server on port 8888, with version 6.0.0 and the tool inventory (hexstrike_server.py:9123-9126)",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "hexstrike-redteam"],
+      "type": "string"
+    },
+    {
+      "value": "8888",
+      "confidence": "low",
+      "context": "HexStrike server port, bound to 0.0.0.0 regardless of HEXSTRIKE_HOST (hexstrike_server.py:98,17289). Common port, use only with the /health fingerprint Incalmo's Flask C2 server is published on 0.0.0.0:8888 with no auth (cylabcyberautonomy/Incalmo docker-compose.yml:41).",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "nyxstrike", "hexstrike-redteam", "incalmo", "pentest-ai"],
+      "type": "port"
+    },
+    {
+      "value": "hexstrike_server.py",
+      "confidence": "high",
+      "context": "HexStrike tool server script, the parent of every tool it runs",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "hexstrike-redteam"],
+      "type": "file_name"
+    },
+    {
+      "value": "hexstrike_mcp.py",
+      "confidence": "high",
+      "context": "HexStrike MCP client that AI assistants launch, python3 hexstrike_mcp.py --server http://<host>:8888",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "hexstrike-redteam"],
+      "type": "file_name"
+    },
+    {
+      "value": "hexstrike-ai-mcp",
+      "confidence": "high",
+      "context": "FastMCP server name of the HexStrike MCP client (hexstrike_mcp.py:277); the example client config names the server hexstrike-ai",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "hexstrike-redteam"],
+      "type": "string"
+    },
+    {
+      "value": "mcp__hexstrike-ai__",
+      "confidence": "medium",
+      "context": "Tool name prefix Claude Code gives HexStrike's MCP tools in model requests when the server is configured as hexstrike-ai, for example mcp__hexstrike-ai__nmap_scan",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "hexstrike-redteam"],
+      "type": "string"
+    },
+    {
+      "value": "/tmp/hexstrike_files",
+      "confidence": "high",
+      "context": "HexStrike file operations folder (hexstrike_server.py:8931)",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "hexstrike-redteam"],
+      "type": "string"
+    },
+    {
+      "value": "/tmp/hexstrike_envs",
+      "confidence": "high",
+      "context": "HexStrike Python virtual environments folder (hexstrike_server.py:5708)",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "hexstrike-redteam"],
+      "type": "string"
+    },
+    {
+      "value": "hexstrike.log",
+      "confidence": "medium",
+      "context": "HexStrike server log in its working folder (hexstrike_server.py:79)",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "hexstrike-redteam"],
+      "type": "file_name"
+    },
+    {
+      "value": "/tmp/mcp_msf_resource.rc",
+      "confidence": "medium",
+      "context": "Metasploit resource file HexStrike writes before running msfconsole (hexstrike_server.py:11070)",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "hexstrike-redteam"],
+      "type": "file_path"
+    },
+    {
+      "value": "/tmp/pacu_commands.txt",
+      "confidence": "medium",
+      "context": "AWS Pacu command file HexStrike writes for its pacu_exploitation tool (hexstrike_server.py:10682)",
+      "actor": "HexStrike operators",
+      "source": "ThreatDefence review of the HexStrike source code",
+      "sourceUrl": "https://github.com/0x4m4/hexstrike-ai",
+      "reported": "2026-11-21",
+      "framework": "hexstrike",
+      "frameworks": ["hexstrike", "nyxstrike", "hexstrike-redteam"],
+      "type": "string"
+    },
+    {
       "value": "/api/boaz/generate-payload",
       "confidence": "high",
       "context": "Unauthenticated Hexstrike-redteam route that runs BOAZ Boaz.py to wrap a payload for evasion; POST with JSON input_file, output_file, loader, compiler, shellcode_type. Port 8888 by default",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/hexstrike_server.py#L17263",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "uri_string"
     },
     {
-      "type": "uri_string",
       "value": "/api/boaz/list-loaders",
       "confidence": "high",
       "context": "Hexstrike-redteam route that lists the 77 BOAZ loaders (GET, ?category=); called by the boaz_list_loaders MCP tool",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/hexstrike_server.py#L17289",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "uri_string"
     },
     {
-      "type": "uri_string",
       "value": "/api/boaz/list-encoders",
       "confidence": "high",
       "context": "Hexstrike-redteam route that lists the 12 BOAZ encoders (GET); called by the boaz_list_encoders MCP tool",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/hexstrike_server.py#L17305",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "uri_string"
     },
     {
-      "type": "uri_string",
       "value": "/api/boaz/analyze-binary",
       "confidence": "high",
       "context": "Hexstrike-redteam route that reports a file's size and entropy with evasion advice (POST, file_path inside BOAZ_beta)",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/hexstrike_server.py#L17319",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "uri_string"
     },
     {
-      "type": "uri_string",
       "value": "/api/boaz/validate-options",
       "confidence": "high",
       "context": "Hexstrike-redteam route that checks a BOAZ loader, encoding and compiler combination (POST)",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/hexstrike_server.py#L17344",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "uri_string"
     },
     {
-      "type": "string",
       "value": "# BOAZ Loaders",
       "confidence": "high",
       "context": "Start of the output field in the JSON answer of /api/boaz/list-loaders on a Hexstrike-redteam server",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/boaz/boaz_manager.py#L334",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "# BOAZ Encoding Schemes",
       "confidence": "high",
       "context": "Start of the output field in the JSON answer of /api/boaz/list-encoders on a Hexstrike-redteam server",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/boaz/boaz_manager.py#L354",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "BOAZ framework not found at",
       "confidence": "high",
       "context": "Error a Hexstrike-redteam server returns to /api/boaz/generate-payload when BOAZ_beta/Boaz.py is missing; full text ends Please set BOAZ_PATH environment variable.",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/boaz/boaz_manager.py#L165",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "BOAZ Manager - Integration layer for BOAZ evasion framework",
       "confidence": "high",
       "context": "Docstring of the Hexstrike-redteam BOAZ integration module boaz/boaz_manager.py",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/boaz/boaz_manager.py#L2",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "BOAZ Red Team Payload Evasion",
       "confidence": "high",
       "context": "Description of the hexstrike-ai MCP server in the Claude Desktop and Claude CLI configuration that configure_mcp.sh writes: HexStrike AI v6.0 - 155+ Security Tools, BOAZ Red Team Payload Evasion",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/install/configure_mcp.sh#L53",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "BOAZ Red Team Integration",
       "confidence": "medium",
       "context": "Description in the example MCP client configuration hexstrike-ai-mcp.json (HexStrike AI v6.0 ... with BOAZ Red Team Integration)",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/hexstrike-ai-mcp.json#L10",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "mcp__hexstrike-ai__boaz_",
       "confidence": "medium",
       "context": "Derived, not a literal in the code: tool name prefix Claude Code gives Hexstrike-redteam's BOAZ MCP tools in model requests when the server is configured as hexstrike-ai, as configure_mcp.sh does, for example mcp__hexstrike-ai__boaz_generate_payload",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/hexstrike_mcp.py#L285",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "string"
     },
     {
-      "type": "file_path",
       "value": "/BOAZ_beta/Boaz.py",
       "confidence": "medium",
       "context": "BOAZ entry script that Hexstrike-redteam runs as python3 <dir>/BOAZ_beta/Boaz.py -f <in> -o <out> with cwd BOAZ_beta; BOAZ_PATH can move it, and a BOAZ install without HexStrike uses the same name",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/boaz/boaz_manager.py#L194",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": "/BOAZ_beta/output/",
       "confidence": "medium",
       "context": "Folder where Hexstrike-redteam's docs and MCP tool description tell the assistant to write BOAZ payloads (.exe, .dll, .cpl); chosen per request",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/README.md#L474",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "file_path"
     },
     {
-      "type": "file_name",
       "value": "boaz_manager.py",
       "confidence": "medium",
       "context": "Hexstrike-redteam BOAZ integration module (boaz/boaz_manager.py) imported by hexstrike_server.py",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/boaz/boaz_manager.py",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "file_name"
     },
     {
-      "type": "string",
       "value": "Configuring MCP for Hexstrike Red Team",
       "confidence": "medium",
       "context": "Banner of Hexstrike-redteam's install/configure_mcp.sh, which overwrites ~/.config/Claude/claude_desktop_config.json and ~/.config/claude-cli/config.json",
+      "actor": "Hexstrike-redteam operators",
       "source": "ThreatDefence review of the Hexstrike-redteam source code",
       "sourceUrl": "https://github.com/Yenn503/Hexstrike-redteam/blob/89779b7948444b88ae11600799880d6feb8e0094/install/configure_mcp.sh#L17",
-      "reported": "2025-11-27"
+      "reported": "2025-11-27",
+      "framework": "hexstrike-redteam",
+      "frameworks": ["hexstrike-redteam"],
+      "type": "string"
     }
   ],
   "indicatorsTruncated": false,

@@ -9,7 +9,7 @@
     "sigma": 4,
     "suricata": 6,
     "yara": 2,
-    "indicators": 6
+    "indicators": 8
   },
   "techniques": [
     {
@@ -55,58 +55,100 @@
   ],
   "indicators": [
     {
-      "type": "user_agent",
+      "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "confidence": "medium",
+      "context": "Default user agent of the CyberStrikeAI implant (internal/c2/payload_builder.go:139). A truncated Chrome string: match the whole value exactly, never as a substring, or it matches every Chrome browser AutoPT's page reader sends the same string (evenhu9/AutoPT src/utils.py:87-90), and so does GH05TCREW/pentestagent's br",
+      "actor": "CyberStrikeAI operators",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21",
+      "framework": "cyberstrikeai",
+      "frameworks": ["cyberstrikeai", "autopt", "ghostcrew-pentestagent", "virga"],
+      "type": "string"
+    },
+    {
       "value": "AutoPT/1.0",
       "confidence": "medium",
       "context": "User agent of the ReadHTML page reader in the upstream AutoPT engine, sent with Python urllib on every page the agent reads (tools/web.py:38)",
+      "actor": "AutoPT operators",
       "source": "ThreatDefence review of the AutoPT source code",
       "sourceUrl": "https://github.com/Dizzy-K/AutoPT/blob/fb26e0c47d47bd835e2164fe2b485df1c546d017/tools/web.py#L38",
-      "reported": "2026-06-01"
+      "reported": "2026-06-01",
+      "framework": "autopt",
+      "frameworks": ["autopt"],
+      "type": "user_agent"
     },
     {
-      "type": "string",
       "value": "AutoPT - 自动化渗透测试平台",
       "confidence": "medium",
       "context": "Title of the AutoPT web console, Flask development server on port 5000 with no login (frontend/index.html:6)",
+      "actor": "AutoPT operators",
       "source": "ThreatDefence review of the AutoPT source code",
       "sourceUrl": "https://github.com/evenhu9/AutoPT/blob/e38e208612e15bce94c828c2eb919ab1171332d6/frontend/index.html#L6",
-      "reported": "2026-04-18"
+      "reported": "2026-04-18",
+      "framework": "autopt",
+      "frameworks": ["autopt"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "xray路径:",
       "confidence": "medium",
       "context": "Prefix of the xray_info value in the AutoPT console's unauthenticated GET /api/system/info answer (app.py:608)",
+      "actor": "AutoPT operators",
       "source": "ThreatDefence review of the AutoPT source code",
       "sourceUrl": "https://github.com/evenhu9/AutoPT/blob/e38e208612e15bce94c828c2eb919ab1171332d6/app.py#L608",
-      "reported": "2026-04-18"
+      "reported": "2026-04-18",
+      "framework": "autopt",
+      "frameworks": ["autopt"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "=== VULHUB PoC REFERENCE (from github.com/vulhub/vulhub) ===",
       "confidence": "medium",
       "context": "Block AutoPT puts in the Inquire agent's prompt before each exploit; seen only in model traffic or in the source (src/psm/state.py:339)",
+      "actor": "AutoPT operators",
       "source": "ThreatDefence review of the AutoPT source code",
       "sourceUrl": "https://github.com/evenhu9/AutoPT/blob/e38e208612e15bce94c828c2eb919ab1171332d6/src/psm/state.py#L339",
-      "reported": "2026-04-18"
+      "reported": "2026-04-18",
+      "framework": "autopt",
+      "frameworks": ["autopt"],
+      "type": "string"
     },
     {
-      "type": "file_name",
       "value": "*_FSM.jsonl",
       "confidence": "medium",
       "context": "Result file AutoPT writes after each run: src/result/<model>/<service>_<CVE>_<model>_FSM.jsonl, with the commands the agent ran (src/autopt.py:81-98)",
+      "actor": "AutoPT operators",
       "source": "ThreatDefence review of the AutoPT source code",
       "sourceUrl": "https://github.com/evenhu9/AutoPT/blob/e38e208612e15bce94c828c2eb919ab1171332d6/src/autopt.py#L81-L98",
-      "reported": "2026-04-18"
+      "reported": "2026-04-18",
+      "framework": "autopt",
+      "frameworks": ["autopt"],
+      "type": "file_name"
     },
     {
-      "type": "domain",
+      "value": "5000",
+      "confidence": "low",
+      "context": "Default AutoPT console port, bound on 0.0.0.0 (app.py:624). Flask's default port, so only context MCP Kali Server's API listens on 127.0.0.1:5000 by default and is documented with --ip 0.0.0.0 (Wh0am123/MCP-Kali-Server server.py:31).",
+      "actor": "AutoPT operators",
+      "source": "ThreatDefence review of the AutoPT source code",
+      "sourceUrl": "https://github.com/evenhu9/AutoPT/blob/e38e208612e15bce94c828c2eb919ab1171332d6/app.py#L624",
+      "reported": "2026-04-18",
+      "framework": "autopt",
+      "frameworks": ["autopt", "mcp-kali-server"],
+      "type": "port"
+    },
+    {
       "value": "api.whatai.cc",
       "confidence": "low",
       "context": "Third-party OpenAI-compatible relay set as openai_base in AutoPT's shipped config.yml (src/config/config.yml:3). A public service many tools use, so only context",
+      "actor": "AutoPT operators",
       "source": "ThreatDefence review of the AutoPT source code",
       "sourceUrl": "https://github.com/evenhu9/AutoPT/blob/e38e208612e15bce94c828c2eb919ab1171332d6/src/config/config.yml#L3",
-      "reported": "2026-04-18"
+      "reported": "2026-04-18",
+      "framework": "autopt",
+      "frameworks": ["autopt"],
+      "type": "domain"
     }
   ],
   "indicatorsTruncated": false,

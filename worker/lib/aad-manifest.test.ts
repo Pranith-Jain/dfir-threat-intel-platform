@@ -95,6 +95,7 @@ const ASSETS = mockAssets({
         sourceUrl: '',
         reported: '',
         framework: 'artex',
+        frameworks: ['artex', 'cairn'],
       },
       {
         value: 'cairn-agent/1.0',
@@ -174,6 +175,9 @@ describe('aad-manifest', () => {
     const rows = await filterAadIndicators(ASSETS, { framework: 'artex' });
     expect(rows).toHaveLength(2);
     expect(rows.every((r) => r.type === 'user_agent')).toBe(true);
+    // A shared indicator listing several frameworks matches each of them.
+    const shared = await filterAadIndicators(ASSETS, { framework: 'cairn' });
+    expect(shared.map((r) => r.value)).toEqual(['artex-readonly/1.0', 'cairn-agent/1.0']);
     const needles = await filterAadIndicators(ASSETS, { keyword: 'pentest' });
     expect(needles).toHaveLength(1);
   });

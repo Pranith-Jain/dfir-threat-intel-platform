@@ -9,7 +9,7 @@
     "sigma": 4,
     "suricata": 16,
     "yara": 3,
-    "indicators": 32
+    "indicators": 34
   },
   "techniques": [
     {
@@ -35,292 +35,412 @@
   ],
   "indicators": [
     {
-      "type": "user_agent",
+      "value": "8080",
+      "confidence": "low",
+      "context": "Default CyberStrikeAI console port, HTTPS with a self-signed certificate on 0.0.0.0 (config.example.yaml) CHYing-agent's dashboard binds 0.0.0.0:8080 with no login (yhy0/CHYing-agent).",
+      "actor": "CyberStrikeAI operators",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21",
+      "framework": "cyberstrikeai",
+      "frameworks": ["cyberstrikeai", "chying-agent", "cyber-harness"],
+      "type": "port"
+    },
+    {
+      "value": "8765",
+      "confidence": "low",
+      "context": "Default port of the sapper-v2 board (sapper view --serve --port). Many other services use it; the one exposed board seen in November 2026 used 2333. Context only Nebula's headless core defaults to 8765 (BerylliumSec/nebula).",
+      "actor": "sapper-v2 operators",
+      "source": "ThreatDefence review of the sapper-v2 source code",
+      "sourceUrl": "https://github.com/N1nEmAn/sapper-v2/blob/7b75e6f1f5d5b4ae0c55878b0dd0994d9b08f1fb/lib/sapper.py#L4549-L4551",
+      "reported": "2026-11-11",
+      "framework": "sapper-v2",
+      "frameworks": ["sapper-v2", "pentest-ai", "cyber-harness", "nebula"],
+      "type": "port"
+    },
+    {
       "value": "cyber",
       "confidence": "high",
       "context": "Exact User-Agent of the cyber-harness scan pipeline's Basic-auth check: a GET with Connection: close to a URL that spray found answering 401, followed by zombie password guessing against it when the answer is Basic. Go net/http client",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/tools/scan/http_auth.go#L49",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "Mozilla/5.0 (compatible; cyber/1.0; +https://github.com/chainreactors/cyber-harness)",
       "confidence": "high",
       "context": "User-Agent of the cyber-harness fetch tool (pseudo-command fetch), with Accept: text/markdown, text/html, text/plain, */*. The model uses it to read advisories, documentation or the target",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/tools/search/fetch.go#L28",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "aiscan",
       "confidence": "medium",
       "context": "Exact User-Agent of the same Basic-auth check in AIScan builds (cyber-harness before September 15, 2026, up to v1.0.0-rc3). A bare product word: match the whole header",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/9c5037a03fd25a153928e432706c124ed27ba98e/tools/scan/http_auth.go#L48",
-      "reported": "2026-08-03"
+      "reported": "2026-08-03",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "Mozilla/5.0 (compatible; aiscan/1.0; +https://github.com/chainreactors/aiscan)",
       "confidence": "high",
       "context": "User-Agent of the fetch tool in AIScan builds (cyber-harness before September 15, 2026); github.com/chainreactors/aiscan now redirects to cyber-harness",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/9c5037a03fd25a153928e432706c124ed27ba98e/tools/search/fetch.go#L25",
-      "reported": "2026-08-03"
+      "reported": "2026-08-03",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
       "confidence": "low",
       "context": "Default User-Agent of the cyber-harness curl tool, sent with Sec-Ch-Ua \"Chromium\";v=\"133\", \"Google Chrome\";v=\"133\", \"Not(A:Brand\";v=\"24\" and Sec-Ch-Ua-Platform \"Linux\". Real Chrome 133 on Linux sends the same user agent: context only, use the brand list",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/tools/curl/client.go#L37",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "user_agent"
     },
     {
-      "type": "string",
       "value": "You are the agent operating inside Cyber, a Cyber Harness for model companies to run benchmarks in cybersecurity scenarios",
       "confidence": "high",
       "context": "Start of the cyber-scan agent system prompt, in model API request bodies (decrypted model traffic) and in its saved sessions",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/exts/scanner/prompt_cyber.go#L65",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "analysis agent inside Cyber, a Cyber Harness for realistic cybersecurity benchmarks",
       "confidence": "high",
       "context": "Part of the system prompt of the cyber-scan scanner sub-agent (You are the <command> analysis agent inside Cyber, ...)",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/exts/scanner/prompt_cyber.go#L63",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "localStorage.getItem('cyber-theme')",
       "confidence": "medium",
       "context": "Inline theme script in the head of the cyber-harness Web Hub page (title Cyber), served at / and at every unknown path",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/web/frontend/index.html#L11",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "localStorage.getItem('aiscan-theme')",
       "confidence": "medium",
       "context": "Inline theme script of the AIScan Web page (title AIScan), builds before September 15, 2026",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/9c5037a03fd25a153928e432706c124ed27ba98e/web/frontend/index.html#L11",
-      "reported": "2026-08-03"
+      "reported": "2026-08-03",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Content-Type, Authorization, Connect-Protocol-Version, Connect-Timeout-Ms, Connect-Content-Encoding, Connect-Accept-Encoding",
       "confidence": "medium",
       "context": "Start of the Access-Control-Allow-Headers value on every cyber-harness Web Hub response (the list ends X-Grpc-Web, X-User-Agent). Other ConnectRPC services use similar lists: pair it with the page or the 401 body",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/pkg/web/handler.go#L59",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "web access token:",
       "confidence": "medium",
       "context": "Log line of the cyber-harness Web Hub at start-up, followed by the access key in clear (random unless --token is given)",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/pkg/web/host/host.go#L64",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "cyber-node-",
       "confidence": "medium",
       "context": "Prefix of the temporary folder (cyber-node-<guid>) in the Windows PowerShell one-liner the Web Hub's Quick Connect generates to download and start a node from node.zip",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/web/frontend/src/lib/node-bootstrap.ts#L52",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "cyber-route-",
       "confidence": "medium",
       "context": "User part of the per-call proxy URL (http://cyber-route-<random>@127.0.0.1:<port>) that cyber-scan puts in HTTP_PROXY and HTTPS_PROXY of the commands it starts while its MITM hub runs",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/tools/proxy/config.go#L73",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "cyber-mcp-",
       "confidence": "medium",
       "context": "JSON-RPC request id prefix (cyber-mcp-<n>) of the cyber-harness MCP client; its initialize names clientInfo cyber-harness, version mcp-ext",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/tools/mcp/connection.go#L146",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "string"
     },
     {
-      "type": "uri_string",
       "value": "/api/aop/node/ws",
       "confidence": "high",
       "context": "WebSocket path a cyber-scan or cyber-audit node dials on a cyber-harness Web Hub, with Authorization: Bearer <access key>",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/pkg/web/service.go#L13",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "uri_string"
     },
     {
-      "type": "uri_string",
       "value": "/api/aop/application/ws",
       "confidence": "high",
       "context": "WebSocket path of the cyber-harness Web Hub for browser and application clients",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/pkg/web/service.go#L12",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "uri_string"
     },
     {
-      "type": "uri_string",
       "value": "/cyber.rpc.",
       "confidence": "high",
       "context": "ConnectRPC path prefix of the cyber-harness Web Hub services (/cyber.rpc.chat.SessionService/ListSessions, /cyber.rpc.scan.ScanService/SubmitScan, ...)",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/pkg/rpc/chat.connect.go#L26",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "uri_string"
     },
     {
-      "type": "uri_string",
       "value": "/chainreactors/cyber-harness/releases/",
       "confidence": "medium",
       "context": "Release download path used by the Hub's Quick Connect installer (cyber-scan_<os>_<arch>.zip and the like), directly or through https://ghfast.top/. Also used by anyone installing it",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/web/frontend/src/lib/node-bootstrap.ts#L20-L21",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "uri_string"
     },
     {
-      "type": "file_name",
       "value": "cyber-agent.pid",
       "confidence": "high",
       "context": "Pid file of cyber-scan agent runs in the temp folder (/tmp/cyber-agent.pid on Linux)",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/cmd/cyber-scan/pidlock.go#L16",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "file_name"
     },
     {
-      "type": "file_name",
       "value": "cyber-harness.db",
       "confidence": "medium",
       "context": "Default SQLite store of the cyber-harness Web Hub in its working directory (tables chat_sessions, chat_aop_events, aop_request_ledger, raw_artifacts)",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/cmd/cyber-harness/main.go#L34",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "file_name"
     },
     {
-      "type": "file_name",
       "value": "cyber-scan",
       "confidence": "medium",
       "context": "Release binary of the cyber-harness agent and scan node (cyber-scan.exe on Windows; UPX-packed for Windows amd64). The binary was aiscan up to v1.0.0-rc9",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/.goreleaser.yml#L29-L31",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "file_name"
     },
     {
-      "type": "file_name",
       "value": "cyber-harness",
       "confidence": "medium",
       "context": "Release binary of the cyber-harness Web Hub (cyber-harness.exe on Windows); aiscan-full up to v1.0.0-rc9",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/.goreleaser.yml#L49-L51",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "file_name"
     },
     {
-      "type": "file_name",
       "value": "cyber-audit",
       "confidence": "medium",
       "context": "Release binary of the cyber-harness source and binary audit agent (cyber-audit.exe on Windows)",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/.goreleaser.yml#L71-L74",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "file_name"
     },
     {
-      "type": "file_path",
       "value": ".cyber/mitm/mitmproxy-ca-cert.pem",
       "confidence": "medium",
       "context": "CA of the cyber-scan MITM traffic hub in the working directory; its path is given to child processes in CURL_CA_BUNDLE, SSL_CERT_FILE, NODE_EXTRA_CA_CERTS, REQUESTS_CA_BUNDLE and GIT_SSL_CAINFO",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/tools/proxy/config.go#L47",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": ".cyber/arsenal/bin/",
       "confidence": "medium",
       "context": "Folder where cyber-scan's arsenal command installs downloaded tools (nuclei, httpx, naabu, interactsh-client, gogo, spray, zombie, the IoM C2 client and others), under the data folder (~/.cyber by default)",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/cmd/cyber-scan/extensions.go#L38",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": ".cyber/active/active.sqlite",
       "confidence": "medium",
       "context": "State store of cyber-scan inbox mode (next to owner.sqlite)",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/exts/inbox/store.go#L112",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": ".cyber/jev/decisions.jsonl",
       "confidence": "medium",
       "context": "Decision log of the optional JEV accelerator in the working directory (next to library.json and execution-<id>.jsonl)",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/exts/jev/store.go#L124",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": ".cyber/output/",
       "confidence": "medium",
       "context": "Folder where cyber-scan saves the full output of each shell command as <id>.log, in the working directory",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/tools/terminal/bash.go#L384",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": ".cyber/cyber.yaml",
       "confidence": "medium",
       "context": "cyber-harness configuration file (user ~/.cyber/cyber.yaml or project .cyber/cyber.yaml) with the model provider, base URL and possibly the API key",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/pkg/config/snapshot.go#L49",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "file_path"
     },
     {
-      "type": "domain",
       "value": "api.typesafe.ai",
       "confidence": "low",
       "context": "TypeSafe JEV decision API (POST /v1/systemone) that cyber-harness calls only when JEV is enabled with a TypeSafe key. A third-party service: context only",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/agent/provider/jev/client.go#L22",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "domain"
     },
     {
-      "type": "domain",
       "value": "ghfast.top",
       "confidence": "low",
       "context": "GitHub download mirror the Web Hub's Quick Connect uses for the china download source (https://ghfast.top/https://github.com/chainreactors/cyber-harness/...). Widely used for any GitHub download: context only",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/web/frontend/src/lib/node-bootstrap.ts#L23",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "domain"
     },
     {
-      "type": "domain",
       "value": "api.chainreactors.cn",
       "confidence": "low",
       "context": "OpenAI-compatible model gateway used in the chainreactors documentation for cyber-audit (CYBER_BASE_URL). Not a default: context only",
+      "actor": "cyber-harness operators",
       "source": "ThreatDefence review of the cyber-harness source code",
       "sourceUrl": "https://github.com/chainreactors/cyber-harness/blob/02ac8ecfa6435610cbe7ee2f3e4deeb5481702c5/cmd/audit/README.md#L91",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "cyber-harness",
+      "frameworks": ["cyber-harness"],
+      "type": "domain"
     }
   ],
   "indicatorsTruncated": false,

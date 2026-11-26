@@ -9,7 +9,7 @@
     "sigma": 3,
     "suricata": 8,
     "yara": 3,
-    "indicators": 17
+    "indicators": 19
   },
   "techniques": [
     {
@@ -45,157 +45,232 @@
   ],
   "indicators": [
     {
-      "type": "string",
+      "value": "8080",
+      "confidence": "low",
+      "context": "Default CyberStrikeAI console port, HTTPS with a self-signed certificate on 0.0.0.0 (config.example.yaml) CHYing-agent's dashboard binds 0.0.0.0:8080 with no login (yhy0/CHYing-agent).",
+      "actor": "CyberStrikeAI operators",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21",
+      "framework": "cyberstrikeai",
+      "frameworks": ["cyberstrikeai", "chying-agent", "cyber-harness"],
+      "type": "port"
+    },
+    {
       "value": "__WSS_PROBE_7b3e__",
       "confidence": "high",
       "context": "Marker the web terminal client types (echo __WSS_PROBE_7b3e__) into a target's ttyd, wetty, GoTTY or Kubernetes exec terminal to find the right protocol; it comes back in the terminal output and stays in shell history",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/claude_sdk/wss_terminal_client.py#L215",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "__WSS_EXIT_c1a4__",
       "confidence": "high",
       "context": "Exit-code marker appended to every command the agent types into a target's web terminal (printf '\\n__WSS_EXIT_c1a4__%s\\n' with the saved exit code); printed in the output and kept in shell history",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/claude_sdk/wss_terminal_client.py#L206",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "__WSS_CMD_END_9f7a__",
       "confidence": "high",
       "context": "End-of-command delimiter (echo __WSS_CMD_END_9f7a__) appended to every command the agent types into a target's web terminal",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/claude_sdk/wss_terminal_client.py#L205",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "__chy_rc=$?",
       "confidence": "high",
       "context": "Shell variable in the wrapper appended to every web terminal command (; __chy_rc=$?; printf ...). Look for it in shell history and terminal session logs on the target",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/claude_sdk/wss_terminal_client.py#L399",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "You are CHYing Orchestrator - an autonomous security automation system",
       "confidence": "high",
       "context": "Start of the orchestrator system prompt sent with every model request. Visible only with TLS inspection of model traffic",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/prompts/orchestrator_identity.md#L2",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "mcp__chying__exec",
       "confidence": "high",
       "context": "Name of the agent's command tool as the model sees it (MCP server chying, tool exec); in model requests and in Claude Code session transcripts under ~/.claude/projects/",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/agents/tool_registry.py#L3",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "CHYing Agent Dashboard",
       "confidence": "high",
       "context": "Title of the dashboard page (Vue build) and of its FastAPI app, so also of /docs (CHYing Agent Dashboard - Swagger UI). Plain HTTP on 0.0.0.0:8080 with no login",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/web-ui/index.html#L7",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Web Dashboard API for CHYing Agent",
       "confidence": "high",
       "context": "Description of the dashboard's FastAPI app, returned in /openapi.json",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/web/app.py#L20",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "chying-agent-docker",
       "confidence": "medium",
       "context": "Container name, hostname and compose service of the agent's privileged Kali tools container; also the DOCKER_CONTAINER_NAME the preflight checks with docker inspect",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/docker/docker-compose.yml#L7",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "string"
     },
     {
-      "type": "docker_image",
       "value": "chying-agent-docker-tools",
       "confidence": "medium",
       "context": "Image of the tools container (chying-agent-docker-tools:latest), built locally from docker/Dockerfile target chying-full; not on a public registry",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/docker/docker-compose.yml#L6",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "docker_image"
     },
     {
-      "type": "file_path",
       "value": "/agent-work/ctf/",
       "confidence": "medium",
       "context": "Per-target work folder agent-work/ctf/<Category>/<challenge>/ (findings.log, attack_timeline.md, dumps/commands.log, poc_scripts/); /root/agent-work/ctf/ inside the container",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/challenge_solver.py#L295",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": "/data/chying.db",
       "confidence": "medium",
       "context": "SQLite database of challenges, executions, findings and writeups in the repository folder",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/db/session.py#L20",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": "/logs/chying_agent_",
       "confidence": "medium",
       "context": "Run log logs/chying_agent_<YYYYmmdd_HHMMSS>.log in the repository folder; per-target logs go to logs/challenges/",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/chying_agent/common.py#L149",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": "/.taie/null-zone/",
       "confidence": "medium",
       "context": "Data folder of the agent's Null Zone contest skills (keys, flags, injection attempts, agent profiles)",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/null-zone/skills/null-zone/SKILL.md#L51",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "file_path"
     },
     {
-      "type": "url",
+      "value": "-1207029254",
+      "confidence": "low",
+      "context": "Dashboard icon /vite.svg, the stock Vite logo (MD5 8e3a10e157f75ada21ab742c022d5430). Shared by every Vite starter app: use only with the title",
+      "actor": "CHYing-agent operators",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/web-ui/public/vite.svg",
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent", "virga"],
+      "type": "favicon_mmh3"
+    },
+    {
       "value": "https://api.lkeap.cloud.tencent.com/coding/anthropic",
       "confidence": "low",
       "context": "Example LLM_BASE_URL (Tencent Cloud Anthropic-compatible endpoint, model glm-5) in .env.example. Used by many Claude Code users: context only",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/.env.example#L35",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "url"
     },
     {
-      "type": "url",
       "value": "https://api.minimaxi.com/anthropic",
       "confidence": "low",
       "context": "Example alternate LLM_BASE_URL_ALT (MiniMax, model MiniMax-M2.7) in .env.example. Used by many Claude Code users: context only",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/.env.example#L41",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "url"
     },
     {
-      "type": "domain",
       "value": "xget-cfw.fireline.fun",
       "confidence": "low",
       "context": "GitHub download accelerator the tools image is built through (Ghidra, ghidra-mcp, nuclei-templates, vulhub, jwt_tool, ysoserial, katana, httpx). Build time only and used by other projects: context only",
+      "actor": "CHYing-agent operators",
       "source": "ThreatDefence review of the CHYing-agent source code",
       "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/docker/Dockerfile#L26",
-      "reported": "2026-04-25"
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent"],
+      "type": "domain"
     }
   ],
   "indicatorsTruncated": false,

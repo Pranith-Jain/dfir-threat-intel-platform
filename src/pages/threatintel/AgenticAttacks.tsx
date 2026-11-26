@@ -42,6 +42,7 @@ interface Indicator {
   sourceUrl: string;
   reported: string;
   framework: string;
+  frameworks?: string[];
   type?: string;
 }
 interface Technique {
@@ -280,7 +281,7 @@ export default function AgenticAttacks(): JSX.Element {
                     <td className="px-3 py-2 text-xs">{it.type}</td>
                     <td className="px-3 py-2 font-mono text-xs break-all">{it.value}</td>
                     <td className="px-3 py-2 text-xs">{it.confidence}</td>
-                    <td className="px-3 py-2 text-xs">{it.framework}</td>
+                    <td className="px-3 py-2 text-xs">{it.frameworks?.join(', ') || it.framework}</td>
                     <td className="px-3 py-2 text-xs">
                       {it.sourceUrl ? (
                         <a

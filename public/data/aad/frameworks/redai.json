@@ -30,112 +30,148 @@
   ],
   "indicators": [
     {
-      "type": "file_path",
       "value": "~/.redai/runs/",
       "confidence": "high",
       "context": "RedAI run folder: <runId>/run.json, events.ndjson, state.json, report.md, report.json, report.html, artifacts/ (transcripts/*.jsonl, validation/<jobId>/ PoCs and screenshots), scratch/<stage>/, validation/browser-profile and validation/agent-browser-home. REDAI_HOME moves it (src/paths.ts:10-22, src/pipeline/filesystem",
+      "actor": "RedAI operators",
       "source": "ThreatDefence review of the RedAI source code",
       "sourceUrl": "https://github.com/kpolley/redai/blob/3ba2a98fb70e0855a28f97951af82ece9ecfe633/src/paths.ts#L16",
-      "reported": "2026-04-26"
+      "reported": "2026-04-26",
+      "framework": "redai",
+      "frameworks": ["redai"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": "~/.redai/validator-environments/",
       "confidence": "high",
       "context": "RedAI validator environments: <uuid>/environment.json (App URL or iOS bundle id) and <name>/browser-profile, the Chrome profile it opens with --user-data-dir for setup (src/paths.ts:28-30, src/pipeline/validator-environments/filesystem-validator-environment-store.ts:74-80, environment-setup.ts:36)",
+      "actor": "RedAI operators",
       "source": "ThreatDefence review of the RedAI source code",
       "sourceUrl": "https://github.com/kpolley/redai/blob/3ba2a98fb70e0855a28f97951af82ece9ecfe633/src/paths.ts#L28",
-      "reported": "2026-04-26"
+      "reported": "2026-04-26",
+      "framework": "redai",
+      "frameworks": ["redai"],
+      "type": "file_path"
     },
     {
-      "type": "string",
       "value": "simctl create redai-template-",
       "confidence": "high",
       "context": "iOS template simulator RedAI creates: xcrun simctl create redai-template-<environment name>-<base36 ms> <device type> <runtime> (src/pipeline/validator-environments/environment-setup.ts:99-100)",
+      "actor": "RedAI operators",
       "source": "ThreatDefence review of the RedAI source code",
       "sourceUrl": "https://github.com/kpolley/redai/blob/3ba2a98fb70e0855a28f97951af82ece9ecfe633/src/pipeline/validator-environments/environment-setup.ts#L99",
-      "reported": "2026-04-26"
+      "reported": "2026-04-26",
+      "framework": "redai",
+      "frameworks": ["redai"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "redai-",
       "confidence": "low",
       "context": "Prefix of the per-job simulator clone name redai-<first 8 of run id>-<first 8 of job id>, made with xcrun simctl clone <template> <name> and deleted after the job (src/validators/ios-simulator/index.ts:57, simctl.ts:16). Short: match it only in simctl command lines",
+      "actor": "RedAI operators",
       "source": "ThreatDefence review of the RedAI source code",
       "sourceUrl": "https://github.com/kpolley/redai/blob/3ba2a98fb70e0855a28f97951af82ece9ecfe633/src/validators/ios-simulator/index.ts#L57",
-      "reported": "2026-04-26"
+      "reported": "2026-04-26",
+      "framework": "redai",
+      "frameworks": ["redai"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "You are RedAI's",
       "confidence": "high",
       "context": "Start of every RedAI agent prompt (threat-modeling agent, file prioritization analyst, vulnerability discovery analyst, micro vulnerability scanner, finding aggregator, report narrator, web validation agent, iOS simulator validation agent). Seen in model traffic where it is inspected and in Claude Code or Codex session",
+      "actor": "RedAI operators",
       "source": "ThreatDefence review of the RedAI source code",
       "sourceUrl": "https://github.com/kpolley/redai/blob/3ba2a98fb70e0855a28f97951af82ece9ecfe633/src/validators/web-agent-browser/prompt.ts#L7",
-      "reported": "2026-04-26"
+      "reported": "2026-04-26",
+      "framework": "redai",
+      "frameworks": ["redai"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "# RedAI Report:",
       "confidence": "high",
       "context": "First line of RedAI's report.md; report.html carries <title>RedAI Report: <run name></title>, and the next paragraph starts RedAI ran a security review of (src/reporting/report-builder.ts:55-60, filesystem-report-writer.ts:40)",
+      "actor": "RedAI operators",
       "source": "ThreatDefence review of the RedAI source code",
       "sourceUrl": "https://github.com/kpolley/redai/blob/3ba2a98fb70e0855a28f97951af82ece9ecfe633/src/reporting/report-builder.ts#L60",
-      "reported": "2026-04-26"
+      "reported": "2026-04-26",
+      "framework": "redai",
+      "frameworks": ["redai"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "@kpolley/redai",
       "confidence": "medium",
       "context": "npm package of RedAI, installed with bun install -g @kpolley/redai; global installs keep the source in .../node_modules/@kpolley/redai/ (package.json:2, README.md:43)",
+      "actor": "RedAI operators",
       "source": "ThreatDefence review of the RedAI source code",
       "sourceUrl": "https://github.com/kpolley/redai/blob/3ba2a98fb70e0855a28f97951af82ece9ecfe633/package.json#L2",
-      "reported": "2026-04-26"
+      "reported": "2026-04-26",
+      "framework": "redai",
+      "frameworks": ["redai"],
+      "type": "string"
     },
     {
-      "type": "url",
       "value": "https://github.com/kpolley/redai",
       "confidence": "medium",
       "context": "RedAI source repository, cloned for a local install (git clone https://github.com/kpolley/redai.git, README.md:50)",
+      "actor": "RedAI operators",
       "source": "ThreatDefence review of the RedAI source code",
       "sourceUrl": "https://github.com/kpolley/redai/blob/3ba2a98fb70e0855a28f97951af82ece9ecfe633/README.md#L50",
-      "reported": "2026-04-26"
+      "reported": "2026-04-26",
+      "framework": "redai",
+      "frameworks": ["redai"],
+      "type": "url"
     },
     {
-      "type": "string",
       "value": "emit_validation_result",
       "confidence": "medium",
       "context": "Tool name RedAI forces in its Anthropic Messages call that normalizes a validation summary (default model claude-opus-4-6); the OpenAI form uses the schema name validation_result with gpt-5.2. Visible only where model traffic is inspected (src/validators/web-agent-browser/index.ts:139-146, src/agents/anthropic/anthropi",
+      "actor": "RedAI operators",
       "source": "ThreatDefence review of the RedAI source code",
       "sourceUrl": "https://github.com/kpolley/redai/blob/3ba2a98fb70e0855a28f97951af82ece9ecfe633/src/validators/web-agent-browser/index.ts#L144",
-      "reported": "2026-04-26"
+      "reported": "2026-04-26",
+      "framework": "redai",
+      "frameworks": ["redai"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "/validation/agent-browser-home",
       "confidence": "medium",
       "context": "AGENT_BROWSER_HOME RedAI sets for agent-browser during browser validation, ~/.redai/runs/<runId>/validation/agent-browser-home, next to AGENT_BROWSER_PROFILE ~/.redai/runs/<runId>/validation/browser-profile (src/validators/web-agent-browser/index.ts:308-323)",
+      "actor": "RedAI operators",
       "source": "ThreatDefence review of the RedAI source code",
       "sourceUrl": "https://github.com/kpolley/redai/blob/3ba2a98fb70e0855a28f97951af82ece9ecfe633/src/validators/web-agent-browser/index.ts#L322",
-      "reported": "2026-04-26"
+      "reported": "2026-04-26",
+      "framework": "redai",
+      "frameworks": ["redai"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "REDAI_HOME",
       "confidence": "low",
       "context": "Environment variable that moves RedAI's home folder from ~/.redai; REDAI_UNIT_SCAN_TIMEOUT_MS sets the unit scan timeout (src/paths.ts:11-12, src/pipeline/scan-pipeline.ts:595)",
+      "actor": "RedAI operators",
       "source": "ThreatDefence review of the RedAI source code",
       "sourceUrl": "https://github.com/kpolley/redai/blob/3ba2a98fb70e0855a28f97951af82ece9ecfe633/src/paths.ts#L11",
-      "reported": "2026-04-26"
+      "reported": "2026-04-26",
+      "framework": "redai",
+      "frameworks": ["redai"],
+      "type": "string"
     },
     {
-      "type": "file_name",
       "value": "redai",
       "confidence": "low",
       "context": "RedAI launcher: a TypeScript file with #!/usr/bin/env bun, linked as <prefix>/bin/redai by bun install -g, so the process is bun <...>/bin/redai. A short common word: pair with bun (package.json:6-8, src/tui/main.tsx:1)",
+      "actor": "RedAI operators",
       "source": "ThreatDefence review of the RedAI source code",
       "sourceUrl": "https://github.com/kpolley/redai/blob/3ba2a98fb70e0855a28f97951af82ece9ecfe633/package.json#L7",
-      "reported": "2026-04-26"
+      "reported": "2026-04-26",
+      "framework": "redai",
+      "frameworks": ["redai"],
+      "type": "file_name"
     }
   ],
   "indicatorsTruncated": false,

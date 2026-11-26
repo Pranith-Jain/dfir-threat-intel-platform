@@ -9,7 +9,7 @@
     "sigma": 5,
     "suricata": 20,
     "yara": 3,
-    "indicators": 24
+    "indicators": 26
   },
   "techniques": [
     {
@@ -75,220 +75,316 @@
   ],
   "indicators": [
     {
-      "type": "user_agent",
+      "value": "8787",
+      "confidence": "medium",
+      "context": "Default ARTEX console port ARIA-X's console listens on 8787 too (01NGVI-QINGYI/ARIA-X config.py:135). Clearwing's sourcehunt webhook binds 0.0.0.0:8787 by default (Lazarus-AI-OSS/clearwing).",
+      "actor": "ARTEX operators",
+      "source": "Censys",
+      "sourceUrl": "https://censys.com/blog/artex-agentic-asbestos/",
+      "reported": "2026-11-05",
+      "framework": "artex",
+      "frameworks": ["artex", "aria-x", "clearwing"],
+      "type": "port"
+    },
+    {
+      "value": "kalilinux/kali-rolling",
+      "confidence": "low",
+      "context": "Official Kali image HackSynth pulls for its attackbox, run with NET_ADMIN, SYS_PTRACE and /dev/net/tun (docker_setup.py:20-32). Used by many tools and people: context only",
+      "actor": "HackSynth operators",
+      "source": "ThreatDefence review of the HackSynth source code",
+      "sourceUrl": "https://github.com/aielte-research/HackSynth/blob/48a41f795dda186df66561c4fd2b58ae84e3e4f8/docker_setup.py#L20-L32",
+      "reported": "2025-06-24",
+      "framework": "hacksynth",
+      "frameworks": ["hacksynth", "aria-x", "clearwing"],
+      "type": "docker_image"
+    },
+    {
       "value": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Clearwing/1.0",
       "confidence": "high",
       "context": "User agent of the Playwright browser Clearwing's agent drives against web targets (browser_navigate and the other browser tools)",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/agent/tools/recon/browser_tools.py#L35",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "Mozilla/5.0 Clearwing/1.0",
       "confidence": "high",
       "context": "User agent of Clearwing's JavaScript bundle analyzer, which fetches a target's script bundles",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/agent/tools/recon/bundle_tools.py#L39",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "clearwing-asm/0.5 (+https://github.com/Lazarus-AI/clearwing)",
       "confidence": "high",
       "context": "User agent of Clearwing's attack-surface liveness probe (GET https:// then http:// on every discovered host) and its crt.sh, Wayback and GitHub code-search lookups",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/agent/tools/recon/discovery_tools.py#L36",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "clearwing-asm/0.5",
       "confidence": "high",
       "context": "User agent of Clearwing's CISA KEV and FIRST EPSS downloads from the operator host",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/asm/threatintel.py#L35",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "clearwing (aiohttp openai fallback)",
       "confidence": "high",
       "context": "User agent of Clearwing's fallback client for OpenAI-compatible model gateways, from the operator host",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/llm/native.py#L1421",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "codex_cli_rs/0.0.0 (clearwing)",
       "confidence": "high",
       "context": "User agent Clearwing sends to chatgpt.com/backend-api/codex when it reuses a ChatGPT subscription login (with originator: codex_cli_rs)",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/llm/native.py#L640",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "user_agent"
     },
     {
-      "type": "string",
       "value": "1|B|2248|clearwing|",
       "confidence": "high",
       "context": "Start of the OP-User-Agent header value Clearwing's 1Password Mycelium pairing tools send: 1|B|2248|clearwing|||Chrome|130.0.0.0|MacOSX|10_15_7|",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/agent/tools/crypto/mycelium_tools.py#L64",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "### WATERMARK OPID:",
       "confidence": "high",
       "context": "First line Clearwing's cryptographically_sign_payload tool adds to a script: ### WATERMARK OPID:<operation id> SIG:<HMAC-SHA256 hex> ###. Its system prompt tells the agent to sign every script and payload",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/exploitation/payloads/watermark.py#L20",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "OP-IRONRAIN",
       "confidence": "medium",
       "context": "Default operation id in Clearwing's payload watermark (### WATERMARK OPID:OP-IRONRAIN SIG:...)",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/agent/tools/exploit/payload_tools.py#L27",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "US-ARMY-CYBER-DECONFL-SECRET",
       "confidence": "high",
       "context": "Default HMAC key of Clearwing's payload watermark when CLEARWING_DECONFL_SECRET is not set. Found in the package on disk or in memory, not on the wire",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/exploitation/payloads/watermark.py#L5",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "@invalid.test",
       "confidence": "medium",
       "context": "Domain of the address Clearwing's SRP tools post to /api/v1/auth to test user enumeration: nonexistent-<8 hex>@invalid.test",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/agent/tools/crypto/srp_tools.py#L376",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "You are Clearwing Agent, an AI-powered penetration testing assistant",
       "confidence": "medium",
       "context": "Opening of Clearwing's agent system prompt, seen in model traffic where it is inspected",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/agent/prompts.py#L11",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Target (IP / hostname / CIDR)",
       "confidence": "medium",
       "context": "Form label on the Clearwing web UI page, next to <title>Clearwing</title> (default 127.0.0.1:8899)",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/ui/web/static/index.html#L88",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "{\"status\":\"ok\",\"service\":\"clearwing\"}",
       "confidence": "medium",
       "context": "Answer of GET /api/health on the Clearwing web UI, no login",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/ui/web/app.py#L103",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "CLEARWING_WEB_API_KEY is not set",
       "confidence": "high",
       "context": "Error the Clearwing web UI returns on /api/operate when its API key is not configured (503)",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/ui/web/app.py#L180",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "clearwing-kali",
       "confidence": "medium",
       "context": "Name of the Kali container (kalilinux/kali-rolling, sleep infinity, host network on Linux) Clearwing's agent starts for its tools",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/agent/tools/ops/kali_docker_tool.py#L5",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "clearwing-sourcehunt",
       "confidence": "medium",
       "context": "Prefix of the Docker images Clearwing builds for its source-code hunter sandboxes",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/sandbox/hunter_sandbox.py#L53",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "__clearwing_crypto_log",
       "confidence": "medium",
       "context": "Variable Clearwing injects into pages it opens to record WebCrypto calls (window.__clearwing_crypto_log)",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/agent/tools/recon/webcrypto_hooks.py#L31",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "string"
     },
     {
-      "type": "file_path",
       "value": "/.clearwing/",
       "confidence": "medium",
       "context": "Clearwing home folder (or CLEARWING_HOME): config.yaml, sessions/, audit/<session>/commands.jsonl, auth/ (model OAuth tokens), sourcehunt/disclosures.db, knowledge_graph.json, memory.db",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/core/config.py#L19",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": "/.clearwing/sourcehunt/disclosures.db",
       "confidence": "medium",
       "context": "Clearwing's disclosure workflow database of found vulnerabilities and their 90-day timelines",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/sourcehunt/disclosure_db.py#L131",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "file_path"
     },
     {
-      "type": "string",
       "value": "clearwing_custom_tools_",
       "confidence": "medium",
       "context": "Prefix of the temporary folder where Clearwing keeps tools its agent writes at run time",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/agent/tools/ops/dynamic_tool_creator.py#L15",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "string"
     },
     {
-      "type": "uri_string",
       "value": "/callback/",
       "confidence": "low",
       "context": "Path of Clearwing's out-of-band callback listener: http://<lhost>:<9999-10008>/callback/<24-character token>, bound on 0.0.0.0 for up to 10 minutes. A target calling it ran the agent's payload",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/agent/tools/ops/callback_listener.py#L131",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "uri_string"
     },
     {
-      "type": "port",
       "value": "8899",
       "confidence": "low",
       "context": "Default port of the Clearwing web UI and API (FastAPI on uvicorn, 127.0.0.1 unless --host is given)",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/clearwing/ui/commands/webui.py#L7",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "port"
     },
     {
-      "type": "docker_image",
       "value": "ghcr.io/lazarus-ai-oss/clearwing",
       "confidence": "low",
       "context": "Image name the repository's Docker workflow publishes to GHCR (built from the repository name); whether the package is public was not checked",
+      "actor": "Clearwing operators",
       "source": "ThreatDefence review of the Clearwing source code",
       "sourceUrl": "https://github.com/Lazarus-AI-OSS/clearwing/blob/08fe47d24d69b2f7352515f22b22d0f81be7ad15/.github/workflows/docker.yml#L28",
-      "reported": "2026-11-24"
+      "reported": "2026-11-24",
+      "framework": "clearwing",
+      "frameworks": ["clearwing"],
+      "type": "docker_image"
     }
   ],
   "indicatorsTruncated": false,

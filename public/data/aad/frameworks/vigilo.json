@@ -50,139 +50,184 @@
   ],
   "indicators": [
     {
-      "type": "user_agent",
       "value": "Vigilo-Greybox/1 (authorised security test)",
       "confidence": "high",
       "context": "User agent on every grey-box request Vigilo sends, set by its guarded HTTP client; the headless browser's requests go through the same client. Vigilo is a CERT-EU tool for assessing your own applications: confirm the test was agreed",
+      "actor": "Vigilo operators",
       "source": "ThreatDefence review of the Vigilo source code",
       "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/src/greybox_web/netguard.py#L153",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "vigilo",
+      "frameworks": ["vigilo"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "Vigilo-Preflight/1.0",
       "confidence": "high",
       "context": "User agent of the HEAD reachability check at the start of every white-box run that has a target URL. The agents that follow use curl, Chromium, WhatWeb and schemathesis with their own user agents",
+      "actor": "Vigilo operators",
       "source": "ThreatDefence review of the Vigilo source code",
       "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/src/temporal/activities.py#L933",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "vigilo",
+      "frameworks": ["vigilo"],
+      "type": "user_agent"
     },
     {
-      "type": "http_header",
       "value": "X-Note-Name",
       "confidence": "medium",
       "context": "Echo probe header on Vigilo's grey-box root fetch and every crawled page, with the value vigilo<8 hex><e>. The header name alone is not unique; pair it with the value",
+      "actor": "Vigilo operators",
       "source": "ThreatDefence review of the Vigilo source code",
       "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/src/greybox_web/tools/discovery.py#L37",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "vigilo",
+      "frameworks": ["vigilo"],
+      "type": "http_header"
     },
     {
-      "type": "string",
       "value": "vigilo-probe-",
       "confidence": "high",
       "context": "Prefix of Vigilo's grey-box probe host vigilo-probe-<8 hex>.invalid, in open redirect parameters (https://vigilo-probe-<hex>.invalid/) and CORS Origin headers. The host never resolves",
+      "actor": "Vigilo operators",
       "source": "ThreatDefence review of the Vigilo source code",
       "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/src/greybox_web/tools/injection.py#L46",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "vigilo",
+      "frameworks": ["vigilo"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "vigilo-callback-",
       "confidence": "medium",
       "context": "Token of Vigilo's server-side callback check (vigilo-callback-<8 hex>, with the negative control vigilo-control-<8 hex>), in the trigger parameter and the observation URL. Only in-scope loopback or private callback listeners are accepted",
+      "actor": "Vigilo operators",
       "source": "ThreatDefence review of the Vigilo source code",
       "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/src/greybox_web/tools/callback.py#L90",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "vigilo",
+      "frameworks": ["vigilo"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "vigilo-file-",
       "confidence": "medium",
       "context": "Default content of the inert file Vigilo's grey-box upload check sends (vigilo-file-<8 hex>, file name vigilo-<8 hex>.txt, multipart boundary vigilo-<8 hex>). The operator can set other content",
+      "actor": "Vigilo operators",
       "source": "ThreatDefence review of the Vigilo source code",
       "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/src/greybox_web/tools/fileops.py#L93",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "vigilo",
+      "frameworks": ["vigilo"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "VigiloInvoke",
       "confidence": "high",
       "context": "Operation name of every GraphQL query or mutation Vigilo's grey-box agent sends (query VigiloInvoke ...)",
+      "actor": "Vigilo operators",
       "source": "ThreatDefence review of the Vigilo source code",
       "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/src/greybox_web/tools/apiops.py#L141",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "vigilo",
+      "frameworks": ["vigilo"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "EHLO vigilo.invalid",
       "confidence": "high",
       "context": "SMTP identification greeting of Vigilo's grey-box network mode, followed by QUIT",
+      "actor": "Vigilo operators",
       "source": "ThreatDefence review of the Vigilo source code",
       "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/src/greybox_web/netcap.py#L52",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "vigilo",
+      "frameworks": ["vigilo"],
+      "type": "string"
     },
     {
-      "type": "uri_string",
       "value": "/vgl-",
       "confidence": "low",
       "context": "Prefix of Vigilo's grey-box soft-404 baseline path /vgl-<8 hex> at the site root. Only meaningful with the 8 hex characters",
+      "actor": "Vigilo operators",
       "source": "ThreatDefence review of the Vigilo source code",
       "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/src/greybox_web/tools/exposure.py#L134",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "vigilo",
+      "frameworks": ["vigilo"],
+      "type": "uri_string"
     },
     {
-      "type": "string",
       "value": "This is an authorised security assessment run by Vigilo.",
       "confidence": "high",
       "context": "Opening line of the engagement section in every Vigilo white-box agent prompt, passed to claude -p on the command line",
+      "actor": "Vigilo operators",
       "source": "ThreatDefence review of the Vigilo source code",
       "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/prompts/whitebox/shared/_engagement.txt#L2",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "vigilo",
+      "frameworks": ["vigilo"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "VIGILO_RESULT: VULNERABLE",
       "confidence": "medium",
       "context": "Line Vigilo's white-box proof harnesses print when a finding reproduces (VIGILO_RESULT: NOT_VULNERABLE otherwise); found in evidence files and reports",
+      "actor": "Vigilo operators",
       "source": "ThreatDefence review of the Vigilo source code",
       "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/prompts/whitebox/prover.txt#L87",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "vigilo",
+      "frameworks": ["vigilo"],
+      "type": "string"
     },
     {
-      "type": "file_name",
       "value": ".vigilo-remote-url",
       "confidence": "medium",
       "context": "File Vigilo's white-box worker writes at the root of a repository it assesses, next to the run folder .vigilo/<session>/",
+      "actor": "Vigilo operators",
       "source": "ThreatDefence review of the Vigilo source code",
       "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/src/services/git_manager.py#L335",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "vigilo",
+      "frameworks": ["vigilo"],
+      "type": "file_name"
     },
     {
-      "type": "account_name",
       "value": "Vigilo Agent",
       "confidence": "medium",
       "context": "Git committer name (email agent@localhost) set in Vigilo's worker image; fix branches fix/<ID> pushed to GitLab carry it",
+      "actor": "Vigilo operators",
       "source": "ThreatDefence review of the Vigilo source code",
       "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/Dockerfile#L119",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "vigilo",
+      "frameworks": ["vigilo"],
+      "type": "account_name"
     },
     {
-      "type": "docker_image",
       "value": "vigilo-worker:latest",
       "confidence": "low",
       "context": "Locally built image of Vigilo's white-box worker (not published to a registry). Name is a default setting",
+      "actor": "Vigilo operators",
       "source": "ThreatDefence review of the Vigilo source code",
       "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/src/webapi/settings.py#L36",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "vigilo",
+      "frameworks": ["vigilo"],
+      "type": "docker_image"
     },
     {
-      "type": "docker_image",
       "value": "vigilo-api:latest",
       "confidence": "low",
       "context": "Locally built image of Vigilo's API and grey-box worker (not published to a registry)",
+      "actor": "Vigilo operators",
       "source": "ThreatDefence review of the Vigilo source code",
       "sourceUrl": "https://github.com/certeu/vigilo/blob/82c2d353abe6b6e639a958a3e719a8efb9f43ff3/deploy/docker-compose.api.yml#L37",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "vigilo",
+      "frameworks": ["vigilo"],
+      "type": "docker_image"
     }
   ],
   "indicatorsTruncated": false,
