@@ -151,6 +151,27 @@ describe('discoverTopicCorpus', () => {
     expect(out.cveIds).toContain('CVE-2099-0002');
   });
 
+  it('falls back to the distinctive first token when the full phrase finds nothing', async () => {
+    const { discoverTopicCorpus } = await import('../../../src/case-study/research/topic');
+    const seen: string[] = [];
+    const stub = {
+      fetch: (async (req: RequestInfo) => {
+        const url = new URL(typeof req === 'string' ? req : (req as Request).url);
+        const q = url.searchParams.get('q') ?? '';
+        seen.push(q);
+        const body = q === 'examplecorp gateway' ? { sections: [] } : UNIFIED;
+        return new Response(JSON.stringify(body), { headers: { 'content-type': 'application/json' } });
+      }) as never,
+    };
+    const out = await discoverTopicCorpus({
+      keyword: 'examplecorp gateway',
+      self: stub,
+      env: { INTERNAL_TOKEN_SECRET: SECRET },
+    });
+    expect(seen).toEqual(['examplecorp gateway', 'examplecorp']);
+    expect(out.hits.map((h) => h.url)).toEqual(['https://example.test/advisory', 'https://example.test/forum']);
+  });
+
   it('returns nothing when there is no SELF binding or internal secret', async () => {
     const { discoverTopicCorpus } = await import('../../../src/case-study/research/topic');
     const stub = selfStub({ '/api/v1/unified-search': UNIFIED });
@@ -162,6 +183,16 @@ describe('discoverTopicCorpus', () => {
       hits: [],
       cveIds: [],
     });
+  });
+});
+
+describe('findCveIds', () => {
+  it('treats a CVE in the topic title as the subject regardless of content type', async () => {
+    const { findCveIds } = await import('../../../src/case-study/research/enrich');
+    // The Generate tab defaults to `analysis`; a named CVE is still the topic.
+    expect(findCveIds('analysis', 'What CVE-2099-0001 means for defenders', {})).toEqual(['CVE-2099-0001']);
+    // A CVE merely present in non-vulnerability evidence stays context.
+    expect(findCveIds('breach', 'Acme breach writeup', { references: [{ id: 'CVE-2099-0002' }] })).toEqual([]);
   });
 });
 

@@ -109,11 +109,21 @@ export async function discoverTopicCorpus(deps: {
   const empty: TopicDiscovery = { hits: [], cveIds: [] };
   if (!deps.keyword || !deps.self || !deps.env.INTERNAL_TOKEN_SECRET) return empty;
 
-  const raw = await selfFetchJson<CorpusResponse>(
-    deps.self,
-    `/api/v1/unified-search?q=${encodeURIComponent(deps.keyword)}`,
-    deps.env
-  );
+  // unified-search substring-matches the whole query. A reduced keyword like
+  // "examplecorp gateway" misses records that only say "Examplecorp edge
+  // gateway", so retry once with the single most distinctive token. At most
+  // two SELF calls, and the retry only happens when the first found nothing.
+  const tokens = deps.keyword.split(' ').filter(Boolean);
+  const keywords = tokens.length > 1 ? [deps.keyword, tokens[0] as string] : [deps.keyword];
+  let raw: CorpusResponse | null = null;
+  for (const keyword of keywords) {
+    raw = await selfFetchJson<CorpusResponse>(
+      deps.self,
+      `/api/v1/unified-search?q=${encodeURIComponent(keyword)}`,
+      deps.env
+    );
+    if (raw && Array.isArray(raw.sections) && raw.sections.some((s) => (s.items ?? []).length > 0)) break;
+  }
   if (!raw || !Array.isArray(raw.sections)) return empty;
 
   const hits: TopicHit[] = [];

@@ -50,13 +50,18 @@ export function findCveIds(type: unknown, title: string, evidence: Record<string
     }
   }
 
-  // Blob-scan only for vulnerability-shaped topics. For a leak or actor
-  // piece, a CVE id the source title mentions in passing is context, not
+  // A CVE id in the TITLE is the topic itself, whatever content type the
+  // operator picked — the admin Generate tab defaults to `analysis`, and a
+  // submitted "CVE-2026-12345 guidance" used to get no CVE facts at all.
+  for (const m of title.match(CVE_RE) ?? []) out.push(m.toUpperCase());
+
+  // Blob-scan the evidence only for vulnerability-shaped topics. For a leak
+  // or actor piece, a CVE id a source mentions in passing is context, not
   // this story — enriching it used to graft a CVE section onto the dossier
   // and pull the whole piece toward advisory shape.
   const isVulnType = typeof type === 'string' && /cve|vulnfaq|exploit/i.test(type);
   if (isVulnType) {
-    const blob = `${title}\n${JSON.stringify(evidence).slice(0, 8000)}`;
+    const blob = JSON.stringify(evidence).slice(0, 8000);
     for (const m of blob.match(CVE_RE) ?? []) out.push(m.toUpperCase());
   }
 

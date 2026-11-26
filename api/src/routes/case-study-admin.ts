@@ -11,6 +11,8 @@ import { countAllCandidates } from '../case-study/storage/candidates';
 import { countApproved } from '../case-study/storage/approved';
 import { countFailures } from '../case-study/storage/failed';
 import { generatePost } from '../case-study/generation';
+import { researchCandidate } from '../case-study/research';
+import type { ResearchDossier } from '../case-study/research/dossier';
 import { suppliedCveIds, suppliedUrls } from '../case-study/research/topic';
 import { putDraft } from '../case-study/storage/drafts';
 import { generateLinkedinFromNotes, generateTwitterFromNotes } from '../case-study/generation/social';
@@ -114,24 +116,42 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
       return { rejected: false };
     }
 
+    const pseudo: Candidate = {
+      key: `custom-${slug}`,
+      type: (type as CaseStudyType | undefined) ?? 'analysis',
+      title: subject,
+      rationale: subject,
+      score: 0.8,
+      evidence: {
+        userContent: brandConfig,
+        urls: suppliedLinks.map((h) => h.url),
+        titles: suppliedLinks.map((h) => h.label),
+        cveIds: suppliedCves,
+      },
+      discoveredAt: now.toISOString(),
+      status: 'pending',
+    };
+
+    // One research pass for all requested formats. Social copy used to be
+    // written from the pasted text alone, so LinkedIn/X could assert things
+    // the blog's verified dossier did not support. Sharing the dossier keeps
+    // every format grounded in the same sources and avoids a second fetch.
+    let sharedDossier: ResearchDossier | undefined;
+    async function ensureDossier(): Promise<ResearchDossier> {
+      if (!sharedDossier) {
+        sharedDossier = await researchCandidate({
+          candidate: pseudo,
+          now,
+          self: c.env.SELF,
+          internalTokenSecret: c.env.INTERNAL_TOKEN_SECRET,
+        });
+      }
+      return sharedDossier;
+    }
+
     for (const fmt of formats) {
       try {
         if (fmt === 'blog') {
-          const pseudo: Candidate = {
-            key: `custom-${slug}`,
-            type: (type as CaseStudyType | undefined) ?? 'analysis',
-            title: subject,
-            rationale: subject,
-            score: 0.8,
-            evidence: {
-              userContent: brandConfig,
-              urls: suppliedLinks.map((h) => h.url),
-              titles: suppliedLinks.map((h) => h.label),
-              cveIds: suppliedCves,
-            },
-            discoveredAt: now.toISOString(),
-            status: 'pending',
-          };
           const post = await generatePost({
             candidate: pseudo,
             ai: getAi(c.env),
@@ -139,10 +159,7 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
             groqKey: c.env.GROQ_API_KEY,
             googleKey: c.env.GOOGLE_AI_STUDIO_API_KEY,
             infronKey: c.env.INFRON_API_KEY,
-            // Lets the research stage read the platform's own corpus
-            // (writeups, trending CVEs, darkweb hits) via the SELF binding.
-            self: c.env.SELF,
-            internalTokenSecret: c.env.INTERNAL_TOKEN_SECRET,
+            dossier: await ensureDossier(),
             notes: notes?.trim(),
           });
           const gate = approve(post.body, 500);
@@ -158,7 +175,13 @@ export function registerAdminRoutes(app: Hono<{ Bindings: Env }>): void {
           };
         } else if (fmt === 'linkedin' || fmt === 'twitter') {
           const gen = fmt === 'linkedin' ? generateLinkedinFromNotes : generateTwitterFromNotes;
-          const notesBody = { slug: `custom-${slug}`, title: subject, body: brandConfig };
+          const notesBody = {
+            slug: `custom-${slug}`,
+            title: subject,
+            body: brandConfig,
+            type: pseudo.type,
+            dossier: await ensureDossier(),
+          };
           const out = (await gen(
             notesBody,
             getAi(c.env),
