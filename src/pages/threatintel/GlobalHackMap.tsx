@@ -41,6 +41,8 @@ const CtiGlobe = lazy(() => import('../../components/threatintel/cti/CtiGlobe'))
 
 const SIDEBAR_W = 380;
 const PANEL_W = 380;
+/** Stable module-level reference: CtiGlobe's `arcsData` effect keys on this. */
+const NO_ARCS: never[] = [];
 
 /** Merge the live CVE feed with the Bluesky-attention mirror, once by id. */
 function mergeCves(feed: GhmCveFeed | null, trending: GhmTrending | null): GhmCve[] {
@@ -316,7 +318,7 @@ export default function GlobalHackMap(): JSX.Element {
   }, [incidents, events]);
   // No arcs: synthesizeArcs() draws every point to one fixed focal node, which
   // reads as a red starburst rather than a real incident globe.
-  const arcs: never[] = [];
+  const arcs = NO_ARCS;
 
   const briefItems = useMemo(
     () => [

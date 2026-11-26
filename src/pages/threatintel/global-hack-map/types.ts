@@ -168,3 +168,54 @@ export interface GhmSelection {
   event: PulseEvent | null;
   cve: GhmCve | null;
 }
+
+/**
+ * Route a dossier's "platform record" link to the RIGHT surface.
+ *
+ * The situation room mixes three record types: CVEs from the live feeds,
+ * breach victims from the GHM RSS mirror and ransomware claims from Global
+ * Pulse. Sending all three to `/cve-list?q=…` was misleading — a breach
+ * dossier advertised a CVE record that had nothing to do with the victim.
+ * Every target below accepts the query param we pass:
+ *   cve-list?q=…                    → CVE search
+ *   breach-hub?tab=watch&q=…        → BreachWatch's `q` filter
+ *   ransomware-hub?tab=report&group=… → RansomReport's `group` deep link
+ */
+export function platformRecordFor(args: {
+  cve: GhmCve | null;
+  incident: GhmIncident | null;
+  event: PulseEvent | null;
+}): { href: string; label: string } {
+  if (args.cve) {
+    return { href: `/threatintel/cve-list?q=${encodeURIComponent(args.cve.id)}`, label: 'CVE record' };
+  }
+  const incident = args.incident;
+  const event = args.event;
+  const text =
+    `${incident?.type ?? ''} ${incident?.actor ?? ''} ${incident?.title ?? ''} ${event?.title ?? ''}`.toLowerCase();
+  const isRansomware =
+    incident?.type?.toLowerCase() === 'ransomware' ||
+    event?.cti === 'ransomware' ||
+    event?.kind === 'ransomware' ||
+    /ransomware|ransom|lockbit|blackcat|alphv|medusa|qilin|akira|cl0p|8base|\bplay\b/i.test(text);
+
+  if (isRansomware) {
+    // GHM titles read "Company #269: Claimed by N0n, not confirmed" — the
+    // actor is the useful group lookup, not the whole headline.
+    const claimed = event?.title?.match(/claimed by\s+([^,;:]+)/i)?.[1]?.trim();
+    const group = (incident?.actor ?? claimed ?? incident?.victim ?? event?.title ?? 'ransomware')
+      .trim()
+      .toLowerCase()
+      .replace(/^claimed by\s+/i, '');
+    return {
+      href: `/threatintel/ransomware-hub?tab=report&group=${encodeURIComponent(group.slice(0, 80))}`,
+      label: 'Ransomware group',
+    };
+  }
+
+  const victim = (incident?.victim ?? event?.title ?? 'breach').trim();
+  return {
+    href: `/threatintel/breach-hub?tab=watch&q=${encodeURIComponent(victim.slice(0, 120))}`,
+    label: 'Breach record',
+  };
+}

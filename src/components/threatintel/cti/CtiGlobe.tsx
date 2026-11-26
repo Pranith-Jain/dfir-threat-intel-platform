@@ -11,6 +11,8 @@
 
 import { useEffect, useRef, useState, useMemo, type JSX } from 'react';
 import Globe, { type GlobeInstance } from 'globe.gl';
+import { feature } from 'topojson-client';
+import type { GeometryCollection, Topology } from 'topojson-specification';
 import type { CtiArc, CtiPoint } from './geo';
 import { severityColor, kindColor } from './geo';
 import { useReduceMotion } from '../../../hooks/useMediaQuery';
@@ -79,22 +81,31 @@ export default function CtiGlobe({
   const [hoveredPoint, setHoveredPoint] = useState<CtiPoint | null>(null);
   const [selectedPoint, setSelectedPoint] = useState<CtiPoint | null>(null);
 
-  // Ring data for critical/high severity points
-  const ringData: RingDatum[] = useMemo(
-    () =>
-      flatPoints
-        ? []
-        : points
-        .filter((p) => p.severity === 'critical' || p.severity === 'high')
-        .slice(0, 80)
-        .map((p) => ({
-          lat: p.lat,
-          lng: p.lng,
-          size: p.severity === 'critical' ? 4.0 : 2.8,
-          color: severityColor(p.severity),
-        })),
-    [points, flatPoints]
-  );
+  // globe.gl's accessors are installed ONCE at init. Without refs, every
+  // callback below closes over the FIRST render's props — in the situation
+  // room that is an empty incident/events array, so clicking a globe dot
+  // looked alive but never opened a dossier. Keep the latest props in refs.
+  const onPointClickRef = useRef(onPointClick);
+  onPointClickRef.current = onPointClick;
+  const onPointHoverRef = useRef(onPointHover);
+  onPointHoverRef.current = onPointHover;
+  const flatPointsRef = useRef(flatPoints);
+  flatPointsRef.current = flatPoints;
+
+  // Ring data. The situation-room (flatPoints) used to disable rings entirely
+  // because one animated ring per critical point turned a dense map into red
+  // blocks. A small, capped set gives the dots life without that failure mode.
+  const ringData: RingDatum[] = useMemo(() => {
+    const ranked = points
+      .filter((p) => p.severity === 'critical' || p.severity === 'high' || p.kind === 'breach')
+      .slice(0, flatPoints ? 14 : 80);
+    return ranked.map((p) => ({
+      lat: p.lat,
+      lng: p.lng,
+      size: flatPoints ? 1.3 : p.severity === 'critical' ? 4.0 : 2.8,
+      color: flatPoints ? kindColor(p.kind ?? '') : severityColor(p.severity),
+    }));
+  }, [points, flatPoints]);
 
   // Initialize globe
   useEffect(() => {
@@ -128,7 +139,7 @@ export default function CtiGlobe({
           return d.kind ? kindColor(d.kind) : severityColor(d.severity);
         })
         .pointAltitude((p: object) => {
-          if (flatPoints) return 0.001;
+          if (flatPointsRef.current) return 0.008;
           const alts: Record<string, number> = {
             critical: 0.15,
             high: 0.09,
@@ -139,7 +150,12 @@ export default function CtiGlobe({
           return alts[datum<CtiPointDatum>(p).severity] ?? 0.035;
         })
         .pointRadius((p: object) => {
-          if (flatPoints) return 0.45;
+          if (flatPointsRef.current) {
+            const d = datum<CtiPointDatum>(p);
+            if (d.kind === 'breach') return 0.9;
+            if (d.kind === 'ransomware' || d.kind === 'cve') return 0.75;
+            return 0.6;
+          }
           const sizes: Record<string, number> = {
             critical: 2.0,
             high: 1.5,
@@ -197,13 +213,14 @@ export default function CtiGlobe({
           if (!p) return;
           const point = datum<CtiPoint>(p);
           setSelectedPoint(point);
-          onPointClick?.(point);
+          // Ref, not the prop captured at init — see the refs above.
+          onPointClickRef.current?.(point);
           lastInteraction.current = Date.now();
         })
         .onPointHover((p: object | null) => {
           const point = p ? datum<CtiPoint>(p) : null;
           setHoveredPoint(point);
-          onPointHover?.(point);
+          onPointHoverRef.current?.(point);
           if (typeof document !== 'undefined') {
             document.body.style.cursor = point ? 'pointer' : 'default';
           }
@@ -279,6 +296,27 @@ export default function CtiGlobe({
       // Set initial POV
       globe.pointOfView({ lat: 20, lng: 0, altitude: 2.5 }, 0);
 
+      // Country outlines. The night texture shows landmasses but no borders;
+      // a thin blue stroke makes a dense situation room readable. Static asset
+      // + topojson-client, no third-party hop, and failure is non-fatal.
+      let boundariesAlive = true;
+      fetch('/world-110m.json')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((topo) => {
+          if (!boundariesAlive || !topo?.objects?.countries || !globeRef.current) return;
+          const topology = topo as unknown as Topology;
+          const shapes = feature(topology, topology.objects.countries as GeometryCollection);
+          globeRef.current
+            .polygonsData(shapes.features)
+            .polygonCapColor(() => 'rgba(0,0,0,0)')
+            .polygonSideColor(() => 'rgba(0,0,0,0)')
+            .polygonStrokeColor(() => 'rgba(125,175,255,0.28)')
+            .polygonAltitude(0.002);
+        })
+        .catch(() => {
+          /* boundaries are decoration — never break the globe */
+        });
+
       globeRef.current = globe;
       setReady(true);
 
@@ -293,6 +331,7 @@ export default function CtiGlobe({
       resizeObserver.observe(container);
 
       return () => {
+        boundariesAlive = false;
         resizeObserver.disconnect();
         container.removeEventListener('mousedown', onMouseDown);
         container.removeEventListener('mouseup', onMouseUp);

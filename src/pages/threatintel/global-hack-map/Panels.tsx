@@ -33,9 +33,9 @@ import { sanitizeUrl } from '../../../lib/sanitize-url';
 import AgentFixLinks from '../../../components/threatintel/AgentFixLinks';
 import { AiSummaryCard } from '../../../components/intel/AiSummaryCard';
 import {
-  cveFromText,
   cveSignal,
   epssPercent,
+  platformRecordFor,
   productLabel,
   severityTone,
   type GhmCve,
@@ -747,13 +747,7 @@ export function DetailPanel({
 }): JSX.Element | null {
   if (!event && !cve && !incident) return null;
   const status = incident?.status ?? (event ? incidentStatus(event) : null);
-  const id =
-    cve?.id ??
-    (cveFromText(incident?.description ?? '') ||
-      cveFromText(event?.title ?? '') ||
-      event?.id ||
-      incident?.id ||
-      'detail');
+  const record = platformRecordFor({ cve, incident, event });
   return (
     <aside
       className="pointer-events-auto flex h-full w-full flex-col overflow-y-auto custom-scrollbar rounded-l-2xl border-l border-line-1 bg-surface-100/95 shadow-xl backdrop-blur-md"
@@ -870,11 +864,8 @@ export function DetailPanel({
               NVD <ExternalLink size={10} />
             </a>
           )}
-          <Link
-            to={`/threatintel/cve-list?q=${encodeURIComponent(id)}`}
-            className="inline-flex items-center gap-1 text-muted hover:text-heading"
-          >
-            Platform record <ArrowUpRight size={10} />
+          <Link to={record.href} className="inline-flex items-center gap-1 text-muted hover:text-heading">
+            {record.label} <ArrowUpRight size={10} />
           </Link>
           {event?.url && (
             <a
@@ -896,7 +887,7 @@ export function DetailPanel({
           <Sparkles size={11} /> AI analysis
         </button>
 
-        {id && <AgentFixLinks cve={id} />}
+        {cve?.id && <AgentFixLinks cve={cve.id} />}
       </div>
     </aside>
   );
