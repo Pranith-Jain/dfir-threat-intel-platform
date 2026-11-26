@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Compass, Filter as FilterIcon, Search, Sparkles, X, type LucideIcon } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
+import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
+import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
 import { PageMeta } from '../../components/PageMeta';
 import { CATALOG, catalogSearch, type HubMeta, type HubPage } from '../../data/threatintel-catalog';
 import type { HubPageBadge } from '../../data/threatintel-hubs';
@@ -215,6 +217,13 @@ function CategoryPill({
 }
 
 function CategorySection({ category, entries }: { category: HubMeta; entries: readonly HubPage[] }): JSX.Element {
+  // Opt-in AI briefing for the detection catalog: the cards are navigation,
+  // so the summary is generated from their labels/descriptions and never
+  // fetched on page load. Same pattern as the live intel feeds.
+  const aiItems = useMemo(
+    () => (category.id === 'detections' ? entries.map((e) => ({ title: e.label, body: e.desc, source: e.path })) : []),
+    [category.id, entries]
+  );
   if (entries.length === 0) return <></>;
   return (
     <section aria-labelledby={`hub-${category.id}`}>
@@ -228,6 +237,27 @@ function CategorySection({ category, entries }: { category: HubMeta; entries: re
         </h2>
         <p className="hidden text-tool text-muted sm:block">{category.blurb}</p>
       </div>
+      {category.id === 'detections' && (
+        <div className="mb-4 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="flex items-center gap-2 text-tool text-muted">
+              <Sparkles size={13} className="text-accent-text" aria-hidden="true" />
+              Opt-in AI briefing over the {entries.length} detection &amp; response tools in this category.
+            </p>
+            <PostAnalysisButton
+              title="Detection & Response catalog"
+              description="AI analysis of the detection tooling, ATT&CK coverage and threat-signal feeds listed in this catalog category."
+              source="detections-catalog"
+            />
+          </div>
+          <AiSummaryCard
+            surface="Detection Catalog · Detection & Response"
+            items={aiItems}
+            requireAdmin={false}
+            autoFetch={false}
+          />
+        </div>
+      )}
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {entries.map((e) => (
           <CatalogCard key={e.path} entry={e} hubIcon={category.icon} />
