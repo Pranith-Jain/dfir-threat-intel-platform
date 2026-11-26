@@ -976,7 +976,7 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
   // ── AAD tools — ThreatDefence agentic attack detections ─────────
   h.tools(
     'aad_list_frameworks',
-    'List AI-agent attack frameworks covered by ThreatDefence Agentic Attack Detections (MIT): 100+ frameworks with KQL hunts, Sigma, Suricata, YARA, indicator counts and the reported in-the-wild use. Filter by keyword or minimum rule/indicator counts.',
+    'List AI-agent attack frameworks covered by ThreatDefence Agentic Attack Detections (MIT): 82 frameworks with KQL hunts, Sigma, Suricata, YARA, indicator counts and the reported in-the-wild use. Filter by keyword or minimum rule/indicator counts.',
     {
       keyword: z.string().optional().describe('Substring match against name, slug, description and reported use'),
       min_indicators: z.number().int().min(0).optional().describe('Minimum sourced indicator count'),

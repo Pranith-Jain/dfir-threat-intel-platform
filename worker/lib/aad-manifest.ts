@@ -37,7 +37,10 @@ export interface AadIndicator {
   source: string;
   sourceUrl: string;
   reported: string;
+  /** Primary framework (display) — the first of `frameworks` for shared IOCs. */
   framework: string;
+  /** All frameworks this indicator is attributed to (CSV cells can list several). */
+  frameworks: string[];
   type?: string;
 }
 
@@ -209,7 +212,8 @@ export async function filterAadIndicators(assets: Fetcher, opts: AadIndicatorFil
       cachedSet(indicatorCache, key, shard, 32);
     }
     for (const item of shard.items) {
-      if (framework && item.framework.toLowerCase() !== framework.toLowerCase()) continue;
+      const owners = item.frameworks?.length ? item.frameworks : [item.framework];
+      if (framework && !owners.some((f) => f.toLowerCase() === framework.toLowerCase())) continue;
       if (needle && !`${item.value} ${item.context} ${item.source}`.toLowerCase().includes(needle)) continue;
       out.push({ ...item, type: shard.type });
       if (out.length >= limit) return out;

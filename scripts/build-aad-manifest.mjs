@@ -225,6 +225,10 @@ async function main() {
   const byFramework = new Map();
   for (const row of indicators) {
     const type = row.type || 'string';
+    // Shared indicators name several frameworks in one space-separated cell
+    // (e.g. "artex cairn"). Attribute the indicator to each of them; treating
+    // the whole cell as a slug produced fake frameworks and broke filtering.
+    const frameworkList = (row.framework || '').split(/[\s,]+/).filter(Boolean);
     const item = {
       value: (row.value || '').slice(0, 400),
       confidence: row.confidence || '',
@@ -233,13 +237,16 @@ async function main() {
       source: row.source || '',
       sourceUrl: row.source_url || '',
       reported: row.reported || '',
-      framework: row.framework || '',
+      framework: frameworkList[0] || 'general',
+      frameworks: frameworkList,
     };
     if (!byType.has(type)) byType.set(type, []);
     byType.get(type).push(item);
-    const fw = row.framework || 'general';
-    if (!byFramework.has(fw)) byFramework.set(fw, []);
-    byFramework.get(fw).push({ type, value: item.value, confidence: item.confidence, context: item.context, source: item.source, sourceUrl: item.sourceUrl, reported: item.reported });
+    const owners = frameworkList.length ? frameworkList : ['general'];
+    for (const fw of owners) {
+      if (!byFramework.has(fw)) byFramework.set(fw, []);
+      byFramework.get(fw).push({ ...item, type });
+    }
   }
   const typeNames = [...byType.keys()].sort();
   for (const type of typeNames) {

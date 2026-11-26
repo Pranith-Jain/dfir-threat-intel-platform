@@ -4170,7 +4170,7 @@ export function bridgeMcpTools(
   add({
     name: 'aad_list_frameworks',
     description:
-      'List AI-agent attack frameworks covered by ThreatDefence Agentic Attack Detections (MIT): 100+ frameworks with KQL hunts, Sigma, Suricata, YARA, indicator counts and reported in-the-wild use. Filter by keyword or minimum rule/indicator counts.',
+      'List AI-agent attack frameworks covered by ThreatDefence Agentic Attack Detections (MIT): 82 frameworks with KQL hunts, Sigma, Suricata, YARA, indicator counts and reported in-the-wild use. Filter by keyword or minimum rule/indicator counts.',
     params: [
       {
         name: 'keyword',

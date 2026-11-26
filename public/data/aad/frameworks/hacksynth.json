@@ -9,7 +9,7 @@
     "sigma": 4,
     "suricata": 1,
     "yara": 2,
-    "indicators": 9
+    "indicators": 10
   },
   "techniques": [
     {
@@ -45,85 +45,124 @@
   ],
   "indicators": [
     {
-      "type": "string",
       "value": "apt -y install kali-linux-headless sshpass curl",
       "confidence": "high",
       "context": "Package install HackSynth runs once in every new attackbox container, inside /bin/bash -c with apt update before it and three ssh-keyscan calls for OverTheWire after it (docker_setup.py:36)",
+      "actor": "HackSynth operators",
       "source": "ThreatDefence review of the HackSynth source code",
       "sourceUrl": "https://github.com/aielte-research/HackSynth/blob/48a41f795dda186df66561c4fd2b58ae84e3e4f8/docker_setup.py#L34-L40",
-      "reported": "2025-06-24"
+      "reported": "2025-06-24",
+      "framework": "hacksynth",
+      "frameworks": ["hacksynth"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "ssh-keyscan -p 2220 bandit.labs.overthewire.org",
       "confidence": "medium",
       "context": "OverTheWire Bandit host key added during HackSynth attackbox setup, followed by -p 2231 krypton.labs.overthewire.org and -p 2223 leviathan.labs.overthewire.org (docker_setup.py:37-39). People playing OverTheWire by hand may run the same",
+      "actor": "HackSynth operators",
       "source": "ThreatDefence review of the HackSynth source code",
       "sourceUrl": "https://github.com/aielte-research/HackSynth/blob/48a41f795dda186df66561c4fd2b58ae84e3e4f8/docker_setup.py#L37-L39",
-      "reported": "2025-06-24"
+      "reported": "2025-06-24",
+      "framework": "hacksynth",
+      "frameworks": ["hacksynth"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "attackbox_kali_pico",
       "confidence": "medium",
       "context": "Docker container name of the HackSynth attackbox in the 69 picoCTF configs (configs/pico_bench/*.json, attackbox key). Set in the config",
+      "actor": "HackSynth operators",
       "source": "ThreatDefence review of the HackSynth source code",
       "sourceUrl": "https://github.com/aielte-research/HackSynth/blob/48a41f795dda186df66561c4fd2b58ae84e3e4f8/configs/pico_bench/benchmarks/Gpt_4o.json#L15",
-      "reported": "2025-06-24"
+      "reported": "2025-06-24",
+      "framework": "hacksynth",
+      "frameworks": ["hacksynth"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "attackbox_kali_overthewire",
       "confidence": "medium",
       "context": "Docker container name of the HackSynth attackbox in the 70 OverTheWire configs (configs/overthewire_bench/*.json, attackbox key). Set in the config",
+      "actor": "HackSynth operators",
       "source": "ThreatDefence review of the HackSynth source code",
       "sourceUrl": "https://github.com/aielte-research/HackSynth/blob/48a41f795dda186df66561c4fd2b58ae84e3e4f8/configs/overthewire_bench/benchmarks/Gpt_4o.json#L15",
-      "reported": "2025-06-24"
+      "reported": "2025-06-24",
+      "framework": "hacksynth",
+      "frameworks": ["hacksynth"],
+      "type": "string"
     },
     {
-      "type": "file_path",
       "value": "/data/cyberml_attackbox",
       "confidence": "medium",
       "context": "Host folder HackSynth bind-mounts on /data in the attackbox when it exists (docker_setup.py:9)",
+      "actor": "HackSynth operators",
       "source": "ThreatDefence review of the HackSynth source code",
       "sourceUrl": "https://github.com/aielte-research/HackSynth/blob/48a41f795dda186df66561c4fd2b58ae84e3e4f8/docker_setup.py#L9",
-      "reported": "2025-06-24"
+      "reported": "2025-06-24",
+      "framework": "hacksynth",
+      "frameworks": ["hacksynth"],
+      "type": "file_path"
     },
     {
-      "type": "string",
       "value": "aielte/CyberML2024",
       "confidence": "medium",
       "context": "Neptune.ai project every shipped HackSynth config logs runs to; each run uploads the config and every command and command output. Seen in config files, or in Neptune traffic only with TLS inspection",
+      "actor": "HackSynth operators",
       "source": "ThreatDefence review of the HackSynth source code",
       "sourceUrl": "https://github.com/aielte-research/HackSynth/blob/48a41f795dda186df66561c4fd2b58ae84e3e4f8/configs/pico_bench/benchmarks/Gpt_4o.json#L3",
-      "reported": "2025-06-24"
+      "reported": "2025-06-24",
+      "framework": "hacksynth",
+      "frameworks": ["hacksynth"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "You are a penetration testing command generator in a CTF game",
       "confidence": "medium",
       "context": "HackSynth OverTheWire Planner system prompt, sent to the model on every step; visible where model traffic is inspected or in the configs on disk",
+      "actor": "HackSynth operators",
       "source": "ThreatDefence review of the HackSynth source code",
       "sourceUrl": "https://github.com/aielte-research/HackSynth/blob/48a41f795dda186df66561c4fd2b58ae84e3e4f8/configs/overthewire_bench/benchmarks/Gpt_4o.json#L21",
-      "reported": "2025-06-24"
+      "reported": "2025-06-24",
+      "framework": "hacksynth",
+      "frameworks": ["hacksynth"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "ENCLOSE THE COMMAND WITHIN <CMD></CMD> TAGS",
       "confidence": "medium",
       "context": "End of the HackSynth Planner user prompt in the picoCTF and OverTheWire configs; the agent runs whatever the model puts between <CMD> tags (pentest_agent.py:72)",
+      "actor": "HackSynth operators",
       "source": "ThreatDefence review of the HackSynth source code",
       "sourceUrl": "https://github.com/aielte-research/HackSynth/blob/48a41f795dda186df66561c4fd2b58ae84e3e4f8/configs/pico_bench/benchmarks/Gpt_4o.json#L22",
-      "reported": "2025-06-24"
+      "reported": "2025-06-24",
+      "framework": "hacksynth",
+      "frameworks": ["hacksynth"],
+      "type": "string"
     },
     {
-      "type": "file_name",
+      "value": "kalilinux/kali-rolling",
+      "confidence": "low",
+      "context": "Official Kali image HackSynth pulls for its attackbox, run with NET_ADMIN, SYS_PTRACE and /dev/net/tun (docker_setup.py:20-32). Used by many tools and people: context only",
+      "actor": "HackSynth operators",
+      "source": "ThreatDefence review of the HackSynth source code",
+      "sourceUrl": "https://github.com/aielte-research/HackSynth/blob/48a41f795dda186df66561c4fd2b58ae84e3e4f8/docker_setup.py#L20-L32",
+      "reported": "2025-06-24",
+      "framework": "hacksynth",
+      "frameworks": ["hacksynth", "aria-x", "clearwing"],
+      "type": "docker_image"
+    },
+    {
       "value": "pentest_agent.py",
       "confidence": "low",
       "context": "HackSynth agent module, next to run_bench.py and docker_setup.py in a clone. A common file name: only the three together mean HackSynth",
+      "actor": "HackSynth operators",
       "source": "ThreatDefence review of the HackSynth source code",
       "sourceUrl": "https://github.com/aielte-research/HackSynth/blob/48a41f795dda186df66561c4fd2b58ae84e3e4f8/pentest_agent.py#L9",
-      "reported": "2025-06-24"
+      "reported": "2025-06-24",
+      "framework": "hacksynth",
+      "frameworks": ["hacksynth"],
+      "type": "file_name"
     }
   ],
   "indicatorsTruncated": false,

@@ -9,7 +9,7 @@
     "sigma": 4,
     "suricata": 8,
     "yara": 2,
-    "indicators": 19
+    "indicators": 22
   },
   "techniques": [
     {
@@ -45,175 +45,268 @@
   ],
   "indicators": [
     {
-      "type": "user_agent",
+      "value": "8787",
+      "confidence": "medium",
+      "context": "Default ARTEX console port ARIA-X's console listens on 8787 too (01NGVI-QINGYI/ARIA-X config.py:135). Clearwing's sourcehunt webhook binds 0.0.0.0:8787 by default (Lazarus-AI-OSS/clearwing).",
+      "actor": "ARTEX operators",
+      "source": "Censys",
+      "sourceUrl": "https://censys.com/blog/artex-agentic-asbestos/",
+      "reported": "2026-11-05",
+      "framework": "artex",
+      "frameworks": ["artex", "aria-x", "clearwing"],
+      "type": "port"
+    },
+    {
+      "value": "api.deepseek.com",
+      "confidence": "low",
+      "context": "AI model API. Investigate only when a server calls it unexpectedly alongside other activity",
+      "actor": "ARTEX operators",
+      "source": "FBI FLASH-20261113-001",
+      "sourceUrl": "https://www.ic3.gov/CSA/2026/261113.pdf",
+      "reported": "2026-11-13",
+      "framework": "artex",
+      "frameworks": ["artex", "aria-x", "pentest-harness"],
+      "type": "domain"
+    },
+    {
+      "value": "kalilinux/kali-rolling",
+      "confidence": "low",
+      "context": "Official Kali image HackSynth pulls for its attackbox, run with NET_ADMIN, SYS_PTRACE and /dev/net/tun (docker_setup.py:20-32). Used by many tools and people: context only",
+      "actor": "HackSynth operators",
+      "source": "ThreatDefence review of the HackSynth source code",
+      "sourceUrl": "https://github.com/aielte-research/HackSynth/blob/48a41f795dda186df66561c4fd2b58ae84e3e4f8/docker_setup.py#L20-L32",
+      "reported": "2025-06-24",
+      "framework": "hacksynth",
+      "frameworks": ["hacksynth", "aria-x", "clearwing"],
+      "type": "docker_image"
+    },
+    {
       "value": "ARIA-X/0.3.0 (authorized security research)",
       "confidence": "high",
       "context": "User agent ARIA-X v0.3.0 sends on every request of its http_request and web_probe tools, and on its DuckDuckGo research searches. Built from __version__, so other versions differ only in the number; the model can replace it through the tool's headers argument",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/tools/net.py#L40",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "ARIA-X/0.2.1 (authorized security research)",
       "confidence": "high",
       "context": "User agent of ARIA-X v0.2.1 (same f-string as v0.3.0)",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/80a7500dbcacdb177c4578ff982c99e3b33e2b1e/src/aria_x/tools/net.py#L39",
-      "reported": "2026-11-23"
+      "reported": "2026-11-23",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "user_agent"
     },
     {
-      "type": "user_agent",
       "value": "ARIA-X/0.1 (authorized security research)",
       "confidence": "high",
       "context": "Fixed user agent of ARIA-X v0.1.0 and v0.2.0",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/995c267f2522ef6cf2aa360c6c2b9c8419f0a4b1/src/aria_x/tools/net.py#L38",
-      "reported": "2026-11-22"
+      "reported": "2026-11-22",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "user_agent"
     },
     {
-      "type": "string",
       "value": "ARIA-X · Engagement Console",
       "confidence": "high",
       "context": "HTML title of the ARIA-X console on port 8787 (middle dot U+00B7), served without a token even when one is set; same since v0.1.0",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/web/index.html#L8",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "ARIA-X console — autonomous security engagement control plane.",
       "confidence": "high",
       "context": "Meta description of the ARIA-X console page",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/web/index.html#L7",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Bearer realm=\"ARIA-X\"",
       "confidence": "high",
       "context": "WWW-Authenticate on the 401 the ARIA-X API answers when a token is set and none is sent (any /api/ path except /api/health)",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/server/app.py#L306",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "string"
     },
     {
-      "type": "http_header",
       "value": "X-ARIA-X-Token",
       "confidence": "high",
       "context": "Request header the ARIA-X API accepts in place of Authorization: Bearer <token>; also listed in its CORS Access-Control-Allow-Headers",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/server/app.py#L394",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "http_header"
     },
     {
-      "type": "string",
       "value": "Autonomous Reasoning & Investigation Agent, eXtended",
       "confidence": "medium",
       "context": "ARIA-X tagline: in the /api/config response (\"tagline\"), the console header, the CLI banner and the package description",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/__init__.py#L23",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "# ARIA-X OPERATING DOCTRINE",
       "confidence": "high",
       "context": "First line of every ARIA-X agent system prompt; visible in model API request bodies to a TLS-inspecting proxy or an LLM gateway log",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/agents/prompts.py#L28",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "ARIA_X_AUTH_TOKEN",
       "confidence": "medium",
       "context": "Environment variable holding the ARIA-X console bearer token; required by its compose file, optional for docker run of its image (then the API has no authentication)",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/config.py#L235",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "ARIA_X_SANDBOX",
       "confidence": "medium",
       "context": "Environment variable set to 1 for every command ARIA-X's local sandbox runs as bash -lc on the host; also the setting that picks the sandbox backend",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/tools/sandbox.py#L278",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "ARIA_X_SESSION",
       "confidence": "high",
       "context": "Environment variable set to 1 for ARIA-X's interactive PTY sessions (/bin/bash -lc <command>)",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/tools/session.py#L227",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "aria-x-sess-",
       "confidence": "high",
       "context": "Name prefix of ARIA-X's interactive Docker sandbox containers (aria-x-sess-<8 hex>, docker run --rm -i -t); one-shot command containers are aria-x-<12 hex>",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/tools/session.py#L211",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "aria-x-console",
       "confidence": "medium",
       "context": "Container name of the ARIA-X console in its compose file (image aria-x:0.3.0, published on 127.0.0.1:8787)",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/docker/docker-compose.yml#L17",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "string"
     },
     {
-      "type": "docker_image",
       "value": "aria-x:0.3.0",
       "confidence": "medium",
       "context": "Locally built ARIA-X image (python:3.12-slim, CMD serve --host 0.0.0.0 --port 8787). Not published to a registry",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/docker/docker-compose.yml#L16",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "docker_image"
     },
     {
-      "type": "file_name",
       "value": "aria-x.db",
       "confidence": "high",
       "context": "ARIA-X SQLite database in its data folder (./data, /app/data in the image), WAL mode so also aria-x.db-wal and aria-x.db-shm",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/config.py#L438",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "file_name"
     },
     {
-      "type": "file_name",
       "value": "aria-x.toml",
       "confidence": "medium",
       "context": "ARIA-X configuration file (configs/aria-x.toml or aria-x.toml), written by aria-x init",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/config.py#L539",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "file_name"
     },
     {
-      "type": "file_path",
       "value": "/work/evidence/http_",
       "confidence": "medium",
       "context": "Evidence records of ARIA-X HTTP requests: <runs>/run_<12 hex>/work/evidence/http_<YYYYMMDD>_<HHMMSS>_<8 digits>.json, holding the request headers with the ARIA-X user agent",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/tools/net.py#L124",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "file_path"
     },
     {
-      "type": "url",
       "value": "https://html.duckduckgo.com/html/?q=",
       "confidence": "low",
       "context": "ARIA-X web_search tool endpoint, fetched with the ARIA-X user agent. Used by many tools: context only, unless the user agent matches",
+      "actor": "ARIA-X operators",
       "source": "ThreatDefence review of the ARIA-X source code",
       "sourceUrl": "https://github.com/01NGVI-QINGYI/ARIA-X/blob/015e197014173de89c0905e1a314629c7b8eec96/src/aria_x/tools/net.py#L679",
-      "reported": "2026-11-25"
+      "reported": "2026-11-25",
+      "framework": "aria-x",
+      "frameworks": ["aria-x"],
+      "type": "url"
     }
   ],
   "indicatorsTruncated": false,

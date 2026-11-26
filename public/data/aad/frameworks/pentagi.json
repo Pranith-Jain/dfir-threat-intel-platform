@@ -9,7 +9,7 @@
     "sigma": 3,
     "suricata": 10,
     "yara": 3,
-    "indicators": 36
+    "indicators": 39
   },
   "techniques": [
     {
@@ -75,328 +75,472 @@
   ],
   "indicators": [
     {
-      "type": "docker_image",
       "value": "vxcontrol/kali-linux",
       "confidence": "high",
       "context": "Default PentAGI worker image for penetration testing tasks (DOCKER_DEFAULT_IMAGE_FOR_PENTEST, backend/pkg/config/config.go:67)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "docker_image"
     },
     {
-      "type": "docker_image",
       "value": "vxcontrol/pentagi",
       "confidence": "high",
       "context": "PentAGI server image (docker-compose.yml)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "docker_image"
     },
     {
-      "type": "docker_image",
       "value": "vxcontrol/scraper",
       "confidence": "medium",
       "context": "PentAGI headless browser service that fetches target pages and screenshots (docker-compose.yml)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "docker_image"
     },
     {
-      "type": "string",
       "value": "pentagi-terminal-",
       "confidence": "high",
       "context": "Name prefix of every per-flow worker container, pentagi-terminal-<flow id>, with a pentagi-terminal-<id>-data volume and /work as working folder (backend/pkg/tools/terminal.go:27, backend/pkg/docker/client.go:33-34)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "pentagi.tenant",
       "confidence": "high",
       "context": "Docker label on PentAGI worker containers and volumes when a tenant is set (backend/pkg/config/tenant.go:189)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "read -r adj 2>/dev/null </proc/self/oom_score_adj",
       "confidence": "high",
       "context": "Shell wrapper around every agent command in the worker container: trap \"\" HUP; raise oom_score_adj by one to mark the flow; exec sh -c \"$0\" <command> (backend/pkg/docker/flow_commands.go:9-13)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "domain",
       "value": "update.pentagi.com",
       "confidence": "medium",
       "context": "PentAGI update service. Every installation POSTs an installation summary to /api/v1/proxy/updates/pentagi/check every 3 hours by default (backend/pkg/server/update/update.go:52, config.go:279-281). Legitimate vendor service: a hit means PentAGI runs on that host",
+      "actor": "Related",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "domain"
     },
     {
-      "type": "url",
       "value": "https://update.pentagi.com/api/v1/proxy/updates/pentagi/check",
       "confidence": "medium",
       "context": "PentAGI installation update check, every 3 hours by default",
+      "actor": "Related",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "url"
     },
     {
-      "type": "domain",
       "value": "support.pentagi.com",
       "confidence": "low",
       "context": "PentAGI support service (config.go:283)",
+      "actor": "Related",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "domain"
     },
     {
-      "type": "string",
       "value": "CN=PentAGI CA",
       "confidence": "high",
       "context": "Issuer of the self-signed certificate PentAGI generates for its HTTPS console: C=US, ST=NY, L=NY, O=PentAGI, OU=Project, CN=PentAGI CA (scripts/entrypoint.sh:20-42)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "pentagi.local",
       "confidence": "high",
       "context": "Subject alternative name of the PentAGI console certificate; the subject is CN=localhost, O=PentAGI (scripts/entrypoint.sh)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "favicon_mmh3",
       "value": "-1596753120",
       "confidence": "high",
       "context": "PentAGI console favicon.ico (Shodan http.favicon.hash), verified against frontend/public/favicon",
+      "actor": "PentAGI operators",
       "source": "RST Cloud",
       "sourceUrl": "https://www.rstcloud.com/hunting-ai-harnesses-cairn-artex-pentagi/",
-      "reported": "2026-11-02"
+      "reported": "2026-11-02",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "favicon_mmh3"
     },
     {
-      "type": "sha256",
       "value": "ec0eb56172d3c3fd926c7cee40c36624aee63369f3fab227408b5575756232bb",
       "confidence": "high",
       "context": "PentAGI console favicon.ico",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "sha256"
     },
     {
-      "type": "sha256",
       "value": "2a620e3c5f7b49dfc6f5278352607f7931f8c38ef9d4689908af65538dd95366",
       "confidence": "high",
       "context": "PentAGI console favicon-96x96.png (Netlas favicon SHA-256)",
+      "actor": "PentAGI operators",
       "source": "RST Cloud",
       "sourceUrl": "https://www.rstcloud.com/hunting-ai-harnesses-cairn-artex-pentagi/",
-      "reported": "2026-11-02"
+      "reported": "2026-11-02",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "sha256"
     },
     {
-      "type": "string",
       "value": "PentAGI Swagger API",
       "confidence": "high",
       "context": "Title of the PentAGI Swagger UI (backend/pkg/server/router.go:72)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "admin@pentagi.com",
       "confidence": "medium",
       "context": "Default PentAGI administrator account, password admin until changed (migrations/sql/20241026_115120_initial_state.sql)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "port",
       "value": "8443",
       "confidence": "low",
       "context": "Default PentAGI console port (HTTPS); RST Cloud also sees clusters on 8666 and 8765",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "port"
     },
     {
-      "type": "port",
       "value": "28000-29999",
       "confidence": "medium",
       "context": "PentAGI worker ports: two per flow from DOCKER_PORTS_BASE 28000, published on 0.0.0.0, used for reverse shells and callbacks (backend/pkg/docker/client.go:35-44,121-131)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "port"
     },
     {
-      "type": "string",
       "value": "operating within a fully authorized penetration testing system",
       "confidence": "high",
       "context": "Fixed text in PentAGI pentester prompts, sent inside model requests (backend/pkg/templates/prompts/pentester.tmpl:3)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "TOOL CALL WORKFLOW ENFORCER",
       "confidence": "high",
       "context": "Heading of PentAGI's reflector prompt, which answers the agent in the user's voice (backend/pkg/templates/prompts/reflector.tmpl:1)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "## AUTHORIZATION FRAMEWORK",
       "confidence": "medium",
       "context": "Pre-authorization block that opens PentAGI role prompts (backend/pkg/templates/prompts/*.tmpl)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "hack_result",
       "confidence": "medium",
       "context": "PentAGI tool function name in model requests (backend/pkg/tools/registry.go)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "memorist_result",
       "confidence": "medium",
       "context": "PentAGI tool function name in model requests (backend/pkg/tools/registry.go)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "maintenance_result",
       "confidence": "medium",
       "context": "PentAGI tool function name in model requests (backend/pkg/tools/registry.go)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "someuser:somepass",
       "confidence": "medium",
       "context": "Default basic-auth credentials of the PentAGI scraper service (docker-compose.yml)",
+      "actor": "PentAGI operators",
       "source": "ThreatDefence review of the PentAGI source code",
       "sourceUrl": "https://github.com/vxcontrol/pentagi",
-      "reported": "2026-11-21"
+      "reported": "2026-11-21",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "ipv4",
       "value": "45.142.193.132",
       "confidence": "medium",
       "context": "Orchestration host of a PaperCut exploitation operator; presented a PentAGI CA certificate on port 33333 from April 7 to July 6, 2026",
+      "actor": "PaperCut exploitation operator (Hunt.io)",
       "source": "Hunt.io",
       "sourceUrl": "https://hunt.io/blog/papercut-attacker-ai-toolkit-exploit-code-second-rce",
-      "reported": "2026-10-15"
+      "reported": "2026-10-15",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "ipv4"
     },
     {
-      "type": "sha256",
       "value": "12603f7a89c66717661f4695e2f0d474036e42ee1631b2070aa88d590d1b79c3",
       "confidence": "medium",
       "context": "PentAGI certificate presented by 45.142.193.132 on port 33333",
+      "actor": "PaperCut exploitation operator (Hunt.io)",
       "source": "Hunt.io",
       "sourceUrl": "https://hunt.io/blog/papercut-attacker-ai-toolkit-exploit-code-second-rce",
-      "reported": "2026-10-15"
+      "reported": "2026-10-15",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "sha256"
     },
     {
-      "type": "ipv4",
       "value": "23.226.135.117",
       "confidence": "low",
       "context": "Exposed PentAGI console renamed xhackai, port 8443. An exposed console is not proof of malicious use",
+      "actor": "Unattributed console operators",
       "source": "RST Cloud",
       "sourceUrl": "https://www.rstcloud.com/hunting-ai-harnesses-cairn-artex-pentagi/",
-      "reported": "2026-11-02"
+      "reported": "2026-11-02",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "ipv4"
     },
     {
-      "type": "ipv4",
       "value": "119.45.26.102",
       "confidence": "low",
       "context": "Exposed renamed PentAGI console, port 18089. An exposed console is not proof of malicious use",
+      "actor": "Unattributed console operators",
       "source": "RST Cloud",
       "sourceUrl": "https://www.rstcloud.com/hunting-ai-harnesses-cairn-artex-pentagi/",
-      "reported": "2026-11-02"
+      "reported": "2026-11-02",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "ipv4"
     },
     {
-      "type": "ipv4",
       "value": "82.25.190.221",
       "confidence": "low",
       "context": "Exposed PentAGI console, port 8443. An exposed console is not proof of malicious use",
+      "actor": "Unattributed console operators",
       "source": "RST Cloud",
       "sourceUrl": "https://www.rstcloud.com/hunting-ai-harnesses-cairn-artex-pentagi/",
-      "reported": "2026-11-02"
+      "reported": "2026-11-02",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "ipv4"
     },
     {
-      "type": "ipv4",
       "value": "124.223.104.170",
       "confidence": "low",
       "context": "Exposed PentAGI console, port 8443. An exposed console is not proof of malicious use",
+      "actor": "Unattributed console operators",
       "source": "RST Cloud",
       "sourceUrl": "https://www.rstcloud.com/hunting-ai-harnesses-cairn-artex-pentagi/",
-      "reported": "2026-11-02"
+      "reported": "2026-11-02",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "ipv4"
     },
     {
-      "type": "ipv4",
       "value": "23.95.170.215",
       "confidence": "low",
       "context": "Exposed PentAGI console, port 8443. An exposed console is not proof of malicious use",
+      "actor": "Unattributed console operators",
       "source": "RST Cloud",
       "sourceUrl": "https://www.rstcloud.com/hunting-ai-harnesses-cairn-artex-pentagi/",
-      "reported": "2026-11-02"
+      "reported": "2026-11-02",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "ipv4"
     },
     {
-      "type": "string",
+      "value": "1.14.104.208",
+      "confidence": "low",
+      "context": "ARTEX and PentAGI consoles on one server, ports 8443 and 8787. An exposed console is not proof of malicious use",
+      "actor": "Unattributed console operators",
+      "source": "RST Cloud",
+      "sourceUrl": "https://www.rstcloud.com/hunting-ai-harnesses-cairn-artex-pentagi/",
+      "reported": "2026-11-02",
+      "framework": "artex",
+      "frameworks": ["artex", "pentagi"],
+      "type": "ipv4"
+    },
+    {
+      "value": "51.158.154.152",
+      "confidence": "low",
+      "context": "ARTEX and PentAGI consoles on one server, ports 8443 and 8787. An exposed console is not proof of malicious use",
+      "actor": "Unattributed console operators",
+      "source": "RST Cloud",
+      "sourceUrl": "https://www.rstcloud.com/hunting-ai-harnesses-cairn-artex-pentagi/",
+      "reported": "2026-11-02",
+      "framework": "artex",
+      "frameworks": ["artex", "pentagi"],
+      "type": "ipv4"
+    },
+    {
+      "value": "84.247.152.233",
+      "confidence": "low",
+      "context": "ARTEX and PentAGI consoles on one server, ports 8443 and 8787. An exposed console is not proof of malicious use",
+      "actor": "Unattributed console operators",
+      "source": "RST Cloud",
+      "sourceUrl": "https://www.rstcloud.com/hunting-ai-harnesses-cairn-artex-pentagi/",
+      "reported": "2026-11-02",
+      "framework": "artex",
+      "frameworks": ["artex", "pentagi"],
+      "type": "ipv4"
+    },
+    {
       "value": "AS398823",
       "confidence": "low",
       "context": "Network hosting about 90 exposed PentAGI consoles (RST Cloud, November 2, 2026)",
+      "actor": "PentAGI operators",
       "source": "RST Cloud",
       "sourceUrl": "https://www.rstcloud.com/hunting-ai-harnesses-cairn-artex-pentagi/",
-      "reported": "2026-11-02"
+      "reported": "2026-11-02",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "xhackai",
       "confidence": "low",
       "context": "Title of a renamed PentAGI console",
+      "actor": "PentAGI operators",
       "source": "RST Cloud",
       "sourceUrl": "https://www.rstcloud.com/hunting-ai-harnesses-cairn-artex-pentagi/",
-      "reported": "2026-11-02"
+      "reported": "2026-11-02",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "Specter",
       "confidence": "low",
       "context": "Title of a renamed PentAGI console",
+      "actor": "PentAGI operators",
       "source": "RST Cloud",
       "sourceUrl": "https://www.rstcloud.com/hunting-ai-harnesses-cairn-artex-pentagi/",
-      "reported": "2026-11-02"
+      "reported": "2026-11-02",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     },
     {
-      "type": "string",
       "value": "PentestAI",
       "confidence": "low",
       "context": "Title of a renamed PentAGI console",
+      "actor": "PentAGI operators",
       "source": "RST Cloud",
       "sourceUrl": "https://www.rstcloud.com/hunting-ai-harnesses-cairn-artex-pentagi/",
-      "reported": "2026-11-02"
+      "reported": "2026-11-02",
+      "framework": "pentagi",
+      "frameworks": ["pentagi"],
+      "type": "string"
     }
   ],
   "indicatorsTruncated": false,
