@@ -700,10 +700,19 @@ export async function promptintelChangelogHandler(c: Context<{ Bindings: Env }>)
 export async function promptintelQuotaHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   const token = c.env.PROMPTINTEL_API_KEY;
   if (!token) return noKey(c);
-  const [quota, limits] = await Promise.all([upstream('/quota', token), upstream('/agents/me/limits', token)]);
-  if (!quota && !limits) return c.json({ error: 'upstream_error' }, 502, { 'cache-control': 'no-store' });
-  return c.json({ quota: quota?.body ?? null, limits: limits?.body ?? null }, 200, {
-    'x-source': 'promptintel-live',
-    'cache-control': 'no-store',
-  });
+  // `/quota` was in the published OpenAPI spec but the live API answers 404
+  // "Endpoint not found" — `/agents/me/limits` is the working, documented
+  // replacement and reports plan, daily request count and every per-key
+  // allowance. `/agents/me/reputation` is explicitly not counted against the
+  // daily request limit, so it is safe to include on every call.
+  const [limits, reputation] = await Promise.all([
+    upstream('/agents/me/limits', token),
+    upstream('/agents/me/reputation', token),
+  ]);
+  if (!limits && !reputation) return c.json({ error: 'upstream_error' }, 502, { 'cache-control': 'no-store' });
+  return c.json(
+    { limits: limits?.body ?? null, reputation: reputation?.body ?? null },
+    200,
+    { 'x-source': 'promptintel-live', 'cache-control': 'no-store', ...(limits?.headers ?? {}) }
+  );
 }
