@@ -25,6 +25,11 @@ aiCtiRouter.get('/ai-cti-feed/', async (c) => {
       repoUrl: idx.repoUrl,
       license: idx.license,
       counts: idx.counts,
+      actors: idx.actors,
+      techniques: idx.techniques,
+      malware: idx.malware,
+      reports: idx.reports,
+      indicators: idx.indicators,
     },
     200,
     { 'cache-control': 'public, max-age=600', 'x-source': 'ai-cti-mirror' }
