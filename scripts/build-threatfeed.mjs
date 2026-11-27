@@ -20,6 +20,12 @@ const OUT = join(ROOT, 'public', 'data', 'threatfeed', 'index.json');
 const REPO = 'https://github.com/jozeta/ThreatFeed';
 const FEEDS = 'https://jozeta.github.io/ThreatFeed/data/feeds.json';
 const UA = 'Mozilla/5.0 (compatible; pranithjain-sync/1.0; +https://pranithjain.qzz.io)';
+const CURATED_FEEDS = [
+  { id: 'news', name: 'News', description: 'Important security stories from ThreatFeed, one per story.', file: 'news.xml' },
+  { id: 'vulns', name: 'Vulnerabilities', description: 'New CISA KEV entries, critical CVEs, public exploits and Patch Tuesday.', file: 'vulns.xml' },
+  { id: 'ransomware', name: 'Ransomware', description: 'Ransomware leak-site victims and ransomware news.', file: 'ransomware.xml' },
+  { id: 'npm', name: 'npm advisories', description: 'Reviewed npm security advisories from the GitHub Advisory Database.', file: 'npm.xml' },
+];
 
 export function parseThreatFeed(raw) {
   const d = typeof raw === 'string' ? JSON.parse(raw) : raw;
