@@ -1790,7 +1790,7 @@ export const RESOURCES: ExternalResource[] = [
     tags: ['vulnerability', 'threat-intel'],
     description:
       'Ranks CVEs by attention and momentum rather than CVSS — mention volume and trend across researchers, advisories, exploit references and community discussion, with vendor/product (CPE) scoping and exploitation / PoC / patch indicators.',
-    why: 'Redundant with the CISA KEV + NVD pipeline already synced into public/data/threat-intel. Its headline ranked CVEs (e.g. CVE-2026-87902, CVE-2025-39682, CVE-2026-85046, CVE-2026-88771, CVE-2026-85706) are all already present in the local KEV feed, and the underlying data is "AI-classified social media analysis" of the same advisory sources. Its robots.txt also carries explicit content-signal licensing conditions.',
+    why: 'REA-verified: content signals are ai-train=no, search=yes, ai-input=yes — factual metadata may be mirrored and cited but must never be used for training. We therefore mirror only public decision fields (urgency/SLA/directive/CVSS/attributed vendors and links) parsed from server-rendered pages into public/data/vulnsocial/, expose them in the VulnSocial decision view on /threatintel/cve/:id, and never vendor upstream code, CSS or article prose.',
   },
   {
     id: 'marginalia-search',
