@@ -21,6 +21,7 @@ export interface ThreatFeedIndex {
   counts: { feeds: number; categories: number; enabled: number; retired: number };
   categories: Array<{ name: string; count: number; feeds: string[] }>;
   feeds: ThreatFeedEntry[];
+  curatedFeeds?: Array<{ id: string; name: string; description: string; url: string }>;
 }
 
 let cached: ThreatFeedIndex | null = null;

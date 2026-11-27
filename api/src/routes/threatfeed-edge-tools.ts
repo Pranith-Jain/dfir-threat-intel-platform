@@ -17,6 +17,7 @@ threatFeedRouter.get('/threatfeed/', async (c) => {
       counts: idx.counts,
       categories: idx.categories,
       feeds: idx.feeds.slice(0, 120),
+      curatedFeeds: idx.curatedFeeds ?? [],
     },
     200,
     { 'cache-control': 'public, max-age=600', 'x-source': 'threatfeed-mirror' }
