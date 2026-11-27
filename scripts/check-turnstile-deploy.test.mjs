@@ -37,6 +37,16 @@ test('parseSecretNames handles plain and table-formatted wrangler output', () =>
   assert.equal(parseSecretNames('TURNSTILE_SITE_KEY\n').has('TURNSTILE_SECRET'), false);
 });
 
+test('reads piped stdin (the GitHub Actions path used by wrangler secret list)', () => {
+  const res = spawnSync(process.execPath, [SCRIPT], {
+    input: 'TURNSTILE_SECRET\nTURNSTILE_SITE_KEY\n',
+    encoding: 'utf8',
+    env: { ...process.env, ALLOW_KEYLESS_WRITES: '' },
+  });
+  assert.equal(res.status, 0);
+  assert.match(`${res.stdout}${res.stderr}`, /gate is enabled/);
+});
+
 test('passes when the gate secret is present', () => {
   const res = run('TURNSTILE_SECRET\nTURNSTILE_SITE_KEY\n');
   assert.equal(res.status, 0);
