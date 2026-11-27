@@ -98,6 +98,7 @@ import { getMmdCategory, listMmdTools, loadMmdCommits, loadMmdIndex, mmdCacheSta
 import { bttCacheStats, filterBttTools, loadBttIndex } from '../lib/blue-team-tools-manifest';
 import { filterPrtfTechniques, getPrtfTechnique, loadPrtfIndex } from '../lib/prtf-manifest';
 import { filterAiCtiRows, loadAiCtiIndex } from '../lib/ai-cti-feed-manifest';
+import { filterThreatFeeds, loadThreatFeedIndex } from '../lib/threatfeed-manifest';
 // AAD — ThreatDefence agentic attack detections (MIT) + ART — Atomic Red Team.
 import {
   aadCacheStats,
@@ -905,6 +906,28 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
   );
 
   // ── MMD tools ───────────────────────────────────────────────────
+  // ThreatFeed — MIT-licensed public feed catalog.
+  h.tools(
+    'tf_list_feeds',
+    'List security RSS feeds from jozeta/ThreatFeed (181 feeds, 15 categories, MIT). Filter by category, keyword or enabled state. Every record links to the upstream feed.',
+    {
+      category: z.string().optional().describe('Category name, e.g. "Vulnerabilities"'),
+      q: z.string().optional().describe('Keyword across name, id and tags'),
+      enabled: z.boolean().optional().describe('Filter enabled/retired feeds'),
+      limit: z.number().int().min(1).max(200).optional().describe('Max feeds (default 100)'),
+    },
+    async ({ category, q, enabled, limit }) => {
+      const idx = await loadThreatFeedIndex(ASSETS);
+      const feeds = filterThreatFeeds(idx, { category, q, enabled, limit: limit ?? 100 });
+      return untrustedToolResult({ total: idx.counts.feeds, returned: feeds.length, feeds });
+    }
+  );
+
+  h.tools('tf_stats', 'Counts for the ThreatFeed catalog: feeds, categories, enabled and retired.', {}, async () => {
+    const idx = await loadThreatFeedIndex(ASSETS);
+    return untrustedToolResult({ counts: idx.counts, categories: idx.categories, license: idx.license });
+  });
+
   // OWASP GenAI Threat Intelligence Initiative — public STIX 2.1 feed.
   h.tools(
     'ai_cti_list_actors',

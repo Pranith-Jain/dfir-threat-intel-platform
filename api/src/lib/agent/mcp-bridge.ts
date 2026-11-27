@@ -139,6 +139,7 @@ import { loadMmdIndex, listMmdTools, getMmdCategory, loadMmdCommits, mmdCacheSta
 import { loadBttIndex, filterBttTools, bttCacheStats } from '../blue-team-tools-manifest';
 import { loadPrtfIndex, filterPrtfTechniques, getPrtfTechnique } from '../prtf-manifest';
 import { loadAiCtiIndex, filterAiCtiRows } from '../ai-cti-feed-manifest';
+import { loadThreatFeedIndex, filterThreatFeeds } from '../threatfeed-manifest';
 
 // AAD — ThreatDefence agentic attack detections (MIT) + ART — Atomic Red Team.
 import {
@@ -4091,6 +4092,45 @@ export function bridgeMcpTools(
         stats: idx.stats,
         cache: kpCacheStats(),
       };
+    },
+  });
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  ThreatFeed (tf_*) — MIT-licensed public feed catalog.
+  // ══════════════════════════════════════════════════════════════════════
+  add({
+    name: 'tf_list_feeds',
+    description:
+      'List security RSS feeds from jozeta/ThreatFeed (181 feeds, 15 categories, MIT). Filter by category, keyword or enabled state. Metadata and upstream links only.',
+    params: [
+      { name: 'category', type: 'string', description: 'Category name, e.g. Vulnerabilities', required: false },
+      { name: 'q', type: 'string', description: 'Keyword across name, id and tags', required: false },
+      { name: 'enabled', type: 'boolean', description: 'Filter enabled/retired feeds', required: false },
+      { name: 'limit', type: 'number', description: 'Max feeds (default 100)', required: false },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadThreatFeedIndex(assets);
+      return {
+        total: idx.counts.feeds,
+        feeds: filterThreatFeeds(idx, {
+          category: args.category as string | undefined,
+          q: args.q as string | undefined,
+          enabled: args.enabled as boolean | undefined,
+          limit: (args.limit as number) ?? 100,
+        }),
+      };
+    },
+  });
+
+  add({
+    name: 'tf_stats',
+    description: 'Counts for the ThreatFeed catalog: feeds, categories, enabled and retired.',
+    params: [],
+    execute: async () => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadThreatFeedIndex(assets);
+      return { counts: idx.counts, categories: idx.categories };
     },
   });
 

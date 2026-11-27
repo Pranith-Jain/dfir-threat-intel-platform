@@ -1214,6 +1214,14 @@ export const HUB_META: readonly HubMeta[] = [
         keywords: ['grid-stix', 'artex-cc', 'ontology', 'stix', 'mcp', 'pentest', 'research'],
       },
       {
+        path: '/threatintel/threat-feed-catalog',
+        tabId: 'threat-feed-catalog',
+        label: 'Threat Feed Catalog',
+        desc: '181 MIT-licensed security RSS feeds in 15 categories from jozeta/ThreatFeed — search, filter and subscribe.',
+        compVar: 'ThreatFeedCatalog',
+        keywords: ['rss', 'feeds', 'newsreader', 'security news', 'threatfeed', 'jozeta'],
+      },
+      {
         path: '/threatintel/ai-security',
         tabId: 'ai-security',
         label: 'AI Security Hub',
