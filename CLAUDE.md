@@ -24,6 +24,15 @@ repo's footguns so you don't rediscover them.
   The per-edit hook checks api/src but skips `worker/`.
 - **API route tests.** CI runs `test/routes/` as its own step (`api vitest (routes)`),
   no sandbox flag needed. External `/api/v1/*` reads are key-gated.
+- **Route order is load-bearing.** Hono does not run `app.use()` middleware registered
+  after a matching handler. Any mutating `/api/v1` route must sit below the global
+  `authenticate('external-only')` chain, and any `TURNSTILE_EXACT_PATHS` route below
+  its gate; `scripts/scan-route-order.mjs` (in `test:scanners`) fails CI otherwise.
+- **Deploy guard for keyless writes.** The Turnstile gate is opt-in at runtime. After
+  every deploy, `deploy.yml` runs `scripts/check-turnstile-deploy.mjs` against the
+  Worker's secret _names_: a deploy fails when `TURNSTILE_SECRET` is absent unless
+  the repo variable `ALLOW_KEYLESS_WRITES=1` records acceptance. See
+  [`docs/turnstile-bot-gate.md`](docs/turnstile-bot-gate.md).
 - **D1 binding is `BRIEFINGS_DB`** (database `pranithjain-briefings`), not `DB`.
   Migrations are immutable; add new ones via `/create-migration`; `--remote` is
   destructive.
@@ -236,7 +245,7 @@ checkout never needs the folder until someone rebuilds locally.
 
 **Weekly sync**: `.github/workflows/si-upstream-sync.yml` re-runs sync + build every Monday 06:00 UTC; opens a PR if `public/data/si/` changed.
 
-**MCP tool inventory**: 468 tools total across the `DFIR_MCP` Durable Object — DFIR/threat-intel tools (`check_ioc`, `lookup_cve`, `enrich_actor`, `lookup_domain`, etc.) + SI tools (`si_*`) + threat-intel vertical (`ti_*`) + NHI scanner (`nhi_*`) + depx (`depx_*`) + winreg (`winreg_*`) + HudsonRock (`hr_*`) + Telegram (`tg_*`) + workspace/notebook (`ws_*`, `notebook_*`) + passive DNS + IOC watchlist + report analysis + more. Regenerate `public/mcp-manifest.json` + `public/mcp/README.md` + `public/llms-full.txt` with `node scripts/build-mcp-manifest.mjs && node scripts/build-llms-full.mjs`.
+**MCP tool inventory**: 470 tools total across the `DFIR_MCP` Durable Object — DFIR/threat-intel tools (`check_ioc`, `lookup_cve`, `enrich_actor`, `lookup_domain`, etc.) + SI tools (`si_*`) + threat-intel vertical (`ti_*`) + NHI scanner (`nhi_*`) + depx (`depx_*`) + winreg (`winreg_*`) + HudsonRock (`hr_*`) + Telegram (`tg_*`) + workspace/notebook (`ws_*`, `notebook_*`) + passive DNS + IOC watchlist + report analysis + more. Regenerate `public/mcp-manifest.json` + `public/mcp/README.md` + `public/llms-full.txt` with `node scripts/build-mcp-manifest.mjs && node scripts/build-llms-full.mjs`.
 
 ## Threat Intel vertical — CVE/KEV/IOC/sector brief (v1)
 
@@ -550,7 +559,7 @@ Two replicated verticals added 2026-10-17, plus live integrations:
 for the digest) reused; `offseq-radar` RSS entry already in `src/data/rssFeeds.ts`.
 
 **Both verticals ride** `.github/workflows/threat-intel-sync.yml` (sync + build
-steps added) and regenerate `public/mcp-manifest.json` (now 468 tools).
+steps added) and regenerate `public/mcp-manifest.json` (now 470 tools).
 
 ## Content-generation system (/admin)
 
@@ -1474,3 +1483,12 @@ metadata + deep links only, never upstream code or prose.
   (`--force-source` overrides), and records the licence in `manifest.json`.
 
 Tests: 4 parser suites + 3 loader suites + 2 route suites; 3× tsc clean.
+
+### ThreatFeed catalog
+
+`https://jozeta.github.io/ThreatFeed/` (repo `jozeta/ThreatFeed`, **MIT**) is a
+client-side newsreader whose public `data/feeds.json` lists 181 security feeds
+in 15 categories. REA verified the site and the feed endpoint. `scripts/build-threatfeed.mjs`
+mirrors feed metadata only (no article bodies) into `public/data/threatfeed/`;
+the catalog is exposed at `/threatintel/threat-feed-catalog` with 3 REST routes
+under `/api/v1/threatfeed/*` and 2 `tf_*` MCP tools. Rides `cti-verticals-sync.yml`.

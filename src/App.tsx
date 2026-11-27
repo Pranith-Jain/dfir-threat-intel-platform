@@ -93,6 +93,7 @@ const BlueTeamTools = lazy(() => import('./pages/dfir/BlueTeamTools'));
 const Prtf = lazy(() => import('./pages/dfir/Prtf'));
 const AiCtiFeed = lazy(() => import('./pages/threatintel/AiCtiFeed'));
 const ResearchProjects = lazy(() => import('./pages/threatintel/ResearchProjects'));
+const ThreatFeedCatalog = lazy(() => import('./pages/threatintel/ThreatFeedCatalog'));
 const StixHub = lazy(() => import('./pages/threatintel/StixHub'));
 const RansomwareHub = lazy(() => import('./pages/threatintel/RansomwareHub'));
 const ExposureCheck = lazy(() => import('./pages/threatintel/Exposure'));
@@ -544,6 +545,7 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/dfir/prtf', Component: Prtf },
   { path: '/threatintel/ai-cti-feed', Component: AiCtiFeed },
   { path: '/threatintel/research-projects', Component: ResearchProjects },
+  { path: '/threatintel/threat-feed-catalog', Component: ThreatFeedCatalog },
   { path: '/dfir/detection-chokepoints', Component: DetectionChokepointsHub },
   { path: '/dfir/subdomain-takeover', Component: SubdomainTakeover },
   { path: '/dfir/grc', Component: Grc },

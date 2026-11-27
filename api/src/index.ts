@@ -1181,6 +1181,7 @@ import { mmdRouter } from './routes/mmd-edge-tools';
 import { blueTeamToolsRouter } from './routes/blue-team-tools-edge-tools';
 import { prtfRouter } from './routes/prtf-edge-tools';
 import { aiCtiRouter } from './routes/ai-cti-feed-edge-tools';
+import { threatFeedRouter } from './routes/threatfeed-edge-tools';
 import { aadRouter } from './routes/aad-edge-tools';
 import { artRouter } from './routes/art-edge-tools';
 import { denaliRouter } from './routes/denali-edge-tools';
@@ -2378,6 +2379,8 @@ app.route('/api/v1', blueTeamToolsRouter);
 app.route('/api/v1', prtfRouter);
 // OWASP GenAI Threat Intelligence Initiative (public STIX feed metadata).
 app.route('/api/v1', aiCtiRouter);
+// ThreatFeed — MIT-licensed feed catalog metadata.
+app.route('/api/v1', threatFeedRouter);
 
 // AAD — Agentic Attack Detections (ThreatDefence, MIT): detection coverage for
 // 82 AI-agent attack frameworks, 1,838 sourced indicators and an ATT&CK

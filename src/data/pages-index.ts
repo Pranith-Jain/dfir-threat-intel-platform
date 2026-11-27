@@ -4350,6 +4350,15 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     keywords: ['grid-stix', 'artex-cc', 'ontology', 'stix', 'mcp', 'pentest', 'research'],
   },
   {
+    path: '/threatintel/threat-feed-catalog',
+    label: 'Threat Feed Catalog',
+    description:
+      'MIT-licensed catalog of 181 security RSS feeds in 15 categories from jozeta/ThreatFeed, with direct subscribe links.',
+    sectionLabel: 'Threat Intel · Sources',
+    group: 'threatintel',
+    keywords: ['rss', 'feeds', 'newsreader', 'security news', 'threatfeed', 'jozeta'],
+  },
+  {
     path: '/threatintel/cyberview',
     label: 'CyberView — Event Map',
     description:

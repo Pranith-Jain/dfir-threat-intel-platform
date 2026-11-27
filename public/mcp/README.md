@@ -1,6 +1,6 @@
 # DFIR-ThreatIntel MCP - tool catalog
 
-**468 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
+**470 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
 
 ## Quick start
 
@@ -14,7 +14,7 @@
 
 ## Tools by category
 
-### other (351)
+### other (353)
 
 - `aad_attack_coverage` - Return the consolidated ATT&CK Navigator layer: 124 techniques scored by how many rules name each one, with the rule descriptions in the comments. Identifies which attacker techniques are best covered by agentic attack detections.
 - `aad_get_framework` - Return one agentic attack framework: coverage counts, ATT&CK techniques with rule-count scores, sourced indicators (value, confidence, context, publication) and an upstream deep link. Use aad_list_frameworks first to discover slugs.
@@ -273,6 +273,8 @@
 - `tc_list_iocs` - List high-confidence malicious domains and IPs from the ThreatCluster IOC blocklist (last 30 days). Each IOC has a type, reason, first/last seen, and the source articles that reported it. Ready for firewall / Pi-hole / pfSense blocklists.
 - `tc_list_misp_events` - List the slim MISP manifest pass-through from ThreatCluster (misp/manifest.json): event UUID, title, date, threat level, and tags per event. For full MISP ingestion use the upstream remote feed directly (https://threatcluster.io/misp/manifest.json).
 - `tc_list_victims` - List newly observed ransomware leak-site victims from the ThreatCluster Dark Web Victims feed (14-day window). Filter by ransom group, sector, country, or keyword. Each entry has a victim name, claiming group, sector, country, and publication date.
+- `tf_list_feeds` - List security RSS feeds from jozeta/ThreatFeed (181 feeds, 15 categories, MIT). Filter by category, keyword or enabled state. Every record links to the upstream feed.
+- `tf_stats` - Counts for the ThreatFeed catalog: feeds, categories, enabled and retired.
 - `tg_boolean_search` - Search Telegram leak messages with boolean AND/OR/NOT operators and field qualifiers. Fields: text, channel.title, channel.username, severity, leak_type. Supports wildcards (prefix*) and exact phrases ("quoted").
 - `tg_live_search` - Keyword-search public Telegram channels LIVE (t.me/s previews matched in memory, nothing stored). AND-semantics across tokens. Returns snippets + permalinks + per-channel diagnostics. Sequential fetches; keep to ≤8 channels.
 - `tg_saved_search_create` - Save a Telegram boolean search query for one-click reuse.
