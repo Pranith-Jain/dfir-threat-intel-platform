@@ -112,10 +112,15 @@ jobs:
         continue-on-error: true
         run: node scripts/build-threatfeed.mjs
 
+      - name: Build ThreatFeed reader snapshot
+        # MIT — public article metadata from the reader's snapshot.json.
+        continue-on-error: true
+        run: node scripts/build-threatfeed-reader.mjs
+
       - name: Show diff stat
         run: |
           echo "=== public/data changed files ==="
-          git status --short public/data/cti-bookmarks/ public/data/lots/ public/data/malapi/ public/data/car/ public/data/capec/ public/data/hijacklibs/ public/data/veris/ public/data/engage/ public/data/mmd/ public/data/blue-team-tools/ public/data/research-projects/ public/data/threatfeed/ | head -40
+          git status --short public/data/cti-bookmarks/ public/data/lots/ public/data/malapi/ public/data/car/ public/data/capec/ public/data/hijacklibs/ public/data/veris/ public/data/engage/ public/data/mmd/ public/data/blue-team-tools/ public/data/research-projects/ public/data/threatfeed/ public/data/threatfeed-reader/ | head -40
 
       - name: Open PR if data changed
         id: pr
@@ -158,6 +163,7 @@ jobs:
             public/data/blue-team-tools/
             public/data/research-projects/
             public/data/threatfeed/
+            public/data/threatfeed-reader/
 
       - name: Auto-merge sync PR
         # Data-only output, main unprotected — merges itself (same pattern

@@ -643,7 +643,9 @@ export default function DFIRPage(): JSX.Element {
               <div className="px-4 sm:px-5 pb-4 sm:pb-5 space-y-4">
                 {DFIR_FAQ.map((f) => (
                   <div key={f.question}>
-                    <h3 className="font-display text-sm font-semibold text-heading">{f.question}</h3>
+                    {/* Question-shaped H2s match voice/LLM prompts directly and
+                        give the FAQ section 2+ AEO question headings. */}
+                    <h2 className="font-display text-sm font-semibold text-heading">{f.question}</h2>
                     <p className="mt-1.5 text-sm text-muted leading-relaxed">{f.answer}</p>
                   </div>
                 ))}

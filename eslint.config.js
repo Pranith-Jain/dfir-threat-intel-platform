@@ -13,6 +13,9 @@ export default tseslint.config(
       'dist',
       '.ssr-build',
       'node_modules',
+      // Vendored coding-agent skills (e.g. security-audit's zero-dependency
+      // CommonJS validators) are third-party tooling, not repo source.
+      '.agents/skills/**',
       'public/tesseract',
       'worker-configuration.d.ts',
       '*.config.*',

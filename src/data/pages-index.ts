@@ -4359,6 +4359,15 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
     keywords: ['rss', 'feeds', 'newsreader', 'security news', 'threatfeed', 'jozeta'],
   },
   {
+    path: '/threatintel/threatfeed-reader',
+    label: 'ThreatFeed Reader',
+    description:
+      'Working in-site port of the MIT ThreatFeed newsreader: 2,197 security dispatches with newspaper/list layouts, filters and local bookmarks.',
+    sectionLabel: 'Threat Intel · Sources',
+    group: 'threatintel',
+    keywords: ['threatfeed', 'newsreader', 'dispatches', 'newspaper', 'bookmarks', 'watchlist'],
+  },
+  {
     path: '/threatintel/cyberview',
     label: 'CyberView — Event Map',
     description:

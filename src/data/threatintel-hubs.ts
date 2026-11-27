@@ -1222,6 +1222,14 @@ export const HUB_META: readonly HubMeta[] = [
         keywords: ['rss', 'feeds', 'newsreader', 'security news', 'threatfeed', 'jozeta'],
       },
       {
+        path: '/threatintel/threatfeed-reader',
+        tabId: 'threatfeed-reader',
+        label: 'ThreatFeed Reader',
+        desc: 'Working in-site port of the ThreatFeed newsreader — 2,197 dispatches, newspaper/list layouts, local read/bookmark state and watchlists.',
+        compVar: 'ThreatFeedReader',
+        keywords: ['threatfeed', 'newsreader', 'dispatches', 'newspaper', 'bookmarks', 'watchlist'],
+      },
+      {
         path: '/threatintel/ai-security',
         tabId: 'ai-security',
         label: 'AI Security Hub',

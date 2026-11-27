@@ -15,7 +15,8 @@ export default defineConfig({
     // (own vitest.config.ts) and uses imports like `cloudflare:test`
     // that don't resolve in this jsdom runner. Exclude its tree so a
     // root-level `npm test` doesn't try to load worker tests here.
-    exclude: ['**/node_modules/**', '**/dist/**', 'api/**', 'scripts/**'],
+    // Vendored agent skills are third-party tooling, not repo test suites.
+    exclude: ['**/node_modules/**', '**/dist/**', '**/.agents/**', 'api/**', 'scripts/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],

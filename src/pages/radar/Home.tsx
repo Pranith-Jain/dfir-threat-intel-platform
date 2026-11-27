@@ -7,6 +7,7 @@ import { FaqStructuredData } from '../../components/FaqStructuredData';
 import { PageMeta } from '../../components/PageMeta';
 import { Input } from '../../components/ui/Input';
 import { RADAR_FAQ } from '../../data/radar-faq';
+import { FaqSection } from '../../components/FaqSection';
 import { errMessage } from '../../lib/log';
 import { turnstileHeaders } from '../../lib/turnstile';
 
@@ -111,6 +112,9 @@ export default function RadarHome() {
               </p>
             )}
           </div>
+
+          {/* Visible Q&A matching RADAR_FAQ JSON-LD emitted above. */}
+          <FaqSection entries={RADAR_FAQ} className="w-full" />
 
           <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
             {[

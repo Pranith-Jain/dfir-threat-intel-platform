@@ -12,6 +12,7 @@ import { ThreatIntelStructuredData } from '../../components/ToolStructuredData';
 import { FaqStructuredData } from '../../components/FaqStructuredData';
 import { BreadcrumbListSchema } from '../../components/BreadcrumbStructuredData';
 import { THREATINTEL_FAQ } from '../../data/threatintel-faq';
+import { FaqSection } from '../../components/FaqSection';
 
 /**
  * Threat-Intel home page - redesigned following SaaS UX patterns from
@@ -376,6 +377,10 @@ export default function ThreatIntelHome(): JSX.Element {
               </div>
             </div>
           </details>
+
+          {/* Visible Q&A matching THREATINTEL_FAQ JSON-LD above — required for
+              FAQ rich results and gives answer engines question-shaped H2s. */}
+          <FaqSection entries={THREATINTEL_FAQ} className="mt-8 sm:mt-10" />
 
           {/* ── Full catalog link */}
           <div className="mt-8 flex justify-center sm:mt-10">

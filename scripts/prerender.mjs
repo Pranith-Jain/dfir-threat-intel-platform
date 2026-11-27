@@ -364,7 +364,9 @@ const ROUTES = [
   // ── Previously shell-only static pages (SEO/CWV: crawlable first paint) ─
   '/argus',
   '/dfir/detection-chokepoints',
-  '/threatintel/detection-wiki',
+  // /threatintel/detection-wiki is already listed in the Detection hub group
+  // above; repeating it here prerenders it twice and produces a duplicate
+  // <loc> in public/sitemap.xml.
   '/threatintel/threat-actor-monitor',
   '/threatintel/alerts',
   '/threatintel/infra/ai-honeypot',

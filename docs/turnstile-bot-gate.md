@@ -51,6 +51,35 @@ on `TURNSTILE_PREFIXES`.
 To roll back: `wrangler secret delete TURNSTILE_SECRET`. The gate turns off
 again on the next request; no deploy needed.
 
+## Deploy-time posture guard
+
+Because the gate is opt-in, a deploy can ship the middleware while leaving the
+prefixes ungated. `deploy.yml` now checks the **deployed Worker's secret names**
+after every deploy with `scripts/check-turnstile-deploy.mjs` (it never reads
+secret values):
+
+- `TURNSTILE_SECRET` present → the deploy is clean.
+- Absent → the deploy **fails** with `::error::` and the remediation steps above,
+  unless the operator has consciously recorded acceptance of the keyless
+  posture by setting the repository variable `ALLOW_KEYLESS_WRITES=1`. With that
+  variable set, the guard emits a loud `::warning::` and passes.
+- Manual `workflow_dispatch` runs without a Cloudflare token skip the check (no
+  deploy happened).
+
+Local equivalent, with or without Cloudflare credentials:
+
+```sh
+npx wrangler secret list | node scripts/check-turnstile-deploy.mjs
+# or, offline, with a file containing one secret name per line:
+node scripts/check-turnstile-deploy.mjs --secrets-file ./names.txt
+```
+
+Related source guard: `scripts/scan-route-order.mjs` fails the CI script suite if
+a mutating `/api/v1` route is registered before `authenticate('external-only')`,
+or if a `TURNSTILE_EXACT_PATHS` route is registered before its gate — Hono does
+not run middleware registered after a handler, which previously left
+`POST /api/v1/radar/scan` ungated.
+
 ## How a request flows
 
 1. `turnstileGuard()` (`api/src/lib/turnstile.ts`) runs before the route.

@@ -358,10 +358,14 @@ const REDIRECT_CANONICALS: Record<string, string> = {
  * SEO content injected into prerendered pages that render an empty <main>
  * (just a Suspense loading spinner). Google sees zero unique content and
  * declines to index. This function detects the thin-content pattern and
- * replaces it with meaningful text — title (h1), description, and section
- * context — that Googlebot can index. React hydration replaces this on mount.
+ * replaces it with meaningful text — title, description, and section context —
+ * that Googlebot can index. React hydration replaces this on mount.
+ *
+ * The title is a <p>, not an <h1>: the app's own DataPageLayout renders the
+ * real <h1> once it hydrates, and a second <h1> in this fallback made 246 of
+ * 251 live pages fail the one-H1-per-page check.
  */
-function injectSeoContent(html: string, pathname?: string): string {
+export function injectSeoContent(html: string, pathname?: string): string {
   if (!pathname || pathname === '/') return html;
   // Detect the thin-content pattern: <main> containing only the
   // animate-fade-in-up > SectionLoader (spinner + sr-only "Loading…").
@@ -387,7 +391,7 @@ function injectSeoContent(html: string, pathname?: string): string {
       : 'security tool';
   const seoBlock = `
     <section class="seo-prerender" aria-label="Page information">
-      <h1>${title}</h1>
+      <p class="font-semibold text-heading">${title}</p>
       <p>${desc}</p>
       <p>This is a free, browser-based ${section} on pranithjain.qzz.io. No signup required — all processing runs locally in your browser.</p>
     </section>`;
@@ -414,7 +418,29 @@ function injectSeoContent(html: string, pathname?: string): string {
  * owns path→host resolution (including redirect-only routes) so this function
  * stays a pure string transform and every entry point agrees on ownership.
  */
-function rewriteHtml(
+/**
+ * Keep exactly one canonical tag, pointing at the resolved canonical URL.
+ *
+ * index.html ships a static <link rel="canonical"> and the SSR'd PageMeta
+ * component emits another one inside <div id="root">. Previously only the
+ * FIRST was rewritten, so 181 live pages served two canonicals — one on the
+ * tool subdomain (matching the sitemap) and one on the apex — and Google had
+ * to guess which to consolidate. Keeping the first and dropping later ones
+ * also fixes pages whose canonical is missing entirely.
+ */
+export function normalizeCanonicals(html: string, canonicalUrl: string): string {
+  const tag = `<link rel="canonical" href="${canonicalUrl}" />`;
+  const re = /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/gi;
+  let seen = false;
+  const collapsed = html.replace(re, () => {
+    if (seen) return '';
+    seen = true;
+    return tag;
+  });
+  return seen ? collapsed : collapsed.replace(/<\/head>/i, `${tag}</head>`);
+}
+
+export function rewriteHtml(
   html: string,
   override: OgOverride | null,
   canonicalUrl: string,
@@ -431,8 +457,7 @@ function rewriteHtml(
   // property=). LinkedIn only reads og:* so it never cared, but X is the sole
   // consumer of twitter:* and its parser expects name= — serving property=
   // was why per-page cards rendered on LinkedIn but not on X.
-  let out = html
-    .replace(/<link\s+rel="canonical"\s+href="[^"]*"/i, `<link rel="canonical" href="${cu}"`)
+  let out = normalizeCanonicals(html, cu)
     .replace(/<meta\s+property="og:url"\s+content="[^"]*"/i, `<meta property="og:url" content="${cu}"`)
     .replace(/<meta\s+name="twitter:url"\s+content="[^"]*"/i, `<meta name="twitter:url" content="${cu}"`);
   if (override) {
