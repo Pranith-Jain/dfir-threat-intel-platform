@@ -9,7 +9,6 @@ const RdintelCve = lazy(() => import('./RdintelCve'));
 const Tldrcve = lazy(() => import('./Tldrcve'));
 const CveTrends = lazy(() => import('./CveTrends'));
 const OffseqThreats = lazy(() => import('./Offseq'));
-const OffseqFeeds = lazy(() => import('./OffseqFeeds'));
 const OffseqMap = lazy(() => import('./OffseqMap'));
 const CveExploits = lazy(() => import('./CveExploits'));
 const CveDigest = lazy(() => import('./CveDigest'));
@@ -21,6 +20,7 @@ const PocScanner = lazy(() => import('./PocScanner'));
 const CyberNewsFeed = lazy(() => import('./CyberNewsFeed'));
 const CveHealthCheck = lazy(() => import('./CveHealthCheck'));
 const ZeroWire = lazy(() => import('./ZeroWire'));
+const VulnSocial = lazy(() => import('./VulnSocial'));
 
 type TabId =
   | 'rdintel'
@@ -28,7 +28,6 @@ type TabId =
   | 'all'
   | 'trending'
   | 'offseq'
-  | 'offseq-feeds'
   | 'offseq-map'
   | 'exploits'
   | 'digest'
@@ -39,7 +38,8 @@ type TabId =
   | 'poc'
   | 'news'
   | 'health'
-  | 'zero-wire';
+  | 'zero-wire'
+  | 'vulnsocial';
 
 const TABS: Array<{ id: TabId; label: string; desc: string }> = [
   {
@@ -62,11 +62,6 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
     id: 'offseq',
     label: 'OffSeq Threats',
     desc: 'OffSeq Threat Radar threat database — aggregated vulnerability, malware and campaign reports with severity, CVSS and exploit signals',
-  },
-  {
-    id: 'offseq-feeds',
-    label: 'OffSeq Feeds',
-    desc: 'Source catalog from radar.offseq.com/feeds — 39 upstream feeds with type, item counts and freshness',
   },
   {
     id: 'offseq-map',
@@ -103,6 +98,11 @@ const TABS: Array<{ id: TabId; label: string; desc: string }> = [
   },
   { id: 'health', label: 'Health', desc: 'Data pipeline health - NVD, EPSS, KEV, GitHub, and Exploit-DB status' },
   {
+    id: 'vulnsocial',
+    label: 'VulnSocial',
+    desc: 'Mirrored CVE triage decisions from vulnsocial.com — urgency, remediation SLA, plain-English verdict, CVSS, exploitation/PoC/patch signals and artifact links.',
+  },
+  {
     id: 'zero-wire',
     label: 'Zero Wire',
     desc: 'Cloudflare Radar Zero Wire — analyst security briefings with patch actions and WAF coverage, plus the 100 most recently published CVEs with CVSS severity',
@@ -137,8 +137,9 @@ export default function CveIntel(): JSX.Element {
         <>
           Unified CVE intelligence: <strong>plain-English tldrcve verdicts</strong>,{' '}
           <strong>RD Intelligence corpus stats</strong>, <strong>cves.io attention ranking</strong>, NVD + KEV + EPSS
-          enrichment, OffSeq threat radar (threats, feeds, map), Cloudflare Radar Zero Wire briefings and CVEs, exploit
-          availability, and Kubernetes advisories. Scores are upstream values, refreshed on their own schedules.
+          enrichment, OffSeq threat radar (threats and map), VulnSocial decision data, Cloudflare Radar Zero Wire
+          briefings and CVEs, exploit availability, and Kubernetes advisories. Scores are upstream values, refreshed on
+          their own schedules.
         </>
       }
     >
@@ -172,7 +173,6 @@ export default function CveIntel(): JSX.Element {
           {activeTab === 'all' && <CveList bare />}
           {activeTab === 'trending' && <CveTrends />}
           {activeTab === 'offseq' && <OffseqThreats bare />}
-          {activeTab === 'offseq-feeds' && <OffseqFeeds />}
           {activeTab === 'offseq-map' && <OffseqMap />}
           {activeTab === 'exploits' && <CveExploits />}
           {activeTab === 'digest' && <CveDigest bare />}
@@ -184,6 +184,7 @@ export default function CveIntel(): JSX.Element {
           {activeTab === 'cert-in' && <CertInAdvisories bare />}
           {activeTab === 'health' && <CveHealthCheck bare />}
           {activeTab === 'zero-wire' && <ZeroWire bare />}
+          {activeTab === 'vulnsocial' && <VulnSocial bare />}
         </Suspense>
       </div>
     </DataPageLayout>
