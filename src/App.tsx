@@ -89,6 +89,10 @@ const ImageIntel = lazy(() => import('./pages/dfir/ImageIntel'));
 const PhoneHub = lazy(() => import('./pages/dfir/PhoneHub'));
 const AgentSuite = lazy(() => import('./pages/dfir/AgentSuite'));
 const SophonWorkbench = lazy(() => import('./pages/dfir/SophonWorkbench'));
+const BlueTeamTools = lazy(() => import('./pages/dfir/BlueTeamTools'));
+const Prtf = lazy(() => import('./pages/dfir/Prtf'));
+const AiCtiFeed = lazy(() => import('./pages/threatintel/AiCtiFeed'));
+const ResearchProjects = lazy(() => import('./pages/threatintel/ResearchProjects'));
 const StixHub = lazy(() => import('./pages/threatintel/StixHub'));
 const RansomwareHub = lazy(() => import('./pages/threatintel/RansomwareHub'));
 const ExposureCheck = lazy(() => import('./pages/threatintel/Exposure'));
@@ -536,6 +540,10 @@ const ROUTES: ReadonlyArray<RouteDef> = [
   { path: '/dfir/powershell-analyzer', Component: PowershellAnalyzer },
   { path: '/dfir/agent-suite', Component: AgentSuite },
   { path: '/dfir/sophon', Component: SophonWorkbench },
+  { path: '/dfir/blue-team-tools', Component: BlueTeamTools },
+  { path: '/dfir/prtf', Component: Prtf },
+  { path: '/threatintel/ai-cti-feed', Component: AiCtiFeed },
+  { path: '/threatintel/research-projects', Component: ResearchProjects },
   { path: '/dfir/detection-chokepoints', Component: DetectionChokepointsHub },
   { path: '/dfir/subdomain-takeover', Component: SubdomainTakeover },
   { path: '/dfir/grc', Component: Grc },

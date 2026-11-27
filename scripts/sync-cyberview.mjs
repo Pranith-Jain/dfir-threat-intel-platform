@@ -1,7 +1,14 @@
 #!/usr/bin/env node
 /**
- * Mirror CyberView from its SOURCE REPO (https://github.com/xanderhutch/CyberView)
+ * Mirror CyberView from its SOURCE REPO (https://github.com/CyberViewTools/CyberView)
  * into public/data/cyberview/.
+ *
+ * LICENCE CHANGE (2026-11-22): upstream was relicensed proprietary repo-wide
+ * ("Relicense CyberView as proprietary", commit on Nov 22 2026). We keep the
+ * already-committed `source/` snapshot and our own re-implemented SPA pages,
+ * but this sync NO LONGER copies upstream HTML/JS/CSS into `source/` — do not
+ * expand the vendored content. Data files produced by the upstream build are
+ * still mirrored from the public feed; no upstream code is added.
  *
  * REA captured the five rendered upstream pages; the repo README explains the
  * split: code lives on `main`, facts live on the `data` branch mounted at
@@ -25,11 +32,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const OUT = join(ROOT, 'public', 'data', 'cyberview');
-const REPO = 'xanderhutch/CyberView';
+const REPO = 'CyberViewTools/CyberView';
 const API = `https://api.github.com/repos/${REPO}`;
-const PAGES = 'https://xanderhutch.github.io/CyberView';
+const PAGES = 'https://cyberview.tools';
 const UA = 'Mozilla/5.0 (compatible; pranithjain-sync/1.0; +https://pranithjain.qzz.io)';
 const FORCE = process.argv.includes('--force');
+const FORCE_SOURCE = process.argv.includes('--force-source');
 
 const BUILT_FILES = [
   'data/feed.json',
@@ -111,19 +119,24 @@ async function main() {
       }
       try { builtAt = String(JSON.parse(readFileSync(join(repo, 'site', 'data', 'manifest.json'), 'utf8')).built_at ?? ''); } catch { /* optional */ }
 
-      // A true mirror of the upstream repo's shipped site source (the exact
-      // port reference), excluding site/data which is mirrored above.
-      const srcSite = join(repo, 'site');
-      const srcOut = join(OUT, 'source');
-      mkdirSync(srcOut, { recursive: true });
-      for (const entry of readdirSync(srcSite, { withFileTypes: true })) {
-        if (entry.name === 'data') continue;
-        const from = join(srcSite, entry.name);
-        const to = join(srcOut, entry.name);
-        try {
-          cpSync(from, to, { recursive: entry.isDirectory() });
-          written.push(`source/${entry.name}`);
-        } catch { /* best effort per entry */ }
+      // The upstream repository is proprietary (all rights reserved). Keep
+      // the already-committed source/ snapshot as a historical port reference
+      // but do NOT copy new upstream HTML/JS/CSS into it.
+      if (FORCE_SOURCE) {
+        const srcSite = join(repo, 'site');
+        const srcOut = join(OUT, 'source');
+        mkdirSync(srcOut, { recursive: true });
+        for (const entry of readdirSync(srcSite, { withFileTypes: true })) {
+          if (entry.name === 'data') continue;
+          const from = join(srcSite, entry.name);
+          const to = join(srcOut, entry.name);
+          try {
+            cpSync(from, to, { recursive: entry.isDirectory() });
+            written.push(`source/${entry.name}`);
+          } catch { /* best effort per entry */ }
+        }
+      } else {
+        console.log('  ! source/ mirroring disabled since the upstream proprietary relicence (--force-source to override)');
       }
     } else {
       console.log('  ! SHA lookup unavailable — falling back to published Pages files');
@@ -188,7 +201,14 @@ async function main() {
 
   const manifest = {
     generatedAt: new Date().toISOString(),
-    upstream: { repo: `https://github.com/${REPO}`, site: PAGES, mainSha, dataSha, builtAt },
+    upstream: {
+      repo: `https://github.com/${REPO}`,
+      site: PAGES,
+      mainSha,
+      dataSha,
+      builtAt,
+      licence: 'Proprietary (all rights reserved since 2026-11-22). source/ snapshot retained but no longer expanded.',
+    },
     files: [...new Set(written)],
     stats,
   };

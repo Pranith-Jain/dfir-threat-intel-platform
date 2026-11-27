@@ -1,0 +1,44 @@
+{
+  "id": "PRTF-7.01",
+  "name": "HID Payload Injection",
+  "tacticId": "PRTF-7",
+  "tacticName": "Implants & Hardware",
+  "section": "USB & HID",
+  "description": "A USB HID attack tool emulates a keyboard when plugged into a target computer, executing a pre-programmed keystroke payload at speeds far exceeding human typing. The payload can open a terminal, download and execute code, exfiltrate credentials, create backdoor accounts, or any other action achievable via keyboard input. HID attacks are effective because USB keyboards are trusted by default in all major operating systems, and the attack completes in seconds — well within an unattended workstation window.",
+  "tools": [
+    {
+      "name": "USB Rubber Ducky",
+      "url": "https://hak5.org/products/usb-rubber-ducky"
+    },
+    {
+      "name": "DIY Digispark build",
+      "url": null
+    }
+  ],
+  "chains": [
+    {
+      "id": "PRTF-8.05",
+      "name": "USB Data Exfiltration"
+    },
+    {
+      "id": "PRTF-9.03",
+      "name": "Backdoor Account Creation"
+    },
+    {
+      "id": "PRTF-9.01",
+      "name": "Planted Hardware"
+    }
+  ],
+  "blue": {
+    "det": "Endpoint DLP alert on new HID device connection; SIEM alert on USB HID registration; EDR behavioral detection for rapid keystroke injection; unusual process execution on workstation.",
+    "cm": "USB device allowlisting via GPO or MDM; endpoint DLP monitoring for new HID device registration; EDR with behavioral detection for keystroke injection; disable USB ports on unattended workstations.",
+    "refs": [
+      {
+        "t": "NIST SP 800-53 SI-3",
+        "a": "NIST",
+        "u": "https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final"
+      }
+    ]
+  },
+  "url": "https://redteam.vip/prtf/#PRTF-7.01"
+}

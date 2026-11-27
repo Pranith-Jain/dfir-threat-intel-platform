@@ -678,12 +678,19 @@ import { liveFeedExportHandler } from './routes/live-feed-export';
 
 const app = new Hono<{ Bindings: Env }>();
 
-// ── Radar (public, no auth required) ─────────────────────────────
+// ── Radar (public reads; the scan POST is key/token gated below) ──
+// The GET siblings stay public: they read cached scan results. The POST fans
+// out to DNS/robots/sitemap/certificate lookups on a caller-supplied URL, so it
+// is registered after the global `authenticate('external-only')` chain AND
+// after its `TURNSTILE_EXACT_PATHS` gate — a route registered before a Hono
+// `app.use` never runs that middleware, which previously left the gate dead.
 app.use(
   '/api/v1/radar/*',
   cors({
     origin: (_, c) => getSiteUrl(c.env as { SITE_URL?: string }),
-    allowHeaders: ['Content-Type'],
+    // Keyed external callers must be able to send their credential; the SPA is
+    // same-origin and exempt from auth, but CORS still has to allow the header.
+    allowHeaders: ['Authorization', 'Content-Type', 'X-API-Key'],
     allowMethods: ['GET', 'POST', 'OPTIONS'],
     maxAge: 86400,
   })
@@ -693,7 +700,6 @@ app.use('/api/v1/radar/*', csrfGuard);
 app.use('/api/v1/radar/*', looseValidation());
 app.use('/api/v1/radar/*', requestLogger);
 app.use('/api/v1/radar/*', rateLimit);
-app.post('/api/v1/radar/scan', radarScanHandler);
 app.get('/api/v1/radar/scan/:id', radarGetScanHandler);
 app.get('/api/v1/radar/recent', radarRecentHandler);
 
@@ -1009,6 +1015,12 @@ for (const base of TURNSTILE_READ_PREFIXES) {
   app.use(`${base}/*`, turnstileGuard({ read: true }));
 }
 
+// Costly radar scan: registered here, after BOTH auth and its exact-path
+// Turnstile gate, so neither middleware is skipped. Same-origin SPA callers
+// still pass via the auth exemption and send a token via turnstileHeaders()
+// when the operator has configured a secret; external callers need an API key.
+app.post('/api/v1/radar/scan', radarScanHandler);
+
 // Anonymous chat sessions are owned by a per-browser visitor cookie rather
 // than the shared `owner_hash IS NULL` pool. Mounted after `authenticate()` so
 // API-key identity is available, and before the copilot/vera routes.
@@ -1166,6 +1178,9 @@ import { hiRouter } from './routes/hi-edge-tools';
 import { ohRouter } from './routes/oh-edge-tools';
 import { kpRouter } from './routes/kp-edge-tools';
 import { mmdRouter } from './routes/mmd-edge-tools';
+import { blueTeamToolsRouter } from './routes/blue-team-tools-edge-tools';
+import { prtfRouter } from './routes/prtf-edge-tools';
+import { aiCtiRouter } from './routes/ai-cti-feed-edge-tools';
 import { aadRouter } from './routes/aad-edge-tools';
 import { artRouter } from './routes/art-edge-tools';
 import { denaliRouter } from './routes/denali-edge-tools';
@@ -2357,6 +2372,12 @@ app.route('/api/v1', kpRouter);
 // categories + recent commit activity feed. Data ships in public/data/mmd/
 // built by scripts/build-mmd-manifest.mjs.
 app.route('/api/v1', mmdRouter);
+// BlueTeam-Tools — metadata-only catalog (no upstream licence).
+app.route('/api/v1', blueTeamToolsRouter);
+// PRTF — Physical Red Team Framework (CC BY 4.0 metadata mirror).
+app.route('/api/v1', prtfRouter);
+// OWASP GenAI Threat Intelligence Initiative (public STIX feed metadata).
+app.route('/api/v1', aiCtiRouter);
 
 // AAD — Agentic Attack Detections (ThreatDefence, MIT): detection coverage for
 // 82 AI-agent attack frameworks, 1,838 sourced indicators and an ATT&CK

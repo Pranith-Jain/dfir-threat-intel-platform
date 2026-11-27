@@ -3,7 +3,7 @@
  * Sync AI Threat Actors tracker data from Cybershujin into staging.
  *
  * Sources:
- *   - tracker.json  — 79 entries, structured JSON with TTP mappings
+ *   - tracker.json  — 158 entries, structured JSON with TTP mappings
  *   - STIX 2.1 bundle — available at ./stix/threat-actors-ai-stix2.1.json
  *
  * Run:

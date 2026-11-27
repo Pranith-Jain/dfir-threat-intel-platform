@@ -1,0 +1,41 @@
+{
+  "id": "PRTF-7.08",
+  "name": "Wiegand Bus Implant",
+  "tacticId": "PRTF-7",
+  "tacticName": "Implants & Hardware",
+  "section": "Access Control",
+  "description": "The ESPKey taps directly into the Wiegand data bus between an RFID reader and the access control panel. Wiegand is a simple, unencrypted two-wire protocol carrying card data in plaintext. The ESPKey captures every credential presented to the reader and transmits the data wirelessly. Installation requires brief access to the back of the reader or the cable run, and the device is small enough to conceal within or behind most reader housings — turning the reader itself into a persistent credential harvester.",
+  "tools": [
+    {
+      "name": "ESPKey",
+      "url": "https://www.redteamtools.com/espkey"
+    }
+  ],
+  "chains": [
+    {
+      "id": "PRTF-5.06",
+      "name": "Low-Frequency RFID Cloning"
+    },
+    {
+      "id": "PRTF-9.01",
+      "name": "Planted Hardware"
+    }
+  ],
+  "blue": {
+    "det": "Physical tamper evidence on reader; reader malfunction; access log shows credential enumeration; OSDP tamper detection alert.",
+    "cm": "OSDP with AES-128 encryption renders Wiegand bus implants useless; reader tamper detection; sealed back-box installation; encrypted access control panel communication.",
+    "refs": [
+      {
+        "t": "ESPKey Research",
+        "a": "Babak Javadi",
+        "u": "https://github.com/octosavvi/ESPKey"
+      },
+      {
+        "t": "OSDP Standard (SIA)",
+        "a": "Security Industry Association",
+        "u": "https://www.securityindustry.org/industry-standards/open-supervised-device-protocol/"
+      }
+    ]
+  },
+  "url": "https://redteam.vip/prtf/#PRTF-7.08"
+}

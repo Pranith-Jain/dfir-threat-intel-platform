@@ -11,7 +11,8 @@ const read = (rel) => JSON.parse(readFileSync(join(BASE, rel), 'utf8'));
 
 test('manifest records upstream source-repo branch SHAs', () => {
   const m = read('manifest.json');
-  assert.match(m.upstream.repo, /github\.com\/xanderhutch\/CyberView$/);
+  assert.match(m.upstream.repo, /github\.com\/CyberViewTools\/CyberView$/);
+  assert.match(m.upstream.licence, /Proprietary/i);
   assert.match(m.upstream.mainSha, /^[0-9a-f]{40}$/);
   assert.match(m.upstream.dataSha, /^[0-9a-f]{40}$/);
   assert.ok(m.files.includes('data/bundle.json'));
