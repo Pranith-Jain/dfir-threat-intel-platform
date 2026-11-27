@@ -3,13 +3,13 @@
   "repo": "berylliumsec/nebula",
   "category": "agent",
   "scope": ["network", "recon"],
-  "stars": 1168,
+  "stars": 1169,
   "description": "Cybersecurity Harness",
   "homepage": "https://www.berylliumsec.com",
   "added": "2026-09-12",
-  "checkedAt": "2026-11-26T03:17:43Z",
-  "pushedAt": "2026-11-25",
-  "daysIdle": 1,
+  "checkedAt": "2026-11-27T03:17:35Z",
+  "pushedAt": "2026-11-27",
+  "daysIdle": 0,
   "archived": false,
   "license": "BSD-2-Clause",
   "upstream": {
@@ -23,27 +23,27 @@
       "description": "A desktop workspace holding the terminal, notes, findings and report in one place, with an approval pause between what the model proposes and what actually runs."
     },
     "derived": {
-      "checked_at": "2026-11-26T03:17:43Z",
+      "checked_at": "2026-11-27T03:17:35Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-11-25",
-        "days_since_push": 1,
-        "total_commits": 2739,
-        "last100_span_days": 6,
+        "pushed_at": "2026-11-27",
+        "days_since_push": 0,
+        "total_commits": 2754,
+        "last100_span_days": 7,
         "last100_authors": 2,
-        "last_commit_sha": "409bf4f",
-        "last_commit_message": "Post each finished Butler check's summary into the main Butler chat (#1327)\n\nA finished Nebula-wide check, and a project check with a summary or a\ndecision, appends one assistant message (author butler, not operator\ninput, starts no turn) to the main Butler chat: time, scope, host\nproject, result and a link to the child chat. Checks Core saw no activity\nin and whose reply starts with 'No change' post nothing. Each case is\nqueued once on ButlerGlobalState and delivered by the worker that owns the\ntarget chat's project. The target is a Core setting next to the check\ninterval, with recorded fallbacks.\n\nPublic commit guard skipped at the operator's explicit request (urgent);\nthe diff was scanned for emails, IPs, private paths and ids before commit.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
-        "last_commit_at": "2026-11-25",
+        "last_commit_sha": "d271527",
+        "last_commit_message": "Spawn harness CLIs in their own process group under uvloop (#1343)\n\nThe Codex app-server and Grok ACP spawns passed process_group=0 so close\ncould reap the CLI's whole tree. Core runs on uvloop, which rejects that\nkeyword (\"unexpected kwargs: process_group\") before the child starts, so\nevery Codex harness start failed. Keep process_group=0 on the stdlib loop\nand use preexec_fn=os.setpgrp on uvloop: the child still gets its own\ngroup inside the worker's session.\n\nCo-authored-by: berylliumsec-handler <41898282+github-actions[bot]@users.noreply.github.com>\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+        "last_commit_at": "2026-11-27",
         "releases": 26,
         "latest_release_at": "2026-11-09",
-        "days_since_release": 17,
-        "days_idle": 1,
+        "days_since_release": 18,
+        "days_idle": 0,
         "relocated": false
       },
       "identity": {
         "canonical_repo": "berylliumsec/nebula",
-        "stars": 1168,
+        "stars": 1169,
         "forks": 182,
         "created_at": "2023-09-30",
         "is_fork": false,
@@ -69,9 +69,9 @@
       },
       "licence": { "file": "BSD-2", "api_spdx": "BSD-2-Clause", "readme_claim": null, "conflict": null },
       "shape": {
-        "loc": 841839,
-        "code_files": 1959,
-        "files": 2569,
+        "loc": 846107,
+        "code_files": 1975,
+        "files": 2587,
         "has_ci": true,
         "has_tests": true,
         "has_dockerfile": true,
@@ -86,7 +86,7 @@
       "substrate": { "bundled": [], "manifests": [] },
       "rebadge": [],
       "risk": { "licence": false, "install": false, "phones_home": true, "opaque": false, "host_access": false },
-      "risk_where": { "phones_home": "ui/src/components/NebulaVoice.tsx:206" }
+      "risk_where": { "phones_home": "scripts/build_nebula_core.py:261" }
     }
   }
 }

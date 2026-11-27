@@ -1,0 +1,146 @@
+{
+  "type": "cyber",
+  "date": "2026-11-27",
+  "threatLevel": "",
+  "executiveSummary": "Critical OT risks this period are driven by: 1) active exploitation of Danfoss AK-SM 8xxA refrigeration controllers with physical consequences reported; 2) a US multi-agency warning of active targeting of Siemens S7 PLCs; 3) chained exploitation of PAN-OS firewalls via PHP and Linux kernel bugs enabling root control of perimeter devices; 4) Node-RED RCE abuse in IIoT/edge deployments; and 5) multiple ICS/IIoT frameworks with high-impact authorization/trust bypass issues. Cross-sector activity by state-sponsored and financially motivated actors increases the likelihood of IT-to-OT pivoting. Danfoss AK-SM 8xxA critical unauthenticated overflow enables controller takeover; recent attacks reportedly caused spoilage/fires and affected cold-chain operations. Immediate isolation and Strict Mode are advised pending 5.5.x updates. View Article CISA Advisory Active targeting of Siemens S7 PLCs using AI-generated tooling to enumerate and manipulate controllers over S7comm; strong segmentation, access controls, and protocol monitoring are required now. Security Advisory PAN-OS firewall compromises via \"PHP2Shell\" + \"Fragnesia\" kernel LPE achieved root on internet-exposed management interfaces; rapidly patch and remove public exposure of management planes. View Article Supporting Report Node-RED unauthenticated RCE (CVE-2026-58115) is being exploited to register malicious flows on exposed/unauthenticated instances; high relevance to IIoT/OT gateways embedding Node-RED. Security Advisory Multiple ICS/IIoT platforms with critical flaws (OpenPLC unauth admin creation; Advantech EKI industrial gateways RCE/cleartext control; Eclipse Arrowhead/Ditto authorization bypass) demand rapid patching and segmentation. CISA Advisory CISA Bulletin Broader state-linked campaigns: PRC \"covert networks\" leveraging compromised SOHO/IoT for staging; Russian FSB targeting router hygiene; ransomware operations with virtualization/ESXi TTPs - all increase IT-to-OT pivot risk if edges remain weak. Security Advisory Security Advisory",
+  "keyFindings": [
+    {
+      "title": "Cold-chain OT at risk",
+      "summary": "Danfoss AK-SM 8xxA unauthenticated overflow is unpatched in deployed fleets; Strict Mode and network isolation are immediate priorities. View Article"
+    },
+    {
+      "title": "Active PLC reconnaissance",
+      "summary": "Siemens S7 devices probed and accessed using scriptable S7comm tools; disable PUT/GET where feasible and enforce cell protection. Security Advisory"
+    },
+    {
+      "title": "Perimeter device ownership",
+      "summary": "PAN-OS management exposure continues to yield root via chained bugs; restrict management to trusted admin networks only. View Article"
+    },
+    {
+      "title": "IIoT flow-engine compromise",
+      "summary": "Node-RED CVE-2026-58115 exploited to deploy malicious flows on exposed editors without adminAuth. Security Advisory"
+    },
+    {
+      "title": "OpenPLC Runtime CVE-2026-126088 allows unauthenticated admin creation - direct r",
+      "summary": "OpenPLC Runtime CVE-2026-126088 allows unauthenticated admin creation - direct risk of logic tampering on PLC runtimes. CISA Advisory"
+    },
+    {
+      "title": "Industrial gateways and IIoT frameworks (Advantech EKI, Eclipse Arrowhead/Ditto)",
+      "summary": "Industrial gateways and IIoT frameworks (Advantech EKI, Eclipse Arrowhead/Ditto) show critical auth/trust bypass paths; segment and patch immediately. CISA Bulletin CISA Bulletin"
+    },
+    {
+      "title": "Actively exploited Cacti zero-day grants unauth RCE on monitoring servers - pote",
+      "summary": "Actively exploited Cacti zero-day grants unauth RCE on monitoring servers - potential for alert suppression and lateral movement. View Article"
+    },
+    {
+      "title": "SiteGuard Server Edition WAF OS command injection is exploited in the wild - pot",
+      "summary": "SiteGuard Server Edition WAF OS command injection is exploited in the wild - potential root/SYSTEM web-tier pivots near OT DMZs. Security Advisory"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "CRITICAL",
+        "label": "Overall OT/ICS Threat Level",
+        "trend": "Multiple actively exploited OT controllers and perimeter devices; immediate actions required"
+      },
+      {
+        "value": "20",
+        "label": "Escalate Events (current brief)",
+        "trend": "Concentration in facility controls, PLCs, and perimeter firewalls"
+      },
+      {
+        "value": "12+",
+        "label": "Actively Exploited Items",
+        "trend": "KEV additions; live exploitation of Danfoss, PAN-OS, Cacti, Node-RED, SiteGuard"
+      },
+      {
+        "value": "10+",
+        "label": "New/Notable OT CVEs & Issues",
+        "trend": "PLC runtime, refrigeration controllers, gateways, IIoT frameworks"
+      },
+      {
+        "value": "Refrigeration, PLC control, EVSE, Gateways",
+        "label": "Primary OT Functions at Risk",
+        "trend": "Controllers & IIoT frameworks under active pressure"
+      },
+      {
+        "value": "Perimeter mgmt, Web apps, VPNs",
+        "label": "Likely Entry Vectors",
+        "trend": "Chained deserialization + LPE; KEV web RCEs"
+      },
+      {
+        "value": "High",
+        "label": "IT→OT Pivot Concern",
+        "trend": "Edge devices and DMZ monitors repeatedly targeted"
+      },
+      {
+        "value": "State & RaaS",
+        "label": "Prevalent Actor Types",
+        "trend": "PRC/FSB tradecraft and ransomware TTPs observed"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Danfoss (AK-SM 8xxA/800A), Siemens (S7-200/300/400/1200/1500, TIA Portal/STEP 7), Autonomy Logic (OpenPLC Runtime ≤4.2.4), Advantech (EKI-1242 series gateways), Eclipse Arrowhead/Ditto, Node-RED (OpenJS Foundation), Palo Alto Networks (PAN-OS firewalls), Cacti (1.2.31), SiteGuard Server Edition (EG Secure Solutions). Supporting/adjacent components: ActiveMQ, EVSE (Autel), OPC UA stacks, enterprise WAF/web tiers."
+    ],
+    "sectors": [
+      "Commercial Facilities / Retail Food (refrigeration and building controls) Water and Wastewater Systems (PLC/engineering workstations; OpenPLC; Siemens S7) Energy (EVSE, distributed energy assets; OPC UA/IIoT frameworks) Critical Manufacturing (PLC/gateway exposures) Healthcare & Public Health (cold-chain storage exposure) Transportation Systems (EVSE; prior Elecbrakes issues)"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "PRC nexus \"covert networks\" campaign leveraging large SOHO/IoT botnets for proxying and persistence near CI. Security Advisory",
+        "FSB Center 16 router-focused tradecraft exploiting SNMP defaults, Cisco SMI, and legacy router hygiene to stage access. Security Advisory",
+        "Gunra ransomware (Conti-derived) exploiting VPN/edge devices, with DLP exfil and rapid encryption on Windows/Linux estates. #StopRansomware",
+        "ESXi/vCenter ransomware operations abusing legitimate management features for VM stop/wipe and backup neutralization. Vendor Research",
+        "Confirmed AI-assisted intrusion chains against European CI operators - rapid exploit chaining against exposed IT surfaces. View Article"
+      ]
+    }
+  ],
+  "relevance": "Risk is concentrated on systems directly operating or mediating control of physical processes: refrigeration supervisors (Danfoss AK-SM 8xxA), PLC runtimes (OpenPLC), programmable controllers (Siemens S7), and industrial gateways (Advantech EKI). Node-RED exploitation threatens IIoT gateways embedded by OEMs adjacent to OT networks. Perimeter compromises of firewalls (PAN-OS) and web/WAF tiers (Cacti, SiteGuard) raise the probability of IT-to-OT pivoting and alert suppression. Multiple CISA joint advisories attribute sustained, state-linked campaigns pre-positioning in infrastructure using compromised SOHO/IoT routers and LOTL techniques, which can bypass traditional perimeter detections and undermine segmentation.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Danfoss AK-SM 8xxA stack overflow (CVE-2026-129713) - unauth POST → potential code exec; patch planned 5.5.x; enable Strict Mode. CISA Advisory",
+        "OpenPLC Runtime ≤4.2.4 race → unauth admin creation (CVE-2026-126088); fixed 4.3.0. CISA Advisory",
+        "Node-RED adminAuth unset → unauth flow registration RCE (CVE-2026-58115) actively exploited. JPCERT Weekly",
+        "SiteGuard Server Edition WAF OS command injection (CVE-2026-106931) - exploited in the wild. JPCERT Advisory",
+        "Advantech EKI-1242* industrial gateways - multiple unauth root RCE/config overwrite/cleartext management (various CVEs). CISA Bulletin",
+        "Eclipse Arrowhead/Ditto IIoT management - authorization and trust bypass flaws enabling sysop takeover/SSRF. CISA Bulletin",
+        "Cacti 1.2.31 unauth RCE via four-request chain; disable guest, restrict UI, hunt poller manipulation. View Article",
+        "PAN-OS mgmt interface - PHP2Shell + Fragnesia kernel LPE exploited; patch all supported trains; remove public exposure. View Article",
+        "EVSE & brokers: Autel MaxiCharger RCE and ActiveMQ AMQP issues of concern to distributed energy/logging. CISA Bulletin",
+        "KEV updates include Danfoss AK-SM 800A legacy issues and multiple enterprise web RCEs - prioritize internet-facing patching and compromise assessment. CISA KEV",
+        "CERT-FR activity bulletin consolidates multiple actively exploited high-impact vulns across OT/IT, including Danfoss and Optimizely JS supply chain. CERT-FR Bulletin"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Exploitation of public-facing applications (ATT&CK T1190) - web RCEs (Cacti, SiteGuard, Node-RED admin APIs)",
+      "Valid accounts and abuse of management planes (T1078, T1021) - PAN-OS mgmt, vCenter/ESXi features, IIoT consoles",
+      "Command and control over web/cloud channels (T1071.001/.004) - CloudFront, GitHub, Graph/SharePoint C2 in related campaigns",
+      "Credential access and OS-level persistence on edge (T1003, T1053) - router/SOHO compromises; backup neutralization",
+      "Lateral movement via DMZ monitors and gateways (T1210) - industrial gateway RCE, monitoring server takeovers",
+      "Hardware/PLC protocol abuse - S7comm over TCP/102; unauthorized PUT/GET and data block access"
+    ],
+    "mitreIds": ["T1190", "T1078", "T1021", "T1071.001", "T1003", "T1053", "T1210"]
+  },
+  "outlook72h": "Expect continued automated scanning against PAN-OS, Node-RED, and PHP-based surfaces; opportunistic exploitation of Danfoss controllers where reachable; and sustained probing of S7 PLCs. Prioritize: 1) removing internet exposure, 2) applying available vendor updates (PAN-OS, OpenPLC, Cacti), 3) enforcing adminAuth and auditing Node-RED flows, and 4) deploying heightened monitoring at OT perimeters (S7comm, unexpected HTTP/S POST floods to controller web tiers). ESCALATE Danfoss AK-SM 8xxA critical flaw; physical cold-chain impacts reported Facility Controls Retail/Healthcare Critical Unauthenticated stack buffer overflow via crafted HTTP/S POST can restart webserver and enable code execution; enforce Strict Mode and isolate. View Article · CISA Advisory Active threat to Siemens S7 PLCs (AI-generated scripts over S7comm) Water/Energy/Manufacturing Critical Recon and read/write access over TCP/102; disable PUT/GET where feasible; apply Siemens cell protection; monitor for unauthorized block access. Security Advisory PAN-OS firewall management chain exploits (PHP2Shell + Fragnesia) Perimeter High Root control on exposed management interfaces; patch to fixed builds; remove public exposure; reimage/rotate secrets on suspicion. View Article · Supporting Report Node-RED RCE via unauth editor/admin API (CVE-2026-58115) exploited IIoT Gateway High Attackers register malicious flows to execute OS commands on exposed instances; enable adminAuth and remove exposure immediately. JPCERT Bulletin OpenPLC Runtime ≤4.2.4 - unauthenticated admin creation (CVE-2026-126088) PLC Runtime High Allows full logic manipulation; upgrade to 4.3.0; isolate management APIs; monitor for sudden admin proliferation. CISA ICS Cacti 1.2.31 unauth chain to RCE in 4 requests Monitoring/DMZ High Disable guest, restrict UI, hunt for poller abuse and webshells; rotate stored device credentials. View Article SiteGuard Server Edition WAF - OS command injection exploited Web/WAF High With statistics feature enabled, attackers execute commands as root/SYSTEM; capture diagnostics, patch, and disable stats feature. JPCERT Advisory PRC \"covert networks\" leveraging compromised SOHO/IoT for CI pre-positioning Cross-Sector High Harden/replace SOHO gear; enforce egress controls; monitor for proxy/botnet-mediated traffic to enterprise/OT perimeters. Joint Advisory FSB Center 16 router hygiene campaign (SNMP defaults, Cisco SMI) Edge Routers Critical Disable SMI; enforce SNMPv3 authPriv; block TFTP/FTP; centralize logging and config monitoring; replace EoL devices. Joint Advisory Advantech EKI-1242 industrial gateways - multi-path unauth control & DoS Gateways High Block/limit TCP/5058; encrypt mgmt channels; isolate devices on dedicated VLANs; hunt for unsolicited root commands and firmware uploads. CISA Bulletin ICS/IIoT frameworks: Eclipse Arrowhead/Ditto critical auth/trust flaws IIoT High Patch/upgrade; enforce strict URL decoding and MQTT/TLS trust; segment management endpoints behind VPN & allowlists. CISA Bulletin AI-assisted intrusions confirmed against CI operators (CH) Cross-Sector High Accelerated exploit chaining against exposed IT services; enforce passkeys, EASM, rapid patch SLAs, and deception at high-value endpoints. View Article MONITOR AutomationDirect C-More EA9 Programming Software heap overflow Engineering WS High Opening crafted project files may allow code execution; update to V6.81; restrict removable media and enforce allowlisting. CISA ICS Schneider Electric EcoStruxure Power Build Rapsody Use-After-Free Engineering WS Moderate User-assisted malicious SSD file opens lead to local code execution; upgrade to regional fixed builds; segment engineering hosts. CISA ICS Poste.io DMARC processing RCE (CVE-2026-127027) Mail Infra High Unauth RCE via DMARC reports; patch to 2.5.22; segment mail infra away from OT; add WAF & inspection on inbound. CERT Polska GNU Screen pre-5.0.2 - RCE via malicious terminal content + local root Jump Hosts High Upgrade to 5.0.2; restrict SSH trust; consider non-setuid build; AppArmor/SELinux profiles on shared hosts. CERT Polska mRemoteNG - TLS validation flaw and weak KDF enable credential theft Remote Admin High Harden TLS to SQL backends; rotate credentials; replace default passphrase; monitor for MITM and reuse. CERT Polska Retadup USB worm distributing CoffeeLoader (removable media risk) Removable Media High Lock down USB; enforce allowlisting; monitor rundll32/7z.dll SetCodecs pattern and GPU shader decryption usage. Research CAST Imaging 3.6.2 - OIDC header abuse, path traversal, hard-coded token App Analysis Moderate Restrict internet exposure; harden Keycloak; rotate secrets; WAF to sanitize X-ISSUER-LOCATION and traversal patterns. CERT Polska 1Password backend incident via GitHub account compromise Supply Chain Moderate Harden SSO/2FA with hardware keys; rotate tokens; monitor for phishing leveraging exposed metadata. News · View Article IGNORE Policy/awareness and non-operational items Low OT Relevance Low NCSC/Heise policy and privacy digests; strategic AI posts with no indicators or OT specifics. General sector briefings and consumer-focused threat roundups lacking actionable OT indicators. Retained for context; no immediate OT/ICS action required.",
+  "relatedCves": [
+    "CVE-2026-58115",
+    "CVE-2026-126088",
+    "CVE-2026-129713",
+    "CVE-2026-106931",
+    "CVE-2026-127027",
+    "CVE-2026-71409",
+    "CVE-2026-87867",
+    "CVE-2026-109857"
+  ]
+}

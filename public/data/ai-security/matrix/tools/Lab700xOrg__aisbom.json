@@ -7,9 +7,9 @@
   "description": "Static security scanner for ML model files — detects pickle bombs, Keras Lambda RCE and GGUF template injection, and generates CycloneDX / SPDX AI-BOMs (AIBOM) as EU AI Act, CRA and FDA §524B evidence.",
   "homepage": "https://www.aisbom.io/",
   "added": "2026-09-14",
-  "checkedAt": "2026-11-26T03:19:51Z",
-  "pushedAt": "2026-11-21",
-  "daysIdle": 5,
+  "checkedAt": "2026-11-27T03:19:34Z",
+  "pushedAt": "2026-11-26",
+  "daysIdle": 1,
   "archived": false,
   "license": "Apache-2.0",
   "upstream": {
@@ -18,22 +18,22 @@
       "description": "Produces the compliance artefact as well as the verdict: a CycloneDX or SPDX bill of materials for a model file, alongside the Keras, GGUF and ONNX payloads it found while reading it."
     },
     "derived": {
-      "checked_at": "2026-11-26T03:19:51Z",
+      "checked_at": "2026-11-27T03:19:34Z",
       "cloned": true,
       "alive": {
         "archived": false,
-        "pushed_at": "2026-11-21",
-        "days_since_push": 5,
-        "total_commits": 238,
-        "last100_span_days": 175,
+        "pushed_at": "2026-11-26",
+        "days_since_push": 1,
+        "total_commits": 241,
+        "last100_span_days": 186,
         "last100_authors": 2,
-        "last_commit_sha": "78039f6",
-        "last_commit_message": "feat(action): fail-on-scan-error input; never report a stale SBOM (#139)\n\nA scan that exits 1 (a missing directory, a parse error, an unreadable\nmodel file such as a git-LFS pointer stub) used to end the Action job\ngreen with nothing said. It now adds a warning annotation, and fails the\njob with exit 1 when `fail-on-scan-error: true`. The default stays false\nand becomes true at the next major release.\n\nThe Action now deletes its output file and the matching VEX files before\nscanning, so a file left by an earlier step or committed to the repo is\nnever commented on or uploaded as this run's result.\n\nExit precedence is 2, then 1, then 3; the upload still runs first.",
-        "last_commit_at": "2026-11-15",
+        "last_commit_sha": "a811cbc",
+        "last_commit_message": "fix(sbom): record dependency versions only for exact pins; add pypi purls (#143)\n\n* fix(sbom): record dependency versions only for exact pins; add pypi purls\n\n`torch>=2.0` became a component at version 2.0, a claim about what is\ninstalled that requirements.txt does not make. A dependency now has a\nversion only for a single ==/=== pin without a wildcard; any other\nspecifier is kept in the aisbom:requirement:specifier property\n(CycloneDX) or the package comment (SPDX 2.3/3.0).\n\nExact pins carry pkg:pypi/<normalised-name>@<version> as the CycloneDX\npurl, an SPDX 2.3 PACKAGE_MANAGER external ref and SPDX 3.0\nsoftware_packageUrl, so VEX tooling can join CVE statements by purl.\n\naisbom diff against an older baseline shows range dependencies as\n`<bound> -> unknown`; noted in the CHANGELOG.\n\n* fix(spdx3): include requirement specifiers in the namespace fingerprint\n\nBoth numpy>=1.0 and numpy>=2.0 now leave the version unknown, so the\ncontent-derived namespace could not tell the two scans apart. Append the\nspecifier when present; scans without ranges keep their namespace.",
+        "last_commit_at": "2026-11-26",
         "releases": 53,
         "latest_release_at": "2026-10-25",
-        "days_since_release": 32,
-        "days_idle": 5,
+        "days_since_release": 33,
+        "days_idle": 1,
         "relocated": false
       },
       "identity": {
@@ -71,9 +71,9 @@
       },
       "licence": { "file": "Apache-2.0", "api_spdx": "Apache-2.0", "readme_claim": null, "conflict": null },
       "shape": {
-        "loc": 35872,
-        "code_files": 85,
-        "files": 121,
+        "loc": 36669,
+        "code_files": 89,
+        "files": 125,
         "has_ci": true,
         "has_tests": true,
         "has_dockerfile": true,
@@ -87,7 +87,8 @@
       },
       "substrate": { "bundled": [], "manifests": [] },
       "rebadge": [],
-      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false }
+      "risk": { "licence": false, "install": false, "phones_home": false, "opaque": false, "host_access": false },
+      "risk_where": {}
     }
   }
 }
