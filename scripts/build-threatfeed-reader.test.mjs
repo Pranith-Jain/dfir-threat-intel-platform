@@ -33,6 +33,33 @@ test('parses articles, assigns feed categories and strips visitor state', () => 
   assert.equal(r.trending.vendors.length, 1);
 });
 
+test('joins the feed catalogue with feedHealth into a Sources view', () => {
+  const health = {
+    'src-1': { status: 'healthy', latencyMs: 120, articleCount: 10, httpStatus: 200, lastFetchedAt: '2026-11-27T00:00:00Z' },
+    'src-3': { status: 'http_error', httpStatus: 503 },
+  };
+  const r = parseSnapshot(
+    { articles: snapshot.articles, feedHealth: health },
+    {},
+    [
+      { id: 'src-1', name: 'Source One', url: 'https://one.test/feed', category: 'Vulnerabilities', tags: ['cve'], enabled: true },
+      { id: 'src-2', name: 'Source Two', category: 'News', enabled: false },
+    ]
+  );
+  assert.equal(r.sources.length, 3); // 2 catalogued + 1 health-only
+  const one = r.sources.find((s) => s.id === 'src-1');
+  assert.equal(one.name, 'Source One');
+  assert.equal(one.category, 'Vulnerabilities');
+  assert.equal(one.status, 'healthy');
+  assert.equal(one.latencyMs, 120);
+  assert.equal(r.sources.find((s) => s.id === 'src-2').enabled, false);
+  // Health-only feed still gets a usable label from feedId.
+  assert.equal(r.sources.find((s) => s.id === 'src-3').status, 'http_error');
+  assert.equal(r.counts.sources, 3);
+  assert.equal(r.counts.sourcesHealthy, 1);
+  assert.equal(r.counts.sourcesUnhealthy, 2);
+});
+
 test('degrades cleanly on a missing snapshot', () => {
   const r = parseSnapshot({}, {}, []);
   assert.deepEqual(r.articles, []);

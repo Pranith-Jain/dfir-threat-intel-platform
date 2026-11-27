@@ -60,18 +60,50 @@ export function parseSnapshot(snapshot, entities, feeds = []) {
     .filter((a) => a.url)
     .sort((a, b) => String(b.publishedAt ?? '').localeCompare(String(a.publishedAt ?? '')));
 
+  // Upstream's /#/sources view is built from feeds.json (catalogue) joined
+  // with snapshot.feedHealth (runtime status). Mirror that join so the in-site
+  // Sources tab shows the same 158 feeds with health, latency and article
+  // counts, without calling any upstream CORS proxy at runtime.
+  const health = snapshot?.feedHealth && typeof snapshot.feedHealth === 'object' ? snapshot.feedHealth : {};
+  const catalog = new Map(feeds.map((f) => [String(f.id), f]));
+  const sourceIds = new Set([...catalog.keys(), ...Object.keys(health)]);
+  const sources = [...sourceIds]
+    .map((id) => {
+      const f = catalog.get(id) ?? {};
+      const h = health[id] ?? {};
+      return {
+        id,
+        name: String(f.name ?? h.feedId ?? id).slice(0, 120),
+        url: /^https?:\/\//i.test(String(f.url ?? '')) ? String(f.url).slice(0, 800) : null,
+        category: String(f.category ?? 'Uncategorised').slice(0, 80),
+        tags: Array.isArray(f.tags) ? f.tags.slice(0, 8).map((t) => String(t).slice(0, 40)) : [],
+        enabled: f.enabled !== false,
+        status: String(h.status ?? 'unknown').slice(0, 24),
+        httpStatus: typeof h.httpStatus === 'number' ? h.httpStatus : null,
+        latencyMs: typeof h.latencyMs === 'number' ? h.latencyMs : null,
+        articleCount: typeof h.articleCount === 'number' ? h.articleCount : null,
+        lastFetchedAt: h.lastFetchedAt ?? null,
+        lastSuccessAt: h.lastSuccessAt ?? null,
+        gatewayUsed: String(h.gatewayUsed ?? '').slice(0, 60),
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+
   const counts = {
     articles: slim.length,
-    sources: new Set(slim.map((a) => a.sourceId)).size,
+    sources: sources.length,
     categories: new Set(slim.map((a) => a.feedCategory)).size,
     critical: slim.filter((a) => a.severity === 'critical').length,
     withCves: slim.filter((a) => a.cves.length > 0).length,
+    sourcesHealthy: sources.filter((s) => s.status === 'healthy').length,
+    sourcesUnhealthy: sources.filter((s) => s.status !== 'healthy').length,
   };
   const vendors = Array.isArray(entities?.vendors) ? entities.vendors.slice(0, 40) : [];
   const actors = Array.isArray(entities?.actors) ? entities.actors.slice(0, 40) : [];
   const groups = Array.isArray(entities?.groups) ? entities.groups.slice(0, 40) : [];
   return {
     articles: slim,
+    sources,
     counts,
     generatedAt: snapshot?.generatedAt ?? null,
     feedHealth: snapshot?.feedHealth ?? {},

@@ -9,10 +9,12 @@
  */
 import { useCallback, useEffect, useMemo, useState, type JSX } from 'react';
 import {
+  Activity,
   ArrowUpRight,
   Bookmark,
   Check,
   Clock3,
+  Database,
   ExternalLink,
   Filter,
   LayoutGrid,
@@ -20,10 +22,14 @@ import {
   Newspaper,
   Rss,
   Search,
+  Sparkles,
   Star,
+  Users,
 } from 'lucide-react';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import { PageMeta } from '../../components/PageMeta';
+import { AiSummaryCard } from '../../components/intel/AiSummaryCard';
+import { PostAnalysisButton } from '../../components/threatintel/PostAnalysisButton';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { sanitizeUrl } from '../../lib/sanitize-url';
 import { relativeAgo } from '../../lib/relativeTime';
@@ -46,6 +52,22 @@ interface Article {
   severityScore: number | null;
 }
 
+interface FeedSource {
+  id: string;
+  name: string;
+  url: string | null;
+  category: string;
+  tags: string[];
+  enabled: boolean;
+  status: string;
+  httpStatus: number | null;
+  latencyMs: number | null;
+  articleCount: number | null;
+  lastFetchedAt: string | null;
+  lastSuccessAt: string | null;
+  gatewayUsed: string;
+}
+
 interface ReaderData {
   generatedAt: string;
   source: string;
@@ -53,13 +75,34 @@ interface ReaderData {
   repoUrl: string;
   license: string;
   note: string;
-  counts: { articles: number; sources: number; categories: number; critical: number; withCves: number };
+  counts: {
+    articles: number;
+    sources: number;
+    categories: number;
+    critical: number;
+    withCves: number;
+    sourcesHealthy: number;
+    sourcesUnhealthy: number;
+  };
   generatedFrom: string | null;
-  trending: { vendors: unknown[]; actors: unknown[]; groups: unknown[] };
+  trending: {
+    vendors: string[];
+    actors: Array<{ id: string; name: string }>;
+    groups: Array<{ id: string; name: string }>;
+  };
+  sources: FeedSource[];
   articles: Article[];
 }
 
 type Layout = 'newspaper' | 'list' | 'compact';
+type View = 'stream' | 'sources' | 'entities';
+
+const SOURCE_STATUS: Record<string, string> = {
+  healthy: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+  http_error: 'border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300',
+  network_error: 'border-orange-500/40 bg-orange-500/10 text-orange-700 dark:text-orange-300',
+  invalid_xml: 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300',
+};
 
 const SEVERITY_STYLE: Record<string, string> = {
   critical: 'border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300',
@@ -203,6 +246,13 @@ function ArticleCard({
             {t}
           </span>
         ))}
+        <PostAnalysisButton
+          title={article.title}
+          description={article.description}
+          source={article.sourceName}
+          link={article.url ?? undefined}
+          compact
+        />
         <a
           href={sanitizeUrl(article.url ?? '') ?? undefined}
           target="_blank"
@@ -221,6 +271,10 @@ export default function ThreatFeedReader(): JSX.Element {
     url: '/data/threatfeed-reader/index.json',
     ttl: 10 * 60_000,
   });
+  const [view, setView] = useState<View>('stream');
+  const [sourceCategory, setSourceCategory] = useState('all');
+  const [sourceStatus, setSourceStatus] = useState('all');
+  const [sourceQ, setSourceQ] = useState('');
   const [layout, setLayout] = useState<Layout>('newspaper');
   const [category, setCategory] = useState('all');
   const [severity, setSeverity] = useState('all');
@@ -266,6 +320,41 @@ export default function ThreatFeedReader(): JSX.Element {
     });
   }, [data?.articles, category, severity, source, q, onlyUnread, onlySaved, read, saved, watchlist]);
 
+  const sourceCategories = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const s of data?.sources ?? []) counts.set(s.category, (counts.get(s.category) ?? 0) + 1);
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  }, [data?.sources]);
+
+  const visibleSources = useMemo(() => {
+    const needle = sourceQ.trim().toLowerCase();
+    return (data?.sources ?? []).filter((s) => {
+      if (sourceCategory !== 'all' && s.category !== sourceCategory) return false;
+      if (sourceStatus === 'healthy' && s.status !== 'healthy') return false;
+      if (sourceStatus === 'unhealthy' && s.status === 'healthy') return false;
+      if (needle && !`${s.name} ${s.id} ${s.tags.join(' ')}`.toLowerCase().includes(needle)) return false;
+      return true;
+    });
+  }, [data?.sources, sourceCategory, sourceStatus, sourceQ]);
+
+  // AI is opt-in: the card only posts to /api/v1/ai-summary when the visitor
+  // clicks Generate. A stable dayKey derived from the mirror's generatedAt
+  // keeps the server cache warm for every visitor on the same snapshot.
+  const summaryItems = useMemo(
+    () =>
+      articles.slice(0, 60).map((a) => ({
+        title: a.title,
+        body: a.description,
+        source: a.sourceName,
+      })),
+    [articles]
+  );
+
+  const openSource = (name: string) => {
+    setSource(name);
+    setView('stream');
+  };
+
   const addWatch = () => {
     const value = window.prompt('Add a watch phrase (product, actor, vendor)');
     if (value?.trim()) toggleWatch(value.trim());
@@ -277,7 +366,7 @@ export default function ThreatFeedReader(): JSX.Element {
       backLabel="Feed catalog"
       icon={<Newspaper size={28} />}
       title="ThreatFeed Reader"
-      description="A working in-site port of the MIT-licensed ThreatFeed newsreader — 2,197 dispatches, local read/bookmark state and no upstream CORS proxies."
+      description="A working in-site port of the MIT-licensed ThreatFeed newsreader — dispatches, live source health, trending entities, opt-in AI analysis and local read/bookmark state."
       maxWidthClass="max-w-7xl"
     >
       <PageMeta
@@ -315,7 +404,170 @@ export default function ThreatFeedReader(): JSX.Element {
         </div>
       )}
 
-      <div className="mb-4 space-y-3">
+      <div className="mb-4 flex flex-wrap items-center gap-1.5" role="tablist" aria-label="Reader views">
+        {(
+          [
+            ['stream', Newspaper, 'Dispatches'],
+            ['sources', Database, 'Sources'],
+            ['entities', Users, 'Entities'],
+          ] as const
+        ).map(([id, Icon, label]) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={view === id}
+            onClick={() => setView(id)}
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-mini ${
+              view === id
+                ? 'border-sky-500/50 bg-sky-500/10 text-sky-700 dark:text-sky-300'
+                : 'border-line-1 text-muted'
+            }`}
+          >
+            <Icon size={12} /> {label}
+          </button>
+        ))}
+        <a
+          href="https://jozeta.github.io/ThreatFeed/#/sources"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ml-auto inline-flex items-center gap-1 text-mini text-sky-600 hover:underline dark:text-sky-400"
+        >
+          upstream sources <ExternalLink size={10} />
+        </a>
+      </div>
+
+      {view === 'sources' && (
+        <section className="mb-4 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative min-w-[220px] flex-1">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
+              <input
+                value={sourceQ}
+                onChange={(e) => setSourceQ(e.target.value)}
+                placeholder="Search sources, IDs, tags…"
+                className="w-full rounded-lg border border-line-1 bg-surface-100 py-1.5 pl-8 pr-3 text-mini text-fg placeholder:text-muted focus:border-sky-500 focus:outline-none"
+              />
+            </div>
+            <select
+              value={sourceCategory}
+              onChange={(e) => setSourceCategory(e.target.value)}
+              className="rounded-lg border border-line-1 bg-surface-100 px-2 py-1.5 text-mini text-fg"
+              aria-label="Source category"
+            >
+              <option value="all">all categories</option>
+              {sourceCategories.map(([name, count]) => (
+                <option key={name} value={name}>
+                  {name} ({count})
+                </option>
+              ))}
+            </select>
+            <select
+              value={sourceStatus}
+              onChange={(e) => setSourceStatus(e.target.value)}
+              className="rounded-lg border border-line-1 bg-surface-100 px-2 py-1.5 text-mini text-fg"
+              aria-label="Source status"
+            >
+              <option value="all">all statuses</option>
+              <option value="healthy">healthy ({data?.counts.sourcesHealthy ?? 0})</option>
+              <option value="unhealthy">unhealthy ({data?.counts.sourcesUnhealthy ?? 0})</option>
+            </select>
+            <span className="text-mini text-muted">
+              {visibleSources.length} of {data?.sources.length ?? 0} sources
+            </span>
+          </div>
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            {visibleSources.map((s) => (
+              <div key={s.id} className="surface-card p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold text-heading">{s.name}</div>
+                    <div className="truncate font-mono text-micro text-muted">
+                      {s.category} · {s.id}
+                    </div>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded border px-1.5 py-0.5 font-mono text-micro ${SOURCE_STATUS[s.status] ?? SOURCE_STATUS.http_error}`}
+                  >
+                    {s.status.replace('_', ' ')}
+                  </span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-micro text-muted">
+                  <span>{s.articleCount ?? '—'} articles</span>
+                  <span>{s.latencyMs != null ? `${s.latencyMs} ms` : '—'}</span>
+                  {s.httpStatus != null && <span>HTTP {s.httpStatus}</span>}
+                  <span className="flex items-center gap-1">
+                    <Clock3 size={9} /> {relativeAgo(s.lastFetchedAt ?? '')}
+                  </span>
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => openSource(s.name)}
+                    className="rounded border border-line-1 px-2 py-0.5 text-micro text-sky-700 hover:border-sky-400 dark:text-sky-300"
+                  >
+                    read dispatches
+                  </button>
+                  {s.url && (
+                    <a
+                      href={sanitizeUrl(s.url) ?? undefined}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-micro text-muted hover:text-heading"
+                    >
+                      feed <ExternalLink size={9} />
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          {visibleSources.length === 0 && (
+            <p className="surface-card p-6 text-center text-mini text-muted">No sources match those filters.</p>
+          )}
+        </section>
+      )}
+
+      {view === 'entities' && (
+        <section className="mb-4 grid gap-3 md:grid-cols-3">
+          {(
+            [
+              ['Vendors', (data?.trending.vendors ?? []).map((v) => ({ id: v, name: v }))],
+              ['Actors', data?.trending.actors ?? []],
+              ['Groups', data?.trending.groups ?? []],
+            ] as const
+          ).map(([title, items]) => (
+            <div key={title} className="surface-card p-3">
+              <div className="mb-2 flex items-center gap-1.5 text-mini font-semibold uppercase tracking-wider text-muted">
+                <Activity size={12} /> {title} ({items.length})
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {items.slice(0, 40).map((item) => (
+                  <button
+                    key={item.id || item.name}
+                    type="button"
+                    onClick={() => toggleWatch(item.name)}
+                    title={watchlist.has(item.name) ? 'Remove from watchlist' : 'Add to watchlist'}
+                    className={`rounded-full border px-2 py-0.5 text-micro ${
+                      watchlist.has(item.name)
+                        ? 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                        : 'border-line-1 text-muted hover:text-heading'
+                    }`}
+                  >
+                    {item.name}
+                    {item.id && item.id !== item.name && <span className="ml-1 font-mono text-muted">{item.id}</span>}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-micro text-muted">
+                Click to add or remove a watch phrase for the dispatch stream.
+              </p>
+            </div>
+          ))}
+        </section>
+      )}
+
+      <div className={`mb-4 space-y-3 ${view === 'stream' ? '' : 'hidden'}`}>
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative min-w-[240px] flex-1">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
@@ -435,39 +687,54 @@ export default function ThreatFeedReader(): JSX.Element {
         )}
       </div>
 
+      {view === 'stream' && data && summaryItems.length > 0 && (
+        <AiSummaryCard
+          surface="ThreatFeed Reader"
+          items={summaryItems}
+          dayKey={data.generatedAt?.slice(0, 10)}
+          requireAdmin={false}
+          autoFetch={false}
+          className="mb-4"
+        />
+      )}
+
       {loading && !data && <p className="text-mini font-mono text-muted">loading dispatches…</p>}
       {error && !data && <p className="text-mini text-rose-600 dark:text-rose-400">{error}</p>}
 
-      <div className="mb-2 text-mini text-muted">
-        <span className="font-mono text-fg">{articles.length.toLocaleString()}</span> dispatches · chronological stream
-      </div>
-      <ul className={`grid gap-2 ${layout === 'newspaper' ? 'md:grid-cols-2' : ''}`}>
-        {articles.slice(0, 300).map((a) => (
-          <ArticleCard
-            key={a.id}
-            article={a}
-            layout={layout}
-            read={read.has(a.id)}
-            bookmarked={saved.has(a.id)}
-            onRead={() => markRead(a.id)}
-            onBookmark={() => toggleSaved(a.id)}
-          />
-        ))}
-      </ul>
+      <div className={view === 'stream' ? '' : 'hidden'}>
+        <div className="mb-2 text-mini text-muted">
+          <span className="font-mono text-fg">{articles.length.toLocaleString()}</span> dispatches · chronological
+          stream
+        </div>
+        <ul className={`grid gap-2 ${layout === 'newspaper' ? 'md:grid-cols-2' : ''}`}>
+          {articles.slice(0, 300).map((a) => (
+            <ArticleCard
+              key={a.id}
+              article={a}
+              layout={layout}
+              read={read.has(a.id)}
+              bookmarked={saved.has(a.id)}
+              onRead={() => markRead(a.id)}
+              onBookmark={() => toggleSaved(a.id)}
+            />
+          ))}
+        </ul>
 
-      {data && articles.length === 0 && (
-        <p className="surface-card p-6 text-center text-mini text-muted">No dispatches match those filters.</p>
-      )}
-      {articles.length > 300 && (
-        <p className="mt-3 text-center text-mini text-muted">
-          Showing the 300 newest of {articles.length.toLocaleString()} matches — narrow the filters to see older
-          dispatches.
-        </p>
-      )}
+        {data && articles.length === 0 && (
+          <p className="surface-card p-6 text-center text-mini text-muted">No dispatches match those filters.</p>
+        )}
+        {articles.length > 300 && (
+          <p className="mt-3 text-center text-mini text-muted">
+            Showing the 300 newest of {articles.length.toLocaleString()} matches — narrow the filters to see older
+            dispatches.
+          </p>
+        )}
+      </div>
 
       <footer className="mt-6 border-t border-line-1 pt-3 text-micro text-muted">
-        {data?.note} Reader UI re-implemented in this platform's design system; no upstream code or CSS vendored.{' '}
-        <Rss size={10} className="inline" />
+        {data?.note} Reader UI re-implemented in this platform's design system; no upstream code or CSS vendored. AI
+        summary and per-article analysis are opt-in and never fetched on page load.{' '}
+        <Sparkles size={10} className="inline" /> <Rss size={10} className="inline" />
       </footer>
     </DataPageLayout>
   );
