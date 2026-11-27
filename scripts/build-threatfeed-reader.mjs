@@ -39,6 +39,11 @@ export function parseSnapshot(snapshot, entities, feeds = []) {
       sourceName: String(a.sourceName ?? '').slice(0, 120),
       description: String(a.description ?? '')
         .replace(/<[^>]+>/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
         .replace(/\s+/g, ' ')
         .trim()
         .slice(0, 700),

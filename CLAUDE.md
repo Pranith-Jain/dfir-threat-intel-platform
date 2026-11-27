@@ -1492,3 +1492,15 @@ in 15 categories. REA verified the site and the feed endpoint. `scripts/build-th
 mirrors feed metadata only (no article bodies) into `public/data/threatfeed/`;
 the catalog is exposed at `/threatintel/threat-feed-catalog` with 3 REST routes
 under `/api/v1/threatfeed/*` and 2 `tf_*` MCP tools. Rides `cti-verticals-sync.yml`.
+
+#### ThreatFeed Reader (working port)
+
+`/threatintel/threatfeed-reader` is a working in-site port of the ThreatFeed
+newsreader's information architecture, not just metadata. `scripts/build-threatfeed-reader.mjs`
+mirrors the public MIT `snapshot.json` (2,197 articles / 158 sources) + feed
+categories from `feeds.json` into `public/data/threatfeed-reader/index.json`;
+visitor state (read/viewed/bookmarked) is stripped and kept in localStorage by
+the SPA. Upstream's third-party CORS proxies (`proxy.corsfix.com`, `api.rss2json.com`)
+are deliberately NOT used — no runtime upstream hop. UI: newspaper/list/compact
+layouts, category/severity/source/search filters, watchlist and saved items.
+No upstream code or CSS is vendored. Weekly sync rides `cti-verticals-sync.yml`.
