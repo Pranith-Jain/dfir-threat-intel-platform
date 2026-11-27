@@ -1504,3 +1504,25 @@ the SPA. Upstream's third-party CORS proxies (`proxy.corsfix.com`, `api.rss2json
 are deliberately NOT used — no runtime upstream hop. UI: newspaper/list/compact
 layouts, category/severity/source/search filters, watchlist and saved items.
 No upstream code or CSS is vendored. Weekly sync rides `cti-verticals-sync.yml`.
+
+#### VulnSocial decision view (CVE detail)
+
+REA verified `https://vulnsocial.com/cve/<id>` is server-rendered with a compact
+triage object embedded in the Next.js RSC flight stream. `scripts/sync-vulnsocial.mjs`
+parses that stream as **data** with a balanced-brace scanner (never `eval`),
+mirroring 20 radar CVEs' urgency/SLA/directive/CVSS/vendors/PoC + patch links
+into `public/data/vulnsocial/`. robots.txt content signals: `ai-train=no,
+search=yes, ai-input=yes` — no training, and no upstream code/CSS/prose is
+vendored (`src/data/threatintel/external-resources.ts` updated accordingly).
+`src/components/threatintel/VulnSocialBrief.tsx` re-implements the verified
+layout (decision header, plain-English verdict, telemetry, triage directive,
+CVSS attribution, CWE, artifact links, CPE/vendor matrix) on
+`/threatintel/cve/:id`; `CveDetail.tsx` now defaults to that view and maps the
+previously dropped `verdict` from `/api/v1/cve/search`, with a toggle back to
+the platform view. Sync rides `cve-intel-sync.yml` (30 min).
+
+#### ThreatFeed curated subscriptions
+
+`scripts/build-threatfeed.mjs` also emits the four public 7-day RSS feeds
+(`news.xml`, `vulns.xml`, `ransomware.xml`, `npm.xml`) as `curatedFeeds`; they
+are rendered as a Subscribe section on `/threatintel/threat-feed-catalog`.

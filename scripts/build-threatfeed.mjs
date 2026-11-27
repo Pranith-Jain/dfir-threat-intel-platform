@@ -74,6 +74,7 @@ async function main() {
     license: 'MIT — https://github.com/jozeta/ThreatFeed/blob/main/LICENSE',
     note: 'Feed metadata only. Article bodies are not mirrored; subscribe through the upstream URL.',
     counts: { feeds: parsed.feeds.length, categories: parsed.categories.length, enabled: parsed.feeds.filter((f) => f.enabled).length, retired: parsed.retiredFeedIds },
+    curatedFeeds: CURATED_FEEDS.map((f) => ({ ...f, url: `https://jozeta.github.io/ThreatFeed/data/feeds/${f.file}` })),
     ...parsed,
   });
   console.log(`  ✓ ThreatFeed: ${parsed.feeds.length} feeds / ${parsed.categories.length} categories → ${OUT}\n`);

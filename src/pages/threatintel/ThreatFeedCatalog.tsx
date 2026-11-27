@@ -26,6 +26,7 @@ interface Index {
   counts: { feeds: number; categories: number; enabled: number; retired: number };
   categories: Array<{ name: string; count: number; feeds: string[] }>;
   feeds: Feed[];
+  curatedFeeds?: Array<{ id: string; name: string; description: string; url: string }>;
 }
 
 export default function ThreatFeedCatalog(): JSX.Element {
@@ -77,6 +78,33 @@ export default function ThreatFeedCatalog(): JSX.Element {
             jozeta/ThreatFeed <ExternalLink size={10} />
           </a>
         </div>
+      )}
+
+      {data?.curatedFeeds && data.curatedFeeds.length > 0 && (
+        <section className="mb-5 rounded-xl border border-sky-500/30 bg-sky-500/5 p-4">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-heading">
+            <Rss size={14} className="text-sky-500" /> Subscribe
+          </h2>
+          <p className="mt-1 text-mini text-muted">Curated 7-day feeds — add these to any RSS reader.</p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {data.curatedFeeds.map((f) => (
+              <a
+                key={f.id}
+                href={sanitizeUrl(f.url) ?? undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border border-line-1 bg-surface-100 p-3 hover:border-sky-500/40"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-semibold text-heading">{f.name}</span>
+                  <ExternalLink size={11} className="text-muted" />
+                </div>
+                <p className="mt-1 text-mini text-muted">{f.description}</p>
+                <code className="mt-2 block truncate font-mono text-micro text-sky-700 dark:text-sky-300">{f.url}</code>
+              </a>
+            ))}
+          </div>
+        </section>
       )}
 
       <div className="mb-4 space-y-2">
