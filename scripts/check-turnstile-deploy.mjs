@@ -41,16 +41,27 @@ function readInput() {
   if (idx >= 0) {
     const file = process.argv[idx + 1];
     if (!file) throw new Error('--secrets-file needs a path');
-    return readFileSync(file, 'utf8');
+    return Promise.resolve(readFileSync(file, 'utf8'));
   }
-  if (process.stdin.isTTY) return '';
-  return readFileSync(0, 'utf8');
+  if (process.stdin.isTTY) return Promise.resolve('');
+  // `readFileSync(0)` raises EAGAIN on GitHub Actions when wrangler's stdout
+  // is piped in — the runner gives the pipe a non-blocking fd. Consume the
+  // stream asynchronously instead so the guard works both locally and in CI.
+  return new Promise((resolve, reject) => {
+    let data = '';
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', (chunk) => {
+      data += chunk;
+    });
+    process.stdin.on('error', reject);
+    process.stdin.on('end', () => resolve(data));
+  });
 }
 
-function main() {
+async function main() {
   let text;
   try {
-    text = readInput();
+    text = await readInput();
   } catch (err) {
     console.error(`::error::Turnstile deploy guard could not read secret names: ${err.message}`);
     process.exit(1);
