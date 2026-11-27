@@ -95,6 +95,18 @@ jobs:
         continue-on-error: true
         run: node scripts/sync-promptintel.mjs
 
+      - name: Build PRTF physical red-team taxonomy
+        # redteam.vip/prtf is CC BY 4.0 — the build parses the embedded JS
+        # literals with acorn (never eval) and emits attributed JSON.
+        continue-on-error: true
+        run: node scripts/build-prtf.mjs
+
+      - name: Build OWASP GenAI Threat Intelligence feed
+        # Public STIX 2.1 bundle from aithreatintelfeed.org, generated from the
+        # GenAI-Security-Project repo (no project licence — metadata + links).
+        continue-on-error: true
+        run: node scripts/build-ai-cti-feed.mjs
+
       - name: Build Atomic Red Team manifest
         # GitHub tree API + 353 raw technique YAMLs from redcanaryco/
         # atomic-red-team (MIT), the catalog behind atomicredteam.io. Metadata
@@ -129,7 +141,7 @@ jobs:
       - name: Show diff stat
         run: |
           echo "=== public/data changed files ==="
-          git status --short public/data/cairn/ public/data/nova/ public/data/denali/ public/data/ai-playbook/ public/data/orca/ public/data/aad/ public/data/art/ public/data/hi/ public/data/oh/ public/data/kp/ public/data/cheyenne-tool/ | head -60
+          git status --short public/data/cairn/ public/data/nova/ public/data/denali/ public/data/ai-playbook/ public/data/orca/ public/data/aad/ public/data/art/ public/data/hi/ public/data/oh/ public/data/kp/ public/data/cheyenne-tool/ public/data/prtf/ public/data/ai-cti-feed/ | head -60
 
       - name: Open PR if data changed
         id: pr
@@ -174,6 +186,8 @@ jobs:
             public/data/oh/
             public/data/kp/
             public/data/cheyenne-tool/
+            public/data/prtf/
+            public/data/ai-cti-feed/
 
       - name: Auto-merge sync PR
         # Data-only output, main unprotected — merges itself (same pattern

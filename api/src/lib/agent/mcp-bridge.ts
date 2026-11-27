@@ -136,6 +136,9 @@ import { filterKpExploits, filterKpTools, getKpFeed, kpCacheStats, loadKpIndex }
 
 // MMD — MalwareMustDie shared codes & tools catalog (public share).
 import { loadMmdIndex, listMmdTools, getMmdCategory, loadMmdCommits, mmdCacheStats } from '../mmd-manifest';
+import { loadBttIndex, filterBttTools, bttCacheStats } from '../blue-team-tools-manifest';
+import { loadPrtfIndex, filterPrtfTechniques, getPrtfTechnique } from '../prtf-manifest';
+import { loadAiCtiIndex, filterAiCtiRows } from '../ai-cti-feed-manifest';
 
 // AAD — ThreatDefence agentic attack detections (MIT) + ART — Atomic Red Team.
 import {
@@ -4088,6 +4091,122 @@ export function bridgeMcpTools(
         stats: idx.stats,
         cache: kpCacheStats(),
       };
+    },
+  });
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  OWASP GenAI Threat Intelligence Initiative (ai_cti_*).
+  // ══════════════════════════════════════════════════════════════════════
+  add({
+    name: 'ai_cti_list_actors',
+    description:
+      'List AI-threat actors from the OWASP GenAI Threat Intelligence Initiative STIX feed (162 actors). Category A = using AI to attack; Category B = attacking AI systems.',
+    params: [
+      { name: 'category', type: 'string', description: 'A or B', required: false },
+      { name: 'q', type: 'string', description: 'Name or STIX id keyword', required: false },
+      { name: 'limit', type: 'number', description: 'Max actors (default 100)', required: false },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadAiCtiIndex(assets);
+      return {
+        total: idx.counts.actors,
+        actors: filterAiCtiRows(idx.actors, {
+          category: args.category as string | undefined,
+          q: args.q as string | undefined,
+          limit: (args.limit as number) ?? 100,
+        }),
+      };
+    },
+  });
+
+  add({
+    name: 'ai_cti_stats',
+    description:
+      'Counts for the OWASP GenAI STIX mirror: objects, actors, techniques, indicators, relationships and category split.',
+    params: [],
+    execute: async () => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadAiCtiIndex(assets);
+      return { counts: idx.counts, generatedAt: idx.generatedAt };
+    },
+  });
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  PRTF (prtf_*) — Physical Red Team Framework, CC BY 4.0.
+  // ══════════════════════════════════════════════════════════════════════
+  add({
+    name: 'prtf_list_techniques',
+    description:
+      'List 108 PRTF physical red-team techniques across 9 tactics (reconnaissance, evasion, bypass, wireless, social engineering, implants, exfiltration, persistence). Filter by tactic or keyword. CC BY 4.0 with attribution.',
+    params: [
+      { name: 'tactic', type: 'string', description: 'Tactic id or name', required: false },
+      { name: 'q', type: 'string', description: 'Keyword across id, name and summary', required: false },
+      { name: 'limit', type: 'number', description: 'Max techniques (default 100)', required: false },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadPrtfIndex(assets);
+      return {
+        total: idx.counts.techniques,
+        techniques: filterPrtfTechniques(idx, {
+          tactic: args.tactic as string | undefined,
+          q: args.q as string | undefined,
+          limit: (args.limit as number) ?? 100,
+        }),
+      };
+    },
+  });
+
+  add({
+    name: 'prtf_get_technique',
+    description:
+      'Return one PRTF technique with full description, tools, related chain and blue-team detection/countermeasure notes.',
+    params: [{ name: 'id', type: 'string', description: 'Technique id, e.g. PRTF-1.01', required: true }],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      return getPrtfTechnique(assets, args.id as string);
+    },
+  });
+
+  // ══════════════════════════════════════════════════════════════════════
+  //  BlueTeam-Tools (btt_*) — metadata-only blue-team catalog.
+  //  No upstream licence: names, one-line summaries and links only.
+  // ══════════════════════════════════════════════════════════════════════
+  add({
+    name: 'btt_list_tools',
+    description:
+      'List 75 blue-team tools across 13 categories from A-poc/BlueTeam-Tools (threat hunting, network discovery, security monitoring, forensics, incident response). Filter by category or keyword. Metadata only with deep links upstream.',
+    params: [
+      { name: 'category', type: 'string', description: 'Category name or slug', required: false },
+      { name: 'q', type: 'string', description: 'Keyword across name, summary and category', required: false },
+      { name: 'linked', type: 'boolean', description: 'Only tools with a public destination URL', required: false },
+      { name: 'limit', type: 'number', description: 'Max tools (default 100)', required: false },
+    ],
+    execute: async (args) => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadBttIndex(assets);
+      return {
+        total: idx.counts.tools,
+        categories: idx.counts.categories,
+        tools: filterBttTools(idx, {
+          category: args.category as string | undefined,
+          q: args.q as string | undefined,
+          linked: args.linked as boolean | undefined,
+          limit: (args.limit as number) ?? 100,
+        }),
+      };
+    },
+  });
+
+  add({
+    name: 'btt_stats',
+    description: 'Counts by category for the BlueTeam-Tools metadata mirror.',
+    params: [],
+    execute: async () => {
+      if (!assets) throw new Error('ASSETS binding unavailable');
+      const idx = await loadBttIndex(assets);
+      return { counts: idx.counts, categories: idx.categories, cache: bttCacheStats() };
     },
   });
 

@@ -1,0 +1,1 @@
+../../../worker/lib/blue-team-tools-manifest.ts

@@ -613,6 +613,24 @@ const DFIR_PAGES: readonly PageEntry[] = [
     keywords: ['sophon', 'workbench', 'authorized test', 'mission scope', 'planner', 'worker', 'evidence'],
   },
   {
+    path: '/dfir/blue-team-tools',
+    label: 'BlueTeam-Tools',
+    description:
+      'Metadata-only directory of 75 blue-team tools across 13 categories — detection, threat hunting, forensics and incident response.',
+    sectionLabel: 'DFIR · Tool Catalog',
+    group: 'dfir',
+    keywords: ['blue team', 'detection', 'threat hunting', 'forensics', 'incident response', 'tool catalog'],
+  },
+  {
+    path: '/dfir/prtf',
+    label: 'PRTF',
+    description:
+      'Physical Red Team Framework — 108 techniques in 9 tactics, mirrored from redteam.vip under CC BY 4.0.',
+    sectionLabel: 'DFIR · Reference',
+    group: 'dfir',
+    keywords: ['prtf', 'physical security', 'red team', 'lockpicking', 'social engineering', 'taxonomy'],
+  },
+  {
     path: '/dfir/phishops',
     label: 'PhishOps',
     description: 'Phishing response runbook - extract, enrich, block, and notify in one workspace.',
@@ -4312,6 +4330,24 @@ const THREATINTEL_PAGES: readonly PageEntry[] = [
       'exploit',
       'poc',
     ],
+  },
+  {
+    path: '/threatintel/ai-cti-feed',
+    label: 'GenAI Threat Intel',
+    description:
+      'OWASP GenAI Threat Intelligence Initiative — 162 AI-using/AI-attacking actors and 121 techniques mirrored from the public STIX 2.1 feed.',
+    sectionLabel: 'Threat Intel · AI Security',
+    group: 'threatintel',
+    keywords: ['owasp', 'genai', 'stix', 'threat actors', 'category a', 'category b', 'atlas', 'aithreatintelfeed'],
+  },
+  {
+    path: '/threatintel/research-projects',
+    label: 'Research Projects',
+    description:
+      'Grid-STIX electrical-grid STIX ontology (GPL-3.0) and ARTEX-CC MCP pentest bridge (AGPL-3.0) — metadata and upstream links.',
+    sectionLabel: 'Threat Intel · Reference',
+    group: 'threatintel',
+    keywords: ['grid-stix', 'artex-cc', 'ontology', 'stix', 'mcp', 'pentest', 'research'],
   },
   {
     path: '/threatintel/cyberview',

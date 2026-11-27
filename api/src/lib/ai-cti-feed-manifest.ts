@@ -1,0 +1,1 @@
+../../../worker/lib/ai-cti-feed-manifest.ts

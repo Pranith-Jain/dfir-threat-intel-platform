@@ -95,6 +95,9 @@ import {
 } from '../lib/oh-manifest';
 import { filterKpExploits, filterKpTools, getKpFeed, kpCacheStats, loadKpIndex } from '../lib/kp-manifest';
 import { getMmdCategory, listMmdTools, loadMmdCommits, loadMmdIndex, mmdCacheStats } from '../lib/mmd-manifest';
+import { bttCacheStats, filterBttTools, loadBttIndex } from '../lib/blue-team-tools-manifest';
+import { filterPrtfTechniques, getPrtfTechnique, loadPrtfIndex } from '../lib/prtf-manifest';
+import { filterAiCtiRows, loadAiCtiIndex } from '../lib/ai-cti-feed-manifest';
 // AAD — ThreatDefence agentic attack detections (MIT) + ART — Atomic Red Team.
 import {
   aadCacheStats,
@@ -902,6 +905,99 @@ export function registerDfirManifestsTools(h: McpToolHost): void {
   );
 
   // ── MMD tools ───────────────────────────────────────────────────
+  // OWASP GenAI Threat Intelligence Initiative — public STIX 2.1 feed.
+  h.tools(
+    'ai_cti_list_actors',
+    'List AI-threat actors from the OWASP GenAI Threat Intelligence Initiative STIX feed (162 actors). Category A = actors using AI to attack; Category B = actors attacking AI systems. Filter by category or name.',
+    {
+      category: z.enum(['A', 'B']).optional().describe('AI-CTI category A (using AI) or B (attacking AI)'),
+      q: z.string().optional().describe('Name or STIX id keyword'),
+      limit: z.number().int().min(1).max(200).optional().describe('Max actors (default 100)'),
+    },
+    async ({ category, q, limit }) => {
+      const idx = await loadAiCtiIndex(ASSETS);
+      const actors = filterAiCtiRows(idx.actors, { category, q, limit: limit ?? 100 });
+      return untrustedToolResult({
+        total: idx.counts.actors,
+        returned: actors.length,
+        categories: { A: idx.counts.categoryA, B: idx.counts.categoryB },
+        actors,
+      });
+    }
+  );
+
+  h.tools(
+    'ai_cti_stats',
+    'Counts for the OWASP GenAI STIX 2.1 mirror: objects, actors, techniques, indicators, relationships and category split.',
+    {},
+    async () => {
+      const idx = await loadAiCtiIndex(ASSETS);
+      return untrustedToolResult({ counts: idx.counts, generatedAt: idx.generatedAt, license: idx.license });
+    }
+  );
+
+  // PRTF — Physical Red Team Framework (CC BY 4.0), metadata mirror.
+  h.tools(
+    'prtf_list_techniques',
+    'List the 108 techniques of PRTF (Physical Red Team Framework, CC BY 4.0) across 9 tactics — reconnaissance, evasion, lockpicking, bypass, wireless/RF, social engineering, implants, exfiltration, persistence. Filter by tactic or keyword. Every record links upstream.',
+    {
+      tactic: z.string().optional().describe('Tactic id or name, e.g. PRTF-4 or "Social Engineering"'),
+      q: z.string().optional().describe('Keyword across id, name and summary'),
+      limit: z.number().int().min(1).max(200).optional().describe('Max techniques (default 100)'),
+    },
+    async ({ tactic, q, limit }) => {
+      const idx = await loadPrtfIndex(ASSETS);
+      const techniques = filterPrtfTechniques(idx, { tactic, q, limit: limit ?? 100 });
+      return untrustedToolResult({
+        total: idx.counts.techniques,
+        returned: techniques.length,
+        license: idx.license,
+        techniques,
+      });
+    }
+  );
+
+  h.tools(
+    'prtf_get_technique',
+    'Return one PRTF technique: full description, tools, related technique chain and blue-team detections/countermeasures.',
+    { id: z.string().describe('Technique id, e.g. PRTF-1.01') },
+    async ({ id }) => {
+      const idx = await loadPrtfIndex(ASSETS);
+      const body = await getPrtfTechnique(ASSETS, id);
+      if (!body)
+        return untrustedToolResult({ error: 'not_found', id, hint: `Valid ids look like ${idx.techniques[0]?.id}` });
+      return untrustedToolResult(body);
+    }
+  );
+
+  // BlueTeam-Tools — metadata-only blue-team catalog (no reuse licence).
+  h.tools(
+    'btt_list_tools',
+    'List 75 blue-team tools across 13 categories from A-poc/BlueTeam-Tools (network discovery, threat hunting, security monitoring, forensics, incident response). Metadata only: names, one-line summaries and public links; every record deep-links upstream. Filter by category or keyword.',
+    {
+      category: z.string().optional().describe('Category name or slug, e.g. "Threat Hunting" or "threat-hunting"'),
+      q: z.string().optional().describe('Keyword across name, summary and category'),
+      linked: z.boolean().optional().describe('Only tools with a public destination URL'),
+      limit: z.number().int().min(1).max(200).optional().describe('Max tools (default 100)'),
+    },
+    async ({ category, q, linked, limit }) => {
+      const idx = await loadBttIndex(ASSETS);
+      const tools = filterBttTools(idx, { category, q, linked, limit: limit ?? 100 });
+      return untrustedToolResult({
+        total: idx.counts.tools,
+        returned: tools.length,
+        categories: idx.counts.categories,
+        license: idx.license,
+        tools,
+      });
+    }
+  );
+
+  h.tools('btt_stats', 'Counts and cache state for the BlueTeam-Tools metadata mirror.', {}, async () => {
+    const idx = await loadBttIndex(ASSETS);
+    return untrustedToolResult({ counts: idx.counts, categories: idx.categories, cache: bttCacheStats() });
+  });
+
   // MalwareMustDie (MMD) shared codes & tools catalog
   // (github.com/unixfreaxjp/malwaremustdie): 228 malware-analysis files
   // across 12 language categories + recent commit activity feed.

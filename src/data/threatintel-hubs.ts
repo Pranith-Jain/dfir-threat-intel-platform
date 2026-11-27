@@ -1197,6 +1197,23 @@ export const HUB_META: readonly HubMeta[] = [
     tone: 'text-rose-700 dark:text-rose-300 border-rose-500/30 bg-rose-500/10',
     pages: [
       {
+        path: '/threatintel/ai-cti-feed',
+        tabId: 'ai-cti-feed',
+        label: 'GenAI Threat Intel',
+        desc: 'OWASP GenAI Threat Intelligence Initiative — 162 AI threat actors and 121 techniques from the public STIX 2.1 feed.',
+        compVar: 'AiCtiFeed',
+        badge: 'new',
+        keywords: ['owasp', 'genai', 'stix', 'threat actors', 'category a', 'category b', 'atlas'],
+      },
+      {
+        path: '/threatintel/research-projects',
+        tabId: 'research-projects',
+        label: 'Research Projects',
+        desc: 'Grid-STIX (GPL-3.0) electrical-grid ontology and ARTEX-CC (AGPL-3.0) MCP pentest bridge — metadata and upstream links.',
+        compVar: 'ResearchProjects',
+        keywords: ['grid-stix', 'artex-cc', 'ontology', 'stix', 'mcp', 'pentest', 'research'],
+      },
+      {
         path: '/threatintel/ai-security',
         tabId: 'ai-security',
         label: 'AI Security Hub',

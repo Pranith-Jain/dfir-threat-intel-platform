@@ -231,7 +231,7 @@ export function registerScriptsRenderAiTools(h: McpToolHost): void {
   // ── AI Threat Actors: Cybershujin tracker ──────────────────────────
   h.tools(
     'ai_threats_list',
-    'List AI-capable threat actors from the Cybershujin tracker (79 entries, MIT). Each entry documents real-world confirmed use of AI/LLMs by threat actors. Filter by table (main/deepfake), category, TTP, or keyword.',
+    'List AI-capable threat actors from the Cybershujin tracker (158 entries, no listed reuse licence — metadata only). Each entry documents real-world confirmed use of AI/LLMs by threat actors. Filter by table (main/deepfake), category, TTP, or keyword.',
     {
       table: z.enum(['main', 'deepfake']).optional().describe('Filter by tracker table'),
       category: z.string().optional().describe('Filter by AI-use category (e.g. "LLM-enhanced scripting techniques")'),

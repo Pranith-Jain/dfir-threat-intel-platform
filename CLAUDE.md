@@ -236,7 +236,7 @@ checkout never needs the folder until someone rebuilds locally.
 
 **Weekly sync**: `.github/workflows/si-upstream-sync.yml` re-runs sync + build every Monday 06:00 UTC; opens a PR if `public/data/si/` changed.
 
-**MCP tool inventory**: 462 tools total across the `DFIR_MCP` Durable Object — DFIR/threat-intel tools (`check_ioc`, `lookup_cve`, `enrich_actor`, `lookup_domain`, etc.) + SI tools (`si_*`) + threat-intel vertical (`ti_*`) + NHI scanner (`nhi_*`) + depx (`depx_*`) + winreg (`winreg_*`) + HudsonRock (`hr_*`) + Telegram (`tg_*`) + workspace/notebook (`ws_*`, `notebook_*`) + passive DNS + IOC watchlist + report analysis + more. Regenerate `public/mcp-manifest.json` + `public/mcp/README.md` + `public/llms-full.txt` with `node scripts/build-mcp-manifest.mjs && node scripts/build-llms-full.mjs`.
+**MCP tool inventory**: 468 tools total across the `DFIR_MCP` Durable Object — DFIR/threat-intel tools (`check_ioc`, `lookup_cve`, `enrich_actor`, `lookup_domain`, etc.) + SI tools (`si_*`) + threat-intel vertical (`ti_*`) + NHI scanner (`nhi_*`) + depx (`depx_*`) + winreg (`winreg_*`) + HudsonRock (`hr_*`) + Telegram (`tg_*`) + workspace/notebook (`ws_*`, `notebook_*`) + passive DNS + IOC watchlist + report analysis + more. Regenerate `public/mcp-manifest.json` + `public/mcp/README.md` + `public/llms-full.txt` with `node scripts/build-mcp-manifest.mjs && node scripts/build-llms-full.mjs`.
 
 ## Threat Intel vertical — CVE/KEV/IOC/sector brief (v1)
 
@@ -550,7 +550,7 @@ Two replicated verticals added 2026-10-17, plus live integrations:
 for the digest) reused; `offseq-radar` RSS entry already in `src/data/rssFeeds.ts`.
 
 **Both verticals ride** `.github/workflows/threat-intel-sync.yml` (sync + build
-steps added) and regenerate `public/mcp-manifest.json` (now 462 tools).
+steps added) and regenerate `public/mcp-manifest.json` (now 468 tools).
 
 ## Content-generation system (/admin)
 
@@ -1437,3 +1437,40 @@ code are vendored — the implementation and prompts are original.
 
 Nothing is persisted beyond the normal agent session; no new DO binding, cron
 trigger or KV namespace is introduced.
+
+## External reference verticals (REA-verified, 2026-11-27)
+
+All six upstream targets were captured with REA before implementation. Licence
+decides depth: permissive → full data with attribution; no licence/copyleft →
+metadata + deep links only, never upstream code or prose.
+
+- **Cybershujin AI Threat Actors** — corrected stale "79 entries" to the live
+  158 (141 main / 17 deepfake) in `src/data/dfir-hubs.ts`,
+  `worker/mcp-tools/scripts-render-ai.ts` and regenerated MCP/llms outputs.
+- **BlueTeam-Tools** (`/dfir/blue-team-tools`) — A-poc repo has NO licence.
+  `scripts/build-blue-team-tools.mjs` parses 13 `<details>` categories / 75
+  tools from the public README into `public/data/blue-team-tools/`; names,
+  one-line summaries and links only. Loader + 4 REST routes + 2 `btt_*` MCP
+  tools. Rides `cti-verticals-sync.yml`.
+- **PRTF** (`/dfir/prtf`) — redteam.vip/prtf is **CC BY 4.0**. The build parses
+  the embedded `const T`/`const tactics` JS literals with **acorn AST → JSON**
+  (never `eval`) into 9 tactics / 108 techniques with tools, chains and
+  blue-team notes under `public/data/prtf/`. Loader + 5 REST routes + 2
+  `prtf_*` MCP tools. Rides `ai-security-verticals-sync.yml`.
+- **OWASP GenAI Threat Intelligence Initiative / aithreatintelfeed.org**
+  (`/threatintel/ai-cti-feed`) — the site is the repo's published STIX 2.1
+  bundle (2,013 objects: 162 actors, 121 techniques, 209 indicators). Repo has
+  no licence, so `scripts/build-ai-cti-feed.mjs` mirrors factual object
+  metadata + refs + relationships, not repository code. Loader + 8 REST
+  routes + 2 `ai_cti_*` MCP tools. Category A = using AI, B = attacking AI.
+- **Research Projects** (`/threatintel/research-projects`) — grid-stix
+  (GPL-3.0) and ARTEX-CC (AGPL-3.0): original one-line summaries, factual
+  counts, licence IDs, public README headings and upstream links only.
+  `scripts/build-research-projects.mjs`, rides `cti-verticals-sync.yml`.
+- **CyberView** — upstream moved `xanderhutch/CyberView` →
+  `CyberViewTools/CyberView` (Pages → `cyberview.tools`) and was **relicensed
+  proprietary on 2026-11-22**. `sync-cyberview.mjs` now targets the new repo,
+  keeps the already-committed `source/` snapshot but NO LONGER expands it
+  (`--force-source` overrides), and records the licence in `manifest.json`.
+
+Tests: 4 parser suites + 3 loader suites + 2 route suites; 3× tsc clean.

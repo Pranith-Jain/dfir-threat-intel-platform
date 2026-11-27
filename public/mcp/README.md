@@ -1,6 +1,6 @@
 # DFIR-ThreatIntel MCP - tool catalog
 
-**462 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
+**468 tools** | live at `https://pranithjain.qzz.io/api/mcp` (streamable HTTP).
 
 ## Quick start
 
@@ -14,7 +14,7 @@
 
 ## Tools by category
 
-### other (345)
+### other (351)
 
 - `aad_attack_coverage` - Return the consolidated ATT&CK Navigator layer: 124 techniques scored by how many rules name each one, with the rule descriptions in the comments. Identifies which attacker techniques are best covered by agentic attack detections.
 - `aad_get_framework` - Return one agentic attack framework: coverage counts, ATT&CK techniques with rule-count scores, sourced indicators (value, confidence, context, publication) and an upstream deep link. Use aad_list_frameworks first to discover slugs.
@@ -22,6 +22,8 @@
 - `aad_list_indicators` - Search the sourced indicator set (1,800+ values across 16 IOC types: user_agent, ipv4, domain, url, sha256, file_path, uri_string, docker_image, favicon_mmh3, etc). Each row carries confidence, context, source publication and the framework it belongs to.
 - `aad_stats` - Return Agentic Attack Detections corpus stats (frameworks, indicators by type, ATT&CK techniques, shared behavior/general rule inventory) and cache state.
 - `ai_advisories` - AI advisory firehose — per-package GHSA advisories, cvelistV5 CVE commits matched to known AI CVEs, tool release trains (garak, PyRIT, promptfoo, litellm, vllm, ollama, langchain, MCP SDK, MITRE ATLAS, OWASP GenAI), ExploitDB PoCs.
+- `ai_cti_list_actors` - List AI-threat actors from the OWASP GenAI Threat Intelligence Initiative STIX feed (162 actors). Category A = actors using AI to attack; Category B = actors attacking AI systems. Filter by category or name.
+- `ai_cti_stats` - Counts for the OWASP GenAI STIX 2.1 mirror: objects, actors, techniques, indicators, relationships and category split.
 - `ai_playbook_cve_refs` - CVE references cited by the AI Security Playbook, enriched against our local CISA KEV snapshot so you can see which are known-exploited. Enrichment comes from our own feed, never upstream.
 - `ai_playbook_get_layer` - Get one AI Security Playbook division by roman id (I..VIII) or slug, including the risk identifiers it defines.
 - `ai_playbook_get_risk_id` - Get one AI-security risk identifier by id (e.g. LLM01, ASI06), with its name, taxonomy and defining division.
@@ -30,7 +32,7 @@
 - `ai_playbook_stats` - AI Security Playbook manifest stats: division/chapter/identifier counts, KEV matches, licence scope, and edge cache state.
 - `ai_research` - AI security research feed — Hacktron, Palo Alto Unit42, Cloud Security Alliance, BleepingComputer AI-filtered items with links back upstream.
 - `ai_threats_get` - Return the full entry body for an AI-capable threat actor — includes full brief, aliases, raw TTP markdown, reported/activity dates, and MITRE technique IDs. Use ai_threats_list first to discover slugs.
-- `ai_threats_list` - List AI-capable threat actors from the Cybershujin tracker (79 entries, MIT). Each entry documents real-world confirmed use of AI/LLMs by threat actors. Filter by table (main/deepfake), category, TTP, or keyword.
+- `ai_threats_list` - List AI-capable threat actors from the Cybershujin tracker (158 entries, no listed reuse licence — metadata only). Each entry documents real-world confirmed use of AI/LLMs by threat actors. Filter by table (main/deepfake), category, TTP, or keyword.
 - `ai_threats_stats` - Return cache + manifest stats for the AI Threat Actors data: total entries, index load state, body-cache hit ratios.
 - `ai_vuln_get` - Full body for one AI vuln: description, references, aliases, affected packages, KEV dates, EPSS percentile. Call ai_vulns first to discover IDs.
 - `ai_vulns` - Realtime AI vulnerability tracking — EUVD + NVD + OSV watchlist (litellm, vllm, langchain, mcp, transformers…), CISA/EU KEV overlap, FIRST EPSS exploit-probability and an AI/agent stack facet. KEV-listed rows sort first.
@@ -44,6 +46,8 @@
 - `art_stats` - Return Atomic Red Team catalog stats: techniques, tests, platform and executor breakdowns, plus cache state.
 - `briefings_related` - Find prior briefings related to a given briefing — links by shared IOCs (domains/IPs/hashes/URL hosts) or shared tactic keywords, ranked by match count then severity then recency. Case-triage linkage (port of the CTI case-queue related-case matcher).
 - `btc_abuse_check` - Check a Bitcoin address for abuse/scam reports on ChainAbuse. Returns the `verdict` field, which is authoritative: "flagged" means abuse reports exist, "clean" means the lookup completed and found none, and "unknown" means the lookup did NOT complete (missing CHAINABUSE_API_KEY or upstream error) — an "unknown" verdict is NOT evidence of a clean address and must not be reported as such. On "flagged", reports include categories (phishing, ransomware, scam, etc.), descriptions, and associated scam types. Useful for tracing illicit crypto transactions.
+- `btt_list_tools` - List 75 blue-team tools across 13 categories from A-poc/BlueTeam-Tools (network discovery, threat hunting, security monitoring, forensics, incident response). Metadata only: names, one-line summaries and public links; every record deep-links upstream. Filter by category or keyword.
+- `btt_stats` - Counts and cache state for the BlueTeam-Tools metadata mirror.
 - `bw_get_breach` - Return the full body of a single breach/leak claim by slug. Includes description, source URL, activity sector, and references. Use bw_list_breaches first to discover slugs.
 - `bw_list_breaches` - List live breach/leak/ransomware claims from free public trackers. Filter by threat actor group, category (ransomware, data_breach, combo_list, source_code, credential_leak), severity, country, days back, or free-text keyword.
 - `bw_list_groups` - List threat actor groups tracked in the Breach Watch database with their breach counts and top category. Filter by keyword or minimum count.
@@ -242,6 +246,8 @@
 - `pi_translate` - Translate an AI-security framework item into the other frameworks (e.g. OWASP_LLM LLM01 → MITRE ATLAS AML.T0051). The link is derived through the IoPC techniques both items map to, and `via` names them. Also answers the inverse: which IoPC techniques sit behind one framework item.
 - `poc_scan` - Search GitHub for public exploit/PoC repositories for a CVE. Returns repo URLs, star counts, language, age, and whether the repo has actual code. Bypasses GitHub 1000-result limit via monthly pagination.
 - `proc_list_rules` - List learned procedure-extraction rules (analyst corrections promoted to guardrails): technique-grounding, exploit-mapping, provenance. Optionally rank by relevance to a report excerpt. Upstream design: netandneedle/procedure-extraction-pipeline (Apache-2.0).
+- `prtf_get_technique` - Return one PRTF technique: full description, tools, related technique chain and blue-team detections/countermeasures.
+- `prtf_list_techniques` - List the 108 techniques of PRTF (Physical Red Team Framework, CC BY 4.0) across 9 tactics — reconnaissance, evasion, lockpicking, bypass, wireless/RF, social engineering, implants, exfiltration, persistence. Filter by tactic or keyword. Every record links upstream.
 - `ransom_group_get` - Return one ransomware group: victim counts, last seen, leak-site mirrors (.onion needs Tor), victim sample, abridged profile meta. Use ransom_groups_list first to discover slugs.
 - `ransom_groups_list` - List ransomware leak-site groups from the directory (620 groups, Ransomlook + ransomware.live). Filter by keyword, leak-site status (online/offline/unknown), active-this-week, or profile presence. Sort by recent activity, victim count, or name.
 - `reports_get` - Return the full details of a single report entry by slug. Use reports_list first to discover slugs.
