@@ -357,6 +357,18 @@ export function authenticate(mode: boolean | 'external-only'): MiddlewareHandler
       return next();
     }
 
+    // Published blog index + posts are public content: blog-public.ts calls
+    // these "public read endpoints", and scripts/build-sitemap.mjs fetches the
+    // index to include /blog/<slug> URLs. The global key gate made that fetch
+    // return 401, so blog posts were silently absent from the sitemap. Only
+    // GET/HEAD is exempt — the handlers are read-only.
+    if (
+      (c.req.method === 'GET' || c.req.method === 'HEAD') &&
+      (c.req.path === '/api/v1/blog/posts' || c.req.path.startsWith('/api/v1/blog/posts/'))
+    ) {
+      return next();
+    }
+
     // Signed feed token. The older RSS feeds above solve this by being fully
     // public (EXEMPT_PATHS) because RSS clients can send no credential at
     // all; that makes them enumerable by anyone. A `?key=<hmac>` on a

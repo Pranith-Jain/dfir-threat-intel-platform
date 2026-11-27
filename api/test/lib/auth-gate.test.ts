@@ -149,6 +149,32 @@ describe('OPEN_PUBLIC_READS valve expiry', () => {
   });
 });
 
+// Published blog content must be readable by non-browser callers: the
+// sitemap builder fetches /api/v1/blog/posts with plain HTTP and no key.
+describe('public blog read gate', () => {
+  function blogApp() {
+    const app = new Hono<{ Bindings: Env }>();
+    app.use('*', authenticate('external-only'));
+    app.get('/api/v1/blog/posts', (c) => c.text('index'));
+    app.get('/api/v1/blog/posts/:slug', (c) => c.text('post'));
+    app.post('/api/v1/blog/posts', (c) => c.text('write'));
+    app.get('/api/v1/private', (c) => c.text('private'));
+    return (path: string, method = 'GET') => app.fetch(new Request(`https://api.test${path}`, { method }), {} as Env);
+  }
+
+  it('allows an external GET to the blog index and to a post', async () => {
+    const call = blogApp();
+    expect((await call('/api/v1/blog/posts')).status).toBe(200);
+    expect((await call('/api/v1/blog/posts/some-slug')).status).toBe(200);
+  });
+
+  it('does not exempt mutations or unrelated routes', async () => {
+    const call = blogApp();
+    expect((await call('/api/v1/blog/posts', 'POST')).status).toBe(401);
+    expect((await call('/api/v1/private')).status).toBe(401);
+  });
+});
+
 // Feed-token gate, end to end through the middleware.
 //
 // /api/v1/cve-digest/rss shipped in #266 and was NOT in EXEMPT_PATHS, so a

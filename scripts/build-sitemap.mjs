@@ -158,6 +158,18 @@ function entryFor(path, opts = {}) {
 }
 
 function buildSitemap(blogPosts = []) {
+  // Guard against a path appearing in two source lists (prerender ROUTES has
+  // done this before): a duplicate <loc> is a sitemap quality error and wastes
+  // crawl budget. Keep the first entry for each final URL.
+  const seen = new Set();
+  const uniqueEntry = (path, opts) => {
+    const entry = entryFor(path, opts);
+    const loc = entry.match(/<loc>([^<]+)<\/loc>/)?.[1];
+    if (!loc || seen.has(loc)) return null;
+    seen.add(loc);
+    return entry;
+  };
+
   const prerenderRoutes = readPrerenderRoutes();
   const caseStudySlugs = readPublishedCaseStudySlugs();
   const researchSlugs = readPublishedResearchSlugs();
@@ -198,34 +210,41 @@ function buildSitemap(blogPosts = []) {
 
   // Emit grouped prerender routes in the order they appear.
   for (const [group, paths] of grouped) {
-    lines.push(`  <!-- ${group} (${paths.length}) -->`);
-    for (const path of paths) {
-      const cls = classifyRoute(path);
-      lines.push(entryFor(path));
-    }
+    const entries = paths.map((path) => uniqueEntry(path)).filter(Boolean);
+    lines.push(`  <!-- ${group} (${entries.length}) -->`);
+    lines.push(...entries);
   }
 
   // Case studies (read from src/data/case-studies.ts)
-  if (caseStudySlugs.length) {
-    lines.push(`  <!-- Case studies (${caseStudySlugs.length}) -->`);
-    for (const slug of caseStudySlugs) {
-      lines.push(entryFor(`/projects/${slug}`, { changefreq: 'yearly', priority: '0.8' }));
+  {
+    const entries = caseStudySlugs
+      .map((slug) => uniqueEntry(`/projects/${slug}`, { changefreq: 'yearly', priority: '0.8' }))
+      .filter(Boolean);
+    if (entries.length) {
+      lines.push(`  <!-- Case studies (${entries.length}) -->`);
+      lines.push(...entries);
     }
   }
 
   // Research articles (read from src/data/threatintel/research.ts)
-  if (researchSlugs.length) {
-    lines.push(`  <!-- Research articles (${researchSlugs.length}) -->`);
-    for (const slug of researchSlugs) {
-      lines.push(entryFor(`/threatintel/research/${slug}`, { changefreq: 'monthly', priority: '0.6' }));
+  {
+    const entries = researchSlugs
+      .map((slug) => uniqueEntry(`/threatintel/research/${slug}`, { changefreq: 'monthly', priority: '0.6' }))
+      .filter(Boolean);
+    if (entries.length) {
+      lines.push(`  <!-- Research articles (${entries.length}) -->`);
+      lines.push(...entries);
     }
   }
 
   // Blog posts (fetched from the live KV-backed API; best-effort)
-  if (blogPosts.length) {
-    lines.push(`  <!-- Blog posts (${blogPosts.length}) -->`);
-    for (const { slug, lastmod } of blogPosts) {
-      lines.push(entryFor(`/blog/${slug}`, { changefreq: 'monthly', priority: '0.6', lastmod }));
+  {
+    const entries = blogPosts
+      .map(({ slug, lastmod }) => uniqueEntry(`/blog/${slug}`, { changefreq: 'monthly', priority: '0.6', lastmod }))
+      .filter(Boolean);
+    if (entries.length) {
+      lines.push(`  <!-- Blog posts (${entries.length}) -->`);
+      lines.push(...entries);
     }
   }
 

@@ -59,7 +59,7 @@ export function renderMarkdown(safeMd: string): string {
     const trimmed = (code as string).replace(/\n$/, '');
     const escaped = (trimmed as string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const langAttr = lang ? ` data-language="${lang}"` : '';
-    return `<pre class="overflow-x-auto rounded-xl bg-surface-300 p-3 my-2 "${langAttr}><code class="text-xs font-mono leading-relaxed text-heading">${escaped}</code></pre>`;
+    return `<pre class="overflow-x-auto rounded-xl bg-surface-300 p-3 my-2"${langAttr}><code class="text-xs font-mono leading-relaxed text-heading">${escaped}</code></pre>`;
   });
   html = html
     .replace(/### (.+)/g, '<h3 class="text-base font-semibold mt-4 mb-1.5">$1</h3>')

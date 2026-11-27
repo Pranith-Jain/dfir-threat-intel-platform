@@ -66,12 +66,12 @@ export function clampToBytes(s: string, maxBytes: number): string {
 }
 export const OG_OVERRIDES: Record<string, OgOverride> = {
   '/about': {
-    title: 'About · pranithjain.qzz.io',
+    title: 'About Pranith Jain · Security Engineer & Detection Engineer',
     description:
       'Security engineer working across DFIR, threat intelligence, detection engineering, and cloud security. Background, focus areas, and how to get in touch.',
   },
   '/skills': {
-    title: 'Skills · pranithjain.qzz.io',
+    title: 'Security Skills · DFIR, Threat Intel & Detection Engineering',
     description:
       'Capabilities across digital forensics & incident response, threat intelligence, detection engineering, cloud & application security, and security automation.',
   },
@@ -80,26 +80,26 @@ export const OG_OVERRIDES: Record<string, OgOverride> = {
     description: 'Professional experience and roles in security engineering, DFIR, and threat intelligence.',
   },
   '/projects': {
-    title: 'Projects · pranithjain.qzz.io',
+    title: 'Security Projects & Case Studies · Pranith Jain',
     description:
       'Selected security projects and case studies — detection tooling, threat-intel platforms, and DFIR utilities built and shipped on the edge.',
   },
   '/blog': {
-    title: 'Blog · pranithjain.qzz.io',
+    title: 'Security Blog · Threat Intelligence & DFIR Write-ups',
     description:
       'Writing on threat intelligence, detection engineering, DFIR, and cloud security — field notes, deep dives, and analysis.',
   },
   // The two highest-value organic-search surfaces previously fell through to
   // index.html's 97-char home <title>; give them their own short cards.
   '/dfir': {
-    title: 'CRUCIBLE · DFIR Toolkit',
+    title: 'CRUCIBLE · Free DFIR Toolkit & IOC Analyzer',
     description:
       'CRUCIBLE — 90+ free, browser-side DFIR tools: IOC checker, CVE prioritizer, crypto tracer, decoders, YARA/Sigma converter. No signup.',
     image: '/og-dfir.png',
     imageAlt: 'CRUCIBLE DFIR toolkit — 90+ free browser-side digital forensics and incident response tools',
   },
   '/radar': {
-    title: 'SCOUT · Recon Scanner',
+    title: 'SCOUT · Free Web Recon & Security Scanner',
     description:
       'SCOUT — deep crawl, JS analysis, API discovery, secret detection, and 0-100 security scoring. Free, browser-driven recon.',
     image: '/og-scout.png',
@@ -128,7 +128,7 @@ export const OG_OVERRIDES: Record<string, OgOverride> = {
       'Strategic facilities worldwide — conflict zones, military bases, nuclear sites, disputed territories, sanctions targets, and critical infrastructure. Map view.',
   },
   '/threatnexus': {
-    title: 'ARGUS · Threat Nexus',
+    title: 'ARGUS · Threat Actor & Campaign Intelligence',
     description:
       'ARGUS — nation-state threat intel dashboard with 3D globe, actor dossiers, relationship graphs, and live threat feeds. Interactive D3 + three.js.',
     image: '/og-argus.png',
@@ -350,8 +350,14 @@ function deriveOgFromPath(pathname: string): OgOverride | null {
           ? 'Blog'
           : first.charAt(0).toUpperCase() + first.slice(1);
 
+  // Single-segment routes used to produce 20-29 char titles ("Skills ·
+  // pranithjain.qzz.io"), below the 30-char SEO floor. Add a stable context
+  // phrase instead of dropping the brand, so every derived title lands in the
+  // 30-60 character sweet spot.
   const title =
-    segments.length > 1 ? `${titlePart} · ${sectionLabel} · pranithjain.qzz.io` : `${titlePart} · pranithjain.qzz.io`;
+    segments.length > 1
+      ? `${titlePart} · ${sectionLabel} · pranithjain.qzz.io`
+      : `${titlePart} · Security Tools & Intel · pranithjain.qzz.io`;
   const description = `${titlePart} — a free ${sectionLabel} tool on pranithjain.qzz.io. Browser-side security analysis, no signup required.`;
   // Byte-clamp to X/Twitter card limits (some validators count UTF-8 bytes).
   return { title: clampToBytes(title, 70), description: clampToBytes(description, 200) };

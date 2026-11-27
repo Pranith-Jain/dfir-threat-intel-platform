@@ -38,7 +38,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       SMOKE_API_KEY: ${{ secrets.SMOKE_API_KEY }}
+      # Set this repository variable to 1 to record a conscious decision to keep
+      # keyless shared-state writes ungated. Otherwise the posture guard below
+      # fails the deploy until the Worker has TURNSTILE_SECRET.
+      ALLOW_KEYLESS_WRITES: ${{ vars.ALLOW_KEYLESS_WRITES }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -97,6 +102,17 @@ jobs:
           fi
       - name: Deploy to Cloudflare Workers
         run: npx wrangler deploy
+
+      # ── Turnstile posture guard ──────────────────────────────────────
+      # The bot gate on shared-state writes is opt-in at runtime. A deploy can
+      # therefore ship the gate's code while leaving every gated prefix open to
+      # any non-browser caller (the same-origin headers are forgeable). Read
+      # only the deployed secret NAMES and fail unless the operator either
+      # enabled the gate or explicitly accepted the keyless posture.
+      - name: Turnstile gate posture
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        run: npx wrangler secret list | node scripts/check-turnstile-deploy.mjs
+
       - name: Gate only (no token; manual dispatch)
         if: ${{ github.event_name == 'workflow_dispatch' && env.CLOUDFLARE_API_TOKEN == '' }}
         run: |
