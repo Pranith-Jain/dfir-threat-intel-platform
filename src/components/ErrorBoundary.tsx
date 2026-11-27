@@ -28,6 +28,17 @@ function isChunkLoadError(err: Error): boolean {
   return false;
 }
 
+/**
+ * React reconciliation can throw `insertBefore ... parameter 1 is not of type
+ * 'Node'` when the live DOM was changed underneath it (stale prerendered
+ * markup, a removed sibling, or a browser extension mutating nodes). The
+ * component tree is unrecoverable in that tab; a reload is the reliable fix.
+ */
+function isDomInsertionError(err: Error): boolean {
+  const msg = `${err.name} ${err.message}`.toLowerCase();
+  return msg.includes('insertbefore') || msg.includes("not of type 'node'") || msg.includes('removechild');
+}
+
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
@@ -141,6 +152,10 @@ export class ErrorBoundary extends Component<Props, State> {
         return <StaleChunkFallback />;
       }
 
+      if (isDomInsertionError(error)) {
+        return <StaleDomFallback />;
+      }
+
       return (
         <ErrorFallback
           error={error}
@@ -154,6 +169,30 @@ export class ErrorBoundary extends Component<Props, State> {
 
     return children;
   }
+}
+
+/**
+ * Friendly view for a broken DOM reconciliation: the component tree cannot
+ * recover in this tab, but a reload always rebuilds it cleanly.
+ */
+function StaleDomFallback(): JSX.Element {
+  return (
+    <div className="animate-fade-in-up w-full max-w-2xl mx-auto p-6 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700/40">
+      <h3 className="text-lg font-bold text-amber-900 dark:text-amber-100 mb-2">This page needs a reload</h3>
+      <p className="text-sm text-amber-800 dark:text-amber-200 mb-4">
+        The page structure changed while it was rendering. Reloading rebuilds it cleanly; your data and filters are
+        safe.
+      </p>
+      <button
+        type="button"
+        onClick={() => window.location.reload()}
+        className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-on-fill text-sm font-medium transition-colors inline-flex items-center gap-2 min-h-11"
+      >
+        <RefreshCw className="w-4 h-4" />
+        Reload page
+      </button>
+    </div>
+  );
 }
 
 /**

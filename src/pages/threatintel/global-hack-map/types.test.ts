@@ -40,9 +40,9 @@ const event = {
 } as PulseEvent;
 
 describe('platformRecordFor', () => {
-  it('sends CVE dossiers to the CVE list with the validated id', () => {
+  it('sends CVE dossiers straight to the CVE detail page', () => {
     expect(platformRecordFor({ cve, incident: null, event: null })).toEqual({
-      href: '/threatintel/cve-list?q=CVE-2026-133469',
+      href: '/threatintel/cve/CVE-2026-133469',
       label: 'CVE record',
     });
   });

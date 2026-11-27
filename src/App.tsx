@@ -8,6 +8,7 @@ import {
   Navigate,
   useSearchParams,
 } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { useTheme, useScrollProgress } from './hooks';
 import { navLinks, personalInfo, stats, toolsNavLinks, TOOLS_NAV_BY_HOST } from './data/content';
 import { currentSurface, SurfaceContext, useSurface, TOOL_HOSTS_BY_PATH, type Surface } from './lib/surface';
@@ -1286,42 +1287,48 @@ export function AppContent({ surface }: { surface?: Surface } = {}) {
     }
   }, [location.pathname, location.hash, navigationType]);
 
+  // Route-scoped error boundary: a transient DOM/reconciliation failure in a
+  // single page must not blank the whole app, and navigating to another route
+  // must clear it. Keying on pathname remounts the boundary on every route
+  // change; the root boundary in main.tsx still catches shell-level failures.
   const routes = useMemo(
     () => (
-      <Routes>
-        {ROUTES.map(({ path, Component, eager }) => (
-          <Route
-            key={path}
-            path={path}
-            element={
-              eager ? (
-                <Component />
-              ) : (
-                <LazyRoute>
+      <ErrorBoundary key={location.pathname} resetOnChange>
+        <Routes>
+          {ROUTES.map(({ path, Component, eager }) => (
+            <Route
+              key={path}
+              path={path}
+              element={
+                eager ? (
                   <Component />
-                </LazyRoute>
-              )
+                ) : (
+                  <LazyRoute>
+                    <Component />
+                  </LazyRoute>
+                )
+              }
+            />
+          ))}
+          {REDIRECTS.map(({ path, to, preserveQuery }) => (
+            <Route
+              key={path}
+              path={path}
+              element={preserveQuery ? <QueryRedirect to={to} /> : <Navigate to={to} replace />}
+            />
+          ))}
+          <Route
+            path="*"
+            element={
+              <LazyRoute>
+                <NotFound />
+              </LazyRoute>
             }
           />
-        ))}
-        {REDIRECTS.map(({ path, to, preserveQuery }) => (
-          <Route
-            key={path}
-            path={path}
-            element={preserveQuery ? <QueryRedirect to={to} /> : <Navigate to={to} replace />}
-          />
-        ))}
-        <Route
-          path="*"
-          element={
-            <LazyRoute>
-              <NotFound />
-            </LazyRoute>
-          }
-        />
-      </Routes>
+        </Routes>
+      </ErrorBoundary>
     ),
-    []
+    [location.pathname]
   );
 
   // ─── App-route render path (DFIR + ThreatIntel as stand-alone apps) ───

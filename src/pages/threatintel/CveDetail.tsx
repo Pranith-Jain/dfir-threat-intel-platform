@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { DataPageLayout } from '../../components/DataPageLayout';
 import HexBrainLink from '../../components/HexBrainLink';
@@ -77,6 +77,31 @@ export default function CveDetail(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+
+  // Scorisk is always a usable reference for a CVE, even when the NVD mirror
+  // has no reference list for that id. Deduplicate so the same URL cannot
+  // produce duplicate React keys when both sources carry it.
+  const referenceRows = useMemo(() => {
+    const primary = `https://scorisk.io/cve/${(data?.cve_id || cveId || '').toUpperCase()}`;
+    const seen = new Set<string>();
+    const rows: Array<{ url: string; host: string }> = [];
+    for (const raw of [primary, ...(data?.references ?? [])]) {
+      if (typeof raw !== 'string' || !raw.trim()) continue;
+      const url = raw.trim();
+      const key = url.replace(/\/+$/, '').toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      let host = 'reference';
+      try {
+        host = new URL(url).host;
+      } catch {
+        /* relative or malformed URL */
+      }
+      rows.push({ url, host });
+      if (rows.length >= 9) break;
+    }
+    return rows;
+  }, [data, cveId]);
 
   useEffect(() => {
     if (!cveId) {
@@ -220,7 +245,7 @@ export default function CveDetail(): JSX.Element {
           </button>
           <Link
             to={`/dfir/cve?cve=${encodeURIComponent(data.cve_id)}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-100 text-white dark:text-heading text-xs font-mono"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-100 text-heading text-xs font-mono"
           >
             <Search size={12} /> Open in DFIR CVE
           </Link>
@@ -516,19 +541,22 @@ export default function CveDetail(): JSX.Element {
             </div>
           )}
 
-          {data.references && data.references.length > 0 && (
+          {referenceRows.length > 0 && (
             <div className="rounded-xl bg-surface-100 border border-line-1 p-4">
               <div className="font-mono text-[11px] tracking-widest text-muted mb-2">REFERENCES</div>
-              <ul className="space-y-1">
-                {data.references.slice(0, 8).map((r) => (
-                  <li key={r}>
+              <ul className="space-y-1.5">
+                {referenceRows.map(({ url, host }) => (
+                  <li key={url}>
                     <a
-                      href={r}
+                      href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs font-mono text-sky-600 hover:underline break-all inline-flex items-center gap-1"
+                      title={url}
+                      className="text-xs font-mono text-sky-600 dark:text-sky-400 hover:underline inline-flex items-start gap-2"
                     >
-                      {r} <ExternalLink size={10} />
+                      <span className="shrink-0 text-muted">{host}</span>
+                      <span className="break-all flex-1">{url}</span>
+                      <ExternalLink size={10} className="shrink-0 mt-0.5" />
                     </a>
                   </li>
                 ))}
@@ -619,7 +647,7 @@ export default function CveDetail(): JSX.Element {
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <Link
                 to={`/dfir/cve?cve=${encodeURIComponent(data.cve_id)}`}
-                className="h-9 rounded-lg bg-surface-100 text-white dark:text-heading text-xs font-mono grid place-items-center"
+                className="h-9 rounded-lg bg-surface-100 text-heading text-xs font-mono grid place-items-center"
               >
                 DFIR CVE
               </Link>
@@ -647,6 +675,15 @@ export default function CveDetail(): JSX.Element {
                 className="h-9 rounded-lg border border-orange-500/30 bg-orange-500/10 text-xs font-mono text-orange-600 dark:text-orange-300 grid place-items-center"
               >
                 HexBrain <ExternalLink size={12} className="ml-1" />
+              </a>
+              <a
+                href={`https://scorisk.io/cve/${data.cve_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-9 rounded-lg border border-sky-500/30 bg-sky-500/10 text-xs font-mono text-sky-600 dark:text-sky-300 grid place-items-center"
+                title={`Open ${data.cve_id} on Scorisk: CVE reference and enrichment notes`}
+              >
+                Scorisk <ExternalLink size={12} className="ml-1" />
               </a>
             </div>
           </div>

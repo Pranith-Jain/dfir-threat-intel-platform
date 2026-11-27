@@ -176,8 +176,8 @@ export interface GhmSelection {
  * breach victims from the GHM RSS mirror and ransomware claims from Global
  * Pulse. Sending all three to `/cve-list?q=…` was misleading — a breach
  * dossier advertised a CVE record that had nothing to do with the victim.
- * Every target below accepts the query param we pass:
- *   cve-list?q=…                    → CVE search
+ * CVEs now go straight to their detail page instead of a search query:
+ *   cve/<ID>                        → CVE detail (no `?` round-trip)
  *   breach-hub?tab=watch&q=…        → BreachWatch's `q` filter
  *   ransomware-hub?tab=report&group=… → RansomReport's `group` deep link
  */
@@ -187,7 +187,7 @@ export function platformRecordFor(args: {
   event: PulseEvent | null;
 }): { href: string; label: string } {
   if (args.cve) {
-    return { href: `/threatintel/cve-list?q=${encodeURIComponent(args.cve.id)}`, label: 'CVE record' };
+    return { href: `/threatintel/cve/${encodeURIComponent(args.cve.id)}`, label: 'CVE record' };
   }
   const incident = args.incident;
   const event = args.event;

@@ -44,6 +44,19 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText(/test error/i)).toBeInTheDocument();
   });
 
+  it('offers a reload instead of a stack trace for DOM insertion failures', () => {
+    const ThrowDomError = () => {
+      throw new TypeError("Failed to execute 'insertBefore' on 'Node': parameter 1 is not of type 'Node'.");
+    };
+    render(
+      <ErrorBoundary>
+        <ThrowDomError />
+      </ErrorBoundary>
+    );
+    expect(screen.getByText('This page needs a reload')).toBeInTheDocument();
+    expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument();
+  });
+
   it('should render custom fallback when provided', () => {
     const fallback = <div data-testid="custom-fallback">Custom error message</div>;
 
