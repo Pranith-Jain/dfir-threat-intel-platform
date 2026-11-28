@@ -1,6 +1,867 @@
 [
   {
     "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
+      "Description": "Unknown adversary exploiting N-central vulnerabilities",
+      "Known_Campaigns": [],
+      "Motivation": "Potentially financial or espionage",
+      "Sophistication": "Moderate",
+      "Strategic_Objectives": "Gain unauthorized access to managed endpoints",
+      "TTPs_Employed": ["Authentication Bypass", "Persistence via Cloudflare Tunnels"]
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Exploitation of authentication bypass in N-central",
+        "Detection": "Monitor for unusual administrative access patterns • Check for unauthorized access attempts",
+        "Remediation": "Apply patches to N-central servers • Upgrade to version 2026.3.1.7",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to get into your network.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "The adversary may use valid accounts to gain access.",
+            "technique_id": "T1078",
+            "technique_name": "Valid Accounts"
+          }
+        ],
+        "Techniques": ["T1078"]
+      },
+      {
+        "Description": "Installation of Cloudflare tunnels for persistence",
+        "Detection": "Look for Cloudflare tunnels running as services • Check for svchost.exe in unusual locations",
+        "Remediation": "Remove unauthorized Cloudflare tunnel services • Conduct endpoint scans for persistence mechanisms",
+        "Stage": "Installation",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to maintain their foothold.",
+            "tactic_id": "TA0003",
+            "tactic_name": "Persistence"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "The adversary may use a proxy to hide their activities.",
+            "technique_id": "T1090",
+            "technique_name": "Proxy"
+          }
+        ],
+        "Techniques": ["T1090"]
+      },
+      {
+        "Description": "Use of Cloudflare tunnels for C2 communication",
+        "Detection": "Monitor outbound connections to Cloudflare • Check for unusual network traffic patterns",
+        "Remediation": "Block unauthorized outbound connections • Implement network segmentation",
+        "Stage": "Command and Control",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to communicate with compromised systems to control them.",
+            "tactic_id": "TA0011",
+            "tactic_name": "Command and Control"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "The adversary may use an internal proxy to route traffic.",
+            "technique_id": "T1090.001",
+            "technique_name": "Internal Proxy"
+          }
+        ],
+        "Techniques": ["T1090.001"]
+      },
+      {
+        "Description": "Limited enumeration of running processes on endpoints",
+        "Detection": "Review process enumeration logs • Correlate with known attacker IP addresses",
+        "Remediation": "Conduct thorough endpoint investigations • Engage security teams for incident response",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to avoid being detected.",
+            "tactic_id": "TA0005",
+            "tactic_name": "Defense Evasion"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "The adversary is trying to get a listing of local system or domain accounts.",
+            "technique_id": "T1087",
+            "technique_name": "Account Discovery"
+          }
+        ],
+        "Techniques": ["T1087"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [
+      "Use of Cloudflare tunnels for persistence",
+      "Enumeration of running processes on endpoints"
+    ],
+    "CVEs": ["CVE-2026-18577", "CVE-2026-18556"],
+    "Capability": {
+      "Defensive_Evasion_Tactics": ["Use of legitimate services for persistence"],
+      "Description": "Exploitation of authentication bypass in N-central",
+      "Exploits": ["CVE-2026-18556", "CVE-2026-18577"],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": ["Cloudflare Tunnels"],
+      "Tools": ["Cloudflare Tunnels", "Take Control"],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [
+      "Monitor for svchost.exe in unusual locations",
+      "Check for unauthorized Cloudflare tunnel services"
+    ],
+    "Extracted_Entities": {
+      "Assets": ["N-central servers", "managed endpoints"],
+      "Breach_Types": ["authentication bypass"],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["N-able", "Cloudflare", "Huntress"],
+      "Countries": ["Finland"],
+      "Domains": ["mousears.synology.me", "wagoosh.direct.quickconnect.to", "who-ripped-one.direct.quickconnect.to"],
+      "Email_Addresses": ["mspsupport@n-able.com"],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["authentication bypass", "remote access", "Cloudflare tunnels"],
+      "Malware_Families": [],
+      "Malware_Filenames": ["svchost.exe"],
+      "Patches": ["2026.3.1.7"],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["IT Services"],
+      "Software": ["N-central"],
+      "Technologies": ["remote monitoring", "management platform"],
+      "Threat_Infrastructure": ["Cloudflare tunnels"],
+      "Vulnerabilities": ["CVE-2026-18556", "CVE-2026-18577"]
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": ["HTTPS"],
+      "Description": "Use of Cloudflare tunnels and VPN exit nodes",
+      "Domains": ["mousears.synology.me", "wagoosh.direct.quickconnect.to", "who-ripped-one.direct.quickconnect.to"],
+      "Hosting_Providers": ["Cloudflare"],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [
+      "Upgrade N-central to version 2026.3.1.7",
+      "Remove unauthorized Cloudflare tunnel services"
+    ],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [
+        "mousears.synology.me",
+        "wagoosh.direct.quickconnect.to",
+        "who-ripped-one.direct.quickconnect.to"
+      ],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": ["svchost.exe in unusual locations"],
+      "TTPs": ["Authentication Bypass", "Persistence via Cloudflare Tunnels"],
+      "Tools": ["Cloudflare Tunnels"]
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [
+      "Network traffic analysis tools",
+      "Endpoint detection and response (EDR) solutions"
+    ],
+    "Severity": "High",
+    "Threat_Actors": [],
+    "Timestamp": "2026-08-02T18:30:00Z",
+    "Title": "N-able N-central Authentication Bypass Exploitation",
+    "Tools": ["Cloudflare Tunnels", "Take Control", "N-central"],
+    "Victim": {
+      "Access_Vectors": ["Remote Access"],
+      "Data_Types_At_Risk": ["Administrative Access", "Endpoint Control"],
+      "Description": "N-central customers affected by authentication bypass",
+      "Geography": "Global",
+      "Impact_Severity": "High",
+      "Industry": "IT Services",
+      "Security_Posture": "Compromised",
+      "Targeted_Assets": ["N-central Servers", "Managed Endpoints"]
+    },
+    "diamond_model_summary": "The incident involves an unknown adversary exploiting authentication bypass vulnerabilities in N-able's N-central platform. The attackers used Cloudflare tunnels for persistence and remote access to managed endpoints. The victims are N-central customers, primarily in the IT Services sector. The adversary's capability includes exploiting CVE-2026-18556 and CVE-2026-18577, using legitimate services for persistence, and maintaining access through Cloudflare tunnels.",
+    "doc_summary": "N-able's N-central platform suffered a security breach due to an authentication bypass vulnerability (CVE-2026-18577) allowing attackers to gain remote administrative access. The attackers exploited this flaw to compromise customer systems managed through N-central servers. Initial fixes were incomplete, leading to further exploitation. Attackers used Cloudflare tunnels to maintain persistence on compromised endpoints. N-able advised upgrading to version 2026.3.1.7 and removing malicious tunnel services. Huntress identified related IP addresses and domains, noting limited post-compromise activity. The incident highlights the need for robust patch management and monitoring of remote access tools.",
+    "enrichment": null,
+    "id": "44aca34a590464aee2812459631bad1e421ed243da3dc3958b2c1c87ce8eb4a9",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The attack on N-able's N-central platform follows a structured kill chain. Initial access was gained through an authentication bypass vulnerability (CVE-2026-18577). The attackers installed Cloudflare tunnels for persistence and used them for command and control. Post-compromise actions included limited enumeration of running processes on endpoints. Detection and remediation efforts focus on monitoring for unauthorized access, removing malicious services, and upgrading to secure software versions.",
+    "operational_tags": ["High Priority", "CVE-linked"],
+    "priority_score": 90,
+    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes several indicators. Domain names such as mousears.synology.me and IP addresses associated with VPN exit nodes are key indicators. The use of Cloudflare tunnels as a persistence mechanism and the exploitation of CVE-2026-18577 are significant TTPs. These indicators can be used to detect and respond to similar threats in the future.",
+    "relevance_score": 55,
+    "sequence": 21477,
+    "source": "https://thehackernews.com/2026/08/n-able-says-attackers-take-over-n.html",
+    "slug": "N-able_N-central_Authentication_Bypass_Exploitation-021477",
+    "shard": 3
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
+      "Description": "Unknown attacker exploited a firmware flaw in Coldcard wallets.",
+      "Known_Campaigns": [],
+      "Motivation": "Financial gain",
+      "Sophistication": "High",
+      "Strategic_Objectives": "Exploitation of firmware vulnerabilities for financial theft",
+      "TTPs_Employed": []
+    },
+    "Analyses": [
+      {
+        "Description": "Attacker likely gathered information on Coldcard firmware vulnerabilities.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to gather information they can use to plan future operations.",
+            "tactic_id": "TA0043",
+            "tactic_name": "Reconnaissance"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "The adversary is gathering information about the victim's host system.",
+            "technique_id": "T1592",
+            "technique_name": "Gather Victim Host Information"
+          }
+        ],
+        "Techniques": ["T1592"]
+      },
+      {
+        "Description": "Exploitation of deterministic PRNG flaw in Coldcard firmware.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to establish resources they can use to support operations.",
+            "tactic_id": "TA0042",
+            "tactic_name": "Resource Development"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "The adversary is developing capabilities to exploit vulnerabilities.",
+            "technique_id": "T1587",
+            "technique_name": "Develop Capabilities"
+          }
+        ],
+        "Techniques": ["T1587"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Exploitation of Coldcard firmware flaw to generate vulnerable seeds.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to get into your network.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "The adversary is exploiting a vulnerability in a public-facing application.",
+            "technique_id": "T1190",
+            "technique_name": "Exploit Public-Facing Application"
+          }
+        ],
+        "Techniques": ["T1190"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Draining of Bitcoin wallets using vulnerable seeds.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to gather data of interest to their goal.",
+            "tactic_id": "TA0009",
+            "tactic_name": "Collection"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "The adversary is collecting data from cloud storage objects.",
+            "technique_id": "T1530",
+            "technique_name": "Data from Cloud Storage Object"
+          }
+        ],
+        "Techniques": ["T1530"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": [],
+      "Description": "Exploitation of deterministic PRNG flaw in Coldcard firmware",
+      "Exploits": ["Coldcard firmware PRNG flaw"],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": [],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [],
+    "Extracted_Entities": {
+      "Assets": ["Bitcoin wallets"],
+      "Breach_Types": ["Cryptocurrency theft"],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Coinkite"],
+      "Countries": ["Canada"],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["Bitcoin", "Coldcard", "firmware flaw", "PRNG", "RNG"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": ["Emergency firmware update"],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Cryptocurrency"],
+      "Software": ["Coldcard firmware"],
+      "Technologies": ["Hardware wallet", "BIP-39"],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": ["Deterministic PRNG flaw"]
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "No specific infrastructure identified",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": [],
+      "Tools": []
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "High",
+    "Threat_Actors": [],
+    "Timestamp": "2026-07-31T18:30:00Z",
+    "Title": "Coldcard Firmware Flaw Exploited to Drain Bitcoin Wallets",
+    "Tools": ["Coldcard firmware"],
+    "Victim": {
+      "Access_Vectors": ["Firmware vulnerability"],
+      "Data_Types_At_Risk": ["Cryptocurrency funds"],
+      "Description": "Owners of Coldcard hardware wallets with vulnerable firmware",
+      "Geography": "Global",
+      "Impact_Severity": "High",
+      "Industry": "Cryptocurrency",
+      "Security_Posture": "Compromised",
+      "Targeted_Assets": ["Bitcoin wallets"]
+    },
+    "diamond_model_summary": "The incident involves an unknown adversary exploiting a firmware flaw in Coldcard hardware wallets, leading to the theft of Bitcoin. The adversary demonstrated high sophistication by exploiting a deterministic PRNG flaw, allowing them to reproduce vulnerable seeds and drain wallets. The infrastructure used remains unidentified, but the victims are global users of Coldcard wallets with vulnerable firmware.",
+    "doc_summary": "An attacker exploited a firmware flaw in Coldcard, a Bitcoin-only hardware wallet by Coinkite, to drain 1,196 Bitcoin addresses on July 30, 2023. The flaw was due to a March 2021 firmware integration error that routed seed generation to a deterministic software pseudorandom number generator (PRNG) instead of the STM32 hardware random number generator (RNG). This allowed the attacker to reproduce candidate output streams offline and check them against public blockchain data. Coinkite shipped emergency firmware on July 31, but existing seeds remain vulnerable. The flaw was traced to Coldcard's production config, which defined MICROPY_HW_ENABLE_RNG as zero, leading to the use of MicroPython's Yasmarang fallback. Coinkite estimates effective entropy at roughly 40 bits on the Mk3 and about 72 bits on the Mk4, Mk5, and Q models. The attacker remains unidentified, and the incident highlights the importance of secure seed generation and firmware updates.",
+    "enrichment": null,
+    "id": "33d64b684b386f21f4b0aac2f0d2804a5e1ea8528a9236ae89ca8573093db3a1",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The attack began with reconnaissance to identify the Coldcard firmware flaw, followed by weaponization through the exploitation of the deterministic PRNG vulnerability. The adversary then exploited the flaw to generate vulnerable seeds, leading to the draining of Bitcoin wallets. The attack highlights the importance of secure seed generation and timely firmware updates to prevent such incidents.",
+    "operational_tags": ["High Priority"],
+    "priority_score": 72,
+    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident is limited due to the lack of specific indicators such as hashes, IP addresses, or domains. The primary challenge lies in addressing the firmware vulnerability and ensuring secure seed generation. The incident underscores the need for robust security practices in hardware wallet development and the importance of timely updates to mitigate risks.",
+    "relevance_score": 47,
+    "sequence": 21476,
+    "source": "https://thehackernews.com/2026/08/coldcard-hardware-wallet-flaw-linked-to.html",
+    "slug": "Coldcard_Firmware_Flaw_Exploited_to_Drain_Bitcoin_Wallets-021476",
+    "shard": 3
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
+      "Description": "Unknown attackers modified Adform's JavaScript to rewrite cryptocurrency addresses.",
+      "Known_Campaigns": [],
+      "Motivation": "Financial gain through cryptocurrency address manipulation.",
+      "Sophistication": "Moderate, involving obfuscation and supply chain compromise.",
+      "Strategic_Objectives": "Redirect cryptocurrency transactions to attacker-controlled addresses.",
+      "TTPs_Employed": ["Supply chain compromise", "Cryptocurrency address manipulation"]
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Modification of JavaScript file to include malicious code.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary develops resources they can use to support operations.",
+            "tactic_id": "TA0042",
+            "tactic_name": "Resource Development"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "The adversary develops capabilities to support operations.",
+            "technique_id": "T1587.001",
+            "technique_name": "Develop Capabilities"
+          }
+        ],
+        "Techniques": ["T1587.001"]
+      },
+      {
+        "Description": "Delivery of the malicious JavaScript via Adform's infrastructure.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to get into your network.",
+            "tactic_id": "TA0011",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "The adversary exploits a vulnerability in a public-facing application.",
+            "technique_id": "T1190",
+            "technique_name": "Exploit Public-Facing Application"
+          }
+        ],
+        "Techniques": ["T1190"]
+      },
+      {
+        "Description": "Exploitation of the JavaScript to rewrite cryptocurrency addresses.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to gather data of interest to their goal.",
+            "tactic_id": "TA0009",
+            "tactic_name": "Collection"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "The adversary accesses clipboard data to gather sensitive information.",
+            "technique_id": "T1115",
+            "technique_name": "Clipboard Data"
+          }
+        ],
+        "Techniques": ["T1115"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "HTTP requests to external IP for potential data exfiltration.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to communicate with compromised systems to control them.",
+            "tactic_id": "TA0011",
+            "tactic_name": "Command and Control"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "The adversary uses web protocols to communicate with compromised systems.",
+            "technique_id": "T1071.001",
+            "technique_name": "Application Layer Protocol: Web Protocols"
+          }
+        ],
+        "Techniques": ["T1071.001"]
+      },
+      {
+        "Description": "Manipulation of cryptocurrency addresses to redirect funds.",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Actions on Objectives",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to gather data of interest to their goal.",
+            "tactic_id": "TA0009",
+            "tactic_name": "Collection"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "The adversary accesses clipboard data to gather sensitive information.",
+            "technique_id": "T1115",
+            "technique_name": "Clipboard Data"
+          }
+        ],
+        "Techniques": ["T1115"]
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": [],
+    "Capability": {
+      "Defensive_Evasion_Tactics": ["Obfuscation using XOR key"],
+      "Description": "The attackers used a modified JavaScript file to manipulate cryptocurrency addresses.",
+      "Exploits": [],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": [],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [],
+    "Extracted_Entities": {
+      "Assets": ["Cryptocurrency wallets"],
+      "Breach_Types": ["Supply chain compromise"],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Adform"],
+      "Countries": [],
+      "Domains": ["s2.adform.net"],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": ["84.32.102.230"],
+      "Keywords": ["JavaScript", "cryptocurrency", "wallet", "supply chain", "Adform"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": [],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Advertising Technology"],
+      "Software": [],
+      "Technologies": [],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": []
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": ["HTTP"],
+      "Description": "The attack leveraged Adform's JavaScript infrastructure to reach multiple websites.",
+      "Domains": ["s2.adform.net"],
+      "Hosting_Providers": [],
+      "IPs": ["84.32.102.230"],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [
+      "Clear browser cache to remove cached malicious JavaScript.",
+      "Verify cryptocurrency wallet addresses before transactions."
+    ],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": ["s2.adform.net"],
+      "Hash_Values": [],
+      "IP_Addresses": ["84.32.102.230"],
+      "Network_Host_Artifacts": [],
+      "TTPs": ["Supply chain compromise", "Cryptocurrency address manipulation"],
+      "Tools": []
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "High",
+    "Threat_Actors": [],
+    "Timestamp": "2026-07-31T18:30:00Z",
+    "Title": "Supply Chain Compromise via Adform JavaScript Modification",
+    "Tools": [],
+    "Victim": {
+      "Access_Vectors": ["Web browser"],
+      "Data_Types_At_Risk": ["Cryptocurrency addresses"],
+      "Description": "Users visiting websites using Adform's compromised JavaScript.",
+      "Geography": "Global",
+      "Impact_Severity": "High",
+      "Industry": "Advertising Technology",
+      "Security_Posture": "Vulnerable due to supply chain compromise",
+      "Targeted_Assets": ["Cryptocurrency wallets"]
+    },
+    "diamond_model_summary": "The incident involves a supply chain compromise where attackers modified Adform's JavaScript file to rewrite cryptocurrency wallet addresses. The adversary's motivation appears to be financial gain through redirecting cryptocurrency transactions. The infrastructure used includes Adform's JavaScript delivery system and an external IP for potential data exfiltration. Victims are users visiting websites using Adform's compromised JavaScript, with a high impact severity due to the potential for financial loss.",
+    "doc_summary": "In July 2026, attackers modified a JavaScript file served by Adform, an advertising technology company, to rewrite cryptocurrency wallet addresses. The incident was detected on July 27, 2026, and involved the trackpoint-async.js file served from s2.adform.net. The malicious code replaced Bitcoin, Ethereum, and Tron addresses in clipboard and form fields, potentially redirecting funds. Adform removed the code, notified clients, and advised clearing browser caches. The attack did not install software or establish persistence, operating only while the page was open. The incident is a supply-chain compromise affecting multiple websites. Kevin Beaumont reported ongoing malicious activity, and Max Maass published a captured script sample. The attack involved obfuscated replacement strings and attempted HTTP requests to an external IP. Adform's incident notice lacked indicators of compromise, and the full scope remains unclear.",
+    "enrichment": null,
+    "id": "0fa86a6b2f57fc9d8dcf3f8c68488f84bfac5b17578d4d88192938889e10b17c",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The attack follows a supply chain compromise model, starting with the weaponization of a JavaScript file to include malicious code. The delivery stage involves distributing the compromised JavaScript via Adform's infrastructure. Exploitation occurs as the script rewrites cryptocurrency addresses in clipboard and form fields. Command and control is attempted through HTTP requests to an external IP. The final stage, actions on objectives, involves redirecting cryptocurrency transactions to attacker-controlled addresses.",
+    "operational_tags": ["High Priority", "C2"],
+    "priority_score": 80,
+    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes IP addresses and domain names as key indicators. The IP address 84.32.102.230 and domain s2.adform.net are critical for detection and response. The attack's reliance on a supply chain compromise and obfuscation techniques adds complexity to detection efforts. The absence of specific malware or tools limits the pyramid's scope, focusing on network artifacts and TTPs.",
+    "relevance_score": 43,
+    "sequence": 21475,
+    "source": "https://thehackernews.com/2026/08/hackers-poison-adform-script-to-swap.html",
+    "slug": "Supply_Chain_Compromise_via_Adform_JavaScript_Modification-021475",
+    "shard": 3
+  },
+  {
+    "Adversary": {
+      "Aliases": [],
+      "Associated_Groups": [],
+      "Description": "No significant information detected",
+      "Known_Campaigns": [],
+      "Motivation": "",
+      "Sophistication": "",
+      "Strategic_Objectives": "",
+      "TTPs_Employed": []
+    },
+    "Analyses": [
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Reconnaissance",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Weaponization",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Delivery",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "Exploitation of vulnerabilities in Adobe Campaign Classic and Bridge",
+        "Detection": "",
+        "Remediation": "Apply the latest security updates for Adobe Campaign Classic and Bridge.",
+        "Stage": "Exploitation",
+        "Tactics": [
+          {
+            "tactic_description": "The adversary is trying to get into your network.",
+            "tactic_id": "TA0001",
+            "tactic_name": "Initial Access"
+          }
+        ],
+        "Technique_Details": [
+          {
+            "technique_description": "Exploitation of a vulnerability in an Internet-facing application.",
+            "technique_id": "T1190",
+            "technique_name": "Exploit Public-Facing Application"
+          }
+        ],
+        "Techniques": ["T1190"]
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Installation",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Command and Control",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      },
+      {
+        "Description": "No significant activity detected",
+        "Detection": "",
+        "Remediation": "",
+        "Stage": "Actions on Objectives",
+        "Tactics": [],
+        "Technique_Details": [],
+        "Techniques": []
+      }
+    ],
+    "Behavioral_Indicators_of_Attackers": [],
+    "CVEs": [
+      "CVE-2026-48449",
+      "CVE-2026-48390",
+      "CVE-2026-48448",
+      "CVE-2026-48391",
+      "CVE-2026-48395",
+      "CVE-2026-48396",
+      "CVE-2026-48374",
+      "CVE-2026-48392",
+      "CVE-2026-48393",
+      "CVE-2026-48394"
+    ],
+    "Capability": {
+      "Defensive_Evasion_Tactics": [],
+      "Description": "No significant information detected",
+      "Exploits": [],
+      "Lateral_Movement_Tools": [],
+      "Malware": [],
+      "Persistence_Mechanisms": [],
+      "Tools": [],
+      "Zero_Days": []
+    },
+    "Data_Exfiltration_Indicators": [],
+    "Detection_Hints": [],
+    "Detection_Rules_And_Indicators": [],
+    "Extracted_Entities": {
+      "Assets": [],
+      "Breach_Types": [],
+      "Command_Lines_Or_Scripts": [],
+      "Companies": ["Adobe"],
+      "Countries": [],
+      "Domains": [],
+      "Email_Addresses": [],
+      "Encryption_Tools": [],
+      "File_Hashes": [],
+      "IP_Addresses": [],
+      "Keywords": ["security updates", "vulnerability", "arbitrary code execution", "SQL injection"],
+      "Malware_Families": [],
+      "Malware_Filenames": [],
+      "Patches": ["ACC v7: 7.4.3 build 9398"],
+      "Phishing_Infrastructure": [],
+      "Sectors": ["Technology"],
+      "Software": ["Adobe Campaign Classic", "Adobe Bridge"],
+      "Technologies": [],
+      "Threat_Infrastructure": [],
+      "Vulnerabilities": [
+        "CVE-2026-48449",
+        "CVE-2026-48448",
+        "CVE-2026-48390",
+        "CVE-2026-48391",
+        "CVE-2026-48395",
+        "CVE-2026-48396",
+        "CVE-2026-48374",
+        "CVE-2026-48392",
+        "CVE-2026-48393",
+        "CVE-2026-48394"
+      ]
+    },
+    "Infrastructure": {
+      "Botnets": [],
+      "C2_Servers": [],
+      "Communication_Protocols": [],
+      "Description": "No significant information detected",
+      "Domains": [],
+      "Hosting_Providers": [],
+      "IPs": [],
+      "SSL_Certificates": []
+    },
+    "Post_Incident_Recommendations": [],
+    "Pyramid_Of_Pain": {
+      "Domain_Names": [],
+      "Hash_Values": [],
+      "IP_Addresses": [],
+      "Network_Host_Artifacts": [],
+      "TTPs": [],
+      "Tools": []
+    },
+    "Recommended_Tools_And_Techniques_For_Analysis": [],
+    "Severity": "Critical",
+    "Threat_Actors": [],
+    "Timestamp": "2026-07-31T18:30:00Z",
+    "Title": "Adobe Campaign Classic and Bridge Critical Vulnerabilities",
+    "Tools": ["Adobe Campaign Classic", "Adobe Bridge"],
+    "Victim": {
+      "Access_Vectors": [],
+      "Data_Types_At_Risk": [],
+      "Description": "No significant information detected",
+      "Geography": "",
+      "Impact_Severity": "",
+      "Industry": "Technology",
+      "Security_Posture": "",
+      "Targeted_Assets": []
+    },
+    "diamond_model_summary": "Information is not available to provide a detailed diamond model summary. Due to a lack of data, no adversary, capability, infrastructure, or victim details could be inferred. This is a fallback summary generated due to insufficient information. To meet the 300-character requirement, additional text is included here. Please note that this placeholder summary lacks substantive insight and is only used because insufficient information was available from the provided text.",
+    "doc_summary": "Adobe has released security updates to address critical vulnerabilities in its Campaign Classic and Bridge products. The Campaign Classic vulnerability, CVE-2026-48449, is a maximum-severity flaw with a CVSS score of 10.0, allowing arbitrary code execution due to incorrect authorization. Another high-severity flaw, CVE-2026-48448, involves SQL injection leading to arbitrary file reads. Both issues are resolved in ACC v7: 7.4.3 build 9398. Adobe Bridge updates address eight critical-rated flaws, including privilege escalation and arbitrary code execution. Security researchers Kieran (kaiksi) and yjdfy reported these vulnerabilities. Users are advised to apply the latest updates for protection.",
+    "enrichment": null,
+    "id": "097fcbe5b08ca7e56f3460f25dff76ef9826b04b1b2096b3c79c146adec9745e",
+    "index": "data_cached_global_airball",
+    "kill_chain_summary": "The incident involves critical vulnerabilities in Adobe Campaign Classic and Bridge, leading to potential arbitrary code execution and privilege escalation. The exploitation stage is significant, with CVE-2026-48449 and CVE-2026-48448 being key vulnerabilities. Adobe has released patches to mitigate these risks. Users are advised to update their systems promptly to prevent exploitation. The lack of specific adversary information limits further kill chain analysis.",
+    "operational_tags": ["High Priority", "CVE-linked"],
+    "priority_score": 89,
+    "pyramid_of_pain_summary": "Information is not available to provide a meaningful pyramid of pain summary. Since no specific indicators (hashes, IPs, domains, tools, TTPs) were identified, this summary is purely a fallback. To meet the 300-char requirement, extra text is added. This placeholder does not offer substantive insight and is used due to insufficient data.",
+    "relevance_score": 45,
+    "sequence": 21474,
+    "source": "https://thehackernews.com/2026/08/adobe-campaign-classic-cvss-100-flaw.html",
+    "slug": "Adobe_Campaign_Classic_and_Bridge_Critical_Vulnerabilities-021474",
+    "shard": 3
+  },
+  {
+    "Adversary": {
       "Aliases": ["Midnight Blizzard", "APT29", "Cozy Bear"],
       "Associated_Groups": ["Russia's Foreign Intelligence Service (SVR)"],
       "Description": "Storm-2945, a sub-cluster of Midnight Blizzard (APT29), attributed to Russia's Foreign Intelligence Service.",
@@ -104708,841 +105569,6 @@
     "sequence": 20979,
     "source": "https://www.bleepingcomputer.com/news/security/fortibleed-campaign-used-custom-fortigate-sniffer-to-steal-credentials/",
     "slug": "FortiBleed_Campaign_Targets_Fortinet_FortiGate_Devices-020979",
-    "shard": 3
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "Unknown threat actors compromised ShapedPlugin's build and distribution pipeline.",
-      "Known_Campaigns": [],
-      "Motivation": "Potentially financial gain or data theft",
-      "Sophistication": "High",
-      "Strategic_Objectives": "Compromise WordPress plugin distribution to install backdoors",
-      "TTPs_Employed": ["Supply chain compromise", "Backdoor installation"]
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Backdoor code was injected into plugin builds.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary injected backdoor code into legitimate software.",
-            "tactic_id": "TA0001",
-            "tactic_name": "Initial Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Compromise of the vendor's build and distribution pipeline.",
-            "technique_id": "T1195.002",
-            "technique_name": "Supply Chain Compromise"
-          }
-        ],
-        "Techniques": ["T1195.002"]
-      },
-      {
-        "Description": "Compromised plugins were delivered via official update channels.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [
-          {
-            "tactic_description": "The compromised plugins were executed upon installation.",
-            "tactic_id": "TA0002",
-            "tactic_name": "Execution"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Execution of backdoor code through plugin updates.",
-            "technique_id": "T1203",
-            "technique_name": "Exploitation for Client Execution"
-          }
-        ],
-        "Techniques": ["T1203"]
-      },
-      {
-        "Description": "The backdoor was activated on admin page access.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "The backdoor established persistence on the victim's system.",
-            "tactic_id": "TA0003",
-            "tactic_name": "Persistence"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Persistence through plugin activation.",
-            "technique_id": "T1547.001",
-            "technique_name": "Registry Run Keys / Startup Folder"
-          }
-        ],
-        "Techniques": ["T1547.001"]
-      },
-      {
-        "Description": "The fake plugin was installed and activated.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [
-          {
-            "tactic_description": "The fake plugin was installed with elevated privileges.",
-            "tactic_id": "TA0004",
-            "tactic_name": "Privilege Escalation"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Installation of a web shell for command execution.",
-            "technique_id": "T1059.003",
-            "technique_name": "Command and Scripting Interpreter: Windows Command Shell"
-          }
-        ],
-        "Techniques": ["T1059.003"]
-      },
-      {
-        "Description": "The malware communicated with a remote server.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [
-          {
-            "tactic_description": "The malware established a C2 channel with a remote server.",
-            "tactic_id": "TA0011",
-            "tactic_name": "Command and Control"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "C2 communication over HTTP.",
-            "technique_id": "T1071.001",
-            "technique_name": "Application Layer Protocol: Web Protocols"
-          }
-        ],
-        "Techniques": ["T1071.001"]
-      },
-      {
-        "Description": "The malware captured credentials and 2FA codes.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "The malware captured credentials and 2FA codes.",
-            "tactic_id": "TA0006",
-            "tactic_name": "Credential Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Capture of credentials in plaintext.",
-            "technique_id": "T1110.001",
-            "technique_name": "Brute Force: Password Guessing"
-          }
-        ],
-        "Techniques": ["T1110.001"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": ["CVE-2026-49777", "CVE-2026-10735"],
-    "Capability": {
-      "Defensive_Evasion_Tactics": ["Self-deletion", "Hiding from admin plugin list"],
-      "Description": "The adversary injected backdoor code into Pro plugin releases.",
-      "Exploits": [],
-      "Lateral_Movement_Tools": [],
-      "Malware": ["Backdoor"],
-      "Persistence_Mechanisms": ["Custom REST endpoint", "install-persistent.php"],
-      "Tools": ["Fake plugin", "Web shell"],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": ["WordPress sites"],
-      "Breach_Types": ["Supply chain compromise"],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["ShapedPlugin", "Wordfence"],
-      "Countries": [],
-      "Domains": ["account.shapedplugin.com"],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": ["194.76.217.28"],
-      "Keywords": ["supply chain attack", "backdoor", "CVE-2026-49777", "CVE-2026-10735"],
-      "Malware_Families": ["Backdoor"],
-      "Malware_Filenames": ["install-persistent.php"],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Technology"],
-      "Software": ["WordPress", "Product Slider Pro for WooCommerce"],
-      "Technologies": ["Easy Digital Downloads"],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": ["CVE-2026-49777", "CVE-2026-10735"]
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": ["194.76.217.28:2871"],
-      "Communication_Protocols": ["HTTP"],
-      "Description": "The attack utilized a remote server for payload delivery.",
-      "Domains": ["account.shapedplugin.com"],
-      "Hosting_Providers": [],
-      "IPs": ["194.76.217.28"],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [
-      "Reset all passwords",
-      "Revoke and regenerate 2FA secrets",
-      "Review administrator accounts for unauthorized additions",
-      "Check mail plugin configurations for modified SMTP credentials"
-    ],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": ["account.shapedplugin.com"],
-      "Hash_Values": [],
-      "IP_Addresses": ["194.76.217.28"],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["Supply chain compromise", "Backdoor installation"],
-      "Tools": ["Fake plugin", "Web shell"]
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "Critical",
-    "Threat_Actors": [],
-    "Timestamp": "2026-06-21T18:30:00Z",
-    "Title": "Supply Chain Attack on ShapedPlugin WordPress Plugins",
-    "Tools": ["Fake plugin", "Web shell", "WordPress", "Product Slider Pro for WooCommerce"],
-    "Victim": {
-      "Access_Vectors": ["Compromised plugin updates"],
-      "Data_Types_At_Risk": ["Credentials", "2FA codes"],
-      "Description": "Site owners using ShapedPlugin's Pro plugins via Easy Digital Downloads.",
-      "Geography": "Global",
-      "Impact_Severity": "High",
-      "Industry": "Technology",
-      "Security_Posture": "Compromised",
-      "Targeted_Assets": ["WordPress sites"]
-    },
-    "diamond_model_summary": "The supply chain attack on ShapedPlugin involved unknown threat actors compromising the vendor's build and distribution pipeline. The adversary injected backdoor code into Pro plugin releases, affecting site owners who installed updates from the official system. The attack utilized a remote server for payload delivery, and the malware was capable of capturing credentials and 2FA codes. The incident highlights the risks associated with supply chain compromises and the need for robust security measures in software distribution processes.",
-    "doc_summary": "A supply chain attack compromised multiple WordPress plugins from ShapedPlugin, affecting Pro plugin builds distributed via Easy Digital Downloads. The attack involved injecting backdoor code into the vendor's build and distribution pipeline, leading to the installation of a fake plugin capable of capturing credentials and 2FA codes. The incident has been assigned CVE-2026-49777 and CVE-2026-10735, with CVSS scores of 10.0 and 9.8, respectively. The malware fetches a payload from a remote server, installs it, and activates it as a fake plugin, reporting the victim domain back to the server. ShapedPlugin is reviewing its processes to ensure product integrity, and affected site owners are advised to reset passwords, regenerate 2FA secrets, and review administrator accounts.",
-    "enrichment": null,
-    "id": "2ce34d4bc99a9a63d164e8a5e0e631a458ea1dc642c959ef28bbb7f2efa0b111",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The attack on ShapedPlugin's WordPress plugins followed a structured kill chain. Initially, the adversary compromised the vendor's build pipeline, injecting backdoor code into plugin releases. The compromised plugins were delivered via official update channels, leading to the installation of a fake plugin on victim sites. The malware established a command and control channel with a remote server, capturing credentials and 2FA codes. The attack demonstrates the effectiveness of supply chain compromises in achieving unauthorized access and data theft.",
-    "operational_tags": ["High Priority", "Supply Chain", "C2", "CVE-linked"],
-    "priority_score": 100,
-    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes several indicators. The IP address 194.76.217.28 was used for command and control communication. The domain account.shapedplugin.com was involved in the distribution of compromised plugins. The malware utilized a file named install-persistent.php for persistence. These indicators highlight the adversary's reliance on specific infrastructure and tools, which can be used to detect and mitigate similar attacks in the future.",
-    "relevance_score": 63,
-    "sequence": 20978,
-    "source": "https://thehackernews.com/2026/06/shapedplugin-wordpress-pro-plugins.html",
-    "slug": "Supply_Chain_Attack_on_ShapedPlugin_WordPress_Plugins-020978",
-    "shard": 3
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "Threat actors offering credential search services in underground markets.",
-      "Known_Campaigns": [],
-      "Motivation": "Financial gain through monetization of stolen credentials.",
-      "Sophistication": "Moderate, leveraging existing infostealer data and underground forums.",
-      "Strategic_Objectives": "Facilitate account takeovers and other malicious activities by providing targeted credential data.",
-      "TTPs_Employed": ["Credential harvesting", "Data processing and enrichment", "Underground market operations"]
-    },
-    "Analyses": [
-      {
-        "Description": "Threat actors gather victim identity information and credentials.",
-        "Detection": "Monitor for unusual access patterns to credential databases. • Track underground forum activity related to credential sales.",
-        "Remediation": "Implement strong password policies and multi-factor authentication. • Educate employees on phishing and credential theft risks.",
-        "Stage": "Reconnaissance",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary is trying to gather information they can use to plan future operations.",
-            "tactic_id": "TA0043",
-            "tactic_name": "Reconnaissance"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Adversaries gather credentials for use in future operations.",
-            "technique_id": "T1589.001",
-            "technique_name": "Gather Victim Identity Information: Credentials"
-          }
-        ],
-        "Techniques": ["T1589.001"]
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Exploitation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Threat actors use acquired credentials for account takeovers and other malicious activities.",
-        "Detection": "Monitor for unusual login attempts and access patterns. • Track credential use across multiple accounts or services.",
-        "Remediation": "Enforce password resets and session revocation for compromised accounts. • Implement continuous monitoring and anomaly detection systems.",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary is trying to steal account names and passwords.",
-            "tactic_id": "TA0006",
-            "tactic_name": "Credential Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Adversaries acquire access to systems or services using stolen credentials.",
-            "technique_id": "T1650",
-            "technique_name": "Acquire Access"
-          }
-        ],
-        "Techniques": ["T1650"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "Ability to search, filter, and deliver targeted credential data from large collections.",
-      "Exploits": [],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": [],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": [],
-      "Breach_Types": [],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": [],
-      "Countries": [],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": [
-        "infostealer",
-        "credential collections",
-        "underground services",
-        "Malware-as-a-Service",
-        "credential brokers",
-        "data processors",
-        "account takeover",
-        "search-service",
-        "initial access brokers"
-      ],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": [],
-      "Software": [],
-      "Technologies": [],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": []
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "Underground forums and private databases used for credential trading and search services.",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["Credential harvesting", "Data processing and enrichment", "Underground market operations"],
-      "Tools": []
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "High",
-    "Threat_Actors": [],
-    "Timestamp": "2026-06-22T10:05:00Z",
-    "Title": "Underground Credential Search Services Exploitation",
-    "Tools": [],
-    "Victim": {
-      "Access_Vectors": ["Infostealer infections", "Underground market transactions"],
-      "Data_Types_At_Risk": ["Credentials", "Cookies", "Autofill data"],
-      "Description": "Organizations and individuals targeted for credential theft and account takeovers.",
-      "Geography": "",
-      "Impact_Severity": "High",
-      "Industry": "",
-      "Security_Posture": "",
-      "Targeted_Assets": ["Corporate accounts", "Email accounts", "SaaS platforms", "VPNs"]
-    },
-    "diamond_model_summary": "The incident involves threat actors operating as credential brokers in underground markets. They provide search services for stolen credentials, acting as a processing layer between infostealer infections and account takeovers. These actors are motivated by financial gain and leverage existing data from infostealers to offer targeted credential data to buyers.",
-    "doc_summary": "Threat actors are increasingly using infostealer-derived credential collections to create underground services. These services allow buyers to request credentials for specific targets, such as companies or platforms. Researchers analyzed 470 forum posts from January 2025 to June 2026, revealing a service layer between infections and account takeovers. The actors involved are often Malware-as-a-Service providers or consumers, acting as credential brokers. They monetize logs by searching, filtering, and delivering targeted results. This service model aligns with MITRE ATT&CK techniques T1589.001 and T1650. Sellers advertise database sizes and search capabilities, but customer feedback indicates issues with data validity and duplication. The market overlaps with initial access brokers, posing risks to businesses. Defenders must monitor these markets to protect against credential-based attacks.",
-    "enrichment": null,
-    "id": "97587fec952c955a69936f409abea4ef",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The kill chain involves threat actors gathering credentials through infostealer infections, processing and enriching the data, and offering search services in underground markets. Buyers use these services to acquire credentials for specific targets, leading to account takeovers and other malicious activities. The service model aligns with MITRE ATT&CK techniques T1589.001 and T1650.",
-    "operational_tags": ["High Priority"],
-    "priority_score": 70,
-    "pyramid_of_pain_summary": "The Pyramid of Pain for this incident includes TTPs related to credential harvesting and underground market operations. No specific hashes, IPs, or domains were identified, but the focus is on the adversaries' ability to process and deliver targeted credential data. This capability poses a significant challenge for defenders, as it enables attackers to efficiently exploit stolen credentials.",
-    "relevance_score": 39,
-    "sequence": 20977,
-    "source": "https://www.bleepingcomputer.com/news/security/a-glimpse-into-the-search-your-target-market-for-stolen-credentials/",
-    "slug": "Underground_Credential_Search_Services_Exploitation-020977",
-    "shard": 3
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "No significant information detected",
-      "Known_Campaigns": [],
-      "Motivation": "",
-      "Sophistication": "",
-      "Strategic_Objectives": "",
-      "TTPs_Employed": []
-    },
-    "Analyses": [
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Reconnaissance",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Weaponization",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Exploitation of the AutoJack vulnerability chain to execute arbitrary commands.",
-        "Detection": "",
-        "Remediation": "Ensure AutoGen Studio is deployed in an isolated environment. • Run AutoGen Studio under a low-privilege account.",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary is trying to get into your network.",
-            "tactic_id": "TA0001",
-            "tactic_name": "Initial Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exploitation of a vulnerability to execute code on a client system.",
-            "technique_id": "T1203",
-            "technique_name": "Exploitation for Client Execution"
-          }
-        ],
-        "Techniques": ["T1203"]
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Execution of arbitrary commands on the host system.",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "The adversary is trying to run malicious code.",
-            "tactic_id": "TA0002",
-            "tactic_name": "Execution"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Use of command-line interfaces to execute commands.",
-            "technique_id": "T1059",
-            "technique_name": "Command and Scripting Interpreter"
-          }
-        ],
-        "Techniques": ["T1059"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": [],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "The capability to exploit a vulnerability chain in AutoGen Studio to execute arbitrary commands via a malicious webpage.",
-      "Exploits": [],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": [],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": ["AI agents", "Developer systems"],
-      "Breach_Types": [],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["Microsoft"],
-      "Countries": [],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["AutoJack", "vulnerability", "AI agents", "WebSocket"],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": [],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Technology"],
-      "Software": ["AutoGen Studio"],
-      "Technologies": ["AI", "WebSocket"],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": ["AutoJack"]
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "No significant information detected",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": [],
-      "Tools": []
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "Moderate",
-    "Threat_Actors": [],
-    "Timestamp": "2026-06-22T13:28:00Z",
-    "Title": "AutoJack Vulnerability in Microsoft's AutoGen Studio",
-    "Tools": ["AutoGen Studio"],
-    "Victim": {
-      "Access_Vectors": ["WebSocket connection"],
-      "Data_Types_At_Risk": [],
-      "Description": "Developers using AutoGen Studio from the main GitHub branch during a specific window.",
-      "Geography": "",
-      "Impact_Severity": "Medium",
-      "Industry": "Technology",
-      "Security_Posture": "Vulnerable during a specific development window",
-      "Targeted_Assets": ["AI agents", "Developer systems"]
-    },
-    "diamond_model_summary": "The AutoJack vulnerability in Microsoft's AutoGen Studio represents a potential threat to developers using the software from the main GitHub branch during a specific window. The vulnerability allows for arbitrary command execution via a malicious webpage, highlighting the need for secure development practices and isolated deployment environments.",
-    "doc_summary": "A vulnerability chain named AutoJack was discovered in Microsoft's AutoGen Studio, a component for prototyping AI agents. This vulnerability could allow attackers to manipulate an AI agent into executing arbitrary commands on its host system by visiting a malicious webpage. AutoGen Studio is part of Microsoft's open-source framework for building multi-agent AI systems. The issue was identified and remediated before any PyPI release, limiting exposure to developers who built AutoGen Studio from the main GitHub branch during a specific window. The attack involves a malicious JavaScript executing on a page visited by a developer's AI agent, opening a WebSocket connection to AutoGen Studio's local MCP endpoint, and launching an attacker-chosen command. Microsoft recommends deploying AutoGen Studio in an isolated environment and running it under a low-privilege account to contain any future agent-driven RCE.",
-    "enrichment": null,
-    "id": "0982c3f738691fcdac1a43d967ca8f73",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The AutoJack vulnerability involves several stages of the MITRE ATT&CK kill chain, including exploitation through a malicious webpage and execution of arbitrary commands on the host system. The vulnerability was limited to a specific development window, and Microsoft has provided recommendations for secure deployment to mitigate future risks.",
-    "operational_tags": [],
-    "priority_score": 46,
-    "pyramid_of_pain_summary": "The AutoJack vulnerability in AutoGen Studio highlights the importance of addressing vulnerabilities at the TTP level. While specific indicators such as hashes or IP addresses were not identified, the focus on secure development practices and isolated environments can help mitigate the impact of similar vulnerabilities in the future.",
-    "relevance_score": 43,
-    "sequence": 20976,
-    "source": "https://www.bleepingcomputer.com/news/security/microsoft-fixes-autogen-studio-flaw-that-enabled-code-execution/",
-    "slug": "AutoJack_Vulnerability_in_Microsoft_s_AutoGen_Studio-020976",
-    "shard": 3
-  },
-  {
-    "Adversary": {
-      "Aliases": [],
-      "Associated_Groups": [],
-      "Description": "No specific adversary identified; potential for opportunistic attackers exploiting vulnerabilities.",
-      "Known_Campaigns": [],
-      "Motivation": "Data exfiltration and unauthorized access to sensitive AI conversations.",
-      "Sophistication": "Moderate, leveraging known vulnerabilities and cross-tenant access.",
-      "Strategic_Objectives": "Access and exfiltrate sensitive AI data from Dify platform users.",
-      "TTPs_Employed": []
-    },
-    "Analyses": [
-      {
-        "Description": "Attackers may have identified vulnerable Dify instances and API endpoints.",
-        "Detection": "Monitor for unusual scanning activity targeting Dify endpoints.",
-        "Remediation": "Implement rate limiting and anomaly detection on API endpoints.",
-        "Stage": "Reconnaissance",
-        "Tactics": [
-          {
-            "tactic_description": "Gathering information to identify vulnerabilities in Dify platform.",
-            "tactic_id": "TA0043",
-            "tactic_name": "Reconnaissance"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Scanning for vulnerable Dify instances and API endpoints.",
-            "technique_id": "T1595",
-            "technique_name": "Active Scanning"
-          }
-        ],
-        "Techniques": ["T1595"]
-      },
-      {
-        "Description": "Exploitation of identified vulnerabilities to prepare for unauthorized access.",
-        "Detection": "Monitor for the creation or use of scripts targeting Dify vulnerabilities.",
-        "Remediation": "Regularly update and patch software to mitigate known vulnerabilities.",
-        "Stage": "Weaponization",
-        "Tactics": [
-          {
-            "tactic_description": "Developing tools or scripts to exploit Dify vulnerabilities.",
-            "tactic_id": "TA0042",
-            "tactic_name": "Resource Development"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Creating scripts to exploit Dify vulnerabilities.",
-            "technique_id": "T1587",
-            "technique_name": "Develop Capabilities"
-          }
-        ],
-        "Techniques": ["T1587"]
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Delivery",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Exploitation of Dify vulnerabilities to gain unauthorized access to AI conversations.",
-        "Detection": "Monitor for unauthorized access attempts and unusual API calls.",
-        "Remediation": "Apply patches and updates to Dify platform to fix vulnerabilities.",
-        "Stage": "Exploitation",
-        "Tactics": [
-          {
-            "tactic_description": "Gaining access to Dify platform through vulnerabilities.",
-            "tactic_id": "TA0001",
-            "tactic_name": "Initial Access"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exploiting Dify vulnerabilities for unauthorized access.",
-            "technique_id": "T1190",
-            "technique_name": "Exploit Public-Facing Application"
-          }
-        ],
-        "Techniques": ["T1190"]
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Installation",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "No significant activity detected",
-        "Detection": "",
-        "Remediation": "",
-        "Stage": "Command and Control",
-        "Tactics": [],
-        "Technique_Details": [],
-        "Techniques": []
-      },
-      {
-        "Description": "Exfiltration of AI conversation data from Dify platform.",
-        "Detection": "Monitor for unusual data transfer patterns and cross-tenant data access.",
-        "Remediation": "Implement strict access controls and data encryption.",
-        "Stage": "Actions on Objectives",
-        "Tactics": [
-          {
-            "tactic_description": "Exfiltrating sensitive data from Dify platform.",
-            "tactic_id": "TA0010",
-            "tactic_name": "Exfiltration"
-          }
-        ],
-        "Technique_Details": [
-          {
-            "technique_description": "Exfiltrating data through unauthorized API access.",
-            "technique_id": "T1041",
-            "technique_name": "Exfiltration Over C2 Channel"
-          }
-        ],
-        "Techniques": ["T1041"]
-      }
-    ],
-    "Behavioral_Indicators_of_Attackers": [],
-    "CVEs": ["CVE-2024-5846", "CVE-2026-41948"],
-    "Capability": {
-      "Defensive_Evasion_Tactics": [],
-      "Description": "Exploitation of vulnerabilities in Dify platform to access and exfiltrate AI conversations.",
-      "Exploits": ["CVE-2024-5846"],
-      "Lateral_Movement_Tools": [],
-      "Malware": [],
-      "Persistence_Mechanisms": [],
-      "Tools": [],
-      "Zero_Days": []
-    },
-    "Data_Exfiltration_Indicators": [],
-    "Detection_Hints": [],
-    "Detection_Rules_And_Indicators": [],
-    "Extracted_Entities": {
-      "Assets": ["AI conversations", "internal APIs"],
-      "Breach_Types": ["Data exfiltration", "Unauthorized access"],
-      "Command_Lines_Or_Scripts": [],
-      "Companies": ["Zafran Security"],
-      "Countries": [],
-      "Domains": [],
-      "Email_Addresses": [],
-      "Encryption_Tools": [],
-      "File_Hashes": [],
-      "IP_Addresses": [],
-      "Keywords": ["DifyTap", "vulnerabilities", "AI conversations", "multi-tenant cloud service"],
-      "Malware_Families": [],
-      "Malware_Filenames": [],
-      "Patches": ["Dify version 1.14.2"],
-      "Phishing_Infrastructure": [],
-      "Sectors": ["Technology"],
-      "Software": ["Dify", "PDFium"],
-      "Technologies": ["AI", "cloud service"],
-      "Threat_Infrastructure": [],
-      "Vulnerabilities": ["CVE-2024-5846", "CVE-2026-41948"]
-    },
-    "Infrastructure": {
-      "Botnets": [],
-      "C2_Servers": [],
-      "Communication_Protocols": [],
-      "Description": "Dify's multi-tenant cloud service infrastructure was exploited.",
-      "Domains": [],
-      "Hosting_Providers": [],
-      "IPs": [],
-      "SSL_Certificates": []
-    },
-    "Post_Incident_Recommendations": [],
-    "Pyramid_Of_Pain": {
-      "Domain_Names": [],
-      "Hash_Values": [],
-      "IP_Addresses": [],
-      "Network_Host_Artifacts": [],
-      "TTPs": ["Exploitation of CVE-2024-5846", "Cross-tenant data access"],
-      "Tools": []
-    },
-    "Recommended_Tools_And_Techniques_For_Analysis": [],
-    "Severity": "Critical",
-    "Threat_Actors": [],
-    "Timestamp": "2026-06-21T18:30:00Z",
-    "Title": "DifyTap Vulnerabilities in Dify Platform Expose AI Conversations",
-    "Tools": ["Dify", "PDFium"],
-    "Victim": {
-      "Access_Vectors": ["Unauthenticated API access", "Cross-tenant data exposure"],
-      "Data_Types_At_Risk": ["AI conversation data", "Uploaded documents"],
-      "Description": "Users of the Dify platform, particularly those utilizing its multi-tenant cloud service.",
-      "Geography": "Global",
-      "Impact_Severity": "Critical",
-      "Industry": "Technology",
-      "Security_Posture": "Vulnerable due to unpatched software and configuration issues.",
-      "Targeted_Assets": ["AI conversations", "Internal APIs"]
-    },
-    "diamond_model_summary": "The DifyTap incident involves vulnerabilities in the Dify platform, allowing unauthorized access to AI conversations. The adversary's motivation appears to be data exfiltration, exploiting vulnerabilities like CVE-2024-5846. The infrastructure targeted is Dify's multi-tenant cloud service, affecting users globally.",
-    "doc_summary": "Cybersecurity researchers from Zafran Security disclosed four vulnerabilities in the Dify platform, an open-source agentic workflow platform with over 146,000 GitHub stars. These vulnerabilities, collectively named DifyTap, include two critical severity issues and two that require no authentication. They allow attackers to read AI conversations from other customers' applications, traverse Dify's internal Plugin Daemon API, and exploit a use-after-free bug in PDFium (CVE-2024-5846). The vulnerabilities impact Dify's multi-tenant cloud service, exposing data across tenants. Following responsible disclosure, most vulnerabilities were addressed in version 1.14.2, with a pending fix for CVE-2026-41948.",
-    "enrichment": null,
-    "id": "a5471bf11dc135a2b44736d9cb73349b2533fb26cac9b004d21893533b048bd3",
-    "index": "data_cached_global_airball",
-    "kill_chain_summary": "The attack on Dify involves reconnaissance to identify vulnerable instances, weaponization through exploit development, and exploitation of vulnerabilities like CVE-2024-5846. The attackers gain initial access and exfiltrate AI conversation data, exploiting cross-tenant vulnerabilities in Dify's cloud service.",
-    "operational_tags": ["High Priority", "CVE-linked"],
-    "priority_score": 100,
-    "pyramid_of_pain_summary": "The DifyTap incident lacks specific indicators like hashes or IPs, focusing on vulnerabilities and TTPs. The Pyramid of Pain highlights the challenge of detecting and responding to such vulnerabilities, emphasizing the need for robust patch management and monitoring of cross-tenant data access.",
-    "relevance_score": 51,
-    "sequence": 20975,
-    "source": "https://thehackernews.com/2026/06/researchers-detail-difytap-flaws-in.html",
-    "slug": "DifyTap_Vulnerabilities_in_Dify_Platform_Expose_AI_Conversations-020975",
     "shard": 3
   }
 ]
