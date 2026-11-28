@@ -1,0 +1,105 @@
+{
+  "type": "cyber",
+  "date": "2026-11-28",
+  "threatLevel": "",
+  "executiveSummary": "Active targeting of Siemens S7 PLCs using AI-generated Python tooling (snap7/S7comm) is ongoing; immediate removal of internet exposure, strict access control, and protocol monitoring on TCP/102 are required. Security Advisory Critical unauthenticated stack buffer overflow in Danfoss AK-SM 8xxA refrigeration controllers can lead to code execution; Strict Mode and network isolation are mandatory pending 5.5.x firmware. Security Advisory Pre-auth UDP RCE in RealVNC affects remote access to engineering workstations/HMIs; patch to fixed versions or disable/force TCP and restrict/monitor UDP immediately. View Article Critical Linux NFS server vulnerability (CVE-2026-99362) enables remote root compromise; patch kernels and restrict TCP/2049 to trusted clients only. View Article Node-RED RCE is being exploited in the wild on deployments exposing the editor/admin API without auth; harden, enable adminAuth, and remove internet exposure. Supporting Report CISA KEV additions underscore active exploitation of OT-relevant platforms (e.g., Danfoss AK-SM 800A, Juniper Session Smart, Mitel MiCollab); prioritize KEV remediation timelines. CISA Alert Multiple ICS-adjacent bulletins flag high-impact pathways (Eclipse Milo OPC UA auth bypass/DoS, IIoT gateways, EVSE/OCPP, DDS, Arrowhead/Ditto management bypass); urgently segment and patch. CISA Bulletin Ransomware at the hypervisor layer (ESXi/vCenter) continues via native management features; treat vCenter as Tier-0 and segregate backups/identities. Vendor Research AI-enabled adversary capacity is increasing: confirmed AI-generated exploitation scripts observed against PLCs and rising adoption of agentic offensive frameworks by nation-state actors. Security Advisory View Article",
+  "keyFindings": [
+    {
+      "title": "OT-native devices under live exploitation pressure",
+      "summary": "Siemens S7 PLCs (AI-assisted scripts) and Danfoss AK-SM cold-chain controllers (unauth RCE) demand immediate boundary hardening and protocol monitoring. Security Advisory Security Advisory"
+    },
+    {
+      "title": "Remote access and perimeter services remain top ingress vectors (RealVNC UDP RCE",
+      "summary": "Remote access and perimeter services remain top ingress vectors (RealVNC UDP RCE, NFS remote root, NetScaler/Check Point KEVs); reduce exposure and enforce MFA/allowlisting. View Article View Article"
+    },
+    {
+      "title": "Misconfigured IIoT/low-code stacks (Node-RED, OPC UA/Milo, Arrowhead/Ditto, WISE",
+      "summary": "Misconfigured IIoT/low-code stacks (Node-RED, OPC UA/Milo, Arrowhead/Ditto, WISE-6610, Advantech EKI-1242) provide high-impact pivot paths; apply vendor fixes and isolate control/data planes. CISA Bulletin"
+    },
+    {
+      "title": "Enterprise compromises (ESXi/vCenter ransomware, N-able RMM breach) can cascade ",
+      "summary": "Enterprise compromises (ESXi/vCenter ransomware, N-able RMM breach) can cascade into OT if identity and management planes are shared; treat virtualization, RMM, and backups as Tier-0. Vendor Research View Article"
+    },
+    {
+      "title": "Nation-state TTPs continue to emphasize covert ingress (SOHO/IoT botnets, router",
+      "summary": "Nation-state TTPs continue to emphasize covert ingress (SOHO/IoT botnets, router hygiene failures) and AI-agent frameworks to accelerate intrusions; ingest IOCs and harden edges. Joint Advisory"
+    }
+  ],
+  "dashboard": {
+    "kpis": [
+      {
+        "value": "HIGH",
+        "label": "Overall OT Cyber Threat Level"
+      },
+      {
+        "value": "56",
+        "label": "Total Intelligence Events Analyzed"
+      },
+      {
+        "value": "18 / 30 / 8",
+        "label": "Escalate / Monitor / Ignore"
+      },
+      {
+        "value": "17",
+        "label": "Actively Exploited or KEV-Trending"
+      }
+    ],
+    "activelyExploited": [],
+    "vendors": [
+      "Siemens S7-1200/1500/200/300/400 Danfoss AK-SM 8xxA Danfoss iC7 (Automation/Marine/Hybrid) RealVNC (Server/Viewer, iOS/Android) Linux NFS Server Advantech EKI-1242 Advantech WISE-6610 Eclipse Milo (OPC UA) Eclipse Arrowhead / Ditto Node-RED Citrix NetScaler ADC/Gateway Check Point Security Mgmt/Quantum Juniper Session Smart VMware vCenter/ESXi Autel EVSE (OCPP) OPC UA/DDS stacks Tomcat Puppet Enterprise"
+    ],
+    "sectors": [
+      "Energy Water & Wastewater Food Retail & Cold Chain Transportation Manufacturing Government Services Healthcare (facility systems) Communications"
+    ]
+  },
+  "topThreats": [],
+  "threatActors": [
+    {
+      "category": "Activity",
+      "items": [
+        "ESXi/vCenter ransomware playbooks abusing native management (no hypervisor exploits) continue to cause rapid service destruction in virtualized estates. Vendor Research",
+        "#StopRansomware: SafePay RaaS impacting multiple CI sectors worldwide; heavy LOTL tools and cloud exfil. Joint Advisory",
+        "Void Blizzard (LAUNDRY BEAR) exploiting Zimbra webmail zero-day for mass credential/2FA theft and persistence. Joint Advisory",
+        "China-nexus covert networks of compromised SOHO/IoT devices (e.g., Volt Typhoon tradecraft) persist for pre-positioning in critical infrastructure. Joint Advisory"
+      ]
+    }
+  ],
+  "relevance": "Multiple items directly affect OT assets or OT-adjacent gateways: Siemens S7 PLCs, Danfoss refrigeration controllers and drives, Advantech EKI gateways, WISE-6610 IIoT routers, OPC UA (Eclipse Milo), and Node-RED deployments commonly embedded in ICS/IIoT products. Perimeter and remote-access exposures (RealVNC, NetScaler, Check Point, Juniper, NFS) materially increase IT-to-OT pivot risk. Exploitation activity is observed or strongly suspected for several issues; KEV entries prioritize patch timelines for externally exposed assets.",
+  "cveWatch": [
+    {
+      "category": "Vulnerability and CVE Watch",
+      "items": [
+        "Advantech EKI-1242 gateways: unauth OS command exec/missing auth on TCP 5058; segment and restrict management interfaces. CISA Bulletin",
+        "WISE-6610 LoRaWAN/IIoT gateway command injection (public exploits); update and isolate from WAN. CISA Bulletin",
+        "Eclipse Milo (OPC UA): auth bypass, padding-oracle, diagnostics exposure, DoS vectors-harden security modes and patch. CISA Bulletin",
+        "Eclipse Arrowhead/Ditto: management bypass and SSRF → device twin/policy manipulation; restrict mgmt endpoints and enforce mTLS/egress controls. CISA Bulletin",
+        "Danfoss iC7 industrial drives: debug/engineering interfaces permit unsigned apps/EEPROM writes; enforce signed firmware and physical/logical port controls. CISA Bulletin",
+        "libumqtt client (MQTT): remote DoS/memory corruption; segment brokers/clients in an OT DMZ and restrict unauthorized sessions. ICS Advisory",
+        "RealVNC multi-platform pre-auth UDP RCE across server/viewer apps-patch fleet-wide and curtail UDP relay. View Article"
+      ]
+    }
+  ],
+  "events": [],
+  "ttps": {
+    "descriptions": [
+      "Initial Access: Exploitation of public-facing apps (T1190) - RealVNC UDP RCE, NFS, NetScaler/Check Point KEVs.",
+      "Discovery/Lateral Movement: Living-off-the-land (Impacket, RDP, WMI), scanning via SOHO/IoT botnets for covert ingress.",
+      "Command & Control: Cloud/CDN abuse (Next.js panels, CloudFront), covert Graph/SharePoint C2, Ably/Pusher channels; UDP relays.",
+      "Impact: Hypervisor-layer service destruction, controller parameter tampering (cold-chain), PLC write operations (S7comm TCP/102).",
+      "AI Enablement: Obtain Capabilities (T1588.007) - AI-generated exploit scripts, agentic frameworks (ARTEX/CyberStrikeAI)."
+    ],
+    "mitreIds": [
+      "T1190",
+      "T1588.007"
+    ]
+  },
+  "outlook72h": "Expect opportunistic exploitation spikes for RealVNC UDP RCE and Linux NFS once PoCs/tooling circulate further; preempt with ACLs and emergency patches. Continued scanning and exploitation of Node-RED instances with open editors/APIs; validate configurations and block public access immediately. Increased phishing and credential abuse against collaboration/email platforms (Zimbra, M365); implement revocation and anomaly-based detections for app passwords/IMAP. Ongoing ESXi/vCenter abuse using native features; monitor for mass VM stop tasks, SSH enablement via Host Profiles, and datastore deletions. Persistent probing on IIoT/OPC UA gateways; apply IPS/WAF behaviors for mgmt endpoints and UASC anomalies. Escalate Highest priority actions required Siemens S7 PLCs - AI-Generated Scripts Targeting TCP/102 ESCALATE THREAT: 5 Actors use AI-generated Python (snap7/S7comm) to enumerate and write to PLCs. Remove public exposure, enforce allowlists, monitor PUT/GET, and patch firmware/engineering tools. Security Advisory Danfoss AK-SM 8xxA Refrigeration Controllers - Unauth RCE ESCALATE THREAT: 5 Unauthenticated POSTs can corrupt memory and lead to code execution. Enforce Strict Mode, remove internet exposure, and apply 5.5.x when available. ICS Advisory RealVNC - Pre-Auth RCE over UDP (Patch/Disable UDP) ESCALATE THREAT: 4 Critical memory-safety flaw allows unauthenticated RCE/DoS via UDP affecting remote access to HMIs/EWs. Patch and force TCP-only; quarantine legacy On-Demand Assist builds. View Article Linux NFS Server - Remote Root (CVE-2026-99362) ESCALATE THREAT: 4 Malicious NFS client can achieve remote root via memory corruption. Patch long-term kernels; firewall TCP/2049 and restrict exports to allowlisted subnets. View Article Node-RED RCE - Active Exploitation of Exposed Editors/APIs ESCALATE THREAT: 4 Exposed/unauth admin endpoints allow flow injection and OS command execution. Enable adminAuth, disable editor in production, and remove internet exposure. JPCERT/CC Advantech EKI-1242 Gateway - Unauth OS Command Exec (TCP 5058) ESCALATE THREAT: 5 Critical flaws in edgserver enable takeover and reconfiguration. Segment, block 5058 from untrusted networks, and monitor for anomalous sessions. CISA Bulletin WISE-6610 IIoT Gateway - Command Injection with Public Exploits ESCALATE THREAT: 4 WAN-facing exposure risks device compromise; update firmware and isolate from the internet. CISA Bulletin OPC UA (Eclipse Milo) - Auth Bypass/DoS/Credential Risks ESCALATE THREAT: 4 Disable weak security modes; enforce SignAndEncrypt; remove anonymous access; patch impacted servers/runtimes. CISA Bulletin Arrowhead/Ditto - Management Bypass & SSRF → Device Twin Control ESCALATE THREAT: 4 Restrict /mgmt/ endpoints; normalize paths, enforce mTLS and strict egress; patch per vendor guidance. CISA Bulletin ESXi/vCenter Ransomware via Native Features (BlackNevas et al.) ESCALATE THREAT: 5 Abuse of Host Profiles, SSH enablement, datastore wipes; classify vCenter/ESXi as Tier-0 and segregate backups/identities/logging. Vendor Research SafePay Ransomware - Global CI Impact, LOTL + Exfil ESCALATE THREAT: 4 VPN/edge exploits, credential abuse, and cloud exfil; strengthen MFA, segmentation, KEV patching, and offline backups. Joint Advisory KEV: Danfoss AK-SM 800A, Juniper, Mitel, Xen Orchestra - Active Exploitation ESCALATE THREAT: 4 Apply vendor fixes by KEV deadlines; restrict mgmt interfaces and audit for signs of compromise. CISA KEV China-Nexus Covert Networks (SOHO/IoT) - Pre-positioning ESCALATE THREAT: 4 Harden SOHO/IoT devices, disable legacy SNMP/SMI, and monitor for proxying/port-forwarding into enterprise/OT. Joint Advisory Zimbra Webmail Zero-Day (Void Blizzard) - Credential/2FA Theft ESCALATE THREAT: 4 Patch to non-vulnerable versions; revoke app passwords/2FA scratch codes and hunt for SOAP/API abuse patterns. Joint Advisory AI Supply-Chain: Prompt/Secret Theft via Inference Routers ESCALATE THREAT: 4 Rotate any creds ever sent to third-party LLMs; require private inference or direct providers with KYC/ZDR attestation; monitor cloud access anomalies. View Article N-able Breach (RMM/Hosted Cloud) - Supply-Chain Exposure ESCALATE THREAT: 4 Patch N-able platforms, restrict RMM exposure, enforce MFA/SSO, and audit MSP access and agent behavior. View Article Autel EV Chargers & Core Middleware (AMQP/Axis/Axis2) - Disruption Risk ESCALATE THREAT: 4 Restrict OCPP/AMQP exposure, apply vendor updates, and segment EVSE VLANs with strong egress filtering. CISA Bulletin Multiple OT/Telecom/Storage Fabrics (NetScaler, SANnav, Ciena) ESCALATE THREAT: 4 Apply vendor patches; remove direct exposure of mgmt UIs; add behavioral monitoring for fabric control planes. CISA Bulletin Monitor Elevated awareness and staged actions PHP Zero-Days (CVE-2026-109618/109619) - Web RCE MONITOR THREAT: 3 Patch across PHP lines; enable WAF virtual patching; hunt for web shells and anomalous process spawns. View Article MQTT libumqtt - DoS/Memory Corruption in Clients MONITOR THREAT: 4 No vendor fix yet; segment MQTT clients/brokers and restrict to authorized peers; monitor for crashes/restarts. ICS Advisory AutomationDirect C-More EA9 Programming - File Parsing RCE MONITOR THREAT: 3 Update to V6.81; treat unknown project files as untrusted; isolate EWs and enforce application allowlisting. ICS Advisory Schneider Electric EcoStruxure Power Build - Local RCE via Project MONITOR THREAT: 2 Upgrade to fixed builds; restrict untrusted .SSD files and segment engineering workstations. ICS Advisory ARTEX AI Framework Adoption (PRC/DPRK Actors) MONITOR THREAT: 3 Watch for automated recon/tool chaining; restrict LLM API egress; emphasize behavior-based detections. View Article Operation ShadowCloud (ESET) - Cloud-Evasive C2 MONITOR THREAT: 3 Abuse of Graph/SharePoint/GitHub/Ably; monitor app registrations/consents and unusual Graph file PUTs. Vendor Research Tomcat Clustering/TLS-PSK (CVE-2026-133325) - Unauthorized Joins MONITOR THREAT: 2 Force TLS 1.2 on clusters until fixed versions; monitor for unexpected cluster members. View Article Puppet Enterprise (CVE-2026-115731) - Deserialization RCE MONITOR THREAT: 3 Patch and restrict mgmt plane; rotate distributed credentials/keys and monitor orchestrations. CISA KEV Ignore (No Immediate OT/ICS Impact) Informational only PrestaShop Plugin (LiteSpeed Cache) - Web Store Issue IGNORE THREAT: 1 E-commerce plugin flaw with no demonstrated OT/ICS nexus. CERT Polska Elastic Product Bulletins - Aggregated Notices IGNORE THREAT: 1 Vendor advisories listing; consult originals as needed. CERT-FR General Policy/Guidance Items (non-threat) IGNORE THREAT: 1 High-level awareness without indicators (e.g., generic AI guidance, sectoral reports). NCSC (UK)",
+  "relatedCves": [
+    "CVE-2026-99362",
+    "CVE-2026-129713",
+    "CVE-2026-109618",
+    "CVE-2026-133325",
+    "CVE-2026-115731",
+    "CVE-2026-129968"
+  ]
+}
